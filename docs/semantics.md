@@ -936,9 +936,12 @@ output domain and lineage when source inversion is not certified; their
 physical construction remains residual rather than guessing a source value.
 
 A complete single-equijoin population may also carry exact scalar `ON` and
-`WHERE` predicates that resolve to exactly one input and do not reference a
-join key. The predicate is attached as `RowTruth(TRUE)` to every row in that
-input's closed physical bag. Joint count construction reuses the same filtered
+(for INNER joins) `WHERE` predicates that resolve to exactly one input and do not
+reference a join key. Source-row restrictions cannot certify post-join `WHERE`
+for outer joins because of NULL extension; those queries remain residual.
+Several predicates on the same source must be jointly satisfiable, not just
+individually exact. Every admitted filter is attached to the same closed
+physical source bag, never separately sampled. Joint count construction reuses the same filtered
 join assignment with independent positive or zero-output terminals. Join-key
 restrictions, ambiguous source predicates, unsupported join shapes and
 unattested source types remain residual.
