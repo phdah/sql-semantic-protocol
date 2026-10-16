@@ -199,3 +199,89 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
         }
     }
 }
+
+#[test]
+fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(id BIGINT PRIMARY KEY, a INTEGER, b INTEGER, s VARCHAR(8));
+         INSERT INTO t VALUES
+         (1, NULL, NULL, NULL),
+         (2, 0, 1, 'aa'),
+         (3, 1, 2, 'ab'),
+         (4, 2, 2, 'ab_cd'),
+         (5, 3, 0, 'abc'),
+         (6, 4, 4, 'ab_%'),
+         (7, -1, 1, 'zz'),
+         (8, -2147483648, 2147483647, 'ab'),
+         (9, 2147483647, -2147483648, 'abX')",
+    )
+    .unwrap();
+    // Hand-worked expectations, not computed from the protocol analyzer.
+    // Every mandatory variant ID is listed exactly once, including output-only
+    // shapes which must preserve the complete physical bag.
+    let expected: [(&str, &[i64]); 28] = [
+        ("E107-V001", &[3]),
+        ("E107-V002", &[2, 4, 5, 6, 7, 8, 9]),
+        ("E107-V003", &[2, 3, 7, 8]),
+        ("E107-V004", &[2, 3, 4, 7, 8]),
+        ("E107-V005", &[5, 6, 9]),
+        ("E107-V006", &[4, 5, 6, 9]),
+        ("E107-V007", &[3, 4, 5]),
+        ("E107-V008", &[2, 6, 7, 8, 9]),
+        ("E107-V009", &[4]),
+        ("E107-V010", &[3, 5]),
+        ("E107-V011", &[2, 4, 5, 6, 7, 8, 9]),
+        ("E107-V012", &[3]),
+        ("E107-V013", &[]),
+        ("E107-V014", &[1]),
+        ("E107-V015", &[2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V016", &[3]),
+        ("E107-V017", &[2, 4, 5, 6, 7, 8, 9]),
+        ("E107-V018", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V019", &[3]),
+        ("E107-V020", &[3, 4, 5, 6, 8, 9]),
+        ("E107-V022", &[4, 6]),
+        ("E107-V025", &[3, 4, 5, 6, 8, 9]),
+        ("E107-V027", &[3, 4, 5]),
+        ("E107-V028", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V029", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V030", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V031", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ("E107-V033", &[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+    ];
+    let exact: Vec<_> = freeze["inventory_cells"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|cell| cell["classification"] == "exact_required")
+        .collect();
+    assert_eq!(exact.len(), expected.len());
+
+    for (cell, (name, truth)) in exact.iter().zip(expected) {
+        let id = cell["id"].as_str().unwrap();
+        assert_eq!(id, name, "the reviewed independent oracle inventory changed");
+        let original = cell["sql_shape"].as_str().unwrap();
+        let predicate = original.split_once(" WHERE ").map(|(_, p)| p);
+        let sql = predicate.map_or_else(
+            || "SELECT id FROM t ORDER BY id".to_owned(),
+            |p| format!("SELECT id FROM t WHERE {p} ORDER BY id"),
+        );
+        let observed = ids_for(&db, &sql);
+        assert_eq!(observed, truth, "{id}: DuckDB physical TRUE membership; SQL={sql}");
+        if let Some(predicate) = predicate {
+            let rejected_sql =
+                format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
+            let rejected = ids_for(&db, &rejected_sql);
+            let true_set: BTreeSet<_> = truth.iter().copied().collect();
+            let not_true: Vec<_> = (1..=9)
+                .filter(|row| !true_set.contains(row))
+                .collect();
+            assert_eq!(
+                rejected, not_true,
+                "{id}: SQL NOT TRUE must retain FALSE and UNKNOWN; SQL={rejected_sql}"
+            );
+        }
+    }
+}
