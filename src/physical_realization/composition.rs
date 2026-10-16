@@ -299,6 +299,39 @@ pub(super) fn physical_operator_population_case(
     Some((witness, counts, case))
 }
 
+/// Two complete group populations can use the same physical source rows
+/// when each produces exactly one row per distinct integer group key.
+///
+/// Their operator-local constructors already certified the full source
+/// cardinality and representability of keys 0..N-1. The same N-row bag can
+/// assign that distinct sequence simultaneously to independent group columns;
+/// identical group columns simply reuse the sequence. More complex group
+/// multiplicities and HAVING constraints require correlated histograms and
+/// therefore remain residual.
+fn compatible_distinct_group_populations(
+    left: &crate::outcome_proofs::OutcomeWitness,
+    right: &crate::outcome_proofs::OutcomeWitness,
+) -> bool {
+    use crate::outcome_proofs::OutcomeWitness;
+    matches!(
+        (left, right),
+        (
+            OutcomeWitness::Groups {
+                relation: left_relation,
+                groups: left_groups,
+                rows_per_group: 1,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: right_relation,
+                groups: right_groups,
+                rows_per_group: 1,
+                ..
+            }
+        ) if left_relation == right_relation && left_groups == right_groups
+    )
+}
+
 /// Safely share fully controlled physical relations across several terminal
 /// operators. Identical constructions can reuse the same rows; independent
 /// sources remain disjoint. A different sufficient population over one source
@@ -330,7 +363,12 @@ pub(super) fn joint_operator_population_goals(
             }
             for (relation, count) in counts {
                 if let Some(existing) = sources.get(&relation) {
-                    if *existing != count || populations.get(&relation) != Some(&witness) {
+                    if *existing != count
+                        || !populations.get(&relation).is_some_and(|previous| {
+                            previous == &witness
+                                || compatible_distinct_group_populations(previous, &witness)
+                        })
+                    {
                         return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
                     }
                 } else {
@@ -339,9 +377,16 @@ pub(super) fn joint_operator_population_goals(
                 }
             }
             for obligation in case.obligations() {
-                if !all_reused || matches!(obligation, WitnessObligation::OutputRows { .. }) {
-                    // Shared source closures and operator histograms are
-                    // one physical assignment, not duplicated obligations.
+                if !all_reused
+                    || matches!(
+                        obligation,
+                        WitnessObligation::OutputRows { .. }
+                            | WitnessObligation::OperatorPopulation { .. }
+                    )
+                {
+                    // Shared source closures count once, but each different
+                    // locally certified grouping histogram retains its own
+                    // operator proof on those same physical rows.
                     if !obligations.contains(obligation) {
                         obligations.push(obligation.clone());
                     }
