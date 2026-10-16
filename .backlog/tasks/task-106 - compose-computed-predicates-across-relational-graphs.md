@@ -91,6 +91,8 @@ Fixed TASK-106 regression found by full suite: generalized exact_source_filter d
 Code review fixed: added missing /// docs on refine_catalog_arithmetic_domain and extracted refine_write_value_domain to remove 3x duplication in UPDATE/MERGE write paths. Spec review confirmed bounded scope is intentional; flagged join-gate bypass and outer-join residual paths are fail-closed by design with conformance coverage. Full gates re-run green.
 
 Hardening follow-up complete: documented join helpers and gate-bypass soundness, extracted blocks_unconstrained_physical_plans helper (11 sites), split joint_join_with_rejected_filters into key/restriction/reconcile/satisfiability/rebuild helpers with identical behavior. Added 3 evidence tests: computed INSERT SELECT arithmetic exact {5..9}, single-layer contradiction never feasible for 1/2/5 rows with zero feasible, outer-join contradiction stays residual not impossible. Full gates green: 74 ok suites, 0 failed, strict clippy, fmt, doc, no-default-features lib.
+
+Group/rank sharing evidence (2026-10-16): the HEAD `compatible_operator_populations` Groups+Ranked arm shipped without regression coverage. Added 2 tests in `tests/task_106_composed_predicates.rs` at the public `physical_joint_row_count_plan` seam: singleton GROUP BY plus same-key ROW_NUMBER share one bag (2 OperatorPopulation, 1 ClosedWorld, 2 OutputRows, order-independent, DuckDB oracle returns (2,2) on {(0,10),(1,20)}), while a rank partitioned on a different key stays residual. Local full-suite execution remains blocked on this host (no prebuilt libduckdb for aarch64-linux-android); verification via fmt parse, lib check/clippy, and CI workflow after push.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary

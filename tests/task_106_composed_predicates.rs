@@ -2095,6 +2095,152 @@ fn uncorrelated_nonunit_group_histograms_stay_residual() {
 }
 
 #[test]
+fn singleton_group_and_matching_rank_partitions_share_one_source_bag() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn = 1",
+        ],
+        "duckdb",
+    );
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = &plan else {
+        panic!("singleton groups and one-row rank partitions share one bag: {plan:?}");
+    };
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
+                .iter()
+                .filter(|obligation| {
+                    matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+                })
+                .count()
+                == 2
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    })
+                    .count()
+                    == 1
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+                && case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::OperatorPopulation {
+                            witness: sql_semantic_protocol::OutcomeWitness::Groups {
+                                groups: 2,
+                                rows_per_group: 1,
+                                ..
+                            }
+                        }
+                    )
+                })
+                && case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::OperatorPopulation {
+                            witness: sql_semantic_protocol::OutcomeWitness::Ranked { rows: 2, .. }
+                        }
+                    )
+                })
+        }),
+        "one physical bag carries both the singleton groups and the rank partitions"
+    );
+    assert!(
+        cases.iter().any(|case| {
+            let mut group_key = false;
+            let mut rank_partition = false;
+            for obligation in case.obligations() {
+                match obligation {
+                    WitnessObligation::OperatorPopulation {
+                        witness: sql_semantic_protocol::OutcomeWitness::Groups { key, .. },
+                    } => {
+                        group_key = key.relation() == Some("t") && key.name() == "a";
+                    }
+                    WitnessObligation::OperatorPopulation {
+                        witness:
+                            sql_semantic_protocol::OutcomeWitness::Ranked {
+                                relation,
+                                partition_key: Some(partition),
+                                order_by,
+                                ..
+                            },
+                    } => {
+                        rank_partition = relation == "t"
+                            && partition.relation() == Some("t")
+                            && partition.name() == "a"
+                            && order_by.len() == 1
+                            && order_by[0].column().relation() == Some("t")
+                            && order_by[0].column().name() == "b";
+                    }
+                    _ => {}
+                }
+            }
+            group_key && rank_partition
+        }),
+        "the shared bag numbers the same integer key for grouping and ranking"
+    );
+
+    let swapped = physical_joint_row_count_plan(
+        &bundle,
+        &[(bundle.layers()[1].id(), 2), (bundle.layers()[0].id(), 2)],
+    );
+    assert_eq!(
+        swapped, plan,
+        "terminal order must not change the joint proof"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (0,10),(1,20);",
+    )
+    .unwrap();
+    let grouped: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    let ranked: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn = 1)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!((grouped, ranked), (2, 2));
+}
+
+#[test]
+fn rank_partition_on_different_key_stays_residual_against_singleton_groups() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT b, ROW_NUMBER() OVER (PARTITION BY b ORDER BY a ASC NULLS LAST) AS rn FROM t QUALIFY rn = 1",
+        ],
+        "duckdb",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "different rank partitions need their own correlation proof: {plan:?}"
+    );
+}
+
+#[test]
 fn join_population_and_group_of_same_key_share_one_complete_source_bag() {
     let bundle = analyze_chain(
         &[
