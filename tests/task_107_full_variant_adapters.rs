@@ -8,7 +8,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, ComparisonAssumption, ComposedSemantics,
+    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComparisonAssumption, ComposedSemantics,
     ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -26,6 +26,19 @@ fn source_semantics(
         panic!("typed source layer became unresolved");
     };
     semantics
+}
+
+fn serialized_source_semantics(bundle: &sql_semantic_protocol::AnalysisBundle) -> Value {
+    let index = bundle
+        .layers()
+        .iter()
+        .position(|layer| layer.consumes().iter().any(|name| name == "warehouse.raw.orders"))
+        .expect("physical source layer index");
+    let document: Value =
+        serde_json::from_str(&to_bundle_json(bundle)).expect("valid canonical protocol JSON");
+    let emitted = &document["layers"][index]["composed_semantics"];
+    assert_eq!(emitted["status"], "resolved");
+    emitted.clone()
 }
 
 #[test]
@@ -129,6 +142,23 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
                 .collect::<Vec<_>>(),
             "{id}: SQL TRUE and NOT TRUE obligation parity"
         );
+        let sql_json = serialized_source_semantics(&direct);
+        let dbt_json = serialized_source_semantics(&dbt);
+        for key in [
+            "output",
+            "column_domains",
+            "condition_exactness",
+            "boolean_witnesses",
+        ] {
+            assert!(
+                sql_json.get(key).is_some() || key == "boolean_witnesses",
+                "{id}: emitted protocol lost {key}"
+            );
+            assert_eq!(
+                sql_json[key], dbt_json[key],
+                "{id}: emitted protocol SQL/dbt semantic drift for {key}"
+            );
+        }
     }
     assert_eq!(
         confirmed, 28,
