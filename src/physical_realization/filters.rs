@@ -29,17 +29,23 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                if !semantics
+                let conflicting_domains = semantics
                     .column_domains()
                     .iter()
-                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
-                    && semantics.boolean_witnesses().len() == proofs.len()
-                {
+                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty));
+                if semantics.boolean_witnesses().len() == proofs.len() {
                     if let Some((qualifying, rejected)) =
                         joint_physical_filters(bundle, &walker, semantics)
                     {
-                        let partial = matches!(qualifying, WitnessDirection::Residual { .. })
-                            || matches!(rejected, WitnessDirection::Residual { .. });
+                        // An empty composed domain must never yield a feasible
+                        // qualifying row. A separately certified conjunction
+                        // may nevertheless prove TRUE impossible, rather than
+                        // hiding that necessary contradiction behind a gap.
+                        if !conflicting_domains
+                            || matches!(qualifying, WitnessDirection::Impossible)
+                        {
+                            let partial = matches!(qualifying, WitnessDirection::Residual { .. })
+                                || matches!(rejected, WitnessDirection::Residual { .. });
                         return PhysicalSourcePlan {
                             target_layer_id: target_layer_id.to_string(),
                             nodes: walker.nodes,
@@ -47,16 +53,13 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                             qualifying,
                             rejected,
                             zero_output,
-                            gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
-                        };
+                                gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
+                            };
+                        }
                     }
                 }
 
-                gap = if semantics
-                    .column_domains()
-                    .iter()
-                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
-                {
+                gap = if conflicting_domains {
                     Some(PhysicalProofGap::ConflictingDomains)
                 } else if proofs.is_empty() {
                     Some(PhysicalProofGap::NoWitness)
