@@ -303,12 +303,17 @@ pub(super) fn physical_operator_population_case(
 /// one physical bag only when their complete, deterministic row assignment
 /// can satisfy every operator's key and multiplicity law simultaneously.
 ///
-/// Singleton GROUP BY rows are numbered 0..N-1 on their key. Distinct
-/// grouping keys can receive that sequence independently. ROW_NUMBER
+/// Identical grouping histograms share one bag through block-diagonal
+/// pairing: N groups of r rows on one key and N groups of r rows on another
+/// key are jointly realized by pairing the i-th keys with r rows each.
+/// Singleton GROUP BY rows are numbered 0..N-1 on their key. ROW_NUMBER
 /// partitioned by the *same* singleton grouping key sees exactly one row
-/// per partition, regardless of its independently typed ORDER BY column.
-/// Non-singleton groups, different rank partitions and unproved windows
-/// remain residual rather than being multiplied as independent examples.
+/// per partition, regardless of its independently typed ORDER BY column. An
+/// unpartitioned ROW_NUMBER over the same N singleton rows also sees every
+/// row pass: its certified limit covers all N rows in the single partition.
+/// Non-identical group multiplicities, different rank partitions and
+/// unproved windows remain residual rather than being multiplied as
+/// independent examples.
 ///
 /// Soundness: the shared bag carries N distinct keys with one row each, so
 /// it presents N one-row partitions to the rank operator. With one row per
@@ -336,16 +341,20 @@ fn compatible_operator_populations(
             OutcomeWitness::Groups {
                 relation: left_relation,
                 groups: left_groups,
-                rows_per_group: 1,
+                rows_per_group: left_rows_per_group,
                 ..
             },
             OutcomeWitness::Groups {
                 relation: right_relation,
                 groups: right_groups,
-                rows_per_group: 1,
+                rows_per_group: right_rows_per_group,
                 ..
             },
-        ) => left_relation == right_relation && left_groups == right_groups,
+        ) => {
+            left_relation == right_relation
+                && left_groups == right_groups
+                && left_rows_per_group == right_rows_per_group
+        }
         (
             OutcomeWitness::Groups {
                 relation: group_relation,
@@ -374,6 +383,34 @@ fn compatible_operator_populations(
                 rows_per_group: 1,
             },
         ) => group_relation == rank_relation && key == partition && groups == rows,
+        (
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                groups,
+                rows_per_group: 1,
+                ..
+            },
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: None,
+                rows,
+                ..
+            },
+        )
+        | (
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: None,
+                rows,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                groups,
+                rows_per_group: 1,
+                ..
+            },
+        ) => group_relation == rank_relation && groups == rows,
         (OutcomeWitness::Groups { .. }, _)
         | (_, OutcomeWitness::Groups { .. })
         | (OutcomeWitness::Ranked { .. }, _)

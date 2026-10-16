@@ -1967,6 +1967,172 @@ fn affine_composition_does_not_invent_domains_for_unknown_producer_values() {
 }
 
 #[test]
+fn identical_nonunit_group_histograms_share_one_source_bag() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+            "SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) >= 2",
+        ],
+        "postgresql",
+    );
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = &plan else {
+        panic!("identical non-singleton histograms share one bag: {plan:?}");
+    };
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
+                .iter()
+                .filter(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::OperatorPopulation {
+                            witness: sql_semantic_protocol::OutcomeWitness::Groups {
+                                groups: 2,
+                                rows_per_group: 2,
+                                ..
+                            }
+                        }
+                    )
+                })
+                .count()
+                == 2
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    })
+                    .count()
+                    == 1
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+        }),
+        "one physical bag carries both non-singleton group histograms"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (0,0),(0,0),(1,1),(1,1);",
+    )
+    .unwrap();
+    let counts = [
+        "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2)",
+        "SELECT COUNT(*) FROM (SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) >= 2)",
+    ]
+    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).unwrap());
+    assert_eq!(counts, [2, 2]);
+}
+
+#[test]
+fn nonunit_group_histograms_with_different_multiplicities_stay_residual() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+            "SELECT b, COUNT(*) AS n FROM t GROUP BY b",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "different group multiplicities need their own correlation proof: {plan:?}"
+    );
+}
+
+#[test]
+fn singleton_groups_share_bag_with_unpartitioned_rank() {
+    // QUALIFY is a parser-boundary dialect feature: duckdb here, mirroring
+    // the other physical QUALIFY tests.
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT ROW_NUMBER() OVER (ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 3",
+        ],
+        "duckdb",
+    );
+    let goals = [(bundle.layers()[0].id(), 3), (bundle.layers()[1].id(), 3)];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = &plan else {
+        panic!("singleton groups and a passing unpartitioned rank share one bag: {plan:?}");
+    };
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::OperatorPopulation {
+                        witness: sql_semantic_protocol::OutcomeWitness::Groups {
+                            groups: 3,
+                            rows_per_group: 1,
+                            ..
+                        }
+                    }
+                )
+            }) && case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::OperatorPopulation {
+                        witness: sql_semantic_protocol::OutcomeWitness::Ranked { rows: 3, .. }
+                    }
+                )
+            })
+        }),
+        "one physical bag carries the singleton groups and the unpartitioned rank"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (0,0),(1,1),(2,2);",
+    )
+    .unwrap();
+    let grouped: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    let ranked: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT ROW_NUMBER() OVER (ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 3)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!((grouped, ranked), (3, 3));
+}
+
+#[test]
+fn unpartitioned_rank_with_different_count_stays_residual() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT ROW_NUMBER() OVER (ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 3",
+        ],
+        "duckdb",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[(bundle.layers()[0].id(), 3), (bundle.layers()[1].id(), 2)],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "mismatched group and rank counts need their own correlation proof: {plan:?}"
+    );
+}
+
+#[test]
 fn nested_affine_chain_transports_bounded_domain() {
     let bundle = analyze_chain(
         &[
