@@ -467,3 +467,70 @@ fn typed_range_bounds_are_closed_and_null_rejection_remains_explicit() {
         );
     }
 }
+
+#[cfg(feature = "odcs")]
+#[test]
+fn odcs_physical_schema_matches_sql_and_compiled_dbt_expression_outcomes() {
+    use sql_semantic_protocol::parse_odcs_yaml;
+
+    const ODCS: &str = r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: task107
+name: Expression parity
+version: 1.0.0
+status: active
+schema:
+  - name: orders
+    physicalName: warehouse.raw.orders
+    properties:
+      - name: id
+        physicalType: BIGINT
+      - name: amount
+        physicalType: INTEGER
+"#;
+    let names = RelationCatalog::new(&["warehouse.raw.orders"]).unwrap();
+    let metadata = parse_odcs_yaml(ODCS, "postgresql", &names).unwrap();
+    let external_catalog = RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
+    let direct_catalog = source_catalog();
+    let dbt_catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    let parser = dialect_from_name("postgresql").unwrap();
+
+    for predicate in [
+        "amount BETWEEN 1 AND 10",
+        "CAST(amount AS BIGINT) * 3 > 9",
+        "COALESCE(amount, 0) IS NULL",
+        "NULLIF(amount, 1) IS NULL",
+        "id > amount AND amount > id",
+    ] {
+        let sql = format!(
+            "SELECT id, amount FROM warehouse.raw.orders WHERE {predicate}"
+        );
+        let mut manifest: Value =
+            serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+        manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = sql.clone().into();
+        let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
+        let dbt = analyze_dbt_artifacts(&manifest, &dbt_catalog, "postgresql", parser.as_ref())
+            .unwrap_or_else(|error| panic!("dbt/{predicate}: {error}"));
+
+        let input = SqlInput::inline(&sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task107", &input, "postgresql", parser.as_ref(),
+        )];
+        let direct = analyze_configured_inputs_with_catalog(&configured, &direct_catalog)
+            .unwrap_or_else(|error| panic!("direct SQL/{predicate}: {error}"));
+        let odcs = analyze_configured_inputs_with_catalog(&configured, &external_catalog)
+            .unwrap_or_else(|error| panic!("ODCS/{predicate}: {error}"));
+
+        let expected = source_semantics(&direct);
+        for (adapter, actual) in [("ODCS", &odcs), ("compiled dbt", &dbt)] {
+            let result = source_semantics(actual);
+            assert_eq!(result.output(), expected.output(), "{predicate}/{adapter}: output typed domains");
+            assert_eq!(result.column_domains(), expected.column_domains(), "{predicate}/{adapter}: input typed domains");
+            assert_eq!(result.condition_exactness(), expected.condition_exactness(), "{predicate}/{adapter}: proof strength");
+            assert_eq!(result.boolean_witnesses().iter().map(|w| w.witness()).collect::<Vec<_>>(),
+                expected.boolean_witnesses().iter().map(|w| w.witness()).collect::<Vec<_>>(),
+                "{predicate}/{adapter}: SQL TRUE/NOT TRUE proof witnesses");
+        }
+    }
+}
