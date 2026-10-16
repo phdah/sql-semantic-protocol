@@ -1742,9 +1742,7 @@ fn total_affine_projection_transports_true_and_not_true_through_materialization(
         let shaped_inputs = shaped_sources
             .iter()
             .zip(["stage", "mart"])
-            .map(|(source, id)| {
-                ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref())
-            })
+            .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
             .collect::<Vec<_>>();
         let shaped = analyze_configured_inputs_with_catalog(&shaped_inputs, &catalog).unwrap();
         let result = physical_source_plan(&shaped, shaped.layers()[1].id());
