@@ -14,9 +14,8 @@ use serde_json::Value;
 const CLOSURE: &str = include_str!("../docs/task-108-acceptance-freeze.json");
 const UPSTREAM: &str = include_str!("../docs/task-107-acceptance-freeze.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
-const PARENT: &str = include_str!(
-    "../.backlog/tasks/task-70 - solve-expression-and-predicate-variants.md"
-);
+const PARENT: &str =
+    include_str!("../.backlog/tasks/task-70 - solve-expression-and-predicate-variants.md");
 const CHILD: &str = include_str!(
     "../.backlog/tasks/task-108 - signoff-task70-typed-predicate-expression-outcomes.md"
 );
@@ -82,7 +81,10 @@ fn parent_criteria_are_independently_mapped_to_every_merged_child() {
         assert_eq!(name(child, "expected_state"), "Done");
         assert!(name(child, "merged_pr").ends_with(&format!(
             "/{}",
-            id.trim_start_matches("TASK-").parse::<usize>().expect("child id") + 8
+            id.trim_start_matches("TASK-")
+                .parse::<usize>()
+                .expect("child id")
+                + 8
         )));
         assert_eq!(name(child, "merge_commit").len(), 40);
         let text = source(name(child, "task_file"));
@@ -110,13 +112,11 @@ fn parent_criteria_are_independently_mapped_to_every_merged_child() {
     assert_eq!(original.len(), 6, "TASK-70 original AC cannot be rewritten");
     let mappings = array(&closure, "original_ac_map");
     assert_eq!(mappings.len(), 6);
-    let expected_families: BTreeSet<_> = array(
-        &manifest["task_70_predicate_evidence"],
-        "family_evidence",
-    )
-    .iter()
-    .map(|family| name(family, "family"))
-    .collect();
+    let expected_families: BTreeSet<_> =
+        array(&manifest["task_70_predicate_evidence"], "family_evidence")
+            .iter()
+            .map(|family| name(family, "family"))
+            .collect();
     let mut covered_families = BTreeSet::new();
     for (index, mapping) in mappings.iter().enumerate() {
         assert_eq!(
@@ -183,7 +183,10 @@ fn all_frozen_variants_and_dialects_have_executable_two_direction_owners() {
             assert_eq!(cell[field], original[field], "{id}: contract drift");
         }
         let proofs = array(cell, "truth_proof_tests");
-        assert!(!proofs.is_empty(), "{id}: missing independently owned proof");
+        assert!(
+            !proofs.is_empty(),
+            "{id}: missing independently owned proof"
+        );
         for proof in proofs {
             check_named_test(proof.as_str().expect("typed proof name"));
         }
@@ -192,8 +195,7 @@ fn all_frozen_variants_and_dialects_have_executable_two_direction_owners() {
             "exact_required" => {
                 mandatory += 1;
                 assert_eq!(
-                    original["semantic_exactness_evidence"],
-                    "verified_exact_or_impossible",
+                    original["semantic_exactness_evidence"], "verified_exact_or_impossible",
                     "{id}: unverified mandatory TRUE/NOT TRUE proof"
                 );
             }
@@ -227,11 +229,14 @@ fn all_frozen_variants_and_dialects_have_executable_two_direction_owners() {
             );
             assert_ne!(name(status, "parser"), "unverified");
             assert_ne!(name(status, "canonical"), "unverified");
-            assert_eq!(name(status, "vendor_execution"), if *dialect == "duckdb" {
-                "duckdb_oracle_required_where_executable"
-            } else {
-                "not_claimed"
-            });
+            assert_eq!(
+                name(status, "vendor_execution"),
+                if *dialect == "duckdb" {
+                    "duckdb_oracle_required_where_executable"
+                } else {
+                    "not_claimed"
+                }
+            );
             count += 1;
         }
     }
@@ -270,8 +275,7 @@ fn independently_executed_goldens_seeds_and_adapter_gates_cannot_be_omitted() {
         }
     }
     assert_eq!(
-        closure["seeded_differential_oracles"],
-        upstream["seeds"],
+        closure["seeded_differential_oracles"], upstream["seeds"],
         "independent DuckDB seeds drifted"
     );
     assert_eq!(
@@ -279,8 +283,7 @@ fn independently_executed_goldens_seeds_and_adapter_gates_cannot_be_omitted() {
         serde_json::json!([0, 1, 42, 20261016])
     );
     assert_eq!(
-        closure["upstream_final_ci"]["conclusion"],
-        "success",
+        closure["upstream_final_ci"]["conclusion"], "success",
         "TASK-107 merged without a verified CI gate"
     );
     for reference in array(&closure, "independently_owned_tests") {
@@ -315,8 +318,14 @@ fn an_unverified_parent_can_never_be_marked_done_or_release_approved() {
     assert_eq!(child_criteria.len(), 5);
     assert_eq!(signed["no_vendor_runtime_claim"], true);
     assert_eq!(signed["downstream_release_gate"], "TASK-91");
-    assert_eq!(manifest["task_108_parent_signoff"]["release_approved"], false);
-    assert_eq!(manifest["task_107_oracle_evidence"]["release_approved"], false);
+    assert_eq!(
+        manifest["task_108_parent_signoff"]["release_approved"],
+        false
+    );
+    assert_eq!(
+        manifest["task_107_oracle_evidence"]["release_approved"],
+        false
+    );
     if signed["status"] == "verified" {
         assert_eq!(signed["all_required_checks_green"], true);
         assert_eq!(signed["task_108_checked"], true);
@@ -326,7 +335,10 @@ fn an_unverified_parent_can_never_be_marked_done_or_release_approved() {
         assert!(parent_criteria.iter().all(|line| line.starts_with("- [x]")));
         assert!(child_criteria.iter().all(|line| line.starts_with("- [x]")));
         assert_eq!(manifest["task_108_parent_signoff"]["status"], "verified");
-        assert_eq!(manifest["task_70_predicate_evidence"]["parent_status"], "Done");
+        assert_eq!(
+            manifest["task_70_predicate_evidence"]["parent_status"],
+            "Done"
+        );
     } else {
         assert_eq!(signed["status"], "pending_final_ci");
         assert!(!child_done && !parent_done, "premature parent completion");
@@ -338,6 +350,9 @@ fn an_unverified_parent_can_never_be_marked_done_or_release_approved() {
             parent_criteria.iter().all(|line| line.starts_with("- [ ]")),
             "unchecked TASK-70 requires independent closure"
         );
-        assert_eq!(manifest["task_108_parent_signoff"]["status"], "pending_final_ci");
+        assert_eq!(
+            manifest["task_108_parent_signoff"]["status"],
+            "pending_final_ci"
+        );
     }
 }
