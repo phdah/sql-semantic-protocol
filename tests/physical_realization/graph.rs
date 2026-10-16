@@ -92,16 +92,14 @@ fn filtered_upstream_and_downstream_require_joint_satisfiability_proof() {
     // qualifies while (0, 0) is rejected. Untyped chains without that
     // evidence keep the historical multiple-witnesses residual.
     assert_eq!(plan.gap(), None, "{plan:?}");
-    assert!(matches!(
-        plan.qualifying(),
-        WitnessDirection::Feasible(_),
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
         "{plan:?}"
-    ));
-    assert!(matches!(
-        plan.rejected(),
-        WitnessDirection::Feasible(_),
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
         "{plan:?}"
-    ));
+    );
     assert_eq!(plan.sources(), &["t".to_string()]);
 }
 
