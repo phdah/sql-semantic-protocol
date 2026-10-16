@@ -12,8 +12,10 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
     physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, AnalysisBundle,
     BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind, LiteralValue, PhysicalProofGap,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+    ConstraintSourceKind, ConstraintValue, Error, GroupBoundaryKind, JoinKind, LiteralValue,
+    PhysicalProofGap, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput, ValueDomain,
     WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
@@ -1463,4 +1465,83 @@ fn contradictory_independent_join_scalar_filters_never_yield_a_complete_populati
         )
         .expect("join contradiction oracle");
     assert_eq!(count, 0);
+}
+
+fn constrained_stage_restriction() -> RelationConstraintSet {
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(
+            ConstraintSourceKind::ExternalMetadata,
+            "stage-warehouse-catalog",
+        )
+        .expect("evidence provenance"),
+        ConstraintEnforcement::Enforced,
+    )];
+    RelationConstraintSet::new(
+        "stage",
+        vec![
+            RelationConstraint::accepted_values(
+                "a",
+                vec![ConstraintValue::Integer(20)],
+                false,
+                evidence,
+            )
+            .expect("warehouse restriction"),
+        ],
+    )
+    .expect("relation constraints")
+}
+
+#[test]
+fn independent_materialized_check_laws_cannot_disappear_during_identity_inversion() {
+    let mut bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a, b, k FROM t",
+            "SELECT a FROM stage WHERE a BETWEEN 1 AND 5",
+        ],
+        "postgresql",
+    );
+    let target = bundle.layers()[1].id().to_string();
+    assert!(
+        matches!(
+            physical_source_plan(&bundle, &target).qualifying(),
+            WitnessDirection::Feasible(_)
+        ),
+        "an unconstrained identity copy should support typed physical filters"
+    );
+    bundle.enrich_relation_constraints(&[constrained_stage_restriction()]);
+    let plan = physical_source_plan(&bundle, &target);
+    assert!(
+        !matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "stage-specific enforced values cannot be discarded at the producer boundary: {plan:?}"
+    );
+    assert!(
+        !matches!(
+            physical_row_count_plan(&bundle, &target, 2),
+            WitnessDirection::Feasible(_)
+        ),
+        "no positive closed-source proof may ignore the materialized CHECK"
+    );
+}
+
+#[test]
+fn filtered_join_population_respects_independently_enforced_stage_laws() {
+    let mut bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a, b, k FROM l",
+            "SELECT s.a FROM stage s JOIN r ON s.k = r.k WHERE s.a BETWEEN 1 AND 5",
+        ],
+        "postgresql",
+    );
+    let target = bundle.layers()[1].id().to_string();
+    let before = physical_row_count_plan(&bundle, &target, 2);
+    assert!(
+        matches!(before, WitnessDirection::Feasible(_)),
+        "filtered join should be constructible without independent constraints: {before:?}"
+    );
+    bundle.enrich_relation_constraints(&[constrained_stage_restriction()]);
+    let after = physical_row_count_plan(&bundle, &target, 2);
+    assert!(
+        !matches!(after, WitnessDirection::Feasible(_)),
+        "complete join populations must not silently bypass stage-specific constraints: {after:?}"
+    );
 }
