@@ -262,8 +262,14 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
     assert_eq!(transitions[1].affected().updated(), 1);
     assert_eq!(transitions[2].affected().deleted(), 1);
     assert_eq!(transitions[2].affected().updated(), 1);
-    assert_eq!(transitions[1].before().rows(), transitions[0].after().rows());
-    assert_eq!(transitions[2].before().rows(), transitions[1].after().rows());
+    assert_eq!(
+        transitions[1].before().rows(),
+        transitions[0].after().rows()
+    );
+    assert_eq!(
+        transitions[2].before().rows(),
+        transitions[1].after().rows()
+    );
     let target = states
         .iter()
         .find(|state| state.relation() == "target")
