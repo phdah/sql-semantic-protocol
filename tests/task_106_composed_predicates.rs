@@ -11,8 +11,9 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, physical_source_plan,
     AnalysisBundle, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, LiteralValue, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, GroupBoundaryKind, LiteralValue,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    WitnessDirection,
 };
 
 fn catalog() -> RelationCatalog {
@@ -123,15 +124,20 @@ fn filtered_chain_conjoins_typed_range_filters() {
     for composed in semantics.boolean_witnesses() {
         assert_exact_both(composed.witness(), "chained range filters");
     }
-    // The upstream filter maps to the physical source through the filtered
-    // but identity-preserving stage producer.
-    assert!(
-        semantics
-            .boolean_witnesses()
-            .iter()
-            .all(|composed| composed.witness().source_relation() == "t"),
-        "both filters must target the same physical source"
-    );
+    // Provenance stays honest: the stage filter is already physical, while
+    // the downstream filter through the filtered stage producer remains
+    // intermediate. The joint terminal proof conjoins both against one
+    // shared physical row instead of relabeling either witness.
+    let mart_id = bundle.layers()[mart_layer(&bundle)].id().to_string();
+    for composed in semantics.boolean_witnesses() {
+        if composed.origin_layer_id() == mart_id.as_str() {
+            assert_eq!(composed.boundary_kind(), GroupBoundaryKind::Intermediate);
+            assert_eq!(composed.witness().source_relation(), "stage");
+        } else {
+            assert_eq!(composed.boundary_kind(), GroupBoundaryKind::Physical);
+            assert_eq!(composed.witness().source_relation(), "t");
+        }
+    }
     let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
     assert!(
         matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
@@ -482,7 +488,10 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
             |row| row.get(0),
         )
         .unwrap();
-    assert_eq!(rejected, 2, "NULL rows are NOT TRUE, not TRUE");
+    assert_eq!(
+        rejected, 3,
+        "FALSE and UNKNOWN rows are all NOT TRUE, including the NULL row"
+    );
 
     let bundle = analyze_chain(
         &[
