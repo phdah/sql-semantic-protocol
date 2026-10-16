@@ -151,3 +151,54 @@ This evidence does **not** discharge the five acceptance criteria:
 ## Code-review follow-up (2026-10-16)
 
 Matt Pocock two-axis review of PR #114 found that filtered join counts could bypass row-shape checks (LIMIT/DISTINCT), treat post-outer-join WHERE as a source-row predicate, and conjoin independently exact but mutually inconsistent scalar ON conditions. The PR now requires a separately certified filtered-join bag shape, keeps outer WHERE residual, and admits multiple source predicates only after joint satisfiability is established. Regression tests cover all three cases with DuckDB oracles where relevant. The bounded implementation does not establish full acceptance of AC #1-#5.
+
+## Follow-up integration work (PR #114)
+
+Expanded the existing TASK-106 bounded scope along two source-independent
+physical proof paths:
+
+- Closed typed INNER JOIN populations now expose individually certified
+  conjuncts to the joint TRUE/NOT TRUE source-row satisfiability solver,
+  instead of rejecting a compound `All(RowTruth)` formula. Incompatible
+  negative terminals can be proven impossible only when the positive INNER
+  join necessarily consumes nonempty sources.
+- Independent filtered equijoin terminal goals can be combined into a single
+  closed physical graph without dropping their source-row filters. Repeated
+  source identities with different filter obligations or unreconciled key
+  populations stay residual, not spuriously feasible.
+- Materialized identity/widening reference inversion and filtered-join source
+  construction now reject independent intermediate relation constraints,
+  defaults and unresolved diagnostics that were not transported into physical
+  source obligations. This protects the AC4 no-fabricated-plans requirement.
+- Added focused public-API SQL and DuckDB tests for joint conjunctive
+  predicates, contradictory negative terminals, independent filtered join
+  DAGs, and intermediate warehouse constraints. Updated the semantic guide,
+  code map, and protocol-owned coverage manifest.
+
+### AC verification matrix
+
+1. **Typed operator propagation:** Covered for existing certified single-source
+   filter/alias, equijoin, grouping/HAVING, ranking/QUALIFY and computed
+   INSERT/UPDATE/MERGE paths by `tests/task_106_composed_predicates.rs`,
+   `tests/physical_realization/mixed.rs`, `tests/physical_write_states.rs`
+   and `tests/advanced_target_validation.rs`. General cross-materialization
+   affine inversion remains unproved and must be classified residual.
+2. **Value domains and identities:** Typed finite computed write domains,
+   inclusive/exclusive range refinements, per-hop widening/NULL certification
+   and stable physical references are tested in the same suites. Arbitrary
+   lossy casts and opaque expressions must not claim precise domains.
+3. **Joint physical assignment:** Newly extends multiple same-source TRUE
+   conjuncts plus NOT TRUE terminals, and disjoint filtered joins. Existing
+   GROUP/HAVING, QUALIFY, duplicate/NULL and ordered DML constructions cover
+   supported operators. Correlated multi-join key histograms remain residual.
+4. **Impossible versus residual:** Necessary contradictory filter conjunctions,
+   incomplete producers, unsupported group expressions, materialization laws,
+   lossy inverses and unsupported writes have explicit regression controls.
+5. **Adapters/oracles:** SQL/dbt full-source parity, DuckDB materialization and
+   ordered write-state oracles, dialect probes, canonical JSON/schema tests,
+   and this PR's new joint join DuckDB fixtures supply bounded evidence.
+
+These are scoped implementation results, **not yet a certification of every
+general graph/operator combination**. Do not mark all AC Done solely because
+bounded tests are green; check for unsupported-but-provable paths under the
+project's outcome-first Definition of Done.
