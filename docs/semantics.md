@@ -972,7 +972,8 @@ optimistically combined.
 Existing operator-specific laws remain authoritative for grouped
 `COUNT`/`HAVING` and `ROW_NUMBER`/`QUALIFY` populations. Unsupported aggregate
 or window expressions do not become exact merely because a neighboring
-predicate is typed. Complete ordered INSERT, UPDATE and MERGE plans evaluate
+predicate is typed. A grouped operator's complete histogram is stored once
+when the same population is reused by multiple terminal goals. Complete ordered INSERT, UPDATE and MERGE plans evaluate
 their supported computed assignments against one shared state. Catalog-typed
 integer assignment expressions reuse the arithmetic-domain prover, so a
 branch-constrained `score BETWEEN 1 AND 5` followed by `score + 4` has the
