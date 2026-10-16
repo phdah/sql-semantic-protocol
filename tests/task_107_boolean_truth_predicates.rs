@@ -4,8 +4,7 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, BooleanWitnessDirection,
-    ComposedSemantics,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ComposedSemantics, ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 #[test]
