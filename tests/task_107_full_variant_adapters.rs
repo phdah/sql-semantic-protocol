@@ -8,8 +8,9 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, BooleanWitnessDirection,
+    ComparisonAssumption, ComposedSemantics, ConfiguredSqlInput, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-107-acceptance-freeze.json");
