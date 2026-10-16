@@ -2146,3 +2146,28 @@ fn grouping_a_non_join_key_does_not_inherit_join_key_uniqueness() {
         "distinct join keys do not make an independently grouped column necessarily impossible"
     );
 }
+
+#[test]
+fn composed_affine_projection_preserves_open_interval_boundaries() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a > 5 AND a < 10",
+            "SELECT CAST(a AS BIGINT) + 2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(composed) = bundle.layers()[1].composed_semantics() else {
+        panic!("composed domain");
+    };
+    let ValueDomain::Ranges(ranges) = composed.output().columns()[0].domain() else {
+        panic!("expected narrowed affine interval");
+    };
+    let [range] = ranges.ranges() else {
+        panic!("one affine range");
+    };
+    let lower = range.lower().expect("lower");
+    let upper = range.upper().expect("upper");
+    assert_eq!(lower.value().value(), &LiteralValue::Number("7".into()));
+    assert_eq!(upper.value().value(), &LiteralValue::Number("12".into()));
+    assert!(!lower.inclusive() && !upper.inclusive());
+}
