@@ -46,13 +46,13 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                         {
                             let partial = matches!(qualifying, WitnessDirection::Residual { .. })
                                 || matches!(rejected, WitnessDirection::Residual { .. });
-                        return PhysicalSourcePlan {
-                            target_layer_id: target_layer_id.to_string(),
-                            nodes: walker.nodes,
-                            sources: walker.sources.into_iter().collect(),
-                            qualifying,
-                            rejected,
-                            zero_output,
+                            return PhysicalSourcePlan {
+                                target_layer_id: target_layer_id.to_string(),
+                                nodes: walker.nodes,
+                                sources: walker.sources.into_iter().collect(),
+                                qualifying,
+                                rejected,
+                                zero_output,
                                 gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
                             };
                         }
