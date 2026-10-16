@@ -39,6 +39,17 @@ UPDATE FROM and DELETE USING, multiple aliases and ordered predicates are not ca
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#6 remain required**. Interpret and verify them through the frozen TASK-81 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Exact core: UPDATE SET expressions/DEFAULT, DELETE WHERE with TRUE/FALSE/UNKNOWN, preserved untouched rows, target constraints and RETURNING.
+2. **Mandatory cross-operator / adapter evidence:** Exact composition: one key-unique UPDATE FROM and DELETE USING/CTE with full pre/post snapshots, plus one ordered INSERT/UPDATE/DELETE script.
+3. **Conditional and non-exact boundary:** Inventory conditional: ambiguous multiple-match UPDATE, dialect ORDER/LIMIT, correlated target conditions and engine-specific RETURNING; false exactness prohibited.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#6 only after required cells and final CI are verified. Do not approve independent release gates through this task.
+
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
