@@ -227,16 +227,26 @@ fn contradictory_chain_filters_prove_impossible_true_and_feasible_rejection() {
         matches!(plan.rejected(), WitnessDirection::Feasible(_)),
         "a row failing the conjunction must remain constructible: {plan:?}"
     );
+    let terminal = bundle.layers()[1].id();
     assert!(
-        matches!(physical_row_count_plan(&bundle, bundle.layers()[1].id(), 2), WitnessDirection::Impossible),
+        matches!(
+            physical_row_count_plan(&bundle, terminal, 2),
+            WitnessDirection::Impossible
+        ),
         "positive rows cannot appear from a necessarily contradictory filter chain"
     );
     assert!(
-        matches!(physical_joint_row_count_plan(&bundle, &[(bundle.layers()[1].id(), 1)]), WitnessDirection::Impossible),
+        matches!(
+            physical_joint_row_count_plan(&bundle, &[(terminal, 1)]),
+            WitnessDirection::Impossible
+        ),
         "joint count goals must preserve necessary impossibility"
     );
     assert!(
-        matches!(physical_row_count_plan(&bundle, bundle.layers()[1].id(), 0), WitnessDirection::Feasible(_)),
+        matches!(
+            physical_row_count_plan(&bundle, terminal, 0),
+            WitnessDirection::Feasible(_)
+        ),
         "empty physical source remains a valid zero-output construction"
     );
 }
