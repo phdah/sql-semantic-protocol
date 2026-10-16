@@ -327,7 +327,7 @@ pub(super) fn physical_integer_evidence(
 /// Validate mixed SQL TRUE and NOT TRUE conditions on one *identical* row.
 /// The witnessed RowVariable must have the same source, instance and name,
 /// rather than merely the same relation string.
-pub(super) fn joint_source_truths_satisfiable(
+pub(super) pub(super) fn joint_source_truths_satisfiable(
     bundle: &AnalysisBundle,
     source: &str,
     predicates: &[WitnessFormula],
