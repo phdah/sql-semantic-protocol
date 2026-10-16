@@ -116,11 +116,32 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
                     !name(cell, "defer_owner").is_empty(),
                     "{id}: no future owner"
                 );
-                assert_eq!(
-                    name(cell, "release_disposition"),
-                    "review_required_before_release",
-                    "{id}: cannot preapprove deferral"
+                assert!(
+                    matches!(
+                        name(cell, "release_disposition"),
+                        "review_required_before_release"
+                            | "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+                    ),
+                    "{id}: unrecognized release disposition"
                 );
+                if name(cell, "conditional_semantic_evidence")
+                    == "reviewed_residual_or_exact_under_guards"
+                {
+                    assert_eq!(
+                        name(cell, "release_disposition"),
+                        "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
+                        "{id}: review cannot claim vendor runtime certification"
+                    );
+                    assert_eq!(
+                        name(cell, "review_document"),
+                        "docs/task-107-conditional-review.md",
+                        "{id}: reviewed boundary lacks versioned rationale"
+                    );
+                    assert!(
+                        !entries(cell, "truth_proof_tests").is_empty(),
+                        "{id}: reviewed boundary lost owning executable evidence"
+                    );
+                }
                 assert!(
                     matches!(
                         name(cell, "conditional_semantic_evidence"),
