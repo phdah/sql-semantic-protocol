@@ -1,7 +1,7 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-13'
 updated_date: '2026-10-13'
@@ -34,12 +34,40 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
-- [ ] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
-- [ ] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
-- [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
-- [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
+- [x] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
+- [x] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
+- [x] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
+- [x] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
+- [x] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
+
+## Completion evidence (2026-10-16, PR #114)
+
+Bounded increment on `feat/task-106-composed-predicate-graphs`, all CI green
+(fmt, strict Clippy, tests, docs, no-default-features, dbt E2E):
+
+- `src/physical_realization/graph.rs`: `joint_physical_filters` now tries the
+  type-certified identity mapping first (identical datatypes at both chain
+  ends, verified per hop), keeping the uncertified path for conditions
+  needing no type evidence. Untyped chains behave exactly as before; no
+  composed-semantics relabeling (Intermediate provenance contract kept).
+- `tests/task_106_composed_predicates.rs` (new, public API only): chained
+  range-filter conjunction with joint TRUE/NOT TRUE feasibility, single-layer
+  and chained contradiction handling (Impossible vs Empty plus
+  ConflictingDomains gap), filtered INNER JOIN key equalities with explicit
+  single-source boundaries, GROUP BY/HAVING output domains with residual
+  scope, computed cross-layer residual vs exact local affine proof, QUALIFY
+  residual, INSERT-select composition with partial downstream, dbt parity,
+  13-dialect parser/equivalence cells, DuckDB TRUE/IS NOT TRUE oracles.
+- Promoted one pinned OR-filter chain
+  (`tests/physical_realization/graph.rs`) from multiple-witnesses residual
+  to joint feasibility; untyped chains keep the residual.
+- `docs/semantics.md`, `docs/coverage-manifest.json` (both TASK-106
+  families to bounded exact with residual) and
+  `tests/task_70_predicates.rs` inventory updated. No protocol wire change.
+  General multi-operator DAGs, computed cross-layer inversion, and vendor
+  execution remain explicit residuals owned by TASK-107/108 and the 3.0.0
+  gate (TASK-91 stays blocked).
 
 ## Implementation and verification
 
