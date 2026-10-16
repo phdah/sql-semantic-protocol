@@ -517,17 +517,19 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
-         INSERT INTO t VALUES (3, 7, 1), (11, 7, 2), (3, 1, 3), (NULL, 7, 4);",
+         INSERT INTO t VALUES (3, 7, 1), (11, 7, 2), (3, 1, 3), (NULL, 7, 4);
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10;
+         CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100;",
     )
     .unwrap();
     let positive: i64 = db
         .query_row(
-            "SELECT COUNT(*) FROM t WHERE a BETWEEN 1 AND 10 AND b BETWEEN 6 AND 100",
+            "SELECT COUNT(*) FROM mart",
             [],
             |row| row.get(0),
         )
         .unwrap();
-    assert_eq!(positive, 1, "exactly one row satisfies both filters");
+    assert_eq!(positive, 1, "exactly one row survives both materializations");
     // IS NOT TRUE counts FALSE plus UNKNOWN rows: the NULL row is NOT
     // TRUE without being FALSE, which a plain NOT would filter away.
     let rejected: i64 = db
