@@ -56,13 +56,19 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
         )
         .unwrap();
         let string_case = fixture["source_type"].as_str() == Some("VARCHAR(8)");
-        let source = fixture["source_rows"].as_array().expect("closed source rows");
+        let source = fixture["source_rows"]
+            .as_array()
+            .expect("closed source rows");
         let mut inserts = Vec::new();
         for row in source {
             let values = row.as_array().expect("source row values");
             let insert = if string_case {
                 assert_eq!(values.len(), 2, "{id}: text source shape");
-                format!("INSERT INTO t (id, s) VALUES ({}, {})", values[0], literal(&values[1]))
+                format!(
+                    "INSERT INTO t (id, s) VALUES ({}, {})",
+                    values[0],
+                    literal(&values[1])
+                )
             } else if values.len() == 3 {
                 format!(
                     "INSERT INTO t (id, a, b) VALUES ({}, {}, {})",
@@ -88,19 +94,20 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
             .unwrap_or_else(|| panic!("{id}: expected one terminal WHERE: {original}"))
             .1;
         let true_sql = format!("SELECT id FROM t WHERE {predicate} ORDER BY id");
-        let rejected_sql =
-            format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
+        let rejected_sql = format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
         let unknown_sql = format!("SELECT id FROM t WHERE ({predicate}) IS UNKNOWN ORDER BY id");
         let true_ids = ids_for(&db, &true_sql);
         let rejected_ids = ids_for(&db, &rejected_sql);
         let unknown_ids = ids_for(&db, &unknown_sql);
 
         assert_eq!(
-            true_ids, expected_ids(fixture, "true_row_ids"),
+            true_ids,
+            expected_ids(fixture, "true_row_ids"),
             "{id}: TRUE mismatch; SQL={true_sql}; source={inserts:?}"
         );
         assert_eq!(
-            rejected_ids, expected_ids(fixture, "not_true_row_ids"),
+            rejected_ids,
+            expected_ids(fixture, "not_true_row_ids"),
             "{id}: NOT TRUE must include UNKNOWN; SQL={rejected_sql}; source={inserts:?}"
         );
         let true_set: BTreeSet<_> = true_ids.iter().copied().collect();
@@ -108,14 +115,22 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
         let input_set: BTreeSet<_> = ids_for(&db, "SELECT id FROM t ORDER BY id")
             .into_iter()
             .collect();
-        assert!(true_set.is_disjoint(&rejected_set), "{id}: cannot qualify and reject");
+        assert!(
+            true_set.is_disjoint(&rejected_set),
+            "{id}: cannot qualify and reject"
+        );
         assert_eq!(
-            true_set.union(&rejected_set).copied().collect::<BTreeSet<_>>(),
+            true_set
+                .union(&rejected_set)
+                .copied()
+                .collect::<BTreeSet<_>>(),
             input_set,
             "{id}: incomplete physical source obligation"
         );
         assert!(
-            unknown_ids.iter().all(|row_id| rejected_set.contains(row_id)),
+            unknown_ids
+                .iter()
+                .all(|row_id| rejected_set.contains(row_id)),
             "{id}: UNKNOWN must be rejected under SQL WHERE"
         );
         let domain = &fixture["expected_output_domain"];
@@ -128,10 +143,15 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
                     let upper: i64 = upper.parse().unwrap();
                     let selected = format!("SELECT a FROM t WHERE {predicate}");
                     let mut stmt = db.prepare(&selected).unwrap();
-                    let rows = stmt.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap();
+                    let rows = stmt
+                        .query_map([], |row| row.get::<_, Option<i64>>(0))
+                        .unwrap();
                     for value in rows {
                         let value = value.unwrap().expect("bounded exact integer not NULL");
-                        assert!(value >= lower && value <= upper, "{id}: {value} outside inclusive domain");
+                        assert!(
+                            value >= lower && value <= upper,
+                            "{id}: {value} outside inclusive domain"
+                        );
                     }
                 }
             }
@@ -139,7 +159,9 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
                 let prefix = domain["prefix"].as_str().expect("binary LIKE prefix");
                 let selected = format!("SELECT s FROM t WHERE {predicate}");
                 let mut stmt = db.prepare(&selected).unwrap();
-                let rows = stmt.query_map([], |row| row.get::<_, Option<String>>(0)).unwrap();
+                let rows = stmt
+                    .query_map([], |row| row.get::<_, Option<String>>(0))
+                    .unwrap();
                 for value in rows {
                     assert!(value.unwrap().expect("selected text").starts_with(prefix));
                 }
