@@ -162,6 +162,6 @@ computed joins/groupings/writes, or all physical positive/rejecting populations.
 TASK-88/TASK-89, sql-tdg TASK-24..36/43/44 and this TASK-91 gate remain open,
 and PR #79 must not be merged solely from this progress.
 
-## TASK-108 expression parent closure handoff (2026-10-17)
+## TASK-108 completed handoff (2026-10-17)
 
-The TASK-108 independent acceptance freeze at `docs/task-108-acceptance-freeze.json` maps all six unchanged TASK-70 AC to 14 family owners, all 42 TASK-107 variant cases, 546 dialect cells, nine goldens, nine compositions and four seeds. `tests/task_108_parent_signoff.rs` guards this traceability and requires distinct semantic/oracle CI owners. This does not upgrade global TASK-88/89/91 release evidence or claim unexecuted vendor-engine semantics. TASK-70 remains In Progress pending final TASK-108 PR-head CI and parent signoff.
+TASK-70 and TASK-108 completed their expression-specific acceptance on protocol PR #116. TASK-91 remains publication-blocking until TASK-88/89/90 and sql-tdg end-to-end evidence are separately signed off. No universal/vendor runtime equivalence or 3.0.0 release is approved.

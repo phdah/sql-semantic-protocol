@@ -17,10 +17,12 @@
   },
   "task_108_parent_signoff": {
     "owner": "TASK-108",
-    "status": "pending_final_ci",
+    "status": "verified",
     "acceptance_freeze": "docs/task-108-acceptance-freeze.json",
     "evidence_audit": "docs/task-108-acceptance-audit.md",
     "verification_test": "tests/task_108_parent_signoff.rs",
+    "final_ci_workflow_run": 38977162083,
+    "verified_implementation_sha": "fac7bba6834b05f1863c33aee00a33d0431f19c9",
     "parent": "TASK-70",
     "original_parent_criteria": 6,
     "merged_children": 7,
@@ -109,7 +111,7 @@
   },
   "task_70_predicate_evidence": {
     "owner": "TASK-70",
-    "status": "bounded_boolean_witness_increment_release_blocked",
+    "status": "TASK_70_closed_bounded_semantic_evidence_release_blocked",
     "evidence": [
       "src/boolean_witness.rs",
       "src/boolean_witness/numeric.rs",
@@ -288,7 +290,7 @@
       "TASK-108"
     ],
     "closure_owner": "TASK-108",
-    "parent_status": "In Progress"
+    "parent_status": "Done"
   },
   "task_101_arithmetic_evidence": {
     "owner": "TASK-101",

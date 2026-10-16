@@ -63,6 +63,4 @@ be changed by completing TASK-108.
 TASK-108 requires **nine passing checks on the final PR HEAD**:
 fmt, strict all-features Clippy, tests, docs, no-default-features lint/test/doc,
 dependency graph and dbt Core E2E. Protocol snapshots execute in `cargo test`.
-The TASK-70 parent and TASK-108 are kept In Progress with unchecked AC until
-this final CI and the independent audit succeed. Do not change `signoff.status`
-to `verified` before that gate.
+The implementation head `fac7bba6834b05f1863c33aee00a33d0431f19c9` passed all nine required checks in [CI run 38977162083](https://github.com/phdah/sql-semantic-protocol/actions/runs/38977162083). Parent/child closure is signed in PR #116; the signoff commit also requires final green CI before merge.

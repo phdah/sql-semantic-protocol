@@ -79,6 +79,8 @@ fn parent_criteria_are_independently_mapped_to_every_merged_child() {
         let id = name(child, "task");
         assert!(seen.insert(id.to_owned()), "{id}: duplicate child");
         assert_eq!(name(child, "expected_state"), "Done");
+        assert_eq!(child["ci_conclusion"], "success");
+        assert!(child["ci_workflow_run_id"].as_u64().is_some());
         assert!(name(child, "merged_pr").ends_with(&format!(
             "/{}",
             id.trim_start_matches("TASK-")

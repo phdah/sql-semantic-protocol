@@ -18,49 +18,63 @@
       "task_file": ".backlog/tasks/task-101 - prove-overflow-safe-arithmetic-and-typed-conversions.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/109",
       "merge_commit": "3632c82e7c55bfb84530d41a8debc6cee5fbae44",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38740728937,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-102",
       "task_file": ".backlog/tasks/task-102 - normalize-case-coalesce-nullif-and-computed-aliases.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/110",
       "merge_commit": "7ca42b11e3508ce06ca5b429b54c803c13ba3456",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38771437481,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-103",
       "task_file": ".backlog/tasks/task-103 - prove-correlated-cross-column-predicate-constraints.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/111",
       "merge_commit": "e7396c47b53ee1055f7e70c0b36cb6c5bf734bef",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38777358880,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-104",
       "task_file": ".backlog/tasks/task-104 - certify-pattern-collation-and-nullsafe-expression-laws.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/112",
       "merge_commit": "18e5beb3be1d690d46a688461c8f620ca95dfdeb",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38787177334,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-105",
       "task_file": ".backlog/tasks/task-105 - classify-temporal-json-and-vendor-expression-semantics.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/113",
       "merge_commit": "3b78dcb71b61b5b7a032d4fa3142d6ea6ec5d6e9",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38863399259,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-106",
       "task_file": ".backlog/tasks/task-106 - compose-computed-predicates-across-relational-graphs.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/114",
       "merge_commit": "771f6ccbffa946e54e950a6e17e17bfd792163b9",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38960096710,
+      "ci_conclusion": "success"
     },
     {
       "task": "TASK-107",
       "task_file": ".backlog/tasks/task-107 - certify-expression-predicate-dialect-dbt-oracles.md",
       "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/115",
       "merge_commit": "b3510e9cd1bbde03cc5ea9d85d403099874fbeee",
-      "expected_state": "Done"
+      "expected_state": "Done",
+      "ci_workflow_run_id": 38975931061,
+      "ci_conclusion": "success"
     }
   ],
   "original_ac_map": [
@@ -1644,12 +1658,14 @@
   "dialect_parser_evidence": "tests/task_107_dialect_classifications.rs",
   "conditional_review": "docs/task-107-conditional-review.md",
   "signoff": {
-    "status": "pending_final_ci",
-    "task_108_checked": false,
-    "task_70_checked": false,
-    "final_head_sha": null,
-    "all_required_checks_green": false,
+    "status": "verified",
+    "task_108_checked": true,
+    "task_70_checked": true,
+    "final_head_sha": "fac7bba6834b05f1863c33aee00a33d0431f19c9",
+    "all_required_checks_green": true,
     "no_vendor_runtime_claim": true,
-    "downstream_release_gate": "TASK-91"
+    "downstream_release_gate": "TASK-91",
+    "final_ci_workflow_run_id": 38977162083,
+    "verification_pr": "https://github.com/phdah/sql-semantic-protocol/pull/116"
   }
 }

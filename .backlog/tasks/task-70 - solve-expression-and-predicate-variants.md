@@ -1,10 +1,10 @@
 ---
 id: TASK-70
 title: Construct typed correlated predicate and expression outcomes
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-13'
+updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies: 
@@ -36,12 +36,12 @@ Current boolean proof supports a restricted scalar subset. Expand safe, typed ex
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Cover arithmetic and overflow, unary/binary comparisons, BETWEEN/IN lists, IS NULL / IS DISTINCT FROM, NULL-safe equality, CASE, COALESCE, NULLIF, supported CAST/TRY_CAST, string LIKE/NOT LIKE/ESCAPE and expressions in join, filter, grouping and assignments.
-- [ ] #2 Support mixed AND/OR/NOT, cross-column comparisons, computed projections and aliases with SQL three-valued logic and reversible typed constraints.
-- [ ] #3 Catalog which dialect-sensitive regex/pattern, collations, implicit casts, date/time, JSON or vendor function families have safe exact semantics; opaque UDFs must retain explicit residuals.
-- [ ] #4 Give canonical positive and NOT TRUE negative witnesses, impossible cases, output domains, comparison settings and deterministic literal coercion.
-- [ ] #5 Add direct SQL, dbt and representative per-dialect parser/oracle tests for each supported expression family and combined predicates.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Cover arithmetic and overflow, unary/binary comparisons, BETWEEN/IN lists, IS NULL / IS DISTINCT FROM, NULL-safe equality, CASE, COALESCE, NULLIF, supported CAST/TRY_CAST, string LIKE/NOT LIKE/ESCAPE and expressions in join, filter, grouping and assignments.
+- [x] #2 Support mixed AND/OR/NOT, cross-column comparisons, computed projections and aliases with SQL three-valued logic and reversible typed constraints.
+- [x] #3 Catalog which dialect-sensitive regex/pattern, collations, implicit casts, date/time, JSON or vendor function families have safe exact semantics; opaque UDFs must retain explicit residuals.
+- [x] #4 Give canonical positive and NOT TRUE negative witnesses, impossible cases, output domains, comparison settings and deterministic literal coercion.
+- [x] #5 Add direct SQL, dbt and representative per-dialect parser/oracle tests for each supported expression family and combined predicates.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -113,3 +113,7 @@ expression proofs, complete physical populations, and exhaustive 13-dialect,
 dbt and engine oracles. The machine-readable per-family scope is now in
 `docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`.
 All six AC remain open in their full declared scope and are now owned by the ordered TASK-101..108 children; TASK-91 stays blocked.
+
+## TASK-70 final six-AC parent closure (2026-10-17)
+
+All eight ordered children TASK-101..108 are completed. Original criteria #1..#6 are signed off within their strongest proved typed output/source-domain, SQL three-valued and physical-realizability boundaries; unsupported and vendor/session cases remain explicit fail-closed typed residuals. The [TASK-108 acceptance audit](../../docs/task-108-acceptance-audit.md) and [frozen matrix](../../docs/task-108-acceptance-freeze.json) map every parent AC to canonical modules, SQL/dbt/ODCS paths, 42 predicate variants, 546 dialect cells, 14 families, nine closed-source DuckDB goldens, nine compositions and four seeds. [PR #116 initial implementation CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/38977162083) passed nine checks on `fac7bba6834b05f1863c33aee00a33d0431f19c9`. Earlier sections describing unfinished partial subsets are historical snapshots superseded by this closure. TASK-88/89/90/91 and sql-tdg release gates remain open.

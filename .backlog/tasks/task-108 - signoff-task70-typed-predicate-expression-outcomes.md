@@ -1,10 +1,10 @@
 ---
 id: TASK-108
 title: Sign off TASK-70 typed predicate and expression outcomes
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies:
@@ -33,11 +33,11 @@ Independent parent-criteria signoff after all TASK-101..107 implementation PRs a
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Verify TASK-101..107 are individually Done, merged on `main`, have complete child AC evidence and no unowned unverified expression/predicate variant; map each original TASK-70 criterion #1..#6 to concrete source modules, tests, adapter paths, docs and coverage rows.
-- [ ] #2 Audit arithmetic and overflow, typed casts, CASE/COALESCE/NULLIF, alias reversibility, cross-column SQL three-valued predicates, text/pattern/dialect/session law classification and verified fail-closed UDF/vendor/residual boundaries against the original TASK-70 description.
-- [ ] #3 Verify exact, impossible and residual positive/NOT TRUE outcomes, canonical output value domains, typed physical source witnesses, comparison assumptions and safe literal coercion through the supported relational DAGs without consumer reparsing.
-- [ ] #4 Verify all 13-dialect expression parser/equivalence cells and relevant direct SQL/dbt/ODCS adapter paths, plus reproducible DuckDB NULL/duplicate/boundary/negative/differential oracles, with no false exact claim or unsupported vendor engine certification.
-- [ ] #5 Re-run complete CI (fmt, strict Clippy, tests, docs, no-default-features, dbt E2E and active protocol JSON schema snapshots), update code map, docs/coverage-manifest and TASK-66/88/89/91 handoffs. Only then check all original TASK-70 AC and mark parent Done; TASK-91/3.0.0 release remains blocked until its separate signoff.
+- [x] #1 Verify TASK-101..107 are individually Done, merged on `main`, have complete child AC evidence and no unowned unverified expression/predicate variant; map each original TASK-70 criterion #1..#6 to concrete source modules, tests, adapter paths, docs and coverage rows.
+- [x] #2 Audit arithmetic and overflow, typed casts, CASE/COALESCE/NULLIF, alias reversibility, cross-column SQL three-valued predicates, text/pattern/dialect/session law classification and verified fail-closed UDF/vendor/residual boundaries against the original TASK-70 description.
+- [x] #3 Verify exact, impossible and residual positive/NOT TRUE outcomes, canonical output value domains, typed physical source witnesses, comparison assumptions and safe literal coercion through the supported relational DAGs without consumer reparsing.
+- [x] #4 Verify all 13-dialect expression parser/equivalence cells and relevant direct SQL/dbt/ODCS adapter paths, plus reproducible DuckDB NULL/duplicate/boundary/negative/differential oracles, with no false exact claim or unsupported vendor engine certification.
+- [x] #5 Re-run complete CI (fmt, strict Clippy, tests, docs, no-default-features, dbt E2E and active protocol JSON schema snapshots), update code map, docs/coverage-manifest and TASK-66/88/89/91 handoffs. Only then check all original TASK-70 AC and mark parent Done; TASK-91/3.0.0 release remains blocked until its separate signoff.
 <!-- AC:END -->
 
 
@@ -68,3 +68,7 @@ must not inherit TASK-107's proof signoff automatically.
 ## Independent frozen acceptance audit (2026-10-17)
 
 The immutable closure matrix lives in [docs/task-108-acceptance-freeze.json](../../docs/task-108-acceptance-freeze.json). Its six-AC evidence map and merge/variant/dialect/adapter/oracle audit are documented in [docs/task-108-acceptance-audit.md](../../docs/task-108-acceptance-audit.md) and verified by `tests/task_108_parent_signoff.rs`. All nine final PR-head checks must pass before TASK-108 and TASK-70 are marked Done; TASK-88/89/90/91 retain independent gates.
+
+## Final acceptance signoff (2026-10-17)
+
+All five TASK-108 AC are verified against the frozen parent matrix and independent public SQL/dbt/ODCS, DuckDB and 13-dialect execution tests. The seven child PRs #109..#115 are merged on main with successful CI. TASK-108 PR #116 implementation head `fac7bba6834b05f1863c33aee00a33d0431f19c9` passed all nine checks in [run 38977162083](https://github.com/phdah/sql-semantic-protocol/actions/runs/38977162083). TASK-70 original six AC are independently mapped and signed off. TASK-88/89/90/91 and protocol 3.0.0 publication retain separate requirements.
