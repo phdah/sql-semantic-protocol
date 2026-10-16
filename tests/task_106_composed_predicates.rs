@@ -1699,7 +1699,10 @@ fn total_affine_projection_transports_true_and_not_true_through_materialization(
         "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
     ];
     let dialect = dialect_from_name("postgresql").expect("postgresql");
-    let sources = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let sources = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let inputs = sources
         .iter()
         .zip(["stage", "mart"])
@@ -1761,7 +1764,10 @@ fn overflowing_affine_projections_remain_residual() {
         "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
     ];
     let dialect = dialect_from_name("postgresql").unwrap();
-    let sources = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let sources = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let inputs = sources
         .iter()
         .zip(["stage", "mart"])
