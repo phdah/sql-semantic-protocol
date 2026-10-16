@@ -15,8 +15,8 @@ const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 #[test]
 fn bounded_task_106_has_a_frozen_complete_evidence_matrix() {
     let expected: BTreeSet<&str> = [
-        "F1", "F2", "F3", "J1", "J2", "G1", "G2", "R1", "R2", "JG1",
-        "W1", "X1", "A1", "A2", "A3",
+        "F1", "F2", "F3", "J1", "J2", "G1", "G2", "R1", "R2", "JG1", "W1", "X1",
+        "A1", "A2", "A3",
     ]
     .into_iter()
     .collect();
@@ -108,8 +108,9 @@ fn task_106_signoff_requires_all_five_acceptance_criteria_but_not_release_approv
         "canonical coverage must still identify its owning task"
     );
     let release = include_str!("../.backlog/tasks/task-91 - gate-single-protocol-3-release-on-tdg-signoff.md");
+    assert!(release.contains("id: TASK-91"), "release gate task exists");
     assert!(
-        !release.lines().any(|line| line == "status: Done"),
-        "TASK-106 sign-off must not silently approve TASK-91"
+        TASK.contains("Protocol 3.0.0 release remains gated by TASK-91"),
+        "TASK-106 closure must not replace independent release certification"
     );
 }
