@@ -1,7 +1,7 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: Done
+status: In Progress
 assignee:
   - OpenCode
 created_date: '2026-10-13'
@@ -58,11 +58,11 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
-- [x] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
-- [x] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
-- [x] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
-- [x] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
+- [ ] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
+- [ ] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
+- [ ] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
+- [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
+- [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -96,7 +96,7 @@ Hardening follow-up complete: documented join helpers and gate-bypass soundness,
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-TASK-106 hardening: documented join helpers and independent filtered-join soundness, extracted shared blocks_unconstrained helper across 11 engines, split joint_join_with_rejected_filters into focused helpers with identical behavior. Added INSERT arithmetic exactness, single-layer contradiction fail-closed, and outer-join residual evidence. Full gates green.
+TASK-106 bounded hardening: documented join helpers, extracted shared constraint checks, and split joint join/negative-filter reconciliation. Added arithmetic, contradiction, and outer-join residual evidence. The broader relational-graph acceptance criteria remain open pending independent verification; do not mark TASK-106 Done on these bounded proofs.
 <!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Bounded implementation evidence (2026-10-16, PR #114)
@@ -147,3 +147,7 @@ This evidence does **not** discharge the five acceptance criteria:
 - **Delivery:** one focused PR to `main`; finish all the child AC before marking it Done and verify complete relevant CI after implementing (not after every commit). Update canonical API/schema/docs, adapter parity and coverage evidence as applicable.
 - **Scope boundary:** Reuse TASK-68/93..100 physical machinery and TASK-79 schema laws. This child owns the **missing computed-expression integration**, not an independent rewrite of joins, groups or DML nor global end-to-end TASK-89 certification.
 - **Next:** Complete and independently verify every TASK-106 AC before marking Done; then pick **TASK-107**.
+
+## Code-review follow-up (2026-10-16)
+
+Matt Pocock two-axis review of PR #114 found that filtered join counts could bypass row-shape checks (LIMIT/DISTINCT), treat post-outer-join WHERE as a source-row predicate, and conjoin independently exact but mutually inconsistent scalar ON conditions. The PR now requires a separately certified filtered-join bag shape, keeps outer WHERE residual, and admits multiple source predicates only after joint satisfiability is established. Regression tests cover all three cases with DuckDB oracles where relevant. The bounded implementation does not establish full acceptance of AC #1-#5.
