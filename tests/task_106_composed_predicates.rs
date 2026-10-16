@@ -523,13 +523,12 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
     )
     .unwrap();
     let positive: i64 = db
-        .query_row(
-            "SELECT COUNT(*) FROM mart",
-            [],
-            |row| row.get(0),
-        )
+        .query_row("SELECT COUNT(*) FROM mart", [], |row| row.get(0))
         .unwrap();
-    assert_eq!(positive, 1, "exactly one row survives both materializations");
+    assert_eq!(
+        positive, 1,
+        "exactly one row survives both materializations"
+    );
     // IS NOT TRUE counts FALSE plus UNKNOWN rows: the NULL row is NOT
     // TRUE without being FALSE, which a plain NOT would filter away.
     let rejected: i64 = db
