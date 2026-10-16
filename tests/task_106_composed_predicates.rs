@@ -1811,3 +1811,84 @@ fn overflowing_affine_projections_remain_residual() {
         "potential overflow may not be represented as an exact physical row witness: {plan:?}"
     );
 }
+
+#[test]
+fn overlapping_filtered_joins_reconcile_one_shared_physical_source() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 9",
+            "SELECT l.b FROM l JOIN stage ON l.k = stage.k WHERE l.b BETWEEN 2 AND 8",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 2),
+    ];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = plan else {
+        panic!("overlapping joins must jointly reconcile source-row truths: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        let closures = case.obligations().iter().filter(|item| {
+            matches!(item, WitnessObligation::ClosedWorld { .. })
+        }).count();
+        let joins = case.obligations().iter().filter(|item| {
+            matches!(item, WitnessObligation::JoinPopulation { closed_world: true, .. })
+        }).count();
+        let shared = case.obligations().iter().filter(|item| {
+            matches!(
+                item,
+                WitnessObligation::Rows {
+                    boundary,
+                    predicate: WitnessFormula::All(parts),
+                    closed_world: true,
+                    ..
+                } if boundary.relation() == "l" && parts.len() == 2
+            )
+        }).count();
+        closures == 3 && joins == 2 && shared == 1
+    }), "each shared physical row must satisfy both typed filters");
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l (a INTEGER,b INTEGER,k INTEGER);
+         CREATE TABLE r (a INTEGER,b INTEGER,k INTEGER);
+         CREATE TABLE stage (a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO l VALUES (3,4,0),(5,6,1);
+         INSERT INTO r VALUES (0,0,0),(0,0,1);
+         INSERT INTO stage VALUES (0,0,0),(0,0,1);",
+    )
+    .expect("shared source example");
+    let counts = [
+        "SELECT COUNT(*) FROM l JOIN r ON l.k=r.k WHERE l.a BETWEEN 1 AND 9",
+        "SELECT COUNT(*) FROM l JOIN stage ON l.k=stage.k WHERE l.b BETWEEN 2 AND 8",
+    ]
+    .map(|sql| {
+        db.query_row(sql, [], |row| row.get::<_, i64>(0))
+            .expect("DuckDB count")
+    });
+    assert_eq!(counts, [2, 2]);
+}
+
+#[test]
+fn conflicting_overlapping_filtered_join_populations_are_not_fabricated() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l JOIN r ON l.k=r.k WHERE l.a BETWEEN 1 AND 4",
+            "SELECT l.a FROM l JOIN stage ON l.k=stage.k WHERE l.a BETWEEN 7 AND 9",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[
+            (bundle.layers()[0].id(), 2),
+            (bundle.layers()[1].id(), 2),
+        ],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "one all-TRUE l source cannot simultaneously meet disjoint intervals: {plan:?}"
+    );
+}
