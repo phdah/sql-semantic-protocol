@@ -36,11 +36,12 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
     let mut verified = 0;
     for case in matrix["cases"].as_array().unwrap() {
         let variant = case["variant"].as_str().unwrap();
-        if matches!(variant, "range_inequality" | "time_inequality") {
+        if variant == "time_inequality" {
             continue;
         }
         let dialect = match variant {
             "asof_nearest_prior" => "snowflake",
+            "range_inequality" => "generic",
             "lateral_derived" => "generic",
             "cross_apply" | "outer_apply" => "mssql",
             _ => panic!("unregistered frozen variant {variant}"),
@@ -117,7 +118,7 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
             })
             .collect::<Vec<_>>();
         observed_selected.sort();
-        let right_column = if variant == "asof_nearest_prior" {
+        let right_column = if matches!(variant, "asof_nearest_prior" | "range_inequality") {
             2
         } else {
             1
@@ -156,5 +157,5 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
         );
         verified += 1;
     }
-    assert_eq!(verified, 8, "both P and N directions for four special laws");
+    assert_eq!(verified, 10, "both P and N directions for five physical numeric laws");
 }
