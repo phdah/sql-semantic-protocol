@@ -370,7 +370,7 @@ fn physical_aliased_self_join_count_plan(
         crate::protocol::ColumnRef::new(Some(right.name().to_string()), b.name().to_string());
     for key in [&left_key, &right_key] {
         let domain = physical_integer_evidence(schema, key)?;
-        if domain.minimum > 0 || domain.maximum < 0 {
+        if domain.minimum > 1 || domain.maximum < 1 {
             return None;
         }
     }
@@ -566,7 +566,7 @@ fn physical_three_way_inner_count_plan(
         (&middle_right_key, 1),
         (&right_key, 2),
     ];
-    // The sufficient construction chooses literal zero, which must be
+    // The sufficient construction chooses literal one, which must be
     // representable in every attested physical signed-integer column type.
     for (key, _) in keys {
         let relation = key.relation()?;
@@ -651,7 +651,7 @@ fn physical_three_way_inner_count_plan(
             middle_left_key: middle_left_key.clone(),
             middle_right_key: middle_right_key.clone(),
             right_key: right_key.clone(),
-            matched_value: 0,
+            matched_value: 1,
             left_rows: counts[0],
             middle_rows: counts[1],
             right_rows: counts[2],
