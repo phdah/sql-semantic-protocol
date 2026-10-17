@@ -222,3 +222,55 @@ fn natural_join_with_disjoint_known_columns_is_cartesian() {
     assert!(query.joins()[0].condition().is_none());
     assert_eq!(layer.consumes().len(), 2);
 }
+
+#[test]
+fn every_portable_frozen_variant_has_a_typed_complete_source_plan() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    for case in matrix["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let variant = case["variant"].as_str().unwrap();
+        let dialect = if variant == "null_safe_equality" { "mysql" } else { "generic" };
+        let bundle = analyzed(case["sql"].as_str().unwrap(), dialect, true);
+        let layer = bundle.layers().last().unwrap().id();
+        let wanted = case["expected_output_count"].as_u64().unwrap();
+        let physical = physical_joint_source_plan(&bundle, &[(layer, wanted)]);
+        let WitnessDirection::Feasible(cases) = physical.outcome() else {
+            panic!("{id}: expected a canonical, complete, schema-backed physical proof: {physical:?}");
+        };
+        let expected_uniform = matches!(
+            variant,
+            "cross" | "or_on" | "non_equi" | "is_not_distinct_from" | "null_safe_equality"
+        );
+        assert!(cases.iter().any(|candidate| {
+            let obligations = candidate.obligations();
+            let closed = obligations.iter().filter(|obligation| {
+                matches!(obligation, WitnessObligation::ClosedWorld { .. })
+            }).count() == 2;
+            let matched_law = obligations.iter().any(|obligation| match obligation {
+                WitnessObligation::UniformJoinPopulation {
+                    left_row,
+                    right_row,
+                    left_rows,
+                    right_rows,
+                    output_rows,
+                    closed_world: true,
+                    ..
+                } if expected_uniform => left_row.relation() == "l"
+                    && right_row.relation() == "r"
+                    && *output_rows == wanted
+                    && (left_rows * right_rows >= wanted),
+                WitnessObligation::JoinPopulation {
+                    left_row,
+                    right_row,
+                    output_rows,
+                    closed_world: true,
+                    ..
+                } if !expected_uniform => left_row.relation() == "l"
+                    && right_row.relation() == "r"
+                    && *output_rows == wanted,
+                _ => false,
+            });
+            closed && matched_law
+        }), "{id}: require one complete matched/NOT TRUE physical pair population");
+    }
+}
