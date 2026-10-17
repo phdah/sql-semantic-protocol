@@ -50,8 +50,27 @@ fn non_strict_and_reversed_range_joins_have_constructive_integer_bags() {
                     closed
                         && obligations.iter().any(|obligation| {
                             matches!(obligation, WitnessObligation::UniformJoinPopulation {
-                                law, output_rows, closed_world: true, ..
-                            } if law.as_str() == expected_law && *output_rows == wanted)
+                                law,
+                                left_value: Some(left_value),
+                                right_value: Some(right_value),
+                                left_rows,
+                                right_rows,
+                                output_rows,
+                                closed_world: true,
+                                ..
+                            } if law.as_str() == expected_law
+                                && (-2147483648..=2147483647).contains(left_value)
+                                && (-2147483648..=2147483647).contains(right_value)
+                                && *output_rows == wanted
+                                && Some(wanted)
+                                    == law.pair_matches(Some(*left_value), Some(*right_value))
+                                        .and_then(|matched| {
+                                            if matched {
+                                                left_rows.checked_mul(*right_rows)
+                                            } else {
+                                                Some(0)
+                                            }
+                                        }))
                         })
                 }),
                 "{predicate}: complete physical source bag for output count {wanted}"
