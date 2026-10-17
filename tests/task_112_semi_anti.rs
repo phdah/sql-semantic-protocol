@@ -74,15 +74,26 @@ fn duckdb_full_bags_prove_semi_anti_null_duplicate_and_absence_laws() {
             .collect::<Vec<_>>();
         actual.sort();
         expected.sort();
-        assert_eq!(actual, expected, "{id}: every physical output row and multiplicity");
+        assert_eq!(
+            actual, expected,
+            "{id}: every physical output row and multiplicity"
+        );
 
         // SQL UNKNOWN is NOT TRUE. An anti survivor must have no TRUE
         // equality against any right/left partner, not just a sampled pair.
         let left = case["left"].as_array().unwrap();
         let right = case["right"].as_array().unwrap();
         let kind = case["kind"].as_str().unwrap();
-        let preserved = if kind.starts_with("left") { left } else { right };
-        let partners = if kind.starts_with("left") { right } else { left };
+        let preserved = if kind.starts_with("left") {
+            left
+        } else {
+            right
+        };
+        let partners = if kind.starts_with("left") {
+            right
+        } else {
+            left
+        };
         let survivor_ids = case["expected"]
             .as_array()
             .unwrap()
@@ -111,8 +122,16 @@ fn duckdb_full_bags_prove_semi_anti_null_duplicate_and_absence_laws() {
             .filter_map(|row| row[1].as_i64())
             .collect::<Vec<_>>();
         let domain = &case["output_domain"];
-        assert_eq!(numeric.iter().min().copied(), domain["minimum"].as_i64(), "{id}");
-        assert_eq!(numeric.iter().max().copied(), domain["maximum"].as_i64(), "{id}");
+        assert_eq!(
+            numeric.iter().min().copied(),
+            domain["minimum"].as_i64(),
+            "{id}"
+        );
+        assert_eq!(
+            numeric.iter().max().copied(),
+            domain["maximum"].as_i64(),
+            "{id}"
+        );
         assert_eq!(
             values.iter().any(|row| row[1].is_null()),
             domain["contains_null"].as_bool().unwrap(),
@@ -120,7 +139,11 @@ fn duckdb_full_bags_prove_semi_anti_null_duplicate_and_absence_laws() {
         );
         assert_eq!(domain["lower_inclusive"], true);
         assert_eq!(domain["upper_inclusive"], true);
-        assert_eq!(values.is_empty(), domain["empty"].as_bool().unwrap(), "{id}");
+        assert_eq!(
+            values.is_empty(),
+            domain["empty"].as_bool().unwrap(),
+            "{id}"
+        );
     }
 }
 
@@ -151,19 +174,23 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
         assert!(
             cases.iter().any(|c| {
                 let obligations = c.obligations();
-                obligations.iter().filter(|o| matches!(
-                    o, WitnessObligation::ClosedWorld { .. }
-                )).count() == 2
-                    && obligations.iter().any(|o| matches!(
-                        o,
-                        WitnessObligation::JoinPopulation {
-                            join_kind, pattern,
-                            left_rows: 4, right_rows: 2,
-                            output_rows, closed_world: true, ..
-                        } if *join_kind == expected_kind
-                            && *pattern == expected_pattern
-                            && *output_rows == wanted
-                    ))
+                obligations
+                    .iter()
+                    .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                    .count()
+                    == 2
+                    && obligations.iter().any(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::JoinPopulation {
+                                join_kind, pattern,
+                                left_rows: 4, right_rows: 2,
+                                output_rows, closed_world: true, ..
+                            } if *join_kind == expected_kind
+                                && *pattern == expected_pattern
+                                && *output_rows == wanted
+                        )
+                    })
             }),
             "{id}: typed nullable duplicate source assignment and both closed-world boundaries"
         );
