@@ -3,8 +3,8 @@
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_source_plan,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessObligation,
+    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessObligation,
 };
 
 const MATRIX: &str = include_str!("../docs/task-114-acceptance-freeze.json");
@@ -79,36 +79,49 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
             .iter()
             .map(|r| r[1].as_i64().map(Some).unwrap_or(None))
             .collect::<Vec<_>>();
-        let proved = cases.iter().find_map(|case| {
-            case.obligations().iter().find_map(|obligation| {
-                if let WitnessObligation::FiniteJoinPopulation {
-                    law,
-                    left_values: left,
-                    right_values: right,
-                    closed_world: true,
-                    output_rows,
-                    ..
-                } = obligation {
-                    (left == &left_values && right == &right_values && *output_rows == expected_rows)
-                        .then(|| *law)
-                } else {
-                    None
-                }
+        let proved = cases
+            .iter()
+            .find_map(|case| {
+                case.obligations().iter().find_map(|obligation| {
+                    if let WitnessObligation::FiniteJoinPopulation {
+                        law,
+                        left_values: left,
+                        right_values: right,
+                        closed_world: true,
+                        output_rows,
+                        ..
+                    } = obligation
+                    {
+                        (left == &left_values
+                            && right == &right_values
+                            && *output_rows == expected_rows)
+                            .then_some(*law)
+                    } else {
+                        None
+                    }
+                })
             })
-        }).unwrap_or_else(|| panic!("{variant}: missing exact frozen source population"));
+            .unwrap_or_else(|| panic!("{variant}: missing exact frozen source population"));
         let selected = proved.selected_rows(&left_values, &right_values).unwrap();
-        let rejected = proved.unselected_pairs(&left_values, &right_values).unwrap();
+        let rejected = proved
+            .unselected_pairs(&left_values, &right_values)
+            .unwrap();
         let mut observed_selected = selected
             .iter()
             .map(|(l, r)| {
                 Value::Array(vec![
                     frozen_left[*l][0].clone(),
                     r.map_or(Value::Null, |i| frozen_right[i][0].clone()),
-                ]).to_string()
+                ])
+                .to_string()
             })
             .collect::<Vec<_>>();
         observed_selected.sort();
-        let right_column = if variant == "asof_nearest_prior" { 2 } else { 1 };
+        let right_column = if variant == "asof_nearest_prior" {
+            2
+        } else {
+            1
+        };
         assert_eq!(
             observed_selected,
             pairs(&case["expected"], right_column),
@@ -117,14 +130,30 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
         let mut observed_rejected = rejected
             .iter()
             .map(|(l, r)| {
-                Value::Array(vec![frozen_left[*l][0].clone(), frozen_right[*r][0].clone()])
-                    .to_string()
+                Value::Array(vec![
+                    frozen_left[*l][0].clone(),
+                    frozen_right[*r][0].clone(),
+                ])
+                .to_string()
             })
             .collect::<Vec<_>>();
         observed_rejected.sort();
-        assert_eq!(observed_rejected, pairs(&case["not_true"], 1), "{variant}: entire unselected Cartesian complement");
-        assert_eq!(observed_values(&left_values), frozen_left.iter().map(|r| r[1].clone()).collect::<Vec<_>>());
-        assert_eq!(observed_values(&right_values), frozen_right.iter().map(|r| r[1].clone()).collect::<Vec<_>>());
+        assert_eq!(
+            observed_rejected,
+            pairs(&case["not_true"], 1),
+            "{variant}: entire unselected Cartesian complement"
+        );
+        assert_eq!(
+            observed_values(&left_values),
+            frozen_left.iter().map(|r| r[1].clone()).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            observed_values(&right_values),
+            frozen_right
+                .iter()
+                .map(|r| r[1].clone())
+                .collect::<Vec<_>>()
+        );
         verified += 1;
     }
     assert_eq!(verified, 8, "both P and N directions for four special laws");
