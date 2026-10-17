@@ -17,9 +17,8 @@ fn oriented_pair<'a>(
         return None;
     };
     let belongs_left = |col: &ColumnExpression| {
-        col.relation().is_some_and(|name| {
-            name == join.left().relation() || join.left().alias() == Some(name)
-        })
+        col.relation()
+            .is_some_and(|name| name == join.left().relation() || join.left().alias() == Some(name))
     };
     let belongs_right = |col: &ColumnExpression| {
         col.relation().is_some_and(|name| {
