@@ -553,7 +553,7 @@ pub(super) fn physical_join_population_with_source_counts(
                     &reference,
                     0,
                 )?;
-                Some((physical, instance))
+                Some((physical, instance.to_string()))
             };
             let (a, a_instance) = map(sql_left)?;
             let (b, b_instance) = map(sql_right)?;
