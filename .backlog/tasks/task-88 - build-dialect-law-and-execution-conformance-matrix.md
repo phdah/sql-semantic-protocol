@@ -22,6 +22,10 @@ dependencies:
   - TASK-81
   - TASK-82
   - TASK-83
+  - TASK-177
+  - TASK-178
+  - TASK-179
+  - TASK-180
 references: 
   - 'TASK-47'
   - 'TASK-51'
@@ -72,3 +76,16 @@ Approved [13-dialect canonical-equivalence acceptance](../../docs/coverage-signo
 ## TASK-108 completed handoff (2026-10-17)
 
 TASK-70/108 completed the expression-specific 13-parser, 546-cell audit. The 14 reviewed conditional dialect cells and all remaining native vendor engine/session/collation requirements stay owned by TASK-88's independent global dialect-law acceptance and TASK-91's publication gate.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-88 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-88. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-177](task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md)** (1/4): 13 named dialects; every reviewed variant; parser accepted/unsupported statuses. Fixtures `88-C177-P`, `88-C177-N`.
+- **[TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md)** (2/4): JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants. Fixtures `88-C178-P`, `88-C178-N`.
+- **[TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md)** (3/4): NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case. Fixtures `88-C179-P`, `88-C179-N`.
+- **[TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md)** (4/4): all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes. Fixtures `88-C180-P`, `88-C180-N`.
+
+**Original AC ownership:** #1 -> TASK-177, TASK-180; #2 -> TASK-177, TASK-178, TASK-180; #3 -> TASK-179, TASK-180; #4 -> TASK-177, TASK-178, TASK-179, TASK-180; #5 -> TASK-177, TASK-178, TASK-179, TASK-180; #6 -> TASK-178, TASK-179, TASK-180; #7 -> TASK-177, TASK-178, TASK-180; #8 -> TASK-177, TASK-178, TASK-179, TASK-180.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-88 closure.

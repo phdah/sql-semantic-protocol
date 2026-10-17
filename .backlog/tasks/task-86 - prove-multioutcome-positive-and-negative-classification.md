@@ -13,6 +13,10 @@ dependencies:
   - TASK-69
   - TASK-70
   - TASK-85
+  - TASK-169
+  - TASK-170
+  - TASK-171
+  - TASK-172
 references: 
   - 'sql-tdg TASK-35'
 priority: high
@@ -59,3 +63,16 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer decision (2026-10-09)
 
 Per-terminal rejected-row classification and **seeded randomized rejecting predicate/column selection** are approved in [docs/coverage-signoff.md](../../docs/coverage-signoff.md). The protocol owns enumerated constructive alternatives and proof; sql-tdg TASK-35 owns unbiased or explicitly disclosed sampling over eligible choices using its injected RNG. Approval completes decision criterion #1 only; no implementation or E2E acceptance is implied.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-86 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-86. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-169](task-169%20-%20represent-per-source-per-terminal-true-false-unknown-and-absence-vectors.md)** (1/4): per-terminal membership; column identities; shared lineage; OR rejection semantics. Fixtures `86-C169-P`, `86-C169-N`.
+- **[TASK-170](task-170%20-%20enumerate-all-constructive-rejection-alternatives-with-provenance.md)** (2/4): multiple AND/OR choices; independent FALSE/UNKNOWN; column-specific branches. Fixtures `86-C170-P`, `86-C170-N`.
+- **[TASK-171](task-171%20-%20specify-seeded-reachability-and-global-compatibility.md)** (3/4): stable deterministic RNG seed selection; every feasible rejection alternative; shared constraints. Fixtures `86-C171-P`, `86-C171-N`.
+- **[TASK-172](task-172%20-%20compose-project-wide-positive-negative-snapshots-and-certify-task-86.md)** (4/4): two terminals; grouped/window/set negatives; sql-tdg TASK-35 semantics. Fixtures `86-C172-P`, `86-C172-N`.
+
+**Original AC ownership:** #1 -> TASK-172; #2 -> TASK-169, TASK-170, TASK-172; #3 -> TASK-171, TASK-172; #4 -> TASK-169, TASK-170, TASK-172; #5 -> TASK-169, TASK-170, TASK-171, TASK-172; #6 -> TASK-169, TASK-170, TASK-171, TASK-172; #7 -> TASK-170, TASK-171, TASK-172; #8 -> TASK-171, TASK-172; #9 -> TASK-169, TASK-170, TASK-171, TASK-172.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-86 closure.

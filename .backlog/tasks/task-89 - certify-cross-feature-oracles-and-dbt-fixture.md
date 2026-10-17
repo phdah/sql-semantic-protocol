@@ -29,6 +29,10 @@ dependencies:
   - TASK-86
   - TASK-87
   - TASK-88
+  - TASK-181
+  - TASK-182
+  - TASK-183
+  - TASK-184
 references: 
   - 'sql-tdg TASK-36'
 priority: high
@@ -78,3 +82,16 @@ Approved [unified E2E gate](../../docs/coverage-signoff.md): rebuild/extend dbt 
 ## TASK-108 completed handoff (2026-10-17)
 
 TASK-70/108 closed nine expression-specific closed-world DuckDB goldens, nine compositions, four seeds and direct SQL/dbt/ODCS parity. TASK-89's mixed-feature and scripted DML/DDL/dbt full-pipeline acceptance remains unchecked; this local closure does not certify it.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-89 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-89. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-181](task-181%20-%20build-seeded-differential-harness-with-replayable-evidence.md)** (1/4): deterministic small instances; positive/negative/Impossible/residual; counterexample capture. Fixtures `89-C181-P`, `89-C181-N`.
+- **[TASK-182](task-182%20-%20certify-mixed-relational-and-correlated-full-output-paths.md)** (2/4): filtered JOIN->GROUP/HAVING->QUALIFY->set; correlated subquery over join; shared keys. Fixtures `89-C182-P`, `89-C182-N`.
+- **[TASK-183](task-183%20-%20certify-pinned-sql-tdg-dbt-and-dml-ddl-execution-harness.md)** (3/4): sql-tdg pinned SHA; committed m-3 fixture; make all; actual scripted transitions. Fixtures `89-C183-P`, `89-C183-N`.
+- **[TASK-184](task-184%20-%20independently-sign-off-cross-feature-and-dialect-release-matrix.md)** (4/4): TASK-66 variants; 13 dialect equivalence; approved conditional engine laws. Fixtures `89-C184-P`, `89-C184-N`.
+
+**Original AC ownership:** #1 -> TASK-181, TASK-182, TASK-184; #2 -> TASK-182, TASK-184; #3 -> TASK-183, TASK-184; #4 -> TASK-181, TASK-182, TASK-183, TASK-184; #5 -> TASK-181, TASK-182, TASK-183, TASK-184; #6 -> TASK-181, TASK-182, TASK-183, TASK-184; #7 -> TASK-183, TASK-184; #8 -> TASK-182, TASK-184.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-89 closure.
