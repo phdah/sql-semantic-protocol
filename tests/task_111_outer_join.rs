@@ -82,16 +82,38 @@ fn frozen_complete_duckdb_source_and_terminal_bags_agree() {
             .map(Value::to_string)
             .collect::<Vec<_>>();
         expected.sort();
-        assert_eq!(actual, expected, "{id}: full bag and physical/synthetic NULL identities");
-        assert_eq!(actual.len() as u64, case["expected_output_count"].as_u64().expect("row count"), "{id}");
+        assert_eq!(
+            actual, expected,
+            "{id}: full bag and physical/synthetic NULL identities"
+        );
+        assert_eq!(
+            actual.len() as u64,
+            case["expected_output_count"].as_u64().expect("row count"),
+            "{id}"
+        );
         for (index, domain) in [(1usize, &case["domains"][0]), (3usize, &case["domains"][1])] {
             let values = case["expected"].as_array().expect("expected bag");
-            let numeric = values.iter().filter_map(|row| row[index].as_i64()).collect::<Vec<_>>();
+            let numeric = values
+                .iter()
+                .filter_map(|row| row[index].as_i64())
+                .collect::<Vec<_>>();
             let minimum = numeric.iter().min().copied();
             let maximum = numeric.iter().max().copied();
-            assert_eq!(minimum, domain["minimum"].as_i64(), "{id}: lower inclusive bound");
-            assert_eq!(maximum, domain["maximum"].as_i64(), "{id}: upper inclusive bound");
-            assert_eq!(values.iter().any(|row| row[index].is_null()), domain["contains_null"].as_bool().expect("nullable"), "{id}: NULL domain");
+            assert_eq!(
+                minimum,
+                domain["minimum"].as_i64(),
+                "{id}: lower inclusive bound"
+            );
+            assert_eq!(
+                maximum,
+                domain["maximum"].as_i64(),
+                "{id}: upper inclusive bound"
+            );
+            assert_eq!(
+                values.iter().any(|row| row[index].is_null()),
+                domain["contains_null"].as_bool().expect("nullable"),
+                "{id}: NULL domain"
+            );
         }
     }
 }
@@ -127,35 +149,43 @@ fn reversed_on_never_reverses_preserved_outer_source_instance() {
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{dialect}: {sql}: expected feasible complete physical proof: {plan:?}");
             };
-            assert!(cases.iter().any(|case| {
-                let complete = case.obligations().iter().filter(|o| matches!(
-                    o, WitnessObligation::ClosedWorld { .. }
-                )).count() == 2;
-                let oriented = case.obligations().iter().any(|o| matches!(
-                    o,
-                    WitnessObligation::JoinPopulation {
-                        left_row,
-                        right_row,
-                        left_key,
-                        right_key,
-                        join_kind,
-                        pattern: actual_pattern,
-                        left_rows,
-                        right_rows,
-                        output_rows: 3,
-                        closed_world: true,
-                        ..
-                    } if *join_kind == kind
-                        && *actual_pattern == pattern
-                        && *left_rows == left_count
-                        && *right_rows == right_count
-                        && left_row.relation() == "l"
-                        && right_row.relation() == "r"
-                        && left_key.relation() == Some("l")
-                        && right_key.relation() == Some("r")
-                ));
-                complete && oriented
-            }), "{dialect}: SQL side identity and absence law: {plan:?}");
+            assert!(
+                cases.iter().any(|case| {
+                    let complete = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                        .count()
+                        == 2;
+                    let oriented = case.obligations().iter().any(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::JoinPopulation {
+                                left_row,
+                                right_row,
+                                left_key,
+                                right_key,
+                                join_kind,
+                                pattern: actual_pattern,
+                                left_rows,
+                                right_rows,
+                                output_rows: 3,
+                                closed_world: true,
+                                ..
+                            } if *join_kind == kind
+                                && *actual_pattern == pattern
+                                && *left_rows == left_count
+                                && *right_rows == right_count
+                                && left_row.relation() == "l"
+                                && right_row.relation() == "r"
+                                && left_key.relation() == Some("l")
+                                && right_key.relation() == Some("r")
+                        )
+                    });
+                    complete && oriented
+                }),
+                "{dialect}: SQL side identity and absence law: {plan:?}"
+            );
         }
     }
 }
@@ -168,14 +198,19 @@ fn source_null_is_not_an_invented_matching_join_pair() {
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: closed empty partner must have an exact FULL witness");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
-            o,
-            WitnessObligation::NoMatchingPartner {
-                null_extended: Some(sql_semantic_protocol::JoinSide::Right),
-                closed_world: true,
-                ..
-            }
-        ))), "{dialect}: no physical partner means synthetic NULL, not an inserted row");
+        assert!(
+            cases
+                .iter()
+                .any(|case| case.obligations().iter().any(|o| matches!(
+                    o,
+                    WitnessObligation::NoMatchingPartner {
+                        null_extended: Some(sql_semantic_protocol::JoinSide::Right),
+                        closed_world: true,
+                        ..
+                    }
+                ))),
+            "{dialect}: no physical partner means synthetic NULL, not an inserted row"
+        );
     }
 }
 
