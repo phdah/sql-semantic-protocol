@@ -11976,17 +11976,36 @@
   "task_111_join_acceptance": {
     "owner": "TASK-111",
     "parent": "TASK-71",
-    "status": "frozen_pending_verification",
+    "status": "verified_bounded_child",
     "acceptance_freeze": "docs/task-111-acceptance-freeze.json",
-    "independent_duckdb_test": "tests/task_111_outer_join.rs",
+    "acceptance_audit": "docs/task-111-acceptance-audit.md",
     "fixture_ids": [
       "71-C111-P",
       "71-C111-N"
     ],
     "mandatory_variant_cells": 8,
-    "parser_dialect_cells": 104,
+    "verified_dialect_parser_cells": 104,
+    "independent_duckdb_test": "tests/task_111_outer_join.rs",
+    "contract_test": "tests/task_111_acceptance_freeze.rs",
+    "compiled_dbt_odcs_parity_test": "tests/task_111_outer_join_adapters.rs",
     "canonical_implementation": "src/physical_realization/joins.rs",
-    "all_original_criteria_verified": false,
+    "physical_constructive_patterns": [
+      "empty_left",
+      "empty_right",
+      "disjoint_keys",
+      "mixed_matched_unmatched",
+      "mixed_duplicate_right"
+    ],
+    "implementation_ci_workflow_run": 39041937842,
+    "verified_implementation_sha": "eb137ac2467d57207252bfd59796f3ec97f6d90e",
+    "all_original_parent_criteria_verified": false,
+    "owned_original_parent_ac": [
+      1,
+      3,
+      5,
+      6
+    ],
+    "conditional_law_release_disposition": "reviewed_bounded_residual_pending_release",
     "release_approved": false
   }
 }
