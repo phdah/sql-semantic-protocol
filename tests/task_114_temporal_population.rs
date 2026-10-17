@@ -12,19 +12,24 @@ fn physical_plan(left_type: &str, right_type: &str, wanted: u64) -> WitnessDirec
         .map(|(name, sql_type)| {
             RelationSchema::new(
                 *name,
-                vec![
-                    SchemaColumn::from_sql_type("t", sql_type, "postgresql").unwrap(),
-                ],
+                vec![SchemaColumn::from_sql_type("t", sql_type, "postgresql").unwrap()],
             )
             .unwrap()
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let sql = SqlInput::inline("SELECT l.t, r.t FROM l JOIN r ON l.t >= r.t");
-    let configured = [ConfiguredSqlInput::new("time", &sql, "generic", parser.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "time",
+        &sql,
+        "generic",
+        parser.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let layer = bundle.layers().last().unwrap().id();
-    physical_joint_source_plan(&bundle, &[(layer, wanted)]).outcome().clone()
+    physical_joint_source_plan(&bundle, &[(layer, wanted)])
+        .outcome()
+        .clone()
 }
 
 #[test]
@@ -45,8 +50,14 @@ fn frozen_timestamp_bags_are_source_backed_and_rejected_pairs_are_exact() {
         Some("2026-10-17 00:07:00".to_string()),
     ];
     assert!(cases.iter().any(|case| {
-        let closed = case.obligations().iter().filter(|ob| matches!(ob, WitnessObligation::ClosedWorld { .. })).count();
-        closed == 2 && case.obligations().iter().any(|ob| matches!(ob, WitnessObligation::TemporalJoinPopulation {
+        let closed = case
+            .obligations()
+            .iter()
+            .filter(|ob| matches!(ob, WitnessObligation::ClosedWorld { .. }))
+            .count();
+        closed == 2
+            && case.obligations().iter().any(|ob| {
+                matches!(ob, WitnessObligation::TemporalJoinPopulation {
             law: TemporalJoinLaw::GreaterThanOrEqual,
             left_values,
             right_values,
@@ -58,29 +69,37 @@ fn frozen_timestamp_bags_are_source_backed_and_rejected_pairs_are_exact() {
             && TemporalJoinLaw::GreaterThanOrEqual.selected_rows(left_values,right_values)
                 == Some(vec![(0,0),(1,0),(1,1)])
             && TemporalJoinLaw::GreaterThanOrEqual.unselected_pairs(left_values,right_values)
-                == Some(vec![(0,1)])))
+                == Some(vec![(0,1)]))
+            })
     }));
 }
 
 #[test]
 fn absent_session_timezone_evidence_refuses_precise_temporal_population() {
-    for (a,b) in [
+    for (a, b) in [
         ("TIMESTAMP", "TIMESTAMP"),
         ("TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITH TIME ZONE"),
         ("TIMESTAMP WITHOUT TIME ZONE", "TIMESTAMP"),
     ] {
-        let direction = physical_plan(a,b,3);
+        let direction = physical_plan(a, b, 3);
         assert!(!matches!(direction, WitnessDirection::Feasible(ref cases)
             if cases.iter().any(|case| case.obligations().iter().any(|ob| matches!(ob, WitnessObligation::TemporalJoinPopulation{..})))));
     }
-    assert_eq!(TemporalJoinLaw::GreaterThanOrEqual.selected_rows(
-        &[Some("2026-02-30 00:00:00".to_string())],
-        &[Some("2026-02-01 00:00:00".to_string())]
-    ), None);
+    assert_eq!(
+        TemporalJoinLaw::GreaterThanOrEqual.selected_rows(
+            &[Some("2026-02-30 00:00:00".to_string())],
+            &[Some("2026-02-01 00:00:00".to_string())]
+        ),
+        None
+    );
 }
 
 #[test]
 fn timestamp_source_type_attestation_is_explicit() {
-    let column = SchemaColumn::from_sql_type("t","TIMESTAMP WITHOUT TIME ZONE","postgresql").unwrap();
-    assert_eq!(column.timestamp_zone(),Some(TimestampZone::WithoutTimeZone));
+    let column =
+        SchemaColumn::from_sql_type("t", "TIMESTAMP WITHOUT TIME ZONE", "postgresql").unwrap();
+    assert_eq!(
+        column.timestamp_zone(),
+        Some(TimestampZone::WithoutTimeZone)
+    );
 }
