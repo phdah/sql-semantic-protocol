@@ -86,13 +86,12 @@ fn frozen_task_113_parser_cells_match_all_registered_dialects() {
         for dialect in matrix["dialects"].as_array().unwrap() {
             let name = dialect.as_str().unwrap();
             assert_eq!(
-                observed["cells"][name],
-                frozen["dialects"][name]["parser"],
-                "{name}: parser and canonical classification of {}", frozen["id"]
+                observed["cells"][name], frozen["dialects"][name]["parser"],
+                "{name}: parser and canonical classification of {}",
+                frozen["id"]
             );
             assert_eq!(
-                frozen["dialects"][name]["canonical"],
-                "equivalent_when_parsed",
+                frozen["dialects"][name]["canonical"], "equivalent_when_parsed",
                 "{name}: semantic shape must remain canonical"
             );
         }
