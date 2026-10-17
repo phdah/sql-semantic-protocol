@@ -443,7 +443,8 @@ impl FiniteJoinLaw {
                         selected.push((left_index, None));
                     }
                 }
-                Self::IntegerGreaterThan | Self::IntegerGreaterThanOrEqual
+                Self::IntegerGreaterThan
+                | Self::IntegerGreaterThanOrEqual
                 | Self::CorrelatedInnerEquality => {
                     selected.extend(matches.into_iter().map(|index| (left_index, Some(index))));
                 }
