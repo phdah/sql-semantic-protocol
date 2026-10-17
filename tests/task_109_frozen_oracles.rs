@@ -69,21 +69,25 @@ fn queried_bag(db: &Connection, sql: &str, cols: usize) -> Vec<Vec<Option<i64>>>
             Ok(tuple)
         })
         .expect("executed rows");
-    let mut output = rows.map(|row| row.expect("typed INTEGER output")).collect::<Vec<_>>();
+    let mut output = rows
+        .map(|row| row.expect("typed INTEGER output"))
+        .collect::<Vec<_>>();
     output.sort();
     output
 }
 
 fn pair_bag(db: &Connection, predicate: &str, not_true: bool) -> Vec<Vec<String>> {
     let truth = if not_true { "IS NOT TRUE" } else { "IS TRUE" };
-    let sql = format!(
-        "SELECT l.rid, r.rid FROM l CROSS JOIN r WHERE ({predicate}) {truth}"
-    );
+    let sql = format!("SELECT l.rid, r.rid FROM l CROSS JOIN r WHERE ({predicate}) {truth}");
     let mut stmt = db.prepare(&sql).expect("SQL three-valued predicate");
-    let rows = stmt.query_map([], |row| {
-        Ok(vec![row.get::<_, String>(0)?, row.get::<_, String>(1)?])
-    }).expect("identity bag");
-    let mut result = rows.map(|r| r.expect("typed identities")).collect::<Vec<_>>();
+    let rows = stmt
+        .query_map([], |row| {
+            Ok(vec![row.get::<_, String>(0)?, row.get::<_, String>(1)?])
+        })
+        .expect("identity bag");
+    let mut result = rows
+        .map(|r| r.expect("typed identities"))
+        .collect::<Vec<_>>();
     result.sort();
     result
 }
@@ -91,7 +95,10 @@ fn pair_bag(db: &Connection, predicate: &str, not_true: bool) -> Vec<Vec<String>
 fn assert_typed_domain(id: &str, actual: &[Vec<Option<i64>>], spec: &Value) {
     if actual.is_empty() {
         assert_eq!(spec["type"], "empty", "{id}: empty bag domain");
-        assert_eq!(spec["nullable"], false, "{id}: absence has no nullable rows");
+        assert_eq!(
+            spec["nullable"], false,
+            "{id}: absence has no nullable rows"
+        );
         return;
     }
     let domains = if spec.get("type").is_some() {
@@ -101,7 +108,11 @@ fn assert_typed_domain(id: &str, actual: &[Vec<Option<i64>>], spec: &Value) {
     };
     for (idx, domain) in domains.iter().enumerate() {
         let nulls = actual.iter().filter(|row| row[idx].is_none()).count();
-        assert_eq!(domain["nullable"], nulls > 0, "{id}/column {idx}: NULL membership");
+        assert_eq!(
+            domain["nullable"],
+            nulls > 0,
+            "{id}/column {idx}: NULL membership"
+        );
         let non_null = actual.iter().filter_map(|row| row[idx]).collect::<Vec<_>>();
         if !non_null.is_empty() {
             let lower = *non_null.iter().min().expect("nonempty minimum");
@@ -119,30 +130,54 @@ fn assert_typed_domain(id: &str, actual: &[Vec<Option<i64>>], spec: &Value) {
 fn every_frozen_variant_executes_complete_physical_and_terminal_bags() {
     let matrix: Value = serde_json::from_str(MATRIX).expect("frozen task inventory");
     let variants = matrix["variants"].as_array().expect("mandatory variants");
-    assert_eq!(variants.len(), 5, "review changes to frozen scope explicitly");
+    assert_eq!(
+        variants.len(),
+        5,
+        "review changes to frozen scope explicitly"
+    );
     for item in variants {
         let id = item["id"].as_str().expect("immutable variant identity");
         let oracle = &item["execution_oracle"];
         let db = Connection::open_in_memory().expect("independent DuckDB oracle");
         db.execute_batch(
             "CREATE TABLE l(rid VARCHAR, k INTEGER, a INTEGER);
-             CREATE TABLE r(rid VARCHAR, k INTEGER, a INTEGER);"
-        ).expect("complete schema");
+             CREATE TABLE r(rid VARCHAR, k INTEGER, a INTEGER);",
+        )
+        .expect("complete schema");
         for name in ["l", "r"] {
-            source_insert(&db, name, item["source_bags"][name].as_array().expect("closed bag"));
-            let actual: i64 = db.query_row(
-                &format!("SELECT COUNT(*) FROM {name}"), [], |row| row.get(0)
-            ).expect("physical cardinality");
-            assert_eq!(actual as usize, item["source_bags"][name].as_array().unwrap().len(), "{id}/{name}: source closed");
+            source_insert(
+                &db,
+                name,
+                item["source_bags"][name].as_array().expect("closed bag"),
+            );
+            let actual: i64 = db
+                .query_row(&format!("SELECT COUNT(*) FROM {name}"), [], |row| {
+                    row.get(0)
+                })
+                .expect("physical cardinality");
+            assert_eq!(
+                actual as usize,
+                item["source_bags"][name].as_array().unwrap().len(),
+                "{id}/{name}: source closed"
+            );
         }
-        let columns = oracle["output_columns"].as_u64().expect("typed projection arity") as usize;
+        let columns = oracle["output_columns"]
+            .as_u64()
+            .expect("typed projection arity") as usize;
         let actual = queried_bag(&db, item["sql"].as_str().expect("SQL variant"), columns);
-        let mut expected: Vec<Vec<Option<i64>>> = serde_json::from_value(
-            oracle["expected_output_bag"].clone()
-        ).expect("frozen typed expected output bag");
+        let mut expected: Vec<Vec<Option<i64>>> =
+            serde_json::from_value(oracle["expected_output_bag"].clone())
+                .expect("frozen typed expected output bag");
         expected.sort();
-        assert_eq!(actual, expected, "{id}: complete terminal values and multiplicities");
-        assert_eq!(actual.len() as u64, item["matched_count"].as_u64().unwrap(), "{id}: output rows");
+        assert_eq!(
+            actual, expected,
+            "{id}: complete terminal values and multiplicities"
+        );
+        assert_eq!(
+            actual.len() as u64,
+            item["matched_count"].as_u64().unwrap(),
+            "{id}: output rows"
+        );
         assert_typed_domain(id, &actual, &item["value_domain"]);
 
         let predicate = oracle["truth_predicate"].as_str().expect("3VL oracle");
@@ -155,10 +190,15 @@ fn every_frozen_variant_executes_complete_physical_and_terminal_bags() {
         expected_positive.sort();
         expected_negative.sort();
         assert_eq!(positive, expected_positive, "{id}: matched row identities");
-        assert_eq!(negative, expected_negative, "{id}: false or unknown identities");
-        assert_eq!(positive.len() + negative.len(),
+        assert_eq!(
+            negative, expected_negative,
+            "{id}: false or unknown identities"
+        );
+        assert_eq!(
+            positive.len() + negative.len(),
             oracle["closed_world_pair_count"].as_u64().unwrap() as usize,
-            "{id}: no omitted physical pair");
+            "{id}: no omitted physical pair"
+        );
     }
 }
 
@@ -189,18 +229,45 @@ fn each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics() {
                     *scalar_count += 1;
                 }
             }
-            count_conjuncts(&joins[0]["condition"], &mut equality_count, &mut scalar_count);
-            assert_eq!(equality_count, item["canonical_ast_expectation"]["key_equality_conjuncts"].as_u64().unwrap() as usize, "{id}/{dialect}: AST equalities");
-            assert_eq!(equality_count + scalar_count, item["canonical_ast_expectation"]["on_conjuncts"].as_u64().unwrap() as usize, "{id}/{dialect}: ON conjunction");
-            let where_kind = item["canonical_ast_expectation"]["where_kind"].as_str().unwrap();
+            count_conjuncts(
+                &joins[0]["condition"],
+                &mut equality_count,
+                &mut scalar_count,
+            );
+            assert_eq!(
+                equality_count,
+                item["canonical_ast_expectation"]["key_equality_conjuncts"]
+                    .as_u64()
+                    .unwrap() as usize,
+                "{id}/{dialect}: AST equalities"
+            );
+            assert_eq!(
+                equality_count + scalar_count,
+                item["canonical_ast_expectation"]["on_conjuncts"]
+                    .as_u64()
+                    .unwrap() as usize,
+                "{id}/{dialect}: ON conjunction"
+            );
+            let where_kind = item["canonical_ast_expectation"]["where_kind"]
+                .as_str()
+                .unwrap();
             if where_kind == "none" {
-                assert!(statement["predicates"]["where"].is_null(), "{id}/{dialect}: no WHERE");
+                assert!(
+                    statement["predicates"]["where"].is_null(),
+                    "{id}/{dialect}: no WHERE"
+                );
             } else {
-                assert_eq!(statement["predicates"]["where"]["kind"], where_kind, "{id}/{dialect}: WHERE kind");
+                assert_eq!(
+                    statement["predicates"]["where"]["kind"], where_kind,
+                    "{id}/{dialect}: WHERE kind"
+                );
             }
             statement["diagnostics"] = Value::Null;
             if let Some(reference) = &reference {
-                assert_eq!(&statement, reference, "{id}/{dialect}: canonical parser equivalence");
+                assert_eq!(
+                    &statement, reference,
+                    "{id}/{dialect}: canonical parser equivalence"
+                );
             } else {
                 reference = Some(statement);
             }
@@ -223,23 +290,29 @@ fn frozen_positive_counts_have_exact_closed_source_witnesses() {
         let WitnessDirection::Feasible(cases) = proof.outcome() else {
             panic!("{id}: missing constructive source-level exact row count: {proof:?}");
         };
-        assert!(cases.iter().any(|case| {
-            let mut closed = 0;
-            let mut proper = false;
-            for o in case.obligations() {
-                match o {
-                    WitnessObligation::ClosedWorld { .. } => closed += 1,
-                    WitnessObligation::JoinPopulation {
-                        join_kind: JoinKind::Inner,
-                        output_rows,
-                        closed_world: true,
-                        pattern: JoinPopulationPattern::CommonMatched | JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::GroupedMatched { .. },
-                        ..
-                    } if *output_rows == wanted => proper = true,
-                    _ => {}
+        assert!(
+            cases.iter().any(|case| {
+                let mut closed = 0;
+                let mut proper = false;
+                for o in case.obligations() {
+                    match o {
+                        WitnessObligation::ClosedWorld { .. } => closed += 1,
+                        WitnessObligation::JoinPopulation {
+                            join_kind: JoinKind::Inner,
+                            output_rows,
+                            closed_world: true,
+                            pattern:
+                                JoinPopulationPattern::CommonMatched
+                                | JoinPopulationPattern::DistinctMatched
+                                | JoinPopulationPattern::GroupedMatched { .. },
+                            ..
+                        } if *output_rows == wanted => proper = true,
+                        _ => {}
+                    }
                 }
-            }
-            proper && closed == 2
-        }), "{id}: full join source law, not an unconstrained sampled pair");
+                proper && closed == 2
+            }),
+            "{id}: full join source law, not an unconstrained sampled pair"
+        );
     }
 }
