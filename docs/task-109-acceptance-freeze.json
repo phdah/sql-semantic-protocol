@@ -110,67 +110,67 @@
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -285,67 +285,67 @@
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -453,67 +453,67 @@
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -625,67 +625,67 @@
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -816,67 +816,67 @@
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "required_or_explicit_boundary",
+          "parser": "parser_equivalent",
           "canonical": "equivalent_when_parsed",
           "vendor_execution": "not_claimed"
         }
