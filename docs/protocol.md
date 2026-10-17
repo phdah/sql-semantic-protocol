@@ -1251,6 +1251,14 @@ physical rows per side and attested signed integer domains containing
 0, 1 and 2. It does not assert that physical SQL NULL keys can be
 inserted, and without a compatible joint histogram it is not composed
 with another join population.
+`mixed_duplicate_right` is the finite duplicated-match extension: one left
+row matches two right rows on key 0; remaining left rows use key 1 and
+remaining right rows key 2. Both nonempty unmatched sides have closed-world
+absence witnesses. For complete left/right bags of 3/4 rows, respectively,
+the LEFT, RIGHT and FULL output bags contain exactly 4/4/6 rows, including
+duplicate matches. This source-count witness is independent of the frozen
+DuckDB physical SQL NULL test: generic schema-only evidence cannot claim
+that inserting a NULL physical key is feasible.
 One physical population is shared by repeated source references, with
 conflicting cardinalities rejected from the construction.
 
