@@ -233,8 +233,12 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
             output_rows,
             closed_world,
         } => {
-            let selected = law.selected_rows(left_values, right_values).unwrap_or_default();
-            let unselected = law.unselected_pairs(left_values, right_values).unwrap_or_default();
+            let selected = law
+                .selected_rows(left_values, right_values)
+                .unwrap_or_default();
+            let unselected = law
+                .unselected_pairs(left_values, right_values)
+                .unwrap_or_default();
             json!({
                 "kind": "finite_join_population",
                 "left_row": constructive_row_to_value(left_row),
@@ -249,7 +253,7 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
                 "output_rows": output_rows,
                 "closed_world": closed_world
             })
-        },
+        }
         crate::WitnessObligation::UniformJoinPopulation {
             left_row,
             right_row,
