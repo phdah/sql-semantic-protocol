@@ -39,7 +39,7 @@ fn bundle(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
 #[test]
 fn frozen_complete_duckdb_source_and_terminal_bags_agree() {
     let matrix: Value = serde_json::from_str(MATRIX).expect("frozen acceptance matrix");
-    assert_eq!(matrix["version"], 1);
+    assert_eq!(matrix["version"], 2, "AST and physical source proof freeze");
     assert_eq!(matrix["cases"].as_array().expect("cases").len(), 8);
     for case in matrix["cases"].as_array().expect("cases") {
         let id = case["id"].as_str().expect("fixture id");
