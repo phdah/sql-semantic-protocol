@@ -102,6 +102,40 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
                 || (left_row.relation() == right_row.relation() && left_rows != right_rows)
         }
+        WitnessObligation::JoinChainPopulation {
+            left_row,
+            middle_row,
+            right_row,
+            left_key,
+            middle_left_key,
+            middle_right_key,
+            right_key,
+            left_rows,
+            middle_rows,
+            right_rows,
+            output_rows,
+            closed_world,
+            ..
+        } => {
+            !closed_world
+                || left_row.instance() == middle_row.instance()
+                || left_row.instance() == right_row.instance()
+                || middle_row.instance() == right_row.instance()
+                || left_key.relation() != Some(left_row.relation())
+                || middle_left_key.relation() != Some(middle_row.relation())
+                || middle_right_key.relation() != Some(middle_row.relation())
+                || right_key.relation() != Some(right_row.relation())
+                || left_rows
+                    .checked_mul(*middle_rows)
+                    .and_then(|count| count.checked_mul(*right_rows))
+                    != Some(*output_rows)
+                || (left_row.relation() == middle_row.relation()
+                    && left_rows != middle_rows)
+                || (left_row.relation() == right_row.relation()
+                    && left_rows != right_rows)
+                || (middle_row.relation() == right_row.relation()
+                    && middle_rows != right_rows)
+        }
         WitnessObligation::OperatorPopulation { witness } => {
             !matches!(
                 witness,

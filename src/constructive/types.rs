@@ -339,6 +339,25 @@ pub enum WitnessObligation {
         output_rows: u64,
         closed_world: bool,
     },
+    /// A three-instance INNER chain, whose two comparisons are simultaneously
+    /// realized by assigning one common, non-NULL integer key value to every
+    /// row in each *unique* controlled physical bag. Aliases can share a bag.
+    /// Counts multiply only because every row passes both ON equalities.
+    JoinChainPopulation {
+        left_row: RowVariable,
+        middle_row: RowVariable,
+        right_row: RowVariable,
+        left_key: ColumnRef,
+        middle_left_key: ColumnRef,
+        middle_right_key: ColumnRef,
+        right_key: ColumnRef,
+        matched_value: i64,
+        left_rows: u64,
+        middle_rows: u64,
+        right_rows: u64,
+        output_rows: u64,
+        closed_world: bool,
+    },
     /// A complete operator-specific population at controlled physical leaves.
     /// Its typed witness carries every required key, multiplicity and NULL-aware
     /// branch count; the surrounding case must also close each leaf relation.

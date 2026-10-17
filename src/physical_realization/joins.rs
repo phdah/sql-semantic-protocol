@@ -287,6 +287,249 @@ fn direct_filtered_source(
     exact_source_filter(bundle, input, query.predicates().where_predicate()?)
 }
 
+/// Certify a finite two-edge INNER chain as one complete physical assignment.
+///
+/// This is not a product of independent pairwise witnesses: both equalities
+/// are satisfied on the *same* physical bags by using the same non-NULL typed
+/// integer key value for every referenced key. Each source instance is named
+/// separately, while repeated producer aliases point to a single source bag.
+/// Non-equality conditions, additional joins, filters and derived transforms
+/// have no such proof and remain residual.
+fn physical_three_way_inner_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+    exact_sources: &BTreeMap<String, u64>,
+) -> Option<WitnessDirection> {
+    use crate::protocol::{ComparisonOperator, JoinKind};
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let layer = walker.layers.get(target_layer_id).copied()?;
+    let query = query_for(bundle, layer)?;
+    let [first_join, second_join] = query.joins() else {
+        return None;
+    };
+    let [left, middle, right] = query.sources() else {
+        return None;
+    };
+    if [first_join, second_join]
+        .iter()
+        .any(|join| join.kind() != JoinKind::Inner)
+        || query.predicates().where_predicate().is_some()
+        || query.aggregation().is_some()
+        || query.set_operation().is_some()
+        || query.window_witness().is_some()
+        || !query.subquery_witnesses().is_empty()
+        || query.predicates().having_predicate().is_some()
+        || query.predicates().qualify_predicate().is_some()
+        || !query.diagnostics().is_empty()
+        || query.output().columns().iter().any(|column| {
+            !matches!(column.expression(), Expression::Column(_) | Expression::Literal(_))
+        })
+        || walker.nodes.iter().any(|node| {
+            node.produced_relations().iter().any(|name| {
+                untransported_materialization_laws(bundle, name)
+            })
+        })
+    {
+        return None;
+    }
+
+    // Only plain-copy producers may sit upstream of the two SQL joins.
+    // In particular no second local join or filtered producer may make one
+    // alias a different (and hence incompatible) physical row selection.
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if id == target_layer_id {
+            continue;
+        }
+        let producer = walker.layers.get(id.as_str()).copied()?;
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition))
+            || !transparent_projection(query_for(bundle, producer)?)
+        {
+            return None;
+        }
+    }
+
+    let sources = [left, middle, right];
+    let names = sources.map(|source| source.alias().unwrap_or(source.name()));
+    if names[0] == names[1] || names[1] == names[2] || names[0] == names[2] {
+        return None;
+    }
+    let relations = sources.map(|source| source.name());
+
+    // Resolve every normalized equality through the same canonical column
+    // mapper used by the binary physical join. The physical relation may be
+    // identical for different SQL aliases, but each ON side must identify the
+    // expected source role in its join edge.
+    let resolve = |position: usize,
+                   expression: &crate::protocol::ColumnExpression|
+     -> Option<crate::protocol::ColumnRef> {
+        let instance = names[position];
+        let reference = crate::protocol::ColumnRef::new(
+            Some(instance.to_string()),
+            expression.name().to_string(),
+        );
+        let mapped = resolve_filter_column_with_evidence(
+            bundle,
+            &walker,
+            target_layer_id,
+            &reference,
+            0,
+            true,
+        )
+        .or_else(|| {
+            resolve_filter_column(bundle, &walker, target_layer_id, &reference, 0)
+        })?;
+        let visible = expression.relation()?;
+        if mapped.relation()? != relations[position]
+            && !walker.sources.contains(mapped.relation()?)
+        {
+            return None;
+        }
+        if visible != instance && visible != relations[position]
+            && visible != mapped.relation()?
+        {
+            return None;
+        }
+        Some(mapped)
+    };
+    let equality = |join: &crate::protocol::Join, a: usize, b: usize|
+     -> Option<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)> {
+        let Predicate::Comparison(comparison) = join.condition()? else {
+            return None;
+        };
+        if comparison.operator() != ComparisonOperator::Eq {
+            return None;
+        }
+        let (Expression::Column(left), Expression::Column(right)) =
+            (comparison.left(), comparison.right())
+        else {
+            return None;
+        };
+        if let (Some(x), Some(y)) = (resolve(a, left), resolve(b, right)) {
+            return Some((x, y));
+        }
+        Some((resolve(a, right)?, resolve(b, left)?))
+    };
+    let (left_key, middle_left_key) = equality(first_join, 0, 1)?;
+    let (middle_right_key, right_key) = equality(second_join, 1, 2)?;
+    if left_key.relation()? != middle_left_key.relation()?
+        && middle_left_key.relation()? != middle_right_key.relation()?
+    {
+        // These are separate physical columns of the middle instance, and
+        // both are assigned zero on the same row, so this is still exact.
+    }
+    let keys = [
+        (&left_key, 0usize),
+        (&middle_left_key, 1),
+        (&middle_right_key, 1),
+        (&right_key, 2),
+    ];
+    // The sufficient construction chooses literal zero, which must be
+    // representable in every attested physical signed-integer column type.
+    for (key, _) in keys {
+        let relation = key.relation()?;
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == relation)?;
+        let bounds = physical_integer_evidence(schema, key)?;
+        if bounds.minimum > 0 || bounds.maximum < 0
+            || blocks_unconstrained_physical_plans(bundle, relation)
+        {
+            return None;
+        }
+    }
+
+    let instances = [
+        RowVariable::new(left_key.relation()?, names[0], "chain_left")?,
+        RowVariable::new(middle_left_key.relation()?, names[1], "chain_middle")?,
+        RowVariable::new(right_key.relation()?, names[2], "chain_right")?,
+    ];
+
+    let mut candidates = Vec::new();
+    if wanted == 0 {
+        candidates.extend([[0, 1, 1], [1, 0, 1], [1, 1, 0], [0, 0, 0]]);
+    } else {
+        for left_rows in 1..=wanted.min(64) {
+            if wanted % left_rows != 0 {
+                continue;
+            }
+            let remaining = wanted / left_rows;
+            for middle_rows in 1..=remaining.min(64) {
+                if remaining % middle_rows == 0 {
+                    candidates.push([left_rows, middle_rows, remaining / middle_rows]);
+                }
+            }
+        }
+    }
+    let mut cases = Vec::new();
+    for counts in candidates {
+        let mut physical_counts = BTreeMap::new();
+        let mut compatible = true;
+        for (index, row) in instances.iter().enumerate() {
+            let count = counts[index];
+            if physical_counts
+                .insert(row.relation().to_string(), count)
+                .is_some_and(|previous| previous != count)
+            {
+                compatible = false;
+            }
+        }
+        if !compatible || exact_sources.iter().any(|(source, rows)| {
+            physical_counts.get(source).is_some_and(|count| count != rows)
+        }) {
+            continue;
+        }
+        let mut obligations = Vec::new();
+        for (relation, count) in &physical_counts {
+            let boundary = WitnessBoundary::new(
+                relation,
+                GroupBoundaryKind::Physical,
+                target_layer_id,
+            )?;
+            obligations.push(WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds: CountBounds::new(*count, Some(*count))?,
+                predicate: count_tautology(),
+                closed_world: true,
+            });
+            obligations.push(WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            });
+        }
+        obligations.push(WitnessObligation::JoinChainPopulation {
+            left_row: instances[0].clone(),
+            middle_row: instances[1].clone(),
+            right_row: instances[2].clone(),
+            left_key: left_key.clone(),
+            middle_left_key: middle_left_key.clone(),
+            middle_right_key: middle_right_key.clone(),
+            right_key: right_key.clone(),
+            matched_value: 0,
+            left_rows: counts[0],
+            middle_rows: counts[1],
+            right_rows: counts[2],
+            output_rows: wanted,
+            closed_world: true,
+        });
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds: CountBounds::new(wanted, Some(wanted))?,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            cases.push(case);
+        }
+    }
+    WitnessDirection::feasible(cases)
+}
+
 /// Realize one local equijoin through a complete physical source population
 /// shared by all its named producers and aliases. No intermediate relation is
 /// treated as writable. Each source receives one cardinality and one assigned
@@ -313,6 +556,11 @@ pub(super) fn physical_join_population_with_source_counts(
     use crate::join_witness::JoinWitnessDirection;
     use crate::protocol::JoinKind;
 
+    if let Some(plan) =
+        physical_three_way_inner_count_plan(bundle, target_layer_id, wanted, exact_sources)
+    {
+        return Some(plan);
+    }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
     let join_layers = walker

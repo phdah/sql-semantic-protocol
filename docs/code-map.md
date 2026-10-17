@@ -67,3 +67,5 @@ All emitters read canonical parser-independent values. To change protocol meanin
 If a path or responsibility changes, update this map **in the same PR**. Keep this document short and factual; it should not become a parallel product roadmap.
 
 TASK-71 source-side orientation: `src/physical_realization/joins.rs` orients recovered filtered-join equality endpoints by the canonical `Join::left/right` inputs before constructing preserved-side outer/null-extension obligations. Public proof regression: `tests/physical_realization/joins.rs`.
+
+TASK-110 three-instance common-key INNER chain: `src/physical_realization/joins.rs` owns the jointly controlled physical counts and SQL alias mapping; `src/constructive/types.rs` and `cases.rs` own `JoinChainPopulation` and invariants, `src/emission/constructive.rs` owns serialization, `tests/task_110_join_chains.rs` owns public/DuckDB regression.

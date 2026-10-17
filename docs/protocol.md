@@ -1584,3 +1584,7 @@ variant. Rust callers using exhaustive field patterns must update them, while
 JSON readers using the schema may continue consuming single-key joins without
 the optional `additional_keys` property. The new wire shape is reserved for
 the next planned major protocol release; no v2 release is certified by TASK-109.
+
+### Three-instance common-key INNER chain
+
+A `join_chain_population` constructive obligation fixes three named row instances, four canonical physical key references, an explicit `matched_value`, their complete source-row counts, and `output_rows`. Each alias references one closed physical input bag, including when two aliases share the same physical source. Every row in each bag has the attested non-NULL integer key value; both `=` comparisons therefore hold on the same source assignment, and the exact INNER-chain bag multiplicity is the checked product of all three counts. It is not the composition of two independently sampled pair witnesses. Other ON shapes, filters, and unconstrained/opaque keys stay residual. The sufficient construction does not assert uniqueness or a universally fixed database state.
