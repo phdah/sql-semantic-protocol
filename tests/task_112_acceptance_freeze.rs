@@ -4,8 +4,8 @@ use std::collections::BTreeSet;
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const MATRIX: &str = include_str!("../docs/task-112-acceptance-freeze.json");
@@ -17,7 +17,10 @@ fn task112_has_eight_bounded_complete_source_and_terminal_bag_cases() {
     let freeze: Value = serde_json::from_str(MATRIX).unwrap();
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(freeze["version"], 1);
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["71-C112-P", "71-C112-N"]));
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["71-C112-P", "71-C112-N"])
+    );
     assert_eq!(cases.len(), 8);
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
     let mut ids = BTreeSet::new();
@@ -28,8 +31,10 @@ fn task112_has_eight_bounded_complete_source_and_terminal_bag_cases() {
         assert_eq!(case["classification"], "exact_required");
         assert_eq!(case["left"].as_array().unwrap().len(), 4);
         assert_eq!(case["right"].as_array().unwrap().len(), 2);
-        assert_eq!(case["expected"].as_array().unwrap().len(),
-            case["expected_output_count"].as_u64().unwrap() as usize);
+        assert_eq!(
+            case["expected"].as_array().unwrap().len(),
+            case["expected_output_count"].as_u64().unwrap() as usize
+        );
         assert_eq!(case["source_instances"]["l"], "l");
         assert_eq!(case["source_instances"]["r"], "r");
         assert_eq!(case["source_column_types"]["k"], "INTEGER");
@@ -43,17 +48,21 @@ fn task112_has_eight_bounded_complete_source_and_terminal_bag_cases() {
             assert!(case["dialects"][dialect.as_str().unwrap()].is_object());
         }
     }
-    assert_eq!(families, BTreeSet::from([
-        "left_semi", "left_anti", "right_semi", "right_anti",
-    ]));
+    assert_eq!(
+        families,
+        BTreeSet::from(["left_semi", "left_anti", "right_semi", "right_anti",])
+    );
     let manifest: Value = serde_json::from_str(MANIFEST).unwrap();
-    assert_eq!(manifest["task_112_join_acceptance"]["acceptance_freeze"],
-        "docs/task-112-acceptance-freeze.json");
+    assert_eq!(
+        manifest["task_112_join_acceptance"]["acceptance_freeze"],
+        "docs/task-112-acceptance-freeze.json"
+    );
     let schema: Value = serde_json::from_str(SCHEMA).unwrap();
     let types = schema["$defs"]["constructiveObligation"]["oneOf"]
         .as_array()
         .unwrap();
-    let join = types.iter()
+    let join = types
+        .iter()
         .find(|v| v["properties"]["kind"]["const"] == "join_population")
         .unwrap();
     let patterns = join["properties"]["pattern"]["enum"].as_array().unwrap();
@@ -65,11 +74,18 @@ fn task112_has_eight_bounded_complete_source_and_terminal_bag_cases() {
 #[test]
 fn every_parsable_dialect_preserves_the_frozen_join_kind_and_equality() {
     let freeze: Value = serde_json::from_str(MATRIX).unwrap();
-    let schemas = ["l", "r"].into_iter()
-        .map(|relation| RelationSchema::new(relation, vec![
-            SchemaColumn::from_sql_type("id", "VARCHAR", "postgresql").unwrap(),
-            SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap(),
-        ]).unwrap())
+    let schemas = ["l", "r"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                vec![
+                    SchemaColumn::from_sql_type("id", "VARCHAR", "postgresql").unwrap(),
+                    SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap(),
+                ],
+            )
+            .unwrap()
+        })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let mut classification_cells = 0;
@@ -78,18 +94,19 @@ fn every_parsable_dialect_preserves_the_frozen_join_kind_and_equality() {
         for dialect in freeze["dialects"].as_array().unwrap() {
             let dialect = dialect.as_str().unwrap();
             let parser = dialect_from_name(dialect).unwrap();
-            let configured = ConfiguredSqlInput::new(
-                "task112", &input, dialect, parser.as_ref()
-            );
+            let configured = ConfiguredSqlInput::new("task112", &input, dialect, parser.as_ref());
             let analyzed = analyze_configured_inputs_with_catalog(&[configured], &catalog);
             if let Ok(bundle) = analyzed {
                 let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
-                let joins = wire["inputs"][0]["statements"][0]["joins"].as_array().unwrap();
+                let joins = wire["inputs"][0]["statements"][0]["joins"]
+                    .as_array()
+                    .unwrap();
                 assert_eq!(joins.len(), 1, "{} / {dialect}", case["id"]);
                 assert_eq!(joins[0]["kind"], case["kind"], "{} / {dialect}", case["id"]);
                 assert_eq!(
                     joins[0]["condition"]["operator"], "eq",
-                    "{} / {dialect}", case["id"]
+                    "{} / {dialect}",
+                    case["id"]
                 );
             }
             // A parser boundary is not a claim of native vendor execution.
