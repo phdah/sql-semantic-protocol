@@ -2,6 +2,20 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_114_join_acceptance": {
+    "owner": "TASK-114",
+    "parent": "TASK-71",
+    "status": "frozen_unverified",
+    "fixture_ids": ["71-C114-P", "71-C114-N"],
+    "acceptance_freeze": "docs/task-114-acceptance-freeze.json",
+    "named_variants": 6,
+    "case_cells": 12,
+    "dialect_classification_cells": 156,
+    "source_adapter_and_duckdb_oracles": "unverified",
+    "unverified_cells_block_done": true,
+    "partial_safety_regressions": "tests/task_114_temporal_lateral_boundaries.rs",
+    "release_approved": false
+  },
   "task_113_join_acceptance": {
     "owner": "TASK-113",
     "parent": "TASK-71",
