@@ -4,8 +4,9 @@ use duckdb::{params, Connection};
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_source_plan,
-    ConfiguredSqlInput, JoinKind, JoinPopulationPattern, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
+    ComposedSemantics, ConfiguredSqlInput, JoinKind, JoinPopulationPattern, JoinWitnessDirection,
+    JoinWitnessShape, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessObligation,
 };
 
 const MATRIX: &str = include_str!("../docs/task-112-acceptance-freeze.json");
@@ -166,6 +167,30 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
             "right_anti" => JoinKind::RightAnti,
             _ => unreachable!(),
         };
+        let local = match bundle.layers().last().unwrap().composed_semantics() {
+            ComposedSemantics::Resolved(resolved) => resolved.join_witnesses(),
+            other => panic!("{id}: unresolved local join witness: {other:?}"),
+        };
+        let [local] = local else {
+            panic!("{id}: exactly one local join witness expected");
+        };
+        let (qualifying, rejected) = match expected_kind {
+            JoinKind::LeftSemi => (JoinWitnessShape::Matched, JoinWitnessShape::LeftUnmatched),
+            JoinKind::LeftAnti => (JoinWitnessShape::LeftUnmatched, JoinWitnessShape::Matched),
+            JoinKind::RightSemi => (JoinWitnessShape::Matched, JoinWitnessShape::RightUnmatched),
+            JoinKind::RightAnti => (JoinWitnessShape::RightUnmatched, JoinWitnessShape::Matched),
+            _ => unreachable!(),
+        };
+        for (direction, shape) in [
+            (local.qualifying(), qualifying),
+            (local.rejected(), rejected),
+        ] {
+            let JoinWitnessDirection::Exact(witnesses) = direction else {
+                panic!("{id}: positive and rejected directions must be exact");
+            };
+            assert_eq!(witnesses.len(), 1, "{id}: single membership truth direction");
+            assert_eq!(witnesses[0].shape(), shape, "{id}: membership classification");
+        }
         let expected_pattern = match case["witness_pattern"].as_str().unwrap() {
             "mixed_duplicate_left" => JoinPopulationPattern::MixedDuplicateLeft,
             "disjoint_four_two" => JoinPopulationPattern::DisjointFourTwo,
