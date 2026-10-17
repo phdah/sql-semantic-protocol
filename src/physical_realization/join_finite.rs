@@ -145,7 +145,7 @@ pub(super) fn physical_finite_join_count_plan(
         || !walker.sources.contains(right_source)
         || !matches!(join.left().relation(), name if name == left_source.name())
         || !matches!(query.output().columns(), columns if columns.iter().all(|column| matches!(column.expression(), Expression::Column(_) | Expression::Literal(_))))
-        || !(query.plain_goal_output_shape() || query.filtered_join_goal_output_shape())
+        || !query.special_join_goal_output_shape()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
         || query.window_witness().is_some()
