@@ -127,7 +127,9 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || left_row.instance() == right_row.instance()
                 || left_row.relation() == right_row.relation()
                 || (matches!(law, UniformJoinLaw::Cartesian)
-                    != (left_key.is_none() && right_key.is_none()))
+                    && (left_key.is_some() || right_key.is_some()))
+                || (!matches!(law, UniformJoinLaw::Cartesian)
+                    && (left_key.is_none() || right_key.is_none()))
                 || left_key
                     .as_ref()
                     .is_some_and(|key| key.relation() != Some(left_row.relation()))
