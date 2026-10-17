@@ -1,6 +1,6 @@
 # TASK-113 acceptance audit
 
-Status: **implementation under final verification**. Do not mark Done or merge the draft until final-head CI and the assertions below have been reviewed.
+Status: **bounded TASK-113 acceptance verified** on implementation commit `3f537cfc789c38b9c2b47c7db84e209ecbff9c43`; final signoff-metadata CI must pass before merge. TASK-71 remains In Progress.
 
 ## Scope
 
@@ -32,3 +32,23 @@ Status: **implementation under final verification**. Do not mark Done or merge t
 ## Final-head sign-off gate
 
 Before Done, verify focused test assertions against all 14 frozen cases, all 182 dialect cells and all adapter facts. Require passing Rust formatting, strict lint, default and no-default tests/docs, dependency checks, dbt E2E and active protocol/schema snapshots on the last head commit. Record workflow and commit here; leave TASK-71 open after this child.
+
+## Independent final AC review (2026-10-17)
+
+All **five child ACs** have been checked against the frozen matrix, the canonical implementation and independent public-API/execution assertions. This is a TASK-113-only certification, not TASK-71 or 3.0.0 release approval.
+
+| Child AC | Verification and evidence | Signoff |
+| --- | --- | --- |
+| #1 Frozen scope | 14/14 P/N cases for seven named forms, stable two-source row/column IDs, typed INTEGER/VARCHAR source facts, output NULL/extrema/inclusive bounds, complete expected and NOT TRUE bags, and 182/182 versioned parser/canonical classifications. Linked in coverage manifest. | Pass |
+| #2 Canonical implementation | Canonical schema-backed NATURAL/USING equality or typed unknown-schema diagnostic; CROSS and restricted OR, signed non-equi, IS NOT DISTINCT FROM and null-safe source-population laws with exact signed INTEGER key assignments. Checked source cardinalities and complete physical leaves for each frozen target count; no consumer SQL reparsing. | Pass |
+| #3 Independent physical oracle | Each of the 14 complete input bags is inserted into DuckDB; the full terminal row-identity bag, count, NULL, numeric bounds and complete NOT TRUE complement are asserted. The final regression also explicitly checks that TRUE and NOT TRUE bags partition every Cartesian physical source pair with multiplicity. | Pass |
+| #4 Dialects, parity, conditional laws | 182/182 cells exercised across 13 project dialects; adapter test exercises all seven forms through direct SQL, compiled dbt and equivalent ODCS schemas. NATURAL without complete columns yields typed Residual, with explicit warning; vendor collation and native `<=>` execution remain owned conditional/pending-release-review limits, not certified. | Pass |
+| #5 Full verification | 9/9 CI jobs passed on implementation commit: rustfmt, strict all-target/all-feature Clippy, full Rust tests (including schema/snapshot), docs, no-default-features lint/test/doc/dependencies, and dbt Core E2E. See run below. Final metadata-only HEAD must also pass before merge. | Pass |
+
+**Implementation head:** `3f537cfc789c38b9c2b47c7db84e209ecbff9c43`.
+
+**Verified CI:** https://github.com/phdah/sql-semantic-protocol/actions/runs/39052136373 (all nine jobs successful).
+
+**Reviewed proof limitation:** The existential uniform-key physical population proves a complete alternative source bag for the requested cardinality, not necessarily identical literal rows to the frozen DuckDB source bag. The literal nullable SQL oracle separately certifies the frozen row identities/NULL/output extrema. No claim is made that the alternative non-NULL integer witness physically inserts NULL or attests a vendor session/collation law. The three named conditional boundaries retain owner TASK-113 and `pending_release_review`.
+
+**Handoff:** TASK-113 Done in PR #122, awaiting merge. TASK-71 remains In Progress, TASK-114 is blocked until #122 merges, and no protocol-3.0.0 release approval is implied.

@@ -2,7 +2,7 @@
   "version": 1,
   "owner": "TASK-113",
   "parent": "TASK-71",
-  "status": "parser_verified_physical_and_adapter_pending",
+  "status": "verified_14_bags_182_dialect_cells_and_adapter_parity",
   "fixture_ids": [
     "71-C113-P",
     "71-C113-N"
@@ -182,8 +182,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-USING",
@@ -337,8 +337,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-NATURAL",
@@ -492,8 +492,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-OR-ON",
@@ -651,8 +651,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-NON-EQUI",
@@ -803,8 +803,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-IS-NOT-DISTINCT-FROM",
@@ -960,8 +960,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-P-NULL-SAFE-EQUALITY",
@@ -1117,8 +1117,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-CROSS",
@@ -1293,8 +1293,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-USING",
@@ -1457,8 +1457,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-NATURAL",
@@ -1621,8 +1621,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-OR-ON",
@@ -1790,8 +1790,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-NON-EQUI",
@@ -1959,8 +1959,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-IS-NOT-DISTINCT-FROM",
@@ -2126,8 +2126,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     },
     {
       "id": "71-C113-N-NULL-SAFE-EQUALITY",
@@ -2293,8 +2293,8 @@
         }
       },
       "classification": "exact_required",
-      "verification": "not_run",
-      "implementation": "pending"
+      "verification": "duckdb_and_public_api_passed",
+      "implementation": "canonical_physical_proof_verified"
     }
   ],
   "conditional_boundaries": [
