@@ -141,7 +141,7 @@ fn compiled_dbt_and_odcs_semi_anti_share_one_typed_source_assignment() {
                         o,
                         WitnessObligation::JoinPopulation {
                             join_kind,
-                            pattern: JoinPopulationPattern::NullableDuplicateMixed,
+                            pattern: JoinPopulationPattern::MixedDuplicateLeft,
                             left_rows: 4,
                             right_rows: 2,
                             output_rows,
