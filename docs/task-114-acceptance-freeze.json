@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-114",
   "parent": "TASK-71",
   "created_at": "2026-10-17",
@@ -163,7 +163,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "ASOF NOT TRUE complements include eligible-but-not-selected predecessors, in addition to false/UNKNOWN pairs; vendor/session tie-breaking without unique prior time is conditional",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-asof_nearest_prior",
       "fixture": "71-C114-P",
@@ -374,7 +374,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "ASOF NOT TRUE complements include eligible-but-not-selected predecessors, in addition to false/UNKNOWN pairs; vendor/session tie-breaking without unique prior time is conditional",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-asof_nearest_prior",
       "fixture": "71-C114-N",
@@ -587,7 +587,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-range_inequality",
       "fixture": "71-C114-P",
@@ -800,7 +800,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-range_inequality",
       "fixture": "71-C114-N",
@@ -1013,7 +1013,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-time_inequality",
       "fixture": "71-C114-P",
@@ -1226,7 +1226,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-time_inequality",
       "fixture": "71-C114-N",
@@ -1433,7 +1433,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "per-left-row correlated execution requires explicit row-instance scope",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-lateral_derived",
       "fixture": "71-C114-P",
@@ -1602,7 +1602,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "per-left-row correlated execution requires explicit row-instance scope",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-lateral_derived",
       "fixture": "71-C114-N",
@@ -1771,7 +1771,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-cross_apply",
       "fixture": "71-C114-P",
@@ -1940,7 +1940,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-cross_apply",
       "fixture": "71-C114-N",
@@ -2101,7 +2101,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "no-match null-extension must not be represented as a physical nullable right row",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-P-outer_apply",
       "fixture": "71-C114-P",
@@ -2262,7 +2262,7 @@
       "conditional_boundary": {
         "owner": "TASK-114",
         "reason": "no-match null-extension must not be represented as a physical nullable right row",
-        "release_disposition": "pending_review"
+        "release_disposition": "pending_release_review"
       },
       "id": "71-C114-N-outer_apply",
       "fixture": "71-C114-N",
@@ -2324,6 +2324,53 @@
       "parser_boundary": 2
     }
   },
-  "revision_reason": "Enriched the unchanged 12 acceptance cells with explicit complete source/column identities, expected terminal cardinality, NULL-inclusive typed finite output sets and inclusive extrema, and rejected row cardinalities. Operator semantics remain release-blocking.",
-  "parser_observation_ci_run": 39072773503
+  "revision_reason": "Scope unchanged: consolidate five explicit conditional runtime/parser boundaries with missing-evidence requirements, task owner and unapproved release-review state.",
+  "parser_observation_ci_run": 39072773503,
+  "conditional_boundaries": [
+    {
+      "id": "J114-ASOF-TIES",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "ASOF nearest-prior among right rows with identical maximal time",
+      "missing_evidence": "Observed per-dialect engine tie-break order or stable secondary ordering invariant; parser AST and one unique predecessor oracle do not establish this.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-TEMPORAL-SESSION",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "timestamp timezone/precision comparison laws",
+      "missing_evidence": "Engine-specific timezone session configuration, timestamp normalization, type coercion and precision evidence needed before exact timestamp source assignments.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-LATERAL-CORRELATION",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "per-left-row LATERAL evaluation and table-valued functions",
+      "missing_evidence": "Executable certified correlated source-instance population, deterministic per-row table-function semantics and a complete positive/absence bag.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-APPLY-OUTER",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "CROSS/OUTER APPLY and preserved unmatched source rows",
+      "missing_evidence": "Per-dialect lateral/APPLY equivalence, exact correlation scoping and closed-world absence for synthetic OUTER NULL extension.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-APPLY-PARSER",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "OUTER APPLY Snowflake parser boundary",
+      "missing_evidence": "Frozen parser observation says syntax is not parsed for Snowflake; no native execution or semantic equivalence can be asserted from that failure.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    }
+  ]
 }
