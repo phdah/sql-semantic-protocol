@@ -368,7 +368,8 @@ pub(super) fn physical_join_population_with_source_counts(
         [join] if join.origin_layer_id() == join_layer.id() => Some(join),
         _ => None,
     };
-    let join_kind = join_query.joins()[0].kind();
+    let sql_join = join_query.joins().first()?;
+    let join_kind = sql_join.kind();
     if matches!(join_kind, JoinKind::Cross | JoinKind::Unknown) {
         return None;
     }
@@ -502,6 +503,22 @@ pub(super) fn physical_join_population_with_source_counts(
         let (right, right_instance) = map(right_key_expression)?;
         (left, left_instance, right, right_instance)
     };
+    // ON equality is commutative, but LEFT/RIGHT/FULL preservation and
+    // null-extension are not. A filtered join can recover endpoints directly
+    // from the canonical ON expression when the local witness is residual.
+    // Orient those endpoints by the SQL join inputs before assigning any
+    // physical key population or unmatched-side obligation.
+    let sql_left = sql_join.left().alias().unwrap_or(sql_join.left().relation());
+    let sql_right = sql_join.right().alias().unwrap_or(sql_join.right().relation());
+    let (left_key, left_instance, right_key, right_instance) =
+        if left_instance == sql_left && right_instance == sql_right {
+            (left_key, left_instance, right_key, right_instance)
+        } else if left_instance == sql_right && right_instance == sql_left {
+            (right_key, right_instance, left_key, left_instance)
+        } else {
+            // Never guess source instance identity through local aliases.
+            return None;
+        };
     if left_instance == right_instance {
         return None;
     }
