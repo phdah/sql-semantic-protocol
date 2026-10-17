@@ -434,11 +434,18 @@ fn positive_join_keys(case: &WitnessCase) -> Option<PositiveJoinKeys> {
         if let WitnessObligation::JoinPopulation {
             left_key,
             right_key,
+            additional_keys,
             join_kind,
             closed_world: true,
             ..
         } = obligation
         {
+            // TASK-115 owns reconciling composite equality keys with additional
+            // terminal predicates. Filtering only the first equality is unsound:
+            // another terminal could constrain an independently assigned key.
+            if !additional_keys.is_empty() {
+                return None;
+            }
             Some(PositiveJoinKeys {
                 left_key: left_key.clone(),
                 right_key: right_key.clone(),
