@@ -143,10 +143,16 @@ pub(super) fn analyze_join(
                 {
                     match &select.from[0].relation {
                         TableFactor::Table {
-                            name, args: None, alias, sample: None, ..
+                            name,
+                            args: None,
+                            alias,
+                            sample: None,
+                            ..
                         } => Some((
                             name.to_string(),
-                            alias.as_ref().map_or_else(|| name.to_string(), |a| a.name.to_string()),
+                            alias
+                                .as_ref()
+                                .map_or_else(|| name.to_string(), |a| a.name.to_string()),
                             select.selection.as_ref(),
                         )),
                         _ => None,
@@ -156,27 +162,32 @@ pub(super) fn analyze_join(
             };
             let (physical_right, physical_right_instance, correlation) =
                 if let Some((source, instance, Some(selection))) = derived {
-                (
-                    Some(source),
-                    Some(instance),
-                    Some(analyze_predicate_with_windows(
-                        selection,
-                        &[],
-                        &BTreeMap::new(),
-                        scope.output_scope,
-                        diagnostics,
-                    )),
-                )
-            } else {
-                (None, None, None)
-            };
+                    (
+                        Some(source),
+                        Some(instance),
+                        Some(analyze_predicate_with_windows(
+                            selection,
+                            &[],
+                            &BTreeMap::new(),
+                            scope.output_scope,
+                            diagnostics,
+                        )),
+                    )
+                } else {
+                    (None, None, None)
+                };
             let execution = match &join.join_operator {
                 JoinOperator::CrossApply => Some(JoinExecution::CrossApply),
                 JoinOperator::OuterApply => Some(JoinExecution::OuterApply),
                 JoinOperator::CrossJoin if *lateral => Some(JoinExecution::LateralInner),
                 _ => None,
             };
-            (execution, physical_right, physical_right_instance, correlation)
+            (
+                execution,
+                physical_right,
+                physical_right_instance,
+                correlation,
+            )
         }
         _ => (
             matches!(&join.join_operator, JoinOperator::AsOf { .. })
