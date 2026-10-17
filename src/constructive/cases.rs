@@ -118,7 +118,8 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || left_row.relation() == right_row.relation()
                 || left_key.relation() != Some(left_row.relation())
                 || right_key.relation() != Some(right_row.relation())
-                || law.selected_rows(left_values, right_values)
+                || law
+                    .selected_rows(left_values, right_values)
                     .is_none_or(|pairs| u64::try_from(pairs.len()).ok() != Some(*output_rows))
         }
         WitnessObligation::FiniteJoinPopulation {
