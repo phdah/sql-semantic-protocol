@@ -17,7 +17,16 @@ fn observed(variant: &str, dialect: &str, sql: &str) -> &'static str {
                 *name,
                 vec![
                     SchemaColumn::from_sql_type("id", "VARCHAR", "postgresql").unwrap(),
-                    SchemaColumn::from_sql_type("t", "INTEGER", "postgresql").unwrap(),
+                    SchemaColumn::from_sql_type(
+                        "t",
+                        if variant == "time_inequality" {
+                            "TIMESTAMP"
+                        } else {
+                            "INTEGER"
+                        },
+                        "postgresql",
+                    )
+                    .unwrap(),
                 ],
             )
             .unwrap()
