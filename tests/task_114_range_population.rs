@@ -28,12 +28,8 @@ fn non_strict_and_reversed_range_joins_have_constructive_integer_bags() {
         ("r.k < l.k", "greater_than"),
         ("r.k >= l.k", "less_than_or_equal"),
     ] {
-        let sql = SqlInput::inline(format!(
-            "SELECT l.k FROM l JOIN r ON {predicate}"
-        ));
-        let input = ConfiguredSqlInput::new(
-            "task-114-range", &sql, "generic", dialect.as_ref()
-        );
+        let sql = SqlInput::inline(format!("SELECT l.k FROM l JOIN r ON {predicate}"));
+        let input = ConfiguredSqlInput::new("task-114-range", &sql, "generic", dialect.as_ref());
         let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
         let layer = bundle.layers().last().unwrap().id();
         for wanted in [0, 2] {
@@ -44,14 +40,19 @@ fn non_strict_and_reversed_range_joins_have_constructive_integer_bags() {
             assert!(
                 candidates.iter().any(|candidate| {
                     let obligations = candidate.obligations();
-                    let closed = obligations.iter().filter(|obligation| {
-                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
-                    }).count() == 2;
-                    closed && obligations.iter().any(|obligation| {
-                        matches!(obligation, WitnessObligation::UniformJoinPopulation {
-                            law, output_rows, closed_world: true, ..
-                        } if law.as_str() == expected_law && *output_rows == wanted)
-                    })
+                    let closed = obligations
+                        .iter()
+                        .filter(|obligation| {
+                            matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                        })
+                        .count()
+                        == 2;
+                    closed
+                        && obligations.iter().any(|obligation| {
+                            matches!(obligation, WitnessObligation::UniformJoinPopulation {
+                                law, output_rows, closed_world: true, ..
+                            } if law.as_str() == expected_law && *output_rows == wanted)
+                        })
                 }),
                 "{predicate}: complete physical source bag for output count {wanted}"
             );
