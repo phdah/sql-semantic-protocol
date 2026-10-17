@@ -194,6 +194,10 @@ pub enum JoinPopulationPattern {
     /// Complete nonempty inputs with disjoint, non-NULL integer keys:
     /// every left key is 0 and every right key is 1. No TRUE ON pair exists.
     DisjointKeys,
+    /// Two closed physical input bags each contain one matching key-zero row;
+    /// their remaining rows have disjoint keys (left one, right two).
+    /// Exactly one TRUE pair exists and each other physical row is unmatched.
+    MixedMatchedUnmatched,
     /// The left population has no rows. The right may be nonempty.
     EmptyLeft,
     /// The right population has no rows. The left may be nonempty.
@@ -208,6 +212,7 @@ impl JoinPopulationPattern {
             Self::CommonMatched => "common_matched",
             Self::GroupedMatched { .. } => "grouped_matched",
             Self::DisjointKeys => "disjoint_keys",
+            Self::MixedMatchedUnmatched => "mixed_matched_unmatched",
             Self::EmptyLeft => "empty_left",
             Self::EmptyRight => "empty_right",
         }
@@ -220,6 +225,7 @@ impl JoinPopulationPattern {
             Self::DistinctMatched
             | Self::CommonMatched
             | Self::DisjointKeys
+            | Self::MixedMatchedUnmatched
             | Self::EmptyLeft
             | Self::EmptyRight => None,
         }
@@ -247,12 +253,16 @@ impl JoinPopulationPattern {
                 left.checked_div(groups)?.checked_mul(right)?
             }
             Self::DisjointKeys if left > 0 && right > 0 => 0,
+            Self::MixedMatchedUnmatched if left >= 2 && right >= 2 => 1,
             Self::EmptyLeft if left == 0 => 0,
             Self::EmptyRight if right == 0 => 0,
             _ => return None,
         };
-        let left_unmatched = if pairs == 0 { left } else { 0 };
-        let right_unmatched = if pairs == 0 { right } else { 0 };
+        let (left_unmatched, right_unmatched) = match self {
+            Self::MixedMatchedUnmatched => (left.checked_sub(1)?, right.checked_sub(1)?),
+            _ if pairs == 0 => (left, right),
+            _ => (0, 0),
+        };
         match kind {
             JoinKind::Inner => Some(pairs),
             JoinKind::Left => pairs.checked_add(left_unmatched),
