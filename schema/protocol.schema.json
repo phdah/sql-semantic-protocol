@@ -1798,10 +1798,18 @@
           "const": "signed_integer_cast"
         },
         "cast_kind": {
-          "enum": ["cast", "try_cast", "safe_cast"]
+          "enum": [
+            "cast",
+            "try_cast",
+            "safe_cast"
+          ]
         },
         "on_failure": {
-          "enum": ["exception", "null", "runtime_dependent"]
+          "enum": [
+            "exception",
+            "null",
+            "runtime_dependent"
+          ]
         },
         "expression": {
           "$ref": "#/$defs/expression"
@@ -1816,16 +1824,39 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "cast_kind": { "const": "cast" } } },
+          "if": {
+            "properties": {
+              "cast_kind": {
+                "const": "cast"
+              }
+            }
+          },
           "then": {
-            "properties": { "on_failure": { "const": "runtime_dependent" } }
+            "properties": {
+              "on_failure": {
+                "const": "runtime_dependent"
+              }
+            }
           }
         },
         {
           "if": {
-            "properties": { "cast_kind": { "enum": ["try_cast", "safe_cast"] } }
+            "properties": {
+              "cast_kind": {
+                "enum": [
+                  "try_cast",
+                  "safe_cast"
+                ]
+              }
+            }
           },
-          "then": { "properties": { "on_failure": { "const": "null" } } }
+          "then": {
+            "properties": {
+              "on_failure": {
+                "const": "null"
+              }
+            }
+          }
         }
       ]
     },
@@ -2994,19 +3025,27 @@
         },
         "text_comparison_law": {
           "type": "string",
-          "enum": ["binary"],
+          "enum": [
+            "binary"
+          ],
           "description": "Authoritatively attested comparison law, not inferred from collation identity."
         },
         "comparison_evidence": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/constraintEvidence" }
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
         }
       },
       "dependentRequired": {
-        "text_comparison_law": ["comparison_evidence"],
-        "comparison_evidence": ["text_comparison_law"]
+        "text_comparison_law": [
+          "comparison_evidence"
+        ],
+        "comparison_evidence": [
+          "text_comparison_law"
+        ]
       }
     },
     "sourceSchema": {
@@ -3915,17 +3954,40 @@
     "checkComparisonConstraint": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "column", "operator", "value", "evidence"],
+      "required": [
+        "kind",
+        "column",
+        "operator",
+        "value",
+        "evidence"
+      ],
       "properties": {
-        "kind": { "const": "check_comparison" },
-        "column": { "$ref": "#/$defs/nonEmptyString" },
-        "operator": { "enum": ["eq", "not_eq", "gt", "gte", "lt", "lte"] },
-        "value": { "$ref": "#/$defs/constraintValue" },
+        "kind": {
+          "const": "check_comparison"
+        },
+        "column": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "not_eq",
+            "gt",
+            "gte",
+            "lt",
+            "lte"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/constraintValue"
+        },
         "evidence": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/constraintEvidence" }
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
         }
       }
     },
@@ -3970,51 +4032,148 @@
     "generatedValueExpression": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "properties": {
-        "kind": { "enum": ["column", "literal", "add", "subtract", "multiply", "abs", "coalesce"] },
-        "column": { "$ref": "#/$defs/nonEmptyString" },
-        "value": { "$ref": "#/$defs/constraintValue" },
-        "left": { "$ref": "#/$defs/generatedValueExpression" },
-        "right": { "$ref": "#/$defs/generatedValueExpression" },
-        "operand": { "$ref": "#/$defs/generatedValueExpression" },
+        "kind": {
+          "enum": [
+            "column",
+            "literal",
+            "add",
+            "subtract",
+            "multiply",
+            "abs",
+            "coalesce"
+          ]
+        },
+        "column": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "$ref": "#/$defs/constraintValue"
+        },
+        "left": {
+          "$ref": "#/$defs/generatedValueExpression"
+        },
+        "right": {
+          "$ref": "#/$defs/generatedValueExpression"
+        },
+        "operand": {
+          "$ref": "#/$defs/generatedValueExpression"
+        },
         "arguments": {
           "type": "array",
           "minItems": 2,
-          "items": { "$ref": "#/$defs/generatedValueExpression" }
+          "items": {
+            "$ref": "#/$defs/generatedValueExpression"
+          }
         }
       },
       "oneOf": [
-        { "properties": { "kind": { "const": "column" } }, "required": ["column"] },
-        { "properties": { "kind": { "const": "literal" } }, "required": ["value"] },
-        { "properties": { "kind": { "enum": ["add", "subtract", "multiply"] } }, "required": ["left", "right"] },
-        { "properties": { "kind": { "const": "abs" } }, "required": ["operand"] },
-        { "properties": { "kind": { "const": "coalesce" } }, "required": ["arguments"] }
+        {
+          "properties": {
+            "kind": {
+              "const": "column"
+            }
+          },
+          "required": [
+            "column"
+          ]
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "literal"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "properties": {
+            "kind": {
+              "enum": [
+                "add",
+                "subtract",
+                "multiply"
+              ]
+            }
+          },
+          "required": [
+            "left",
+            "right"
+          ]
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "abs"
+            }
+          },
+          "required": [
+            "operand"
+          ]
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "coalesce"
+            }
+          },
+          "required": [
+            "arguments"
+          ]
+        }
       ]
     },
     "columnValueSource": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["column", "kind", "value", "evidence"],
+      "required": [
+        "column",
+        "kind",
+        "value",
+        "evidence"
+      ],
       "properties": {
-        "column": { "$ref": "#/$defs/nonEmptyString" },
-        "kind": { "enum": ["default", "generated", "identity"] },
+        "column": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "kind": {
+          "enum": [
+            "default",
+            "generated",
+            "identity"
+          ]
+        },
         "value": {
           "oneOf": [
-            { "$ref": "#/$defs/constraintValue" },
-            { "type": "null" }
+            {
+              "$ref": "#/$defs/constraintValue"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "expression": {
           "oneOf": [
-            { "$ref": "#/$defs/generatedValueExpression" },
-            { "type": "null" }
+            {
+              "$ref": "#/$defs/generatedValueExpression"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "evidence": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/constraintEvidence" }
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
         }
       }
     },
@@ -4152,33 +4311,63 @@
     "computedCheckConstraint": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["left", "operator", "right", "evidence"],
+      "required": [
+        "left",
+        "operator",
+        "right",
+        "evidence"
+      ],
       "properties": {
-        "left": { "$ref": "#/$defs/generatedValueExpression" },
-        "operator": { "enum": ["eq", "not_eq", "gt", "gte", "lt", "lte"] },
-        "right": { "$ref": "#/$defs/generatedValueExpression" },
+        "left": {
+          "$ref": "#/$defs/generatedValueExpression"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "not_eq",
+            "gt",
+            "gte",
+            "lt",
+            "lte"
+          ]
+        },
+        "right": {
+          "$ref": "#/$defs/generatedValueExpression"
+        },
         "evidence": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/constraintEvidence" }
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
         }
       }
     },
     "computedKeyConstraint": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["primary", "expressions", "evidence"],
+      "required": [
+        "primary",
+        "expressions",
+        "evidence"
+      ],
       "properties": {
-        "primary": { "type": "boolean" },
+        "primary": {
+          "type": "boolean"
+        },
         "expressions": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/generatedValueExpression" }
+          "items": {
+            "$ref": "#/$defs/generatedValueExpression"
+          }
         },
         "evidence": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/constraintEvidence" }
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
         }
       }
     },
@@ -6937,6 +7126,27 @@
             },
             "closed_world": {
               "const": true
+            },
+            "additional_keys": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "left",
+                  "right"
+                ],
+                "properties": {
+                  "left": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  },
+                  "right": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  }
+                }
+              }
             }
           }
         },
