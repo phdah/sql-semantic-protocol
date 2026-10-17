@@ -18,6 +18,10 @@ dependencies:
   - TASK-75
   - TASK-76
   - TASK-79
+  - TASK-165
+  - TASK-166
+  - TASK-167
+  - TASK-168
 references: 
   - 'TASK-64'
 priority: high
@@ -57,3 +61,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-85 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-85. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-165](task-165%20-%20prove-standalone-output-count-and-typed-distribution-goals.md)** (1/4): rows; groups; distinct; NULL fraction; duplicate count; column histogram. Fixtures `85-C165-P`, `85-C165-N`.
+- **[TASK-166](task-166%20-%20compose-shared-source-positive-and-impossible-terminal-goals.md)** (2/4): two terminals one physical source; compatible and conflicting count/NULL goals. Fixtures `85-C166-P`, `85-C166-N`.
+- **[TASK-167](task-167%20-%20compose-join-filter-group-and-another-window-set-terminal.md)** (3/4): join->WHERE->GROUP/HAVING; additional window or set output; correlated tuples. Fixtures `85-C167-P`, `85-C167-N`.
+- **[TASK-168](task-168%20-%20classify-correlations-fanout-and-certify-task-85-goals.md)** (4/4): tuple histograms; multicolumn correlation; LIMIT/QUALIFY/window/set fanout. Fixtures `85-C168-P`, `85-C168-N`.
+
+**Original AC ownership:** #1 -> TASK-165, TASK-166, TASK-167, TASK-168; #2 -> TASK-167, TASK-168; #3 -> TASK-165, TASK-166, TASK-168; #4 -> TASK-166, TASK-167, TASK-168; #5 -> TASK-165, TASK-166, TASK-167, TASK-168; #6 -> TASK-165, TASK-166, TASK-167, TASK-168.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-85 closure.

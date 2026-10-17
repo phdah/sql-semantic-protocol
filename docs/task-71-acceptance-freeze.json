@@ -1,0 +1,1637 @@
+{
+  "task": "TASK-71",
+  "version": 1,
+  "frozen_at": "2026-10-17",
+  "baseline": "main 2026-10-17 after TASK-108 merge",
+  "authoritative": [
+    ".backlog/tasks/task-71 - complete-join-topology-witnesses.md",
+    "docs/backlog-acceptance-contracts.md",
+    "docs/coverage-manifest.json"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "coverage_notes": "This inventory is a mandatory finite floor, not a certification. Every cell is release-blocking until its expected typed domain, positive/NOT TRUE proof, source instance identities, complete DuckDB source/terminal oracle and adapter/dialect evidence is tested. Conditional cells require reviewer-approved law-based disposition. No mandatory cell may be replaced by a residual.",
+  "mandatory": [
+    {
+      "id": "J71-I2-EQ",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l INNER JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 2,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "two-way unique-key matched pairs, interval [0,1]"
+    },
+    {
+      "id": "J71-I2-DUP",
+      "acceptance_criteria": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l INNER JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 6,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 3
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "shared key, one-to-many bag produces 2*3 rows"
+    },
+    {
+      "id": "J71-I3-CHAIN",
+      "acceptance_criteria": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k JOIN t ON r.k = t.k",
+      "expected": {
+        "terminal_count": 4,
+        "physical_source_counts": {
+          "l": 1,
+          "r": 2,
+          "t": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "two-hop complete joint source population"
+    },
+    {
+      "id": "J71-I3-WHERE",
+      "acceptance_criteria": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k JOIN t ON r.k = t.k WHERE l.a > 0",
+      "expected": {
+        "terminal_count": 4,
+        "physical_source_counts": {
+          "l": 1,
+          "r": 2,
+          "t": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "upstream selection and downstream count on one closed bag"
+    },
+    {
+      "id": "J71-LEFT-EMPTY",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l LEFT JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 3,
+        "physical_source_counts": {
+          "l": 3,
+          "r": 0
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "unmatched right produces output NULL but no physical right NULL rows"
+    },
+    {
+      "id": "J71-RIGHT-EMPTY",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT r.k FROM l RIGHT JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 3,
+        "physical_source_counts": {
+          "l": 0,
+          "r": 3
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "unmatched left NULL-extended"
+    },
+    {
+      "id": "J71-FULL-UNMATCHED",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k, r.k FROM l FULL JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 3,
+        "physical_source_counts": {
+          "l": 3,
+          "r": 0
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "left-only bag, explicit right NULL-extension"
+    },
+    {
+      "id": "J71-SEMI-ABSENCE",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l LEFT SEMI JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 0,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 0
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "no true matching partner"
+    },
+    {
+      "id": "J71-ANTI-ABSENCE",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l LEFT ANTI JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 2,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 0
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "closed-world absence proof"
+    },
+    {
+      "id": "J71-SELF",
+      "acceptance_criteria": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT a.k FROM l a JOIN l b ON a.k = b.k",
+      "expected": {
+        "terminal_count": 4,
+        "physical_source_counts": {
+          "l": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "same physical relation, distinct aliases, duplicated matches"
+    },
+    {
+      "id": "J71-COMPOSITE",
+      "acceptance_criteria": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k AND l.a = r.a",
+      "expected": {
+        "terminal_count": 2,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "composite typed equality, two source columns required"
+    },
+    {
+      "id": "J71-NULL-REJECT",
+      "acceptance_criteria": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 0,
+        "physical_source_counts": {
+          "l": 1,
+          "r": 1
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "both keys NULL; SQL UNKNOWN rejects pair"
+    },
+    {
+      "id": "J71-OUTER-REVERSED",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.a FROM l LEFT JOIN r ON r.k = l.k AND l.a > 0",
+      "expected": {
+        "terminal_count": 3,
+        "physical_source_counts": {
+          "l": 3,
+          "r": 0
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "reverse comparison operands must not reverse preserved physical join side"
+    },
+    {
+      "id": "J71-MATCH-REJECTED",
+      "acceptance_criteria": [
+        3,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.a FROM l JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 0,
+        "physical_source_counts": {
+          "l": 1,
+          "r": 1
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "disjoint integer keys, NOT TRUE membership and no false exact matches"
+    },
+    {
+      "id": "J71-FK-KEY",
+      "acceptance_criteria": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "exact_required",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k",
+      "expected": {
+        "terminal_count": 2,
+        "physical_source_counts": {
+          "l": 2,
+          "r": 2
+        },
+        "positive_truth": "exact",
+        "not_true_truth": "exact_or_impossible_by_sql_three_valued_logic",
+        "value_domains": "typed source/projected domains with explicit NULL and interval bounds required",
+        "row_identities": "source instances and matched/unmatched/rejected classes verified against closed source bag"
+      },
+      "oracle": "duckdb_source_and_terminal",
+      "adapters": [
+        "direct_sql",
+        "dbt_compiled_sql",
+        "odcs_when_equivalent_schema_evidence"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "unverified",
+      "notes": "typed PK/FK constraints and nullability must be checked against source catalog"
+    }
+  ],
+  "conditional": [
+    {
+      "id": "J71-CROSS",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l CROSS JOIN r",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "cartesian counts exact only when complete input counts can be certified",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-USING",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l JOIN r USING(k)",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "USING named columns/merged projections require resolved schema",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-NATURAL",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l NATURAL JOIN r",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "complete column intersection and typed name resolution required",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-OR-ON",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k OR l.a=r.a",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "disjunction deduplicates matched pair identity",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-NONEQUI",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k < r.k",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "strict inequality and NULL ordering require typed domain proof",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-NULLSAFE",
+      "acceptance_criteria": [
+        1,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "typed NULL equality and dialect syntax proof",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-ASOF",
+      "acceptance_criteria": [
+        2,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l ASOF JOIN r ON l.k >= r.k",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "argmax/time order and tie laws are dialect-dependent",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-RANGE-TIME",
+      "acceptance_criteria": [
+        2,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k BETWEEN r.a AND r.k",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "range/temporal typed interval and overlap laws",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-LATERAL",
+      "acceptance_criteria": [
+        2,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l CROSS JOIN LATERAL (SELECT r.k FROM r WHERE r.k=l.k) AS x",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "per-left-row evaluation and correlation semantics",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-APPLY",
+      "acceptance_criteria": [
+        2,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l CROSS APPLY (SELECT r.k FROM r WHERE r.k=l.k) AS x",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "dialect-specific APPLY per-row correlation and null-extension",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-ALIAS-REUSE",
+      "acceptance_criteria": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT a.k FROM l a JOIN l b ON a.k=b.k JOIN l c ON b.k=c.k",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "separate relation instances on shared physical bag",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    },
+    {
+      "id": "J71-OUTER-WHERE",
+      "acceptance_criteria": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "classification": "conditional",
+      "sql": "SELECT l.k FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL",
+      "parser_classifications": [
+        {
+          "dialect": "generic",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mysql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgresql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "postgres",
+          "status": "unverified"
+        },
+        {
+          "dialect": "hive",
+          "status": "unverified"
+        },
+        {
+          "dialect": "sqlite",
+          "status": "unverified"
+        },
+        {
+          "dialect": "snowflake",
+          "status": "unverified"
+        },
+        {
+          "dialect": "redshift",
+          "status": "unverified"
+        },
+        {
+          "dialect": "mssql",
+          "status": "unverified"
+        },
+        {
+          "dialect": "clickhouse",
+          "status": "unverified"
+        },
+        {
+          "dialect": "bigquery",
+          "status": "unverified"
+        },
+        {
+          "dialect": "ansi",
+          "status": "unverified"
+        },
+        {
+          "dialect": "duckdb",
+          "status": "unverified"
+        },
+        {
+          "dialect": "databricks",
+          "status": "unverified"
+        }
+      ],
+      "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
+      "residual_boundary": "WHERE after outer NULL extension must not become physical source prefilter",
+      "owner": "TASK-71",
+      "release_disposition": "pending_review_blocks_task_closure",
+      "verification": "unverified"
+    }
+  ],
+  "ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo doc --no-deps",
+    "cargo test --no-default-features",
+    "dbt E2E and active protocol schema snapshot checks"
+  ],
+  "signoff": {
+    "original_acceptance_criteria": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "required": "all mandatory verified and conditional statuses reviewed, complete run CI green",
+    "status": "blocked_pending_eight_children_and_independent_parent_closure"
+  },
+  "execution_queue": [
+    "TASK-109",
+    "TASK-110",
+    "TASK-111",
+    "TASK-112",
+    "TASK-113",
+    "TASK-114",
+    "TASK-115",
+    "TASK-116"
+  ],
+  "execution_plan": "docs/backlog-child-queue-plan.json",
+  "freeze_level": "parent_inventory_only_child_specific_typed_oracles_unverified"
+}

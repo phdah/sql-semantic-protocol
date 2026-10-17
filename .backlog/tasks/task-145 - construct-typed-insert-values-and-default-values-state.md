@@ -1,0 +1,49 @@
+---
+id: TASK-145
+title: Construct typed INSERT VALUES and DEFAULT VALUES state
+status: To Do
+assignee: []
+created_date: '2026-10-17'
+updated_date: '2026-10-17'
+labels: []
+milestone: m-3
+dependencies:
+  - TASK-67
+  - TASK-68
+  - TASK-69
+  - TASK-70
+  - TASK-79
+references:
+  - TASK-80
+  - TASK-66
+priority: high
+type: feature
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+**TASK-80 child 1/4.** Implement construct typed insert values and default values state in a focused PR against `main` after dependencies merge. The parent original AC are additive and remain open until independently signed off. Never depend on parent TASK-80.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Finite execution contract
+
+- **Stable fixture IDs:** `80-C145-P`, `80-C145-N`.
+- **Named mandatory/conditional variants:** multirow VALUES; explicit lists; omitted/default/generated/identity fields; zero-row insert.
+- **Numerical/row-state oracle:** empty target -> INSERT rows [(1,10),(2,20)] => final 2; DEFAULT VALUES gives exactly one row with attested defaults.
+- **Typed conditional boundary:** No guessed defaults, identity or unsafe implicit casts. Owner: TASK-145.
+- **Original TASK-80 criteria:** #1, #2, #3, #5, #6.
+
+## Acceptance Criteria
+
+<!-- AC:BEGIN -->
+- [ ] #1 Before editing semantics, freeze each named variant and both fixture IDs in a versioned, immutable task matrix linked from `docs/coverage-manifest.json`. Each mandatory cell fixes SQL syntax, parser-dialect status, canonical row/source identity, concrete prestate and expected full poststate, typed column domains (NULL/bound inclusivity), positive and NOT TRUE proof strength, comparison assumptions, adapter evidence and conditional release disposition. Missing/unverified exact cells block Done.
+- [ ] #2 Implement the **finite variant inventory above** using the canonical protocol and physical state model. Match the independent row/state oracle exactly, including write/transaction precedence, before/after rows, untouched rows, enforced constraints and Exact/Impossible/Residual classification. Never invent a producer state or infer a dialect law from parser support.
+- [ ] #3 Execute the named oracle plus its rejected/NULL/duplicate/impossible contrast on full DuckDB source, intermediate and target snapshots. Assert full bag, row identities, domain bounds, affected counts and final state, not only parsed output or one success count.
+- [ ] #4 Test all 13 exposed parser dialects where syntax is shared and relevant vendor syntax boundaries; assert direct SQL, dbt and ODCS parity wherever identical metadata evidence exists. Vendor/session/engine-only claims require versioned evidence; missing evidence is typed Residual with owner TASK-145 and reviewed disposition.
+- [ ] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-80 open.
+<!-- AC:END -->
+
+## Sequencing
+
+Next: [TASK-146](task-146%20-%20compose-insert-select-column-reorder-and-cte-sources.md) after this child is merged.

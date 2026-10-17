@@ -13,6 +13,10 @@ dependencies:
   - TASK-69
   - TASK-70
   - TASK-79
+  - TASK-145
+  - TASK-146
+  - TASK-147
+  - TASK-148
 references: 
   - 'TASK-65'
 priority: high
@@ -52,3 +56,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child implementation queue (2026-10-17)
+
+TASK-80 is a **parent signoff**, not a single implementation PR. Preserve all original AC and only sign them off independently after all children are Done and merged. Pick the first unfinished dependency-ready child. Parent depends on the children only for closure; no child depends on its parent. Scope and fixed fixture IDs are in `docs/backlog-child-queue-plan.json`.
+
+- **[TASK-145](task-145%20-%20construct-typed-insert-values-and-default-values-state.md)** (1/4): multirow VALUES; explicit lists; omitted/default/generated/identity fields; zero-row insert. IDs `80-C145-P`, `80-C145-N`.
+- **[TASK-146](task-146%20-%20compose-insert-select-column-reorder-and-cte-sources.md)** (2/4): INSERT SELECT; CTE filtered source; target reordering; FK and CHECK constraints. IDs `80-C146-P`, `80-C146-N`.
+- **[TASK-147](task-147%20-%20classify-conflict-overwrite-returning-and-upsert-syntax.md)** (3/4): INSERT IGNORE/REPLACE/ON CONFLICT; OVERWRITE; RETURNING; vendor dialects. IDs `80-C147-P`, `80-C147-N`.
+- **[TASK-148](task-148%20-%20certify-ordered-insert-scripts-and-adapter-parity.md)** (4/4): INSERT after CTE; later SELECT/DDL; direct/dbt/ODCS; 13 dialect parse matrix. IDs `80-C148-P`, `80-C148-N`.
+
+**Original AC mapping:** #1 -> TASK-145, TASK-146, TASK-147, TASK-148; #2 -> TASK-145, TASK-146, TASK-147, TASK-148; #3 -> TASK-145, TASK-146, TASK-147, TASK-148; #4 -> TASK-146, TASK-148; #5 -> TASK-145, TASK-146, TASK-147, TASK-148; #6 -> TASK-145, TASK-146, TASK-147, TASK-148.
+
+**No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.

@@ -368,7 +368,8 @@ pub(super) fn physical_join_population_with_source_counts(
         [join] if join.origin_layer_id() == join_layer.id() => Some(join),
         _ => None,
     };
-    let join_kind = join_query.joins()[0].kind();
+    let sql_join = join_query.joins().first()?;
+    let join_kind = sql_join.kind();
     if matches!(join_kind, JoinKind::Cross | JoinKind::Unknown) {
         return None;
     }
@@ -500,7 +501,30 @@ pub(super) fn physical_join_population_with_source_counts(
         };
         let (left, left_instance) = map(left_key_expression)?;
         let (right, right_instance) = map(right_key_expression)?;
-        (left, left_instance, right, right_instance)
+        // INNER matches are symmetric. A composed local witness above already
+        // owns its physical source orientation, which can differ from the
+        // immediate SQL producer names; do not reinterpret that proof.
+        if join_kind == JoinKind::Inner {
+            (left, left_instance, right, right_instance)
+        } else {
+            // Outer/semi/anti preservation is positional, not the ON equality's
+            // operand order. Orient only endpoints freshly recovered from ON.
+            let sql_left = sql_join
+                .left()
+                .alias()
+                .unwrap_or(sql_join.left().relation());
+            let sql_right = sql_join
+                .right()
+                .alias()
+                .unwrap_or(sql_join.right().relation());
+            if left_instance == sql_left && right_instance == sql_right {
+                (left, left_instance, right, right_instance)
+            } else if left_instance == sql_right && right_instance == sql_left {
+                (right, right_instance, left, left_instance)
+            } else {
+                return None;
+            }
+        }
     };
     if left_instance == right_instance {
         return None;

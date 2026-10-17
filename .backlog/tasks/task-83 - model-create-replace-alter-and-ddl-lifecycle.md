@@ -14,6 +14,10 @@ dependencies:
   - TASK-77
   - TASK-78
   - TASK-79
+  - TASK-157
+  - TASK-158
+  - TASK-159
+  - TASK-160
 references: 
   - 'TASK-12'
   - 'TASK-23'
@@ -54,3 +58,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child implementation queue (2026-10-17)
+
+TASK-83 is a **parent signoff**, not a single implementation PR. Preserve all original AC and only sign them off independently after all children are Done and merged. Pick the first unfinished dependency-ready child. Parent depends on the children only for closure; no child depends on its parent. Scope and fixed fixture IDs are in `docs/backlog-child-queue-plan.json`.
+
+- **[TASK-157](task-157%20-%20prove-create-ctas-view-and-materialization-identities.md)** (1/4): CREATE TABLE, CTAS, REPLACE; VIEW/MATERIALIZED VIEW; schema-qualified IDs. IDs `83-C157-P`, `83-C157-N`.
+- **[TASK-158](task-158%20-%20prove-alter-add-drop-rename-type-column-transitions.md)** (2/4): ALTER TABLE ADD/DROP/RENAME/TYPE; defaults; data preservation; key checks. IDs `83-C158-P`, `83-C158-N`.
+- **[TASK-159](task-159%20-%20prove-drop-truncate-rename-if-exists-and-vendor-object-kinds.md)** (3/4): DROP, TRUNCATE, RENAME, IF EXISTS/NOT EXISTS, CLONE/LIKE, TEMP/TRANSIENT. IDs `83-C159-P`, `83-C159-N`.
+- **[TASK-160](task-160%20-%20compose-create-insert-alter-select-drop-and-certify-task-83.md)** (4/4): full ordered schema+row lifecycle, catalog identities, adapter parity. IDs `83-C160-P`, `83-C160-N`.
+
+**Original AC mapping:** #1 -> TASK-157, TASK-159, TASK-160; #2 -> TASK-158, TASK-159, TASK-160; #3 -> TASK-157, TASK-159, TASK-160; #4 -> TASK-157, TASK-158, TASK-159, TASK-160; #5 -> TASK-157, TASK-158, TASK-159, TASK-160; #6 -> TASK-157, TASK-158, TASK-159, TASK-160.
+
+**No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.

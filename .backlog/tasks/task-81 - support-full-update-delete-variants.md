@@ -14,6 +14,10 @@ dependencies:
   - TASK-70
   - TASK-75
   - TASK-79
+  - TASK-149
+  - TASK-150
+  - TASK-151
+  - TASK-152
 references: 
   - 'TASK-65'
 priority: high
@@ -53,3 +57,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child implementation queue (2026-10-17)
+
+TASK-81 is a **parent signoff**, not a single implementation PR. Preserve all original AC and only sign them off independently after all children are Done and merged. Pick the first unfinished dependency-ready child. Parent depends on the children only for closure; no child depends on its parent. Scope and fixed fixture IDs are in `docs/backlog-child-queue-plan.json`.
+
+- **[TASK-149](task-149%20-%20prove-typed-update-and-delete-single-target-effects.md)** (1/4): UPDATE SET literals/computed/DEFAULT; DELETE WHERE; TRUE/FALSE/UNKNOWN; untouched and RETURNING. IDs `81-C149-P`, `81-C149-N`.
+- **[TASK-150](task-150%20-%20prove-update-from-and-delete-using-joined-mutations.md)** (2/4): unique-key UPDATE FROM; DELETE USING; CTE; multiple candidate rows. IDs `81-C150-P`, `81-C150-N`.
+- **[TASK-151](task-151%20-%20classify-qualified-targets-order-limit-returning-and-correlations.md)** (3/4): correlated target conditions; RETURNING; vendor ORDER/LIMIT; partition-qualified mutations. IDs `81-C151-P`, `81-C151-N`.
+- **[TASK-152](task-152%20-%20compose-insert-update-delete-and-certify-task-81-states.md)** (4/4): sequential three-write script; FK/CHECK; dbt/direct/ODCS; DuckDB. IDs `81-C152-P`, `81-C152-N`.
+
+**Original AC mapping:** #1 -> TASK-149, TASK-150, TASK-151, TASK-152; #2 -> TASK-149, TASK-150, TASK-151, TASK-152; #3 -> TASK-149, TASK-150, TASK-151, TASK-152; #4 -> TASK-151, TASK-152; #5 -> TASK-149, TASK-150, TASK-151, TASK-152; #6 -> TASK-149, TASK-150, TASK-151, TASK-152.
+
+**No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.

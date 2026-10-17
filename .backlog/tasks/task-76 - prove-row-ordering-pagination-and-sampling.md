@@ -12,6 +12,10 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-74
+  - TASK-133
+  - TASK-134
+  - TASK-135
+  - TASK-136
 references: 
   - 'TASK-43'
   - 'TASK-64'
@@ -52,3 +56,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-76 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-133](task-133%20-%20prove-deterministic-order-by-limit-offset-and-top.md)** (1/4): sorted total order; LIMIT/OFFSET; FETCH FIRST; TOP variant. Fixtures `76-C133-P`, `76-C133-N`.
+- **[TASK-134](task-134%20-%20prove-ties-distinct-and-qualify-pagination-boundaries.md)** (2/4): WITH TIES; DISTINCT; DISTINCT ON; SQL NULL ordering. Fixtures `76-C134-P`, `76-C134-N`.
+- **[TASK-135](task-135%20-%20compose-nested-page-boundaries-through-cte-and-sets.md)** (3/4): nested LIMIT+OFFSET CTE; set branch ORDER/LIMIT; producer copies. Fixtures `76-C135-P`, `76-C135-N`.
+- **[TASK-136](task-136%20-%20classify-sampling-and-certify-task-76-dialect-oracle-matrix.md)** (4/4): seeded TABLESAMPLE/SAMPLE; dialect TOP/FETCH; NULL/tie laws; 13 dialects. Fixtures `76-C136-P`, `76-C136-N`.
+
+**Original acceptance mapping:** #1 -> TASK-133, TASK-134, TASK-136; #2 -> TASK-133, TASK-134, TASK-135, TASK-136; #3 -> TASK-134, TASK-136; #4 -> TASK-135, TASK-136; #5 -> TASK-133, TASK-134, TASK-135, TASK-136; #6 -> TASK-133, TASK-134, TASK-135, TASK-136.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

@@ -16,6 +16,10 @@ dependencies:
   - TASK-79
   - TASK-80
   - TASK-81
+  - TASK-153
+  - TASK-154
+  - TASK-155
+  - TASK-156
 references: 
   - 'TASK-65'
 priority: high
@@ -55,3 +59,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child implementation queue (2026-10-17)
+
+TASK-82 is a **parent signoff**, not a single implementation PR. Preserve all original AC and only sign them off independently after all children are Done and merged. Pick the first unfinished dependency-ready child. Parent depends on the children only for closure; no child depends on its parent. Scope and fixed fixture IDs are in `docs/backlog-child-queue-plan.json`.
+
+- **[TASK-153](task-153%20-%20prove-ordered-merge-matched-update-delete-actions.md)** (1/4): MERGE ON unique key; MATCHED UPDATE/DELETE with WHEN predicates; NULL key. IDs `82-C153-P`, `82-C153-N`.
+- **[TASK-154](task-154%20-%20prove-unmatched-insert-and-by-source-branches.md)** (2/4): NOT MATCHED BY TARGET INSERT; NOT MATCHED BY SOURCE UPDATE/DELETE; branch order. IDs `82-C154-P`, `82-C154-N`.
+- **[TASK-155](task-155%20-%20classify-repeated-matches-upsert-equivalents-and-constraint-effects.md)** (3/4): ambiguous many-to-one MERGE; two NULL keys; unique FK; dialect ON CONFLICT. IDs `82-C155-P`, `82-C155-N`.
+- **[TASK-156](task-156%20-%20compose-computed-and-sequential-merges-and-certify-task-82.md)** (4/4): computed SET/INSERT; two MERGEs; nested prior state; dialect matrices. IDs `82-C156-P`, `82-C156-N`.
+
+**Original AC mapping:** #1 -> TASK-153, TASK-154, TASK-155, TASK-156; #2 -> TASK-153, TASK-154, TASK-155, TASK-156; #3 -> TASK-153, TASK-154, TASK-155, TASK-156; #4 -> TASK-154, TASK-156; #5 -> TASK-153, TASK-154, TASK-155, TASK-156; #6 -> TASK-153, TASK-154, TASK-155, TASK-156.
+
+**No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.

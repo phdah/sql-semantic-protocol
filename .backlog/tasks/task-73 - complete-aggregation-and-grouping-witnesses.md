@@ -13,6 +13,10 @@ dependencies:
   - TASK-69
   - TASK-70
   - TASK-71
+  - TASK-121
+  - TASK-122
+  - TASK-123
+  - TASK-124
 references: 
   - 'TASK-59'
 priority: high
@@ -52,3 +56,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-73 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-121](task-121%20-%20prove-basic-grouped-and-global-aggregate-value-domains.md)** (1/4): COUNT(*), COUNT(expr), SUM, MIN, MAX, AVG; NULL/duplicate; empty global versus grouped. Fixtures `73-C121-P`, `73-C121-N`.
+- **[TASK-122](task-122%20-%20prove-distinct-filter-having-and-multiple-group-identities.md)** (2/4): COUNT DISTINCT; FILTER WHERE; mixed HAVING predicates; two aggregates and aliases. Fixtures `73-C122-P`, `73-C122-N`.
+- **[TASK-123](task-123%20-%20compose-aggregates-after-filtered-joins-and-classify-grouping-variants.md)** (3/4): WHERE then JOIN then GROUP/HAVING; GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL. Fixtures `73-C123-P`, `73-C123-N`.
+- **[TASK-124](task-124%20-%20independently-certify-task-73-group-and-aggregate-oracles.md)** (4/4): committed aggregate_summary.sql; direct/dbt/ODCS; all exposed dialect paths. Fixtures `73-C124-P`, `73-C124-N`.
+
+**Original acceptance mapping:** #1 -> TASK-121, TASK-122, TASK-124; #2 -> TASK-122, TASK-123, TASK-124; #3 -> TASK-121, TASK-123, TASK-124; #4 -> TASK-121, TASK-122, TASK-123, TASK-124; #5 -> TASK-121, TASK-122, TASK-123, TASK-124; #6 -> TASK-121, TASK-122, TASK-123, TASK-124.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

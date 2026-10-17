@@ -165,3 +165,20 @@ and PR #79 must not be merged solely from this progress.
 ## TASK-108 completed handoff (2026-10-17)
 
 TASK-70 and TASK-108 completed their expression-specific acceptance on protocol PR #116. TASK-91 remains publication-blocking until TASK-88/89/90 and sql-tdg end-to-end evidence are separately signed off. No universal/vendor runtime equivalence or 3.0.0 release is approved.
+
+
+## Dependency-ordered implementation gates (2026-10-17)
+
+Original TASK-91 release AC are **unchanged**. The 19 still-open
+implementation parents TASK-71..78 and TASK-80..90 now depend for **closure**
+on their 80 bounded child tasks TASK-109..188. See
+[`docs/backlog-child-queue-plan.json`](../../docs/backlog-child-queue-plan.json)
+and [the queue audit](../../docs/backlog-acceptance-contracts.md).
+Do not add every child as a direct TASK-91 dependency: dependency closure via
+each parent is authoritative and avoids duplicate synchronization.
+
+Before releasing 3.0.0, verify all child tasks Done/merged and all parent
+original AC independently signed off, per-child exact and conditional coverage
+fully evidenced, TASK-88/89/90 complete, downstream sql-tdg pinned acceptance
+green, and Release Please PR #79 held until the existing TASK-91 gates pass.
+TASK-79 is already completed, while TASK-92 is explicitly post-v3.

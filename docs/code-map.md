@@ -65,3 +65,5 @@ All emitters read canonical parser-independent values. To change protocol meanin
 4. Run a targeted test (`cargo test --test <integration-test-name>`), then the repository's full verification gate before merge.
 
 If a path or responsibility changes, update this map **in the same PR**. Keep this document short and factual; it should not become a parallel product roadmap.
+
+TASK-71 source-side orientation: `src/physical_realization/joins.rs` orients recovered filtered-join equality endpoints by the canonical `Join::left/right` inputs before constructing preserved-side outer/null-extension obligations. Public proof regression: `tests/physical_realization/joins.rs`.

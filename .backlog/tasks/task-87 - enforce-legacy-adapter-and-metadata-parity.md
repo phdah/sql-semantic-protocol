@@ -15,6 +15,10 @@ dependencies:
   - TASK-81
   - TASK-82
   - TASK-83
+  - TASK-173
+  - TASK-174
+  - TASK-175
+  - TASK-176
 references: 
   - 'TASK-27'
   - 'TASK-35'
@@ -56,3 +60,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-87 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-87. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-173](task-173%20-%20freeze-authoritative-metadata-fact-ownership-and-absence-laws.md)** (1/4): dbt compiled SQL/dependencies/constraints; catalog types; ODCS fields; direct DDL. Fixtures `87-C173-P`, `87-C173-N`.
+- **[TASK-174](task-174%20-%20certify-dbt-ephemeral-view-table-and-incremental-semantics.md)** (2/4): dbt materialization tags; producer/write identity; executed vs unexecuted model. Fixtures `87-C174-P`, `87-C174-N`.
+- **[TASK-175](task-175%20-%20resolve-schema-aliases-fk-only-source-and-adapter-limitations.md)** (3/4): schema-qualified quoted names; tests; FK-only evidence; missing warehouse metadata. Fixtures `87-C175-P`, `87-C175-N`.
+- **[TASK-176](task-176%20-%20certify-sql-dbt-odcs-paired-canonical-parity-across-writes.md)** (4/4): three adapter pairs: table, view/ephemeral, incremental/write; typed source constraints. Fixtures `87-C176-P`, `87-C176-N`.
+
+**Original AC ownership:** #1 -> TASK-173, TASK-174, TASK-175, TASK-176; #2 -> TASK-173, TASK-174, TASK-175, TASK-176; #3 -> TASK-174, TASK-176; #4 -> TASK-173, TASK-175, TASK-176; #5 -> TASK-173, TASK-174, TASK-175, TASK-176; #6 -> TASK-173, TASK-174, TASK-175, TASK-176.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-87 closure.

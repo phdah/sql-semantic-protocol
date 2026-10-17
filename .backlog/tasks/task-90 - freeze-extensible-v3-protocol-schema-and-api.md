@@ -31,6 +31,10 @@ dependencies:
   - TASK-86
   - TASK-87
   - TASK-88
+  - TASK-185
+  - TASK-186
+  - TASK-187
+  - TASK-188
 references: 
   - 'docs/protocol.md'
   - 'schema/protocol.schema.json'
@@ -76,3 +80,16 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer scope (2026-10-09)
 
 Approved deferred-extensibility rule in [docs/coverage-signoff.md](../../docs/coverage-signoff.md): non-modeled UDFs, randomness, recursion and vendor session assumptions fail closed **now**, but may be supported in future versions by a typed, independently validated source-independent evidence contract. TASK-92 tracks post-v3 exploration and is **not** a blocker of the consolidated 3.0.0 release.
+
+## Bounded dependency-ordered child execution queue (2026-10-17)
+
+TASK-90 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-90. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+
+- **[TASK-185](task-185%20-%20inventory-rust-json-cli-witness-and-write-public-contract.md)** (1/4): public model identities; emitted schema; deterministic bytes; all supported modes. Fixtures `90-C185-P`, `90-C185-N`.
+- **[TASK-186](task-186%20-%20define-typed-capability-extensions-and-fail-closed-unknown-tags.md)** (2/4): future function/opaque metadata; optional fields; version gating; strict unknown-tag handling. Fixtures `90-C186-P`, `90-C186-N`.
+- **[TASK-187](task-187%20-%20certify-v2-to-v3-migration-and-canonical-compatibility.md)** (3/4): breaking versus additive; v2/v3 goldens; migration docs and schema snapshots. Fixtures `90-C187-P`, `90-C187-N`.
+- **[TASK-188](task-188%20-%20pin-sql-tdg-pre-release-consumer-and-certify-final-task-90-gate.md)** (4/4): final candidate SHA; consumer reads source/row/write cases; serialization CI. Fixtures `90-C188-P`, `90-C188-N`.
+
+**Original AC ownership:** #1 -> TASK-185, TASK-187, TASK-188; #2 -> TASK-186, TASK-188; #3 -> TASK-187, TASK-188; #4 -> TASK-185, TASK-186, TASK-187, TASK-188; #5 -> TASK-188; #6 -> TASK-185, TASK-186, TASK-187, TASK-188; #7 -> TASK-186, TASK-188.
+
+**No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-90 closure.

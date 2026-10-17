@@ -12,6 +12,10 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-70
+  - TASK-125
+  - TASK-126
+  - TASK-127
+  - TASK-128
 references: 
   - 'TASK-60'
 priority: high
@@ -51,3 +55,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-74 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-125](task-125%20-%20prove-row-number-rank-dense-rank-with-peers.md)** (1/4): PARTITION BY; total versus tied ORDER BY; ASC/DESC; NULL handling. Fixtures `74-C125-P`, `74-C125-N`.
+- **[TASK-126](task-126%20-%20prove-navigation-and-bounded-rows-frames.md)** (2/4): LAG/LEAD; FIRST_VALUE/LAST_VALUE; bounded ROWS frame; NULLs; frame boundaries. Fixtures `74-C126-P`, `74-C126-N`.
+- **[TASK-127](task-127%20-%20compose-qualify-and-upstream-grouped-or-joined-row-shaping.md)** (3/4): QUALIFY ROW_NUMBER<=n; multiple rank conditions; joins and grouped inputs; rejected peers. Fixtures `74-C127-P`, `74-C127-N`.
+- **[TASK-128](task-128%20-%20certify-advanced-frames-vendor-laws-and-task-74-signoff.md)** (4/4): NTILE; RANGE/GROUPS; COLLATE; NULL ordering; ranked_orders.sql; 13 dialects. Fixtures `74-C128-P`, `74-C128-N`.
+
+**Original acceptance mapping:** #1 -> TASK-125, TASK-126, TASK-127, TASK-128; #2 -> TASK-125, TASK-126, TASK-128; #3 -> TASK-127, TASK-128; #4 -> TASK-125, TASK-126, TASK-127, TASK-128; #5 -> TASK-125, TASK-126, TASK-127, TASK-128; #6 -> TASK-125, TASK-126, TASK-127, TASK-128.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
