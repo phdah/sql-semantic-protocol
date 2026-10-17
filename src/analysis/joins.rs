@@ -116,7 +116,26 @@ pub(super) fn analyze_join(
         } => {
             let derived = match subquery.body.as_ref() {
                 SetExpr::Select(select)
-                    if select.from.len() == 1 && select.from[0].joins.is_empty() =>
+                    if subquery.with.is_none()
+                        && subquery.limit_clause.is_none()
+                        && subquery.fetch.is_none()
+                        && select.from.len() == 1
+                        && select.from[0].joins.is_empty()
+                        && select.distinct.is_none()
+                        && select.top.is_none()
+                        && select.having.is_none()
+                        && select.qualify.is_none()
+                        && select.prewhere.is_none()
+                        && select.lateral_views.is_empty()
+                        && select.connect_by.is_none()
+                        && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                            if items.is_empty() && modifiers.is_empty())
+                        && select.projection.iter().all(|item| matches!(item,
+                            SelectItem::UnnamedExpr(Expr::CompoundIdentifier(_))
+                                | SelectItem::ExprWithAlias {
+                                    expr: Expr::CompoundIdentifier(_),
+                                    ..
+                                })) =>
                 {
                     match &select.from[0].relation {
                         TableFactor::Table {
