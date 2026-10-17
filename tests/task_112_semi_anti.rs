@@ -167,8 +167,8 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
             _ => unreachable!(),
         };
         let expected_pattern = match case["witness_pattern"].as_str().unwrap() {
-            "nullable_duplicate_mixed" => JoinPopulationPattern::NullableDuplicateMixed,
-            "nullable_duplicate_disjoint" => JoinPopulationPattern::NullableDuplicateDisjoint,
+            "mixed_duplicate_left" => JoinPopulationPattern::MixedDuplicateLeft,
+            "disjoint_four_two" => JoinPopulationPattern::DisjointFourTwo,
             _ => unreachable!(),
         };
         assert!(
