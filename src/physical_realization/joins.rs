@@ -695,6 +695,9 @@ pub(super) fn physical_join_population_with_source_counts(
     use crate::join_witness::JoinWitnessDirection;
     use crate::protocol::JoinKind;
 
+    if let Some(plan) = join_uniform::physical_uniform_join_count_plan(bundle, target_layer_id, wanted, exact_sources) {
+        return Some(plan);
+    }
     if let Some(plan) =
         physical_three_way_inner_count_plan(bundle, target_layer_id, wanted, exact_sources)
     {
