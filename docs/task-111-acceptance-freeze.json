@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-111",
   "parent": "TASK-71",
-  "status": "frozen_pending_verification",
+  "status": "verified_bounded_child",
   "fixture_ids": [
     "71-C111-P",
     "71-C111-N"
@@ -195,7 +195,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-P-LEFT-REVERSED",
@@ -368,7 +375,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-P-RIGHT-EMPTY",
@@ -541,7 +555,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-P-FULL-EMPTY",
@@ -714,7 +735,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-N-LEFT-MIXED",
@@ -910,7 +938,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-N-RIGHT-MIXED",
@@ -1106,7 +1141,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-N-FULL-MIXED",
@@ -1314,7 +1356,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": true,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     },
     {
       "id": "71-C111-N-BOTH-EMPTY",
@@ -1455,7 +1504,14 @@
         "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
         "requires_absence_proof": false,
         "exact_physical_null_insertion_claim": false
-      }
+      },
+      "status": "verified",
+      "verification_evidence": [
+        "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree",
+        "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+        "tests/task_111_acceptance_freeze.rs::frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells",
+        "tests/task_111_outer_join_adapters.rs::compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment"
+      ]
     }
   ],
   "original_parent_ac": [
@@ -1501,16 +1557,35 @@
     }
   ],
   "signoff": {
-    "all_mandatory_cells_verified": false,
-    "complete_dialect_classification": false,
-    "dbt_odcs_parity": false,
-    "ci_green": false,
-    "code_review": false
+    "all_mandatory_cells_verified": true,
+    "complete_dialect_classification": true,
+    "dbt_odcs_parity": true,
+    "ci_green": true,
+    "code_review": true,
+    "implementation_run_id": 39041937842,
+    "checked_green_jobs": 9,
+    "implementation_ci_sha": "eb137ac2467d57207252bfd59796f3ec97f6d90e",
+    "final_metadata_head_gate": "GitHub PR #120 checks must all remain green before merge"
   },
   "execution_evidence": {
     "test": "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
-    "status": "ci_pending",
+    "status": "verified_on_implementation_ci_head",
     "classification_note": "This is parser and canonical analyzer parity, not native execution on non-DuckDB engines."
   },
-  "review_revision_note": "v2 freeze adds canonical AST and source-count-specific constructive verification; original SQL and independent full source/output bags unchanged."
+  "review_revision_note": "v2 freeze adds canonical AST and source-count-specific constructive verification; original SQL and independent full source/output bags unchanged.",
+  "review": {
+    "state": "signed_off",
+    "axes": {
+      "standards": "passed_after_remediating_shared_physical_histogram_and_semi_cardinality_bugs",
+      "spec": "passed_eight_frozen_complete_bags_dialect_and_adapter_matrix"
+    },
+    "notes": "Only TASK-111 ordinary equality; native vendor laws and metadata-unsupported physical NULL insertion remain explicitly residual."
+  },
+  "acceptance_criteria": {
+    "1": "v2 frozen 8-case canonical AST/typed bag/domains/predicates and 104 dialect cells",
+    "2": "canonical LEFT/RIGHT/FULL closed-world empty/disjoint/mixed/duplicated source populations with correct direction, SQL-side orientation and independent SQL NULL oracle boundary",
+    "3": "full DuckDB terminal bags, stable row IDs, duplicate identities and all TRUE/FALSE/UNKNOWN source-pair partitions",
+    "4": "13 parser dialects plus postgres alias, real compiled dbt/ODCS parity and three reviewed typed residual owner cases",
+    "5": "focused public acceptance contracts and all nine CI checks verified on implementation SHA eb137ac2, with final PR metadata CI gate"
+  }
 }
