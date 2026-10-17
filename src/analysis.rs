@@ -44,7 +44,7 @@ use crate::protocol::{
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LikePrefixPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, JoinExecution, LikePrefixPredicate,
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
