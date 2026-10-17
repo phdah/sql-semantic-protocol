@@ -186,6 +186,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "empty_right",
+        "left_physical_count": 3,
+        "right_physical_count": 0,
+        "output_count": 3,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -350,6 +359,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "empty_right",
+        "left_physical_count": 3,
+        "right_physical_count": 0,
+        "output_count": 3,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -514,6 +532,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "empty_left",
+        "left_physical_count": 0,
+        "right_physical_count": 3,
+        "output_count": 3,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -678,6 +705,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "empty_right",
+        "left_physical_count": 3,
+        "right_physical_count": 0,
+        "output_count": 3,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -865,6 +901,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "mixed_duplicate_right",
+        "left_physical_count": 3,
+        "right_physical_count": 4,
+        "output_count": 4,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -1052,6 +1097,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "mixed_duplicate_right",
+        "left_physical_count": 3,
+        "right_physical_count": 4,
+        "output_count": 4,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -1251,6 +1305,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "mixed_duplicate_right",
+        "left_physical_count": 3,
+        "right_physical_count": 4,
+        "output_count": 6,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": true,
+        "exact_physical_null_insertion_claim": false
       }
     },
     {
@@ -1383,6 +1446,15 @@
         },
         "where_kind": "none",
         "joins": 1
+      },
+      "constructive_oracle": {
+        "expected_pattern": "empty_left",
+        "left_physical_count": 0,
+        "right_physical_count": 0,
+        "output_count": 0,
+        "source_key_proof": "constructive non-NULL witness compatible with full source bag counts; physical SQL NULL truth handled by independent DuckDB full-bag oracle",
+        "requires_absence_proof": false,
+        "exact_physical_null_insertion_claim": false
       }
     }
   ],
@@ -1440,5 +1512,5 @@
     "status": "ci_pending",
     "classification_note": "This is parser and canonical analyzer parity, not native execution on non-DuckDB engines."
   },
-  "review_revision_note": "v2 adds independently asserted canonical AST contracts to every pre-frozen TASK-111 fixture without changing SQL, source bags, output bags or mandatory variant inventory."
+  "review_revision_note": "v2 freeze adds canonical AST and source-count-specific constructive verification; original SQL and independent full source/output bags unchanged."
 }
