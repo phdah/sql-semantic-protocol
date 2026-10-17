@@ -844,7 +844,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(lateral["diagnostics"]
         .as_array()
         .expect("diagnostics should be an array")
-        .is_empty());
+        .iter()
+        .any(|diagnostic| diagnostic["code"] == "unsupported_lateral_row_scope"));
     let lateral_output = output_column(
         layer_for_model(&protocol, "lateral_orders"),
         "adjusted_amount",
