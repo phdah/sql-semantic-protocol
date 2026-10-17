@@ -226,12 +226,8 @@ fn composite_keys_remain_identical_under_direct_dbt_and_odcs_schema_evidence() {
         let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
         let source = SqlInput::inline(sql);
         let dialect = dialect_from_name("postgresql").expect("PostgreSQL");
-        let configured = ConfiguredSqlInput::new(
-            "task-109-adapters",
-            &source,
-            "postgresql",
-            dialect.as_ref(),
-        );
+        let configured =
+            ConfiguredSqlInput::new("task-109-adapters", &source, "postgresql", dialect.as_ref());
         let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
             .expect("source-independent analysis");
         let proof = physical_joint_source_plan(&bundle, &[(bundle.layers()[0].id(), 4)]);
