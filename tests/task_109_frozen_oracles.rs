@@ -316,3 +316,47 @@ fn frozen_positive_counts_have_exact_closed_source_witnesses() {
         );
     }
 }
+
+#[test]
+fn reviewed_conditional_joins_fail_closed_without_inventing_exact_pair_laws() {
+    let matrix: Value = serde_json::from_str(MATRIX).expect("versioned matrix");
+    let cases = matrix["conditional_boundary"]["cases"].as_array().expect("review cases");
+    assert_eq!(cases.len(), 4);
+    for case in cases {
+        let id = case["id"].as_str().expect("named boundary");
+        assert_eq!(case["owner"], "TASK-109", "{id}: bounded owner");
+        assert_eq!(case["review_disposition"], "accepted_fail_closed_nonmandatory");
+        assert!(case["missing_evidence"].as_str().is_some_and(|note| !note.is_empty()));
+        let sql = case["sql"].as_str().expect("SQL variant");
+        let analyzed = if id == "J109-STRING" {
+            let schemas = ["l", "r"].into_iter().map(|name| {
+                RelationSchema::new(
+                    name,
+                    ["k", "a"].into_iter().map(|col| {
+                        SchemaColumn::from_sql_type(
+                            col,
+                            if col == "k" { "VARCHAR" } else { "INTEGER" },
+                            "postgresql",
+                        ).expect("physical source type")
+                    }).collect(),
+                ).expect("schema")
+            }).collect::<Vec<_>>();
+            let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
+            let source = SqlInput::inline(sql);
+            let parser = dialect_from_name("postgresql").expect("PostgreSQL");
+            let input = [ConfiguredSqlInput::new("task109-conditional", &source,
+                "postgresql", parser.as_ref())];
+            analyze_configured_inputs_with_catalog(&input, &catalog).expect("typed analysis")
+        } else {
+            fixture_bundle(sql, "postgresql")
+        };
+        let proof = physical_joint_source_plan(
+            &analyzed,
+            &[(analyzed.layers()[0].id(), 4)],
+        );
+        assert!(
+            matches!(proof.outcome(), WitnessDirection::Residual { .. }),
+            "{id}: absent evidence must remain typed residual, not fabricated feasibility/impossibility: {proof:?}"
+        );
+    }
+}
