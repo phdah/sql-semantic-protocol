@@ -2,6 +2,18 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_71_join_acceptance": {
+    "owner": "TASK-71",
+    "status": "implementation_in_progress_unverified",
+    "acceptance_freeze": "docs/task-71-acceptance-freeze.json",
+    "mandatory_fixture_cells": 15,
+    "conditional_variant_cells": 12,
+    "dialect_spellings": 14,
+    "implemented_slice": "filtered outer join ON-operand reversal uses SQL-preserved input identity for source-row and null-extension proofs",
+    "focused_public_api_test": "tests/physical_realization/joins.rs::filtered_outer_join_population_uses_sql_input_order_not_on_operand_order",
+    "all_original_criteria_verified": false,
+    "release_approved": false
+  },
   "task_107_oracle_evidence": {
     "owner": "TASK-107",
     "status": "certified_bounded_expression_oracles",
