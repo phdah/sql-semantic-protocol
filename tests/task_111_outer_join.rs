@@ -292,3 +292,63 @@ fn disjoint_nonempty_outer_inputs_are_closed_world_without_physical_null_inserti
         }
     }
 }
+
+#[test]
+fn matched_and_unmatched_outer_populations_retain_both_truth_directions() {
+    for &dialect in DIALECTS {
+        for (kind, sql, output_rows, left_count, right_count) in [
+            (
+                JoinKind::Left,
+                "SELECT l.id FROM l LEFT JOIN r ON r.k=l.k",
+                3,
+                3,
+                2,
+            ),
+            (
+                JoinKind::Right,
+                "SELECT r.id FROM l RIGHT JOIN r ON r.k=l.k",
+                3,
+                2,
+                3,
+            ),
+            (
+                JoinKind::Full,
+                "SELECT l.id FROM l FULL JOIN r ON r.k=l.k",
+                3,
+                2,
+                2,
+            ),
+        ] {
+            let b = bundle(sql, dialect);
+            let plan = physical_joint_source_plan(&b, &[(b.layers()[0].id(), output_rows)]);
+            let WitnessDirection::Feasible(cases) = plan.outcome() else {
+                panic!("{dialect}: must construct matched and unmatched outer bag: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| {
+                let matching = case.obligations().iter().any(|o| matches!(
+                    o,
+                    WitnessObligation::JoinPopulation {
+                        join_kind,
+                        pattern: JoinPopulationPattern::MixedMatchedUnmatched,
+                        left_rows,
+                        right_rows,
+                        closed_world: true,
+                        ..
+                    } if *join_kind == kind
+                        && *left_rows == left_count
+                        && *right_rows == right_count
+                ));
+                let positives = case.obligations().iter().filter(|o| matches!(
+                    o, WitnessObligation::JoinPair { .. }
+                )).count();
+                let negative_rows = case.obligations().iter().filter(|o| matches!(
+                    o, WitnessObligation::NoMatchingPartner { closed_world: true, .. }
+                )).count();
+                let closed_sources = case.obligations().iter().filter(|o| matches!(
+                    o, WitnessObligation::ClosedWorld { .. }
+                )).count();
+                matching && positives == 1 && negative_rows == 2 && closed_sources == 2
+            }), "{dialect}: matched+unmatched row IDs and complete source bags: {plan:?}");
+        }
+    }
+}
