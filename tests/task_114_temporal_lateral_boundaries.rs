@@ -1,7 +1,8 @@
 //! TASK-114 red/green public semantic boundary for correlated and temporal joins.
 //! These safety regressions do not certify the full TASK-114 constructive matrix.
 use sql_semantic_protocol::{
-    analyze_sql, dialect_from_name, ComparisonOperator, JoinKind, Predicate, ProtocolStatement,
+    analyze_sql, dialect_from_name, ComparisonOperator, Expression, JoinKind, Predicate,
+    ProtocolStatement,
 };
 
 fn query(sql: &str, dialect: &str) -> sql_semantic_protocol::QueryStatement {
@@ -27,8 +28,14 @@ fn asof_ordering_is_not_a_plain_equality_join_and_carries_specific_residual() {
         panic!("ASOF eligibility must be present without implying winner selection");
     };
     assert_eq!(eligibility.operator(), ComparisonOperator::Gte);
-    assert!(format!("{eligibility:?}").contains("l"));
-    assert!(format!("{eligibility:?}").contains("r"));
+    assert!(matches!(
+        eligibility.left(),
+        Expression::Column(column) if column.relation() == Some("l") && column.name() == "t"
+    ));
+    assert!(matches!(
+        eligibility.right(),
+        Expression::Column(column) if column.relation() == Some("r") && column.name() == "t"
+    ));
     assert!(result
         .diagnostics()
         .iter()
