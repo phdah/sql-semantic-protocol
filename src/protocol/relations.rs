@@ -251,6 +251,7 @@ pub struct Join {
     condition: Option<Predicate>,
     execution: Option<JoinExecution>,
     right_physical_source: Option<String>,
+    right_physical_instance: Option<String>,
 }
 
 impl Join {
@@ -267,6 +268,7 @@ impl Join {
             condition,
             execution: None,
             right_physical_source: None,
+            right_physical_instance: None,
         }
     }
 
@@ -274,9 +276,11 @@ impl Join {
         mut self,
         execution: JoinExecution,
         right_physical_source: Option<String>,
+        right_physical_instance: Option<String>,
     ) -> Self {
         self.execution = Some(execution);
         self.right_physical_source = right_physical_source;
+        self.right_physical_instance = right_physical_instance;
         self
     }
 
@@ -288,6 +292,11 @@ impl Join {
     /// The physical source of a single, correlated derived input, if proven.
     pub fn right_physical_source(&self) -> Option<&str> {
         self.right_physical_source.as_deref()
+    }
+
+    /// Alias used for the physical right input inside a correlated subquery.
+    pub fn right_physical_instance(&self) -> Option<&str> {
+        self.right_physical_instance.as_deref()
     }
 
     /// Return the normalized join kind.
