@@ -11,12 +11,17 @@ use sql_semantic_protocol::{
 
 const MATRIX: &str = include_str!("../docs/task-113-acceptance-freeze.json");
 
-fn analyzed(sql: &str, dialect: &str, complete_schema: bool) -> sql_semantic_protocol::AnalysisBundle {
+fn analyzed(
+    sql: &str,
+    dialect: &str,
+    complete_schema: bool,
+) -> sql_semantic_protocol::AnalysisBundle {
     let schemas = ["l", "r"]
         .into_iter()
         .map(|relation| {
             let id = if relation == "l" { "lid" } else { "rid" };
-            let mut columns = vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()];
+            let mut columns =
+                vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()];
             if complete_schema {
                 columns.push(SchemaColumn::from_sql_type(id, "VARCHAR", "postgresql").unwrap());
             }
@@ -38,29 +43,42 @@ fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
         let id = case["id"].as_str().unwrap();
         let db = Connection::open_in_memory().unwrap();
         db.execute_batch(
-            "CREATE TABLE l(lid VARCHAR, k INTEGER); CREATE TABLE r(rid VARCHAR, k INTEGER);"
-        ).unwrap();
+            "CREATE TABLE l(lid VARCHAR, k INTEGER); CREATE TABLE r(rid VARCHAR, k INTEGER);",
+        )
+        .unwrap();
         for (relation, entries) in [("l", &case["left"]), ("r", &case["right"])] {
             for entry in entries.as_array().unwrap() {
                 db.execute(
                     &format!("INSERT INTO {relation} VALUES (?, ?)"),
                     params![entry[0].as_str().unwrap(), entry[1].as_i64()],
-                ).unwrap();
+                )
+                .unwrap();
             }
         }
         let mut stmt = db.prepare(case["duckdb_sql"].as_str().unwrap()).unwrap();
-        let mut actual = stmt.query_map([], |row| {
-            let lid: String = row.get(0)?;
-            let lk: Option<i64> = row.get(1)?;
-            let rid: String = row.get(2)?;
-            let rk: Option<i64> = row.get(3)?;
-            Ok(json!([lid,lk,rid,rk]).to_string())
-        }).unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
-        let mut expected = case["expected"].as_array().unwrap()
-            .iter().map(Value::to_string).collect::<Vec<_>>();
+        let mut actual = stmt
+            .query_map([], |row| {
+                let lid: String = row.get(0)?;
+                let lk: Option<i64> = row.get(1)?;
+                let rid: String = row.get(2)?;
+                let rk: Option<i64> = row.get(3)?;
+                Ok(json!([lid, lk, rid, rk]).to_string())
+            })
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect::<Vec<_>>();
+        let mut expected = case["expected"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(Value::to_string)
+            .collect::<Vec<_>>();
         actual.sort();
         expected.sort();
-        assert_eq!(actual, expected, "{id}: full terminal bag, row identity, and NULL");
+        assert_eq!(
+            actual, expected,
+            "{id}: full terminal bag, row identity, and NULL"
+        );
 
         let predicate = match case["variant"].as_str().unwrap() {
             "cross" => "TRUE",
@@ -70,28 +88,53 @@ fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
             "is_not_distinct_from" | "null_safe_equality" => "l.k IS NOT DISTINCT FROM r.k",
             other => panic!("unfrozen variant: {other}"),
         };
-        let sql = format!(
-            "SELECT l.lid, r.rid FROM l CROSS JOIN r WHERE ({predicate}) IS NOT TRUE"
-        );
+        let sql =
+            format!("SELECT l.lid, r.rid FROM l CROSS JOIN r WHERE ({predicate}) IS NOT TRUE");
         let mut rejection = db.prepare(&sql).unwrap();
-        let mut actual_rejected = rejection.query_map([], |row| {
-            let a: String = row.get(0)?;
-            let b: String = row.get(1)?;
-            Ok(json!([a,b]).to_string())
-        }).unwrap().map(|row|row.unwrap()).collect::<Vec<_>>();
-        let mut expected_rejected = case["not_true_pairs"].as_array().unwrap()
-            .iter().map(Value::to_string).collect::<Vec<_>>();
+        let mut actual_rejected = rejection
+            .query_map([], |row| {
+                let a: String = row.get(0)?;
+                let b: String = row.get(1)?;
+                Ok(json!([a, b]).to_string())
+            })
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect::<Vec<_>>();
+        let mut expected_rejected = case["not_true_pairs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(Value::to_string)
+            .collect::<Vec<_>>();
         actual_rejected.sort();
         expected_rejected.sort();
-        assert_eq!(actual_rejected, expected_rejected, "{id}: every NOT TRUE pair");
+        assert_eq!(
+            actual_rejected, expected_rejected,
+            "{id}: every NOT TRUE pair"
+        );
 
         let values = case["expected"].as_array().unwrap();
-        let numeric = values.iter().filter_map(|v|v[1].as_i64()).collect::<Vec<_>>();
+        let numeric = values
+            .iter()
+            .filter_map(|v| v[1].as_i64())
+            .collect::<Vec<_>>();
         let domain = &case["output_domain"];
-        assert_eq!(numeric.iter().min().copied(),domain["minimum"].as_i64(),"{id}: inclusive minimum");
-        assert_eq!(numeric.iter().max().copied(),domain["maximum"].as_i64(),"{id}: inclusive maximum");
-        assert_eq!(values.iter().any(|row|row[1].is_null()), domain["contains_null"],"{id}: NULL");
-        assert_eq!(values.is_empty(),domain["empty"],"{id}: empty");
+        assert_eq!(
+            numeric.iter().min().copied(),
+            domain["minimum"].as_i64(),
+            "{id}: inclusive minimum"
+        );
+        assert_eq!(
+            numeric.iter().max().copied(),
+            domain["maximum"].as_i64(),
+            "{id}: inclusive maximum"
+        );
+        assert_eq!(
+            values.iter().any(|row| row[1].is_null()),
+            domain["contains_null"],
+            "{id}: NULL"
+        );
+        assert_eq!(values.is_empty(), domain["empty"], "{id}: empty");
     }
 }
 
@@ -115,21 +158,30 @@ fn natural_join_known_source_column_intersection_produces_exact_join_witness() {
         panic!("same physical join-key assignment required: {physical:?}");
     };
     assert!(cases.iter().any(|case| {
-        case.obligations().iter().filter(|o|matches!(o,WitnessObligation::ClosedWorld{..})).count() == 2
+        case.obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 2
     }));
 }
 
 #[test]
 fn natural_join_unknown_column_intersection_fails_closed() {
     let dialect = sqlparser::dialect::GenericDialect {};
-    let analyzed = sql_semantic_protocol::analyze_sql(
-        "SELECT l.k FROM l NATURAL JOIN r",
-        "generic",
-        &dialect,
-    ).unwrap();
-    let statement = analyzed.statements().iter().find_map(|statement| match statement {
-        sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
-        _ => None,
-    }).unwrap();
-    assert!(statement.diagnostics().iter().any(|d|d.code()=="unsupported_natural_join_condition"));
+    let analyzed =
+        sql_semantic_protocol::analyze_sql("SELECT l.k FROM l NATURAL JOIN r", "generic", &dialect)
+            .unwrap();
+    let statement = analyzed
+        .statements()
+        .iter()
+        .find_map(|statement| match statement {
+            sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
+            _ => None,
+        })
+        .unwrap();
+    assert!(statement
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "unsupported_natural_join_condition"));
 }
