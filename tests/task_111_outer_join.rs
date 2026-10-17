@@ -245,38 +245,50 @@ fn disjoint_nonempty_outer_inputs_are_closed_world_without_physical_null_inserti
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{dialect}: no-match complete nonempty proof: {plan:?}");
             };
-            assert!(cases.iter().any(|case| {
-                let disjoint = case.obligations().iter().any(|o| matches!(
-                    o,
-                    WitnessObligation::JoinPopulation {
-                        left_row,
-                        right_row,
-                        join_kind,
-                        pattern: JoinPopulationPattern::DisjointKeys,
-                        left_rows,
-                        right_rows,
-                        output_rows: 3,
-                        closed_world: true,
-                        ..
-                    } if *join_kind == kind
-                        && *left_rows == expected_left
-                        && *right_rows == expected_right
-                        && left_row.relation() == "l"
-                        && right_row.relation() == "r"
-                ));
-                let absences = case.obligations().iter().filter(|o| matches!(
-                    o,
-                    WitnessObligation::NoMatchingPartner {
-                        closed_world: true,
-                        ..
-                    }
-                )).count();
-                let whole_bags = case.obligations().iter().filter(|o| matches!(
-                    o,
-                    WitnessObligation::ClosedWorld { .. }
-                )).count();
-                disjoint && absences == 2 && whole_bags == 2
-            }), "{dialect}: complete physical sources and two nonmatching sides: {plan:?}");
+            assert!(
+                cases.iter().any(|case| {
+                    let disjoint = case.obligations().iter().any(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::JoinPopulation {
+                                left_row,
+                                right_row,
+                                join_kind,
+                                pattern: JoinPopulationPattern::DisjointKeys,
+                                left_rows,
+                                right_rows,
+                                output_rows: 3,
+                                closed_world: true,
+                                ..
+                            } if *join_kind == kind
+                                && *left_rows == expected_left
+                                && *right_rows == expected_right
+                                && left_row.relation() == "l"
+                                && right_row.relation() == "r"
+                        )
+                    });
+                    let absences = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| {
+                            matches!(
+                                o,
+                                WitnessObligation::NoMatchingPartner {
+                                    closed_world: true,
+                                    ..
+                                }
+                            )
+                        })
+                        .count();
+                    let whole_bags = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                        .count();
+                    disjoint && absences == 2 && whole_bags == 2
+                }),
+                "{dialect}: complete physical sources and two nonmatching sides: {plan:?}"
+            );
         }
     }
 }
