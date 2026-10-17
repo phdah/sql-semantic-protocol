@@ -187,6 +187,7 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
             right_row,
             left_key,
             right_key,
+            additional_keys,
             join_kind,
             pattern,
             left_rows,
@@ -207,6 +208,15 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
                 "output_rows": output_rows,
                 "closed_world": closed_world
             });
+            if !additional_keys.is_empty() {
+                value["additional_keys"] = json!(additional_keys
+                    .iter()
+                    .map(|key| json!({
+                        "left": column_ref_to_value(key.left()),
+                        "right": column_ref_to_value(key.right())
+                    }))
+                    .collect::<Vec<_>>());
+            }
             if let Some(groups) = pattern.group_count() {
                 value["pattern_groups"] = json!(groups);
             }
