@@ -46,10 +46,7 @@ type FiniteCandidateBags = Vec<(FiniteSourceBag, FiniteSourceBag)>;
 /// Choose complete source rows for a bounded cardinality goal.
 /// The ASOF two-row construction deliberately matches the independent
 /// [5,10] and [4,7] predecessor fixture, including the nonwinning true pair.
-fn candidate_bags(
-    law: FiniteJoinLaw,
-    wanted: u64,
-) -> Option<FiniteCandidateBags> {
+fn candidate_bags(law: FiniteJoinLaw, wanted: u64) -> Option<FiniteCandidateBags> {
     if wanted > 64 {
         return None;
     }
