@@ -408,7 +408,9 @@ impl FiniteJoinLaw {
                 let matched = match (left_value, right_value) {
                     (Some(left), Some(right)) => match self {
                         Self::AsOfNearestPriorInclusive => right <= left,
-                        Self::CorrelatedInnerEquality | Self::CorrelatedOuterEquality => left == right,
+                        Self::CorrelatedInnerEquality | Self::CorrelatedOuterEquality => {
+                            left == right
+                        }
                     },
                     _ => false,
                 };
@@ -418,12 +420,14 @@ impl FiniteJoinLaw {
             }
             match self {
                 Self::AsOfNearestPriorInclusive => {
-                    let nearest = matches
-                        .iter()
-                        .copied()
-                        .max_by_key(|index| right[*index]);
+                    let nearest = matches.iter().copied().max_by_key(|index| right[*index]);
                     if let Some(nearest) = nearest {
-                        if matches.iter().filter(|index| right[**index] == right[nearest]).count() != 1 {
+                        if matches
+                            .iter()
+                            .filter(|index| right[**index] == right[nearest])
+                            .count()
+                            != 1
+                        {
                             return None;
                         }
                         selected.push((left_index, Some(nearest)));
@@ -454,10 +458,12 @@ impl FiniteJoinLaw {
         right: &[Option<i64>],
     ) -> Option<Vec<(usize, usize)>> {
         let selected = self.selected_rows(left, right)?;
-        Some((0..left.len())
-            .flat_map(|l| (0..right.len()).map(move |r| (l, r)))
-            .filter(|(l, r)| !selected.contains(&(*l, Some(*r))))
-            .collect())
+        Some(
+            (0..left.len())
+                .flat_map(|l| (0..right.len()).map(move |r| (l, r)))
+                .filter(|(l, r)| !selected.contains(&(*l, Some(*r))))
+                .collect(),
+        )
     }
 }
 
