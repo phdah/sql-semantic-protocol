@@ -188,8 +188,16 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
             let JoinWitnessDirection::Exact(witnesses) = direction else {
                 panic!("{id}: positive and rejected directions must be exact");
             };
-            assert_eq!(witnesses.len(), 1, "{id}: single membership truth direction");
-            assert_eq!(witnesses[0].shape(), shape, "{id}: membership classification");
+            assert_eq!(
+                witnesses.len(),
+                1,
+                "{id}: single membership truth direction"
+            );
+            assert_eq!(
+                witnesses[0].shape(),
+                shape,
+                "{id}: membership classification"
+            );
         }
         let expected_pattern = match case["witness_pattern"].as_str().unwrap() {
             "mixed_duplicate_left" => JoinPopulationPattern::MixedDuplicateLeft,
