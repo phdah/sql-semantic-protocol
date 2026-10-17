@@ -1,6 +1,6 @@
 {
   "task": "TASK-109",
-  "version": 1,
+  "version": 2,
   "frozen_at": "2026-10-17",
   "scope_boundary": "Two physical INNER inputs, one or two AND-conjoined equality keys, one-to-many bags, typed signed INTEGER physical keys; chained joins and vendor laws explicitly owned by TASK-110..116",
   "fixture_ids": [
@@ -1159,6 +1159,8 @@
   "review": {
     "state": "evidence_pending",
     "reviewer": "automated task acceptance audit",
-    "scope_note": "This matrix separates fixture-specific executed results from universally valid semantic directions. Review against DuckDB and compiled protocol on final head before signing off."
+    "scope_note": "This matrix separates fixture-specific executed results from universally valid semantic directions. Review against DuckDB and compiled protocol on final head before signing off.",
+    "revision_note": "v2 reviewer correction of incomplete preimplementation v1 matrix: added independently executable full source and output bags, canonical AST classifications, explicit nonmandatory conditional cases, and fixture-vs-universal exactness distinction. Named fixture and variant IDs, input bags and expected row counts unchanged.",
+    "reviewed_boundary": "No globally impossible classification is inferred solely from empty rows under one frozen dataset. The fixed fixture oracle proves absence only for its complete closed bag."
   }
 }
