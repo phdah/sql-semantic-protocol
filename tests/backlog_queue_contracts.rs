@@ -71,7 +71,7 @@ fn acceptance_numbers(text: &str) -> BTreeSet<u64> {
 }
 
 #[test]
-fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapping() {
+fn all_planned_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapping() {
     let plan: serde_json::Value =
         serde_json::from_str(include_str!("../docs/backlog-child-queue-plan.json"))
             .expect("versioned child plan");
@@ -138,7 +138,12 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
             let content = fs::read_to_string(repo_path(&format!(".backlog/tasks/{name}")))
                 .unwrap_or_else(|error| panic!("missing {name}: {error}"));
             assert!(frontmatter(&content).contains(&format!("id: {child}")));
-            assert!(frontmatter(&content).contains("status: To Do"));
+            assert!(
+                ["status: To Do", "status: In Progress", "status: Done"]
+                    .iter()
+                    .any(|status| frontmatter(&content).contains(status)),
+                "{child} has invalid backlog status"
+            );
             let expected = if i == 0 {
                 upstream.clone()
             } else {
@@ -154,11 +159,16 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
             );
             assert!(!dependencies(&content).contains(&format!("TASK-{number}")));
             let criteria = acceptance_numbers(&content);
-            assert_eq!(criteria, BTreeSet::from([1, 2, 3, 4, 5]), "{child}");
             assert!(
-                !content.contains("- [x] #"),
-                "{child} claimed Done prematurely"
+                BTreeSet::from([1, 2, 3, 4, 5]).is_subset(&criteria),
+                "{child} is missing core completion gates"
             );
+            if frontmatter(&content).contains("status: Done") {
+                assert!(
+                    !content.contains("- [ ] #"),
+                    "{child} marked Done with incomplete acceptance"
+                );
+            }
             let fixtures = phase["fixture_ids"].as_array().expect("fixture IDs");
             assert_eq!(fixtures.len(), 2);
             for fixture in fixtures {
