@@ -499,9 +499,10 @@ impl TemporalJoinLaw {
             || bytes.get(10) != Some(&b' ')
             || bytes.get(13) != Some(&b':')
             || bytes.get(16) != Some(&b':')
-            || !bytes.iter().enumerate().all(|(i, digit)| {
-                matches!(i, 4 | 7 | 10 | 13 | 16) || digit.is_ascii_digit()
-            })
+            || !bytes
+                .iter()
+                .enumerate()
+                .all(|(i, digit)| matches!(i, 4 | 7 | 10 | 13 | 16) || digit.is_ascii_digit())
             || crate::temporal::canonical_date_text(&value[..10]).is_err()
         {
             return false;
@@ -522,7 +523,12 @@ impl TemporalJoinLaw {
         left: &[Option<String>],
         right: &[Option<String>],
     ) -> Option<Vec<(usize, usize)>> {
-        if left.iter().chain(right).flatten().any(|time| !Self::valid_timestamp(time)) {
+        if left
+            .iter()
+            .chain(right)
+            .flatten()
+            .any(|time| !Self::valid_timestamp(time))
+        {
             return None;
         }
         let mut selected = Vec::new();
