@@ -148,7 +148,10 @@ fn frozen_complete_duckdb_source_and_terminal_bags_agree() {
             }
         }
         expected_pairs.sort();
-        assert_eq!(actual_pairs, expected_pairs, "{id}: complete TRUE/FALSE/UNKNOWN pairs");
+        assert_eq!(
+            actual_pairs, expected_pairs,
+            "{id}: complete TRUE/FALSE/UNKNOWN pairs"
+        );
     }
 }
 
