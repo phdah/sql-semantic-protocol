@@ -71,3 +71,39 @@ Each three-item row specifies the **minimum** required certified path, the bound
 **Release TASK-91:** No downgrade of TASK-66 mandatory feature/dialect inventory for convenience. All release blockers, actual producer/terminal oracles, and downstream sql-tdg integration must pass. TASK-92 is explicitly post-v3.
 **Completed tasks:** TASK-66..69, TASK-79, TASK-93..106 (as applicable) remain unchanged. This is a forward-looking scope/verification review, not retroactive redefinition of accepted proofs.
 **Future extension:** Generalized arbitrary correlated DAGs, nonlinear symbolic inverses, opaque UDFs and unbounded recursion must be tracked as separately bounded tasks or approved conditional cells. A residual is never proof of supported semantics.
+
+
+## Pre-release child queue audit (2026-10-17, PR #117)
+
+The independently reviewed backlog planning inventory is
+[`docs/backlog-child-queue-plan.json`](backlog-child-queue-plan.json).
+It maps every original AC of the 19 uncompleted implementation parents
+TASK-71..78 and TASK-80..90 to **80 distinct TASK-109..188 child tasks**.
+TASK-79 was already Done and is unchanged; TASK-91 remains the independent
+release gate; TASK-92 is post-v3 and not a release-blocking implementation.
+
+- Keep all original parent AC and their feature-richness floor. Parent
+  dependencies on children are **closure-only**; each child depends on
+  upstream *completed* parent prerequisites or its immediately preceding
+  sibling, never on itself or its own parent.
+- Each child fixes a finite named syntax/semantic variant set, two stable
+  initial fixture IDs, an independently stated sample source/result/state
+  oracle and explicit fail-closed boundaries. These are **planning constraints**,
+  not a false claim that all typed expected domains and every dialect oracle
+  are already implemented or certified.
+- **Before implementation** freeze an individual child's full machine-readable
+  acceptance inventory, including exact source/terminal bags, typed bounds and
+  NULL, SQL TRUE and NOT TRUE directions, physical identities, adapters and
+  all parser/dialect cells. Test and sign off **every** mandatory cell; justify
+  any conditional cell with evidence, named owner and reviewed disposition.
+  No blanket `where supported`, green-only signoff or implicit parent closure.
+- TASK-71 starts at TASK-109. Each other implementation parent likewise
+  resolves to its first dependency-ready child. Once all child PRs are merged,
+  the parent receives an **independent six/nine/eight-AC closure review**
+  before it can be marked Done and unblock TASK-91.
+
+The original task acceptance criteria, the approved TASK-66 matrix, the
+project-wide outcome-domain Definition of Done and any broader release
+integration gates remain binding. Splitting schedules implementation; it
+does **not** downgrade mandatory semantics or declare vendor-specific behavior
+supported without evidence.

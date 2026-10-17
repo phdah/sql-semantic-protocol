@@ -66,7 +66,7 @@ Per-terminal rejected-row classification and **seeded randomized rejecting predi
 
 ## Bounded dependency-ordered child execution queue (2026-10-17)
 
-TASK-86 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-86. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+TASK-86 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory; preserve previously checked AC #1 while requiring every remaining AC and the completed evidence to be independently reviewed once all children are Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-86. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
 
 - **[TASK-169](task-169%20-%20represent-per-source-per-terminal-true-false-unknown-and-absence-vectors.md)** (1/4): per-terminal membership; column identities; shared lineage; OR rejection semantics. Fixtures `86-C169-P`, `86-C169-N`.
 - **[TASK-170](task-170%20-%20enumerate-all-constructive-rejection-alternatives-with-provenance.md)** (2/4): multiple AND/OR choices; independent FALSE/UNKNOWN; column-specific branches. Fixtures `86-C170-P`, `86-C170-N`.

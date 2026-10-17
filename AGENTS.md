@@ -240,6 +240,25 @@ parent itself for new implementation work or mark it Done until the child
 closure checks and original acceptance criteria are verified. The parent
 task file owns the concrete queue; keep general routing guidance here.
 
+**Multiple parent queues (2026-10-17):** `docs/backlog-child-queue-plan.json`
+owns the forward TASK-71..90 execution plan (excluding completed TASK-79).
+When more than one queue has a ready child, choose the ready child belonging
+to the **lowest-numbered unfinished parent**; within that queue use the
+lowest-numbered unfinished child. A child is ready only when all its declared
+dependencies are Done **and merged on `main`**. The parent has child dependencies
+only for closure; children do not depend on their parent. Do not skip or work on
+the next sibling while its predecessor is merely In Progress or has an unmerged
+PR. TASK-91 is a release gate, not a generic next implementation task;
+TASK-92 is post-v3. Parent original criteria are never auto-checked from
+child CI alone.
+
+**A queue plan is not an implementation acceptance freeze.** Fixed fixture IDs,
+named families and example expected outputs are the preimplementation scope
+boundary; before writing semantics, each child must freeze its own complete
+typed domain/SQL/dialect/adapter/oracle matrix with exact expected results,
+as required below. No missing mandatory matrix cell is a permissible Residual.
+
+
 ### Bounded acceptance before implementation
 
 An acceptance criterion is **not** bounded merely because it references the

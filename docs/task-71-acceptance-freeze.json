@@ -1620,6 +1620,18 @@
       6
     ],
     "required": "all mandatory verified and conditional statuses reviewed, complete run CI green",
-    "status": "blocked"
-  }
+    "status": "blocked_pending_eight_children_and_independent_parent_closure"
+  },
+  "execution_queue": [
+    "TASK-109",
+    "TASK-110",
+    "TASK-111",
+    "TASK-112",
+    "TASK-113",
+    "TASK-114",
+    "TASK-115",
+    "TASK-116"
+  ],
+  "execution_plan": "docs/backlog-child-queue-plan.json",
+  "freeze_level": "parent_inventory_only_child_specific_typed_oracles_unverified"
 }
