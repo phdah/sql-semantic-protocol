@@ -111,14 +111,17 @@ pub(super) fn analyze_join(
     // Downstream physical planners consume typed column identities and never
     // reparse the vendor's APPLY or LATERAL SQL text.
     let (execution, physical_right, correlation) = match &join.relation {
-        TableFactor::Derived { subquery, lateral, .. } => {
+        TableFactor::Derived {
+            subquery, lateral, ..
+        } => {
             let derived = match subquery.body.as_ref() {
-                SetExpr::Select(select) if select.from.len() == 1
-                    && select.from[0].joins.is_empty() => {
+                SetExpr::Select(select)
+                    if select.from.len() == 1 && select.from[0].joins.is_empty() =>
+                {
                     match &select.from[0].relation {
-                        TableFactor::Table { name, args: None, .. } => {
-                            Some((name.to_string(), select.selection.as_ref()))
-                        }
+                        TableFactor::Table {
+                            name, args: None, ..
+                        } => Some((name.to_string(), select.selection.as_ref())),
                         _ => None,
                     }
                 }
@@ -154,7 +157,10 @@ pub(super) fn analyze_join(
         ),
     };
     let condition = if execution.is_some_and(|form| {
-        matches!(form, JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply)
+        matches!(
+            form,
+            JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply
+        )
     }) {
         correlation.or(condition)
     } else {
