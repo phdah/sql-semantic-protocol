@@ -89,7 +89,11 @@
           "fixture_ids": [
             "71-C112-P",
             "71-C112-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-112-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/121",
+          "dependency_gate": "TASK-113 remains blocked until PR #121 merges into main"
         },
         {
           "title": "Implement portable join syntax and Boolean condition variants",
@@ -106,7 +110,8 @@
           "fixture_ids": [
             "71-C113-P",
             "71-C113-N"
-          ]
+          ],
+          "dependency_gate": "Blocked until TASK-112 is Done and PR #121 merges into main"
         },
         {
           "title": "Classify ASOF range time and LATERAL APPLY laws",
