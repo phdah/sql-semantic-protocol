@@ -278,10 +278,14 @@ impl JoinKeyEquality {
     }
 
     /// Column in the left physical source instance.
-    pub fn left(&self) -> &ColumnRef { &self.left }
+    pub fn left(&self) -> &ColumnRef {
+        &self.left
+    }
 
     /// Column in the right physical source instance.
-    pub fn right(&self) -> &ColumnRef { &self.right }
+    pub fn right(&self) -> &ColumnRef {
+        &self.right
+    }
 }
 
 /// One required fact. None of these grant physical-source realizability on their own.
