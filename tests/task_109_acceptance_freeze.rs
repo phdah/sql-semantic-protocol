@@ -97,5 +97,17 @@ fn task_109_matrix_is_linked_and_protocol_schema_models_full_key_tuple() {
     assert_eq!(join["properties"]["additional_keys"]["minItems"], 1);
     assert_eq!(join["properties"]["additional_keys"]["maxItems"], 1);
     assert!(TASK.contains("docs/task-109-acceptance-freeze.json"));
-    assert!(TASK.contains("status: In Progress"));
+    assert!(TASK.contains("status: Done"));
+    assert_eq!(manifest["task_109_join_acceptance"]["status"], "verified_bounded_binary_inner_join");
+    let audited: Value = serde_json::from_str(FREEZE).expect("reviewed executable matrix");
+    assert_eq!(audited["version"], 2, "review every acceptance revision");
+    assert_eq!(audited["review"]["state"], "signed_off");
+    assert_eq!(audited["verification"]["status"], "verified");
+    assert_eq!(audited["verification"]["required_jobs_passed"], 9);
+    assert!(audited["variants"].as_array().unwrap().iter().all(|v| {
+        v["status"] == "verified" && v["verification_evidence"].as_array().is_some()
+    }));
+    assert!(TASK.contains("- [x] #5"));
+    assert!(include_str!("../docs/task-109-acceptance-audit.md")
+        .contains("TASK-110 remains"));
 }
