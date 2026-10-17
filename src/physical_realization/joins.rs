@@ -1025,7 +1025,13 @@ pub(super) fn physical_join_population_with_source_counts(
         (JoinPopulationPattern::EmptyLeft, 0, wanted),
         (JoinPopulationPattern::DisjointKeys, wanted, 1),
         (JoinPopulationPattern::DisjointKeys, 1, wanted),
+        (JoinPopulationPattern::MixedMatchedUnmatched, wanted, 2),
+        (JoinPopulationPattern::MixedMatchedUnmatched, 2, wanted),
     ];
+    if wanted >= 3 {
+        candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, wanted - 1, 2));
+        candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, 2, wanted - 1));
+    }
     if let Some(partner) = wanted.checked_sub(1) {
         if partner > 0 {
             candidates.push((JoinPopulationPattern::DisjointKeys, partner, 1));
@@ -1092,6 +1098,7 @@ pub(super) fn physical_join_population_with_source_counts(
             JoinPopulationPattern::DistinctMatched => i128::from(left_rows.saturating_sub(1)),
             JoinPopulationPattern::GroupedMatched { groups } => i128::from(groups - 1),
             JoinPopulationPattern::DisjointKeys => 1,
+            JoinPopulationPattern::MixedMatchedUnmatched => 2,
             JoinPopulationPattern::CommonMatched
             | JoinPopulationPattern::EmptyLeft
             | JoinPopulationPattern::EmptyRight => 0,
@@ -1190,6 +1197,47 @@ pub(super) fn physical_join_population_with_source_counts(
                         .then_some(crate::join_witness::JoinSide::Left),
                     closed_world: true,
                 });
+            }
+            JoinPopulationPattern::MixedMatchedUnmatched => {
+                // Physical key 0 joins exactly one row per side; key 1
+                // occurs only on unmatched left rows and key 2 only on
+                // unmatched right rows. The entire bag is accounted for.
+                obligations.push(WitnessObligation::JoinPair {
+                    left_row: left_row.clone(),
+                    right_row: right_row.clone(),
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    null_extended: None,
+                });
+                for (candidate, partner, left, right, null_extended) in [
+                    (
+                        &left_row,
+                        &right_row,
+                        &left_key,
+                        &right_key,
+                        matches!(join_kind, JoinKind::Left | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Right),
+                    ),
+                    (
+                        &right_row,
+                        &left_row,
+                        &right_key,
+                        &left_key,
+                        matches!(join_kind, JoinKind::Right | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Left),
+                    ),
+                ] {
+                    obligations.push(WitnessObligation::NoMatchingPartner {
+                        candidate: candidate.clone(),
+                        partner: partner.clone(),
+                        comparison: crate::protocol::ComparisonOperator::Eq,
+                        left: left.clone(),
+                        right: right.clone(),
+                        null_extended,
+                        closed_world: true,
+                    });
+                }
             }
             JoinPopulationPattern::DisjointKeys => {
                 // Both complete input bags exist, but the left key is 0 and
@@ -1733,7 +1781,7 @@ pub(super) fn jointly_realized_join_goals(
         if !valid {
             continue;
         }
-        // This pattern assigns different key values to opposite instances.
+        // These patterns assign different key values to opposite instances.
         // Independent join graphs that reuse a source might contradict those
         // assignments; they need a full joint key histogram before signoff.
         if populations.len() > 1
@@ -1741,7 +1789,8 @@ pub(super) fn jointly_realized_join_goals(
                 matches!(
                     population,
                     WitnessObligation::JoinPopulation {
-                        pattern: JoinPopulationPattern::DisjointKeys,
+                        pattern: JoinPopulationPattern::DisjointKeys
+                            | JoinPopulationPattern::MixedMatchedUnmatched,
                         ..
                     }
                 )
