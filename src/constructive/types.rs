@@ -191,6 +191,9 @@ pub enum JoinPopulationPattern {
     /// Keys 0..groups occur exactly left_rows/groups and right_rows/groups
     /// times, respectively. SQL bags multiply those contributor counts.
     GroupedMatched { groups: u64 },
+    /// Complete nonempty inputs with disjoint, non-NULL integer keys:
+    /// every left key is 0 and every right key is 1. No TRUE ON pair exists.
+    DisjointKeys,
     /// The left population has no rows. The right may be nonempty.
     EmptyLeft,
     /// The right population has no rows. The left may be nonempty.
@@ -204,6 +207,7 @@ impl JoinPopulationPattern {
             Self::DistinctMatched => "distinct_matched",
             Self::CommonMatched => "common_matched",
             Self::GroupedMatched { .. } => "grouped_matched",
+            Self::DisjointKeys => "disjoint_keys",
             Self::EmptyLeft => "empty_left",
             Self::EmptyRight => "empty_right",
         }
@@ -213,7 +217,11 @@ impl JoinPopulationPattern {
     pub const fn group_count(self) -> Option<u64> {
         match self {
             Self::GroupedMatched { groups } => Some(groups),
-            Self::DistinctMatched | Self::CommonMatched | Self::EmptyLeft | Self::EmptyRight => {
+            Self::DistinctMatched
+            | Self::CommonMatched
+            | Self::DisjointKeys
+            | Self::EmptyLeft
+            | Self::EmptyRight => {
                 None
             }
         }
@@ -240,6 +248,7 @@ impl JoinPopulationPattern {
             {
                 left.checked_div(groups)?.checked_mul(right)?
             }
+            Self::DisjointKeys if left > 0 && right > 0 => 0,
             Self::EmptyLeft if left == 0 => 0,
             Self::EmptyRight if right == 0 => 0,
             _ => return None,
