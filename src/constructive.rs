@@ -275,3 +275,29 @@ mod tests {
         assert!(WitnessDirection::feasible(vec![case]).is_none());
     }
 }
+
+#[cfg(test)]
+mod uniform_join_contract_tests {
+    use super::*;
+    use crate::protocol::ColumnRef;
+
+    #[test]
+    fn noncartesian_population_requires_both_physical_keys() {
+        let left = RowVariable::new("l", "l", "left").unwrap();
+        let right = RowVariable::new("r", "r", "right").unwrap();
+        let invalid = WitnessObligation::UniformJoinPopulation {
+            left_row: left,
+            right_row: right,
+            left_key: Some(ColumnRef::new(Some("l".to_string()), "k".to_string())),
+            right_key: None,
+            law: UniformJoinLaw::NullSafeEquality,
+            left_value: Some(0),
+            right_value: Some(0),
+            left_rows: 1,
+            right_rows: 1,
+            output_rows: 1,
+            closed_world: true,
+        };
+        assert!(WitnessCase::new(vec![invalid], ProofStrength::Sufficient).is_none());
+    }
+}
