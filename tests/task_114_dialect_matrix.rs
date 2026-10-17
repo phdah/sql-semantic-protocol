@@ -2,7 +2,7 @@
 //! The classification is intentionally stricter than "SQL parsed".
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, JoinKind,
+    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, JoinExecution, JoinKind,
     ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -49,6 +49,21 @@ fn observed(variant: &str, dialect: &str, sql: &str) -> &'static str {
     let Some(query) = query else {
         return "parsed_not_query";
     };
+    let expected_execution = match variant {
+        "asof_nearest_prior" => Some(JoinExecution::AsOfNearest),
+        "lateral_derived" => Some(JoinExecution::LateralInner),
+        "cross_apply" => Some(JoinExecution::CrossApply),
+        "outer_apply" => Some(JoinExecution::OuterApply),
+        _ => None,
+    };
+    if query.joins().first().and_then(|join| join.execution()) != expected_execution {
+        return "parsed_unclassified";
+    }
+    if matches!(expected_execution, Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply))
+        && query.joins().first().and_then(|join| join.right_physical_source()) != Some("r")
+    {
+        return "parsed_unclassified";
+    }
     let codes = query
         .diagnostics()
         .iter()
