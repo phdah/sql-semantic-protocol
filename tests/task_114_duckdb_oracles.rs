@@ -35,10 +35,7 @@ fn nearest_prior_asof_chooses_one_right_row_not_all_eligible_pairs() {
     )
     .unwrap();
 
-    let selected = rows(
-        &db,
-        "SELECT l.id, r.id FROM l ASOF JOIN r ON l.t >= r.t",
-    );
+    let selected = rows(&db, "SELECT l.id, r.id FROM l ASOF JOIN r ON l.t >= r.t");
     assert_eq!(
         selected,
         expected(&[("l5", Some("r4")), ("l10", Some("r7"))])
@@ -65,11 +62,7 @@ fn nearest_prior_asof_chooses_one_right_row_not_all_eligible_pairs() {
     );
     assert_eq!(
         eligible,
-        expected(&[
-            ("l5", Some("r4")),
-            ("l10", Some("r4")),
-            ("l10", Some("r7")),
-        ])
+        expected(&[("l5", Some("r4")), ("l10", Some("r4")), ("l10", Some("r7")),])
     );
     assert_eq!(selected.len(), 2);
     assert_eq!(eligible.len(), 3);
@@ -99,11 +92,7 @@ fn correlated_lateral_evaluates_each_left_row_and_preserves_duplicates() {
     );
     assert_eq!(
         inner,
-        expected(&[
-            ("l1", Some("r1")),
-            ("l1", Some("r1b")),
-            ("l2", Some("r2")),
-        ])
+        expected(&[("l1", Some("r1")), ("l1", Some("r1b")), ("l2", Some("r2")),])
     );
 
     let outer = rows(
@@ -140,11 +129,7 @@ fn inequality_range_join_proves_both_selected_and_not_true_bags() {
 
     assert_eq!(
         rows(&db, "SELECT l.id, r.id FROM l JOIN r ON l.t > r.t"),
-        expected(&[
-            ("l5", Some("r4")),
-            ("l10", Some("r4")),
-            ("l10", Some("r7")),
-        ])
+        expected(&[("l5", Some("r4")), ("l10", Some("r4")), ("l10", Some("r7")),])
     );
     assert_eq!(
         rows(
