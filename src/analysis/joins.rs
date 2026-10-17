@@ -130,12 +130,16 @@ pub(super) fn analyze_join(
                         && select.connect_by.is_none()
                         && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                             if items.is_empty() && modifiers.is_empty())
-                        && select.projection.iter().all(|item| matches!(item,
-                            SelectItem::UnnamedExpr(Expr::CompoundIdentifier(_))
-                                | SelectItem::ExprWithAlias {
-                                    expr: Expr::CompoundIdentifier(_),
-                                    ..
-                                })) =>
+                        && select.projection.iter().all(|item| {
+                            matches!(
+                                item,
+                                SelectItem::UnnamedExpr(Expr::CompoundIdentifier(_))
+                                    | SelectItem::ExprWithAlias {
+                                        expr: Expr::CompoundIdentifier(_),
+                                        ..
+                                    }
+                            )
+                        }) =>
                 {
                     match &select.from[0].relation {
                         TableFactor::Table {
