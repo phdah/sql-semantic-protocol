@@ -11972,5 +11972,21 @@
     "require_child_specific_frozen_matrix": true,
     "require_original_parent_ac_signoff": true,
     "release_approved": false
+  },
+  "task_111_join_acceptance": {
+    "owner": "TASK-111",
+    "parent": "TASK-71",
+    "status": "frozen_pending_verification",
+    "acceptance_freeze": "docs/task-111-acceptance-freeze.json",
+    "independent_duckdb_test": "tests/task_111_outer_join.rs",
+    "fixture_ids": [
+      "71-C111-P",
+      "71-C111-N"
+    ],
+    "mandatory_variant_cells": 8,
+    "parser_dialect_cells": 104,
+    "canonical_implementation": "src/physical_realization/joins.rs",
+    "all_original_criteria_verified": false,
+    "release_approved": false
   }
 }
