@@ -1,0 +1,2330 @@
+{
+  "version": 1,
+  "owner": "TASK-113",
+  "parent": "TASK-71",
+  "status": "frozen_unverified",
+  "fixture_ids": [
+    "71-C113-P",
+    "71-C113-N"
+  ],
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "acceptance_boundary": "CROSS, USING, NATURAL with authoritative schemas, OR-on, non-equi comparison, IS NOT DISTINCT FROM and null-safe equality; complete physical source bags and positive/NOT TRUE truth. No unknown syntax or vendor semantics promoted to exactness.",
+  "source_semantics": "All source rows are nullable INTEGER k with stable VARCHAR row identity. NATURAL columns intersect on k only because id names differ. Exact source/output domains and full output bags are independently specified.",
+  "cases": [
+    {
+      "id": "71-C113-P-CROSS",
+      "fixture": "71-C113-P",
+      "variant": "cross",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l CROSS JOIN r",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l CROSS JOIN r",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ],
+        [
+          "l1",
+          1,
+          "r2",
+          null
+        ],
+        [
+          "l2",
+          null,
+          "r1",
+          1
+        ],
+        [
+          "l2",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "cross",
+        "condition": "no_predicate"
+      },
+      "expected_output_count": 4,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-USING",
+      "fixture": "71-C113-P",
+      "variant": "using",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r USING (k)",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r USING (k)",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "eq"
+      },
+      "expected_output_count": 1,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-NATURAL",
+      "fixture": "71-C113-P",
+      "variant": "natural",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l NATURAL JOIN r",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l NATURAL JOIN r",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "eq"
+      },
+      "expected_output_count": 1,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-OR-ON",
+      "fixture": "71-C113-P",
+      "variant": "or_on",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k = r.k OR l.k IS NULL",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k = r.k OR l.k IS NULL",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ],
+        [
+          "l2",
+          null,
+          "r1",
+          1
+        ],
+        [
+          "l2",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "or"
+      },
+      "expected_output_count": 3,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-NON-EQUI",
+      "fixture": "71-C113-P",
+      "variant": "non_equi",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k < r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k < r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "lt"
+      },
+      "expected_output_count": 0,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": true
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-IS-NOT-DISTINCT-FROM",
+      "fixture": "71-C113-P",
+      "variant": "is_not_distinct_from",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ],
+        [
+          "l2",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "is_not_distinct_from"
+      },
+      "expected_output_count": 2,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-P-NULL-SAFE-EQUALITY",
+      "fixture": "71-C113-P",
+      "variant": "null_safe_equality",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k <=> r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          1
+        ],
+        [
+          "l2",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "is_not_distinct_from"
+      },
+      "expected_output_count": 2,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-CROSS",
+      "fixture": "71-C113-N",
+      "variant": "cross",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l CROSS JOIN r",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l CROSS JOIN r",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          2
+        ],
+        [
+          "l1",
+          1,
+          "r2",
+          null
+        ],
+        [
+          "l2",
+          1,
+          "r1",
+          2
+        ],
+        [
+          "l2",
+          1,
+          "r2",
+          null
+        ],
+        [
+          "l3",
+          null,
+          "r1",
+          2
+        ],
+        [
+          "l3",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "cross",
+        "condition": "no_predicate"
+      },
+      "expected_output_count": 6,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-USING",
+      "fixture": "71-C113-N",
+      "variant": "using",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r USING (k)",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r USING (k)",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "eq"
+      },
+      "expected_output_count": 0,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": true
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-NATURAL",
+      "fixture": "71-C113-N",
+      "variant": "natural",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l NATURAL JOIN r",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l NATURAL JOIN r",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "eq"
+      },
+      "expected_output_count": 0,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": true
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-OR-ON",
+      "fixture": "71-C113-N",
+      "variant": "or_on",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k = r.k OR l.k IS NULL",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k = r.k OR l.k IS NULL",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l3",
+          null,
+          "r1",
+          2
+        ],
+        [
+          "l3",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "or"
+      },
+      "expected_output_count": 2,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-NON-EQUI",
+      "fixture": "71-C113-N",
+      "variant": "non_equi",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k < r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k < r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1,
+          "r1",
+          2
+        ],
+        [
+          "l2",
+          1,
+          "r1",
+          2
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "lt"
+      },
+      "expected_output_count": 2,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-IS-NOT-DISTINCT-FROM",
+      "fixture": "71-C113-N",
+      "variant": "is_not_distinct_from",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l3",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l3",
+          "r1"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "is_not_distinct_from"
+      },
+      "expected_output_count": 1,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "duckdb_fixture_required"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    },
+    {
+      "id": "71-C113-N-NULL-SAFE-EQUALITY",
+      "fixture": "71-C113-N",
+      "variant": "null_safe_equality",
+      "sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k <=> r.k",
+      "duckdb_sql": "SELECT l.lid, l.k, r.rid, r.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          2
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l3",
+          null,
+          "r2",
+          null
+        ]
+      ],
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l3",
+          "r1"
+        ]
+      ],
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "left": {
+          "lid": "VARCHAR",
+          "k": "INTEGER"
+        },
+        "right": {
+          "rid": "VARCHAR",
+          "k": "INTEGER"
+        }
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "inner",
+        "condition": "is_not_distinct_from"
+      },
+      "expected_output_count": 1,
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "all qualifying source row pairs satisfy the complete canonical join predicate under SQL three-valued truth",
+      "not_true_proof": "enumerate every other physical source pair; predicate evaluates SQL FALSE or UNKNOWN; entire input bags are closed",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "generic": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "verification_required",
+          "canonical": "verification_required",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "verification": "not_run",
+      "implementation": "pending"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "J113-VENDOR-COLLATION",
+      "owner": "TASK-113",
+      "missing_evidence": "authoritative collation and comparable key type semantics",
+      "disposition": "pending_release_review",
+      "classification": "conditional"
+    },
+    {
+      "id": "J113-NATURAL-UNKNOWN-SCHEMA",
+      "owner": "TASK-113",
+      "missing_evidence": "complete source column names for NATURAL intersection",
+      "disposition": "pending_release_review",
+      "classification": "conditional"
+    },
+    {
+      "id": "J113-NULLSAFE-PARSER",
+      "owner": "TASK-113",
+      "missing_evidence": "parser dialect acceptance of <=> and native vendor execution",
+      "disposition": "pending_release_review",
+      "classification": "conditional"
+    }
+  ],
+  "acceptance_criteria": {
+    "1": "freeze exact baseline and complementary physical bag, parser/dialect/adapter cells",
+    "2": "implement all named canonical outcomes",
+    "3": "independent full-bag DuckDB and typed domain tests",
+    "4": "13 dialect + SQL/dbt/ODCS",
+    "5": "full CI signoff and audit before Done"
+  }
+}
