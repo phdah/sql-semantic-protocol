@@ -90,7 +90,8 @@ fn compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment() {
     "#;
         let odcs =
             parse_odcs_yaml(odcs_yaml, "postgresql", &names).expect("typed ODCS physical metadata");
-        let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS catalog");
+        let odcs_catalog =
+            RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS catalog");
         let schemas = relations
             .iter()
             .map(|relation| {
@@ -110,8 +111,8 @@ fn compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment() {
             "postgresql",
             parser.as_ref(),
         )];
-        let direct =
-            analyze_configured_inputs_with_catalog(&configured, &catalog).expect("direct SQL analysis");
+        let direct = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .expect("direct SQL analysis");
         let from_odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
             .expect("ODCS source analysis");
 
