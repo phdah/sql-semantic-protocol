@@ -135,6 +135,10 @@ fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
             "{id}: NULL"
         );
         assert_eq!(values.is_empty(), domain["empty"], "{id}: empty");
+        if !numeric.is_empty() {
+            assert_eq!(domain["lower_inclusive"], true, "{id}: minimum included");
+            assert_eq!(domain["upper_inclusive"], true, "{id}: maximum included");
+        }
     }
 }
 
