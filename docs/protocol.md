@@ -1232,6 +1232,33 @@ Named producers remain graph nodes, never independently writable sources.
 multiplication even for two aliases of one physical relation.
 `empty_left`/`empty_right` enumerate a complete absent partner population,
 proving unmatched and NULL-extended rows as well as semi/anti absence laws.
+`disjoint_keys` assigns key 0 to **all left physical rows** and key 1 to
+**all right physical rows**, requiring two nonempty signed integer populations
+with evidence for both values. Its complete-bag equality produces no TRUE
+pairs. LEFT and RIGHT preserve their respective input counts, FULL preserves
+the sum, and any NULLs appearing on the missing side are **synthetic output
+NULL extensions**, not invented physical source rows. Both sides carry
+closed-world `no_matching_partner` obligations. This pattern cannot be
+combined with other join populations on shared keys without a compatible
+joint histogram and does not prove physical SQL NULL key insertion.
+`mixed_matched_unmatched` certifies a complete bag with exactly one
+matching key-zero row per side; the remaining left rows use key one and
+the remaining right rows use key two. LEFT emits `left_rows` rows, RIGHT
+emits `right_rows` rows, and FULL emits `left_rows + right_rows - 1`.
+A matched-pair obligation and two separate non-matching row variables
+prove both TRUE and NOT TRUE directions. The pattern needs at least two
+physical rows per side and attested signed integer domains containing
+0, 1 and 2. It does not assert that physical SQL NULL keys can be
+inserted, and without a compatible joint histogram it is not composed
+with another join population.
+`mixed_duplicate_right` is the finite duplicated-match extension: one left
+row matches two right rows on key 0; remaining left rows use key 1 and
+remaining right rows key 2. Both nonempty unmatched sides have closed-world
+absence witnesses. For complete left/right bags of 3/4 rows, respectively,
+the LEFT, RIGHT and FULL output bags contain exactly 4/4/6 rows, including
+duplicate matches. This source-count witness is independent of the frozen
+DuckDB physical SQL NULL test: generic schema-only evidence cannot claim
+that inserting a NULL physical key is feasible.
 One physical population is shared by repeated source references, with
 conflicting cardinalities rejected from the construction.
 

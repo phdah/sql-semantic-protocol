@@ -898,31 +898,30 @@ pub(super) fn physical_join_population_with_source_counts(
             };
             let (left, left_instance) = map(left_key_expression)?;
             let (right, right_instance) = map(right_key_expression)?;
-            // INNER matches are symmetric. A composed local witness above already
-            // owns its physical source orientation, which can differ from the
-            // immediate SQL producer names; do not reinterpret that proof.
-            if join_kind == JoinKind::Inner {
-                (left, left_instance, right, right_instance)
-            } else {
-                // Outer/semi/anti preservation is positional, not the ON equality's
-                // operand order. Orient only endpoints freshly recovered from ON.
-                let sql_left = sql_join
-                    .left()
-                    .alias()
-                    .unwrap_or(sql_join.left().relation());
-                let sql_right = sql_join
-                    .right()
-                    .alias()
-                    .unwrap_or(sql_join.right().relation());
-                if left_instance == sql_left && right_instance == sql_right {
-                    (left, left_instance, right, right_instance)
-                } else if left_instance == sql_right && right_instance == sql_left {
-                    (right, right_instance, left, left_instance)
-                } else {
-                    return None;
-                }
-            }
+            (left, left_instance, right, right_instance)
         };
+    // SQL preservation is based on the input's position rather than the
+    // lexical orientation of the equality's operands. A local composed
+    // witness can have reversed endpoints even without source filters.
+    let (left_key, left_instance, right_key, right_instance) = if join_kind == JoinKind::Inner {
+        (left_key, left_instance, right_key, right_instance)
+    } else {
+        let sql_left = sql_join
+            .left()
+            .alias()
+            .unwrap_or(sql_join.left().relation());
+        let sql_right = sql_join
+            .right()
+            .alias()
+            .unwrap_or(sql_join.right().relation());
+        if left_instance == sql_left && right_instance == sql_right {
+            (left_key, left_instance, right_key, right_instance)
+        } else if left_instance == sql_right && right_instance == sql_left {
+            (right_key, right_instance, left_key, left_instance)
+        } else {
+            return None;
+        }
+    };
     if left_instance == right_instance {
         return None;
     }
@@ -1024,7 +1023,26 @@ pub(super) fn physical_join_population_with_source_counts(
         (JoinPopulationPattern::CommonMatched, 1, wanted),
         (JoinPopulationPattern::EmptyRight, wanted, 0),
         (JoinPopulationPattern::EmptyLeft, 0, wanted),
+        (JoinPopulationPattern::DisjointKeys, wanted, 1),
+        (JoinPopulationPattern::DisjointKeys, 1, wanted),
+        (JoinPopulationPattern::MixedMatchedUnmatched, wanted, 2),
+        (JoinPopulationPattern::MixedMatchedUnmatched, 2, wanted),
+        // The frozen physical bag contains three left and four right rows,
+        // including two matching right-hand copies and unmatched contributors
+        // on both sides. Unlike a count-only alternative, this witnesses the
+        // same full input multiplicities as the independent DuckDB oracle.
+        (JoinPopulationPattern::MixedDuplicateRight, 3, 4),
     ];
+    if wanted >= 3 {
+        candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, wanted - 1, 2));
+        candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, 2, wanted - 1));
+    }
+    if let Some(partner) = wanted.checked_sub(1) {
+        if partner > 0 {
+            candidates.push((JoinPopulationPattern::DisjointKeys, partner, 1));
+            candidates.push((JoinPopulationPattern::DisjointKeys, 1, partner));
+        }
+    }
     if wanted == 0 {
         candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
         if let Some(&count) = exact_sources.get(left_source) {
@@ -1076,13 +1094,25 @@ pub(super) fn physical_join_population_with_source_counts(
     let mut cases = Vec::new();
     for (pattern, left_rows, right_rows) in candidates {
         if pattern.output_rows(join_kind, left_rows, right_rows) != Some(wanted)
-            || (left_source == right_source && left_rows != right_rows)
+            || (left_source == right_source
+                && (left_rows != right_rows
+                    // Both patterns require different complete key histograms
+                    // on the two sides, impossible for one physical source.
+                    || matches!(
+                        pattern,
+                        JoinPopulationPattern::DisjointKeys
+                            | JoinPopulationPattern::MixedMatchedUnmatched
+                            | JoinPopulationPattern::MixedDuplicateRight
+                    )))
         {
             continue;
         }
         let max_value = match pattern {
             JoinPopulationPattern::DistinctMatched => i128::from(left_rows.saturating_sub(1)),
             JoinPopulationPattern::GroupedMatched { groups } => i128::from(groups - 1),
+            JoinPopulationPattern::DisjointKeys => 1,
+            JoinPopulationPattern::MixedMatchedUnmatched
+            | JoinPopulationPattern::MixedDuplicateRight => 2,
             JoinPopulationPattern::CommonMatched
             | JoinPopulationPattern::EmptyLeft
             | JoinPopulationPattern::EmptyRight => 0,
@@ -1181,6 +1211,86 @@ pub(super) fn physical_join_population_with_source_counts(
                         .then_some(crate::join_witness::JoinSide::Left),
                     closed_world: true,
                 });
+            }
+            JoinPopulationPattern::MixedMatchedUnmatched
+            | JoinPopulationPattern::MixedDuplicateRight => {
+                // Physical key 0 joins one left row with one (or two)
+                // right rows; key 1
+                // occurs only on unmatched left rows and key 2 only on
+                // unmatched right rows. The entire bag is accounted for.
+                obligations.push(WitnessObligation::JoinPair {
+                    left_row: left_row.clone(),
+                    right_row: right_row.clone(),
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    null_extended: None,
+                });
+                let unmatched_left =
+                    RowVariable::new(left_source, &left_instance, "join_left_unmatched")?;
+                let unmatched_right =
+                    RowVariable::new(right_source, &right_instance, "join_right_unmatched")?;
+                for (candidate, partner, left, right, null_extended) in [
+                    (
+                        &unmatched_left,
+                        &right_row,
+                        &left_key,
+                        &right_key,
+                        matches!(join_kind, JoinKind::Left | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Right),
+                    ),
+                    (
+                        &unmatched_right,
+                        &left_row,
+                        &right_key,
+                        &left_key,
+                        matches!(join_kind, JoinKind::Right | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Left),
+                    ),
+                ] {
+                    obligations.push(WitnessObligation::NoMatchingPartner {
+                        candidate: candidate.clone(),
+                        partner: partner.clone(),
+                        comparison: crate::protocol::ComparisonOperator::Eq,
+                        left: left.clone(),
+                        right: right.clone(),
+                        null_extended,
+                        closed_world: true,
+                    });
+                }
+            }
+            JoinPopulationPattern::DisjointKeys => {
+                // Both complete input bags exist, but the left key is 0 and
+                // the right key is 1. Neither side has any TRUE partner.
+                // These NULLs are output extensions, never physical rows.
+                for (candidate, partner, left, right, null_extended) in [
+                    (
+                        &left_row,
+                        &right_row,
+                        &left_key,
+                        &right_key,
+                        matches!(join_kind, JoinKind::Left | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Right),
+                    ),
+                    (
+                        &right_row,
+                        &left_row,
+                        &right_key,
+                        &left_key,
+                        matches!(join_kind, JoinKind::Right | JoinKind::Full)
+                            .then_some(crate::join_witness::JoinSide::Left),
+                    ),
+                ] {
+                    obligations.push(WitnessObligation::NoMatchingPartner {
+                        candidate: candidate.clone(),
+                        partner: partner.clone(),
+                        comparison: crate::protocol::ComparisonOperator::Eq,
+                        left: left.clone(),
+                        right: right.clone(),
+                        null_extended,
+                        closed_world: true,
+                    });
+                }
             }
             JoinPopulationPattern::EmptyLeft | JoinPopulationPattern::EmptyRight => {}
         }
@@ -1689,6 +1799,24 @@ pub(super) fn jointly_realized_join_goals(
             }
         }
         if !valid {
+            continue;
+        }
+        // These patterns assign different key values to opposite instances.
+        // Independent join graphs that reuse a source might contradict those
+        // assignments; they need a full joint key histogram before signoff.
+        if populations.len() > 1
+            && populations.iter().any(|population| {
+                matches!(
+                    population,
+                    WitnessObligation::JoinPopulation {
+                        pattern: JoinPopulationPattern::DisjointKeys
+                            | JoinPopulationPattern::MixedMatchedUnmatched
+                            | JoinPopulationPattern::MixedDuplicateRight,
+                        ..
+                    }
+                )
+            })
+        {
             continue;
         }
         // Filters on any controlled key require a different key-aware

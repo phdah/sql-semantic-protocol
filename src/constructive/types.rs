@@ -191,6 +191,17 @@ pub enum JoinPopulationPattern {
     /// Keys 0..groups occur exactly left_rows/groups and right_rows/groups
     /// times, respectively. SQL bags multiply those contributor counts.
     GroupedMatched { groups: u64 },
+    /// Complete nonempty inputs with disjoint, non-NULL integer keys:
+    /// every left key is 0 and every right key is 1. No TRUE ON pair exists.
+    DisjointKeys,
+    /// Two closed physical input bags each contain one matching key-zero row;
+    /// their remaining rows have disjoint keys (left one, right two).
+    /// Exactly one TRUE pair exists and each other physical row is unmatched.
+    MixedMatchedUnmatched,
+    /// One matching row on the left and two on the right both have key zero.
+    /// Every remaining left row has key one and every remaining right row
+    /// has key two. Exactly two TRUE pairs coexist with both unmatched sides.
+    MixedDuplicateRight,
     /// The left population has no rows. The right may be nonempty.
     EmptyLeft,
     /// The right population has no rows. The left may be nonempty.
@@ -204,6 +215,9 @@ impl JoinPopulationPattern {
             Self::DistinctMatched => "distinct_matched",
             Self::CommonMatched => "common_matched",
             Self::GroupedMatched { .. } => "grouped_matched",
+            Self::DisjointKeys => "disjoint_keys",
+            Self::MixedMatchedUnmatched => "mixed_matched_unmatched",
+            Self::MixedDuplicateRight => "mixed_duplicate_right",
             Self::EmptyLeft => "empty_left",
             Self::EmptyRight => "empty_right",
         }
@@ -213,9 +227,13 @@ impl JoinPopulationPattern {
     pub const fn group_count(self) -> Option<u64> {
         match self {
             Self::GroupedMatched { groups } => Some(groups),
-            Self::DistinctMatched | Self::CommonMatched | Self::EmptyLeft | Self::EmptyRight => {
-                None
-            }
+            Self::DistinctMatched
+            | Self::CommonMatched
+            | Self::DisjointKeys
+            | Self::MixedMatchedUnmatched
+            | Self::MixedDuplicateRight
+            | Self::EmptyLeft
+            | Self::EmptyRight => None,
         }
     }
 
@@ -240,12 +258,19 @@ impl JoinPopulationPattern {
             {
                 left.checked_div(groups)?.checked_mul(right)?
             }
+            Self::DisjointKeys if left > 0 && right > 0 => 0,
+            Self::MixedMatchedUnmatched if left >= 2 && right >= 2 => 1,
+            Self::MixedDuplicateRight if left >= 2 && right >= 3 => 2,
             Self::EmptyLeft if left == 0 => 0,
             Self::EmptyRight if right == 0 => 0,
             _ => return None,
         };
-        let left_unmatched = if pairs == 0 { left } else { 0 };
-        let right_unmatched = if pairs == 0 { right } else { 0 };
+        let (left_unmatched, right_unmatched) = match self {
+            Self::MixedMatchedUnmatched => (left.checked_sub(1)?, right.checked_sub(1)?),
+            Self::MixedDuplicateRight => (left.checked_sub(1)?, right.checked_sub(2)?),
+            _ if pairs == 0 => (left, right),
+            _ => (0, 0),
+        };
         match kind {
             JoinKind::Inner => Some(pairs),
             JoinKind::Left => pairs.checked_add(left_unmatched),
@@ -253,8 +278,19 @@ impl JoinPopulationPattern {
             JoinKind::Full => pairs
                 .checked_add(left_unmatched)?
                 .checked_add(right_unmatched),
-            JoinKind::LeftSemi => Some(if pairs > 0 { left } else { 0 }),
-            JoinKind::RightSemi => Some(if pairs > 0 { right } else { 0 }),
+            // Partial populations have exactly one matched source row per
+            // side. Semi joins select source rows, not pair multiplicities.
+            JoinKind::LeftSemi => Some(match self {
+                Self::MixedMatchedUnmatched | Self::MixedDuplicateRight => 1,
+                _ if pairs > 0 => left,
+                _ => 0,
+            }),
+            JoinKind::RightSemi => Some(match self {
+                Self::MixedMatchedUnmatched => 1,
+                Self::MixedDuplicateRight => 2,
+                _ if pairs > 0 => right,
+                _ => 0,
+            }),
             JoinKind::LeftAnti => Some(left_unmatched),
             JoinKind::RightAnti => Some(right_unmatched),
             JoinKind::Cross | JoinKind::Unknown => None,

@@ -67,7 +67,11 @@
           "fixture_ids": [
             "71-C111-P",
             "71-C111-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-111-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/120",
+          "dependency_gate": "TASK-112 remains blocked until PR #120 merged into main"
         },
         {
           "title": "Certify SEMI and ANTI absence witnesses",
