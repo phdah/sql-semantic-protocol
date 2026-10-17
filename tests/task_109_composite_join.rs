@@ -271,8 +271,8 @@ fn emitted_composite_population_contains_the_full_key_tuple() {
             .any(|obligation| {
                 obligation["kind"] == "join_population"
                     && obligation["join_kind"] == "inner"
-                    && obligation["additional_keys"][0]["left"]["column"] == "a"
-                    && obligation["additional_keys"][0]["right"]["column"] == "a"
+                    && obligation["additional_keys"][0]["left"]["name"] == "a"
+                    && obligation["additional_keys"][0]["right"]["name"] == "a"
                     && obligation["closed_world"] == true
             })
     }));
