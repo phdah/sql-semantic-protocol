@@ -23,7 +23,7 @@ fn fixture_bundle(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBu
                 ["k", "a"]
                     .iter()
                     .map(|column| {
-                        SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
+                        SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql")
                             .expect("signed INTEGER schema")
                     })
                     .collect(),
