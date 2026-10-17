@@ -74,7 +74,13 @@ fn source_backed_asof_and_correlated_operators_have_exact_finite_bags() {
         for wanted in [0, 2] {
             let plan = physical_joint_source_plan(&bundle, &[(layer, wanted)]);
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
-                panic!("{variant}/{wanted}: no canonical exact plan: {plan:?}");
+                panic!("{variant}/{wanted}: no canonical exact plan: {plan:?}; special_shape={}; sources={:?}; join={:?}; diagnostics={:?}; outputs={:?}",
+                    query.special_join_goal_output_shape(),
+                    query.sources(),
+                    query.joins()[0],
+                    query.diagnostics(),
+                    query.output().columns()
+                );
             };
             assert!(
                 cases.iter().any(|case| {
