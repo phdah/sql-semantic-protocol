@@ -1,0 +1,1650 @@
+{
+  "version": 1,
+  "owner": "TASK-114",
+  "parent": "TASK-71",
+  "created_at": "2026-10-17",
+  "status": "frozen_pending_implementation_and_verification",
+  "fixture_ids": [
+    "71-C114-P",
+    "71-C114-N"
+  ],
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "mandatory_named_variants": [
+    "asof_nearest_prior",
+    "range_inequality",
+    "time_inequality",
+    "lateral_derived",
+    "cross_apply",
+    "outer_apply"
+  ],
+  "cases": [
+    {
+      "variant": "asof_nearest_prior",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r MATCH_CONDITION(l.t >= r.t)",
+      "duckdb_sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r ON l.t >= r.t",
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "ASOF tie-breaking without a uniquely maximal right timestamp is conditional",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-asof_nearest_prior",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "asof_nearest_prior",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r MATCH_CONDITION(l.t >= r.t)",
+      "duckdb_sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r ON l.t >= r.t",
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "ASOF tie-breaking without a uniquely maximal right timestamp is conditional",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-asof_nearest_prior",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    },
+    {
+      "variant": "range_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t > r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-range_inequality",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "range_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t > r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-range_inequality",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    },
+    {
+      "variant": "time_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t >= r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "TIMESTAMP"
+      },
+      "left": [
+        [
+          "l5",
+          "2026-10-17 00:05:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00"
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          "2026-10-17 00:05:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[2026-10-17T00:05:00,2026-10-17T00:10:00]",
+        "right_t": "[2026-10-17T00:04:00,2026-10-17T00:07:00]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-time_inequality",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "time_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t >= r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "TIMESTAMP"
+      },
+      "left": [
+        [
+          "l5",
+          "2026-10-17 00:05:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00"
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          "2026-10-17 00:05:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[2026-10-17T00:05:00,2026-10-17T00:10:00]",
+        "right_t": "[2026-10-17T00:04:00,2026-10-17T00:07:00]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-time_inequality",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    },
+    {
+      "variant": "lateral_derived",
+      "sql": "SELECT l.id, q.id FROM l CROSS JOIN LATERAL (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "per-left-row correlated execution requires explicit row-instance scope",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-lateral_derived",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "lateral_derived",
+      "sql": "SELECT l.id, q.id FROM l CROSS JOIN LATERAL (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "per-left-row correlated execution requires explicit row-instance scope",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-lateral_derived",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    },
+    {
+      "variant": "cross_apply",
+      "sql": "SELECT l.id, q.id FROM l CROSS APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-cross_apply",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "cross_apply",
+      "sql": "SELECT l.id, q.id FROM l CROSS APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-cross_apply",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    },
+    {
+      "variant": "outer_apply",
+      "sql": "SELECT l.id, q.id FROM l OUTER APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "not_true": [
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,1]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "no-match null-extension must not be represented as a physical nullable right row",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-P-outer_apply",
+      "fixture": "71-C114-P",
+      "direction": "positive"
+    },
+    {
+      "variant": "outer_apply",
+      "sql": "SELECT l.id, q.id FROM l OUTER APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "not_true": [
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,1]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "unverified",
+        "dbt": "unverified",
+        "odcs_equivalent_metadata": "unverified"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "bigquery": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "clickhouse": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "databricks": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "duckdb": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "generic": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "hive": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mssql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "mysql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "postgresql": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "redshift": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "snowflake": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        },
+        "sqlite": {
+          "parser": "unverified",
+          "canonical": "unverified"
+        }
+      },
+      "verification": "unverified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "no-match null-extension must not be represented as a physical nullable right row",
+        "release_disposition": "pending_review"
+      },
+      "id": "71-C114-N-outer_apply",
+      "fixture": "71-C114-N",
+      "direction": "not_true"
+    }
+  ],
+  "closure": {
+    "required_cases": 12,
+    "required_dialect_cells": 156,
+    "verified_cases": 0,
+    "verified_dialect_cells": 0,
+    "blocking_if_unverified": true,
+    "adapter_parity_required": true,
+    "full_physical_duckdb_oracles_required": true,
+    "description": "This inventory fixes the scope but does not certify AST/parser support or semantics. Parser boundaries need evidence. Named variants are mandatory and cannot be deferred just because implementation is difficult."
+  }
+}
