@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-111",
   "parent": "TASK-71",
   "status": "frozen_pending_verification",
@@ -170,6 +170,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "left",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "l.k",
+          "right": "r.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -318,6 +334,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "left",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "r.k",
+          "right": "l.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -466,6 +498,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "right",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "l.k",
+          "right": "r.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -614,6 +662,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "full",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "l.k",
+          "right": "r.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -785,6 +849,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "left",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "l.k",
+          "right": "r.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -956,6 +1036,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "right",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "r.k",
+          "right": "l.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -1139,6 +1235,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "full",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "r.k",
+          "right": "l.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     },
     {
@@ -1255,6 +1367,22 @@
           "native_execution": "not_claimed",
           "canonical": "equivalent_when_parsed"
         }
+      },
+      "canonical_ast_expectation": {
+        "statement_kind": "query",
+        "join_kind": "full",
+        "relation_instances": {
+          "left": "l",
+          "right": "r"
+        },
+        "on": {
+          "kind": "comparison",
+          "operator": "eq",
+          "left": "l.k",
+          "right": "r.k"
+        },
+        "where_kind": "none",
+        "joins": 1
       }
     }
   ],
@@ -1298,5 +1426,6 @@
     "test": "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
     "status": "ci_pending",
     "classification_note": "This is parser and canonical analyzer parity, not native execution on non-DuckDB engines."
-  }
+  },
+  "review_revision_note": "v2 adds independently asserted canonical AST contracts to every pre-frozen TASK-111 fixture without changing SQL, source bags, output bags or mandatory variant inventory."
 }
