@@ -1,7 +1,7 @@
 ---
 id: TASK-114
 title: Classify ASOF range time and LATERAL APPLY laws
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -29,6 +29,10 @@ type: feature
 - **Concrete independent oracle baseline:** L times [5,10], R times [4,7] => nearest-prior ASOF picks [4,7]; correlated LATERAL two singletons => 2 rows.
 - **Conditional/fail-closed boundary:** Vendor/session tie-breaking and per-row table-function side effects must fail closed with named conditional owner.
 - **Original parent AC ownership:** #2, #3, #5, #6. Additive to project-wide outcome-first definition of done and TASK-66 capability inventory.
+
+## Frozen acceptance inventory
+
+The versioned [TASK-114 acceptance matrix](../../docs/task-114-acceptance-freeze.json) enumerates twelve positive/NOT TRUE fixture cells across ASOF, range, time, LATERAL, CROSS APPLY and OUTER APPLY, with 156 dialect classification obligations. **Every cell is still unverified; this file freezes scope, not evidence or signoff.**
 
 ## Acceptance Criteria
 
