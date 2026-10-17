@@ -7,9 +7,9 @@ use crate::data_type::DataType;
 use crate::protocol::{ColumnRef, ComparisonOperator, JoinKind};
 use crate::relation::TimestampZone;
 
-fn timestamp_key<'a>(
+fn timestamp_key(
     source: &str,
-    columns: &'a [crate::relation::SchemaColumn],
+    columns: &[crate::relation::SchemaColumn],
     name: &str,
 ) -> Option<ColumnRef> {
     let column = columns.iter().find(|col| col.name() == name)?;
@@ -25,7 +25,10 @@ fn timestamp(text: &str) -> Option<String> {
     TemporalJoinLaw::valid_timestamp(text).then(|| text.to_string())
 }
 
-fn timestamp_candidates(wanted: u64) -> Option<Vec<(Vec<Option<String>>, Vec<Option<String>>)>> {
+type TemporalSourceBag = Vec<Option<String>>;
+type TemporalCandidateBags = Vec<(TemporalSourceBag, TemporalSourceBag)>;
+
+fn timestamp_candidates(wanted: u64) -> Option<TemporalCandidateBags> {
     let a = || timestamp("2026-10-17 00:05:00");
     let b = || timestamp("2026-10-17 00:10:00");
     let c = || timestamp("2026-10-17 00:04:00");
