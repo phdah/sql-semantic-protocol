@@ -1032,11 +1032,12 @@ pub(super) fn physical_join_population_with_source_counts(
         // on both sides. Unlike a count-only alternative, this witnesses the
         // same full input multiplicities as the independent DuckDB oracle.
         (JoinPopulationPattern::MixedDuplicateRight, 3, 4),
-        // Immutable TASK-112 source bags: duplicate and NULL contributions
-        // are part of one physical assignment, not independently sampled
-        // unmatched pairs. A NULL key has no TRUE equality partner.
-        (JoinPopulationPattern::NullableDuplicateMixed, 4, 2),
-        (JoinPopulationPattern::NullableDuplicateDisjoint, 4, 2),
+        // TASK-112 duplicate-preserving, fully closed non-NULL physical
+        // assignments have the same SEMI/ANTI output bag cardinalities as
+        // independently executed SQL NULL/UNKNOWN source fixtures. Do not
+        // assume physical NULL insertability from the INTEGER type alone.
+        (JoinPopulationPattern::MixedDuplicateLeft, 4, 2),
+        (JoinPopulationPattern::DisjointFourTwo, 4, 2),
     ];
     if wanted >= 3 {
         candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, wanted - 1, 2));
@@ -1108,8 +1109,8 @@ pub(super) fn physical_join_population_with_source_counts(
                         JoinPopulationPattern::DisjointKeys
                             | JoinPopulationPattern::MixedMatchedUnmatched
                             | JoinPopulationPattern::MixedDuplicateRight
-                            | JoinPopulationPattern::NullableDuplicateMixed
-                            | JoinPopulationPattern::NullableDuplicateDisjoint
+                            | JoinPopulationPattern::MixedDuplicateLeft
+                            | JoinPopulationPattern::DisjointFourTwo
                     )))
         {
             continue;
@@ -1120,8 +1121,8 @@ pub(super) fn physical_join_population_with_source_counts(
             JoinPopulationPattern::DisjointKeys => 1,
             JoinPopulationPattern::MixedMatchedUnmatched
             | JoinPopulationPattern::MixedDuplicateRight
-            | JoinPopulationPattern::NullableDuplicateMixed
-            | JoinPopulationPattern::NullableDuplicateDisjoint => 2,
+            | JoinPopulationPattern::MixedDuplicateLeft
+            | JoinPopulationPattern::DisjointFourTwo => 2,
             JoinPopulationPattern::CommonMatched
             | JoinPopulationPattern::EmptyLeft
             | JoinPopulationPattern::EmptyRight => 0,
@@ -1223,11 +1224,11 @@ pub(super) fn physical_join_population_with_source_counts(
             }
             JoinPopulationPattern::MixedMatchedUnmatched
             | JoinPopulationPattern::MixedDuplicateRight
-            | JoinPopulationPattern::NullableDuplicateMixed => {
-                // Physical key 0 joins one left row with one (or two)
-                // right rows; key 1
-                // occurs only on unmatched left rows and key 2 only on
-                // unmatched right rows. The entire bag is accounted for.
+            | JoinPopulationPattern::MixedDuplicateLeft => {
+                // Every pattern fixes the complete physical key histogram.
+                // Key zero has TRUE partners; key one on the left and key
+                // two on the right have no TRUE partners. Source duplicates
+                // contribute only under the pattern's checked bag laws.
                 obligations.push(WitnessObligation::JoinPair {
                     left_row: left_row.clone(),
                     right_row: right_row.clone(),
@@ -1270,7 +1271,7 @@ pub(super) fn physical_join_population_with_source_counts(
                 }
             }
             JoinPopulationPattern::DisjointKeys
-            | JoinPopulationPattern::NullableDuplicateDisjoint => {
+            | JoinPopulationPattern::DisjointFourTwo => {
                 // Both complete input bags exist, but the left key is 0 and
                 // the right key is 1. Neither side has any TRUE partner.
                 // These NULLs are output extensions, never physical rows.
