@@ -324,31 +324,50 @@ fn matched_and_unmatched_outer_populations_retain_both_truth_directions() {
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{dialect}: must construct matched and unmatched outer bag: {plan:?}");
             };
-            assert!(cases.iter().any(|case| {
-                let matching = case.obligations().iter().any(|o| matches!(
-                    o,
-                    WitnessObligation::JoinPopulation {
-                        join_kind,
-                        pattern: JoinPopulationPattern::MixedMatchedUnmatched,
-                        left_rows,
-                        right_rows,
-                        closed_world: true,
-                        ..
-                    } if *join_kind == kind
-                        && *left_rows == left_count
-                        && *right_rows == right_count
-                ));
-                let positives = case.obligations().iter().filter(|o| matches!(
-                    o, WitnessObligation::JoinPair { .. }
-                )).count();
-                let negative_rows = case.obligations().iter().filter(|o| matches!(
-                    o, WitnessObligation::NoMatchingPartner { closed_world: true, .. }
-                )).count();
-                let closed_sources = case.obligations().iter().filter(|o| matches!(
-                    o, WitnessObligation::ClosedWorld { .. }
-                )).count();
-                matching && positives == 1 && negative_rows == 2 && closed_sources == 2
-            }), "{dialect}: matched+unmatched row IDs and complete source bags: {plan:?}");
+            assert!(
+                cases.iter().any(|case| {
+                    let matching = case.obligations().iter().any(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::JoinPopulation {
+                                join_kind,
+                                pattern: JoinPopulationPattern::MixedMatchedUnmatched,
+                                left_rows,
+                                right_rows,
+                                closed_world: true,
+                                ..
+                            } if *join_kind == kind
+                                && *left_rows == left_count
+                                && *right_rows == right_count
+                        )
+                    });
+                    let positives = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| matches!(o, WitnessObligation::JoinPair { .. }))
+                        .count();
+                    let negative_rows = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| {
+                            matches!(
+                                o,
+                                WitnessObligation::NoMatchingPartner {
+                                    closed_world: true,
+                                    ..
+                                }
+                            )
+                        })
+                        .count();
+                    let closed_sources = case
+                        .obligations()
+                        .iter()
+                        .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                        .count();
+                    matching && positives == 1 && negative_rows == 2 && closed_sources == 2
+                }),
+                "{dialect}: matched+unmatched row IDs and complete source bags: {plan:?}"
+            );
         }
     }
 }
@@ -367,34 +386,47 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
         };
         for &dialect in DIALECTS {
             assert_eq!(
-                case["dialects"][dialect]["parser"],
-                "parser_equivalent",
+                case["dialects"][dialect]["parser"], "parser_equivalent",
                 "{id}/{dialect}: matrix must record executable parser status"
             );
             assert_eq!(
                 case["dialects"][dialect]["native_execution"],
-                if dialect == "duckdb" { "duckdb_oracle" } else { "not_claimed" },
+                if dialect == "duckdb" {
+                    "duckdb_oracle"
+                } else {
+                    "not_claimed"
+                },
                 "{id}/{dialect}: parser does not certify vendor execution"
             );
             let analyzed = bundle(sql, dialect);
             let layer = analyzed.layers().first().expect("joined terminal");
             let plan = physical_joint_source_plan(
                 &analyzed,
-                &[(layer.id(), case["expected_output_count"].as_u64().expect("count"))],
+                &[(
+                    layer.id(),
+                    case["expected_output_count"].as_u64().expect("count"),
+                )],
             );
-            assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
-                "{id}/{dialect}: exact typed closed source population: {plan:?}");
+            assert!(
+                matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+                "{id}/{dialect}: exact typed closed source population: {plan:?}"
+            );
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 unreachable!("guarded above");
             };
-            assert!(cases.iter().any(|witness| witness.obligations().iter().any(|o| matches!(
-                o,
-                WitnessObligation::JoinPopulation {
-                    join_kind,
-                    closed_world: true,
-                    ..
-                } if *join_kind == kind
-            ))), "{id}/{dialect}: canonical join kind and complete physical input evidence");
+            assert!(
+                cases
+                    .iter()
+                    .any(|witness| witness.obligations().iter().any(|o| matches!(
+                        o,
+                        WitnessObligation::JoinPopulation {
+                            join_kind,
+                            closed_world: true,
+                            ..
+                        } if *join_kind == kind
+                    ))),
+                "{id}/{dialect}: canonical join kind and complete physical input evidence"
+            );
         }
     }
 }
