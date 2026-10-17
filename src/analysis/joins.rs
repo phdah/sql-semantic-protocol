@@ -90,11 +90,9 @@ pub(super) fn analyze_join_constraint(
             scope,
             diagnostics,
         )),
-        JoinConstraint::Using(columns) => join_column_equalities(
-            columns.iter().map(ToString::to_string),
-            left,
-            right,
-        ),
+        JoinConstraint::Using(columns) => {
+            join_column_equalities(columns.iter().map(ToString::to_string), left, right)
+        }
         JoinConstraint::Natural => {
             // NATURAL is an equality conjunction over the intersection of
             // both visible source schemas. With incomplete schemas, guessing
