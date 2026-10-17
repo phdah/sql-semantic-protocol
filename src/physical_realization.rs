@@ -476,6 +476,7 @@ mod filters;
 mod graph;
 mod grouping;
 mod join_finite;
+mod join_temporal;
 mod join_uniform;
 mod joins;
 mod joint_counts;
