@@ -176,6 +176,7 @@ pub(super) fn physical_finite_join_count_plan(
                 | "unsupported_cross_apply"
                 | "unsupported_outer_apply"
                 | "unsupported_lateral_row_scope"
+                | "unresolved_local_predicate"
         )
     }) {
         return None;
