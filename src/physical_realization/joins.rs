@@ -501,30 +501,31 @@ pub(super) fn physical_join_population_with_source_counts(
         };
         let (left, left_instance) = map(left_key_expression)?;
         let (right, right_instance) = map(right_key_expression)?;
-        (left, left_instance, right, right_instance)
-    };
-    // ON equality is commutative, but LEFT/RIGHT/FULL preservation and
-    // null-extension are not. A filtered join can recover endpoints directly
-    // from the canonical ON expression when the local witness is residual.
-    // Orient those endpoints by the SQL join inputs before assigning any
-    // physical key population or unmatched-side obligation.
-    let sql_left = sql_join
-        .left()
-        .alias()
-        .unwrap_or(sql_join.left().relation());
-    let sql_right = sql_join
-        .right()
-        .alias()
-        .unwrap_or(sql_join.right().relation());
-    let (left_key, left_instance, right_key, right_instance) =
-        if left_instance == sql_left && right_instance == sql_right {
-            (left_key, left_instance, right_key, right_instance)
-        } else if left_instance == sql_right && right_instance == sql_left {
-            (right_key, right_instance, left_key, left_instance)
+        // INNER matches are symmetric. A composed local witness above already
+        // owns its physical source orientation, which can differ from the
+        // immediate SQL producer names; do not reinterpret that proof.
+        if join_kind == JoinKind::Inner {
+            (left, left_instance, right, right_instance)
         } else {
-            // Never guess source instance identity through local aliases.
-            return None;
-        };
+            // Outer/semi/anti preservation is positional, not the ON equality's
+            // operand order. Orient only endpoints freshly recovered from ON.
+            let sql_left = sql_join
+                .left()
+                .alias()
+                .unwrap_or(sql_join.left().relation());
+            let sql_right = sql_join
+                .right()
+                .alias()
+                .unwrap_or(sql_join.right().relation());
+            if left_instance == sql_left && right_instance == sql_right {
+                (left, left_instance, right, right_instance)
+            } else if left_instance == sql_right && right_instance == sql_left {
+                (right, right_instance, left, left_instance)
+            } else {
+                return None;
+            }
+        }
+    };
     if left_instance == right_instance {
         return None;
     }
