@@ -12,6 +12,8 @@ Physical schema and default semantics: `src/relation.rs` owns typed columns, col
 
 ASOF ordering lineage and unsupported ASOF/APPLY diagnostics: `src/analysis/joins.rs`; correlated `LATERAL` derived-row fail-closed boundary: `src/analysis/relations.rs`; public safety regressions: `tests/task_114_temporal_lateral_boundaries.rs`. The ASOF eligibility predicate is preserved in the canonical join condition without claiming that all eligible pairs are selected. Full constructive nearest-prior and correlated-population proofs remain pending.
 
+TASK-114 finite complete row bags: `src/protocol/relations.rs` owns typed ASOF and correlated `JoinExecution`; `src/analysis/joins.rs` owns AST-derived correlation and physical source-instance identity, and `src/analysis/queries.rs` the parser-certified special-join outer row shape. `src/constructive/types.rs` owns selected/nonselected complete identity pair laws `FiniteJoinLaw` and `TemporalJoinLaw`, `src/physical_realization/join_finite.rs` owns certified signed-integer nearest/range and LATERAL/APPLY source populations, and `src/physical_realization/join_temporal.rs` owns explicitly zone-free temporal complete bags. `src/constructive/cases.rs` validates source bag invariants. `src/emission/constructive.rs` and `schema/protocol.schema.json` own the wire contract. Independent public oracles: `tests/task_114_finite_populations.rs`, `tests/task_114_canonical_frozen.rs`, `tests/task_114_temporal_population.rs`, `tests/task_114_special_adapter_parity.rs`, `tests/task_114_frozen_execution.rs`, `tests/task_114_dialect_matrix.rs`.
+
 ## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |
