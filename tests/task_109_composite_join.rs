@@ -273,3 +273,155 @@ fn emitted_composite_population_contains_the_full_key_tuple() {
             })
     }));
 }
+
+#[test]
+fn compiled_dbt_and_odcs_join_inputs_preserve_the_physical_composite_proof() {
+    use sql_semantic_protocol::{
+        analyze_dbt_manifest_with_schemas, parse_dbt_manifest, parse_odcs_yaml,
+    };
+
+    let sql = "SELECT l.k, l.a FROM warehouse.raw.left_input AS l \
+               INNER JOIN warehouse.raw.right_input AS r \
+               ON l.k = r.k AND l.a = r.a";
+    let manifest = serde_json::json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+            "dbt_version": "1.11.8",
+            "adapter_type": "postgres"
+        },
+        "nodes": {
+            "model.demo.joined": {
+                "unique_id": "model.demo.joined",
+                "resource_type": "model",
+                "relation_name": "warehouse.analytics.joined",
+                "database": "warehouse",
+                "schema": "analytics",
+                "original_file_path": "models/joined.sql",
+                "language": "sql",
+                "raw_code": sql,
+                "compiled_code": sql,
+                "depends_on": {"nodes": ["source.demo.left_input", "source.demo.right_input"]}
+            }
+        },
+        "sources": {
+            "source.demo.left_input": {
+                "unique_id": "source.demo.left_input",
+                "resource_type": "source",
+                "relation_name": "warehouse.raw.left_input",
+                "database": "warehouse",
+                "schema": "raw",
+                "name": "left_input",
+                "columns": {
+                    "k": {"name": "k", "data_type": "INTEGER"},
+                    "a": {"name": "a", "data_type": "INTEGER"}
+                }
+            },
+            "source.demo.right_input": {
+                "unique_id": "source.demo.right_input",
+                "resource_type": "source",
+                "relation_name": "warehouse.raw.right_input",
+                "database": "warehouse",
+                "schema": "raw",
+                "name": "right_input",
+                "columns": {
+                    "k": {"name": "k", "data_type": "INTEGER"},
+                    "a": {"name": "a", "data_type": "INTEGER"}
+                }
+            }
+        }
+    });
+    let parser = dialect_from_name("postgresql").expect("PostgreSQL");
+    let manifest = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
+    let dbt = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref())
+        .expect("dbt manifest with physical typed columns");
+
+    let relations = ["warehouse.raw.left_input", "warehouse.raw.right_input"];
+    let names = RelationCatalog::new(&relations).expect("physical input identities");
+    let odcs_yaml = r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: task109
+name: Binary join inputs
+version: 1.0.0
+status: active
+schema:
+  - name: left_input
+    physicalName: warehouse.raw.left_input
+    properties:
+      - name: k
+        physicalType: INTEGER
+      - name: a
+        physicalType: INTEGER
+  - name: right_input
+    physicalName: warehouse.raw.right_input
+    properties:
+      - name: k
+        physicalType: INTEGER
+      - name: a
+        physicalType: INTEGER
+"#;
+    let odcs = parse_odcs_yaml(odcs_yaml, "postgresql", &names)
+        .expect("equivalent ODCS physical metadata");
+    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas())
+        .expect("ODCS typed physical catalog");
+    let direct_schemas = relations
+        .iter()
+        .map(|name| {
+            RelationSchema::new(
+                *name,
+                ["k", "a"]
+                    .into_iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
+                            .expect("typed integer")
+                    })
+                    .collect(),
+            )
+            .expect("direct source")
+        })
+        .collect::<Vec<_>>();
+    let direct_catalog = RelationCatalog::from_schemas(&direct_schemas).expect("direct catalog");
+    let source = SqlInput::inline(sql);
+    let input = [ConfiguredSqlInput::new(
+        "task109",
+        &source,
+        "postgresql",
+        parser.as_ref(),
+    )];
+    let direct = analyze_configured_inputs_with_catalog(&input, &direct_catalog)
+        .expect("direct SQL");
+    let from_odcs = analyze_configured_inputs_with_catalog(&input, &odcs_catalog)
+        .expect("SQL with ODCS physical metadata");
+
+    for (kind, analyzed) in [("direct", &direct), ("dbt", &dbt), ("odcs", &from_odcs)] {
+        let layer = analyzed
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer.consumes().iter().any(|source| source == relations[0])
+                    && layer.consumes().iter().any(|source| source == relations[1])
+            })
+            .expect("join consumes both physical instances");
+        let proof = physical_joint_source_plan(analyzed, &[(layer.id(), 4)]);
+        let WitnessDirection::Feasible(cases) = proof.outcome() else {
+            panic!("{kind}: missing physical composite join construction: {proof:?}");
+        };
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|item| {
+                    matches!(
+                        item,
+                        WitnessObligation::JoinPopulation {
+                            additional_keys,
+                            join_kind: sql_semantic_protocol::JoinKind::Inner,
+                            output_rows: 4,
+                            closed_world: true,
+                            ..
+                        } if additional_keys.len() == 1
+                    )
+                })
+            }),
+            "{kind}: exact complete composite proof"
+        );
+    }
+}
