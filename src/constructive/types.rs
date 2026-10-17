@@ -381,6 +381,10 @@ pub enum FiniteJoinLaw {
     CorrelatedInnerEquality,
     /// Evaluate equality per left row, null-extending only absent right bags.
     CorrelatedOuterEquality,
+    /// Strict signed-integer inner range comparison over complete bags.
+    IntegerGreaterThan,
+    /// Inclusive signed-integer inner range comparison over complete bags.
+    IntegerGreaterThanOrEqual,
 }
 
 impl FiniteJoinLaw {
@@ -390,6 +394,8 @@ impl FiniteJoinLaw {
             Self::AsOfNearestPriorInclusive => "asof_nearest_prior_inclusive",
             Self::CorrelatedInnerEquality => "correlated_inner_equality",
             Self::CorrelatedOuterEquality => "correlated_outer_equality",
+            Self::IntegerGreaterThan => "integer_greater_than",
+            Self::IntegerGreaterThanOrEqual => "integer_greater_than_or_equal",
         }
     }
 
@@ -411,6 +417,8 @@ impl FiniteJoinLaw {
                         Self::CorrelatedInnerEquality | Self::CorrelatedOuterEquality => {
                             left == right
                         }
+                        Self::IntegerGreaterThan => left > right,
+                        Self::IntegerGreaterThanOrEqual => left >= right,
                     },
                     _ => false,
                 };
@@ -435,7 +443,8 @@ impl FiniteJoinLaw {
                         selected.push((left_index, None));
                     }
                 }
-                Self::CorrelatedInnerEquality => {
+                Self::IntegerGreaterThan | Self::IntegerGreaterThanOrEqual
+                | Self::CorrelatedInnerEquality => {
                     selected.extend(matches.into_iter().map(|index| (left_index, Some(index))));
                 }
                 Self::CorrelatedOuterEquality => {
