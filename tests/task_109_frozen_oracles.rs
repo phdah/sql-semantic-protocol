@@ -95,7 +95,7 @@ fn assert_typed_domain(id: &str, actual: &[Vec<Option<i64>>], spec: &Value) {
         return;
     }
     let domains = if spec.get("type").is_some() {
-        vec![&spec]
+        vec![spec]
     } else {
         vec![&spec["k"], &spec["a"]]
     };
