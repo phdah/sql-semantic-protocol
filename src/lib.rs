@@ -115,7 +115,7 @@ pub use constraints::{
 };
 pub use constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
-    ConstructiveWitness, CountBounds, JoinPopulationPattern, ProofStrength, RowQuantifier,
+    ConstructiveWitness, CountBounds, JoinKeyEquality, JoinPopulationPattern, ProofStrength, RowQuantifier,
     RowVariable, WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
     WitnessOperator, WitnessTerm,
 };
