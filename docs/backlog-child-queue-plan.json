@@ -46,7 +46,11 @@
           "fixture_ids": [
             "71-C110-P",
             "71-C110-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-110-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/119",
+          "dependency_gate": "TASK-111 remains blocked until PR #119 merged into main"
         },
         {
           "title": "Prove LEFT RIGHT and FULL unmatched null-extension",

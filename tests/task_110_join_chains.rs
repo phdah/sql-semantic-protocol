@@ -380,3 +380,19 @@ fn duckdb_shared_producers_reuse_one_complete_original_source_bag() {
         .expect("actual positive domain and count");
     assert_eq!(extent, (Some(1), Some(1), 4));
 }
+
+#[test]
+fn unsupported_chain_key_expressions_remain_residual_not_fabricated_proofs() {
+    for sql in [
+        "SELECT l.k FROM l JOIN r ON l.k + 1 = r.k JOIN t ON r.k=t.k",
+        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k < t.k",
+        "SELECT l.k FROM l JOIN r ON l.k=r.k OR l.k=2 JOIN t ON r.k=t.k",
+    ] {
+        let b = bundle(&[sql], "postgresql");
+        let plan = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Residual { .. }),
+            "unsupported join expression must not assert a closed physical proof: {plan:?}"
+        );
+    }
+}

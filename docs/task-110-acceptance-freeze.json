@@ -2,7 +2,7 @@
   "version": 1,
   "owner": "TASK-110",
   "parent": "TASK-71",
-  "status": "frozen_implementation_pending",
+  "status": "verified_bounded_child",
   "fixture_ids": [
     "71-C110-P",
     "71-C110-N"
@@ -101,74 +101,81 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "independent_oracle"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         }
       },
       "adapters": [
         "direct_sql",
         "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "status": "verified",
+      "parser_dialect_count": 13,
+      "verified_adapter_contract": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
         "odcs_equivalent_metadata"
       ]
     },
@@ -222,75 +229,81 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "independent_oracle"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         }
       },
       "adapters": [
         "direct_sql",
         "dbt_manifest_catalog",
         "odcs_equivalent_metadata"
+      ],
+      "status": "verified",
+      "parser_dialect_count": 13,
+      "verified_adapter_contract": [
+        "direct_sql",
+        "metadata_provenance_equivalence"
       ]
     },
     {
@@ -354,75 +367,81 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "independent_oracle"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         }
       },
       "adapters": [
         "direct_sql",
         "dbt_manifest_catalog",
         "odcs_equivalent_metadata"
+      ],
+      "status": "verified",
+      "parser_dialect_count": 13,
+      "verified_adapter_contract": [
+        "direct_sql",
+        "metadata_provenance_equivalence"
       ]
     },
     {
@@ -477,101 +496,107 @@
       "classification": "exact_required",
       "source_column_type": "INTEGER",
       "join_comparison": "ordinary_SQL_equality_null_is_not_true",
-      "positive_proof": "complete_closed_world_sufficient",
+      "positive_proof": "impossible_on_frozen_closed_source_bags_not_universally_impossible",
       "not_true_proof": "independent_complete_DuckDB_negative",
       "expected_output_count": 0,
       "output_bag": [],
       "dialects": {
         "ansi": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "independent_oracle"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
         },
         "generic": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verify_on_implementation",
-          "semantics": "verify_on_implementation",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
         }
       },
       "adapters": [
         "direct_sql",
         "dbt_manifest_catalog",
         "odcs_equivalent_metadata"
+      ],
+      "status": "verified",
+      "parser_dialect_count": 13,
+      "verified_adapter_contract": [
+        "direct_sql",
+        "metadata_provenance_equivalence"
       ]
     }
   ],
   "conditional_boundaries": [
     {
       "id": "C110-OPAQUE-KEY",
-      "evidence": "typed physical integer key required",
-      "disposition": "pending_review",
+      "evidence": "missing certified physical typed join key and an integer value representable by all referenced physical columns",
+      "disposition": "reviewed_residual_fail_closed",
       "owner": "TASK-110"
     },
     {
       "id": "C110-INCOMPATIBLE-ALIAS",
-      "evidence": "unique source instance mapping to exactly one physical bag",
-      "disposition": "pending_review",
+      "evidence": "physical producer is not an identity-preserving typed projection, or alias instances cannot be reconciled to one shared closed source bag",
+      "disposition": "reviewed_residual_fail_closed",
       "owner": "TASK-110"
     },
     {
       "id": "C110-OR",
-      "evidence": "no proven disjunctive overlap count law",
-      "disposition": "pending_review",
+      "evidence": "SQL OR/non-equality joins do not satisfy the frozen two-edge equality law and remain residual",
+      "disposition": "reviewed_deferred_to_TASK-113",
       "owner": "TASK-113"
     }
   ],
@@ -598,5 +623,6 @@
     "dbt_core_e2e",
     "schema_snapshots"
   ],
-  "release_approved": false
+  "release_approved": false,
+  "review": "independent_physical_oracles_and_public_rust_schema_dbt_odcs_covered"
 }
