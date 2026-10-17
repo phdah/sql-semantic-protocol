@@ -287,6 +287,153 @@ fn direct_filtered_source(
     exact_source_filter(bundle, input, query.predicates().where_predicate()?)
 }
 
+/// A direct aliased self-join reads the *same* physical bag twice.
+/// Assigning N identical, non-NULL typed keys yields exactly N*N ordered
+/// matched pairs, including each row matched with itself. No second source
+/// population or independent alias cardinality may be created.
+fn physical_aliased_self_join_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+    exact_sources: &BTreeMap<String, u64>,
+) -> Option<WitnessDirection> {
+    use crate::protocol::{ComparisonOperator, JoinKind};
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    if walker.nodes.iter().filter(|node| matches!(node.id(), PhysicalPlanRef::Layer(_))).count()
+        != 1
+    {
+        return None;
+    }
+    let layer = walker.layers.get(target_layer_id).copied()?;
+    let query = query_for(bundle, layer)?;
+    let [left, right] = query.sources() else {
+        return None;
+    };
+    let [join] = query.joins() else {
+        return None;
+    };
+    if left.name() != right.name()
+        || left.alias().is_none()
+        || right.alias().is_none()
+        || left.alias() == right.alias()
+        || join.kind() != JoinKind::Inner
+        || query.predicates().where_predicate().is_some()
+        || query.aggregation().is_some()
+        || query.set_operation().is_some()
+        || query.window_witness().is_some()
+        || !query.subquery_witnesses().is_empty()
+        || query.predicates().having_predicate().is_some()
+        || query.predicates().qualify_predicate().is_some()
+        || !query.diagnostics().is_empty()
+        || query.output().columns().iter().any(|column| {
+            !matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        })
+        || blocks_unconstrained_physical_plans(bundle, left.name())
+    {
+        return None;
+    }
+
+    let Predicate::Comparison(condition) = join.condition()? else {
+        return None;
+    };
+    let (Expression::Column(a), Expression::Column(b)) =
+        (condition.left(), condition.right())
+    else {
+        return None;
+    };
+    if condition.operator() != ComparisonOperator::Eq {
+        return None;
+    }
+    // ON may reverse operands, but its instances must be the two SQL aliases.
+    let aliases = [left.alias()?, right.alias()?];
+    if !((a.relation() == Some(aliases[0]) && b.relation() == Some(aliases[1]))
+        || (a.relation() == Some(aliases[1]) && b.relation() == Some(aliases[0])))
+        && !(a.relation() == Some(left.name()) && b.relation() == Some(left.name()))
+    {
+        return None;
+    }
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == left.name())?;
+    let left_key = crate::protocol::ColumnRef::new(
+        Some(left.name().to_string()),
+        a.name().to_string(),
+    );
+    let right_key = crate::protocol::ColumnRef::new(
+        Some(right.name().to_string()),
+        b.name().to_string(),
+    );
+    for key in [&left_key, &right_key] {
+        let domain = physical_integer_evidence(schema, key)?;
+        if domain.minimum > 0 || domain.maximum < 0 {
+            return None;
+        }
+    }
+    let rows = wanted.isqrt();
+    if rows.checked_mul(rows)? != wanted
+        || exact_sources.get(left.name()).is_some_and(|count| *count != rows)
+    {
+        return None;
+    }
+    let left_row = RowVariable::new(left.name(), aliases[0], "self_join_left")?;
+    let right_row = RowVariable::new(right.name(), aliases[1], "self_join_right")?;
+    let boundary = WitnessBoundary::new(
+        left.name(),
+        GroupBoundaryKind::Physical,
+        target_layer_id,
+    )?;
+    let mut obligations = vec![
+        WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: CountBounds::new(rows, Some(rows))?,
+            predicate: count_tautology(),
+            closed_world: true,
+        },
+        WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        },
+        WitnessObligation::JoinPopulation {
+            left_row: left_row.clone(),
+            right_row: right_row.clone(),
+            left_key: left_key.clone(),
+            right_key: right_key.clone(),
+            additional_keys: vec![],
+            join_kind: JoinKind::Inner,
+            pattern: JoinPopulationPattern::CommonMatched,
+            left_rows: rows,
+            right_rows: rows,
+            output_rows: wanted,
+            closed_world: true,
+        },
+    ];
+    if rows > 0 {
+        obligations.push(WitnessObligation::JoinPair {
+            left_row,
+            right_row,
+            left: left_key,
+            right: right_key,
+            comparison: ComparisonOperator::Eq,
+            null_extended: None,
+        });
+    }
+    obligations.push(WitnessObligation::OutputRows {
+        layer_id: target_layer_id.to_string(),
+        bounds: CountBounds::new(wanted, Some(wanted))?,
+    });
+    WitnessDirection::feasible(vec![WitnessCase::new(
+        obligations,
+        ProofStrength::Sufficient,
+    )?])
+}
+
 /// Certify a finite two-edge INNER chain as one complete physical assignment.
 ///
 /// This is not a product of independent pairwise witnesses: both equalities
@@ -553,6 +700,11 @@ pub(super) fn physical_join_population_with_source_counts(
 
     if let Some(plan) =
         physical_three_way_inner_count_plan(bundle, target_layer_id, wanted, exact_sources)
+    {
+        return Some(plan);
+    }
+    if let Some(plan) =
+        physical_aliased_self_join_count_plan(bundle, target_layer_id, wanted, exact_sources)
     {
         return Some(plan);
     }
