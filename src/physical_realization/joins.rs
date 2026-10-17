@@ -190,16 +190,15 @@ fn join_conjuncts<'a>(predicate: &'a Predicate, output: &mut Vec<&'a Predicate>)
     }
 }
 
-/// Split a single-equijoin condition into its key equality and scalar filters.
+/// Extract the finite one- or two-column equijoin key and scalar filters.
 ///
-/// Accepts exactly one cross-relation `=` key plus any number of scalar `ON`
-/// conjuncts; also carries the query `WHERE` predicate. Returns `None` for
-/// multi-key, CROSS/UNKNOWN, or otherwise unsupported join shapes.
+/// Every key equality must link the two distinct input instances. Composite
+/// keys are a conjunction over one complete physical bag, never separate pair
+/// witnesses. Additional equality keys or ambiguous conditions fail closed.
 fn join_key_and_scalar_filters(
     query: &QueryStatement,
 ) -> Option<(
-    &crate::protocol::ColumnExpression,
-    &crate::protocol::ColumnExpression,
+    Vec<(&crate::protocol::ColumnExpression, &crate::protocol::ColumnExpression)>,
     Vec<&Predicate>,
 )> {
     use crate::protocol::ComparisonOperator;
@@ -207,7 +206,7 @@ fn join_key_and_scalar_filters(
     let condition = query.joins().first()?.condition()?;
     let mut operands = Vec::new();
     join_conjuncts(condition, &mut operands);
-    let mut key = None;
+    let mut keys = Vec::new();
     let mut filters = Vec::new();
     for operand in operands {
         let Predicate::Comparison(comparison) = operand else {
@@ -227,22 +226,18 @@ fn join_key_and_scalar_filters(
             && right.relation().is_some()
             && left.relation() != right.relation()
         {
-            if key.is_some() {
-                return None;
-            }
-            key = Some(match (comparison.left(), comparison.right()) {
-                (Expression::Column(left), Expression::Column(right)) => (left, right),
-                _ => return None,
-            });
+            keys.push((left, right));
         } else {
             filters.push(operand);
         }
     }
-    let (left, right) = key?;
+    if !(1..=2).contains(&keys.len()) {
+        return None;
+    }
     if let Some(predicate) = query.predicates().where_predicate() {
         filters.push(predicate);
     }
-    Some((left, right, filters))
+    Some((keys, filters))
 }
 
 /// Exact positive row selector for a direct filtered producer. Repeating a
@@ -358,8 +353,8 @@ pub(super) fn physical_join_population_with_source_counts(
     {
         return None;
     }
-    let (left_key_expression, right_key_expression, scalar_filters) =
-        join_key_and_scalar_filters(join_query)?;
+    let (join_keys, scalar_filters) = join_key_and_scalar_filters(join_query)?;
+    let &(left_key_expression, right_key_expression) = join_keys.first()?;
 
     let ComposedSemantics::Resolved(semantics) = join_layer.composed_semantics() else {
         return None;
@@ -429,7 +424,10 @@ pub(super) fn physical_join_population_with_source_counts(
     // physical bag, and keys are recovered from the same canonical query.
     // This bypasses the local gate only when such filters exist; without
     // them, retain the stronger original local gate.
-    if source_filters.is_empty() && !matches!(join?.qualifying(), JoinWitnessDirection::Exact(_)) {
+    if source_filters.is_empty()
+        && join_keys.len() == 1
+        && !matches!(join?.qualifying(), JoinWitnessDirection::Exact(_))
+    {
         return None;
     }
 
@@ -453,7 +451,7 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     }
 
-    let (left_key, left_instance, right_key, right_instance) = if source_filters.is_empty() {
+    let (left_key, left_instance, right_key, right_instance) = if source_filters.is_empty() && join_keys.len() == 1 {
         let join = join?;
         if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
             return None;
@@ -531,18 +529,61 @@ pub(super) fn physical_join_population_with_source_counts(
     }
     let left_source = left_key.relation()?;
     let right_source = right_key.relation()?;
+    // The composite condition is a conjunction, not two independent joins.
+    // Map every additional key to the same physical source instances, including
+    // reversed ON operands. The full population assigns the same key-group
+    // sequence to all components, so all matched row pairs satisfy *every* '='.
+    let additional_keys = join_keys
+        .iter()
+        .skip(1)
+        .map(|&(sql_left, sql_right)| {
+            let map = |column: &crate::protocol::ColumnExpression| {
+                let instance = column.relation()?;
+                let reference = crate::protocol::ColumnRef::new(
+                    Some(instance.to_string()),
+                    column.name().to_string(),
+                );
+                let physical = resolve_filter_column(
+                    bundle,
+                    &walker,
+                    join_layer.id(),
+                    &reference,
+                    0,
+                )?;
+                Some((physical, instance))
+            };
+            let (a, a_instance) = map(sql_left)?;
+            let (b, b_instance) = map(sql_right)?;
+            let (left, right) = if a_instance == left_instance && b_instance == right_instance {
+                (a, b)
+            } else if a_instance == right_instance && b_instance == left_instance {
+                (b, a)
+            } else {
+                return None;
+            };
+            if left.relation()? != left_source
+                || right.relation()? != right_source
+                || left == left_key
+                || right == right_key
+            {
+                return None;
+            }
+            Some(crate::constructive::JoinKeyEquality::new(left, right))
+        })
+        .collect::<Option<Vec<_>>>()?;
+
     // The construction controls join keys independently of source filters.
     // If a filter mentions either join key, the literal must instead be
     // reconciled with each candidate population, which is not done here.
     if source_filters.iter().any(|(source, filters)| {
-        (source == left_source
-            && filters
-                .iter()
-                .any(|filter| formula_references_column(filter, &left_key)))
-            || (source == right_source
-                && filters
-                    .iter()
-                    .any(|filter| formula_references_column(filter, &right_key)))
+        filters.iter().any(|filter| {
+            (source == left_source && formula_references_column(filter, &left_key))
+                || (source == right_source && formula_references_column(filter, &right_key))
+                || additional_keys.iter().any(|pair| {
+                    (source == left_source && formula_references_column(filter, pair.left()))
+                        || (source == right_source && formula_references_column(filter, pair.right()))
+                })
+        })
     }) {
         return None;
     }
@@ -558,7 +599,19 @@ pub(super) fn physical_join_population_with_source_counts(
         .find(|s| s.relation() == right_source)?;
     let left_bounds = physical_integer_evidence(left_schema, &left_key)?;
     let right_bounds = physical_integer_evidence(right_schema, &right_key)?;
-    if left_bounds.minimum > 0
+    let additional_bounds = additional_keys
+        .iter()
+        .map(|pair| {
+            Some((
+                physical_integer_evidence(left_schema, pair.left())?,
+                physical_integer_evidence(right_schema, pair.right())?,
+            ))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    if additional_bounds.iter().any(|(left, right)| {
+        left.minimum > 0 || right.minimum > 0 || left.maximum < 0 || right.maximum < 0
+    })
+        || left_bounds.minimum > 0
         || right_bounds.minimum > 0
         || left_bounds.maximum < 0
         || right_bounds.maximum < 0
@@ -642,6 +695,10 @@ pub(super) fn physical_join_population_with_source_counts(
         };
         if (left_rows > 0 && max_value > left_bounds.maximum)
             || (right_rows > 0 && max_value > right_bounds.maximum)
+            || additional_bounds.iter().any(|(left, right)| {
+                (left_rows > 0 && max_value > left.maximum)
+                    || (right_rows > 0 && max_value > right.maximum)
+            })
         {
             continue;
         }
@@ -673,6 +730,7 @@ pub(super) fn physical_join_population_with_source_counts(
             right_row: right_row.clone(),
             left_key: left_key.clone(),
             right_key: right_key.clone(),
+            additional_keys: additional_keys.clone(),
             join_kind,
             pattern,
             left_rows,
@@ -695,6 +753,16 @@ pub(super) fn physical_join_population_with_source_counts(
                     comparison: crate::protocol::ComparisonOperator::Eq,
                     null_extended: None,
                 });
+                for pair in &additional_keys {
+                    obligations.push(WitnessObligation::JoinPair {
+                        left_row: left_row.clone(),
+                        right_row: right_row.clone(),
+                        left: pair.left().clone(),
+                        right: pair.right().clone(),
+                        comparison: crate::protocol::ComparisonOperator::Eq,
+                        null_extended: None,
+                    });
+                }
             }
             JoinPopulationPattern::EmptyRight if left_rows > 0 => {
                 obligations.push(WitnessObligation::NoMatchingPartner {
@@ -1167,6 +1235,7 @@ pub(super) fn jointly_realized_join_goals(
                     right_row,
                     left_key,
                     right_key,
+                    additional_keys,
                     pattern,
                     left_rows,
                     right_rows,
@@ -1181,10 +1250,13 @@ pub(super) fn jointly_realized_join_goals(
                             | JoinPopulationPattern::CommonMatched
                             | JoinPopulationPattern::GroupedMatched { .. }
                     ) {
-                        for (row, key, count) in [
-                            (left_row, left_key, left_rows),
-                            (right_row, right_key, right_rows),
-                        ] {
+                        for (row, key, count) in [(left_row, left_key, left_rows), (right_row, right_key, right_rows)]
+                            .into_iter()
+                            .chain(additional_keys.iter().flat_map(|pair| [
+                                (left_row, pair.left(), left_rows),
+                                (right_row, pair.right(), right_rows),
+                            ]))
+                        {
                             let assignment = (*pattern, *count);
                             let identity = (row.relation().to_string(), key.name().to_string());
                             if assignments
@@ -1229,6 +1301,7 @@ pub(super) fn jointly_realized_join_goals(
                 if let WitnessObligation::JoinPopulation {
                     left_key,
                     right_key,
+                    additional_keys,
                     ..
                 } = population
                 {
@@ -1236,6 +1309,12 @@ pub(super) fn jointly_realized_join_goals(
                         && formula_references_column(filter, left_key))
                         || (right_key.relation() == Some(source.as_str())
                             && formula_references_column(filter, right_key))
+                        || additional_keys.iter().any(|pair| {
+                            (pair.left().relation() == Some(source.as_str())
+                                && formula_references_column(filter, pair.left()))
+                                || (pair.right().relation() == Some(source.as_str())
+                                    && formula_references_column(filter, pair.right()))
+                        })
                 } else {
                     false
                 }
