@@ -208,8 +208,16 @@ fn complete_nonnull_constructive_populations_preserve_sql_survivor_identities() 
         )
         .unwrap();
         for (relation, rows, assignment) in [
-            ("l", &case["left"], &case["constructive_physical_assignment"]["left_keys"]),
-            ("r", &case["right"], &case["constructive_physical_assignment"]["right_keys"]),
+            (
+                "l",
+                &case["left"],
+                &case["constructive_physical_assignment"]["left_keys"],
+            ),
+            (
+                "r",
+                &case["right"],
+                &case["constructive_physical_assignment"]["right_keys"],
+            ),
         ] {
             let keys = assignment.as_array().unwrap();
             let source = rows.as_array().unwrap();
@@ -236,6 +244,9 @@ fn complete_nonnull_constructive_populations_preserve_sql_survivor_identities() 
             .collect::<Vec<_>>();
         selected.sort();
         expected.sort();
-        assert_eq!(selected, expected, "{id}: closed non-NULL population survivor identities");
+        assert_eq!(
+            selected, expected,
+            "{id}: closed non-NULL population survivor identities"
+        );
     }
 }
