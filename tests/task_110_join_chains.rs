@@ -220,7 +220,10 @@ fn frozen_join_chain_matrix_has_stable_closed_world_cases_and_parser_coverage() 
         assert!(id.starts_with("71-C110-"), "{id}: TASK-110 namespace");
         assert_eq!(case["classification"], "exact_required");
         assert_eq!(case["source_column_type"], "INTEGER");
-        assert_eq!(case["join_comparison"], "ordinary_SQL_equality_null_is_not_true");
+        assert_eq!(
+            case["join_comparison"],
+            "ordinary_SQL_equality_null_is_not_true"
+        );
         let matched = case["matches"].as_array().expect("row identity bag");
         assert_eq!(
             matched.len() as u64,
@@ -239,7 +242,12 @@ fn frozen_join_chain_matrix_has_stable_closed_world_cases_and_parser_coverage() 
             );
             let statements = case["statements"]
                 .as_array()
-                .map(|items| items.iter().map(|item| item.as_str().expect("SQL")).collect::<Vec<_>>())
+                .map(|items| {
+                    items
+                        .iter()
+                        .map(|item| item.as_str().expect("SQL"))
+                        .collect::<Vec<_>>()
+                })
                 .unwrap_or_else(|| vec![case["sql"].as_str().expect("SQL")]);
             let analyzed = bundle(&statements, dialect);
             assert_eq!(analyzed.layers().len(), statements.len(), "{id}/{dialect}");
@@ -263,28 +271,31 @@ fn emitted_chain_obligation_has_all_instances_and_exact_source_bag_counts() {
     let cases = wire["graph"]["physical_joint_count_plan"]["outcome"]["cases"]
         .as_array()
         .expect("canonical cases");
-    assert!(cases.iter().any(|case| {
-        case["obligations"]
-            .as_array()
-            .expect("typed obligations")
-            .iter()
-            .any(|obligation| {
-                obligation["kind"] == "join_chain_population"
-                    && obligation["left_row"]["relation"] == "l"
-                    && obligation["middle_row"]["relation"] == "r"
-                    && obligation["right_row"]["relation"] == "t"
-                    && obligation["left_key"]["name"] == "k"
-                    && obligation["middle_left_key"]["name"] == "k"
-                    && obligation["middle_right_key"]["name"] == "k"
-                    && obligation["right_key"]["name"] == "k"
-                    && obligation["matched_value"] == 0
-                    && obligation["left_rows"] == 2
-                    && obligation["middle_rows"] == 2
-                    && obligation["right_rows"] == 1
-                    && obligation["output_rows"] == 4
-                    && obligation["closed_world"] == true
-            })
-    }), "the public wire contract must serialize one joint key assignment");
+    assert!(
+        cases.iter().any(|case| {
+            case["obligations"]
+                .as_array()
+                .expect("typed obligations")
+                .iter()
+                .any(|obligation| {
+                    obligation["kind"] == "join_chain_population"
+                        && obligation["left_row"]["relation"] == "l"
+                        && obligation["middle_row"]["relation"] == "r"
+                        && obligation["right_row"]["relation"] == "t"
+                        && obligation["left_key"]["name"] == "k"
+                        && obligation["middle_left_key"]["name"] == "k"
+                        && obligation["middle_right_key"]["name"] == "k"
+                        && obligation["right_key"]["name"] == "k"
+                        && obligation["matched_value"] == 0
+                        && obligation["left_rows"] == 2
+                        && obligation["middle_rows"] == 2
+                        && obligation["right_rows"] == 1
+                        && obligation["output_rows"] == 4
+                        && obligation["closed_world"] == true
+                })
+        }),
+        "the public wire contract must serialize one joint key assignment"
+    );
     let schema: serde_json::Value =
         serde_json::from_str(include_str!("../schema/protocol.schema.json"))
             .expect("protocol JSON schema");
@@ -328,7 +339,10 @@ fn physical_chain_is_invariant_to_attested_schema_metadata_provenance() {
         let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
         assert!(matches!(proof.outcome(), WitnessDirection::Feasible(_)));
         if let Some(expected) = &baseline {
-            assert_eq!(&proof, expected, "{kind:?}: one provenance-independent proof");
+            assert_eq!(
+                &proof, expected,
+                "{kind:?}: one provenance-independent proof"
+            );
         } else {
             baseline = Some(proof);
         }
