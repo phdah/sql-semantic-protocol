@@ -1,7 +1,7 @@
 ---
 id: TASK-109
 title: Prove two-input inner join bags and composite keys
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -42,6 +42,12 @@ type: feature
 - [ ] #4 For each supported shared form, classify all **13 exposed project dialects** as parser-equivalent or explicit parser boundary; check direct SQL and dbt plus ODCS when equivalent metadata exists. For each conditional vendor/session law, record specific missing evidence, stable typed residual/Impossible, owner TASK-109 and pending reviewed release disposition. No native engine certification without execution.
 - [ ] #5 Run focused public API tests, `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and active protocol/schema snapshots on the final implementation head. Review actual assertions against each frozen fixture; only then mark this child Done and update its parent queue and coverage evidence. Green CI alone is insufficient.
 <!-- AC:END -->
+
+## Frozen executable inventory
+
+The child-specific v1 acceptance inventory is [docs/task-109-acceptance-freeze.json](../../docs/task-109-acceptance-freeze.json), linked from the canonical coverage manifest. Exact fixtures name every positive pair, NOT TRUE pair, source instance and expected output-domain bound, as well as dialect, adapter and final CI gates. The public regression target is `tests/task_109_composite_join.rs`; `tests/task_109_acceptance_freeze.rs` checks inventory closure.
+
+The physical INNER-join constructor interprets each extra AND-conjoined equality as part of the **same complete key-group assignment**, not as an independent join pair. The canonical `join_population.additional_keys` property is emitted only for composite keys. No status or release claim is certified by the frozen inventory alone.
 
 ## Handoff
 
