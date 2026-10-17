@@ -56,7 +56,10 @@ pub(super) fn analyze_join(
     // SQLparser exposes the temporal ASOF ordering predicate separately from
     // the optional ON equality constraint. Both can contribute source lineage.
     // Until nearest-prior matching is proven, the canonical kind stays Unknown.
-    if let JoinOperator::AsOf { match_condition, .. } = &join.join_operator {
+    if let JoinOperator::AsOf {
+        match_condition, ..
+    } = &join.join_operator
+    {
         collect_expression_dependencies(
             match_condition,
             scope.local_relations,
