@@ -541,3 +541,93 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
         .expect("many-to-many count");
     assert_eq!(product, 4);
 }
+
+#[test]
+fn filtered_outer_join_population_uses_sql_input_order_not_on_operand_order() {
+    // Public proof boundary: complete source counts and source instance identities
+    // must be identical when an equality's SQL operands are reversed.
+    // An outer join preserves a SQL input side, not the left-hand ON operand.
+    let fixtures = [
+        (
+            "SELECT l.a FROM l LEFT JOIN r ON r.k = l.k AND l.a > 0",
+            JoinPopulationPattern::EmptyRight,
+            3,
+            0,
+        ),
+        (
+            "SELECT r.a FROM l RIGHT JOIN r ON r.k = l.k AND r.a > 0",
+            JoinPopulationPattern::EmptyLeft,
+            0,
+            3,
+        ),
+        (
+            "SELECT l.a FROM l FULL JOIN r ON r.k = l.k AND l.a > 0",
+            JoinPopulationPattern::EmptyRight,
+            3,
+            0,
+        ),
+    ];
+    for (sql, pattern, expected_left, expected_right) in fixtures {
+        let b = bundle(&[sql], "postgresql");
+        let plan = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 3)]);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("expected exact closed source population for {sql}: {plan:?}");
+        };
+        assert!(
+            cases.iter().any(|case| case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::JoinPopulation {
+                        left_row,
+                        right_row,
+                        left_key,
+                        right_key,
+                        pattern: actual_pattern,
+                        left_rows,
+                        right_rows,
+                        output_rows: 3,
+                        closed_world: true,
+                        ..
+                    } if left_row.relation() == "l"
+                        && right_row.relation() == "r"
+                        && left_key.relation() == Some("l")
+                        && right_key.relation() == Some("r")
+                        && *actual_pattern == pattern
+                        && *left_rows == expected_left
+                        && *right_rows == expected_right
+                )
+            })),
+            "join proof must preserve SQL left/right input identity: {sql}: {plan:?}"
+        );
+    }
+
+    let db = Connection::open_in_memory().expect("duckdb");
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (1, NULL), (2, 0), (3, 0);",
+    )
+    .expect("closed physical left bag");
+    let left_count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l LEFT JOIN r ON r.k=l.k AND l.a>0",
+            [],
+            |row| row.get(0),
+        )
+        .expect("left join result");
+    assert_eq!(left_count, 3);
+
+    db.execute_batch(
+        "DELETE FROM l;
+         INSERT INTO r VALUES (1, NULL), (2, 0), (3, 0);",
+    )
+    .expect("closed physical right bag");
+    let right_count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l RIGHT JOIN r ON r.k=l.k AND r.a>0",
+            [],
+            |row| row.get(0),
+        )
+        .expect("right join result");
+    assert_eq!(right_count, 3);
+}
