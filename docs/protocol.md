@@ -1241,6 +1241,16 @@ NULL extensions**, not invented physical source rows. Both sides carry
 closed-world `no_matching_partner` obligations. This pattern cannot be
 combined with other join populations on shared keys without a compatible
 joint histogram and does not prove physical SQL NULL key insertion.
+`mixed_matched_unmatched` certifies a complete bag with exactly one
+matching key-zero row per side; the remaining left rows use key one and
+the remaining right rows use key two. LEFT emits `left_rows` rows, RIGHT
+emits `right_rows` rows, and FULL emits `left_rows + right_rows - 1`.
+A matched-pair obligation and two separate non-matching row variables
+prove both TRUE and NOT TRUE directions. The pattern needs at least two
+physical rows per side and attested signed integer domains containing
+0, 1 and 2. It does not assert that physical SQL NULL keys can be
+inserted, and without a compatible joint histogram it is not composed
+with another join population.
 One physical population is shared by repeated source references, with
 conflicting cardinalities rejected from the construction.
 
