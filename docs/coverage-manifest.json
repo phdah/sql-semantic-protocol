@@ -2,6 +2,19 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_113_join_acceptance": {
+    "owner": "TASK-113",
+    "parent": "TASK-71",
+    "status": "frozen_unverified",
+    "fixture_ids": ["71-C113-P", "71-C113-N"],
+    "acceptance_freeze": "docs/task-113-acceptance-freeze.json",
+    "cases": 14,
+    "named_variants": 7,
+    "dialect_classification_cells": 182,
+    "independent_duckdb_and_public_tests": "tests/task_113_portable_joins.rs",
+    "unverified_cells_block_done": true,
+    "release_approved": false
+  },
   "task_110_join_acceptance": {
     "owner": "TASK-110",
     "parent": "TASK-71",
