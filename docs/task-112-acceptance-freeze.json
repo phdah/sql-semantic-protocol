@@ -1,0 +1,1334 @@
+{
+  "version": 1,
+  "owner": "TASK-112",
+  "parent": "TASK-71",
+  "status": "verified_bounded_child",
+  "fixture_ids": [
+    "71-C112-P",
+    "71-C112-N"
+  ],
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "fixture_contract": "Complete physical bags, row identities and SQL three-valued equality. SQL NULL never matches, duplicate matching keys select preserved rows once per physical row. ANTI requires absence of every TRUE partner.",
+  "cases": [
+    {
+      "id": "71-C112-P-LEFT-SEMI",
+      "fixture": "71-C112-P",
+      "kind": "left_semi",
+      "sql": "SELECT l.id, l.k FROM l LEFT SEMI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT l.id, l.k FROM l SEMI JOIN r ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ]
+      ],
+      "expected_output_count": 2,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "left_semi",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "mixed_duplicate_left",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-P-LEFT-ANTI",
+      "fixture": "71-C112-P",
+      "kind": "left_anti",
+      "sql": "SELECT l.id, l.k FROM l LEFT ANTI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT l.id, l.k FROM l ANTI JOIN r ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "expected_output_count": 2,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "left_anti",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 2,
+        "maximum": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "mixed_duplicate_left",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-P-RIGHT-SEMI",
+      "fixture": "71-C112-P",
+      "kind": "right_semi",
+      "sql": "SELECT r.id, r.k FROM l RIGHT SEMI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT r.id, r.k FROM r SEMI JOIN l ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "r1",
+          1
+        ]
+      ],
+      "expected_output_count": 1,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "right_semi",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "r.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "mixed_duplicate_left",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-P-RIGHT-ANTI",
+      "fixture": "71-C112-P",
+      "kind": "right_anti",
+      "sql": "SELECT r.id, r.k FROM l RIGHT ANTI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT r.id, r.k FROM r ANTI JOIN l ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected_output_count": 1,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "right_anti",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "r.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "mixed_duplicate_left",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-N-LEFT-SEMI",
+      "fixture": "71-C112-N",
+      "kind": "left_semi",
+      "sql": "SELECT l.id, l.k FROM l LEFT SEMI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT l.id, l.k FROM l SEMI JOIN r ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          3
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [],
+      "expected_output_count": 0,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "left_semi",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": true
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "disjoint_four_two",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-N-LEFT-ANTI",
+      "fixture": "71-C112-N",
+      "kind": "left_anti",
+      "sql": "SELECT l.id, l.k FROM l LEFT ANTI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT l.id, l.k FROM l ANTI JOIN r ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          3
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "expected_output_count": 4,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "left_anti",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "l.k",
+        "type": "signed_integer",
+        "minimum": 1,
+        "maximum": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "disjoint_four_two",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-N-RIGHT-SEMI",
+      "fixture": "71-C112-N",
+      "kind": "right_semi",
+      "sql": "SELECT r.id, r.k FROM l RIGHT SEMI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT r.id, r.k FROM r SEMI JOIN l ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          3
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [],
+      "expected_output_count": 0,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "right_semi",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "r.k",
+        "type": "signed_integer",
+        "minimum": null,
+        "maximum": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false,
+        "empty": true
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "disjoint_four_two",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    },
+    {
+      "id": "71-C112-N-RIGHT-ANTI",
+      "fixture": "71-C112-N",
+      "kind": "right_anti",
+      "sql": "SELECT r.id, r.k FROM l RIGHT ANTI JOIN r ON l.k = r.k",
+      "duckdb_sql": "SELECT r.id, r.k FROM r ANTI JOIN l ON l.k = r.k",
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          1
+        ],
+        [
+          "l3",
+          null
+        ],
+        [
+          "l4",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          3
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected": [
+        [
+          "r1",
+          3
+        ],
+        [
+          "r2",
+          null
+        ]
+      ],
+      "expected_output_count": 2,
+      "source_instances": {
+        "l": "l",
+        "r": "r"
+      },
+      "source_column_types": {
+        "id": "VARCHAR",
+        "k": "INTEGER"
+      },
+      "canonical_ast_expectation": {
+        "join_kind": "right_anti",
+        "comparison": "eq",
+        "sql_three_valued": true,
+        "joins": 1
+      },
+      "output_domain": {
+        "column": "r.k",
+        "type": "signed_integer",
+        "minimum": 3,
+        "maximum": 3,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true,
+        "empty": false
+      },
+      "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
+      "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
+      "witness_pattern": "disjoint_four_two",
+      "adapter_facts": [
+        "direct_sql",
+        "compiled_dbt_with_catalog",
+        "odcs_when_equivalent_schema"
+      ],
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "not_claimed"
+        }
+      },
+      "classification": "exact_required",
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "TASK-112-C-VENDOR",
+      "owner": "TASK-112",
+      "classification": "conditional",
+      "missing_evidence": "13 independent native-engine SEMI/ANTI grammar and execution laws unavailable from portable sqlparser and DuckDB",
+      "release_disposition": "pending_release_review",
+      "status": "reviewed_bounded_residual"
+    },
+    {
+      "id": "TASK-112-C-NULLABILITY",
+      "owner": "TASK-112",
+      "classification": "conditional",
+      "missing_evidence": "A source carrying NOT NULL or arbitrary key constraints needs authoritative metadata before a NULL-bearing bag can be constructed",
+      "release_disposition": "pending_release_review",
+      "status": "reviewed_bounded_residual"
+    }
+  ],
+  "original_parent_ac": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "signoff": {
+    "mandatory_cases": 8,
+    "mandatory_dialect_cells": 104,
+    "ci_green": true,
+    "reviewed": true,
+    "verified_parser_cells": 104,
+    "verified_mandatory_cases": 8,
+    "implementation_ci_run": 39045626995,
+    "verified_implementation_sha": "1840c06f4816732d8f55fe53b3ddaf7edc30d0e0",
+    "release_approved": false
+  }
+}

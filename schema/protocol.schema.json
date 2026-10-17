@@ -6918,6 +6918,8 @@
                 "disjoint_keys",
                 "mixed_matched_unmatched",
                 "mixed_duplicate_right",
+                "mixed_duplicate_left",
+                "disjoint_four_two",
                 "empty_left",
                 "empty_right"
               ]

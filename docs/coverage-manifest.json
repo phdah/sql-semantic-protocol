@@ -12007,5 +12007,41 @@
     ],
     "conditional_law_release_disposition": "reviewed_bounded_residual_pending_release",
     "release_approved": false
+  },
+  "task_112_join_acceptance": {
+    "owner": "TASK-112",
+    "parent": "TASK-71",
+    "status": "verified_bounded_child",
+    "acceptance_freeze": "docs/task-112-acceptance-freeze.json",
+    "fixture_ids": [
+      "71-C112-P",
+      "71-C112-N"
+    ],
+    "mandatory_variant_cells": 8,
+    "required_dialect_parser_cells": 104,
+    "independent_duckdb_test": "tests/task_112_semi_anti.rs",
+    "contract_test": "tests/task_112_acceptance_freeze.rs",
+    "compiled_dbt_odcs_parity_test": "tests/task_112_semi_anti_adapters.rs",
+    "canonical_implementation": "src/physical_realization/joins.rs",
+    "all_original_parent_criteria_verified": false,
+    "owned_original_parent_ac": [
+      1,
+      3,
+      4,
+      5,
+      6
+    ],
+    "release_approved": false,
+    "acceptance_audit": "docs/task-112-acceptance-audit.md",
+    "verified_dialect_parser_cells": 104,
+    "verified_variant_cells": 8,
+    "physical_constructive_patterns": [
+      "mixed_duplicate_left",
+      "disjoint_four_two"
+    ],
+    "implementation_ci_workflow_run": 39045626995,
+    "verified_implementation_sha": "1840c06f4816732d8f55fe53b3ddaf7edc30d0e0",
+    "child_acceptance_criteria_verified": true,
+    "conditional_law_release_disposition": "reviewed_bounded_residual_pending_release"
   }
 }
