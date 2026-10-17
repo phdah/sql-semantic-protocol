@@ -608,7 +608,6 @@ fn shared_physical_source_cannot_receive_two_disjoint_histograms() {
     );
 }
 
-
 #[test]
 fn nonportable_null_safe_outer_condition_remains_a_typed_residual() {
     let analyzed = bundle(
