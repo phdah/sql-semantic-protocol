@@ -36,15 +36,14 @@ fn bundle(sql: &[&str], dialect: &str) -> sql_semantic_protocol::AnalysisBundle 
             (i, source, selected)
         })
         .collect::<Vec<_>>();
+    let ids = (0..sql.len())
+        .map(|i| format!("task-110-{i}"))
+        .collect::<Vec<_>>();
     let configured = inputs
         .iter()
-        .map(|(i, source, dialect_impl)| {
-            ConfiguredSqlInput::new(
-                format!("task-110-{i}"),
-                source,
-                dialect,
-                dialect_impl.as_ref(),
-            )
+        .zip(&ids)
+        .map(|((_, source, dialect_impl), id)| {
+            ConfiguredSqlInput::new(id, source, dialect, dialect_impl.as_ref())
         })
         .collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis")
