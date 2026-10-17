@@ -1210,9 +1210,13 @@ pub(super) fn physical_join_population_with_source_counts(
                     comparison: crate::protocol::ComparisonOperator::Eq,
                     null_extended: None,
                 });
+                let unmatched_left =
+                    RowVariable::new(left_source, &left_instance, "join_left_unmatched")?;
+                let unmatched_right =
+                    RowVariable::new(right_source, &right_instance, "join_right_unmatched")?;
                 for (candidate, partner, left, right, null_extended) in [
                     (
-                        &left_row,
+                        &unmatched_left,
                         &right_row,
                         &left_key,
                         &right_key,
@@ -1220,7 +1224,7 @@ pub(super) fn physical_join_population_with_source_counts(
                             .then_some(crate::join_witness::JoinSide::Right),
                     ),
                     (
-                        &right_row,
+                        &unmatched_right,
                         &left_row,
                         &right_key,
                         &left_key,
