@@ -270,8 +270,18 @@ impl JoinPopulationPattern {
             JoinKind::Full => pairs
                 .checked_add(left_unmatched)?
                 .checked_add(right_unmatched),
-            JoinKind::LeftSemi => Some(if pairs > 0 { left } else { 0 }),
-            JoinKind::RightSemi => Some(if pairs > 0 { right } else { 0 }),
+            // Partial populations have exactly one matched source row per
+            // side. Semi joins select source rows, not pair multiplicities.
+            JoinKind::LeftSemi => Some(match self {
+                Self::MixedMatchedUnmatched => 1,
+                _ if pairs > 0 => left,
+                _ => 0,
+            }),
+            JoinKind::RightSemi => Some(match self {
+                Self::MixedMatchedUnmatched => 1,
+                _ if pairs > 0 => right,
+                _ => 0,
+            }),
             JoinKind::LeftAnti => Some(left_unmatched),
             JoinKind::RightAnti => Some(right_unmatched),
             JoinKind::Cross | JoinKind::Unknown => None,
