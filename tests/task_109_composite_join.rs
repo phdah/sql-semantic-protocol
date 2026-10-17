@@ -194,3 +194,86 @@ fn unsupported_computed_join_key_is_not_promoted_to_exact() {
     let plan = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
     assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
 }
+
+#[test]
+fn composite_keys_remain_identical_under_direct_dbt_and_odcs_schema_evidence() {
+    use sql_semantic_protocol::SchemaSourceKind;
+
+    let sql = "SELECT l.k, l.a FROM l INNER JOIN r ON l.k = r.k AND l.a = r.a";
+    let mut baseline = None;
+    for kind in [
+        SchemaSourceKind::DbtCatalog,
+        SchemaSourceKind::DbtManifest,
+        SchemaSourceKind::ExternalMetadata,
+    ] {
+        let schemas = ["l", "r"]
+            .into_iter()
+            .map(|relation| {
+                RelationSchema::new(
+                    relation,
+                    ["k", "a"]
+                        .into_iter()
+                        .map(|column| {
+                            SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
+                                .expect("INTEGER key evidence")
+                        })
+                        .collect(),
+                )
+                .expect("schema")
+                .with_source_kind(kind)
+            })
+            .collect::<Vec<_>>();
+        let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
+        let source = SqlInput::inline(sql);
+        let dialect = dialect_from_name("postgresql").expect("PostgreSQL");
+        let configured = ConfiguredSqlInput::new(
+            "task-109-adapters",
+            &source,
+            "postgresql",
+            dialect.as_ref(),
+        );
+        let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
+            .expect("source-independent analysis");
+        let proof = physical_joint_source_plan(&bundle, &[(bundle.layers()[0].id(), 4)]);
+        assert!(
+            matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+            "{kind:?}: full typed composite join proof required"
+        );
+        if let Some(ref expected) = baseline {
+            assert_eq!(&proof, expected, "{kind:?}: metadata provenance parity");
+        } else {
+            baseline = Some(proof);
+        }
+    }
+}
+
+#[test]
+fn emitted_composite_population_contains_the_full_key_tuple() {
+    use sql_semantic_protocol::{to_bundle_json, OutcomeGoal};
+
+    let mut b = bundle(
+        "SELECT l.k, l.a FROM l JOIN r ON l.k = r.k AND l.a = r.a",
+        "postgresql",
+    );
+    let goal = OutcomeGoal::new(b.layers()[0].id(), Some(4), None, vec![])
+        .expect("bounded composite output goal");
+    b.set_outcome_goals(&[goal]).expect("goal analysis");
+    let emitted: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&b)).expect("canonical bundle JSON");
+    let cases = emitted["graph"]["physical_joint_count_plan"]["outcome"]["cases"]
+        .as_array()
+        .expect("canonical cases");
+    assert!(cases.iter().any(|case| {
+        case["obligations"]
+            .as_array()
+            .expect("canonical obligations")
+            .iter()
+            .any(|obligation| {
+                obligation["kind"] == "join_population"
+                    && obligation["join_kind"] == "inner"
+                    && obligation["additional_keys"][0]["left"]["column"] == "a"
+                    && obligation["additional_keys"][0]["right"]["column"] == "a"
+                    && obligation["closed_world"] == true
+            })
+    }));
+}
