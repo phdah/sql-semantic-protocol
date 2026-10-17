@@ -476,6 +476,7 @@ mod filters;
 mod graph;
 mod grouping;
 mod joins;
+mod join_uniform;
 mod joint_counts;
 mod joint_distributions;
 mod membership;
