@@ -96,6 +96,7 @@ fn repeated_physical_source_is_assigned_once_for_both_aliases() {
     ];
     for &dialect in DIALECTS {
         let b = bundle(&queries, dialect);
+        eprintln!("TASK110 graph: {:?}", b.inputs()[2].statements());
         let plan = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 4)]);
         assert_eq!(plan.sources(), &["l", "r"].map(str::to_string));
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
