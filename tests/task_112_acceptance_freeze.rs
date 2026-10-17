@@ -66,7 +66,7 @@ fn task112_has_eight_bounded_complete_source_and_terminal_bag_cases() {
         .find(|v| v["properties"]["kind"]["const"] == "join_population")
         .unwrap();
     let patterns = join["properties"]["pattern"]["enum"].as_array().unwrap();
-    for p in ["nullable_duplicate_mixed", "nullable_duplicate_disjoint"] {
+    for p in ["mixed_duplicate_left", "disjoint_four_two"] {
         assert!(patterns.contains(&Value::String(p.to_string())));
     }
 }
