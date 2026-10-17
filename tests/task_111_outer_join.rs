@@ -472,3 +472,66 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
         }
     }
 }
+
+
+#[test]
+fn mixed_population_semi_anti_counts_do_not_inherit_full_outer_cardinality() {
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::Left, 3, 2),
+        Some(3)
+    );
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::Right, 3, 2),
+        Some(2)
+    );
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::Full, 3, 2),
+        Some(4)
+    );
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::Inner, 3, 2),
+        Some(1)
+    );
+    for kind in [JoinKind::LeftSemi, JoinKind::RightSemi] {
+        assert_eq!(
+            JoinPopulationPattern::MixedMatchedUnmatched.output_rows(kind, 3, 2),
+            Some(1),
+            "{kind:?}: semi output contains one matched physical source row"
+        );
+    }
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::LeftAnti, 3, 2),
+        Some(2)
+    );
+    assert_eq!(
+        JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::RightAnti, 3, 2),
+        Some(1)
+    );
+}
+
+#[test]
+fn shared_physical_source_cannot_receive_two_disjoint_histograms() {
+    let analyzed = bundle(
+        "SELECT a.id FROM l AS a FULL OUTER JOIN l AS b ON a.k = b.k",
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 3)]);
+    assert!(
+        !matches!(
+            plan.outcome(),
+            WitnessDirection::Feasible(cases) if cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinPopulation {
+                            pattern: JoinPopulationPattern::DisjointKeys
+                                | JoinPopulationPattern::MixedMatchedUnmatched,
+                            ..
+                        }
+                    )
+                })
+            })
+        ),
+        "one physical table used by two aliases cannot carry incompatible complete key histograms: {plan:?}"
+    );
+}
