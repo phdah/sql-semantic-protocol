@@ -196,3 +196,46 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
         );
     }
 }
+
+#[test]
+fn complete_nonnull_constructive_populations_preserve_sql_survivor_identities() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    for case in matrix["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let db = Connection::open_in_memory().unwrap();
+        db.execute_batch(
+            "CREATE TABLE l(id VARCHAR, k INTEGER NOT NULL); CREATE TABLE r(id VARCHAR, k INTEGER NOT NULL);",
+        )
+        .unwrap();
+        for (relation, rows, assignment) in [
+            ("l", &case["left"], &case["constructive_physical_assignment"]["left_keys"]),
+            ("r", &case["right"], &case["constructive_physical_assignment"]["right_keys"]),
+        ] {
+            let keys = assignment.as_array().unwrap();
+            let source = rows.as_array().unwrap();
+            assert_eq!(source.len(), keys.len(), "{id}: entire source bag");
+            for (row, key) in source.iter().zip(keys) {
+                db.execute(
+                    &format!("INSERT INTO {relation}(id, k) VALUES (?, ?)"),
+                    params![row[0].as_str().unwrap(), key.as_i64().unwrap()],
+                )
+                .unwrap();
+            }
+        }
+        let mut query = db.prepare(case["duckdb_sql"].as_str().unwrap()).unwrap();
+        let mut selected = query
+            .query_map([], |row| row.get::<_, String>(0))
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect::<Vec<_>>();
+        let mut expected = case["expected"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| row[0].as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
+        selected.sort();
+        expected.sort();
+        assert_eq!(selected, expected, "{id}: closed non-NULL population survivor identities");
+    }
+}
