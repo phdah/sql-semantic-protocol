@@ -53,7 +53,10 @@ fn expected_rows(rows: &Value) -> Vec<String> {
                             Value::Null
                         } else {
                             Value::String(
-                                value.as_str().map(ToString::to_string).unwrap_or_else(|| value.to_string()),
+                                value
+                                    .as_str()
+                                    .map(ToString::to_string)
+                                    .unwrap_or_else(|| value.to_string()),
                             )
                         }
                     })
@@ -95,11 +98,8 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
                 ));
             }
             if !values.is_empty() {
-                db.execute_batch(&format!(
-                    "INSERT INTO {name} VALUES {}",
-                    values.join(",")
-                ))
-                .unwrap();
+                db.execute_batch(&format!("INSERT INTO {name} VALUES {}", values.join(",")))
+                    .unwrap();
             }
             let source_sql = format!("SELECT id,CAST(t AS VARCHAR) FROM {name}");
             let frozen_source = &case[if name == "l" { "left" } else { "right" }];
@@ -112,10 +112,20 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             let text = bounds.as_str().unwrap().replace('T', " ");
             let sql = format!("SELECT CAST(MIN(t) AS VARCHAR),CAST(MAX(t) AS VARCHAR) FROM {name}");
             let actual = actual_rows(&db, &sql, 2);
-            let extrema = text.trim_start_matches('[').trim_end_matches(']').split(',').collect::<Vec<_>>();
+            let extrema = text
+                .trim_start_matches('[')
+                .trim_end_matches(']')
+                .split(',')
+                .collect::<Vec<_>>();
             assert_eq!(
                 actual,
-                vec![Value::Array(extrema.iter().map(|s| Value::String((*s).to_string())).collect()).to_string()],
+                vec![Value::Array(
+                    extrema
+                        .iter()
+                        .map(|s| Value::String((*s).to_string()))
+                        .collect()
+                )
+                .to_string()],
                 "{id}: inclusive typed source bounds"
             );
         }
@@ -140,7 +150,14 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             ),
             other => panic!("unknown frozen TASK-114 variant: {other}"),
         };
-        let width = case["expected"].as_array().unwrap().first().unwrap().as_array().unwrap().len();
+        let width = case["expected"]
+            .as_array()
+            .unwrap()
+            .first()
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .len();
         assert_eq!(
             actual_rows(&db, &selected, width),
             expected_rows(&case["expected"]),
@@ -163,7 +180,11 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             let mut observed = actual_rows(&db, selected_pairs, 2);
             observed.extend(actual_rows(&db, &rejected, 2));
             observed.sort();
-            assert_eq!(observed, actual_rows(&db, pairs, 2), "{id}: physical pair partition");
+            assert_eq!(
+                observed,
+                actual_rows(&db, pairs, 2),
+                "{id}: physical pair partition"
+            );
         }
     }
 }
