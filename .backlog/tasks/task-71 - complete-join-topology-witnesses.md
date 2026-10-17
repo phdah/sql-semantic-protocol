@@ -12,6 +12,14 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-70
+  - TASK-109
+  - TASK-110
+  - TASK-111
+  - TASK-112
+  - TASK-113
+  - TASK-114
+  - TASK-115
+  - TASK-116
 references: 
   - 'TASK-61'
 priority: high
@@ -58,3 +66,20 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 - Source population fix: filtered JOIN ON predicates may write equality operands in reverse order. The physical constructor now orients the recovered columns/source-instance identities by `Join::left()` and `Join::right()` before applying outer/anti/semi match and null-extension laws.
 - Focused public API regression and independent DuckDB outer-join count oracle: `tests/physical_realization/joins.rs` (`filtered_outer_join_population_uses_sql_input_order_not_on_operand_order`).
 - **Partial implementation only.** AC #1..#6 are still open. Mandatory chained join, composite key, all source/terminal oracle, adapter and dialect cases in the freeze are not certified by this increment. Review and explicitly verify all frozen cells before signing off TASK-71.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**This is a parent signoff task, not the next implementation task.** Pick the first unfinished child below whose dependencies are satisfied. Keep TASK-71 `In Progress` until all child PRs merge and original AC #1..#6 pass independently. Children must never depend on their parent; each next child depends on its immediate predecessor.
+
+- **[TASK-109](task-109%20-%20prove-two-input-inner-join-bags-and-composite-keys.md)** (1/8): binary INNER equality; one-to-many key duplicates; two-column composite equality. Fixture IDs: `71-C109-P`, `71-C109-N`.
+- **[TASK-110](task-110%20-%20compose-three-relation-chains-self-joins-and-shared-aliases.md)** (2/8): three-input INNER chain; self-join with independent aliases; repeated/shared physical producer. Fixture IDs: `71-C110-P`, `71-C110-N`.
+- **[TASK-111](task-111%20-%20prove-left-right-and-full-unmatched-null-extension.md)** (3/8): LEFT/RIGHT/FULL matched and unmatched; SQL NULL and reversed-ON operands; physical vs synthetic NULL. Fixture IDs: `71-C111-P`, `71-C111-N`.
+- **[TASK-112](task-112%20-%20certify-semi-and-anti-absence-witnesses.md)** (4/8): LEFT/RIGHT SEMI and ANTI; duplicates; SQL UNKNOWN; rejected nonmembership. Fixture IDs: `71-C112-P`, `71-C112-N`.
+- **[TASK-113](task-113%20-%20implement-portable-join-syntax-and-boolean-condition-variants.md)** (5/8): CROSS; USING; NATURAL with known schema; OR-on; non-equi; IS NOT DISTINCT FROM; null-safe equality. Fixture IDs: `71-C113-P`, `71-C113-N`.
+- **[TASK-114](task-114%20-%20classify-asof-range-time-and-lateral-apply-laws.md)** (6/8): ASOF nearest-prior; range/time inequalities; LATERAL; CROSS/OUTER APPLY; supported parser dialects. Fixture IDs: `71-C114-P`, `71-C114-N`.
+- **[TASK-115](task-115%20-%20compose-join-plans-through-filters-constraints-and-terminal-row-shaping.md)** (7/8): two-hop WHERE then JOIN/JOIN; composite ON plus nullable keys; PK/FK; downstream GROUP/count. Fixture IDs: `71-C115-P`, `71-C115-N`.
+- **[TASK-116](task-116%20-%20independently-certify-task-71-join-matrix-and-parent-acceptance.md)** (8/8): frozen J71 cells incl mandatory/conditional; SQL/dbt/ODCS; 13 supported dialect identities; DuckDB. Fixture IDs: `71-C116-P`, `71-C116-N`.
+
+**Original AC to child ownership:** #1 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-115, TASK-116; #2 -> TASK-114, TASK-116; #3 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116; #4 -> TASK-109, TASK-110, TASK-112, TASK-115, TASK-116; #5 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116; #6 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116.
+
+**Independent closure:** The parent keeps all original AC unchecked until every required frozen cell is executed, all conditional limits reviewed, adapter/13-dialect and DuckDB evidence reconciled, and final CI verified. The parent acceptance inventory is `docs/task-71-acceptance-freeze.json`, with the child execution plan at `docs/backlog-child-queue-plan.json`. No partial PR is a release approval.
