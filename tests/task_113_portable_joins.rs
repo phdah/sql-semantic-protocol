@@ -76,6 +76,11 @@ fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
         actual.sort();
         expected.sort();
         assert_eq!(
+            expected.len() as u64,
+            case["expected_output_count"].as_u64().unwrap(),
+            "{id}: frozen output count must match the complete bag"
+        );
+        assert_eq!(
             actual, expected,
             "{id}: full terminal bag, row identity, and NULL"
         );
@@ -111,6 +116,35 @@ fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
         assert_eq!(
             actual_rejected, expected_rejected,
             "{id}: every NOT TRUE pair"
+        );
+
+        // A complete join oracle proves both existence and closed-world absence:
+        // no physical source pair may disappear from, or occur twice in, the
+        // TRUE / IS NOT TRUE partition. Keep row identities, not set counts.
+        let mut all_source_pairs = case["left"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|left| {
+                case["right"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(move |right| json!([left[0], right[0]]).to_string())
+            })
+            .collect::<Vec<_>>();
+        let mut classified_pairs = case["expected"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| json!([row[0], row[2]]).to_string())
+            .chain(expected_rejected.iter().cloned())
+            .collect::<Vec<_>>();
+        all_source_pairs.sort();
+        classified_pairs.sort();
+        assert_eq!(
+            classified_pairs, all_source_pairs,
+            "{id}: every physical pair must occur exactly once as TRUE or NOT TRUE"
         );
 
         let values = case["expected"].as_array().unwrap();
