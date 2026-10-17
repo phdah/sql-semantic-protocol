@@ -36,10 +36,7 @@ fn timestamp_candidates(wanted: u64) -> Option<TemporalCandidateBags> {
     let candidates = if wanted == 3 {
         vec![(vec![a(), b()], vec![c(), d()])]
     } else if wanted == 0 {
-        vec![
-            (vec![c()], vec![d()]),
-            (Vec::new(), vec![c()]),
-        ]
+        vec![(vec![c()], vec![d()]), (Vec::new(), vec![c()])]
     } else if wanted <= 64 {
         let n = usize::try_from(wanted).ok()?;
         vec![(vec![a(); n], vec![c()])]
@@ -58,13 +55,21 @@ pub(super) fn physical_temporal_join_count_plan(
 ) -> Option<WitnessDirection> {
     let mut walker = Walker::new(bundle);
     walker.visit(layer_id).ok()?;
-    if walker.nodes.iter().filter(|n| matches!(n.id(), PhysicalPlanRef::Layer(_))).count() != 1 {
+    if walker
+        .nodes
+        .iter()
+        .filter(|n| matches!(n.id(), PhysicalPlanRef::Layer(_)))
+        .count()
+        != 1
+    {
         return None;
     }
     let layer = walker.layers.get(layer_id).copied()?;
     let query = query_for(bundle, layer)?;
     let [join] = query.joins() else { return None };
-    let [left, right] = query.sources() else { return None };
+    let [left, right] = query.sources() else {
+        return None;
+    };
     if join.kind() != JoinKind::Inner
         || join.execution().is_some()
         || join.left().relation() != left.name()
@@ -82,14 +87,23 @@ pub(super) fn physical_temporal_join_count_plan(
         || query.predicates().where_predicate().is_some()
         || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
-        || query.output().columns().iter().any(|col| !matches!(col.expression(), Expression::Column(_) | Expression::Literal(_)))
-        || layer.write_kind().is_some_and(|kind| !kind.fully_defines_relation())
+        || query.output().columns().iter().any(|col| {
+            !matches!(
+                col.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        })
+        || layer
+            .write_kind()
+            .is_some_and(|kind| !kind.fully_defines_relation())
         || blocks_unconstrained_physical_plans(bundle, left.name())
         || blocks_unconstrained_physical_plans(bundle, right.name())
     {
         return None;
     }
-    let Predicate::Comparison(cmp) = join.condition()? else { return None };
+    let Predicate::Comparison(cmp) = join.condition()? else {
+        return None;
+    };
     let (Expression::Column(a), Expression::Column(b)) = (cmp.left(), cmp.right()) else {
         return None;
     };
@@ -98,23 +112,32 @@ pub(super) fn physical_temporal_join_count_plan(
     if left_instance == right_instance {
         return None;
     }
-    let (left_column, right_column, op) = if a.relation() == Some(left_instance)
-        && b.relation() == Some(right_instance)
-    {
-        (a, b, cmp.operator())
-    } else if a.relation() == Some(right_instance) && b.relation() == Some(left_instance) {
-        (b, a, match cmp.operator() {
-            ComparisonOperator::Lte => ComparisonOperator::Gte,
-            _ => return None,
-        })
-    } else {
-        return None;
-    };
+    let (left_column, right_column, op) =
+        if a.relation() == Some(left_instance) && b.relation() == Some(right_instance) {
+            (a, b, cmp.operator())
+        } else if a.relation() == Some(right_instance) && b.relation() == Some(left_instance) {
+            (
+                b,
+                a,
+                match cmp.operator() {
+                    ComparisonOperator::Lte => ComparisonOperator::Gte,
+                    _ => return None,
+                },
+            )
+        } else {
+            return None;
+        };
     if op != ComparisonOperator::Gte {
         return None;
     }
-    let left_schema = bundle.source_schemas().iter().find(|schema| schema.relation() == left.name())?;
-    let right_schema = bundle.source_schemas().iter().find(|schema| schema.relation() == right.name())?;
+    let left_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == left.name())?;
+    let right_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == right.name())?;
     let left_key = timestamp_key(left.name(), left_schema.columns(), left_column.name())?;
     let right_key = timestamp_key(right.name(), right_schema.columns(), right_column.name())?;
     let left_row = RowVariable::new(left.name(), left_instance, "temporal_left")?;
@@ -122,14 +145,21 @@ pub(super) fn physical_temporal_join_count_plan(
     let law = TemporalJoinLaw::GreaterThanOrEqual;
     let mut cases = Vec::new();
     for (left_values, right_values) in timestamp_candidates(wanted)? {
-        if exact_sources.get(left.name()).is_some_and(|count| usize::try_from(*count).ok() != Some(left_values.len()))
-            || exact_sources.get(right.name()).is_some_and(|count| usize::try_from(*count).ok() != Some(right_values.len()))
+        if exact_sources
+            .get(left.name())
+            .is_some_and(|count| usize::try_from(*count).ok() != Some(left_values.len()))
+            || exact_sources
+                .get(right.name())
+                .is_some_and(|count| usize::try_from(*count).ok() != Some(right_values.len()))
             || law.selected_rows(&left_values, &right_values)?.len() as u64 != wanted
         {
             continue;
         }
         let mut obligations = Vec::new();
-        for (relation, count) in [(left.name(), left_values.len()), (right.name(), right_values.len())] {
+        for (relation, count) in [
+            (left.name(), left_values.len()),
+            (right.name(), right_values.len()),
+        ] {
             let boundary = WitnessBoundary::new(relation, GroupBoundaryKind::Physical, layer_id)?;
             let rows = u64::try_from(count).ok()?;
             obligations.push(WitnessObligation::Rows {
@@ -140,7 +170,8 @@ pub(super) fn physical_temporal_join_count_plan(
                 closed_world: true,
             });
             obligations.push(WitnessObligation::ClosedWorld {
-                boundary, coverage: ClosedWorldCoverage::EntireRelation,
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
             });
         }
         obligations.push(WitnessObligation::TemporalJoinPopulation {
