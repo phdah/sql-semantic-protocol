@@ -102,6 +102,26 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
                 || (left_row.relation() == right_row.relation() && left_rows != right_rows)
         }
+        WitnessObligation::FiniteJoinPopulation {
+            left_row,
+            right_row,
+            left_key,
+            right_key,
+            law,
+            left_values,
+            right_values,
+            output_rows,
+            closed_world,
+        } => {
+            !closed_world
+                || left_row.instance() == right_row.instance()
+                || left_row.relation() == right_row.relation()
+                || left_key.relation() != Some(left_row.relation())
+                || right_key.relation() != Some(right_row.relation())
+                || law
+                    .selected_rows(left_values, right_values)
+                    .is_none_or(|selected| u64::try_from(selected.len()).ok() != Some(*output_rows))
+        }
         WitnessObligation::UniformJoinPopulation {
             left_row,
             right_row,
