@@ -7,6 +7,10 @@ const FREEZE: &str = include_str!("../docs/task-111-acceptance-freeze.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 const SCHEMA: &str = include_str!("../schema/protocol.schema.json");
 const AUDIT: &str = include_str!("../docs/task-111-acceptance-audit.md");
+const TASK: &str = include_str!(
+    "../.backlog/tasks/task-111 - prove-left-right-and-full-unmatched-null-extension.md"
+);
+const QUEUE: &str = include_str!("../docs/backlog-child-queue-plan.json");
 
 #[test]
 fn frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells() {
@@ -138,4 +142,30 @@ fn frozen_task111_contract_is_linked_to_active_schema_and_review_audit() {
     assert!(AUDIT.contains("TASK-111-C-NULLABILITY"));
     assert!(AUDIT.contains("TASK-111-C-VENDOR"));
     assert!(AUDIT.contains("TASK-111-C-NULLSAFE"));
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    assert_eq!(freeze["status"], "verified_bounded_child");
+    assert_eq!(freeze["review"]["state"], "signed_off");
+    assert_eq!(freeze["signoff"]["checked_green_jobs"], 9);
+    assert_eq!(freeze["signoff"]["ci_green"], true);
+    assert!(freeze["cases"].as_array().unwrap().iter().all(|v| {
+        v["status"] == "verified" && v["verification_evidence"].as_array().is_some()
+    }));
+    assert_eq!(
+        manifest["task_111_join_acceptance"]["status"],
+        "verified_bounded_child"
+    );
+    assert_eq!(
+        manifest["task_111_join_acceptance"]["acceptance_audit"],
+        "docs/task-111-acceptance-audit.md"
+    );
+    let queue: Value = serde_json::from_str(QUEUE).unwrap();
+    let parent = queue["parents"].as_array().unwrap().iter().find(|v| v["parent"] == 71).unwrap();
+    let child = parent["phases"].as_array().unwrap().iter().find(|v| v["id"] == 111).unwrap();
+    assert_eq!(child["acceptance_signoff"], "verified_bounded_child");
+    assert!(child["dependency_gate"].as_str().unwrap().contains("TASK-112"));
+    assert!(TASK.contains("status: Done"));
+    for criterion in 1..=5 {
+        assert!(TASK.contains(&format!("- [x] #{criterion}")));
+    }
+    assert!(TASK.contains("TASK-71 stays In Progress"));
 }
