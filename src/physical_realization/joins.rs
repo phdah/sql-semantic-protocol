@@ -850,7 +850,7 @@ pub(super) fn physical_join_population_with_source_counts(
     }
 
     let (left_key, left_instance, right_key, right_instance) =
-        if source_filters.is_empty() && join_keys.len() == 1 && join_kind == JoinKind::Inner {
+        if source_filters.is_empty() && join_keys.len() == 1 {
             let join = join?;
             if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
                 return None;
@@ -898,31 +898,30 @@ pub(super) fn physical_join_population_with_source_counts(
             };
             let (left, left_instance) = map(left_key_expression)?;
             let (right, right_instance) = map(right_key_expression)?;
-            // INNER matches are symmetric. A composed local witness above already
-            // owns its physical source orientation, which can differ from the
-            // immediate SQL producer names; do not reinterpret that proof.
-            if join_kind == JoinKind::Inner {
-                (left, left_instance, right, right_instance)
-            } else {
-                // Outer/semi/anti preservation is positional, not the ON equality's
-                // operand order. Orient only endpoints freshly recovered from ON.
-                let sql_left = sql_join
-                    .left()
-                    .alias()
-                    .unwrap_or(sql_join.left().relation());
-                let sql_right = sql_join
-                    .right()
-                    .alias()
-                    .unwrap_or(sql_join.right().relation());
-                if left_instance == sql_left && right_instance == sql_right {
-                    (left, left_instance, right, right_instance)
-                } else if left_instance == sql_right && right_instance == sql_left {
-                    (right, right_instance, left, left_instance)
-                } else {
-                    return None;
-                }
-            }
+            (left, left_instance, right, right_instance)
         };
+    // SQL preservation is based on the input's position rather than the
+    // lexical orientation of the equality's operands. A local composed
+    // witness can have reversed endpoints even without source filters.
+    let (left_key, left_instance, right_key, right_instance) = if join_kind == JoinKind::Inner {
+        (left_key, left_instance, right_key, right_instance)
+    } else {
+        let sql_left = sql_join
+            .left()
+            .alias()
+            .unwrap_or(sql_join.left().relation());
+        let sql_right = sql_join
+            .right()
+            .alias()
+            .unwrap_or(sql_join.right().relation());
+        if left_instance == sql_left && right_instance == sql_right {
+            (left_key, left_instance, right_key, right_instance)
+        } else if left_instance == sql_right && right_instance == sql_left {
+            (right_key, right_instance, left_key, left_instance)
+        } else {
+            return None;
+        }
+    };
     if left_instance == right_instance {
         return None;
     }
