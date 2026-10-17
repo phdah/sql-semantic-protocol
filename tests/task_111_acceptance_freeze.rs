@@ -12,7 +12,10 @@ const AUDIT: &str = include_str!("../docs/task-111-acceptance-audit.md");
 fn frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells() {
     let freeze: Value = serde_json::from_str(FREEZE).expect("frozen matrix");
     assert_eq!(freeze["version"], 2);
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["71-C111-P", "71-C111-N"]));
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["71-C111-P", "71-C111-N"])
+    );
     let expected = BTreeSet::from([
         "71-C111-P-LEFT-EMPTY",
         "71-C111-P-LEFT-REVERSED",
@@ -23,7 +26,9 @@ fn frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells() {
         "71-C111-N-FULL-MIXED",
         "71-C111-N-BOTH-EMPTY",
     ]);
-    let cases = freeze["cases"].as_array().expect("finite mandatory variants");
+    let cases = freeze["cases"]
+        .as_array()
+        .expect("finite mandatory variants");
     let actual = cases
         .iter()
         .map(|case| case["id"].as_str().expect("stable fixture ID"))
@@ -40,9 +45,15 @@ fn frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells() {
         assert_eq!(case["source_instances"]["r"], "r", "{id}");
         assert_eq!(case["source_column_types"]["k"], "INTEGER", "{id}");
         assert_eq!(case["source_column_types"]["id"], "VARCHAR", "{id}");
-        assert_eq!(case["canonical_ast_expectation"]["on"]["operator"], "eq", "{id}");
+        assert_eq!(
+            case["canonical_ast_expectation"]["on"]["operator"], "eq",
+            "{id}"
+        );
         assert_eq!(case["canonical_ast_expectation"]["joins"], 1, "{id}");
-        assert!(case["constructive_oracle"]["expected_pattern"].is_string(), "{id}");
+        assert!(
+            case["constructive_oracle"]["expected_pattern"].is_string(),
+            "{id}"
+        );
         assert_eq!(
             case["constructive_oracle"]["left_physical_count"],
             case["left"].as_array().unwrap().len(),
@@ -72,7 +83,11 @@ fn frozen_task111_variants_have_complete_sql_ast_oracle_and_dialect_cells() {
             assert_eq!(cell["canonical"], "equivalent_when_parsed", "{id}/{name}");
             assert_eq!(
                 cell["native_execution"],
-                if name == "duckdb" { "duckdb_oracle" } else { "not_claimed" },
+                if name == "duckdb" {
+                    "duckdb_oracle"
+                } else {
+                    "not_claimed"
+                },
                 "{id}/{name}: no vendor engine inference"
             );
             cells += 1;
@@ -97,7 +112,10 @@ fn frozen_task111_contract_is_linked_to_active_schema_and_review_audit() {
         manifest["task_111_join_acceptance"]["acceptance_freeze"],
         "docs/task-111-acceptance-freeze.json"
     );
-    assert_eq!(manifest["task_111_join_acceptance"]["release_approved"], false);
+    assert_eq!(
+        manifest["task_111_join_acceptance"]["release_approved"],
+        false
+    );
     let schema: Value = serde_json::from_str(SCHEMA).expect("canonical schema");
     let joins = schema["$defs"]["constructiveObligation"]["oneOf"]
         .as_array()
