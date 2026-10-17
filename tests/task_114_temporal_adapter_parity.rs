@@ -39,7 +39,12 @@ schema:
             .map(|name| {
                 RelationSchema::new(
                     *name,
-                    vec![SchemaColumn::from_sql_type("t", "TIMESTAMP WITHOUT TIME ZONE", "postgresql").unwrap()],
+                    vec![SchemaColumn::from_sql_type(
+                        "t",
+                        "TIMESTAMP WITHOUT TIME ZONE",
+                        "postgresql",
+                    )
+                    .unwrap()],
                 )
                 .unwrap()
             })
