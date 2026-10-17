@@ -1578,3 +1578,9 @@ every component, the constructor fails closed rather than asserting an exact
 count. This optional property is absent from the single-key wire shape.
 Additional semantic families, including three-way joins and null-safe equality,
 are separate tasks.
+
+This adds a field to the public Rust `WitnessObligation::JoinPopulation`
+variant. Rust callers using exhaustive field patterns must update them, while
+JSON readers using the schema may continue consuming single-key joins without
+the optional `additional_keys` property. The new wire shape is reserved for
+the next planned major protocol release; no v2 release is certified by TASK-109.
