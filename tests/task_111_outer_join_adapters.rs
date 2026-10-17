@@ -11,7 +11,14 @@ fn compiled_dbt_and_odcs_outer_join_use_one_typed_source_assignment() {
         SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
     };
 
-    let sql = "SELECT l.k FROM warehouse.raw.left_input AS l FULL OUTER JOIN warehouse.raw.right_input AS r ON r.k=l.k";
+    for (expected_kind, join_sql, expected_left, expected_right) in [
+        (JoinKind::Left, "LEFT JOIN", 3, 2),
+        (JoinKind::Right, "RIGHT JOIN", 2, 3),
+        (JoinKind::Full, "FULL OUTER JOIN", 2, 2),
+    ] {
+        let sql = format!(
+            "SELECT l.k FROM warehouse.raw.left_input AS l {join_sql} warehouse.raw.right_input AS r ON r.k=l.k"
+        );
     let manifest = serde_json::json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -132,16 +139,19 @@ schema:
                 .any(|case| case.obligations().iter().any(|o| matches!(
                     o,
                     WitnessObligation::JoinPopulation {
-                        join_kind: JoinKind::Full,
+                        join_kind,
                         pattern: JoinPopulationPattern::MixedMatchedUnmatched,
-                        left_rows: 2,
-                        right_rows: 2,
+                        left_rows,
+                        right_rows,
                         output_rows: 3,
                         closed_world: true,
                         ..
-                    }
+                    } if *join_kind == expected_kind
+                        && *left_rows == expected_left
+                        && *right_rows == expected_right
                 ))),
-            "{adapter}: compiled source facts must retain the exact mixed outer bag"
+            "{adapter}: {expected_kind:?} compiled facts must retain exact mixed outer bag"
         );
+    }
     }
 }
