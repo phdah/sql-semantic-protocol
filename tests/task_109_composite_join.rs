@@ -442,8 +442,13 @@ fn every_frozen_sql_variant_is_accepted_in_the_exposed_parser_dialects() {
                 1,
                 "{id}/{dialect}: accepted canonical single join"
             );
+            let canonical = if dialect == "postgres" {
+                "postgresql"
+            } else {
+                dialect
+            };
             assert!(
-                item["dialects"][dialect]["parser"] == "parser_equivalent",
+                item["dialects"][canonical]["parser"] == "parser_equivalent",
                 "{id}/{dialect}: no silent dialect classification"
             );
         }
