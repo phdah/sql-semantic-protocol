@@ -286,7 +286,7 @@ fn emitted_chain_obligation_has_all_instances_and_exact_source_bag_counts() {
                         && obligation["middle_left_key"]["name"] == "k"
                         && obligation["middle_right_key"]["name"] == "k"
                         && obligation["right_key"]["name"] == "k"
-                        && obligation["matched_value"] == 0
+                        && obligation["matched_value"] == 1
                         && obligation["left_rows"] == 2
                         && obligation["middle_rows"] == 2
                         && obligation["right_rows"] == 1
