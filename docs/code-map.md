@@ -10,7 +10,9 @@ Portable Boolean CHECK AST and three-valued validator: `src/computed_boolean_che
 
 Physical schema and default semantics: `src/relation.rs` owns typed columns, collation and timezone identity; `src/column_sources.rs` owns defaults and typed row-local generated-expression/opaque identity evidence; `src/computed_keys.rs` and `src/computed_checks.rs` own functional key and arithmetic CHECK facts; `src/constraints.rs` merges and validates constraints; `src/physical_realization/write_states/{constraints,check_comparisons,type_validation,operators,typed_values,typed_populations}.rs` owns closed-world physical feasibility, numeric CHECK validation and nested Arrow-like value proof. Adapter paths should only translate evidence, never implement independent proof laws.
 
-ASOF ordering lineage and unsupported ASOF/APPLY diagnostics: `src/analysis/joins.rs`; correlated `LATERAL` derived-row fail-closed boundary: `src/analysis/relations.rs`; public safety regressions: `tests/task_114_temporal_lateral_boundaries.rs`. These paths are not a TASK-114 constructive proof.\n\n## Starting points
+ASOF ordering lineage and unsupported ASOF/APPLY diagnostics: `src/analysis/joins.rs`; correlated `LATERAL` derived-row fail-closed boundary: `src/analysis/relations.rs`; public safety regressions: `tests/task_114_temporal_lateral_boundaries.rs`. The ASOF eligibility predicate is preserved in the canonical join condition without claiming that all eligible pairs are selected. Full constructive nearest-prior and correlated-population proofs remain pending.
+
+## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |
 |---|---|---|---|
