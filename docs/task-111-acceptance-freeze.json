@@ -1402,17 +1402,30 @@
   "conditional_boundaries": [
     {
       "id": "TASK-111-C-NULLABILITY",
-      "status": "pending_release_review",
       "owner": "TASK-111",
-      "reason": "Bare physical SQL type does not itself certify a producer can insert actual NULL key values; source schema enforcement evidence required for constructive exactness.",
-      "expected": "typed_residual_when_unproven"
+      "status": "reviewed_bounded_residual",
+      "missing_evidence": "Authoritative per-source NULL insertability and enforced NOT NULL/constraint provenance absent from generic physical catalog. An integer type alone cannot witness a physical NULL row.",
+      "expected": "typed_residual_for_physical_null_insertion_without_schema_evidence",
+      "release_disposition": "pending_release_review",
+      "test": "tests/task_111_outer_join.rs::frozen_complete_duckdb_source_and_terminal_bags_agree"
     },
     {
       "id": "TASK-111-C-VENDOR",
-      "status": "pending_release_review",
       "owner": "TASK-111",
-      "reason": "No parser-level acceptance implies native vendor runtime behavior, collation or session NULL comparison laws.",
-      "expected": "typed_residual_when_unproven"
+      "status": "reviewed_bounded_residual",
+      "missing_evidence": "Native vendor engine execution of each parser-equivalent join, including session collation and implicit cast environment.",
+      "expected": "typed_residual_if_vendor_execution_requested",
+      "release_disposition": "pending_release_review",
+      "test": "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect"
+    },
+    {
+      "id": "TASK-111-C-NULLSAFE",
+      "owner": "TASK-111",
+      "status": "reviewed_bounded_residual",
+      "missing_evidence": "Portable execution-law attestation for IS NOT DISTINCT FROM and vendor NULL-safe ON equality, deferred to TASK-113.",
+      "expected": "typed_residual",
+      "release_disposition": "pending_release_review",
+      "test": "tests/task_111_outer_join.rs::nonportable_null_safe_outer_condition_remains_a_typed_residual"
     }
   ],
   "signoff": {
