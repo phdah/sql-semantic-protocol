@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_source_plan,
     ConfiguredSqlInput, JoinKind, JoinPopulationPattern, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
+    SchemaColumn, SqlInput, WitnessDirection, WitnessObligation, to_bundle_json,
 };
 
 const MATRIX: &str = include_str!("../docs/task-111-acceptance-freeze.json");
@@ -441,6 +441,17 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
                 "{id}/{dialect}: parser does not certify vendor execution"
             );
             let analyzed = bundle(sql, dialect);
+            let wire: Value = serde_json::from_str(&to_bundle_json(&analyzed))
+                .expect("canonical protocol JSON");
+            let statement = &wire["inputs"][0]["statements"][0];
+            let expected_ast = &case["canonical_ast_expectation"];
+            assert_eq!(statement["kind"], expected_ast["statement_kind"], "{id}/{dialect}");
+            let joins = statement["joins"].as_array().expect("canonical joins");
+            assert_eq!(joins.len(), expected_ast["joins"].as_u64().expect("join count") as usize, "{id}/{dialect}");
+            assert_eq!(joins[0]["kind"], expected_ast["join_kind"], "{id}/{dialect}");
+            assert_eq!(joins[0]["condition"]["kind"], expected_ast["on"]["kind"], "{id}/{dialect}");
+            assert_eq!(joins[0]["condition"]["operator"], expected_ast["on"]["operator"], "{id}/{dialect}");
+            assert!(statement["predicates"]["where"].is_null(), "{id}/{dialect}: no WHERE restriction");
             let layer = analyzed.layers().first().expect("joined terminal");
             let plan = physical_joint_source_plan(
                 &analyzed,
