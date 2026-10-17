@@ -129,12 +129,9 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                     .checked_mul(*middle_rows)
                     .and_then(|count| count.checked_mul(*right_rows))
                     != Some(*output_rows)
-                || (left_row.relation() == middle_row.relation()
-                    && left_rows != middle_rows)
-                || (left_row.relation() == right_row.relation()
-                    && left_rows != right_rows)
-                || (middle_row.relation() == right_row.relation()
-                    && middle_rows != right_rows)
+                || (left_row.relation() == middle_row.relation() && left_rows != middle_rows)
+                || (left_row.relation() == right_row.relation() && left_rows != right_rows)
+                || (middle_row.relation() == right_row.relation() && middle_rows != right_rows)
         }
         WitnessObligation::OperatorPopulation { witness } => {
             !matches!(
