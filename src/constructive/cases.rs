@@ -80,6 +80,7 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
             right_row,
             left_key,
             right_key,
+            additional_keys,
             join_kind,
             pattern,
             left_rows,
@@ -91,6 +92,13 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || left_row.instance() == right_row.instance()
                 || left_row.relation() != left_key.relation().unwrap_or("")
                 || right_row.relation() != right_key.relation().unwrap_or("")
+                || additional_keys.iter().any(|key| {
+                    key.left().relation() != left_key.relation()
+                        || key.right().relation() != right_key.relation()
+                        || key.left() == left_key
+                        || key.right() == right_key
+                })
+                || (!additional_keys.is_empty() && *join_kind != crate::protocol::JoinKind::Inner)
                 || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
                 || (left_row.relation() == right_row.relation() && left_rows != right_rows)
         }
