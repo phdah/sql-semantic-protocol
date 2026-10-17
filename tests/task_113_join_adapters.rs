@@ -148,20 +148,19 @@ schema:
                     matches!(obligation, WitnessObligation::ClosedWorld { .. })
                 }).count() == 2;
                 let population = case.obligations().iter().any(|obligation| {
-                    match obligation {
+                    matches!(
+                        obligation,
                         WitnessObligation::JoinPopulation {
                             output_rows: 2,
                             pattern: JoinPopulationPattern::CommonMatched,
                             closed_world: true,
                             ..
-                        } => true,
-                        WitnessObligation::UniformJoinPopulation {
+                        } | WitnessObligation::UniformJoinPopulation {
                             output_rows: 2,
                             closed_world: true,
                             ..
-                        } => true,
-                        _ => false,
-                    }
+                        }
+                    )
                 });
                 closed && population
             }), "{variant}/{adapter}: exact two-source bag proof");
