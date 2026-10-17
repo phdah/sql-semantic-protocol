@@ -115,6 +115,40 @@ fn frozen_complete_duckdb_source_and_terminal_bags_agree() {
                 "{id}: NULL domain"
             );
         }
+        // Independently classify every physical ON pair as TRUE, FALSE or
+        // UNKNOWN, including NULL comparisons. A NULL key can never be
+        // mistaken for a synthetic output-only NULL extension.
+        let mut pair_query = db
+            .prepare(
+                "SELECT l.id, r.id, CASE WHEN l.k = r.k THEN 'TRUE' 
+                 WHEN NOT (l.k = r.k) THEN 'FALSE' ELSE 'UNKNOWN' END 
+                 FROM l CROSS JOIN r",
+            )
+            .expect("physical pair oracle");
+        let mut actual_pairs = pair_query
+            .query_map([], |row| {
+                let left: String = row.get(0)?;
+                let right: String = row.get(1)?;
+                let truth: String = row.get(2)?;
+                Ok(json!([left, right, truth]).to_string())
+            })
+            .expect("classify physical ON pairs")
+            .map(|row| row.expect("physical pair"))
+            .collect::<Vec<_>>();
+        actual_pairs.sort();
+        let mut expected_pairs = Vec::new();
+        for left in case["left"].as_array().expect("left physical source") {
+            for right in case["right"].as_array().expect("right physical source") {
+                let truth = match (left[1].as_i64(), right[1].as_i64()) {
+                    (Some(a), Some(b)) if a == b => "TRUE",
+                    (Some(_), Some(_)) => "FALSE",
+                    _ => "UNKNOWN",
+                };
+                expected_pairs.push(json!([left[0], right[0], truth]).to_string());
+            }
+        }
+        expected_pairs.sort();
+        assert_eq!(actual_pairs, expected_pairs, "{id}: complete TRUE/FALSE/UNKNOWN pairs");
     }
 }
 
