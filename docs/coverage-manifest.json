@@ -2,6 +2,16 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_110_join_acceptance": {
+    "owner": "TASK-110",
+    "parent": "TASK-71",
+    "status": "frozen_implementation_pending",
+    "acceptance_freeze": "docs/task-110-acceptance-freeze.json",
+    "fixtures": ["71-C110-P", "71-C110-N"],
+    "mandatory_variant_cells": 4,
+    "test": "tests/task_110_join_chains.rs",
+    "release_approved": false
+  },
   "task_109_join_acceptance": {
     "owner": "TASK-109",
     "parent": "TASK-71",
