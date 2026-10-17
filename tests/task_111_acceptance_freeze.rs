@@ -147,9 +147,11 @@ fn frozen_task111_contract_is_linked_to_active_schema_and_review_audit() {
     assert_eq!(freeze["review"]["state"], "signed_off");
     assert_eq!(freeze["signoff"]["checked_green_jobs"], 9);
     assert_eq!(freeze["signoff"]["ci_green"], true);
-    assert!(freeze["cases"].as_array().unwrap().iter().all(|v| {
-        v["status"] == "verified" && v["verification_evidence"].as_array().is_some()
-    }));
+    assert!(freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|v| { v["status"] == "verified" && v["verification_evidence"].as_array().is_some() }));
     assert_eq!(
         manifest["task_111_join_acceptance"]["status"],
         "verified_bounded_child"
@@ -159,10 +161,23 @@ fn frozen_task111_contract_is_linked_to_active_schema_and_review_audit() {
         "docs/task-111-acceptance-audit.md"
     );
     let queue: Value = serde_json::from_str(QUEUE).unwrap();
-    let parent = queue["parents"].as_array().unwrap().iter().find(|v| v["parent"] == 71).unwrap();
-    let child = parent["phases"].as_array().unwrap().iter().find(|v| v["id"] == 111).unwrap();
+    let parent = queue["parents"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|v| v["parent"] == 71)
+        .unwrap();
+    let child = parent["phases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|v| v["id"] == 111)
+        .unwrap();
     assert_eq!(child["acceptance_signoff"], "verified_bounded_child");
-    assert!(child["dependency_gate"].as_str().unwrap().contains("TASK-112"));
+    assert!(child["dependency_gate"]
+        .as_str()
+        .unwrap()
+        .contains("TASK-112"));
     assert!(TASK.contains("status: Done"));
     for criterion in 1..=5 {
         assert!(TASK.contains(&format!("- [x] #{criterion}")));
