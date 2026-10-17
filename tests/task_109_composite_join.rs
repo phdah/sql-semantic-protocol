@@ -425,3 +425,26 @@ schema:
         );
     }
 }
+
+#[test]
+fn every_frozen_sql_variant_is_accepted_in_the_exposed_parser_dialects() {
+    let frozen: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-109-acceptance-freeze.json"))
+            .expect("versioned mandatory variants");
+    for item in frozen["variants"].as_array().expect("mandatory cases") {
+        let id = item["id"].as_str().expect("stable fixture identity");
+        let sql = item["sql"].as_str().expect("frozen SQL");
+        for &dialect in DIALECTS {
+            let analyzed = bundle(sql, dialect);
+            assert_eq!(
+                analyzed.layers().len(),
+                1,
+                "{id}/{dialect}: accepted canonical single join"
+            );
+            assert!(
+                item["dialects"][dialect]["parser"] == "parser_equivalent",
+                "{id}/{dialect}: no silent dialect classification"
+            );
+        }
+    }
+}
