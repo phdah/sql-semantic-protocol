@@ -221,9 +221,7 @@ impl JoinPopulationPattern {
             | Self::CommonMatched
             | Self::DisjointKeys
             | Self::EmptyLeft
-            | Self::EmptyRight => {
-                None
-            }
+            | Self::EmptyRight => None,
         }
     }
 
