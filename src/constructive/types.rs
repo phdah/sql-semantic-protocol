@@ -467,6 +467,88 @@ impl FiniteJoinLaw {
     }
 }
 
+/// A signed-independent wall-clock timestamp comparison over canonical
+/// Gregorian second-resolution text with no implicit session conversion.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TemporalJoinLaw {
+    /// The left timestamp is greater than or equal to the right timestamp.
+    GreaterThanOrEqual,
+}
+
+impl TemporalJoinLaw {
+    /// Stable protocol law name.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::GreaterThanOrEqual => "timestamp_greater_than_or_equal",
+        }
+    }
+
+    /// Validate a canonical YYYY-MM-DD HH:MM:SS wall-clock timestamp.
+    pub fn valid_timestamp(value: &str) -> bool {
+        let bytes = value.as_bytes();
+        if bytes.len() != 19
+            || bytes.get(10) != Some(&b' ')
+            || bytes.get(13) != Some(&b':')
+            || bytes.get(16) != Some(&b':')
+            || !bytes.iter().enumerate().all(|(i, digit)| {
+                matches!(i, 4 | 7 | 10 | 13 | 16) || digit.is_ascii_digit()
+            })
+            || crate::temporal::canonical_date_text(&value[..10]).is_err()
+        {
+            return false;
+        }
+        match (
+            value[11..13].parse::<u8>(),
+            value[14..16].parse::<u8>(),
+            value[17..19].parse::<u8>(),
+        ) {
+            (Ok(h), Ok(m), Ok(s)) => h < 24 && m < 60 && s < 60,
+            _ => false,
+        }
+    }
+
+    /// Every TRUE timestamp pair, preserving source-row index and duplicates.
+    pub fn selected_rows(
+        self,
+        left: &[Option<String>],
+        right: &[Option<String>],
+    ) -> Option<Vec<(usize, usize)>> {
+        if left.iter().chain(right).flatten().any(|time| !Self::valid_timestamp(time)) {
+            return None;
+        }
+        let mut selected = Vec::new();
+        for (l, left_value) in left.iter().enumerate() {
+            for (r, right_value) in right.iter().enumerate() {
+                let matched = match (left_value, right_value) {
+                    (Some(left), Some(right)) => match self {
+                        Self::GreaterThanOrEqual => left >= right,
+                    },
+                    _ => false,
+                };
+                if matched {
+                    selected.push((l, r));
+                }
+            }
+        }
+        Some(selected)
+    }
+
+    /// All FALSE/UNKNOWN timestamp comparison pairs, independently of output.
+    pub fn unselected_pairs(
+        self,
+        left: &[Option<String>],
+        right: &[Option<String>],
+    ) -> Option<Vec<(usize, usize)>> {
+        let selected = self.selected_rows(left, right)?;
+        Some(
+            (0..left.len())
+                .flat_map(|l| (0..right.len()).map(move |r| (l, r)))
+                .filter(|pair| !selected.contains(pair))
+                .collect(),
+        )
+    }
+}
+
 /// A second or later equality in a complete composite join-key assignment.
 /// Both sides are physical source columns controlled by the same key-group values
 /// as the primary equality. This is a complete bag law, not a sampled pair.
@@ -572,6 +654,19 @@ pub enum WitnessObligation {
         law: FiniteJoinLaw,
         left_values: Vec<Option<i64>>,
         right_values: Vec<Option<i64>>,
+        output_rows: u64,
+        closed_world: bool,
+    },
+    /// Exact physical wall-clock TIMESTAMP pair assignment, with per-column
+    /// explicit WITHOUT TIME ZONE source evidence and no session conversion.
+    TemporalJoinPopulation {
+        left_row: RowVariable,
+        right_row: RowVariable,
+        left_key: ColumnRef,
+        right_key: ColumnRef,
+        law: TemporalJoinLaw,
+        left_values: Vec<Option<String>>,
+        right_values: Vec<Option<String>>,
         output_rows: u64,
         closed_world: bool,
     },
