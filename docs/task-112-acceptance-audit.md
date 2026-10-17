@@ -47,3 +47,18 @@ The protocol schema enumerates both new canonical patterns; `docs/coverage-manif
 ## Release and verification boundary
 
 Nine CI jobs are required on the implementation head: formatting, strict Clippy, full Rust tests, docs, no-default-features lint/test/docs/dependencies, and dbt Core E2E. The final head also needs a green run after task and manifest signoff metadata. Task-112 only, not TASK-71 or 3.0.0, is eligible for bounded signoff. Pending release decisions are not automatically approved by a green check.
+
+## Verified implementation-head signoff
+
+All nine CI jobs succeeded on implementation SHA `1840c06f4816732d8f55fe53b3ddaf7edc30d0e0`:
+https://github.com/phdah/sql-semantic-protocol/actions/runs/39045626995.
+
+**AC #1:** 8/8 frozen mandatory cells, typed output bounds/NULL flags, complete source bags, and 104/104 explicit dialect parser classifications checked by public API.
+
+**AC #2:** all four native canonical `JoinKind` directions, checked source-bag pattern laws, exact qualifying/rejected local directions, typed full closed-world no-partner obligations, and no unsupported literal NULL insertability claim.
+
+**AC #3:** DuckDB executes both the literal nullable SQL input/output bag and the complete non-NULL constructive alternative for each of eight variants, comparing stable survivor IDs and multiplicity. SQL NULL and UNKNOWN are verified against every physical partner row.
+
+**AC #4:** 13/13 parser-equivalent canonical dialects with separately normalized DuckDB execution; direct SQL, compiled dbt manifest, and equivalent ODCS metadata for all four join kinds. Native vendor execution and source NULL insertability are reviewed bounded, not release-approved.
+
+**AC #5:** format, strict Clippy, Rust tests, docs, no-default features, dbt E2E, active schema snapshots, and this independent two-axis review completed. All five child ACs can be marked Done. TASK-71 and the v3 release stay open. Metadata-only CI on the final PR head remains the merge gate.
