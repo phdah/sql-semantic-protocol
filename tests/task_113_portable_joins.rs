@@ -185,3 +185,31 @@ fn natural_join_unknown_column_intersection_fails_closed() {
         .iter()
         .any(|d| d.code() == "unsupported_natural_join_condition"));
 }
+
+#[test]
+fn natural_join_with_disjoint_known_columns_is_cartesian() {
+    let left = RelationSchema::new(
+        "l",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap();
+    let right = RelationSchema::new(
+        "r",
+        vec![SchemaColumn::from_sql_type("v", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[left, right]).unwrap();
+    let parser = dialect_from_name("generic").unwrap();
+    let sql = SqlInput::inline("SELECT l.k FROM l NATURAL JOIN r");
+    let input = ConfiguredSqlInput::new("task-113-empty-intersection", &sql, "generic", parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    let layer = &bundle.layers()[0];
+    let query = bundle.inputs()[0].statements().iter().find_map(|statement| match statement {
+        sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
+        _ => None,
+    }).unwrap();
+    assert!(query.diagnostics().is_empty());
+    assert_eq!(query.joins()[0].kind(), JoinKind::Cross);
+    assert!(query.joins()[0].condition().is_none());
+    assert_eq!(layer.consumes().len(), 2);
+}
