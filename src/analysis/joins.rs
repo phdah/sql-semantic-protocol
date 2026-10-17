@@ -107,7 +107,64 @@ pub(super) fn analyze_join(
         on_condition
     };
 
-    ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
+    // Normalize simple correlated-derived WHERE once at the SQL/AST boundary.
+    // Downstream physical planners consume typed column identities and never
+    // reparse the vendor's APPLY or LATERAL SQL text.
+    let (execution, physical_right, correlation) = match &join.relation {
+        TableFactor::Derived { subquery, lateral, .. } => {
+            let derived = match subquery.body.as_ref() {
+                SetExpr::Select(select) if select.from.len() == 1
+                    && select.from[0].joins.is_empty() => {
+                    match &select.from[0].relation {
+                        TableFactor::Table { name, args: None, .. } => {
+                            Some((name.to_string(), select.selection.as_ref()))
+                        }
+                        _ => None,
+                    }
+                }
+                _ => None,
+            };
+            let (physical_right, correlation) = if let Some((source, Some(selection))) = derived {
+                (
+                    Some(source),
+                    Some(analyze_predicate_with_windows(
+                        selection,
+                        &[],
+                        &BTreeMap::new(),
+                        scope.output_scope,
+                        diagnostics,
+                    )),
+                )
+            } else {
+                (None, None)
+            };
+            let execution = match &join.join_operator {
+                JoinOperator::CrossApply => Some(JoinExecution::CrossApply),
+                JoinOperator::OuterApply => Some(JoinExecution::OuterApply),
+                JoinOperator::CrossJoin if *lateral => Some(JoinExecution::LateralInner),
+                _ => None,
+            };
+            (execution, physical_right, correlation)
+        }
+        _ => (
+            matches!(&join.join_operator, JoinOperator::AsOf { .. })
+                .then_some(JoinExecution::AsOfNearest),
+            None,
+            None,
+        ),
+    };
+    let condition = if execution.is_some_and(|form| {
+        matches!(form, JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply)
+    }) {
+        correlation.or(condition)
+    } else {
+        condition
+    };
+    let analyzed = ProtocolJoin::new(kind, left.clone(), right.clone(), condition);
+    match execution {
+        Some(form) => analyzed.with_execution(form, physical_right),
+        None => analyzed,
+    }
 }
 
 pub(super) fn analyze_join_operator(
