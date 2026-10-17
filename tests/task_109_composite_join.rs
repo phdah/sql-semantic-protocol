@@ -274,6 +274,7 @@ fn emitted_composite_population_contains_the_full_key_tuple() {
     }));
 }
 
+#[cfg(feature = "odcs")]
 #[test]
 fn compiled_dbt_and_odcs_join_inputs_preserve_the_physical_composite_proof() {
     use sql_semantic_protocol::{
