@@ -89,6 +89,7 @@ fn every_parsable_dialect_preserves_the_frozen_join_kind_and_equality() {
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let mut classification_cells = 0;
+    let mut unclassified = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
         let input = SqlInput::inline(case["sql"].as_str().unwrap());
         for dialect in freeze["dialects"].as_array().unwrap() {
@@ -96,6 +97,17 @@ fn every_parsable_dialect_preserves_the_frozen_join_kind_and_equality() {
             let parser = dialect_from_name(dialect).unwrap();
             let configured = ConfiguredSqlInput::new("task112", &input, dialect, parser.as_ref());
             let analyzed = analyze_configured_inputs_with_catalog(&[configured], &catalog);
+            let parser_class = if analyzed.is_ok() {
+                "parser_equivalent"
+            } else {
+                "parser_boundary"
+            };
+            if case["dialects"][dialect]["parser"] != parser_class {
+                unclassified.push(format!(
+                    "{}/{dialect}={parser_class}",
+                    case["id"].as_str().unwrap()
+                ));
+            }
             if let Ok(bundle) = analyzed {
                 let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
                 let joins = wire["inputs"][0]["statements"][0]["joins"]
@@ -114,4 +126,9 @@ fn every_parsable_dialect_preserves_the_frozen_join_kind_and_equality() {
         }
     }
     assert_eq!(classification_cells, 104);
+    assert!(
+        unclassified.is_empty(),
+        "freeze every dialect cell rather than silently skipping parser boundaries: {}",
+        unclassified.join(", ")
+    );
 }
