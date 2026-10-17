@@ -2,6 +2,24 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_110_join_acceptance": {
+    "owner": "TASK-110",
+    "parent": "TASK-71",
+    "status": "verified_bounded_child",
+    "acceptance_freeze": "docs/task-110-acceptance-freeze.json",
+    "acceptance_audit": "docs/task-110-acceptance-audit.md",
+    "fixture_ids": [
+      "71-C110-P",
+      "71-C110-N"
+    ],
+    "mandatory_variant_cells": 4,
+    "verified_dialect_parser_cells": 52,
+    "compiled_dbt_odcs_parity_test": "tests/task_110_join_adapters.rs",
+    "independent_duckdb_and_public_tests": "tests/task_110_join_chains.rs",
+    "canonical_protocol_schema": "schema/protocol.schema.json",
+    "production_proof": "JoinChainPopulation with common non-NULL physical integer key, one closed bag per unique physical source; direct aliased self-join reuses one bag",
+    "release_approved": false
+  },
   "task_109_join_acceptance": {
     "owner": "TASK-109",
     "parent": "TASK-71",
@@ -14,7 +32,10 @@
     "frozen_physical_duckdb_bags": 5,
     "independent_execution_test": "tests/task_109_frozen_oracles.rs",
     "implementation_head_ci_run": 39025591446,
-    "fixture_ids": ["71-C109-P", "71-C109-N"],
+    "fixture_ids": [
+      "71-C109-P",
+      "71-C109-N"
+    ],
     "mandatory_variants": 5,
     "physical_composite_key_proof": "two-column AND equality with shared key-group assignment over entire closed source bags",
     "test": "tests/task_109_composite_join.rs",
