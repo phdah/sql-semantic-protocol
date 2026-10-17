@@ -182,7 +182,7 @@
         "odcs_equivalent_metadata"
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
-      "status": "unverified",
+      "status": "verified",
       "not_true_pairs": [
         [
           "l1",
@@ -245,7 +245,14 @@
         ]
       },
       "protocol_physical_classification": "feasible_for_exact_positive_count",
-      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
     },
     {
       "id": "71-C109-P-COMPOSITE",
@@ -398,7 +405,7 @@
         "odcs_equivalent_metadata"
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
-      "status": "unverified",
+      "status": "verified",
       "not_true_pairs": [
         [
           "l1",
@@ -465,7 +472,14 @@
         ]
       },
       "protocol_physical_classification": "feasible_for_exact_positive_count",
-      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
     },
     {
       "id": "71-C109-N-NULL",
@@ -599,7 +613,7 @@
         "odcs_equivalent_metadata"
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
-      "status": "unverified",
+      "status": "verified",
       "not_true_pairs": [
         [
           "l1",
@@ -665,7 +679,14 @@
         ]
       },
       "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
-      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
     },
     {
       "id": "71-C109-N-COMPOSITE",
@@ -799,7 +820,7 @@
         "odcs_equivalent_metadata"
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
-      "status": "unverified",
+      "status": "verified",
       "not_true_pairs": [
         [
           "l1",
@@ -865,7 +886,14 @@
         ]
       },
       "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
-      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
     },
     {
       "id": "71-C109-P-DUP",
@@ -1018,7 +1046,7 @@
         "odcs_equivalent_metadata"
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
-      "status": "unverified",
+      "status": "verified",
       "not_true_pairs": [],
       "execution_oracle": {
         "dialect": "duckdb",
@@ -1066,7 +1094,14 @@
         ]
       },
       "protocol_physical_classification": "feasible_for_exact_positive_count",
-      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
     }
   ],
   "acceptance_map": {
@@ -1105,7 +1140,7 @@
     ]
   },
   "verification": {
-    "status": "pending_final_head_checks",
+    "status": "verified",
     "required": [
       "cargo fmt --check",
       "cargo clippy --all-targets --all-features -- -D warnings",
@@ -1115,7 +1150,10 @@
       "dbt e2e",
       "schema snapshots"
     ],
-    "blocking": true
+    "blocking": false,
+    "implementation_ci_run": 39025591446,
+    "required_jobs_passed": 9,
+    "audit": "docs/task-109-acceptance-audit.md"
   },
   "conditional_boundary": {
     "owner": "TASK-109",
@@ -1157,10 +1195,14 @@
     "disposition": "Bounded nonmandatory cases explicitly reviewed as fail-closed; native vendor/session execution unverified and not certified; no mandatory exact result deferred"
   },
   "review": {
-    "state": "evidence_pending",
+    "state": "signed_off",
     "reviewer": "automated task acceptance audit",
     "scope_note": "This matrix separates fixture-specific executed results from universally valid semantic directions. Review against DuckDB and compiled protocol on final head before signing off.",
     "revision_note": "v2 reviewer correction of incomplete preimplementation v1 matrix: added independently executable full source and output bags, canonical AST classifications, explicit nonmandatory conditional cases, and fixture-vs-universal exactness distinction. Named fixture and variant IDs, input bags and expected row counts unchanged.",
-    "reviewed_boundary": "No globally impossible classification is inferred solely from empty rows under one frozen dataset. The fixed fixture oracle proves absence only for its complete closed bag."
+    "reviewed_boundary": "No globally impossible classification is inferred solely from empty rows under one frozen dataset. The fixed fixture oracle proves absence only for its complete closed bag.",
+    "signoff_date": "2026-10-17",
+    "implementation_head": "e4ce883e01b17d027ce63efa1e42a53e9dfc757f",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39025591446",
+    "final_pr_head_gate": "Required GitHub Actions CI status on final PR head; PR must not be marked ready before all nine jobs green"
   }
 }
