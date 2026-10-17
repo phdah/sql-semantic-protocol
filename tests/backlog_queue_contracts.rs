@@ -76,7 +76,11 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
         serde_json::from_str(include_str!("../docs/backlog-child-queue-plan.json"))
             .expect("versioned child plan");
     let parents = plan["parents"].as_array().expect("parent plan");
-    assert_eq!(parents.len(), 19, "all unfinished pre-v3 implementation parents");
+    assert_eq!(
+        parents.len(),
+        19,
+        "all unfinished pre-v3 implementation parents"
+    );
     let mut registered = BTreeSet::new();
     let mut global_ids = Vec::new();
     for parent in parents {
@@ -84,7 +88,13 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
         assert!((71..=90).contains(&number) && number != 79);
         let entries = fs::read_dir(repo_path(".backlog/tasks"))
             .expect("backlog directory")
-            .map(|entry| entry.expect("entry").file_name().to_string_lossy().into_owned())
+            .map(|entry| {
+                entry
+                    .expect("entry")
+                    .file_name()
+                    .to_string_lossy()
+                    .into_owned()
+            })
             .collect::<Vec<_>>();
         let filename = entries
             .iter()
@@ -105,10 +115,16 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
             .cloned()
             .collect();
         for child in &all_child_ids {
-            assert!(parent_deps.contains(child), "parent {number} missing closure dependency {child}");
+            assert!(
+                parent_deps.contains(child),
+                "parent {number} missing closure dependency {child}"
+            );
         }
         let original_ac = acceptance_numbers(&document);
-        assert!(!original_ac.is_empty(), "parent {number} has no original AC");
+        assert!(
+            !original_ac.is_empty(),
+            "parent {number} has no original AC"
+        );
         let mut mapped = BTreeSet::new();
         for (i, phase) in children.iter().enumerate() {
             let child_id = phase["id"].as_u64().expect("child number");
@@ -126,13 +142,23 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
             let expected = if i == 0 {
                 upstream.clone()
             } else {
-                vec![format!("TASK-{}", children[i - 1]["id"].as_u64().expect("previous child"))]
+                vec![format!(
+                    "TASK-{}",
+                    children[i - 1]["id"].as_u64().expect("previous child")
+                )]
             };
-            assert_eq!(dependencies(&content), expected, "{child} has wrong dependencies");
+            assert_eq!(
+                dependencies(&content),
+                expected,
+                "{child} has wrong dependencies"
+            );
             assert!(!dependencies(&content).contains(&format!("TASK-{number}")));
             let criteria = acceptance_numbers(&content);
             assert_eq!(criteria, BTreeSet::from([1, 2, 3, 4, 5]), "{child}");
-            assert!(!content.contains("- [x] #"), "{child} claimed Done prematurely");
+            assert!(
+                !content.contains("- [x] #"),
+                "{child} claimed Done prematurely"
+            );
             let fixtures = phase["fixture_ids"].as_array().expect("fixture IDs");
             assert_eq!(fixtures.len(), 2);
             for fixture in fixtures {
@@ -141,14 +167,29 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
             }
             for original in phase["original_ac"].as_array().expect("parent AC mapping") {
                 let ac = original.as_u64().expect("AC number");
-                assert!(original_ac.contains(&ac), "{child} maps nonexistent parent AC #{ac}");
+                assert!(
+                    original_ac.contains(&ac),
+                    "{child} maps nonexistent parent AC #{ac}"
+                );
                 mapped.insert(ac);
             }
-            for section in ["fixture IDs", "DuckDB", "Residual", "13", "docs/coverage-manifest.json"] {
-                assert!(content.contains(section), "{child} missing evidence gate {section}");
+            for section in [
+                "fixture IDs",
+                "DuckDB",
+                "Residual",
+                "13",
+                "docs/coverage-manifest.json",
+            ] {
+                assert!(
+                    content.contains(section),
+                    "{child} missing evidence gate {section}"
+                );
             }
         }
-        assert_eq!(mapped, original_ac, "parent {number} has unmapped original AC");
+        assert_eq!(
+            mapped, original_ac,
+            "parent {number} has unmapped original AC"
+        );
     }
     global_ids.sort_unstable();
     assert_eq!(global_ids, (109..=188).collect::<Vec<_>>());
