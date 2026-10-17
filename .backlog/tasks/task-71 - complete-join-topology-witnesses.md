@@ -1,10 +1,10 @@
 ---
 id: TASK-71
 title: Construct exact join trees and dialect join variants
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies: 
@@ -51,3 +51,10 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Implementation increment (2026-10-17)
+
+- Initial finite TASK-71 inventory: [docs/task-71-acceptance-freeze.json](../../docs/task-71-acceptance-freeze.json), linked by `docs/coverage-manifest.json`. All mandatory and conditional cells remain unverified and block parent Done.
+- Source population fix: filtered JOIN ON predicates may write equality operands in reverse order. The physical constructor now orients the recovered columns/source-instance identities by `Join::left()` and `Join::right()` before applying outer/anti/semi match and null-extension laws.
+- Focused public API regression and independent DuckDB outer-join count oracle: `tests/physical_realization/joins.rs` (`filtered_outer_join_population_uses_sql_input_order_not_on_operand_order`).
+- **Partial implementation only.** AC #1..#6 are still open. Mandatory chained join, composite key, all source/terminal oracle, adapter and dialect cases in the freeze are not certified by this increment. Review and explicitly verify all frozen cells before signing off TASK-71.
