@@ -19,7 +19,17 @@ pub(super) fn analyze_join(
         ));
     }
 
-    let (kind, constraint, exact_kind) = analyze_join_operator(&join.join_operator);
+    let (mut kind, constraint, exact_kind) = analyze_join_operator(&join.join_operator);
+    // With complete schemas and no shared column, NATURAL has the
+    // cardinality semantics of CROSS JOIN, not an implicit opaque INNER ON.
+    if matches!(constraint, Some(JoinConstraint::Natural))
+        && matches!(
+            natural_join_columns(left, right, scope.output_scope),
+            Some(columns) if columns.is_empty()
+        )
+    {
+        kind = JoinKind::Cross;
+    }
 
     if !exact_kind {
         diagnostics.push(warning(
@@ -97,16 +107,9 @@ pub(super) fn analyze_join_constraint(
             // NATURAL is an equality conjunction over the intersection of
             // both visible source schemas. With incomplete schemas, guessing
             // an empty intersection would silently turn a join into CROSS.
-            match (
-                known_visible_join_columns(left, scope),
-                known_visible_join_columns(right, scope),
-            ) {
-                (Some(left_columns), Some(right_columns)) => join_column_equalities(
-                    left_columns.intersection(&right_columns).cloned(),
-                    left,
-                    right,
-                ),
-                _ => {
+            match natural_join_columns(left, right, scope) {
+                Some(columns) => join_column_equalities(columns, left, right),
+                None => {
                     diagnostics.push(warning(
                         "unsupported_natural_join_condition",
                         DiagnosticArea::Join,
@@ -156,6 +159,17 @@ fn known_visible_join_columns(
     };
     let unique = columns.iter().cloned().collect::<BTreeSet<_>>();
     (unique.len() == columns.len()).then_some(unique)
+}
+
+/// Intersect complete, unambiguous visible columns in deterministic order.
+fn natural_join_columns(
+    left: &RelationRef,
+    right: &RelationRef,
+    scope: &[OutputRelation],
+) -> Option<BTreeSet<String>> {
+    let left = known_visible_join_columns(left, scope)?;
+    let right = known_visible_join_columns(right, scope)?;
+    Some(left.intersection(&right).cloned().collect())
 }
 
 /// Build the canonical equality conjunction for USING and NATURAL syntax.
