@@ -185,10 +185,14 @@ pub(super) fn physical_finite_join_count_plan(
             FiniteJoinLaw::AsOfNearestPriorInclusive,
             join.right().alias().unwrap_or(join.right().relation()),
         ),
-        JoinExecution::LateralInner | JoinExecution::CrossApply => {
-            (FiniteJoinLaw::CorrelatedInnerEquality, join.right_physical_instance()?)
-        }
-        JoinExecution::OuterApply => (FiniteJoinLaw::CorrelatedOuterEquality, join.right_physical_instance()?),
+        JoinExecution::LateralInner | JoinExecution::CrossApply => (
+            FiniteJoinLaw::CorrelatedInnerEquality,
+            join.right_physical_instance()?,
+        ),
+        JoinExecution::OuterApply => (
+            FiniteJoinLaw::CorrelatedOuterEquality,
+            join.right_physical_instance()?,
+        ),
     };
     let left_qualifier = left_source.alias().unwrap_or(left_source.name());
     let (left_expr, right_expr, operator) =
