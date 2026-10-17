@@ -21,7 +21,10 @@ fn asof_ordering_is_not_a_plain_equality_join_and_carries_specific_residual() {
     let result = query(sql, "snowflake");
     assert_eq!(result.joins().len(), 1);
     assert_eq!(result.joins()[0].kind(), JoinKind::Unknown);
-    assert!(result.diagnostics().iter().any(|d| d.code() == "unsupported_asof_nearest_prior"));
+    assert!(result
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "unsupported_asof_nearest_prior"));
 }
 
 #[test]
@@ -30,13 +33,14 @@ fn cross_and_outer_apply_have_distinct_correlation_diagnostics() {
         ("CROSS APPLY", "unsupported_cross_apply"),
         ("OUTER APPLY", "unsupported_outer_apply"),
     ] {
-        let sql = format!(
-            "SELECT l.id FROM l {operator} (SELECT r.id FROM r WHERE r.t = l.t) q"
-        );
+        let sql = format!("SELECT l.id FROM l {operator} (SELECT r.id FROM r WHERE r.t = l.t) q");
         let result = query(&sql, "mssql");
         assert_eq!(result.joins().len(), 1);
         assert_eq!(result.joins()[0].kind(), JoinKind::Unknown);
-        assert!(result.diagnostics().iter().any(|d| d.code() == code), "{operator}");
+        assert!(
+            result.diagnostics().iter().any(|d| d.code() == code),
+            "{operator}"
+        );
     }
 }
 
