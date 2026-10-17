@@ -169,7 +169,11 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             .map(|row| serde_json::from_str::<Value>(row).unwrap())
             .collect::<Vec<_>>();
         let declared_domains = case["expected_output_domains"].as_array().unwrap();
-        assert_eq!(declared_domains.len(), width, "{id}: all output columns typed");
+        assert_eq!(
+            declared_domains.len(),
+            width,
+            "{id}: all output columns typed"
+        );
         for (index, domain) in declared_domains.iter().enumerate() {
             let mut observed = complete_output_rows
                 .iter()
@@ -179,7 +183,11 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             observed.dedup();
             let mut declared = domain["values"].as_array().unwrap().clone();
             declared.sort_by_key(Value::to_string);
-            assert_eq!(observed, declared, "{id}: exact output domain of {}", domain["column"]);
+            assert_eq!(
+                observed, declared,
+                "{id}: exact output domain of {}",
+                domain["column"]
+            );
             assert_eq!(
                 observed.contains(&Value::Null),
                 domain["contains_null"].as_bool().unwrap(),
@@ -196,8 +204,14 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
                     non_null.sort();
                 }
                 if let (Some(lower), Some(upper)) = (non_null.first(), non_null.last()) {
-                    assert_eq!(domain["lower"]["value"], *lower, "{id}: inclusive lower value");
-                    assert_eq!(domain["upper"]["value"], *upper, "{id}: inclusive upper value");
+                    assert_eq!(
+                        domain["lower"]["value"], *lower,
+                        "{id}: inclusive lower value"
+                    );
+                    assert_eq!(
+                        domain["upper"]["value"], *upper,
+                        "{id}: inclusive upper value"
+                    );
                     assert_eq!(domain["lower"]["inclusive"], true, "{id}: lower included");
                     assert_eq!(domain["upper"]["inclusive"], true, "{id}: upper included");
                 }
