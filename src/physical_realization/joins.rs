@@ -1027,6 +1027,11 @@ pub(super) fn physical_join_population_with_source_counts(
         (JoinPopulationPattern::DisjointKeys, 1, wanted),
         (JoinPopulationPattern::MixedMatchedUnmatched, wanted, 2),
         (JoinPopulationPattern::MixedMatchedUnmatched, 2, wanted),
+        // The frozen physical bag contains three left and four right rows,
+        // including two matching right-hand copies and unmatched contributors
+        // on both sides. Unlike a count-only alternative, this witnesses the
+        // same full input multiplicities as the independent DuckDB oracle.
+        (JoinPopulationPattern::MixedDuplicateRight, 3, 4),
     ];
     if wanted >= 3 {
         candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, wanted - 1, 2));
@@ -1097,6 +1102,7 @@ pub(super) fn physical_join_population_with_source_counts(
                         pattern,
                         JoinPopulationPattern::DisjointKeys
                             | JoinPopulationPattern::MixedMatchedUnmatched
+                            | JoinPopulationPattern::MixedDuplicateRight
                     )))
         {
             continue;
@@ -1105,7 +1111,8 @@ pub(super) fn physical_join_population_with_source_counts(
             JoinPopulationPattern::DistinctMatched => i128::from(left_rows.saturating_sub(1)),
             JoinPopulationPattern::GroupedMatched { groups } => i128::from(groups - 1),
             JoinPopulationPattern::DisjointKeys => 1,
-            JoinPopulationPattern::MixedMatchedUnmatched => 2,
+            JoinPopulationPattern::MixedMatchedUnmatched
+            | JoinPopulationPattern::MixedDuplicateRight => 2,
             JoinPopulationPattern::CommonMatched
             | JoinPopulationPattern::EmptyLeft
             | JoinPopulationPattern::EmptyRight => 0,
@@ -1205,8 +1212,10 @@ pub(super) fn physical_join_population_with_source_counts(
                     closed_world: true,
                 });
             }
-            JoinPopulationPattern::MixedMatchedUnmatched => {
-                // Physical key 0 joins exactly one row per side; key 1
+            JoinPopulationPattern::MixedMatchedUnmatched
+            | JoinPopulationPattern::MixedDuplicateRight => {
+                // Physical key 0 joins one left row with one (or two)
+                // right rows; key 1
                 // occurs only on unmatched left rows and key 2 only on
                 // unmatched right rows. The entire bag is accounted for.
                 obligations.push(WitnessObligation::JoinPair {
@@ -1801,7 +1810,8 @@ pub(super) fn jointly_realized_join_goals(
                     population,
                     WitnessObligation::JoinPopulation {
                         pattern: JoinPopulationPattern::DisjointKeys
-                            | JoinPopulationPattern::MixedMatchedUnmatched,
+                            | JoinPopulationPattern::MixedMatchedUnmatched
+                            | JoinPopulationPattern::MixedDuplicateRight,
                         ..
                     }
                 )
