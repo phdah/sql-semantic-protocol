@@ -1090,7 +1090,14 @@ pub(super) fn physical_join_population_with_source_counts(
     for (pattern, left_rows, right_rows) in candidates {
         if pattern.output_rows(join_kind, left_rows, right_rows) != Some(wanted)
             || (left_source == right_source
-                && (left_rows != right_rows || pattern == JoinPopulationPattern::DisjointKeys))
+                && (left_rows != right_rows
+                    // Both patterns require different complete key histograms
+                    // on the two sides, impossible for one physical source.
+                    || matches!(
+                        pattern,
+                        JoinPopulationPattern::DisjointKeys
+                            | JoinPopulationPattern::MixedMatchedUnmatched
+                    )))
         {
             continue;
         }
