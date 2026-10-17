@@ -30,6 +30,10 @@ type: feature
 - **Conditional/fail-closed boundary:** Distinct Boolean semantics and NATURAL column intersection require schema evidence; preserve typed residual per unsupported case.
 - **Original parent AC ownership:** #1, #3, #5, #6. Additive to project-wide outcome-first definition of done and TASK-66 capability inventory.
 
+## Acceptance inventory
+
+- Frozen v1 matrix (verification pending): [TASK-113 acceptance freeze](../../docs/task-113-acceptance-freeze.json). Covers 14 positive/complementary complete bags for all seven named forms, each with 13 parser dialect obligations. This freeze does not certify any unexecuted cell or waive the five acceptance criteria below.
+
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
