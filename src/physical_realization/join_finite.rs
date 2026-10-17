@@ -52,7 +52,10 @@ fn candidate_bags(law: FiniteJoinLaw, wanted: u64) -> Option<FiniteCandidateBags
     }
     let n = usize::try_from(wanted).ok()?;
     if wanted == 0 {
-        return Some(vec![(Vec::new(), Vec::new())]);
+        return Some(vec![
+            (Vec::new(), Vec::new()),
+            (vec![Some(4)], vec![Some(7)]),
+        ]);
     }
     let integer_bag = |size: usize| {
         (0..size)
@@ -83,6 +86,13 @@ fn candidate_bags(law: FiniteJoinLaw, wanted: u64) -> Option<FiniteCandidateBags
                 (left, right)
             };
             vec![(left, right)]
+        }
+        FiniteJoinLaw::IntegerGreaterThan | FiniteJoinLaw::IntegerGreaterThanOrEqual => {
+            if wanted == 3 {
+                vec![(vec![Some(5), Some(10)], vec![Some(4), Some(7)])]
+            } else {
+                vec![(vec![Some(5); n], vec![Some(4)])]
+            }
         }
         FiniteJoinLaw::CorrelatedInnerEquality => {
             let keys = integer_bag(n);
@@ -129,16 +139,19 @@ pub(super) fn physical_finite_join_count_plan(
     let layer = walker.layers.get(target_layer_id).copied()?;
     let query = query_for(bundle, layer)?;
     let [join] = query.joins() else { return None };
-    let execution = join.execution()?;
+    let execution = join.execution();
     let [left_source, _] = query.sources() else {
         return None;
     };
     let right_source = match execution {
-        JoinExecution::AsOfNearest => query.sources().get(1)?.name(),
-        JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply => {
+        Some(JoinExecution::AsOfNearest) | None => query.sources().get(1)?.name(),
+        Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply) => {
             join.right_physical_source()?
         }
     };
+    if execution.is_none() && join.kind() != crate::protocol::JoinKind::Inner {
+        return None;
+    }
     if left_source.name() == right_source
         || walker.sources.len() != 2
         || !walker.sources.contains(left_source.name())
@@ -181,31 +194,21 @@ pub(super) fn physical_finite_join_count_plan(
     }) {
         return None;
     }
-    let (law, right_qualifier) = match execution {
-        JoinExecution::AsOfNearest => (
-            FiniteJoinLaw::AsOfNearestPriorInclusive,
-            join.right().alias().unwrap_or(join.right().relation()),
-        ),
-        JoinExecution::LateralInner | JoinExecution::CrossApply => (
-            FiniteJoinLaw::CorrelatedInnerEquality,
-            join.right_physical_instance()?,
-        ),
-        JoinExecution::OuterApply => (
-            FiniteJoinLaw::CorrelatedOuterEquality,
-            join.right_physical_instance()?,
-        ),
+    let right_qualifier = match execution {
+        Some(JoinExecution::AsOfNearest) | None => join.right().alias().unwrap_or(join.right().relation()),
+        Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply) => join.right_physical_instance()?,
     };
     let left_qualifier = left_source.alias().unwrap_or(left_source.name());
     let (left_expr, right_expr, operator) =
         correlated_pair(left_qualifier, right_qualifier, join.condition()?)?;
-    if !match execution {
-        JoinExecution::AsOfNearest => operator == ComparisonOperator::Gte,
-        JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply => {
-            operator == ComparisonOperator::Eq
-        }
-    } {
-        return None;
-    }
+    let law = match (execution, operator) {
+        (None, ComparisonOperator::Gt) => FiniteJoinLaw::IntegerGreaterThan,
+        (None, ComparisonOperator::Gte) => FiniteJoinLaw::IntegerGreaterThanOrEqual,
+        (Some(JoinExecution::AsOfNearest), ComparisonOperator::Gte) => FiniteJoinLaw::AsOfNearestPriorInclusive,
+        (Some(JoinExecution::LateralInner | JoinExecution::CrossApply), ComparisonOperator::Eq) => FiniteJoinLaw::CorrelatedInnerEquality,
+        (Some(JoinExecution::OuterApply), ComparisonOperator::Eq) => FiniteJoinLaw::CorrelatedOuterEquality,
+        _ => return None,
+    };
     let left_key = ColumnRef::new(
         Some(left_source.name().to_string()),
         left_expr.name().to_string(),
