@@ -243,6 +243,8 @@ impl JoinPopulationPattern {
             | Self::DisjointKeys
             | Self::MixedMatchedUnmatched
             | Self::MixedDuplicateRight
+            | Self::NullableDuplicateMixed
+            | Self::NullableDuplicateDisjoint
             | Self::EmptyLeft
             | Self::EmptyRight => None,
         }
