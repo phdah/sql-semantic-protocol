@@ -182,6 +182,16 @@ fn canonical_physical_witness_matches_frozen_complete_nullable_bags() {
                     && obligations.iter().any(|o| {
                         matches!(
                             o,
+                            WitnessObligation::NoMatchingPartner {
+                                closed_world: true,
+                                null_extended: None,
+                                ..
+                            }
+                        )
+                    })
+                    && obligations.iter().any(|o| {
+                        matches!(
+                            o,
                             WitnessObligation::JoinPopulation {
                                 join_kind, pattern,
                                 left_rows: 4, right_rows: 2,
