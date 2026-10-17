@@ -1,6 +1,8 @@
 //! TASK-114 red/green public semantic boundary for correlated and temporal joins.
 //! These safety regressions do not certify the full TASK-114 constructive matrix.
-use sql_semantic_protocol::{analyze_sql, dialect_from_name, JoinKind, ProtocolStatement};
+use sql_semantic_protocol::{
+    analyze_sql, dialect_from_name, ComparisonOperator, JoinKind, Predicate, ProtocolStatement,
+};
 
 fn query(sql: &str, dialect: &str) -> sql_semantic_protocol::QueryStatement {
     let parser = dialect_from_name(dialect).expect("supported dialect");
@@ -21,6 +23,12 @@ fn asof_ordering_is_not_a_plain_equality_join_and_carries_specific_residual() {
     let result = query(sql, "snowflake");
     assert_eq!(result.joins().len(), 1);
     assert_eq!(result.joins()[0].kind(), JoinKind::Unknown);
+    let Some(Predicate::Comparison(eligibility)) = result.joins()[0].condition() else {
+        panic!("ASOF eligibility must be present without implying winner selection");
+    };
+    assert_eq!(eligibility.operator(), ComparisonOperator::Gte);
+    assert!(format!("{eligibility:?}").contains("l"));
+    assert!(format!("{eligibility:?}").contains("r"));
     assert!(result
         .diagnostics()
         .iter()
