@@ -167,11 +167,7 @@ fn timestamp_inequality_includes_equal_instants_and_rejects_unknown() {
             &db,
             "SELECT l.id,r.id FROM l CROSS JOIN r WHERE (l.t >= r.t) IS NOT TRUE"
         ),
-        expected(&[
-            ("le", Some("rn")),
-            ("ln", Some("re")),
-            ("ln", Some("rn")),
-        ]),
+        expected(&[("le", Some("rn")), ("ln", Some("re")), ("ln", Some("rn")),]),
         "all three UNKNOWN physical pairs are nonmatches"
     );
 }
