@@ -69,7 +69,9 @@ fn check_named_test(reference: &str) {
         .take_while(|line| line.trim().is_empty() || line.trim().starts_with("#["))
         .collect();
     assert!(
-        attributes.iter().any(|attribute| attribute.trim() == "#[test]"),
+        attributes
+            .iter()
+            .any(|attribute| attribute.trim() == "#[test]"),
         "{reference}: named proof is not an executable #[test]"
     );
 }
