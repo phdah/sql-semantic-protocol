@@ -7287,7 +7287,9 @@
               "enum": [
                 "asof_nearest_prior_inclusive",
                 "correlated_inner_equality",
-                "correlated_outer_equality"
+                "correlated_outer_equality",
+                "integer_greater_than",
+                "integer_greater_than_or_equal"
               ]
             },
             "left_values": {
