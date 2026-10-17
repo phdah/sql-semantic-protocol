@@ -50,6 +50,15 @@ fn uniform_join_law(
                 (ComparisonOperator::Lt, false) | (ComparisonOperator::Gt, true) => {
                     UniformJoinLaw::LessThan
                 }
+                (ComparisonOperator::Gt, false) | (ComparisonOperator::Lt, true) => {
+                    UniformJoinLaw::GreaterThan
+                }
+                (ComparisonOperator::Lte, false) | (ComparisonOperator::Gte, true) => {
+                    UniformJoinLaw::LessThanOrEqual
+                }
+                (ComparisonOperator::Gte, false) | (ComparisonOperator::Lte, true) => {
+                    UniformJoinLaw::GreaterThanOrEqual
+                }
                 (ComparisonOperator::IsNotDistinctFrom, _) => UniformJoinLaw::NullSafeEquality,
                 _ => return None,
             };
@@ -162,6 +171,9 @@ pub(super) fn physical_uniform_join_count_plan(
     let (positive, negative) = match law {
         UniformJoinLaw::Cartesian => ((None, None), (None, None)),
         UniformJoinLaw::LessThan => ((Some(0), Some(1)), (Some(1), Some(0))),
+        UniformJoinLaw::GreaterThan => ((Some(1), Some(0)), (Some(0), Some(1))),
+        UniformJoinLaw::LessThanOrEqual => ((Some(0), Some(0)), (Some(1), Some(0))),
+        UniformJoinLaw::GreaterThanOrEqual => ((Some(0), Some(0)), (Some(0), Some(1))),
         UniformJoinLaw::NullSafeEquality => ((Some(0), Some(0)), (Some(0), Some(1))),
         UniformJoinLaw::EqualityOrLeftNull => ((Some(0), Some(0)), (Some(1), Some(0))),
     };
