@@ -204,7 +204,48 @@
           "l3",
           "r3"
         ]
-      ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k",
+        "expected_output_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "output_columns": 1,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
     },
     {
       "id": "71-C109-P-COMPOSITE",
@@ -391,7 +432,40 @@
           "l3",
           "r3"
         ]
-      ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k AND l.a = r.a",
+        "expected_output_bag": [
+          [
+            1,
+            10
+          ]
+        ],
+        "output_columns": 2,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 2,
+        "on_conjuncts": 2,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
     },
     {
       "id": "71-C109-N-NULL",
@@ -449,7 +523,7 @@
         "a": "INTEGER"
       },
       "matched_count": 0,
-      "positive_proof": "impossible",
+      "positive_proof": "impossible_on_frozen_closed_bag_not_universally_impossible",
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
@@ -563,7 +637,35 @@
           "l3",
           "r3"
         ]
-      ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "(l.k = r.k) AND (l.k IS NULL)",
+        "expected_output_bag": [],
+        "output_columns": 1,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "is_null",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
     },
     {
       "id": "71-C109-N-COMPOSITE",
@@ -621,7 +723,7 @@
         "a": "INTEGER"
       },
       "matched_count": 0,
-      "positive_proof": "impossible",
+      "positive_proof": "impossible_on_frozen_closed_bag_not_universally_impossible",
       "not_true_proof": "exact_closed_world",
       "dialects": {
         "ansi": {
@@ -735,7 +837,35 @@
           "l3",
           "r3"
         ]
-      ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k AND l.a = r.a AND l.a > 10",
+        "expected_output_bag": [],
+        "output_columns": 2,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 2,
+        "on_conjuncts": 3,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
     },
     {
       "id": "71-C109-P-DUP",
@@ -889,7 +1019,54 @@
       ],
       "oracle": "complete_duckdb_bags_and_row_ids",
       "status": "unverified",
-      "not_true_pairs": []
+      "not_true_pairs": [],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k",
+        "expected_output_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "output_columns": 1,
+        "closed_world_pair_count": 6,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database"
     }
   ],
   "acceptance_map": {
@@ -928,7 +1105,7 @@
     ]
   },
   "verification": {
-    "status": "unverified",
+    "status": "pending_final_head_checks",
     "required": [
       "cargo fmt --check",
       "cargo clippy --all-targets --all-features -- -D warnings",
@@ -943,10 +1120,45 @@
   "conditional_boundary": {
     "owner": "TASK-109",
     "cases": [
-      "unsupported noninteger key comparisons",
-      "engine-specific NULL-safe join equality",
-      "non-AND or computed ON conditions"
+      {
+        "id": "J109-COMPUTED-ON",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k + 1 = r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "No physical expression-key assignment or inverse derivation; column arithmetic cannot be treated as an equality-key population",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-NULLSAFE",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "NULL-safe row equality and NULL-matched pairs require a separate complete population law",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-OR",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k OR l.a = r.a",
+        "owner": "TASK-109",
+        "missing_evidence": "Disjunctive pair counting needs inclusion/exclusion and cannot reuse an AND key-group proof",
+        "expected": "residual_unproved_join_condition",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-STRING",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "Typed noninteger physical collation and comparison-equivalence evidence is absent from signed INTEGER join construction",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory",
+        "physical_schema_type": "VARCHAR"
+      }
     ],
-    "disposition": "requires reviewer approval before release; no mandatory family may be residual"
+    "disposition": "Bounded nonmandatory cases explicitly reviewed as fail-closed; native vendor/session execution unverified and not certified; no mandatory exact result deferred"
+  },
+  "review": {
+    "state": "evidence_pending",
+    "reviewer": "automated task acceptance audit",
+    "scope_note": "This matrix separates fixture-specific executed results from universally valid semantic directions. Review against DuckDB and compiled protocol on final head before signing off."
   }
 }
