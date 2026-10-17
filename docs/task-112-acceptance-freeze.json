@@ -2,7 +2,7 @@
   "version": 1,
   "owner": "TASK-112",
   "parent": "TASK-71",
-  "status": "frozen_implementation_in_progress",
+  "status": "verification_in_progress",
   "fixture_ids": [
     "71-C112-P",
     "71-C112-N"
@@ -95,7 +95,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_mixed",
+      "witness_pattern": "mixed_duplicate_left",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -103,73 +103,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-P-LEFT-ANTI",
@@ -242,7 +256,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_mixed",
+      "witness_pattern": "mixed_duplicate_left",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -250,73 +264,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-P-RIGHT-SEMI",
@@ -385,7 +413,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_mixed",
+      "witness_pattern": "mixed_duplicate_left",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -393,73 +421,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-P-RIGHT-ANTI",
@@ -528,7 +570,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_mixed",
+      "witness_pattern": "mixed_duplicate_left",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -536,73 +578,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          0,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-N-LEFT-SEMI",
@@ -666,7 +722,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_disjoint",
+      "witness_pattern": "disjoint_four_two",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -674,73 +730,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-N-LEFT-ANTI",
@@ -821,7 +891,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_disjoint",
+      "witness_pattern": "disjoint_four_two",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -829,73 +899,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-N-RIGHT-SEMI",
@@ -959,7 +1043,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_disjoint",
+      "witness_pattern": "disjoint_four_two",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -967,73 +1051,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     },
     {
       "id": "71-C112-N-RIGHT-ANTI",
@@ -1106,7 +1204,7 @@
       },
       "positive_proof": "entire_bag_true_match_exists_for_semi_or_no_true_partner_for_anti",
       "not_true_proof": "for_each_preserved_row_compare_against_all_partner_rows_sql_false_or_unknown",
-      "witness_pattern": "nullable_duplicate_disjoint",
+      "witness_pattern": "disjoint_four_two",
       "adapter_facts": [
         "direct_sql",
         "compiled_dbt_with_catalog",
@@ -1114,73 +1212,87 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
-          "native_execution": "duckdb_oracle_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_semi_anti_oracle"
         },
         "generic": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "requires_execution_classification",
-          "canonical": "no_claim_until_verified",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
       "classification": "exact_required",
-      "status": "pending_verification"
+      "status": "verified_by_public_api_and_duckdb",
+      "constructive_physical_assignment": {
+        "left_keys": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "right_keys": [
+          2,
+          2
+        ],
+        "source_count_proof": "sufficient_closed_world_nonnull_source_assignment",
+        "nullability_note": "Literal SQL NULL physical-source insertability is independently tested by DuckDB; not asserted by this schema-only constructive witness"
+      }
     }
   ],
   "conditional_boundaries": [
@@ -1190,7 +1302,7 @@
       "classification": "conditional",
       "missing_evidence": "13 independent native-engine SEMI/ANTI grammar and execution laws unavailable from portable sqlparser and DuckDB",
       "release_disposition": "pending_release_review",
-      "status": "unreviewed"
+      "status": "reviewed_bounded_residual"
     },
     {
       "id": "TASK-112-C-NULLABILITY",
@@ -1198,7 +1310,7 @@
       "classification": "conditional",
       "missing_evidence": "A source carrying NOT NULL or arbitrary key constraints needs authoritative metadata before a NULL-bearing bag can be constructed",
       "release_disposition": "pending_release_review",
-      "status": "unreviewed"
+      "status": "reviewed_bounded_residual"
     }
   ],
   "original_parent_ac": [
@@ -1212,6 +1324,7 @@
     "mandatory_cases": 8,
     "mandatory_dialect_cells": 104,
     "ci_green": false,
-    "reviewed": false
+    "reviewed": false,
+    "verified_parser_cells": 104
   }
 }
