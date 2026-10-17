@@ -70,12 +70,9 @@ fn compiled_dbt_and_odcs_three_way_join_preserve_one_physical_proof() {
     });
     let parser = dialect_from_name("postgresql").expect("PostgreSQL");
     let parsed_manifest = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt v12");
-    let from_dbt = analyze_dbt_manifest_with_schemas(
-        &parsed_manifest,
-        "postgresql",
-        parser.as_ref(),
-    )
-    .expect("typed dbt source schemas");
+    let from_dbt =
+        analyze_dbt_manifest_with_schemas(&parsed_manifest, "postgresql", parser.as_ref())
+            .expect("typed dbt source schemas");
 
     let relations = [
         "warehouse.raw.left_input",
@@ -107,19 +104,16 @@ schema:
       - name: k
         physicalType: INTEGER
 "#;
-    let odcs = parse_odcs_yaml(odcs_yaml, "postgresql", &names)
-        .expect("typed ODCS physical metadata");
-    let odcs_catalog =
-        RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS catalog");
+    let odcs =
+        parse_odcs_yaml(odcs_yaml, "postgresql", &names).expect("typed ODCS physical metadata");
+    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS catalog");
     let direct_schemas = relations
         .iter()
         .map(|relation| {
             RelationSchema::new(
                 *relation,
-                vec![
-                    SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
-                        .expect("physical source key")
-                ],
+                vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
+                    .expect("physical source key")],
             )
             .expect("typed source")
         })
@@ -137,7 +131,11 @@ schema:
     let from_odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
         .expect("ODCS source analysis");
 
-    for (kind, analyzed) in [("direct", &direct), ("dbt", &from_dbt), ("odcs", &from_odcs)] {
+    for (kind, analyzed) in [
+        ("direct", &direct),
+        ("dbt", &from_dbt),
+        ("odcs", &from_odcs),
+    ] {
         let layer = analyzed
             .layers()
             .iter()
@@ -151,20 +149,23 @@ schema:
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{kind}: complete physical join proof required: {plan:?}");
         };
-        assert!(cases.iter().any(|case| {
-            case.obligations().iter().any(|obligation| {
-                matches!(
-                    obligation,
-                    WitnessObligation::JoinChainPopulation {
-                        left_rows: 2,
-                        middle_rows: 2,
-                        right_rows: 1,
-                        output_rows: 4,
-                        closed_world: true,
-                        ..
-                    }
-                )
-            })
-        }), "{kind}: adapter must preserve one exact three-instance bag");
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinChainPopulation {
+                            left_rows: 2,
+                            middle_rows: 2,
+                            right_rows: 1,
+                            output_rows: 4,
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                })
+            }),
+            "{kind}: adapter must preserve one exact three-instance bag"
+        );
     }
 }
