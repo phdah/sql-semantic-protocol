@@ -325,12 +325,15 @@ fn physical_three_way_inner_count_plan(
         || query.predicates().qualify_predicate().is_some()
         || !query.diagnostics().is_empty()
         || query.output().columns().iter().any(|column| {
-            !matches!(column.expression(), Expression::Column(_) | Expression::Literal(_))
+            !matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
         })
         || walker.nodes.iter().any(|node| {
-            node.produced_relations().iter().any(|name| {
-                untransported_materialization_laws(bundle, name)
-            })
+            node.produced_relations()
+                .iter()
+                .any(|name| untransported_materialization_laws(bundle, name))
         })
     {
         return None;
@@ -381,23 +384,20 @@ fn physical_three_way_inner_count_plan(
             0,
             true,
         )
-        .or_else(|| {
-            resolve_filter_column(bundle, &walker, target_layer_id, &reference, 0)
-        })?;
+        .or_else(|| resolve_filter_column(bundle, &walker, target_layer_id, &reference, 0))?;
         let visible = expression.relation()?;
-        if mapped.relation()? != relations[position]
-            && !walker.sources.contains(mapped.relation()?)
+        if mapped.relation()? != relations[position] && !walker.sources.contains(mapped.relation()?)
         {
             return None;
         }
-        if visible != instance && visible != relations[position]
-            && visible != mapped.relation()?
-        {
+        if visible != instance && visible != relations[position] && visible != mapped.relation()? {
             return None;
         }
         Some(mapped)
     };
-    let equality = |join: &crate::protocol::Join, a: usize, b: usize|
+    let equality = |join: &crate::protocol::Join,
+                    a: usize,
+                    b: usize|
      -> Option<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)> {
         let Predicate::Comparison(comparison) = join.condition()? else {
             return None;
@@ -417,12 +417,6 @@ fn physical_three_way_inner_count_plan(
     };
     let (left_key, middle_left_key) = equality(first_join, 0, 1)?;
     let (middle_right_key, right_key) = equality(second_join, 1, 2)?;
-    if left_key.relation()? != middle_left_key.relation()?
-        && middle_left_key.relation()? != middle_right_key.relation()?
-    {
-        // These are separate physical columns of the middle instance, and
-        // both are assigned zero on the same row, so this is still exact.
-    }
     let keys = [
         (&left_key, 0usize),
         (&middle_left_key, 1),
@@ -438,7 +432,8 @@ fn physical_three_way_inner_count_plan(
             .iter()
             .find(|schema| schema.relation() == relation)?;
         let bounds = physical_integer_evidence(schema, key)?;
-        if bounds.minimum > 0 || bounds.maximum < 0
+        if bounds.minimum > 0
+            || bounds.maximum < 0
             || blocks_unconstrained_physical_plans(bundle, relation)
         {
             return None;
@@ -456,12 +451,12 @@ fn physical_three_way_inner_count_plan(
         candidates.extend([[0, 1, 1], [1, 0, 1], [1, 1, 0], [0, 0, 0]]);
     } else {
         for left_rows in 1..=wanted.min(64) {
-            if wanted % left_rows != 0 {
+            if !wanted.is_multiple_of(left_rows) {
                 continue;
             }
             let remaining = wanted / left_rows;
             for middle_rows in 1..=remaining.min(64) {
-                if remaining % middle_rows == 0 {
+                if remaining.is_multiple_of(middle_rows) {
                     candidates.push([left_rows, middle_rows, remaining / middle_rows]);
                 }
             }
@@ -480,18 +475,19 @@ fn physical_three_way_inner_count_plan(
                 compatible = false;
             }
         }
-        if !compatible || exact_sources.iter().any(|(source, rows)| {
-            physical_counts.get(source).is_some_and(|count| count != rows)
-        }) {
+        if !compatible
+            || exact_sources.iter().any(|(source, rows)| {
+                physical_counts
+                    .get(source)
+                    .is_some_and(|count| count != rows)
+            })
+        {
             continue;
         }
         let mut obligations = Vec::new();
         for (relation, count) in &physical_counts {
-            let boundary = WitnessBoundary::new(
-                relation,
-                GroupBoundaryKind::Physical,
-                target_layer_id,
-            )?;
+            let boundary =
+                WitnessBoundary::new(relation, GroupBoundaryKind::Physical, target_layer_id)?;
             obligations.push(WitnessObligation::Rows {
                 boundary: boundary.clone(),
                 quantifier: RowQuantifier::ForAll,
