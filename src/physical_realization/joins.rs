@@ -226,7 +226,10 @@ fn join_key_and_scalar_filters(
             && right.relation().is_some()
             && left.relation() != right.relation()
         {
-            keys.push((left, right));
+            keys.push(match (comparison.left(), comparison.right()) {
+                (Expression::Column(left), Expression::Column(right)) => (left, right),
+                _ => return None,
+            });
         } else {
             filters.push(operand);
         }
