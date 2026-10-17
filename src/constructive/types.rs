@@ -327,6 +327,12 @@ pub enum UniformJoinLaw {
     Cartesian,
     /// Strict less-than of signed integer join columns.
     LessThan,
+    /// Strict greater-than of signed integer join columns.
+    GreaterThan,
+    /// Inclusive less-than-or-equal of signed integer join columns.
+    LessThanOrEqual,
+    /// Inclusive greater-than-or-equal of signed integer join columns.
+    GreaterThanOrEqual,
     /// SQL IS NOT DISTINCT FROM over non-NULL signed integer columns.
     NullSafeEquality,
     /// Equality disjoined with left-key IS NULL, evaluated with non-NULL keys.
@@ -339,6 +345,9 @@ impl UniformJoinLaw {
         match self {
             Self::Cartesian => "cartesian",
             Self::LessThan => "less_than",
+            Self::GreaterThan => "greater_than",
+            Self::LessThanOrEqual => "less_than_or_equal",
+            Self::GreaterThanOrEqual => "greater_than_or_equal",
             Self::NullSafeEquality => "null_safe_equality",
             Self::EqualityOrLeftNull => "equality_or_left_null",
         }
@@ -350,6 +359,9 @@ impl UniformJoinLaw {
         match (self, left, right) {
             (Self::Cartesian, None, None) => Some(true),
             (Self::LessThan, Some(left), Some(right)) => Some(left < right),
+            (Self::GreaterThan, Some(left), Some(right)) => Some(left > right),
+            (Self::LessThanOrEqual, Some(left), Some(right)) => Some(left <= right),
+            (Self::GreaterThanOrEqual, Some(left), Some(right)) => Some(left >= right),
             (Self::NullSafeEquality | Self::EqualityOrLeftNull, Some(left), Some(right)) => {
                 Some(left == right)
             }
