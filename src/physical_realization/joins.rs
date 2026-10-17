@@ -1032,6 +1032,11 @@ pub(super) fn physical_join_population_with_source_counts(
         // on both sides. Unlike a count-only alternative, this witnesses the
         // same full input multiplicities as the independent DuckDB oracle.
         (JoinPopulationPattern::MixedDuplicateRight, 3, 4),
+        // Immutable TASK-112 source bags: duplicate and NULL contributions
+        // are part of one physical assignment, not independently sampled
+        // unmatched pairs. A NULL key has no TRUE equality partner.
+        (JoinPopulationPattern::NullableDuplicateMixed, 4, 2),
+        (JoinPopulationPattern::NullableDuplicateDisjoint, 4, 2),
     ];
     if wanted >= 3 {
         candidates.push((JoinPopulationPattern::MixedMatchedUnmatched, wanted - 1, 2));
@@ -1103,6 +1108,8 @@ pub(super) fn physical_join_population_with_source_counts(
                         JoinPopulationPattern::DisjointKeys
                             | JoinPopulationPattern::MixedMatchedUnmatched
                             | JoinPopulationPattern::MixedDuplicateRight
+                            | JoinPopulationPattern::NullableDuplicateMixed
+                            | JoinPopulationPattern::NullableDuplicateDisjoint
                     )))
         {
             continue;
@@ -1112,7 +1119,9 @@ pub(super) fn physical_join_population_with_source_counts(
             JoinPopulationPattern::GroupedMatched { groups } => i128::from(groups - 1),
             JoinPopulationPattern::DisjointKeys => 1,
             JoinPopulationPattern::MixedMatchedUnmatched
-            | JoinPopulationPattern::MixedDuplicateRight => 2,
+            | JoinPopulationPattern::MixedDuplicateRight
+            | JoinPopulationPattern::NullableDuplicateMixed
+            | JoinPopulationPattern::NullableDuplicateDisjoint => 2,
             JoinPopulationPattern::CommonMatched
             | JoinPopulationPattern::EmptyLeft
             | JoinPopulationPattern::EmptyRight => 0,
@@ -1213,7 +1222,8 @@ pub(super) fn physical_join_population_with_source_counts(
                 });
             }
             JoinPopulationPattern::MixedMatchedUnmatched
-            | JoinPopulationPattern::MixedDuplicateRight => {
+            | JoinPopulationPattern::MixedDuplicateRight
+            | JoinPopulationPattern::NullableDuplicateMixed => {
                 // Physical key 0 joins one left row with one (or two)
                 // right rows; key 1
                 // occurs only on unmatched left rows and key 2 only on
@@ -1259,7 +1269,8 @@ pub(super) fn physical_join_population_with_source_counts(
                     });
                 }
             }
-            JoinPopulationPattern::DisjointKeys => {
+            JoinPopulationPattern::DisjointKeys
+            | JoinPopulationPattern::NullableDuplicateDisjoint => {
                 // Both complete input bags exist, but the left key is 0 and
                 // the right key is 1. Neither side has any TRUE partner.
                 // These NULLs are output extensions, never physical rows.
