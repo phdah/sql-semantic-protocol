@@ -157,5 +157,8 @@ fn asof_and_correlated_frozen_bags_are_exactly_generated_by_canonical_laws() {
         );
         verified += 1;
     }
-    assert_eq!(verified, 10, "both P and N directions for five physical numeric laws");
+    assert_eq!(
+        verified, 10,
+        "both P and N directions for five physical numeric laws"
+    );
 }
