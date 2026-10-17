@@ -1270,11 +1270,10 @@ pub(super) fn physical_join_population_with_source_counts(
                     });
                 }
             }
-            JoinPopulationPattern::DisjointKeys
-            | JoinPopulationPattern::DisjointFourTwo => {
-                // Both complete input bags exist, but the left key is 0 and
-                // the right key is 1. Neither side has any TRUE partner.
-                // These NULLs are output extensions, never physical rows.
+            JoinPopulationPattern::DisjointKeys | JoinPopulationPattern::DisjointFourTwo => {
+                // Both complete source bags are nonempty with no TRUE key
+                // equality. Only outer joins emit synthetic NULL extensions;
+                // SEMI/ANTI classify membership against the entire bag.
                 for (candidate, partner, left, right, null_extended) in [
                     (
                         &left_row,
