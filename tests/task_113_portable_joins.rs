@@ -201,13 +201,22 @@ fn natural_join_with_disjoint_known_columns_is_cartesian() {
     let catalog = RelationCatalog::from_schemas(&[left, right]).unwrap();
     let parser = dialect_from_name("generic").unwrap();
     let sql = SqlInput::inline("SELECT l.k FROM l NATURAL JOIN r");
-    let input = ConfiguredSqlInput::new("task-113-empty-intersection", &sql, "generic", parser.as_ref());
+    let input = ConfiguredSqlInput::new(
+        "task-113-empty-intersection",
+        &sql,
+        "generic",
+        parser.as_ref(),
+    );
     let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
     let layer = &bundle.layers()[0];
-    let query = bundle.inputs()[0].statements().iter().find_map(|statement| match statement {
-        sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
-        _ => None,
-    }).unwrap();
+    let query = bundle.inputs()[0]
+        .statements()
+        .iter()
+        .find_map(|statement| match statement {
+            sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
+            _ => None,
+        })
+        .unwrap();
     assert!(query.diagnostics().is_empty());
     assert_eq!(query.joins()[0].kind(), JoinKind::Cross);
     assert!(query.joins()[0].condition().is_none());
