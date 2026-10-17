@@ -110,7 +110,7 @@ pub(super) fn analyze_join(
     // Normalize simple correlated-derived WHERE once at the SQL/AST boundary.
     // Downstream physical planners consume typed column identities and never
     // reparse the vendor's APPLY or LATERAL SQL text.
-    let (execution, physical_right, correlation) = match &join.relation {
+    let (execution, physical_right, physical_right_instance, correlation) = match &join.relation {
         TableFactor::Derived {
             subquery, lateral, ..
         } => {
@@ -143,16 +143,22 @@ pub(super) fn analyze_join(
                 {
                     match &select.from[0].relation {
                         TableFactor::Table {
-                            name, args: None, ..
-                        } => Some((name.to_string(), select.selection.as_ref())),
+                            name, args: None, alias, sample: None, ..
+                        } => Some((
+                            name.to_string(),
+                            alias.as_ref().map_or_else(|| name.to_string(), |a| a.name.to_string()),
+                            select.selection.as_ref(),
+                        )),
                         _ => None,
                     }
                 }
                 _ => None,
             };
-            let (physical_right, correlation) = if let Some((source, Some(selection))) = derived {
+            let (physical_right, physical_right_instance, correlation) =
+                if let Some((source, instance, Some(selection))) = derived {
                 (
                     Some(source),
+                    Some(instance),
                     Some(analyze_predicate_with_windows(
                         selection,
                         &[],
@@ -162,7 +168,7 @@ pub(super) fn analyze_join(
                     )),
                 )
             } else {
-                (None, None)
+                (None, None, None)
             };
             let execution = match &join.join_operator {
                 JoinOperator::CrossApply => Some(JoinExecution::CrossApply),
@@ -170,11 +176,12 @@ pub(super) fn analyze_join(
                 JoinOperator::CrossJoin if *lateral => Some(JoinExecution::LateralInner),
                 _ => None,
             };
-            (execution, physical_right, correlation)
+            (execution, physical_right, physical_right_instance, correlation)
         }
         _ => (
             matches!(&join.join_operator, JoinOperator::AsOf { .. })
                 .then_some(JoinExecution::AsOfNearest),
+            None,
             None,
             None,
         ),
@@ -191,7 +198,7 @@ pub(super) fn analyze_join(
     };
     let analyzed = ProtocolJoin::new(kind, left.clone(), right.clone(), condition);
     match execution {
-        Some(form) => analyzed.with_execution(form, physical_right),
+        Some(form) => analyzed.with_execution(form, physical_right, physical_right_instance),
         None => analyzed,
     }
 }
