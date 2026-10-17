@@ -695,7 +695,875 @@
           ]
         }
       ]
+    },
+    {
+      "parent": 80,
+      "phases": [
+        {
+          "title": "Construct typed INSERT VALUES and DEFAULT VALUES state",
+          "variants": "multirow VALUES; explicit lists; omitted/default/generated/identity fields; zero-row insert",
+          "oracle": "empty target -> INSERT rows [(1,10),(2,20)] => final 2; DEFAULT VALUES gives exactly one row with attested defaults",
+          "boundary": "No guessed defaults, identity or unsafe implicit casts",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 145,
+          "fixture_ids": [
+            "80-C145-P",
+            "80-C145-N"
+          ]
+        },
+        {
+          "title": "Compose INSERT SELECT column reorder and CTE sources",
+          "variants": "INSERT SELECT; CTE filtered source; target reordering; FK and CHECK constraints",
+          "oracle": "source rows [1,2,3], WHERE k>1 inserts [2,3] into empty target; untouched prestate preserved",
+          "boundary": "Prove source rows and target final bag together, including every enforced key",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 146,
+          "fixture_ids": [
+            "80-C146-P",
+            "80-C146-N"
+          ]
+        },
+        {
+          "title": "Classify conflict overwrite RETURNING and UPSERT syntax",
+          "variants": "INSERT IGNORE/REPLACE/ON CONFLICT; OVERWRITE; RETURNING; vendor dialects",
+          "oracle": "Target key 1, source keys [1,2]: deterministic DO NOTHING leaves keys [1,2]; RETURNING inserted key=2",
+          "boundary": "Unordered collision resolution and overwrite scope are typed residual without engine evidence",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 147,
+          "fixture_ids": [
+            "80-C147-P",
+            "80-C147-N"
+          ]
+        },
+        {
+          "title": "Certify ordered INSERT scripts and adapter parity",
+          "variants": "INSERT after CTE; later SELECT/DDL; direct/dbt/ODCS; 13 dialect parse matrix",
+          "oracle": "Snapshot before/after two-row insert then SELECT count 2; rejected duplicate constrained key impossible",
+          "boundary": "All four insertion families, target domains and final full-bag DuckDB checks required",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 148,
+          "fixture_ids": [
+            "80-C148-P",
+            "80-C148-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 81,
+      "phases": [
+        {
+          "title": "Prove typed UPDATE and DELETE single-target effects",
+          "variants": "UPDATE SET literals/computed/DEFAULT; DELETE WHERE; TRUE/FALSE/UNKNOWN; untouched and RETURNING",
+          "oracle": "target keys [1,2,NULL], UPDATE WHERE key=1 changes exactly one; DELETE WHERE key=NULL changes zero",
+          "boundary": "Use same target before/after bag and preserve unknown predicate cases",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 149,
+          "fixture_ids": [
+            "81-C149-P",
+            "81-C149-N"
+          ]
+        },
+        {
+          "title": "Prove UPDATE FROM and DELETE USING joined mutations",
+          "variants": "unique-key UPDATE FROM; DELETE USING; CTE; multiple candidate rows",
+          "oracle": "target keys [1,2], source key [1] => exactly one modified/deleted target; duplicate matching source is residual or error per law",
+          "boundary": "No multiple-match rewrite without unique identity and engine match assumption",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 150,
+          "fixture_ids": [
+            "81-C150-P",
+            "81-C150-N"
+          ]
+        },
+        {
+          "title": "Classify qualified targets ORDER LIMIT RETURNING and correlations",
+          "variants": "correlated target conditions; RETURNING; vendor ORDER/LIMIT; partition-qualified mutations",
+          "oracle": "UPDATE two rows and RETURNING key => precisely keys [1,2] when supported; ORDER LIMIT 1 touches one deterministic target",
+          "boundary": "Unsupported dialect-specific write order or RETURNING shape remains typed residual",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 151,
+          "fixture_ids": [
+            "81-C151-P",
+            "81-C151-N"
+          ]
+        },
+        {
+          "title": "Compose INSERT UPDATE DELETE and certify TASK-81 states",
+          "variants": "sequential three-write script; FK/CHECK; dbt/direct/ODCS; DuckDB",
+          "oracle": "empty target -> INSERT [1,2] -> UPDATE key1 -> DELETE key2 => one surviving updated key1 row",
+          "boundary": "All target and referenced-source snapshots exact and rejected identities tested",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 152,
+          "fixture_ids": [
+            "81-C152-P",
+            "81-C152-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 82,
+      "phases": [
+        {
+          "title": "Prove ordered MERGE matched UPDATE DELETE actions",
+          "variants": "MERGE ON unique key; MATCHED UPDATE/DELETE with WHEN predicates; NULL key",
+          "oracle": "target keys [1,2], source key [1] => UPDATE 1, preserve 2; when DELETE first matched 1 removed",
+          "boundary": "First applicable branch semantics and complete target before/after bag",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 153,
+          "fixture_ids": [
+            "82-C153-P",
+            "82-C153-N"
+          ]
+        },
+        {
+          "title": "Prove unmatched INSERT and BY SOURCE branches",
+          "variants": "NOT MATCHED BY TARGET INSERT; NOT MATCHED BY SOURCE UPDATE/DELETE; branch order",
+          "oracle": "target keys [1,2], source keys [1,3] => matched 1, source-only 3 inserted, target-only 2 handled BY SOURCE",
+          "boundary": "No intermediate target state treated as an independent source row",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 154,
+          "fixture_ids": [
+            "82-C154-P",
+            "82-C154-N"
+          ]
+        },
+        {
+          "title": "Classify repeated matches UPSERT equivalents and constraint effects",
+          "variants": "ambiguous many-to-one MERGE; two NULL keys; unique FK; dialect ON CONFLICT",
+          "oracle": "duplicate source matching target key 1 => runtime-dependent/error classified; null keys do not equal under ordinary ON",
+          "boundary": "No claim of first-winner semantics without attested vendor law",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 155,
+          "fixture_ids": [
+            "82-C155-P",
+            "82-C155-N"
+          ]
+        },
+        {
+          "title": "Compose computed and sequential MERGEs and certify TASK-82",
+          "variants": "computed SET/INSERT; two MERGEs; nested prior state; dialect matrices",
+          "oracle": "initial target [(1,1)], two MERGEs increment key1 twice => final payload 3, with full transition oracle",
+          "boundary": "Positive/rejected partition and end-state proof with complete DuckDB/script snapshots",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 156,
+          "fixture_ids": [
+            "82-C156-P",
+            "82-C156-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 83,
+      "phases": [
+        {
+          "title": "Prove CREATE CTAS VIEW and materialization identities",
+          "variants": "CREATE TABLE, CTAS, REPLACE; VIEW/MATERIALIZED VIEW; schema-qualified IDs",
+          "oracle": "source [1,2] CTAS -> table [1,2]; VIEW remains logical dependency, materialized snapshots frozen at creation",
+          "boundary": "No confusing logical view reads with stored physical producer rows",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 157,
+          "fixture_ids": [
+            "83-C157-P",
+            "83-C157-N"
+          ]
+        },
+        {
+          "title": "Prove ALTER ADD DROP RENAME TYPE column transitions",
+          "variants": "ALTER TABLE ADD/DROP/RENAME/TYPE; defaults; data preservation; key checks",
+          "oracle": "table (a=1) ADD b DEFAULT 2 => row (1,2); RENAME a TO c => (c=1,b=2)",
+          "boundary": "Engine-specific cast/rewrite failure is typed residual with before/after schema",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 158,
+          "fixture_ids": [
+            "83-C158-P",
+            "83-C158-N"
+          ]
+        },
+        {
+          "title": "Prove DROP TRUNCATE RENAME IF EXISTS and vendor object kinds",
+          "variants": "DROP, TRUNCATE, RENAME, IF EXISTS/NOT EXISTS, CLONE/LIKE, TEMP/TRANSIENT",
+          "oracle": "table [1,2] TRUNCATE=>0; DROP=>relation absent; IF EXISTS missing table no error",
+          "boundary": "Vendor clone/session transaction scope requires explicit evidence and assumptions",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 159,
+          "fixture_ids": [
+            "83-C159-P",
+            "83-C159-N"
+          ]
+        },
+        {
+          "title": "Compose CREATE INSERT ALTER SELECT DROP and certify TASK-83",
+          "variants": "full ordered schema+row lifecycle, catalog identities, adapter parity",
+          "oracle": "CREATE empty -> INSERT key1 -> ADD b DEFAULT2 -> SELECT (1,2) -> DROP removes table",
+          "boundary": "Require complete before/after catalogs and bags at each step, not final count only",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 160,
+          "fixture_ids": [
+            "83-C160-P",
+            "83-C160-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 84,
+      "phases": [
+        {
+          "title": "Define sequential typed state graph across DML DDL",
+          "variants": "INSERT/UPDATE/DELETE/MERGE/DDL; per-step before/after, producer/read identity",
+          "oracle": "empty T -> INSERT [1,2] -> UPDATE key1 -> DELETE key2 => final one updated row and four state snapshots",
+          "boundary": "No free synthetic intermediate state or reorder of read/write dependencies",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 161,
+          "fixture_ids": [
+            "84-C161-P",
+            "84-C161-N"
+          ]
+        },
+        {
+          "title": "Prove DuckDB BEGIN COMMIT ROLLBACK SAVEPOINT transitions",
+          "variants": "BEGIN/COMMIT; ROLLBACK; SAVEPOINT/release/rollback-to; negative replay",
+          "oracle": "BEGIN INSERT key1 ROLLBACK => empty table; BEGIN INSERT key2 COMMIT => one row",
+          "boundary": "Only certify SAVEPOINT when concrete DuckDB engine supports and oracle verifies it",
+          "original_ac": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 162,
+          "fixture_ids": [
+            "84-C162-P",
+            "84-C162-N"
+          ]
+        },
+        {
+          "title": "Classify auto-commit implicit DDL and engine isolation boundaries",
+          "variants": "DDL implicit commits; temp tables; FK deferral; concurrent isolation; dialect transaction laws",
+          "oracle": "Single-session deterministic DDL transaction snapshots required; unknown concurrency behavior stays residual",
+          "boundary": "No claim cross-engine transaction equivalence from parser AST alone",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 163,
+          "fixture_ids": [
+            "84-C163-P",
+            "84-C163-N"
+          ]
+        },
+        {
+          "title": "Certify ordered mixed script state and final targets",
+          "variants": "mixed DDL,DML,MERGE/read; output counts; dbt/ODCS; dialects",
+          "oracle": "CREATE -> INSERT 2 -> MERGE 1 update -> DELETE 1 -> SELECT yields 1 row; every transition snapshotted",
+          "boundary": "No CI green claim until all intermediate and rollback paths have executable oracles",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 164,
+          "fixture_ids": [
+            "84-C164-P",
+            "84-C164-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 85,
+      "phases": [
+        {
+          "title": "Prove standalone output count and typed distribution goals",
+          "variants": "rows; groups; distinct; NULL fraction; duplicate count; column histogram",
+          "oracle": "source [1,1,NULL] => count3, distinct nonnull1, NULL count1, histogram {1:2,NULL:1}",
+          "boundary": "Full closed-world bag mandatory before Exact histogram classification",
+          "original_ac": [
+            1,
+            3,
+            5,
+            6
+          ],
+          "id": 165,
+          "fixture_ids": [
+            "85-C165-P",
+            "85-C165-N"
+          ]
+        },
+        {
+          "title": "Compose shared-source positive and impossible terminal goals",
+          "variants": "two terminals one physical source; compatible and conflicting count/NULL goals",
+          "oracle": "source [1,1,2] => terminal A count3, terminal B WHERE key=1 count2; B requested 4 is Impossible with max 3",
+          "boundary": "Cannot multiply independent solutions or misclassify unknown shared inputs as Impossible",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 166,
+          "fixture_ids": [
+            "85-C166-P",
+            "85-C166-N"
+          ]
+        },
+        {
+          "title": "Compose join filter group and another window/set terminal",
+          "variants": "join->WHERE->GROUP/HAVING; additional window or set output; correlated tuples",
+          "oracle": "L keys [1,1], R key [1] => join count2, grouped key1 count2; second terminal share L count2",
+          "boundary": "One closed physical row assignment satisfies all terminal histograms and NULL domains",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 167,
+          "fixture_ids": [
+            "85-C167-P",
+            "85-C167-N"
+          ]
+        },
+        {
+          "title": "Classify correlations fanout and certify TASK-85 goals",
+          "variants": "tuple histograms; multicolumn correlation; LIMIT/QUALIFY/window/set fanout",
+          "oracle": "Run positive/impossible/residual oracle triplet and paired SQL/dbt outcomes with source/terminal full snapshots",
+          "boundary": "Unverified tuple correlations remain typed residual; frozen cells control required exact richness",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 168,
+          "fixture_ids": [
+            "85-C168-P",
+            "85-C168-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 86,
+      "phases": [
+        {
+          "title": "Represent per-source per-terminal TRUE FALSE UNKNOWN and absence vectors",
+          "variants": "per-terminal membership; column identities; shared lineage; OR rejection semantics",
+          "oracle": "For A OR B, A=FALSE B=TRUE => output present, never negative; FALSE/FALSE => rejected; NULL/FALSE => UNKNOWN rejected",
+          "boundary": "No single-branch falsification masquerades as terminal nonmembership",
+          "original_ac": [
+            2,
+            4,
+            9,
+            5,
+            6
+          ],
+          "id": 169,
+          "fixture_ids": [
+            "86-C169-P",
+            "86-C169-N"
+          ]
+        },
+        {
+          "title": "Enumerate all constructive rejection alternatives with provenance",
+          "variants": "multiple AND/OR choices; independent FALSE/UNKNOWN; column-specific branches",
+          "oracle": "WHERE a>0 AND b>0, choose a=-1,b=1 or a=1,b=-1 => two feasible rejected-column alternatives",
+          "boundary": "All provable alternatives for fixed fixture, not arbitrary SQL trees; gaps residual",
+          "original_ac": [
+            2,
+            4,
+            7,
+            9,
+            5,
+            6
+          ],
+          "id": 170,
+          "fixture_ids": [
+            "86-C170-P",
+            "86-C170-N"
+          ]
+        },
+        {
+          "title": "Specify seeded reachability and global compatibility",
+          "variants": "stable deterministic RNG seed selection; every feasible rejection alternative; shared constraints",
+          "oracle": "Seeds 0..15 must visit two distinct rejected columns and reproduce identical assignments per same seed",
+          "boundary": "Do not label unverified alternative globally Impossible; preserve joint physical constraints",
+          "original_ac": [
+            3,
+            7,
+            8,
+            9,
+            5,
+            6
+          ],
+          "id": 171,
+          "fixture_ids": [
+            "86-C171-P",
+            "86-C171-N"
+          ]
+        },
+        {
+          "title": "Compose project-wide positive negative snapshots and certify TASK-86",
+          "variants": "two terminals; grouped/window/set negatives; sql-tdg TASK-35 semantics",
+          "oracle": "shared source [(a=1,b=-1),(a=-1,b=1)] two terminal filters yield complementary survivors; verify both full outputs",
+          "boundary": "Confirm recorded TASK-35 decision, all nine original AC and independent multi-seed oracle signoff",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "id": 172,
+          "fixture_ids": [
+            "86-C172-P",
+            "86-C172-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 87,
+      "phases": [
+        {
+          "title": "Freeze authoritative metadata fact ownership and absence laws",
+          "variants": "dbt compiled SQL/dependencies/constraints; catalog types; ODCS fields; direct DDL",
+          "oracle": "dbt manifest gives model SQL, catalog gives datatype; missing catalog must not invent a warehouse type",
+          "boundary": "Each canonical fact records precise authoritative provenance and enforcement status",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 173,
+          "fixture_ids": [
+            "87-C173-P",
+            "87-C173-N"
+          ]
+        },
+        {
+          "title": "Certify dbt ephemeral view table and incremental semantics",
+          "variants": "dbt materialization tags; producer/write identity; executed vs unexecuted model",
+          "oracle": "One ephemeral SQL model and one table model have same canonical SELECT outcome, but only table is materialized write",
+          "boundary": "Manifest-only incremental SQL cannot assert executed target state",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 174,
+          "fixture_ids": [
+            "87-C174-P",
+            "87-C174-N"
+          ]
+        },
+        {
+          "title": "Resolve schema aliases FK-only source and adapter limitations",
+          "variants": "schema-qualified quoted names; tests; FK-only evidence; missing warehouse metadata",
+          "oracle": "same source DDL/ODCS/dbt key and schema produce same typed canonical domain; missing FK target yields explicit diagnostic",
+          "boundary": "No fabricated warehouse keys, catalog introspection or test enforcement",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 175,
+          "fixture_ids": [
+            "87-C175-P",
+            "87-C175-N"
+          ]
+        },
+        {
+          "title": "Certify SQL dbt ODCS paired canonical parity across writes",
+          "variants": "three adapter pairs: table, view/ephemeral, incremental/write; typed source constraints",
+          "oracle": "Compare full JSON facts/physical proof strengths on equivalent evidence and retain intentional materialization differences",
+          "boundary": "Every newly exposed adapter fact must have exact vs residual assertions and full CI",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 176,
+          "fixture_ids": [
+            "87-C176-P",
+            "87-C176-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 88,
+      "phases": [
+        {
+          "title": "Freeze TASK-66 feature-by-13-dialect parser coverage",
+          "variants": "13 named dialects; every reviewed variant; parser accepted/unsupported statuses",
+          "oracle": "Full cross-product of approved stable TASK-66 variant IDs with 13 dialects; no missing rows or implicit skip",
+          "boundary": "Parser success alone never certifies outcome semantics or vendor engine execution",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            7,
+            8
+          ],
+          "id": 177,
+          "fixture_ids": [
+            "88-C177-P",
+            "88-C177-N"
+          ]
+        },
+        {
+          "title": "Certify canonical equivalence for shared dialect AST variants",
+          "variants": "JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants",
+          "oracle": "For meaning-preserving spellings assert identical typed domains, NULL/boundary, lineage, membership, count and effects",
+          "boundary": "Strip only provenance metadata; do not weaken comparison to parser AST shapes",
+          "original_ac": [
+            2,
+            4,
+            5,
+            7,
+            8,
+            6
+          ],
+          "id": 178,
+          "fixture_ids": [
+            "88-C178-P",
+            "88-C178-N"
+          ]
+        },
+        {
+          "title": "Classify conditional session and vendor execution laws",
+          "variants": "NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case",
+          "oracle": "Every vendor-specific law has explicit version/session/evidence, typed residual or real executed oracle",
+          "boundary": "No claim of engine execution from DuckDB-equivalent syntax or unsupported parser dialect",
+          "original_ac": [
+            3,
+            4,
+            5,
+            8,
+            6
+          ],
+          "id": 179,
+          "fixture_ids": [
+            "88-C179-P",
+            "88-C179-N"
+          ]
+        },
+        {
+          "title": "Independently certify complete dialect matrix and gate CI",
+          "variants": "all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes",
+          "oracle": "Full parser equivalence CI across TASK-66 frozen variants and all owned conditionals reviewed without false exactness",
+          "boundary": "Any unowned conditional or failed mandatory outcome blocks TASK-88 Done and TASK-91",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "id": 180,
+          "fixture_ids": [
+            "88-C180-P",
+            "88-C180-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 89,
+      "phases": [
+        {
+          "title": "Build seeded differential harness with replayable evidence",
+          "variants": "deterministic small instances; positive/negative/Impossible/residual; counterexample capture",
+          "oracle": "Seeds [0,1,42,20261017] produce replayable SQL, input bags, expected result bags, protocol JSON and diagnostics",
+          "boundary": "No test merely parsing SQL or comparing generated snapshots to themselves",
+          "original_ac": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "id": 181,
+          "fixture_ids": [
+            "89-C181-P",
+            "89-C181-N"
+          ]
+        },
+        {
+          "title": "Certify mixed relational and correlated full-output paths",
+          "variants": "filtered JOIN->GROUP/HAVING->QUALIFY->set; correlated subquery over join; shared keys",
+          "oracle": "Join [1,1] to key1 => group count2, QUALIFY top1 => one row; alternate correlated NOT EXISTS rejects expected rows",
+          "boundary": "Assert complete source/terminal bags and both membership directions for each fixture",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            8
+          ],
+          "id": 182,
+          "fixture_ids": [
+            "89-C182-P",
+            "89-C182-N"
+          ]
+        },
+        {
+          "title": "Certify pinned sql-tdg dbt and DML DDL execution harness",
+          "variants": "sql-tdg pinned SHA; committed m-3 fixture; make all; actual scripted transitions",
+          "oracle": "Execute dbt models plus required DML/DDL, capture before/after sources and every terminal output for >=4 seeds",
+          "boundary": "Cannot substitute protocol-only tests for generator/engine evidence",
+          "original_ac": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "id": 183,
+          "fixture_ids": [
+            "89-C183-P",
+            "89-C183-N"
+          ]
+        },
+        {
+          "title": "Independently sign off cross-feature and dialect release matrix",
+          "variants": "TASK-66 variants; 13 dialect equivalence; approved conditional engine laws",
+          "oracle": "All mandatory rows executed or evidenced; zero disabled fixtures; no false Exact; full CI green",
+          "boundary": "TASK-91 retains separate publication/consumer gate even after TASK-89 closure",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "id": 184,
+          "fixture_ids": [
+            "89-C184-P",
+            "89-C184-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 90,
+      "phases": [
+        {
+          "title": "Inventory Rust JSON CLI witness and write public contract",
+          "variants": "public model identities; emitted schema; deterministic bytes; all supported modes",
+          "oracle": "Same input emitted twice byte-identical; JSON validation and typed proof strength for representative JOIN, WRITE, WINDOW",
+          "boundary": "No parser AST types or accidental historical active version emission",
+          "original_ac": [
+            1,
+            4,
+            6
+          ],
+          "id": 185,
+          "fixture_ids": [
+            "90-C185-P",
+            "90-C185-N"
+          ]
+        },
+        {
+          "title": "Define typed capability extensions and fail-closed unknown tags",
+          "variants": "future function/opaque metadata; optional fields; version gating; strict unknown-tag handling",
+          "oracle": "Unknown operator tag rejects or explicitly residual; no silent upgrade to Exact; capability gate deterministic",
+          "boundary": "No speculative implementation of arbitrary UDF or remote vendor function semantics",
+          "original_ac": [
+            2,
+            4,
+            7,
+            6
+          ],
+          "id": 186,
+          "fixture_ids": [
+            "90-C186-P",
+            "90-C186-N"
+          ]
+        },
+        {
+          "title": "Certify v2 to v3 migration and canonical compatibility",
+          "variants": "breaking versus additive; v2/v3 goldens; migration docs and schema snapshots",
+          "oracle": "Golden v2 and v3 examples preserve intended typed semantic differences with explicit breaking classification",
+          "boundary": "No undocumented equivalent-field rename or shifted bound inclusion",
+          "original_ac": [
+            1,
+            3,
+            4,
+            6
+          ],
+          "id": 187,
+          "fixture_ids": [
+            "90-C187-P",
+            "90-C187-N"
+          ]
+        },
+        {
+          "title": "Pin sql-tdg pre-release consumer and certify final TASK-90 gate",
+          "variants": "final candidate SHA; consumer reads source/row/write cases; serialization CI",
+          "oracle": "Pinned sql-tdg pre-release passes source witness, joined histogram and ordered MERGE case using final schema",
+          "boundary": "Completion only after all parent child queues/semantic freeze, schema and adapter contracts independently verified",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "id": 188,
+          "fixture_ids": [
+            "90-C188-P",
+            "90-C188-N"
+          ]
+        }
+      ]
     }
   ],
-  "next_unallocated_child_id": 145
+  "next_unallocated_child_id": 189
 }
