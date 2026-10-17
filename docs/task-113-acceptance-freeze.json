@@ -2,7 +2,7 @@
   "version": 1,
   "owner": "TASK-113",
   "parent": "TASK-71",
-  "status": "frozen_unverified",
+  "status": "parser_verified_physical_and_adapter_pending",
   "fixture_ids": [
     "71-C113-P",
     "71-C113-N"
@@ -116,68 +116,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -271,68 +271,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -426,68 +426,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -585,68 +585,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -737,68 +737,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -894,68 +894,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1051,68 +1051,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_nullsafe_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1227,68 +1227,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1391,68 +1391,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1555,68 +1555,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1724,68 +1724,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -1893,68 +1893,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -2060,68 +2060,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "duckdb_fixture_required"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_full_bag_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -2227,68 +2227,68 @@
       ],
       "dialects": {
         "ansi": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "native_execution": "duckdb_normalized_nullsafe_oracle"
         },
         "generic": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "verification_required",
-          "canonical": "verification_required",
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
       },
@@ -2326,5 +2326,6 @@
     "3": "independent full-bag DuckDB and typed domain tests",
     "4": "13 dialect + SQL/dbt/ODCS",
     "5": "full CI signoff and audit before Done"
-  }
+  },
+  "parser_probe": "tests/task_113_parser_matrix.rs"
 }
