@@ -563,6 +563,22 @@ fn mixed_population_semi_anti_counts_do_not_inherit_full_outer_cardinality() {
         JoinPopulationPattern::MixedMatchedUnmatched.output_rows(JoinKind::RightAnti, 3, 2),
         Some(1)
     );
+    for (kind, expected) in [
+        (JoinKind::Inner, 2),
+        (JoinKind::Left, 4),
+        (JoinKind::Right, 4),
+        (JoinKind::Full, 6),
+        (JoinKind::LeftSemi, 1),
+        (JoinKind::RightSemi, 2),
+        (JoinKind::LeftAnti, 2),
+        (JoinKind::RightAnti, 2),
+    ] {
+        assert_eq!(
+            JoinPopulationPattern::MixedDuplicateRight.output_rows(kind, 3, 4),
+            Some(expected),
+            "{kind:?}: 3x4 bags have exactly two matched pairs"
+        );
+    }
 }
 
 #[test]
