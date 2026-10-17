@@ -1,0 +1,701 @@
+{
+  "version": 1,
+  "created": "2026-10-17",
+  "purpose": "Finite child queues; parents retain all original acceptance criteria and signoff gates. Child tasks are not Done until their own frozen executable matrix and CI are verified.",
+  "scope": "All unfinished release-blocking implementation parents TASK-71..90, excluding completed TASK-79; TASK-91 is a release gate and TASK-92 is post-v3.",
+  "start_child_id": 109,
+  "parents": [
+    {
+      "parent": 71,
+      "phases": [
+        {
+          "title": "Prove two-input inner join bags and composite keys",
+          "variants": "binary INNER equality; one-to-many key duplicates; two-column composite equality",
+          "oracle": "L=[(1,10),(1,20),(NULL,30)], R=[(1,10),(1,50),(NULL,70)]; simple ON k: 4 matched rows, composite ON (k,a): 1 row; NULL join keys never match",
+          "boundary": "No full chained topology; unsupported expressions stay typed residual",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 109,
+          "fixture_ids": [
+            "71-C109-P",
+            "71-C109-N"
+          ]
+        },
+        {
+          "title": "Compose three-relation chains, self-joins, and shared aliases",
+          "variants": "three-input INNER chain; self-join with independent aliases; repeated/shared physical producer",
+          "oracle": "L keys [1,1], R keys [1,1], T key [1]: three-way count=4; self-join L a,b ON key: count=4 from two physical rows",
+          "boundary": "Every source instance tied to exactly one closed physical bag; no pairwise independence shortcuts",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 110,
+          "fixture_ids": [
+            "71-C110-P",
+            "71-C110-N"
+          ]
+        },
+        {
+          "title": "Prove LEFT RIGHT and FULL unmatched null-extension",
+          "variants": "LEFT/RIGHT/FULL matched and unmatched; SQL NULL and reversed-ON operands; physical vs synthetic NULL",
+          "oracle": "L keys [1,NULL,2], R empty => LEFT/FULL=3 rows; reversed operands preserve LEFT count=3; R-only RIGHT count=3",
+          "boundary": "Missing partner is an entire-physical-bag absence proof, never a physical NULL insertion",
+          "original_ac": [
+            1,
+            3,
+            5,
+            6
+          ],
+          "id": 111,
+          "fixture_ids": [
+            "71-C111-P",
+            "71-C111-N"
+          ]
+        },
+        {
+          "title": "Certify SEMI and ANTI absence witnesses",
+          "variants": "LEFT/RIGHT SEMI and ANTI; duplicates; SQL UNKNOWN; rejected nonmembership",
+          "oracle": "L keys [1,1,NULL,2], R keys [1,NULL] => LEFT SEMI=2, LEFT ANTI=2",
+          "boundary": "Anti proof must exclude every TRUE partner, not only one attempted pair",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 112,
+          "fixture_ids": [
+            "71-C112-P",
+            "71-C112-N"
+          ]
+        },
+        {
+          "title": "Implement portable join syntax and Boolean condition variants",
+          "variants": "CROSS; USING; NATURAL with known schema; OR-on; non-equi; IS NOT DISTINCT FROM; null-safe equality",
+          "oracle": "L keys [1,NULL], R keys [1,NULL] => CROSS=4; ON '='=1; null-safe equality=2; USING(k)=1",
+          "boundary": "Distinct Boolean semantics and NATURAL column intersection require schema evidence; preserve typed residual per unsupported case",
+          "original_ac": [
+            1,
+            3,
+            5,
+            6
+          ],
+          "id": 113,
+          "fixture_ids": [
+            "71-C113-P",
+            "71-C113-N"
+          ]
+        },
+        {
+          "title": "Classify ASOF range time and LATERAL APPLY laws",
+          "variants": "ASOF nearest-prior; range/time inequalities; LATERAL; CROSS/OUTER APPLY; supported parser dialects",
+          "oracle": "L times [5,10], R times [4,7] => nearest-prior ASOF picks [4,7]; correlated LATERAL two singletons => 2 rows",
+          "boundary": "Vendor/session tie-breaking and per-row table-function side effects must fail closed with named conditional owner",
+          "original_ac": [
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 114,
+          "fixture_ids": [
+            "71-C114-P",
+            "71-C114-N"
+          ]
+        },
+        {
+          "title": "Compose join plans through filters constraints and terminal row shaping",
+          "variants": "two-hop WHERE then JOIN/JOIN; composite ON plus nullable keys; PK/FK; downstream GROUP/count",
+          "oracle": "L keys [1,1,2] WHERE a>0, R keys [1,1], T keys [1] => positive joined count 4; rejecting NULL key excluded",
+          "boundary": "Must prove same complete physical input bag for upstream filters, all join instances and terminal count",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 115,
+          "fixture_ids": [
+            "71-C115-P",
+            "71-C115-N"
+          ]
+        },
+        {
+          "title": "Independently certify TASK-71 join matrix and parent acceptance",
+          "variants": "frozen J71 cells incl mandatory/conditional; SQL/dbt/ODCS; 13 supported dialect identities; DuckDB",
+          "oracle": "Verify all 15 mandatory, 12 conditional inventory cells, each original AC #1..#6 and full CI; zero unchecked mandatory cells",
+          "boundary": "Do not promote conditional parser only claims to native engine certification; parent only Done after cross-case signoff",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 116,
+          "fixture_ids": [
+            "71-C116-P",
+            "71-C116-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 72,
+      "phases": [
+        {
+          "title": "Prove two-column set bag and NULL laws",
+          "variants": "UNION/INTERSECT/EXCEPT each DISTINCT/ALL; tuple duplicates and NULL equality",
+          "oracle": "A=[(1,NULL),(1,NULL),(2,4)], B=[(1,NULL),(3,4)]; UNION ALL=5; UNION DISTINCT=3; INTERSECT ALL=1; EXCEPT ALL=2",
+          "boundary": "No independent per-column histogram substitution for tuple frequencies",
+          "original_ac": [
+            1,
+            3,
+            5,
+            6
+          ],
+          "id": 117,
+          "fixture_ids": [
+            "72-C117-P",
+            "72-C117-N"
+          ]
+        },
+        {
+          "title": "Compose nested branches and shared physical sources",
+          "variants": "three-branch nested sets; branch-local WHERE; shared physical input; produced CTE/model",
+          "oracle": "((A UNION ALL B) EXCEPT ALL C) with A=[1,1],B=[1],C=[1] yields 2 surviving 1s; rejected counterpart absent",
+          "boundary": "One complete upstream source assignment across branches, not independent intermediate inserts",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 118,
+          "fixture_ids": [
+            "72-C118-P",
+            "72-C118-N"
+          ]
+        },
+        {
+          "title": "Resolve alignment, limits and vendor set forms",
+          "variants": "positional aliases/coercion; BY NAME/CORRESPONDING; MINUS; local and set ORDER/LIMIT/FETCH",
+          "oracle": "Two-col positional UNION with renamed aliases preserves 2-column order; ORDER/LIMIT over [(1),(2),(3)] with LIMIT 2 -> 2",
+          "boundary": "Fail closed when collation/type/branch parser or ordering laws unavailable",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 119,
+          "fixture_ids": [
+            "72-C119-P",
+            "72-C119-N"
+          ]
+        },
+        {
+          "title": "Certify TASK-72 adapter and dialect set matrix",
+          "variants": "mandatory set family matrix; NULL tuple and multiset oracles; sql/dbt/ODCS; 13 dialects",
+          "oracle": "Check six bag operators, two-column NULL case, three-branch shared-source case and exact/rejected counts with full CI",
+          "boundary": "No unverified mandatory histogram cell or parser-only vendor support can sign off parent",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 120,
+          "fixture_ids": [
+            "72-C120-P",
+            "72-C120-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 73,
+      "phases": [
+        {
+          "title": "Prove basic grouped and global aggregate value domains",
+          "variants": "COUNT(*), COUNT(expr), SUM, MIN, MAX, AVG; NULL/duplicate; empty global versus grouped",
+          "oracle": "Input [1,1,NULL] => COUNT(*)=3, COUNT(x)=2, SUM(x)=2, MIN/MAX=1, AVG=1; empty COUNT(*)=0",
+          "boundary": "Use typed decimal/overflow domain laws, not host-language guessed arithmetic",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 121,
+          "fixture_ids": [
+            "73-C121-P",
+            "73-C121-N"
+          ]
+        },
+        {
+          "title": "Prove DISTINCT FILTER HAVING and multiple group identities",
+          "variants": "COUNT DISTINCT; FILTER WHERE; mixed HAVING predicates; two aggregates and aliases",
+          "oracle": "Group k=1 with values [1,1,NULL] => COUNT DISTINCT=1 and COUNT(x)=2; HAVING COUNT(x)>1 survives",
+          "boundary": "Mixed FALSE/UNKNOWN rejected groups must be proven against entire group bag",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 122,
+          "fixture_ids": [
+            "73-C122-P",
+            "73-C122-N"
+          ]
+        },
+        {
+          "title": "Compose aggregates after filtered joins and classify grouping variants",
+          "variants": "WHERE then JOIN then GROUP/HAVING; GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL",
+          "oracle": "Join L[1,1] with R[1,1] => group count=4; HAVING COUNT(*)>4 rejects; global empty aggregate yields one row",
+          "boundary": "Grouping extensions require explicit grouping IDs and engine/parser classification",
+          "original_ac": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 123,
+          "fixture_ids": [
+            "73-C123-P",
+            "73-C123-N"
+          ]
+        },
+        {
+          "title": "Independently certify TASK-73 group and aggregate oracles",
+          "variants": "committed aggregate_summary.sql; direct/dbt/ODCS; all exposed dialect paths",
+          "oracle": "Full SQL/DuckDB snapshots: six aggregates, NULLs, duplicate contributions, join/HAVING and grouped/global empty cases",
+          "boundary": "Parent blocked if any mandatory typed output-domain or negative-group proof lacks executable evidence",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 124,
+          "fixture_ids": [
+            "73-C124-P",
+            "73-C124-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 74,
+      "phases": [
+        {
+          "title": "Prove ROW_NUMBER RANK DENSE_RANK with peers",
+          "variants": "PARTITION BY; total versus tied ORDER BY; ASC/DESC; NULL handling",
+          "oracle": "values [1,1,2] => RANK [1,1,3], DENSE_RANK [1,1,2]; ROW_NUMBER unique tie order unprovable without secondary key",
+          "boundary": "Never assert deterministic peer identity when ORDER BY is not total",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 125,
+          "fixture_ids": [
+            "74-C125-P",
+            "74-C125-N"
+          ]
+        },
+        {
+          "title": "Prove navigation and bounded ROWS frames",
+          "variants": "LAG/LEAD; FIRST_VALUE/LAST_VALUE; bounded ROWS frame; NULLs; frame boundaries",
+          "oracle": "ordered values [10,NULL,30]: LAG row2=10, LEAD row2=30; ROWS 1 PRECEDING running COUNT(*)=[1,2,2]",
+          "boundary": "Other RANGE/GROUPS/NTILE/collation variants classified separately",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 126,
+          "fixture_ids": [
+            "74-C126-P",
+            "74-C126-N"
+          ]
+        },
+        {
+          "title": "Compose QUALIFY and upstream grouped or joined row shaping",
+          "variants": "QUALIFY ROW_NUMBER<=n; multiple rank conditions; joins and grouped inputs; rejected peers",
+          "oracle": "two partitions each [3,2,1] ordered descending, QUALIFY ROW_NUMBER=1 gives 2 survivors and 4 rejected",
+          "boundary": "Survivors and NOT TRUE witnesses must share exact upstream bag and stable row identities",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 127,
+          "fixture_ids": [
+            "74-C127-P",
+            "74-C127-N"
+          ]
+        },
+        {
+          "title": "Certify advanced frames vendor laws and TASK-74 signoff",
+          "variants": "NTILE; RANGE/GROUPS; COLLATE; NULL ordering; ranked_orders.sql; 13 dialects",
+          "oracle": "Oracle three ranking laws, one navigation, one ROWS frame, grouped QUALIFY and explicit parser/session boundaries",
+          "boundary": "No exact claim for underordered or engine-dependent windows; parent signoff independent",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 128,
+          "fixture_ids": [
+            "74-C128-P",
+            "74-C128-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 75,
+      "phases": [
+        {
+          "title": "Prove EXISTS and NOT EXISTS correlated/uncorrelated",
+          "variants": "single-key correlation; duplicate inner bags; empty inner; TRUE/NOT TRUE absence",
+          "oracle": "outer keys [1,2,NULL], inner [1,1,NULL] => EXISTS one outer row, NOT EXISTS two",
+          "boundary": "No existential witness may substitute for closed-world NOT EXISTS exclusion",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 129,
+          "fixture_ids": [
+            "75-C129-P",
+            "75-C129-N"
+          ]
+        },
+        {
+          "title": "Prove IN and NOT IN three-valued membership",
+          "variants": "correlated/uncorrelated IN/NOT IN; NULL inner or outer; compound key",
+          "oracle": "outer keys [1,2,NULL], inner [1,NULL] => IN TRUE for 1; NOT IN TRUE for none; 2 and NULL are UNKNOWN",
+          "boundary": "NULL UNKNOWN and duplicate tuple membership separate from impossible witnesses",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 130,
+          "fixture_ids": [
+            "75-C130-P",
+            "75-C130-N"
+          ]
+        },
+        {
+          "title": "Model scalar subqueries ANY ALL and nested correlation boundaries",
+          "variants": "scalar subquery zero/one/multiple rows; ANY/SOME/ALL; nesting; LATERAL/APPLY",
+          "oracle": "scalar subquery empty returns NULL; singleton [2] returns 2; two rows raise cardinality error in DuckDB",
+          "boundary": "Runtime errors, engine-specific quantification and APPLY unsupported paths have named fail-closed reasons",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 131,
+          "fixture_ids": [
+            "75-C131-P",
+            "75-C131-N"
+          ]
+        },
+        {
+          "title": "Compose grouped/joined correlations and independently certify TASK-75",
+          "variants": "composite correlations through JOIN and GROUP inner; subquery_orders.sql; dbt/ODCS",
+          "oracle": "outer [1,2], joined inner key [1,1] => EXISTS only 1; NOT EXISTS only 2; full terminal snapshots required",
+          "boundary": "No unproved nested-source identity or missing parser dialect cells in parent signoff",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 132,
+          "fixture_ids": [
+            "75-C132-P",
+            "75-C132-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 76,
+      "phases": [
+        {
+          "title": "Prove deterministic ORDER BY LIMIT OFFSET and TOP",
+          "variants": "sorted total order; LIMIT/OFFSET; FETCH FIRST; TOP variant",
+          "oracle": "keys [1,2,3,4] ascending LIMIT 2 OFFSET 1 => [2,3]; empty input -> empty output",
+          "boundary": "No survivor identity without total order or attested ties",
+          "original_ac": [
+            1,
+            2,
+            5,
+            6
+          ],
+          "id": 133,
+          "fixture_ids": [
+            "76-C133-P",
+            "76-C133-N"
+          ]
+        },
+        {
+          "title": "Prove ties DISTINCT and QUALIFY pagination boundaries",
+          "variants": "WITH TIES; DISTINCT; DISTINCT ON; SQL NULL ordering",
+          "oracle": "ORDER BY key DESC values [3,2,2,1] FETCH FIRST 2 WITH TIES => [3,2,2] count 3",
+          "boundary": "Unspecified NULL ordering and DISTINCT ON tie choice must be typed residual",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 134,
+          "fixture_ids": [
+            "76-C134-P",
+            "76-C134-N"
+          ]
+        },
+        {
+          "title": "Compose nested page boundaries through CTE and sets",
+          "variants": "nested LIMIT+OFFSET CTE; set branch ORDER/LIMIT; producer copies",
+          "oracle": "Input [1,2,3,4,5], inner LIMIT 4 then outer OFFSET 2 LIMIT 1 => [3]",
+          "boundary": "No rewriting offset windows across unresolved producer order boundaries",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 135,
+          "fixture_ids": [
+            "76-C135-P",
+            "76-C135-N"
+          ]
+        },
+        {
+          "title": "Classify sampling and certify TASK-76 dialect/oracle matrix",
+          "variants": "seeded TABLESAMPLE/SAMPLE; dialect TOP/FETCH; NULL/tie laws; 13 dialects",
+          "oracle": "Execute exact first three deterministic families, sample cases preserve seeded/stochastic residual",
+          "boundary": "Do not certify probabilistic membership as exact absent fully attested deterministic law",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 136,
+          "fixture_ids": [
+            "76-C136-P",
+            "76-C136-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 77,
+      "phases": [
+        {
+          "title": "Prove VALUES and array table fanout with ordinality",
+          "variants": "multirow VALUES; array UNNEST/EXPLODE; NULL/empty arrays; ordinality",
+          "oracle": "VALUES (1),(2) => 2 rows; UNNEST([1,2])=>2; UNNEST([])=>0; ordinality [1,2]",
+          "boundary": "Typed nested element/NULL evidence required; opaque collection stays residual",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 137,
+          "fixture_ids": [
+            "77-C137-P",
+            "77-C137-N"
+          ]
+        },
+        {
+          "title": "Implement star transforms and fixed-schema pivot unpivot",
+          "variants": "SELECT * EXCEPT/REPLACE/RENAME; PIVOT and UNPIVOT fixed columns",
+          "oracle": "Two-column row (a=1,b=2), EXCEPT(b) => one column a=1; fixed two-key pivot returns exactly declared columns",
+          "boundary": "Dynamic pivot/schema discovery cannot fabricate columns",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 138,
+          "fixture_ids": [
+            "77-C138-P",
+            "77-C138-N"
+          ]
+        },
+        {
+          "title": "Classify JSON table generators and vendor functions",
+          "variants": "JSON_TABLE/FLATTEN/EXPLODE; generator/table UDF; variable shape",
+          "oracle": "For declared array [5,6], documented deterministic flatten yields 2 elements; missing shape => residual",
+          "boundary": "No unknown function cardinality or JSON schema guesses",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 139,
+          "fixture_ids": [
+            "77-C139-P",
+            "77-C139-N"
+          ]
+        },
+        {
+          "title": "Compose table fanout with joins/dbt and certify TASK-77",
+          "variants": "VALUES/UNNEST fanout feeding join or group; dbt adapter; 13 dialects",
+          "oracle": "UNNEST([1,1,2]) GROUP BY value => groups 1:2, 2:1; negative absent group verified",
+          "boundary": "Every deterministic variant has full source bag and terminal snapshot; conditional laws explicit",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 140,
+          "fixture_ids": [
+            "77-C140-P",
+            "77-C140-N"
+          ]
+        }
+      ]
+    },
+    {
+      "parent": 78,
+      "phases": [
+        {
+          "title": "Prove nested and shadowed CTE source identity",
+          "variants": "ordinary WITH; nested/reused CTEs; alias shadowing; view vs materialized copy",
+          "oracle": "raw keys [1,2], reused CTE twice with equijoin yields 2 matches, not 4 independent inserts",
+          "boundary": "Every producer and source instance has a distinct canonical identity",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 141,
+          "fixture_ids": [
+            "78-C141-P",
+            "78-C141-N"
+          ]
+        },
+        {
+          "title": "Classify finite recursive CTE and cycle/termination laws",
+          "variants": "recursive base and step; UNION vs UNION ALL; finite bound; cyclic residual",
+          "oracle": "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<3) yields [1,2,3]",
+          "boundary": "Unproven recursion termination is explicit residual, not a claimed complete bag",
+          "original_ac": [
+            1,
+            2,
+            3,
+            5,
+            6
+          ],
+          "id": 142,
+          "fixture_ids": [
+            "78-C142-P",
+            "78-C142-N"
+          ]
+        },
+        {
+          "title": "Compose filtering/computed producers across consumers",
+          "variants": "CTE WHERE; computed aliases; downstream JOIN/count/write; materialization",
+          "oracle": "raw [1,2,3] WHERE k>1 => stage [2,3]; two consumers share exactly same stage bag",
+          "boundary": "No intermediate source insertion; preserve producer ordering and row filters",
+          "original_ac": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 143,
+          "fixture_ids": [
+            "78-C143-P",
+            "78-C143-N"
+          ]
+        },
+        {
+          "title": "Certify raw/dbt multistep scopes and TASK-78 signoff",
+          "variants": "views, reused sources, multi statements, selective row-changing materialization; dialects",
+          "oracle": "DuckDB full initial/producer/output snapshots for shadowed CTE, bounded recursion and two-consumer filter",
+          "boundary": "Unsupported LATERAL/temporary session scope typed residual with evidence and owner",
+          "original_ac": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "id": 144,
+          "fixture_ids": [
+            "78-C144-P",
+            "78-C144-N"
+          ]
+        }
+      ]
+    }
+  ],
+  "next_unallocated_child_id": 145
+}
