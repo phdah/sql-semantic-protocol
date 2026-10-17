@@ -1,5 +1,5 @@
 //! Guard the pre-release implementation backlog against missing child files,
- //! dependency cycles and unmapped parent acceptance criteria.
+//! dependency cycles and unmapped parent acceptance criteria.
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::PathBuf;
@@ -144,7 +144,7 @@ fn all_frozen_parent_queues_have_acyclic_child_dependencies_and_complete_ac_mapp
                 assert!(original_ac.contains(&ac), "{child} maps nonexistent parent AC #{ac}");
                 mapped.insert(ac);
             }
-            for section in ["Finite", "DuckDB", "Residual", "13", "docs/coverage-manifest.json"] {
+            for section in ["fixture IDs", "DuckDB", "Residual", "13", "docs/coverage-manifest.json"] {
                 assert!(content.contains(section), "{child} missing evidence gate {section}");
             }
         }
