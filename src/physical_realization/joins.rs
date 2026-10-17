@@ -198,7 +198,10 @@ fn join_conjuncts<'a>(predicate: &'a Predicate, output: &mut Vec<&'a Predicate>)
 fn join_key_and_scalar_filters(
     query: &QueryStatement,
 ) -> Option<(
-    Vec<(&crate::protocol::ColumnExpression, &crate::protocol::ColumnExpression)>,
+    Vec<(
+        &crate::protocol::ColumnExpression,
+        &crate::protocol::ColumnExpression,
+    )>,
     Vec<&Predicate>,
 )> {
     use crate::protocol::ComparisonOperator;
@@ -454,79 +457,80 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     }
 
-    let (left_key, left_instance, right_key, right_instance) = if source_filters.is_empty() && join_keys.len() == 1 {
-        let join = join?;
-        if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
-            return None;
-        }
-        let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
-            let column = crate::protocol::ColumnRef::new(
-                Some(endpoint.relation().to_string()),
-                endpoint.column().to_string(),
-            );
-            let mapped = if walker.sources.contains(endpoint.relation()) {
-                column
-            } else {
-                resolve_filter_column_with_evidence(
-                    bundle,
-                    &walker,
-                    join_layer.id(),
-                    &column,
-                    0,
-                    true,
-                )?
-            };
-            walker
-                .sources
-                .contains(mapped.relation()?)
-                .then(|| (mapped, endpoint.relation_instance().to_string()))
-        };
-        let (left, left_instance) = map(join.left()?)?;
-        let (right, right_instance) = map(join.right()?)?;
-        (left, left_instance, right, right_instance)
-    } else {
-        // A composed local witness may be residual for filtered parents
-        // and therefore have no endpoints. Recover them from the *same*
-        // canonical query's typed ON comparison, never by reparsing SQL.
-        let map = |column: &crate::protocol::ColumnExpression| {
-            let instance = column.relation()?;
-            let source = crate::protocol::ColumnRef::new(
-                Some(instance.to_string()),
-                column.name().to_string(),
-            );
-            let mapped = resolve_filter_column(bundle, &walker, join_layer.id(), &source, 0)?;
-            walker
-                .sources
-                .contains(mapped.relation()?)
-                .then_some((mapped, instance.to_string()))
-        };
-        let (left, left_instance) = map(left_key_expression)?;
-        let (right, right_instance) = map(right_key_expression)?;
-        // INNER matches are symmetric. A composed local witness above already
-        // owns its physical source orientation, which can differ from the
-        // immediate SQL producer names; do not reinterpret that proof.
-        if join_kind == JoinKind::Inner {
-            (left, left_instance, right, right_instance)
-        } else {
-            // Outer/semi/anti preservation is positional, not the ON equality's
-            // operand order. Orient only endpoints freshly recovered from ON.
-            let sql_left = sql_join
-                .left()
-                .alias()
-                .unwrap_or(sql_join.left().relation());
-            let sql_right = sql_join
-                .right()
-                .alias()
-                .unwrap_or(sql_join.right().relation());
-            if left_instance == sql_left && right_instance == sql_right {
-                (left, left_instance, right, right_instance)
-            } else if left_instance == sql_right && right_instance == sql_left {
-                (right, right_instance, left, left_instance)
-            } else {
+    let (left_key, left_instance, right_key, right_instance) =
+        if source_filters.is_empty() && join_keys.len() == 1 {
+            let join = join?;
+            if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
                 return None;
             }
-        }
-    };
+            let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
+                let column = crate::protocol::ColumnRef::new(
+                    Some(endpoint.relation().to_string()),
+                    endpoint.column().to_string(),
+                );
+                let mapped = if walker.sources.contains(endpoint.relation()) {
+                    column
+                } else {
+                    resolve_filter_column_with_evidence(
+                        bundle,
+                        &walker,
+                        join_layer.id(),
+                        &column,
+                        0,
+                        true,
+                    )?
+                };
+                walker
+                    .sources
+                    .contains(mapped.relation()?)
+                    .then(|| (mapped, endpoint.relation_instance().to_string()))
+            };
+            let (left, left_instance) = map(join.left()?)?;
+            let (right, right_instance) = map(join.right()?)?;
+            (left, left_instance, right, right_instance)
+        } else {
+            // A composed local witness may be residual for filtered parents
+            // and therefore have no endpoints. Recover them from the *same*
+            // canonical query's typed ON comparison, never by reparsing SQL.
+            let map = |column: &crate::protocol::ColumnExpression| {
+                let instance = column.relation()?;
+                let source = crate::protocol::ColumnRef::new(
+                    Some(instance.to_string()),
+                    column.name().to_string(),
+                );
+                let mapped = resolve_filter_column(bundle, &walker, join_layer.id(), &source, 0)?;
+                walker
+                    .sources
+                    .contains(mapped.relation()?)
+                    .then_some((mapped, instance.to_string()))
+            };
+            let (left, left_instance) = map(left_key_expression)?;
+            let (right, right_instance) = map(right_key_expression)?;
+            // INNER matches are symmetric. A composed local witness above already
+            // owns its physical source orientation, which can differ from the
+            // immediate SQL producer names; do not reinterpret that proof.
+            if join_kind == JoinKind::Inner {
+                (left, left_instance, right, right_instance)
+            } else {
+                // Outer/semi/anti preservation is positional, not the ON equality's
+                // operand order. Orient only endpoints freshly recovered from ON.
+                let sql_left = sql_join
+                    .left()
+                    .alias()
+                    .unwrap_or(sql_join.left().relation());
+                let sql_right = sql_join
+                    .right()
+                    .alias()
+                    .unwrap_or(sql_join.right().relation());
+                if left_instance == sql_left && right_instance == sql_right {
+                    (left, left_instance, right, right_instance)
+                } else if left_instance == sql_right && right_instance == sql_left {
+                    (right, right_instance, left, left_instance)
+                } else {
+                    return None;
+                }
+            }
+        };
     if left_instance == right_instance {
         return None;
     }
@@ -546,13 +550,8 @@ pub(super) fn physical_join_population_with_source_counts(
                     Some(instance.to_string()),
                     column.name().to_string(),
                 );
-                let physical = resolve_filter_column(
-                    bundle,
-                    &walker,
-                    join_layer.id(),
-                    &reference,
-                    0,
-                )?;
+                let physical =
+                    resolve_filter_column(bundle, &walker, join_layer.id(), &reference, 0)?;
                 Some((physical, instance.to_string()))
             };
             let (a, a_instance) = map(sql_left)?;
@@ -584,7 +583,8 @@ pub(super) fn physical_join_population_with_source_counts(
                 || (source == right_source && formula_references_column(filter, &right_key))
                 || additional_keys.iter().any(|pair| {
                     (source == left_source && formula_references_column(filter, pair.left()))
-                        || (source == right_source && formula_references_column(filter, pair.right()))
+                        || (source == right_source
+                            && formula_references_column(filter, pair.right()))
                 })
         })
     }) {
@@ -613,8 +613,7 @@ pub(super) fn physical_join_population_with_source_counts(
         .collect::<Option<Vec<_>>>()?;
     if additional_bounds.iter().any(|(left, right)| {
         left.minimum > 0 || right.minimum > 0 || left.maximum < 0 || right.maximum < 0
-    })
-        || left_bounds.minimum > 0
+    }) || left_bounds.minimum > 0
         || right_bounds.minimum > 0
         || left_bounds.maximum < 0
         || right_bounds.maximum < 0
@@ -1253,13 +1252,17 @@ pub(super) fn jointly_realized_join_goals(
                             | JoinPopulationPattern::CommonMatched
                             | JoinPopulationPattern::GroupedMatched { .. }
                     ) {
-                        for (row, key, count) in [(left_row, left_key, left_rows), (right_row, right_key, right_rows)]
-                            .into_iter()
-                            .chain(additional_keys.iter().flat_map(|pair| [
+                        for (row, key, count) in [
+                            (left_row, left_key, left_rows),
+                            (right_row, right_key, right_rows),
+                        ]
+                        .into_iter()
+                        .chain(additional_keys.iter().flat_map(|pair| {
+                            [
                                 (left_row, pair.left(), left_rows),
                                 (right_row, pair.right(), right_rows),
-                            ]))
-                        {
+                            ]
+                        })) {
                             let assignment = (*pattern, *count);
                             let identity = (row.relation().to_string(), key.name().to_string());
                             if assignments
