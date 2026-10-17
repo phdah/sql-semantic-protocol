@@ -158,11 +158,51 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             .as_array()
             .unwrap()
             .len();
+        let actual = actual_rows(&db, &selected, width);
         assert_eq!(
-            actual_rows(&db, &selected, width),
+            actual,
             expected_rows(&case["expected"]),
             "{id}: complete output bag, multiplicity and identities"
         );
+        let complete_output_rows = actual
+            .iter()
+            .map(|row| serde_json::from_str::<Value>(row).unwrap())
+            .collect::<Vec<_>>();
+        let declared_domains = case["expected_output_domains"].as_array().unwrap();
+        assert_eq!(declared_domains.len(), width, "{id}: all output columns typed");
+        for (index, domain) in declared_domains.iter().enumerate() {
+            let mut observed = complete_output_rows
+                .iter()
+                .map(|row| row[index].clone())
+                .collect::<Vec<_>>();
+            observed.sort_by_key(Value::to_string);
+            observed.dedup();
+            let mut declared = domain["values"].as_array().unwrap().clone();
+            declared.sort_by_key(Value::to_string);
+            assert_eq!(observed, declared, "{id}: exact output domain of {}", domain["column"]);
+            assert_eq!(
+                observed.contains(&Value::Null),
+                domain["contains_null"].as_bool().unwrap(),
+                "{id}: NULL value-domain membership"
+            );
+            if domain["data_type"] == "INTEGER" || domain["data_type"] == "TIMESTAMP" {
+                let mut non_null = observed
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .collect::<Vec<_>>();
+                if domain["data_type"] == "INTEGER" {
+                    non_null.sort_by_key(|value| value.parse::<i128>().unwrap());
+                } else {
+                    non_null.sort();
+                }
+                if let (Some(lower), Some(upper)) = (non_null.first(), non_null.last()) {
+                    assert_eq!(domain["lower"]["value"], **lower, "{id}: inclusive lower value");
+                    assert_eq!(domain["upper"]["value"], **upper, "{id}: inclusive upper value");
+                    assert_eq!(domain["lower"]["inclusive"], true, "{id}: lower included");
+                    assert_eq!(domain["upper"]["inclusive"], true, "{id}: upper included");
+                }
+            }
+        }
         assert_eq!(
             actual_rows(&db, &rejected, 2),
             expected_rows(&case["not_true"]),
