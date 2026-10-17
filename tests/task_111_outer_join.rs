@@ -486,18 +486,45 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 unreachable!("guarded above");
             };
+            let frozen = &case["constructive_oracle"];
+            let left_count = frozen["left_physical_count"].as_u64().expect("left bag");
+            let right_count = frozen["right_physical_count"].as_u64().expect("right bag");
+            let output_count = frozen["output_count"].as_u64().expect("output bag");
+            let expected_pattern = frozen["expected_pattern"].as_str().expect("pattern");
             assert!(
-                cases
-                    .iter()
-                    .any(|witness| witness.obligations().iter().any(|o| matches!(
-                        o,
-                        WitnessObligation::JoinPopulation {
-                            join_kind,
-                            closed_world: true,
-                            ..
-                        } if *join_kind == kind
-                    ))),
-                "{id}/{dialect}: canonical join kind and complete physical input evidence"
+                cases.iter().any(|witness| {
+                    let same_population = witness.obligations().iter().any(|obligation| {
+                        matches!(obligation,
+                            WitnessObligation::JoinPopulation {
+                                join_kind,
+                                pattern,
+                                left_rows,
+                                right_rows,
+                                output_rows,
+                                closed_world: true,
+                                ..
+                            } if *join_kind == kind
+                                && pattern.as_str() == expected_pattern
+                                && *left_rows == left_count
+                                && *right_rows == right_count
+                                && *output_rows == output_count
+                        )
+                    });
+                    let full_bags = witness.obligations().iter().filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    }).count() == 2;
+                    let absence = !frozen["requires_absence_proof"].as_bool().expect("absence law")
+                        || witness.obligations().iter().any(|obligation| {
+                            matches!(obligation,
+                                WitnessObligation::NoMatchingPartner {
+                                    closed_world: true,
+                                    ..
+                                }
+                            )
+                        });
+                    same_population && full_bags && absence
+                }),
+                "{id}/{dialect}: same complete physical source bag sizes and match multiplicities as frozen independent oracle: {plan:?}"
             );
         }
     }
