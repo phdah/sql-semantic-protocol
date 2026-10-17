@@ -12,6 +12,10 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-70
+  - TASK-129
+  - TASK-130
+  - TASK-131
+  - TASK-132
 references: 
   - 'TASK-62'
 priority: high
@@ -51,3 +55,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-75 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-129](task-129%20-%20prove-exists-and-not-exists-correlated-uncorrelated.md)** (1/4): single-key correlation; duplicate inner bags; empty inner; TRUE/NOT TRUE absence. Fixtures `75-C129-P`, `75-C129-N`.
+- **[TASK-130](task-130%20-%20prove-in-and-not-in-three-valued-membership.md)** (2/4): correlated/uncorrelated IN/NOT IN; NULL inner or outer; compound key. Fixtures `75-C130-P`, `75-C130-N`.
+- **[TASK-131](task-131%20-%20model-scalar-subqueries-any-all-and-nested-correlation-boundaries.md)** (3/4): scalar subquery zero/one/multiple rows; ANY/SOME/ALL; nesting; LATERAL/APPLY. Fixtures `75-C131-P`, `75-C131-N`.
+- **[TASK-132](task-132%20-%20compose-grouped-joined-correlations-and-independently-certify-task-75.md)** (4/4): composite correlations through JOIN and GROUP inner; subquery_orders.sql; dbt/ODCS. Fixtures `75-C132-P`, `75-C132-N`.
+
+**Original acceptance mapping:** #1 -> TASK-129, TASK-130, TASK-131, TASK-132; #2 -> TASK-129, TASK-130, TASK-131, TASK-132; #3 -> TASK-131, TASK-132; #4 -> TASK-129, TASK-130, TASK-131, TASK-132; #5 -> TASK-129, TASK-130, TASK-131, TASK-132; #6 -> TASK-129, TASK-130, TASK-131, TASK-132.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

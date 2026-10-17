@@ -12,6 +12,10 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-70
+  - TASK-117
+  - TASK-118
+  - TASK-119
+  - TASK-120
 references: 
   - 'TASK-58'
 priority: high
@@ -51,3 +55,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-72 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-117](task-117%20-%20prove-two-column-set-bag-and-null-laws.md)** (1/4): UNION/INTERSECT/EXCEPT each DISTINCT/ALL; tuple duplicates and NULL equality. Fixtures `72-C117-P`, `72-C117-N`.
+- **[TASK-118](task-118%20-%20compose-nested-branches-and-shared-physical-sources.md)** (2/4): three-branch nested sets; branch-local WHERE; shared physical input; produced CTE/model. Fixtures `72-C118-P`, `72-C118-N`.
+- **[TASK-119](task-119%20-%20resolve-alignment-limits-and-vendor-set-forms.md)** (3/4): positional aliases/coercion; BY NAME/CORRESPONDING; MINUS; local and set ORDER/LIMIT/FETCH. Fixtures `72-C119-P`, `72-C119-N`.
+- **[TASK-120](task-120%20-%20certify-task-72-adapter-and-dialect-set-matrix.md)** (4/4): mandatory set family matrix; NULL tuple and multiset oracles; sql/dbt/ODCS; 13 dialects. Fixtures `72-C120-P`, `72-C120-N`.
+
+**Original acceptance mapping:** #1 -> TASK-117, TASK-118, TASK-119, TASK-120; #2 -> TASK-118, TASK-119, TASK-120; #3 -> TASK-117, TASK-118, TASK-120; #4 -> TASK-119, TASK-120; #5 -> TASK-117, TASK-118, TASK-119, TASK-120; #6 -> TASK-117, TASK-118, TASK-119, TASK-120.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

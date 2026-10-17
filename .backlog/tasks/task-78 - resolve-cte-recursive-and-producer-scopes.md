@@ -13,6 +13,10 @@ dependencies:
   - TASK-69
   - TASK-76
   - TASK-77
+  - TASK-141
+  - TASK-142
+  - TASK-143
+  - TASK-144
 references: 
   - 'TASK-31'
   - 'TASK-44'
@@ -53,3 +57,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-78 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-141](task-141%20-%20prove-nested-and-shadowed-cte-source-identity.md)** (1/4): ordinary WITH; nested/reused CTEs; alias shadowing; view vs materialized copy. Fixtures `78-C141-P`, `78-C141-N`.
+- **[TASK-142](task-142%20-%20classify-finite-recursive-cte-and-cycle-termination-laws.md)** (2/4): recursive base and step; UNION vs UNION ALL; finite bound; cyclic residual. Fixtures `78-C142-P`, `78-C142-N`.
+- **[TASK-143](task-143%20-%20compose-filtering-computed-producers-across-consumers.md)** (3/4): CTE WHERE; computed aliases; downstream JOIN/count/write; materialization. Fixtures `78-C143-P`, `78-C143-N`.
+- **[TASK-144](task-144%20-%20certify-raw-dbt-multistep-scopes-and-task-78-signoff.md)** (4/4): views, reused sources, multi statements, selective row-changing materialization; dialects. Fixtures `78-C144-P`, `78-C144-N`.
+
+**Original acceptance mapping:** #1 -> TASK-141, TASK-142, TASK-143, TASK-144; #2 -> TASK-142, TASK-144; #3 -> TASK-141, TASK-142, TASK-143, TASK-144; #4 -> TASK-141, TASK-143, TASK-144; #5 -> TASK-141, TASK-142, TASK-143, TASK-144; #6 -> TASK-141, TASK-142, TASK-143, TASK-144.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

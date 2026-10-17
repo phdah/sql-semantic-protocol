@@ -13,6 +13,10 @@ dependencies:
   - TASK-68
   - TASK-69
   - TASK-70
+  - TASK-137
+  - TASK-138
+  - TASK-139
+  - TASK-140
 references: 
   - 'TASK-19'
 priority: high
@@ -52,3 +56,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Dependency-ordered bounded child queue (2026-10-17)
+
+**TASK-77 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+
+- **[TASK-137](task-137%20-%20prove-values-and-array-table-fanout-with-ordinality.md)** (1/4): multirow VALUES; array UNNEST/EXPLODE; NULL/empty arrays; ordinality. Fixtures `77-C137-P`, `77-C137-N`.
+- **[TASK-138](task-138%20-%20implement-star-transforms-and-fixed-schema-pivot-unpivot.md)** (2/4): SELECT * EXCEPT/REPLACE/RENAME; PIVOT and UNPIVOT fixed columns. Fixtures `77-C138-P`, `77-C138-N`.
+- **[TASK-139](task-139%20-%20classify-json-table-generators-and-vendor-functions.md)** (3/4): JSON_TABLE/FLATTEN/EXPLODE; generator/table UDF; variable shape. Fixtures `77-C139-P`, `77-C139-N`.
+- **[TASK-140](task-140%20-%20compose-table-fanout-with-joins-dbt-and-certify-task-77.md)** (4/4): VALUES/UNNEST fanout feeding join or group; dbt adapter; 13 dialects. Fixtures `77-C140-P`, `77-C140-N`.
+
+**Original acceptance mapping:** #1 -> TASK-137, TASK-138, TASK-139, TASK-140; #2 -> TASK-137, TASK-138, TASK-139, TASK-140; #3 -> TASK-137, TASK-138, TASK-139, TASK-140; #4 -> TASK-140; #5 -> TASK-137, TASK-138, TASK-139, TASK-140; #6 -> TASK-137, TASK-138, TASK-139, TASK-140.
+
+**Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
