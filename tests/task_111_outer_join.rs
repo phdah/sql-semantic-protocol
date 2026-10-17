@@ -352,3 +352,49 @@ fn matched_and_unmatched_outer_populations_retain_both_truth_directions() {
         }
     }
 }
+
+#[test]
+fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
+    let matrix: Value = serde_json::from_str(MATRIX).expect("frozen matrix");
+    for case in matrix["cases"].as_array().expect("frozen cases") {
+        let sql = case["sql"].as_str().expect("SQL");
+        let id = case["id"].as_str().expect("stable fixture ID");
+        let kind = match case["kind"].as_str().expect("JOIN kind") {
+            "LEFT" => JoinKind::Left,
+            "RIGHT" => JoinKind::Right,
+            "FULL" => JoinKind::Full,
+            other => panic!("unrecognized frozen join kind {other}"),
+        };
+        for &dialect in DIALECTS {
+            assert_eq!(
+                case["dialects"][dialect]["parser"],
+                "parser_equivalent",
+                "{id}/{dialect}: matrix must record executable parser status"
+            );
+            assert_eq!(
+                case["dialects"][dialect]["native_execution"],
+                if dialect == "duckdb" { "duckdb_oracle" } else { "not_claimed" },
+                "{id}/{dialect}: parser does not certify vendor execution"
+            );
+            let analyzed = bundle(sql, dialect);
+            let layer = analyzed.layers().first().expect("joined terminal");
+            let plan = physical_joint_source_plan(
+                &analyzed,
+                &[(layer.id(), case["expected_output_count"].as_u64().expect("count"))],
+            );
+            assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+                "{id}/{dialect}: exact typed closed source population: {plan:?}");
+            let WitnessDirection::Feasible(cases) = plan.outcome() else {
+                unreachable!("guarded above");
+            };
+            assert!(cases.iter().any(|witness| witness.obligations().iter().any(|o| matches!(
+                o,
+                WitnessObligation::JoinPopulation {
+                    join_kind,
+                    closed_world: true,
+                    ..
+                } if *join_kind == kind
+            ))), "{id}/{dialect}: canonical join kind and complete physical input evidence");
+        }
+    }
+}
