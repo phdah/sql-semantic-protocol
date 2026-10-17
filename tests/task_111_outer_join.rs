@@ -545,3 +545,17 @@ fn shared_physical_source_cannot_receive_two_disjoint_histograms() {
         "one physical table used by two aliases cannot carry incompatible complete key histograms: {plan:?}"
     );
 }
+
+
+#[test]
+fn nonportable_null_safe_outer_condition_remains_a_typed_residual() {
+    let analyzed = bundle(
+        "SELECT l.id FROM l LEFT JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 3)]);
+    assert!(
+        matches!(plan.outcome(), WitnessDirection::Residual { .. }),
+        "without certified null-safe equality execution evidence no complete physical source assignment may be promoted to Exact: {plan:?}"
+    );
+}
