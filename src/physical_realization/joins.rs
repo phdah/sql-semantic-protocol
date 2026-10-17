@@ -850,7 +850,7 @@ pub(super) fn physical_join_population_with_source_counts(
     }
 
     let (left_key, left_instance, right_key, right_instance) =
-        if source_filters.is_empty() && join_keys.len() == 1 {
+        if source_filters.is_empty() && join_keys.len() == 1 && join_kind == JoinKind::Inner {
             let join = join?;
             if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
                 return None;
