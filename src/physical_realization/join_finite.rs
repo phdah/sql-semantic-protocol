@@ -145,9 +145,9 @@ pub(super) fn physical_finite_join_count_plan(
     };
     let right_source = match execution {
         Some(JoinExecution::AsOfNearest) | None => query.sources().get(1)?.name(),
-        Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply) => {
-            join.right_physical_source()?
-        }
+        Some(
+            JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply,
+        ) => join.right_physical_source()?,
     };
     if execution.is_none() && join.kind() != crate::protocol::JoinKind::Inner {
         return None;
@@ -195,8 +195,12 @@ pub(super) fn physical_finite_join_count_plan(
         return None;
     }
     let right_qualifier = match execution {
-        Some(JoinExecution::AsOfNearest) | None => join.right().alias().unwrap_or(join.right().relation()),
-        Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply) => join.right_physical_instance()?,
+        Some(JoinExecution::AsOfNearest) | None => {
+            join.right().alias().unwrap_or(join.right().relation())
+        }
+        Some(
+            JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply,
+        ) => join.right_physical_instance()?,
     };
     let left_qualifier = left_source.alias().unwrap_or(left_source.name());
     let (left_expr, right_expr, operator) =
@@ -204,9 +208,15 @@ pub(super) fn physical_finite_join_count_plan(
     let law = match (execution, operator) {
         (None, ComparisonOperator::Gt) => FiniteJoinLaw::IntegerGreaterThan,
         (None, ComparisonOperator::Gte) => FiniteJoinLaw::IntegerGreaterThanOrEqual,
-        (Some(JoinExecution::AsOfNearest), ComparisonOperator::Gte) => FiniteJoinLaw::AsOfNearestPriorInclusive,
-        (Some(JoinExecution::LateralInner | JoinExecution::CrossApply), ComparisonOperator::Eq) => FiniteJoinLaw::CorrelatedInnerEquality,
-        (Some(JoinExecution::OuterApply), ComparisonOperator::Eq) => FiniteJoinLaw::CorrelatedOuterEquality,
+        (Some(JoinExecution::AsOfNearest), ComparisonOperator::Gte) => {
+            FiniteJoinLaw::AsOfNearestPriorInclusive
+        }
+        (Some(JoinExecution::LateralInner | JoinExecution::CrossApply), ComparisonOperator::Eq) => {
+            FiniteJoinLaw::CorrelatedInnerEquality
+        }
+        (Some(JoinExecution::OuterApply), ComparisonOperator::Eq) => {
+            FiniteJoinLaw::CorrelatedOuterEquality
+        }
         _ => return None,
     };
     let left_key = ColumnRef::new(
