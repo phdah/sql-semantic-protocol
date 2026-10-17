@@ -16,11 +16,19 @@ fn oriented_pair<'a>(
     let (Expression::Column(a), Expression::Column(b)) = (left, right) else {
         return None;
     };
-    let left_instance = join.left().alias().unwrap_or(join.left().relation());
-    let right_instance = join.right().alias().unwrap_or(join.right().relation());
-    if a.relation() == Some(left_instance) && b.relation() == Some(right_instance) {
+    let belongs_left = |col: &ColumnExpression| {
+        col.relation().is_some_and(|name| {
+            name == join.left().relation() || join.left().alias() == Some(name)
+        })
+    };
+    let belongs_right = |col: &ColumnExpression| {
+        col.relation().is_some_and(|name| {
+            name == join.right().relation() || join.right().alias() == Some(name)
+        })
+    };
+    if belongs_left(a) && belongs_right(b) {
         Some((a, b, false))
-    } else if a.relation() == Some(right_instance) && b.relation() == Some(left_instance) {
+    } else if belongs_right(a) && belongs_left(b) {
         Some((b, a, true))
     } else {
         None
@@ -62,7 +70,11 @@ fn uniform_join_law(
             let Expression::Column(null_test) = is_null.expression() else {
                 return None;
             };
-            if null_test.relation() != left.relation() || null_test.name() != left.name() {
+            if null_test.name() != left.name()
+                || !null_test.relation().is_some_and(|name| {
+                    name == join.left().relation() || join.left().alias() == Some(name)
+                })
+            {
                 return None;
             }
             Some((UniformJoinLaw::EqualityOrLeftNull, Some((left, right))))
