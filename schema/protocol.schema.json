@@ -6937,6 +6937,27 @@
             },
             "closed_world": {
               "const": true
+            },
+            "additional_keys": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "left",
+                  "right"
+                ],
+                "properties": {
+                  "left": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  },
+                  "right": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  }
+                }
+              }
             }
           }
         },

@@ -82,4 +82,6 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 **Original AC to child ownership:** #1 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-115, TASK-116; #2 -> TASK-114, TASK-116; #3 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116; #4 -> TASK-109, TASK-110, TASK-112, TASK-115, TASK-116; #5 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116; #6 -> TASK-109, TASK-110, TASK-111, TASK-112, TASK-113, TASK-114, TASK-115, TASK-116.
 
+**TASK-109 child evidence:** The first binary INNER / composite-key child has a bounded independent [TASK-109 acceptance audit](../../docs/task-109-acceptance-audit.md), signed in [PR #118](https://github.com/phdah/sql-semantic-protocol/pull/118). This certifies only the TASK-109 slice, not any entire parent AC. TASK-110 is not ready until that PR merges on `main`.
+
 **Independent closure:** The parent keeps all original AC unchecked until every required frozen cell is executed, all conditional limits reviewed, adapter/13-dialect and DuckDB evidence reconciled, and final CI verified. The parent acceptance inventory is `docs/task-71-acceptance-freeze.json`, with the child execution plan at `docs/backlog-child-queue-plan.json`. No partial PR is a release approval.

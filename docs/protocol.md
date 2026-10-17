@@ -1564,3 +1564,23 @@ offset conversion, non-binary string collation, NaN and signed-zero storage,
 JSON numeric rounding and nested-valued DML assignments, unproved coercions or function
 evaluation are deliberately **residual**. A parser accepting their syntax
 does not make their physical construction exact.
+
+### Composite physical INNER join keys (TASK-109)
+
+For a two-column `INNER JOIN ... ON l.k = r.k AND l.a = r.a`, a complete
+`join_population` obligation contains its primary `left_key`/`right_key`
+and an `additional_keys` array of `{left, right}` physical column references.
+All key components share one complete, typed non-NULL key-group assignment for
+the indicated `pattern` and `left_rows`/`right_rows`. The row identities,
+multiplicities and `closed_world` obligations apply to the **whole tuple**,
+not to individually sampled equality pairs. Without typed integer evidence for
+every component, the constructor fails closed rather than asserting an exact
+count. This optional property is absent from the single-key wire shape.
+Additional semantic families, including three-way joins and null-safe equality,
+are separate tasks.
+
+This adds a field to the public Rust `WitnessObligation::JoinPopulation`
+variant. Rust callers using exhaustive field patterns must update them, while
+JSON readers using the schema may continue consuming single-key joins without
+the optional `additional_keys` property. The new wire shape is reserved for
+the next planned major protocol release; no v2 release is certified by TASK-109.

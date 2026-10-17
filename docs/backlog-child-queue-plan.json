@@ -24,7 +24,11 @@
           "fixture_ids": [
             "71-C109-P",
             "71-C109-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-109-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/118",
+          "dependency_gate": "TASK-110 remains blocked until PR #118 merged into main"
         },
         {
           "title": "Compose three-relation chains, self-joins, and shared aliases",

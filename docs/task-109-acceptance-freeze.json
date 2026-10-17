@@ -1,0 +1,1208 @@
+{
+  "task": "TASK-109",
+  "version": 2,
+  "frozen_at": "2026-10-17",
+  "scope_boundary": "Two physical INNER inputs, one or two AND-conjoined equality keys, one-to-many bags, typed signed INTEGER physical keys; chained joins and vendor laws explicitly owned by TASK-110..116",
+  "fixture_ids": [
+    "71-C109-P",
+    "71-C109-N"
+  ],
+  "dialect_identities": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "alias_spelling": "postgres",
+  "adapter_contract": [
+    "direct_sql",
+    "dbt_manifest_catalog",
+    "odcs_equivalent_metadata"
+  ],
+  "variants": [
+    {
+      "id": "71-C109-P-EQ",
+      "fixture": "71-C109-P",
+      "family": "binary_inner_equality",
+      "sql": "SELECT l.k FROM l INNER JOIN r ON l.k = r.k",
+      "matched": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "value_domain": {
+        "type": "integer",
+        "lower": "1",
+        "upper": "1",
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false
+      },
+      "classification": "exact_required",
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "a": 20
+          },
+          {
+            "id": "l3",
+            "k": null,
+            "a": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "a": 50
+          },
+          {
+            "id": "r3",
+            "k": null,
+            "a": 70
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "k": "INTEGER",
+        "a": "INTEGER"
+      },
+      "matched_count": 4,
+      "positive_proof": "exact",
+      "not_true_proof": "exact_closed_world",
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        }
+      },
+      "postgres_alias": "postgresql",
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "oracle": "complete_duckdb_bags_and_row_ids",
+      "status": "verified",
+      "not_true_pairs": [
+        [
+          "l1",
+          "r3"
+        ],
+        [
+          "l2",
+          "r3"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ],
+        [
+          "l3",
+          "r3"
+        ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k",
+        "expected_output_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "output_columns": 1,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
+    },
+    {
+      "id": "71-C109-P-COMPOSITE",
+      "fixture": "71-C109-P",
+      "family": "two_column_composite_equality",
+      "sql": "SELECT l.k, l.a FROM l INNER JOIN r ON l.k = r.k AND l.a = r.a",
+      "matched": [
+        [
+          "l1",
+          "r1"
+        ]
+      ],
+      "value_domain": {
+        "k": {
+          "type": "integer",
+          "lower": "1",
+          "upper": "1",
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "a": {
+          "type": "integer",
+          "lower": "10",
+          "upper": "10",
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        }
+      },
+      "classification": "exact_required",
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "a": 20
+          },
+          {
+            "id": "l3",
+            "k": null,
+            "a": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "a": 50
+          },
+          {
+            "id": "r3",
+            "k": null,
+            "a": 70
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "k": "INTEGER",
+        "a": "INTEGER"
+      },
+      "matched_count": 1,
+      "positive_proof": "exact",
+      "not_true_proof": "exact_closed_world",
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        }
+      },
+      "postgres_alias": "postgresql",
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "oracle": "complete_duckdb_bags_and_row_ids",
+      "status": "verified",
+      "not_true_pairs": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l1",
+          "r3"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l2",
+          "r3"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ],
+        [
+          "l3",
+          "r3"
+        ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k AND l.a = r.a",
+        "expected_output_bag": [
+          [
+            1,
+            10
+          ]
+        ],
+        "output_columns": 2,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 2,
+        "on_conjuncts": 2,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
+    },
+    {
+      "id": "71-C109-N-NULL",
+      "fixture": "71-C109-N",
+      "family": "null_rejected_and_absence",
+      "sql": "SELECT l.k FROM l INNER JOIN r ON l.k = r.k WHERE l.k IS NULL",
+      "matched": [],
+      "value_domain": {
+        "type": "empty",
+        "nullable": false
+      },
+      "classification": "exact_required",
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "a": 20
+          },
+          {
+            "id": "l3",
+            "k": null,
+            "a": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "a": 50
+          },
+          {
+            "id": "r3",
+            "k": null,
+            "a": 70
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "k": "INTEGER",
+        "a": "INTEGER"
+      },
+      "matched_count": 0,
+      "positive_proof": "impossible_on_frozen_closed_bag_not_universally_impossible",
+      "not_true_proof": "exact_closed_world",
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        }
+      },
+      "postgres_alias": "postgresql",
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "oracle": "complete_duckdb_bags_and_row_ids",
+      "status": "verified",
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l1",
+          "r3"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l2",
+          "r3"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ],
+        [
+          "l3",
+          "r3"
+        ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "(l.k = r.k) AND (l.k IS NULL)",
+        "expected_output_bag": [],
+        "output_columns": 1,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "is_null",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
+    },
+    {
+      "id": "71-C109-N-COMPOSITE",
+      "fixture": "71-C109-N",
+      "family": "composite_rejected_matches",
+      "sql": "SELECT l.k, l.a FROM l INNER JOIN r ON l.k = r.k AND l.a = r.a AND l.a > 10",
+      "matched": [],
+      "value_domain": {
+        "type": "empty",
+        "nullable": false
+      },
+      "classification": "exact_required",
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "a": 20
+          },
+          {
+            "id": "l3",
+            "k": null,
+            "a": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "a": 10
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "a": 50
+          },
+          {
+            "id": "r3",
+            "k": null,
+            "a": 70
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "k": "INTEGER",
+        "a": "INTEGER"
+      },
+      "matched_count": 0,
+      "positive_proof": "impossible_on_frozen_closed_bag_not_universally_impossible",
+      "not_true_proof": "exact_closed_world",
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        }
+      },
+      "postgres_alias": "postgresql",
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "oracle": "complete_duckdb_bags_and_row_ids",
+      "status": "verified",
+      "not_true_pairs": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l1",
+          "r3"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l2",
+          "r3"
+        ],
+        [
+          "l3",
+          "r1"
+        ],
+        [
+          "l3",
+          "r2"
+        ],
+        [
+          "l3",
+          "r3"
+        ]
+      ],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k AND l.a = r.a AND l.a > 10",
+        "expected_output_bag": [],
+        "output_columns": 2,
+        "closed_world_pair_count": 9,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 2,
+        "on_conjuncts": 3,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "zero_output_feasible_for_fixture_only",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
+    },
+    {
+      "id": "71-C109-P-DUP",
+      "fixture": "71-C109-P",
+      "family": "one_to_many_duplicates",
+      "sql": "SELECT l.k FROM l INNER JOIN r ON l.k = r.k",
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1
+          },
+          {
+            "id": "l2",
+            "k": 1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1
+          },
+          {
+            "id": "r2",
+            "k": 1
+          },
+          {
+            "id": "r3",
+            "k": 1
+          }
+        ]
+      },
+      "matched": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l1",
+          "r3"
+        ],
+        [
+          "l2",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ],
+        [
+          "l2",
+          "r3"
+        ]
+      ],
+      "value_domain": {
+        "type": "integer",
+        "lower": "1",
+        "upper": "1",
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false
+      },
+      "classification": "exact_required",
+      "source_instances": {
+        "left": "l",
+        "right": "r"
+      },
+      "source_column_types": {
+        "k": "INTEGER",
+        "a": "INTEGER"
+      },
+      "matched_count": 6,
+      "positive_proof": "exact",
+      "not_true_proof": "exact_closed_world",
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "independent_duckdb_oracle"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "equivalent_when_parsed",
+          "vendor_execution": "not_claimed"
+        }
+      },
+      "postgres_alias": "postgresql",
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest_catalog",
+        "odcs_equivalent_metadata"
+      ],
+      "oracle": "complete_duckdb_bags_and_row_ids",
+      "status": "verified",
+      "not_true_pairs": [],
+      "execution_oracle": {
+        "dialect": "duckdb",
+        "truth_predicate": "l.k = r.k",
+        "expected_output_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "output_columns": 1,
+        "closed_world_pair_count": 6,
+        "required_assertions": [
+          "full_sql_output_bag",
+          "physical_source_bag",
+          "matched_source_row_identities",
+          "not_true_source_row_identities",
+          "sql_three_valued_absence",
+          "inclusive_bounds_nullable"
+        ]
+      },
+      "canonical_ast_expectation": {
+        "statement": "query",
+        "join_kind": "inner",
+        "key_equality_conjuncts": 1,
+        "on_conjuncts": 1,
+        "where_kind": "none",
+        "source_instances": [
+          "l",
+          "r"
+        ]
+      },
+      "protocol_physical_classification": "feasible_for_exact_positive_count",
+      "fixture_scope": "DuckDB closed physical input bags; interval extrema and impossible outcomes apply to these fixed bags, not every possible database",
+      "verification_evidence": [
+        "tests/task_109_frozen_oracles.rs::every_frozen_variant_executes_complete_physical_and_terminal_bags",
+        "tests/task_109_frozen_oracles.rs::each_frozen_variant_has_canonical_join_ast_and_same_dialect_semantics",
+        "tests/task_109_frozen_oracles.rs::frozen_positive_counts_have_exact_closed_source_witnesses",
+        "tests/task_109_composite_join.rs",
+        "docs/task-109-acceptance-audit.md"
+      ]
+    }
+  ],
+  "acceptance_map": {
+    "1": [
+      "71-C109-P-EQ",
+      "71-C109-P-COMPOSITE",
+      "71-C109-N-NULL",
+      "71-C109-N-COMPOSITE",
+      "71-C109-P-DUP"
+    ],
+    "2": [
+      "71-C109-P-EQ",
+      "71-C109-P-COMPOSITE",
+      "71-C109-P-DUP"
+    ],
+    "3": [
+      "71-C109-P-EQ",
+      "71-C109-P-COMPOSITE",
+      "71-C109-N-NULL",
+      "71-C109-N-COMPOSITE",
+      "71-C109-P-DUP"
+    ],
+    "4": [
+      "71-C109-P-EQ",
+      "71-C109-P-COMPOSITE",
+      "71-C109-N-NULL",
+      "71-C109-N-COMPOSITE",
+      "71-C109-P-DUP"
+    ],
+    "5": [
+      "71-C109-P-EQ",
+      "71-C109-P-COMPOSITE",
+      "71-C109-N-NULL",
+      "71-C109-N-COMPOSITE",
+      "71-C109-P-DUP"
+    ]
+  },
+  "verification": {
+    "status": "verified",
+    "required": [
+      "cargo fmt --check",
+      "cargo clippy --all-targets --all-features -- -D warnings",
+      "cargo test",
+      "cargo doc --no-deps",
+      "cargo test --no-default-features",
+      "dbt e2e",
+      "schema snapshots"
+    ],
+    "blocking": false,
+    "implementation_ci_run": 39025591446,
+    "required_jobs_passed": 9,
+    "audit": "docs/task-109-acceptance-audit.md"
+  },
+  "conditional_boundary": {
+    "owner": "TASK-109",
+    "cases": [
+      {
+        "id": "J109-COMPUTED-ON",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k + 1 = r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "No physical expression-key assignment or inverse derivation; column arithmetic cannot be treated as an equality-key population",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-NULLSAFE",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "NULL-safe row equality and NULL-matched pairs require a separate complete population law",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-OR",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k OR l.a = r.a",
+        "owner": "TASK-109",
+        "missing_evidence": "Disjunctive pair counting needs inclusion/exclusion and cannot reuse an AND key-group proof",
+        "expected": "residual_unproved_join_condition",
+        "review_disposition": "accepted_fail_closed_nonmandatory"
+      },
+      {
+        "id": "J109-STRING",
+        "sql": "SELECT l.k FROM l JOIN r ON l.k = r.k",
+        "owner": "TASK-109",
+        "missing_evidence": "Typed noninteger physical collation and comparison-equivalence evidence is absent from signed INTEGER join construction",
+        "expected": "residual_unproved_key",
+        "review_disposition": "accepted_fail_closed_nonmandatory",
+        "physical_schema_type": "VARCHAR"
+      }
+    ],
+    "disposition": "Bounded nonmandatory cases explicitly reviewed as fail-closed; native vendor/session execution unverified and not certified; no mandatory exact result deferred"
+  },
+  "review": {
+    "state": "signed_off",
+    "reviewer": "automated task acceptance audit",
+    "scope_note": "This matrix separates fixture-specific executed results from universally valid semantic directions. Review against DuckDB and compiled protocol on final head before signing off.",
+    "revision_note": "v2 reviewer correction of incomplete preimplementation v1 matrix: added independently executable full source and output bags, canonical AST classifications, explicit nonmandatory conditional cases, and fixture-vs-universal exactness distinction. Named fixture and variant IDs, input bags and expected row counts unchanged.",
+    "reviewed_boundary": "No globally impossible classification is inferred solely from empty rows under one frozen dataset. The fixed fixture oracle proves absence only for its complete closed bag.",
+    "signoff_date": "2026-10-17",
+    "implementation_head": "e4ce883e01b17d027ce63efa1e42a53e9dfc757f",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39025591446",
+    "final_pr_head_gate": "Required GitHub Actions CI status on final PR head; PR must not be marked ready before all nine jobs green"
+  }
+}

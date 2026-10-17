@@ -262,6 +262,32 @@ impl JoinPopulationPattern {
     }
 }
 
+/// A second or later equality in a complete composite join-key assignment.
+/// Both sides are physical source columns controlled by the same key-group values
+/// as the primary equality. This is a complete bag law, not a sampled pair.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JoinKeyEquality {
+    left: ColumnRef,
+    right: ColumnRef,
+}
+
+impl JoinKeyEquality {
+    /// Construct a key component already resolved to physical columns.
+    pub fn new(left: ColumnRef, right: ColumnRef) -> Self {
+        Self { left, right }
+    }
+
+    /// Column in the left physical source instance.
+    pub fn left(&self) -> &ColumnRef {
+        &self.left
+    }
+
+    /// Column in the right physical source instance.
+    pub fn right(&self) -> &ColumnRef {
+        &self.right
+    }
+}
+
 /// One required fact. None of these grant physical-source realizability on their own.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WitnessObligation {
@@ -303,6 +329,9 @@ pub enum WitnessObligation {
         right_row: RowVariable,
         left_key: ColumnRef,
         right_key: ColumnRef,
+        /// Additional key components sharing the same complete key-group assignment.
+        /// Each pair is equal on matched rows, with ordinary SQL NULL not matching.
+        additional_keys: Vec<JoinKeyEquality>,
         join_kind: crate::protocol::JoinKind,
         pattern: JoinPopulationPattern,
         left_rows: u64,
