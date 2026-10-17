@@ -120,3 +120,7 @@ until complete scope and final CI are independently verified. Further release
 blockers include unsupported general decimal runtime laws, implicit/session
 coercion, unbounded conversion rules and non-representable periodic inversion.
 Do not close TASK-101 or unblock TASK-102 based on this increment alone.
+
+## Historical verification note superseded (2026-10-17)
+
+The earlier in-progress statement that the five criteria were unchecked was a historical snapshot. All five are now checked, PR #109 merged into main at `3632c82e7c55bfb84530d41a8debc6cee5fbae44`, and [its PR-head CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/38740728937) passed. TASK-108 independently checks this closed child and its bounded exact/residual proof evidence.

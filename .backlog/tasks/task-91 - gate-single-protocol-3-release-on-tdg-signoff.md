@@ -161,3 +161,7 @@ coercions/collations/regex, date/time/JSON/vendor semantics, arbitrary
 computed joins/groupings/writes, or all physical positive/rejecting populations.
 TASK-88/TASK-89, sql-tdg TASK-24..36/43/44 and this TASK-91 gate remain open,
 and PR #79 must not be merged solely from this progress.
+
+## TASK-108 completed handoff (2026-10-17)
+
+TASK-70 and TASK-108 completed their expression-specific acceptance on protocol PR #116. TASK-91 remains publication-blocking until TASK-88/89/90 and sql-tdg end-to-end evidence are separately signed off. No universal/vendor runtime equivalence or 3.0.0 release is approved.

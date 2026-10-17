@@ -74,3 +74,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer decision (2026-10-09)
 
 Approved [unified E2E gate](../../docs/coverage-signoff.md): rebuild/extend dbt model DAG for all feasible transformations and add a **required scripted DML/DDL suite invoked by the same top-level `make all`**, not an unrelated optional job. Include CREATE/ALTER/REPLACE/DROP, INSERT/UPDATE/DELETE/MERGE/conflicts, transactions, snapshots, complete output snapshots and per-terminal randomized negatives. No false universal claims for unsupported opaque external behavior.
+
+## TASK-108 completed handoff (2026-10-17)
+
+TASK-70/108 closed nine expression-specific closed-world DuckDB goldens, nine compositions, four seeds and direct SQL/dbt/ODCS parity. TASK-89's mixed-feature and scripted DML/DDL/dbt full-pipeline acceptance remains unchecked; this local closure does not certify it.

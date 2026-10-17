@@ -4,13 +4,38 @@
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_107_oracle_evidence": {
     "owner": "TASK-107",
-    "status": "implementation_in_progress",
+    "status": "certified_bounded_expression_oracles",
     "matrix": "docs/task-107-oracle-matrix.json",
     "acceptance_freeze": "docs/task-107-acceptance-freeze.json",
     "frozen_variant_cells": 42,
     "frozen_dialect_cells": 546,
     "test": "tests/task_107_expression_oracles.rs",
-    "coverage": "registered representative SQL, dbt, dialect and seeded DuckDB evidence; acceptance matrix and full CI remain incomplete",
+    "coverage": "42 frozen predicate variants (28 mandatory exact, 14 independently reviewed conditional), 546 parser/canonical dialect cells, 14 families, nine closed-world goldens, nine compositions, four deterministic seeds; verified by TASK-107 test owners and successful merged PR #115 CI; TASK-88/89/91 remain independent release blockers.",
+    "release_approved": false,
+    "final_ci_workflow_run": 38975931061,
+    "final_ci_head_sha": "e6473af66f80ffe445a18e6630e119317f4fc200"
+  },
+  "task_108_parent_signoff": {
+    "owner": "TASK-108",
+    "status": "verified",
+    "acceptance_freeze": "docs/task-108-acceptance-freeze.json",
+    "evidence_audit": "docs/task-108-acceptance-audit.md",
+    "verification_test": "tests/task_108_parent_signoff.rs",
+    "final_ci_workflow_run": 38977162083,
+    "verified_implementation_sha": "fac7bba6834b05f1863c33aee00a33d0431f19c9",
+    "parent": "TASK-70",
+    "original_parent_criteria": 6,
+    "merged_children": 7,
+    "registered_family_cells": 14,
+    "registered_predicate_variant_cells": 42,
+    "registered_dialect_cells": 546,
+    "seeded_duckdb_oracles": [
+      0,
+      1,
+      42,
+      20261016
+    ],
+    "coverage": "Independent parent mapping of original six criteria, 14 families and frozen TASK-107 cases; does not imply 3.0.0 release.",
     "release_approved": false
   },
   "task_105_expression_evidence": {
@@ -86,7 +111,7 @@
   },
   "task_70_predicate_evidence": {
     "owner": "TASK-70",
-    "status": "bounded_boolean_witness_increment_release_blocked",
+    "status": "TASK_70_closed_bounded_semantic_evidence_release_blocked",
     "evidence": [
       "src/boolean_witness.rs",
       "src/boolean_witness/numeric.rs",
@@ -265,7 +290,7 @@
       "TASK-108"
     ],
     "closure_owner": "TASK-108",
-    "parent_status": "In Progress"
+    "parent_status": "Done"
   },
   "task_101_arithmetic_evidence": {
     "owner": "TASK-101",

@@ -96,3 +96,7 @@ inventory records exact conditions and unresolved dialect-sensitive families.
 All entries remain release-blocking: this is **bounded local evidence**, not
 TASK-88/89 exhaustive dialect/engine or generator validation. TASK-66 stays
 Done for the inventory, without waiving TASK-70 or TASK-91.
+
+## TASK-108 completed handoff (2026-10-17)
+
+TASK-70/108 signed the original six parent criteria against the frozen TASK-107 42-variant, 546-dialect inventory and 14 family owners (`docs/task-108-acceptance-freeze.json`). TASK-66 remains an inventory deliverable, not a declaration that TASK-91's full release scope is certified.

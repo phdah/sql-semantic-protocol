@@ -68,3 +68,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer decision (2026-10-09)
 
 Approved [13-dialect canonical-equivalence acceptance](../../docs/coverage-signoff.md): parsing runs in CI without vendor databases and equivalent SQL in every supported dialect must emit **semantically identical canonical protocol outcomes**, not only parse. DuckDB executes the equivalent common SQL and validates actual generated data. Externally unavailable engines must never be marked execution-certified. Fixture baseline tests in TASK-66 are representative, not sufficient for TASK-88 acceptance.
+
+## TASK-108 completed handoff (2026-10-17)
+
+TASK-70/108 completed the expression-specific 13-parser, 546-cell audit. The 14 reviewed conditional dialect cells and all remaining native vendor engine/session/collation requirements stay owned by TASK-88's independent global dialect-law acceptance and TASK-91's publication gate.
