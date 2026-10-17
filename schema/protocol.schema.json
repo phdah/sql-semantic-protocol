@@ -6972,6 +6972,98 @@
           "required": [
             "kind",
             "left_row",
+            "right_row",
+            "left_key",
+            "right_key",
+            "law",
+            "left_value",
+            "right_value",
+            "left_rows",
+            "right_rows",
+            "output_rows",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "uniform_join_population"
+            },
+            "left_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "right_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "left_key": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/groupWitnessColumn"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "right_key": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/groupWitnessColumn"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "law": {
+              "enum": [
+                "cartesian",
+                "less_than",
+                "null_safe_equality",
+                "equality_or_left_null"
+              ]
+            },
+            "left_value": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "right_value": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "left_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "right_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "output_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "closed_world": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "left_row",
             "middle_row",
             "right_row",
             "left_key",

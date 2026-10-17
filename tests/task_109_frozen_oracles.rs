@@ -370,9 +370,16 @@ fn reviewed_conditional_joins_fail_closed_without_inventing_exact_pair_laws() {
             fixture_bundle(sql, "postgresql")
         };
         let proof = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 4)]);
-        assert!(
-            matches!(proof.outcome(), WitnessDirection::Residual { .. }),
-            "{id}: absent evidence must remain typed residual, not fabricated feasibility/impossibility: {proof:?}"
-        );
+        if id == "J109-NULLSAFE" {
+            assert!(
+                matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+                "TASK-113 upgrades typed non-NULL uniform NULL-safe pairs: {proof:?}"
+            );
+        } else {
+            assert!(
+                matches!(proof.outcome(), WitnessDirection::Residual { .. }),
+                "{id}: unsupported expressions or collation still fail closed: {proof:?}"
+            );
+        }
     }
 }

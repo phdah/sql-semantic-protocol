@@ -111,7 +111,10 @@
             "71-C113-P",
             "71-C113-N"
           ],
-          "dependency_gate": "Blocked until TASK-112 is Done and PR #121 merges into main"
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-113-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/122",
+          "dependency_gate": "TASK-114 remains blocked until PR #122 merges into main"
         },
         {
           "title": "Classify ASOF range time and LATERAL APPLY laws",

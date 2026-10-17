@@ -102,6 +102,42 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
                 || (left_row.relation() == right_row.relation() && left_rows != right_rows)
         }
+        WitnessObligation::UniformJoinPopulation {
+            left_row,
+            right_row,
+            left_key,
+            right_key,
+            law,
+            left_value,
+            right_value,
+            left_rows,
+            right_rows,
+            output_rows,
+            closed_world,
+        } => {
+            let matches = law.pair_matches(*left_value, *right_value);
+            let expected = matches.and_then(|yes| {
+                if yes {
+                    left_rows.checked_mul(*right_rows)
+                } else {
+                    Some(0)
+                }
+            });
+            !closed_world
+                || left_row.instance() == right_row.instance()
+                || left_row.relation() == right_row.relation()
+                || (matches!(law, UniformJoinLaw::Cartesian)
+                    && (left_key.is_some() || right_key.is_some()))
+                || (!matches!(law, UniformJoinLaw::Cartesian)
+                    && (left_key.is_none() || right_key.is_none()))
+                || left_key
+                    .as_ref()
+                    .is_some_and(|key| key.relation() != Some(left_row.relation()))
+                || right_key
+                    .as_ref()
+                    .is_some_and(|key| key.relation() != Some(right_row.relation()))
+                || expected != Some(*output_rows)
+        }
         WitnessObligation::JoinChainPopulation {
             left_row,
             middle_row,

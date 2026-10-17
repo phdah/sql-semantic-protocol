@@ -84,4 +84,6 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 **TASK-109 child evidence:** The first binary INNER / composite-key child has a bounded independent [TASK-109 acceptance audit](../../docs/task-109-acceptance-audit.md), signed in [PR #118](https://github.com/phdah/sql-semantic-protocol/pull/118). This certifies only the TASK-109 slice, not any entire parent AC. TASK-110 is not ready until that PR merges on `main`.
 
+**TASK-113 child evidence:** Seven portable join variants, 14 complete DuckDB physical bag cases, 182 parser/canonical dialect cells, direct SQL/dbt/ODCS parity, and conditional boundary reviews passed on PR #122 implementation head. See [TASK-113 acceptance audit](../../docs/task-113-acceptance-audit.md). Child signoff remains gated on PR #122 merge; the parent original ACs are still open.
+
 **Independent closure:** The parent keeps all original AC unchecked until every required frozen cell is executed, all conditional limits reviewed, adapter/13-dialect and DuckDB evidence reconciled, and final CI verified. The parent acceptance inventory is `docs/task-71-acceptance-freeze.json`, with the child execution plan at `docs/backlog-child-queue-plan.json`. No partial PR is a release approval.
