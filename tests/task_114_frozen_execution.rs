@@ -136,9 +136,13 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
                 format!("SELECT {cols} FROM l ASOF JOIN r ON l.t >= r.t"),
                 "WITH winners AS (SELECT l.id lid, r.id rid FROM l ASOF JOIN r ON l.t >= r.t) SELECT l.id,r.id FROM l CROSS JOIN r LEFT JOIN winners w ON w.lid=l.id AND w.rid=r.id WHERE w.lid IS NULL".to_string(),
             ),
-            "range_inequality" | "time_inequality" => (
+            "range_inequality" => (
                 format!("SELECT {cols} FROM l JOIN r ON l.t > r.t"),
                 "SELECT l.id,r.id FROM l CROSS JOIN r WHERE (l.t > r.t) IS NOT TRUE".to_string(),
+            ),
+            "time_inequality" => (
+                format!("SELECT {cols} FROM l JOIN r ON l.t >= r.t"),
+                "SELECT l.id,r.id FROM l CROSS JOIN r WHERE (l.t >= r.t) IS NOT TRUE".to_string(),
             ),
             "lateral_derived" | "cross_apply" => (
                 "SELECT l.id,q.id FROM l CROSS JOIN LATERAL (SELECT r.id,r.t FROM r WHERE r.t = l.t) q".to_string(),
@@ -228,7 +232,8 @@ fn every_frozen_task_114_positive_and_not_true_bag_executes_independently() {
             let pairs = "SELECT l.id,r.id FROM l CROSS JOIN r";
             let selected_pairs = match variant {
                 "asof_nearest_prior" => "SELECT l.id,r.id FROM l ASOF JOIN r ON l.t >= r.t",
-                "range_inequality" | "time_inequality" => "SELECT l.id,r.id FROM l JOIN r ON l.t > r.t",
+                "range_inequality" => "SELECT l.id,r.id FROM l JOIN r ON l.t > r.t",
+                "time_inequality" => "SELECT l.id,r.id FROM l JOIN r ON l.t >= r.t",
                 _ => "SELECT l.id,q.id FROM l CROSS JOIN LATERAL (SELECT r.id FROM r WHERE r.t=l.t) q",
             };
             let mut observed = actual_rows(&db, selected_pairs, 2);
