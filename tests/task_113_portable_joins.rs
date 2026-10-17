@@ -262,6 +262,44 @@ fn natural_join_with_disjoint_known_columns_is_cartesian() {
 }
 
 #[test]
+fn missing_natural_schema_cannot_be_promoted_to_a_physical_proof() {
+    let catalog = RelationCatalog::new(&["l", "r"]).unwrap();
+    let parser = dialect_from_name("generic").unwrap();
+    let sql = SqlInput::inline("SELECT l.k FROM l NATURAL JOIN r");
+    let input = ConfiguredSqlInput::new("task-113-unknown", &sql, "generic", parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    let layer = bundle.layers().last().unwrap().id();
+    let physical = physical_joint_source_plan(&bundle, &[(layer, 1)]);
+    assert!(
+        matches!(physical.outcome(), WitnessDirection::Residual { .. }),
+        "unknown NATURAL intersection must remain a typed residual: {physical:?}"
+    );
+}
+
+#[test]
+fn every_conditional_boundary_has_an_owned_pending_release_disposition() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    let boundaries = matrix["conditional_boundaries"].as_array().unwrap();
+    assert_eq!(boundaries.len(), 3);
+    for id in [
+        "J113-VENDOR-COLLATION",
+        "J113-NATURAL-UNKNOWN-SCHEMA",
+        "J113-NULLSAFE-PARSER",
+    ] {
+        let boundary = boundaries.iter().find(|entry| entry["id"] == id).unwrap();
+        assert_eq!(boundary["owner"], "TASK-113");
+        assert_eq!(boundary["classification"], "conditional");
+        assert_eq!(boundary["disposition"], "pending_release_review");
+        assert!(
+            boundary["missing_evidence"]
+                .as_str()
+                .is_some_and(|evidence| !evidence.trim().is_empty()),
+            "{id}: missing evidence must be named"
+        );
+    }
+}
+
+#[test]
 fn every_portable_frozen_variant_has_a_typed_complete_source_plan() {
     let matrix: Value = serde_json::from_str(MATRIX).unwrap();
     for case in matrix["cases"].as_array().unwrap() {
