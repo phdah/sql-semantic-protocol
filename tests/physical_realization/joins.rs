@@ -508,8 +508,8 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
     let b = bundle(&["SELECT l.a FROM l CROSS JOIN r"], "postgresql");
     let p = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
     assert!(
-        matches!(p.outcome(), WitnessDirection::Residual { .. }),
-        "unsupported cross join-local evidence must not become feasible"
+        matches!(p.outcome(), WitnessDirection::Feasible(_)),
+        "TASK-113: complete independent CROSS input bags prove cardinality"
     );
 
     let conn = Connection::open_in_memory().expect("duckdb");
