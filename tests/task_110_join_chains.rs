@@ -221,7 +221,7 @@ fn frozen_join_chain_matrix_has_stable_closed_world_cases_and_parser_coverage() 
         assert_eq!(case["classification"], "exact_required");
         assert_eq!(case["source_column_type"], "INTEGER");
         assert_eq!(case["join_comparison"], "ordinary_SQL_equality_null_is_not_true");
-        let matched = case["matched"].as_array().expect("row identity bag");
+        let matched = case["matches"].as_array().expect("row identity bag");
         assert_eq!(
             matched.len() as u64,
             case["expected_output_count"].as_u64().expect("count"),
