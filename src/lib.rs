@@ -168,7 +168,7 @@ pub use protocol::{
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, Diagnostic, DiagnosticArea,
     DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind,
+    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind, JoinExecution,
     LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType, LiteralValue,
     LogicalPredicate, MergeAction, MergeAssignment, MergeClause, MergeMatchKind, NotPredicate,
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
