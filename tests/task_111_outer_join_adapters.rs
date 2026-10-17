@@ -98,10 +98,13 @@ schema:
     let catalog = RelationCatalog::from_schemas(&schemas).expect("direct catalog");
     let source = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
-        "task111", &source, "postgresql", parser.as_ref(),
+        "task111",
+        &source,
+        "postgresql",
+        parser.as_ref(),
     )];
-    let direct = analyze_configured_inputs_with_catalog(&configured, &catalog)
-        .expect("direct SQL analysis");
+    let direct =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("direct SQL analysis");
     let from_odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
         .expect("ODCS source analysis");
 
@@ -113,23 +116,32 @@ schema:
         let layer = analyzed
             .layers()
             .iter()
-            .find(|layer| relations.iter().all(|name| layer.consumes().iter().any(|v| v == name)))
+            .find(|layer| {
+                relations
+                    .iter()
+                    .all(|name| layer.consumes().iter().any(|v| v == name))
+            })
             .expect("outer join terminal consumes both sources");
         let plan = physical_joint_source_plan(analyzed, &[(layer.id(), 3)]);
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{adapter}: physical outer proof required: {plan:?}");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
-            o,
-            WitnessObligation::JoinPopulation {
-                join_kind: JoinKind::Full,
-                pattern: JoinPopulationPattern::MixedMatchedUnmatched,
-                left_rows: 2,
-                right_rows: 2,
-                output_rows: 3,
-                closed_world: true,
-                ..
-            }
-        ))), "{adapter}: compiled source facts must retain the exact mixed outer bag");
+        assert!(
+            cases
+                .iter()
+                .any(|case| case.obligations().iter().any(|o| matches!(
+                    o,
+                    WitnessObligation::JoinPopulation {
+                        join_kind: JoinKind::Full,
+                        pattern: JoinPopulationPattern::MixedMatchedUnmatched,
+                        left_rows: 2,
+                        right_rows: 2,
+                        output_rows: 3,
+                        closed_world: true,
+                        ..
+                    }
+                ))),
+            "{adapter}: compiled source facts must retain the exact mixed outer bag"
+        );
     }
 }
