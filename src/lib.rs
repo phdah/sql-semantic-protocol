@@ -116,7 +116,7 @@ pub use constraints::{
 pub use constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
     ConstructiveWitness, CountBounds, FiniteJoinLaw, JoinKeyEquality, JoinPopulationPattern,
-    ProofStrength, RowQuantifier, RowVariable, UniformJoinLaw, WitnessBoundary, WitnessCase,
+    ProofStrength, RowQuantifier, RowVariable, TemporalJoinLaw, UniformJoinLaw, WitnessBoundary, WitnessCase,
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
