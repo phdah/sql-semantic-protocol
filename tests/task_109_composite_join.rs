@@ -362,8 +362,8 @@ schema:
 "#;
     let odcs = parse_odcs_yaml(odcs_yaml, "postgresql", &names)
         .expect("equivalent ODCS physical metadata");
-    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas())
-        .expect("ODCS typed physical catalog");
+    let odcs_catalog =
+        RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS typed physical catalog");
     let direct_schemas = relations
         .iter()
         .map(|name| {
@@ -388,8 +388,8 @@ schema:
         "postgresql",
         parser.as_ref(),
     )];
-    let direct = analyze_configured_inputs_with_catalog(&input, &direct_catalog)
-        .expect("direct SQL");
+    let direct =
+        analyze_configured_inputs_with_catalog(&input, &direct_catalog).expect("direct SQL");
     let from_odcs = analyze_configured_inputs_with_catalog(&input, &odcs_catalog)
         .expect("SQL with ODCS physical metadata");
 
