@@ -2,8 +2,8 @@
 //! The classification is intentionally stricter than "SQL parsed".
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, JoinExecution, JoinKind,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, JoinExecution,
+    JoinKind, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const MATRIX: &str = include_str!("../docs/task-114-acceptance-freeze.json");
@@ -59,8 +59,14 @@ fn observed(variant: &str, dialect: &str, sql: &str) -> &'static str {
     if query.joins().first().and_then(|join| join.execution()) != expected_execution {
         return "parsed_unclassified";
     }
-    if matches!(expected_execution, Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply))
-        && query.joins().first().and_then(|join| join.right_physical_source()) != Some("r")
+    if matches!(
+        expected_execution,
+        Some(JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply)
+    ) && query
+        .joins()
+        .first()
+        .and_then(|join| join.right_physical_source())
+        != Some("r")
     {
         return "parsed_unclassified";
     }
