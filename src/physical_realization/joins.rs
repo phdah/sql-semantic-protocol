@@ -195,15 +195,15 @@ fn join_conjuncts<'a>(predicate: &'a Predicate, output: &mut Vec<&'a Predicate>)
 /// Every key equality must link the two distinct input instances. Composite
 /// keys are a conjunction over one complete physical bag, never separate pair
 /// witnesses. Additional equality keys or ambiguous conditions fail closed.
-fn join_key_and_scalar_filters(
-    query: &QueryStatement,
-) -> Option<(
-    Vec<(
-        &crate::protocol::ColumnExpression,
-        &crate::protocol::ColumnExpression,
-    )>,
-    Vec<&Predicate>,
-)> {
+type JoinKeyExpressions<'a> = Vec<(
+    &'a crate::protocol::ColumnExpression,
+    &'a crate::protocol::ColumnExpression,
+)>;
+
+/// The full ON key tuple and any independent scalar filters.
+type JoinKeysAndFilters<'a> = (JoinKeyExpressions<'a>, Vec<&'a Predicate>);
+
+fn join_key_and_scalar_filters(query: &QueryStatement) -> Option<JoinKeysAndFilters<'_>> {
     use crate::protocol::ComparisonOperator;
 
     let condition = query.joins().first()?.condition()?;
