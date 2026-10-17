@@ -1,0 +1,135 @@
+//! TASK-113: portable joins under a complete, independently frozen physical SQL bag.
+//! Public semantic analysis and DuckDB execution are the test seams.
+
+use duckdb::{params, Connection};
+use serde_json::{json, Value};
+use sql_semantic_protocol::{
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_source_plan,
+    ComposedSemantics, ConfiguredSqlInput, JoinKind, JoinWitnessDirection, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
+};
+
+const MATRIX: &str = include_str!("../docs/task-113-acceptance-freeze.json");
+
+fn analyzed(sql: &str, dialect: &str, complete_schema: bool) -> sql_semantic_protocol::AnalysisBundle {
+    let schemas = ["l", "r"]
+        .into_iter()
+        .map(|relation| {
+            let id = if relation == "l" { "lid" } else { "rid" };
+            let mut columns = vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()];
+            if complete_schema {
+                columns.push(SchemaColumn::from_sql_type(id, "VARCHAR", "postgresql").unwrap());
+            }
+            RelationSchema::new(relation, columns).unwrap()
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let parser = dialect_from_name(dialect).unwrap();
+    let source = SqlInput::inline(sql);
+    let input = ConfiguredSqlInput::new("task-113", &source, dialect, parser.as_ref());
+    analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap()
+}
+
+#[test]
+fn duckdb_executes_every_frozen_join_bag_and_truth_partition() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    assert_eq!(matrix["cases"].as_array().unwrap().len(), 14);
+    for case in matrix["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let db = Connection::open_in_memory().unwrap();
+        db.execute_batch(
+            "CREATE TABLE l(lid VARCHAR, k INTEGER); CREATE TABLE r(rid VARCHAR, k INTEGER);"
+        ).unwrap();
+        for (relation, entries) in [("l", &case["left"]), ("r", &case["right"])] {
+            for entry in entries.as_array().unwrap() {
+                db.execute(
+                    &format!("INSERT INTO {relation} VALUES (?, ?)"),
+                    params![entry[0].as_str().unwrap(), entry[1].as_i64()],
+                ).unwrap();
+            }
+        }
+        let mut stmt = db.prepare(case["duckdb_sql"].as_str().unwrap()).unwrap();
+        let mut actual = stmt.query_map([], |row| {
+            let lid: String = row.get(0)?;
+            let lk: Option<i64> = row.get(1)?;
+            let rid: String = row.get(2)?;
+            let rk: Option<i64> = row.get(3)?;
+            Ok(json!([lid,lk,rid,rk]).to_string())
+        }).unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
+        let mut expected = case["expected"].as_array().unwrap()
+            .iter().map(Value::to_string).collect::<Vec<_>>();
+        actual.sort();
+        expected.sort();
+        assert_eq!(actual, expected, "{id}: full terminal bag, row identity, and NULL");
+
+        let predicate = match case["variant"].as_str().unwrap() {
+            "cross" => "TRUE",
+            "using" | "natural" => "l.k = r.k",
+            "or_on" => "l.k = r.k OR l.k IS NULL",
+            "non_equi" => "l.k < r.k",
+            "is_not_distinct_from" | "null_safe_equality" => "l.k IS NOT DISTINCT FROM r.k",
+            other => panic!("unfrozen variant: {other}"),
+        };
+        let sql = format!(
+            "SELECT l.lid, r.rid FROM l CROSS JOIN r WHERE ({predicate}) IS NOT TRUE"
+        );
+        let mut rejection = db.prepare(&sql).unwrap();
+        let mut actual_rejected = rejection.query_map([], |row| {
+            let a: String = row.get(0)?;
+            let b: String = row.get(1)?;
+            Ok(json!([a,b]).to_string())
+        }).unwrap().map(|row|row.unwrap()).collect::<Vec<_>>();
+        let mut expected_rejected = case["not_true_pairs"].as_array().unwrap()
+            .iter().map(Value::to_string).collect::<Vec<_>>();
+        actual_rejected.sort();
+        expected_rejected.sort();
+        assert_eq!(actual_rejected, expected_rejected, "{id}: every NOT TRUE pair");
+
+        let values = case["expected"].as_array().unwrap();
+        let numeric = values.iter().filter_map(|v|v[1].as_i64()).collect::<Vec<_>>();
+        let domain = &case["output_domain"];
+        assert_eq!(numeric.iter().min().copied(),domain["minimum"].as_i64(),"{id}: inclusive minimum");
+        assert_eq!(numeric.iter().max().copied(),domain["maximum"].as_i64(),"{id}: inclusive maximum");
+        assert_eq!(values.iter().any(|row|row[1].is_null()), domain["contains_null"],"{id}: NULL");
+        assert_eq!(values.is_empty(),domain["empty"],"{id}: empty");
+    }
+}
+
+#[test]
+fn natural_join_known_source_column_intersection_produces_exact_join_witness() {
+    let sql = "SELECT l.k FROM l NATURAL JOIN r";
+    let b = analyzed(sql, "generic", true);
+    let layer = &b.layers()[0];
+    let ComposedSemantics::Resolved(resolved) = layer.composed_semantics() else {
+        panic!("NATURAL JOIN with a known k column on both inputs must resolve");
+    };
+    let [join] = resolved.join_witnesses() else {
+        panic!("one join witness required");
+    };
+    assert_eq!(join.kind(), JoinKind::Inner);
+    assert!(matches!(join.qualifying(), JoinWitnessDirection::Exact(_)));
+    assert_eq!(join.left().unwrap().column(), "k");
+    assert_eq!(join.right().unwrap().column(), "k");
+    let physical = physical_joint_source_plan(&b, &[(layer.id(), 1)]);
+    let WitnessDirection::Feasible(cases) = physical.outcome() else {
+        panic!("same physical join-key assignment required: {physical:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().filter(|o|matches!(o,WitnessObligation::ClosedWorld{..})).count() == 2
+    }));
+}
+
+#[test]
+fn natural_join_unknown_column_intersection_fails_closed() {
+    let dialect = sqlparser::dialect::GenericDialect {};
+    let analyzed = sql_semantic_protocol::analyze_sql(
+        "SELECT l.k FROM l NATURAL JOIN r",
+        "generic",
+        &dialect,
+    ).unwrap();
+    let statement = analyzed.statements().iter().find_map(|statement| match statement {
+        sql_semantic_protocol::protocol::Statement::Query(query) => Some(query),
+        _ => None,
+    }).unwrap();
+    assert!(statement.diagnostics().iter().any(|d|d.code()=="unsupported_natural_join_condition"));
+}
