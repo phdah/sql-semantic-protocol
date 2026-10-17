@@ -508,8 +508,14 @@ pub(super) fn physical_join_population_with_source_counts(
     // from the canonical ON expression when the local witness is residual.
     // Orient those endpoints by the SQL join inputs before assigning any
     // physical key population or unmatched-side obligation.
-    let sql_left = sql_join.left().alias().unwrap_or(sql_join.left().relation());
-    let sql_right = sql_join.right().alias().unwrap_or(sql_join.right().relation());
+    let sql_left = sql_join
+        .left()
+        .alias()
+        .unwrap_or(sql_join.left().relation());
+    let sql_right = sql_join
+        .right()
+        .alias()
+        .unwrap_or(sql_join.right().relation());
     let (left_key, left_instance, right_key, right_instance) =
         if left_instance == sql_left && right_instance == sql_right {
             (left_key, left_instance, right_key, right_instance)
