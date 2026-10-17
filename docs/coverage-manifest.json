@@ -12007,5 +12007,30 @@
     ],
     "conditional_law_release_disposition": "reviewed_bounded_residual_pending_release",
     "release_approved": false
+  },
+  "task_112_join_acceptance": {
+    "owner": "TASK-112",
+    "parent": "TASK-71",
+    "status": "frozen_implementation_in_progress",
+    "acceptance_freeze": "docs/task-112-acceptance-freeze.json",
+    "fixture_ids": [
+      "71-C112-P",
+      "71-C112-N"
+    ],
+    "mandatory_variant_cells": 8,
+    "required_dialect_parser_cells": 104,
+    "independent_duckdb_test": "tests/task_112_semi_anti.rs",
+    "contract_test": "tests/task_112_acceptance_freeze.rs",
+    "compiled_dbt_odcs_parity_test": "tests/task_112_semi_anti_adapters.rs",
+    "canonical_implementation": "src/physical_realization/joins.rs",
+    "all_original_parent_criteria_verified": false,
+    "owned_original_parent_ac": [
+      1,
+      3,
+      4,
+      5,
+      6
+    ],
+    "release_approved": false
   }
 }
