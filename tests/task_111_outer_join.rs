@@ -385,12 +385,17 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
             other => panic!("unrecognized frozen join kind {other}"),
         };
         for &dialect in DIALECTS {
+            let canonical = if dialect == "postgres" {
+                "postgresql"
+            } else {
+                dialect
+            };
             assert_eq!(
-                case["dialects"][dialect]["parser"], "parser_equivalent",
+                case["dialects"][canonical]["parser"], "parser_equivalent",
                 "{id}/{dialect}: matrix must record executable parser status"
             );
             assert_eq!(
-                case["dialects"][dialect]["native_execution"],
+                case["dialects"][canonical]["native_execution"],
                 if dialect == "duckdb" {
                     "duckdb_oracle"
                 } else {
