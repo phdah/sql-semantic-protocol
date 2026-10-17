@@ -473,7 +473,6 @@ fn frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect() {
     }
 }
 
-
 #[test]
 fn mixed_population_semi_anti_counts_do_not_inherit_full_outer_cardinality() {
     assert_eq!(
