@@ -383,8 +383,7 @@ fn physical_three_way_inner_count_plan(
             &reference,
             0,
             true,
-        )
-        .or_else(|| resolve_filter_column(bundle, &walker, target_layer_id, &reference, 0))?;
+        )?;
         let visible = expression.relation()?;
         if mapped.relation()? != relations[position] && !walker.sources.contains(mapped.relation()?)
         {
