@@ -298,8 +298,8 @@
       "fixture": "71-C110-P",
       "variant": "shared_materialized_producer_chain",
       "statements": [
-        "CREATE TABLE stage AS SELECT k FROM l",
-        "CREATE TABLE mart AS SELECT k FROM l",
+        "CREATE TABLE stage AS SELECT id,k FROM l",
+        "CREATE TABLE mart AS SELECT id,k FROM l",
         "SELECT a.k FROM stage a JOIN r b ON a.k=b.k JOIN mart c ON b.k=c.k"
       ],
       "bag": {
