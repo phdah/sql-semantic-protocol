@@ -202,6 +202,15 @@ pub enum JoinPopulationPattern {
     /// Every remaining left row has key one and every remaining right row
     /// has key two. Exactly two TRUE pairs coexist with both unmatched sides.
     MixedDuplicateRight,
+    /// The entire left bag has keys [0,0,NULL,1] and the entire right bag
+    /// [0,NULL]. Exactly two TRUE key pairs exist. The left duplicate is
+    /// preserved twice by SEMI, never multiplied by partner rows; NULL has
+    /// no TRUE partner and survives ANTI.
+    NullableDuplicateMixed,
+    /// The entire left bag has keys [0,0,NULL,1] and the right bag [2,NULL].
+    /// All comparisons are FALSE or UNKNOWN, so ANTI preserves all source
+    /// rows and SEMI preserves none.
+    NullableDuplicateDisjoint,
     /// The left population has no rows. The right may be nonempty.
     EmptyLeft,
     /// The right population has no rows. The left may be nonempty.
@@ -218,6 +227,8 @@ impl JoinPopulationPattern {
             Self::DisjointKeys => "disjoint_keys",
             Self::MixedMatchedUnmatched => "mixed_matched_unmatched",
             Self::MixedDuplicateRight => "mixed_duplicate_right",
+            Self::NullableDuplicateMixed => "nullable_duplicate_mixed",
+            Self::NullableDuplicateDisjoint => "nullable_duplicate_disjoint",
             Self::EmptyLeft => "empty_left",
             Self::EmptyRight => "empty_right",
         }
@@ -261,6 +272,8 @@ impl JoinPopulationPattern {
             Self::DisjointKeys if left > 0 && right > 0 => 0,
             Self::MixedMatchedUnmatched if left >= 2 && right >= 2 => 1,
             Self::MixedDuplicateRight if left >= 2 && right >= 3 => 2,
+            Self::NullableDuplicateMixed if left == 4 && right == 2 => 2,
+            Self::NullableDuplicateDisjoint if left == 4 && right == 2 => 0,
             Self::EmptyLeft if left == 0 => 0,
             Self::EmptyRight if right == 0 => 0,
             _ => return None,
@@ -268,6 +281,7 @@ impl JoinPopulationPattern {
         let (left_unmatched, right_unmatched) = match self {
             Self::MixedMatchedUnmatched => (left.checked_sub(1)?, right.checked_sub(1)?),
             Self::MixedDuplicateRight => (left.checked_sub(1)?, right.checked_sub(2)?),
+            Self::NullableDuplicateMixed => (2, 1),
             _ if pairs == 0 => (left, right),
             _ => (0, 0),
         };
@@ -282,12 +296,14 @@ impl JoinPopulationPattern {
             // side. Semi joins select source rows, not pair multiplicities.
             JoinKind::LeftSemi => Some(match self {
                 Self::MixedMatchedUnmatched | Self::MixedDuplicateRight => 1,
+                Self::NullableDuplicateMixed => 2,
                 _ if pairs > 0 => left,
                 _ => 0,
             }),
             JoinKind::RightSemi => Some(match self {
                 Self::MixedMatchedUnmatched => 1,
                 Self::MixedDuplicateRight => 2,
+                Self::NullableDuplicateMixed => 1,
                 _ if pairs > 0 => right,
                 _ => 0,
             }),
