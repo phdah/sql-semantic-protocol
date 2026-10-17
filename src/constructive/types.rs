@@ -370,6 +370,97 @@ impl UniformJoinLaw {
     }
 }
 
+/// A complete, ordered pair-selection law. Indices identify individual
+/// physical source rows, not just values or projected SQL columns.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FiniteJoinLaw {
+    /// For each left value choose the unique maximum non-NULL right value <= it.
+    /// Ties are not certified without explicit engine ordering evidence.
+    AsOfNearestPriorInclusive,
+    /// Evaluate equality separately for each left row and emit all TRUE partners.
+    CorrelatedInnerEquality,
+    /// Evaluate equality per left row, null-extending only absent right bags.
+    CorrelatedOuterEquality,
+}
+
+impl FiniteJoinLaw {
+    /// Stable machine-readable proof-law name.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::AsOfNearestPriorInclusive => "asof_nearest_prior_inclusive",
+            Self::CorrelatedInnerEquality => "correlated_inner_equality",
+            Self::CorrelatedOuterEquality => "correlated_outer_equality",
+        }
+    }
+
+    /// Compute the entire selected output bag with physical row identities.
+    /// A missing right index represents a synthetic NULL projection, not a
+    /// source row. Return None for a noncertifiable ASOF tie.
+    pub fn selected_rows(
+        self,
+        left: &[Option<i64>],
+        right: &[Option<i64>],
+    ) -> Option<Vec<(usize, Option<usize>)>> {
+        let mut selected = Vec::new();
+        for (left_index, left_value) in left.iter().enumerate() {
+            let mut matches = Vec::new();
+            for (right_index, right_value) in right.iter().enumerate() {
+                let matched = match (left_value, right_value) {
+                    (Some(left), Some(right)) => match self {
+                        Self::AsOfNearestPriorInclusive => right <= left,
+                        Self::CorrelatedInnerEquality | Self::CorrelatedOuterEquality => left == right,
+                    },
+                    _ => false,
+                };
+                if matched {
+                    matches.push(right_index);
+                }
+            }
+            match self {
+                Self::AsOfNearestPriorInclusive => {
+                    let nearest = matches
+                        .iter()
+                        .copied()
+                        .max_by_key(|index| right[*index]);
+                    if let Some(nearest) = nearest {
+                        if matches.iter().filter(|index| right[**index] == right[nearest]).count() != 1 {
+                            return None;
+                        }
+                        selected.push((left_index, Some(nearest)));
+                    } else {
+                        selected.push((left_index, None));
+                    }
+                }
+                Self::CorrelatedInnerEquality => {
+                    selected.extend(matches.into_iter().map(|index| (left_index, Some(index))));
+                }
+                Self::CorrelatedOuterEquality => {
+                    if matches.is_empty() {
+                        selected.push((left_index, None));
+                    } else {
+                        selected.extend(matches.into_iter().map(|index| (left_index, Some(index))));
+                    }
+                }
+            }
+        }
+        Some(selected)
+    }
+
+    /// All real physical source pairs which are not selected, including ASOF
+    /// eligible-but-nonnearest predecessors and SQL UNKNOWN NULL pairs.
+    pub fn unselected_pairs(
+        self,
+        left: &[Option<i64>],
+        right: &[Option<i64>],
+    ) -> Option<Vec<(usize, usize)>> {
+        let selected = self.selected_rows(left, right)?;
+        Some((0..left.len())
+            .flat_map(|l| (0..right.len()).map(move |r| (l, r)))
+            .filter(|(l, r)| !selected.contains(&(*l, Some(*r))))
+            .collect())
+    }
+}
+
 /// A second or later equality in a complete composite join-key assignment.
 /// Both sides are physical source columns controlled by the same key-group values
 /// as the primary equality. This is a complete bag law, not a sampled pair.
@@ -461,6 +552,20 @@ pub enum WitnessObligation {
         right_value: Option<i64>,
         left_rows: u64,
         right_rows: u64,
+        output_rows: u64,
+        closed_world: bool,
+    },
+    /// Every per-row selection and NOT TRUE complement is fixed by a complete
+    /// typed two-source value bag. Source row indices are stable identities;
+    /// an unmatched output has no physical right-row index.
+    FiniteJoinPopulation {
+        left_row: RowVariable,
+        right_row: RowVariable,
+        left_key: ColumnRef,
+        right_key: ColumnRef,
+        law: FiniteJoinLaw,
+        left_values: Vec<Option<i64>>,
+        right_values: Vec<Option<i64>>,
         output_rows: u64,
         closed_world: bool,
     },
