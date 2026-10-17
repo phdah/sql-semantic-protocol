@@ -106,56 +106,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -241,56 +254,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -376,56 +402,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -511,56 +550,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -669,56 +721,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -827,56 +892,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -997,56 +1075,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     },
@@ -1100,56 +1191,69 @@
       "classification": "exact_required",
       "dialects": {
         "ansi": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "bigquery": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "clickhouse": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "databricks": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "duckdb": {
-          "parser": "pending_executable_classification",
-          "native_execution": "duckdb_oracle"
+          "parser": "parser_equivalent",
+          "native_execution": "duckdb_oracle",
+          "canonical": "equivalent_when_parsed"
         },
         "generic": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "hive": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mssql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "mysql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "postgresql": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "redshift": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "snowflake": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         },
         "sqlite": {
-          "parser": "pending_executable_classification",
-          "native_execution": "not_claimed"
+          "parser": "parser_equivalent",
+          "native_execution": "not_claimed",
+          "canonical": "equivalent_when_parsed"
         }
       }
     }
@@ -1189,5 +1293,10 @@
     "dbt_odcs_parity": false,
     "ci_green": false,
     "code_review": false
+  },
+  "execution_evidence": {
+    "test": "tests/task_111_outer_join.rs::frozen_sql_cases_are_canonical_equivalent_in_every_exposed_parser_dialect",
+    "status": "ci_pending",
+    "classification_note": "This is parser and canonical analyzer parity, not native execution on non-DuckDB engines."
   }
 }
