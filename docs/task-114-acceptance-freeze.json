@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "owner": "TASK-114",
   "parent": "TASK-71",
   "created_at": "2026-10-17",
@@ -153,7 +153,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -241,7 +241,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "asof_nearest_prior",
@@ -364,7 +366,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -452,7 +454,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "range_inequality",
@@ -577,7 +581,7 @@
           "canonical": "shared_predicate_ast_verified"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -665,7 +669,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "range_inequality",
@@ -790,7 +796,7 @@
           "canonical": "shared_predicate_ast_verified"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -878,7 +884,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "time_inequality",
@@ -1003,7 +1011,7 @@
           "canonical": "shared_predicate_ast_verified"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1091,7 +1099,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "time_inequality",
@@ -1216,7 +1226,7 @@
           "canonical": "shared_predicate_ast_verified"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1304,7 +1314,9 @@
             "inclusive": true
           }
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "lateral_derived",
@@ -1423,7 +1435,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1473,7 +1485,9 @@
           ],
           "contains_null": false
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "lateral_derived",
@@ -1592,7 +1606,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1642,7 +1656,9 @@
           ],
           "contains_null": false
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "cross_apply",
@@ -1761,7 +1777,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1811,7 +1827,9 @@
           ],
           "contains_null": false
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "cross_apply",
@@ -1930,7 +1948,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -1980,7 +1998,9 @@
           ],
           "contains_null": false
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "outer_apply",
@@ -2091,7 +2111,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -2141,7 +2161,9 @@
           ],
           "contains_null": true
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     },
     {
       "variant": "outer_apply",
@@ -2252,7 +2274,7 @@
           "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
-      "verification": "unverified",
+      "verification": "mandatory_canonical_proof_unverified",
       "original_ac": [
         2,
         3,
@@ -2302,7 +2324,9 @@
           ],
           "contains_null": true
         }
-      ]
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "unverified"
     }
   ],
   "closure": {
@@ -2322,9 +2346,11 @@
       "parsed_cross_apply_residual": 26,
       "parsed_outer_apply_residual": 24,
       "parser_boundary": 2
-    }
+    },
+    "verified_duckdb_bags": 12,
+    "duckdb_oracle_ci_run": 39073582470
   },
-  "revision_reason": "Scope unchanged: consolidate five explicit conditional runtime/parser boundaries with missing-evidence requirements, task owner and unapproved release-review state.",
+  "revision_reason": "Review confirms 12/12 frozen DuckDB source/terminal/NOT TRUE/domain oracles on fully green CI run 39073582470; canonical nearest-prior and APPLY source proof and native vendor semantics remain unverified and block Done.",
   "parser_observation_ci_run": 39072773503,
   "conditional_boundaries": [
     {
