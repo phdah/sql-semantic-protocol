@@ -1,4 +1,4 @@
-//! Probe TASK-113's parser/dialect cells before freezing classifications.
+//! TASK-113: 182 independently observed parser/canonical dialect classifications.
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, ComparisonOperator,
@@ -9,7 +9,7 @@ use sql_semantic_protocol::{
 const MATRIX: &str = include_str!("../docs/task-113-acceptance-freeze.json");
 
 #[test]
-fn probe_task_113_parser_cells() {
+fn frozen_task_113_parser_cells_match_all_registered_dialects() {
     let matrix: Value = serde_json::from_str(MATRIX).unwrap();
     let schemas = ["l", "r"]
         .into_iter()
@@ -79,8 +79,22 @@ fn probe_task_113_parser_cells() {
         }
         observations.push(json!({"id":case["id"],"cells":cells}));
     }
-    panic!(
-        "TASK113_PARSER_CLASSIFICATIONS={}",
-        serde_json::to_string(&observations).unwrap()
-    );
+    assert_eq!(observations.len(), 14);
+    assert_eq!(matrix["dialects"].as_array().unwrap().len(), 13);
+    for (observed, frozen) in observations.iter().zip(matrix["cases"].as_array().unwrap()) {
+        assert_eq!(observed["id"], frozen["id"]);
+        for dialect in matrix["dialects"].as_array().unwrap() {
+            let name = dialect.as_str().unwrap();
+            assert_eq!(
+                observed["cells"][name],
+                frozen["dialects"][name]["parser"],
+                "{name}: parser and canonical classification of {}", frozen["id"]
+            );
+            assert_eq!(
+                frozen["dialects"][name]["canonical"],
+                "equivalent_when_parsed",
+                "{name}: semantic shape must remain canonical"
+            );
+        }
+    }
 }
