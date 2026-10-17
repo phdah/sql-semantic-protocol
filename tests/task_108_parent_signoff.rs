@@ -59,9 +59,18 @@ fn check_named_test(reference: &str) {
         .split_once("::")
         .unwrap_or_else(|| panic!("{reference}: expected test_file::test_name"));
     let content = source(file);
+    let declaration = format!("fn {function}(");
+    let position = content
+        .find(&declaration)
+        .unwrap_or_else(|| panic!("{reference}: test owner missing or renamed"));
+    let attributes: Vec<_> = content[..position]
+        .lines()
+        .rev()
+        .take_while(|line| line.trim().is_empty() || line.trim().starts_with("#["))
+        .collect();
     assert!(
-        content.contains(&format!("fn {function}(")),
-        "{reference}: test owner missing or renamed"
+        attributes.iter().any(|attribute| attribute.trim() == "#[test]"),
+        "{reference}: named proof is not an executable #[test]"
     );
 }
 
@@ -111,7 +120,18 @@ fn parent_criteria_are_independently_mapped_to_every_merged_child() {
     );
 
     let original = criteria(PARENT);
-    assert_eq!(original.len(), 6, "TASK-70 original AC cannot be rewritten");
+    assert_eq!(
+        original,
+        [
+            "- [x] #1 Cover arithmetic and overflow, unary/binary comparisons, BETWEEN/IN lists, IS NULL / IS DISTINCT FROM, NULL-safe equality, CASE, COALESCE, NULLIF, supported CAST/TRY_CAST, string LIKE/NOT LIKE/ESCAPE and expressions in join, filter, grouping and assignments.",
+            "- [x] #2 Support mixed AND/OR/NOT, cross-column comparisons, computed projections and aliases with SQL three-valued logic and reversible typed constraints.",
+            "- [x] #3 Catalog which dialect-sensitive regex/pattern, collations, implicit casts, date/time, JSON or vendor function families have safe exact semantics; opaque UDFs must retain explicit residuals.",
+            "- [x] #4 Give canonical positive and NOT TRUE negative witnesses, impossible cases, output domains, comparison settings and deterministic literal coercion.",
+            "- [x] #5 Add direct SQL, dbt and representative per-dialect parser/oracle tests for each supported expression family and combined predicates.",
+            "- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.",
+        ],
+        "TASK-70 original acceptance wording must remain unchanged"
+    );
     let mappings = array(&closure, "original_ac_map");
     assert_eq!(mappings.len(), 6);
     let expected_families: BTreeSet<_> =
@@ -251,9 +271,36 @@ fn all_frozen_variants_and_dialects_have_executable_two_direction_owners() {
     for cell in array(&closure, "family_cells") {
         let family = name(cell, "family");
         assert!(actual.insert(family), "{family}: duplicate family");
-        assert!(name(cell, "owner").starts_with("TASK-"));
-        assert!(!name(cell, "certified_boundary").is_empty());
-        assert!(!name(cell, "evidence").is_empty());
+        let canonical = array(&manifest["task_70_predicate_evidence"], "family_evidence")
+            .iter()
+            .find(|entry| name(entry, "family") == family)
+            .unwrap_or_else(|| panic!("{family}: canonical family missing"));
+        for (frozen_field, canonical_field) in [
+            ("owner", "implementation_task"),
+            ("status_at_freeze", "status"),
+            ("certified_boundary", "scope"),
+            ("evidence", "evidence"),
+        ] {
+            assert_eq!(
+                cell[frozen_field], canonical[canonical_field],
+                "{family}: {frozen_field} drifted from the canonical manifest"
+            );
+        }
+        for reference in name(cell, "evidence").split(';').map(str::trim) {
+            match reference {
+                "task_105_expression_evidence.variants" => assert!(
+                    !array(&manifest["task_105_expression_evidence"], "variants").is_empty(),
+                    "{family}: empty manifest evidence"
+                ),
+                path if path.starts_with("tests/")
+                    || path.starts_with("src/")
+                    || path.starts_with("docs/") =>
+                {
+                    assert!(!source(path).is_empty(), "{family}: missing {path}");
+                }
+                _ => panic!("{family}: unsupported evidence pointer {reference}"),
+            }
+        }
         assert_eq!(cell["release_approved"], false);
     }
     assert_eq!(actual, expected, "TASK-70 family mapping drift");
@@ -297,7 +344,20 @@ fn independently_executed_goldens_seeds_and_adapter_gates_cannot_be_omitted() {
         .iter()
         .map(|gate| gate.as_str().expect("CI gate name"))
         .collect();
-    assert_eq!(unique.len(), 9);
+    let expected_gates: BTreeSet<_> = [
+        "Rust / fmt",
+        "Rust / lint",
+        "Rust / test",
+        "Rust / doc",
+        "Rust (no default features) / lint",
+        "Rust (no default features) / test",
+        "Rust (no default features) / doc",
+        "Rust (no default features) / dependencies",
+        "dbt Core E2E",
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(unique, expected_gates, "required CI checks changed");
     for path in [
         "schema/protocol.schema.json",
         "docs/protocol.md",
@@ -333,6 +393,16 @@ fn an_unverified_parent_can_never_be_marked_done_or_release_approved() {
         assert_eq!(signed["task_108_checked"], true);
         assert_eq!(signed["task_70_checked"], true);
         assert_eq!(signed["final_head_sha"].as_str().map(str::len), Some(40));
+        assert_eq!(
+            signed["final_head_sha"],
+            manifest["task_108_parent_signoff"]["verified_implementation_sha"],
+            "frozen signoff and canonical implementation SHA diverged"
+        );
+        assert_eq!(
+            signed["final_ci_workflow_run_id"],
+            manifest["task_108_parent_signoff"]["final_ci_workflow_run"],
+            "frozen signoff and canonical workflow run diverged"
+        );
         assert!(child_done && parent_done);
         assert!(parent_criteria.iter().all(|line| line.starts_with("- [x]")));
         assert!(child_criteria.iter().all(|line| line.starts_with("- [x]")));
