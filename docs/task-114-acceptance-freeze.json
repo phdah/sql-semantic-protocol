@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-114",
   "parent": "TASK-71",
   "created_at": "2026-10-17",
-  "status": "frozen_pending_implementation_and_verification",
+  "status": "parser_classified_constructive_semantics_pending",
   "fixture_ids": [
     "71-C114-P",
     "71-C114-N"
@@ -101,56 +101,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -238,56 +238,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_asof_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -377,56 +377,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         }
       },
       "verification": "unverified",
@@ -516,56 +516,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         }
       },
       "verification": "unverified",
@@ -655,56 +655,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         }
       },
       "verification": "unverified",
@@ -794,56 +794,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_equivalent",
+          "canonical": "shared_predicate_ast_verified"
         }
       },
       "verification": "unverified",
@@ -927,56 +927,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1060,56 +1060,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_lateral_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1193,56 +1193,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1326,56 +1326,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1451,56 +1451,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_boundary",
+          "canonical": "no_ast_parser_boundary"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1576,56 +1576,56 @@
       },
       "dialects": {
         "ansi": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "bigquery": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "clickhouse": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "databricks": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "duckdb": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "generic": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "hive": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mssql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "mysql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "postgresql": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "redshift": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         },
         "snowflake": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parser_boundary",
+          "canonical": "no_ast_parser_boundary"
         },
         "sqlite": {
-          "parser": "unverified",
-          "canonical": "unverified"
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "parser_recognized_semantic_proof_missing"
         }
       },
       "verification": "unverified",
@@ -1653,7 +1653,17 @@
     "blocking_if_unverified": true,
     "adapter_parity_required": true,
     "full_physical_duckdb_oracles_required": true,
-    "description": "This inventory fixes the scope but does not certify AST/parser support or semantics. Parser boundaries need evidence. Named variants are mandatory and cannot be deferred just because implementation is difficult."
+    "description": "All 156 dialect syntax/AST recognition cells classified by public API CI observations; this is not semantic verification for ASOF/APPLY or a native engine claim. Exact temporal/correlated source and row proofs, adapter parity, frozen bag execution, and review remain separate gates.",
+    "parser_classified_cells": 156,
+    "classification_counts": {
+      "parsed_asof_residual": 26,
+      "parser_equivalent": 52,
+      "parsed_lateral_residual": 26,
+      "parsed_cross_apply_residual": 26,
+      "parsed_outer_apply_residual": 24,
+      "parser_boundary": 2
+    }
   },
-  "revision_reason": "Correct ASOF selected-row complement: (l10,r4) satisfies time inequality but is not the nearest-prior selected partner. This is an explicit pre-signoff matrix correction, not evidence of a verified cell."
+  "revision_reason": "Correct ASOF selected-row complement: (l10,r4) satisfies time inequality but is not the nearest-prior selected partner. This is an explicit pre-signoff matrix correction, not evidence of a verified cell.",
+  "parser_observation_ci_run": 39072773503
 }
