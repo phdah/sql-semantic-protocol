@@ -146,3 +146,32 @@ fn inequality_range_join_proves_both_selected_and_not_true_bags() {
         ])
     );
 }
+
+#[test]
+fn timestamp_inequality_includes_equal_instants_and_rejects_unknown() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(id VARCHAR, t TIMESTAMP);
+         CREATE TABLE r(id VARCHAR, t TIMESTAMP);
+         INSERT INTO l VALUES ('le', TIMESTAMP '2026-10-17 00:05:00'), ('ln',NULL);
+         INSERT INTO r VALUES ('re', TIMESTAMP '2026-10-17 00:05:00'), ('rn',NULL);",
+    )
+    .unwrap();
+    assert_eq!(
+        rows(&db, "SELECT l.id,r.id FROM l JOIN r ON l.t >= r.t"),
+        expected(&[("le", Some("re"))]),
+        "inclusive timestamp lower comparison must retain equality"
+    );
+    assert_eq!(
+        rows(
+            &db,
+            "SELECT l.id,r.id FROM l CROSS JOIN r WHERE (l.t >= r.t) IS NOT TRUE"
+        ),
+        expected(&[
+            ("le", Some("rn")),
+            ("ln", Some("re")),
+            ("ln", Some("rn")),
+        ]),
+        "all three UNKNOWN physical pairs are nonmatches"
+    );
+}
