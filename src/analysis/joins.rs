@@ -32,11 +32,38 @@ pub(super) fn analyze_join(
     }
 
     if !exact_kind {
-        diagnostics.push(warning(
-            "unsupported_join_form",
-            DiagnosticArea::Join,
-            "join kind is parsed but is not represented precisely by protocol v0",
-        ));
+        let (code, message) = match &join.join_operator {
+            JoinOperator::AsOf { .. } => (
+                "unsupported_asof_nearest_prior",
+                "ASOF requires a nearest-row ordering and tie/absence proof; its match predicate is not an ordinary equijoin",
+            ),
+            JoinOperator::CrossApply => (
+                "unsupported_cross_apply",
+                "CROSS APPLY requires a correlated right-side population for each left source row",
+            ),
+            JoinOperator::OuterApply => (
+                "unsupported_outer_apply",
+                "OUTER APPLY requires correlated right-side evaluation and a complete null-extension absence proof",
+            ),
+            _ => (
+                "unsupported_join_form",
+                "join kind is parsed but is not represented precisely by the canonical protocol",
+            ),
+        };
+        diagnostics.push(warning(code, DiagnosticArea::Join, message));
+    }
+
+    // SQLparser exposes the temporal ASOF ordering predicate separately from
+    // the optional ON equality constraint. Both can contribute source lineage.
+    // Until nearest-prior matching is proven, the canonical kind stays Unknown.
+    if let JoinOperator::AsOf { match_condition, .. } = &join.join_operator {
+        collect_expression_dependencies(
+            match_condition,
+            scope.local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
     }
 
     if let Some(JoinConstraint::On(expression)) = constraint {
