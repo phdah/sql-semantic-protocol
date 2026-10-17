@@ -108,10 +108,11 @@ pub(super) fn physical_uniform_join_count_plan(
         || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
         || !query.diagnostics().is_empty()
-        || !walker
+        || walker
             .nodes
             .iter()
-            .all(|node| node.produced_relations().is_empty())
+            .filter(|node| matches!(node.id(), PhysicalPlanRef::Layer(_)))
+            .any(|node| !node.produced_relations().is_empty())
         || query.output().columns().iter().any(|column| {
             !matches!(
                 column.expression(),
