@@ -8066,6 +8066,9 @@
         },
         "right_physical_source": {
           "$ref": "#/$defs/nonEmptyString"
+        },
+        "right_physical_instance": {
+          "$ref": "#/$defs/nonEmptyString"
         }
       }
     }
