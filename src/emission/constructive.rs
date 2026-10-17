@@ -222,6 +222,30 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
             }
             value
         }
+        crate::WitnessObligation::TemporalJoinPopulation {
+            left_row,
+            right_row,
+            left_key,
+            right_key,
+            law,
+            left_values,
+            right_values,
+            output_rows,
+            closed_world,
+        } => json!({
+            "kind": "temporal_join_population",
+            "left_row": constructive_row_to_value(left_row),
+            "right_row": constructive_row_to_value(right_row),
+            "left_key": column_ref_to_value(left_key),
+            "right_key": column_ref_to_value(right_key),
+            "law": law.as_str(),
+            "left_values": left_values,
+            "right_values": right_values,
+            "selected_pairs": law.selected_rows(left_values,right_values),
+            "unselected_pairs": law.unselected_pairs(left_values,right_values),
+            "output_rows": output_rows,
+            "closed_world": closed_world
+        }),
         crate::WitnessObligation::FiniteJoinPopulation {
             left_row,
             right_row,
