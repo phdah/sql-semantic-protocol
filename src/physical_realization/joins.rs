@@ -517,7 +517,7 @@ fn physical_three_way_inner_count_plan(
      -> Option<crate::protocol::ColumnRef> {
         let instance = names[position];
         let reference = crate::protocol::ColumnRef::new(
-            Some(instance.to_string()),
+            Some(relations[position].to_string()),
             expression.name().to_string(),
         );
         let mapped = resolve_filter_column_with_evidence(
