@@ -1615,3 +1615,21 @@ the next planned major protocol release; no v2 release is certified by TASK-109.
 ### Three-instance common-key INNER chain
 
 A `join_chain_population` constructive obligation fixes three named row instances, four canonical physical key references, an explicit `matched_value`, their complete source-row counts, and `output_rows`. Each alias references one closed physical input bag, including when two aliases share the same physical source. Every row in each bag has the attested non-NULL integer key value (one in the frozen oracle); both `=` comparisons therefore hold on the same source assignment, and the exact INNER-chain bag multiplicity is the checked product of all three counts. It is not the composition of two independently sampled pair witnesses. Other ON shapes, filters, and unconstrained/opaque keys stay residual. The sufficient construction does not assert uniqueness or a universally fixed database state.
+
+### Uniform signed-integer inequality JOIN population (TASK-114 increment)
+
+For a direct, unconstrained, two-source `INNER JOIN` on one resolved signed-integer
+column pair, `uniform_join_population` represents one complete physical bag with
+constant source-key values and exact row counts. In addition to `less_than`,
+`cartesian` and the existing Boolean laws, its `law` may now be
+`greater_than`, `less_than_or_equal` or `greater_than_or_equal`.
+Operands are normalized to the physical left/right source instance, including
+SQL predicates written in reverse order. Inclusive equality and rejected
+opposing assignments are distinguished by the law's `pair_matches` semantics.
+
+The producer only claims `Feasible` if both input types have trusted signed
+integer bounds and every assigned key falls inside them; source bags are marked
+closed-world. This does **not** certify timestamp comparison, collation,
+correlated LATERAL evaluation, ASOF nearest-prior selection, or vendor
+tie-breaking. Those require further TASK-114 evidence and stay explicit
+residuals rather than borrowing this uniform integer construction.
