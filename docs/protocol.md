@@ -1232,6 +1232,15 @@ Named producers remain graph nodes, never independently writable sources.
 multiplication even for two aliases of one physical relation.
 `empty_left`/`empty_right` enumerate a complete absent partner population,
 proving unmatched and NULL-extended rows as well as semi/anti absence laws.
+`disjoint_keys` assigns key 0 to **all left physical rows** and key 1 to
+**all right physical rows**, requiring two nonempty signed integer populations
+with evidence for both values. Its complete-bag equality produces no TRUE
+pairs. LEFT and RIGHT preserve their respective input counts, FULL preserves
+the sum, and any NULLs appearing on the missing side are **synthetic output
+NULL extensions**, not invented physical source rows. Both sides carry
+closed-world `no_matching_partner` obligations. This pattern cannot be
+combined with other join populations on shared keys without a compatible
+joint histogram and does not prove physical SQL NULL key insertion.
 One physical population is shared by repeated source references, with
 conflicting cardinalities rejected from the construction.
 
