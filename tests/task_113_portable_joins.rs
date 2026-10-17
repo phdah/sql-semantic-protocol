@@ -128,7 +128,7 @@ fn natural_join_unknown_column_intersection_fails_closed() {
         &dialect,
     ).unwrap();
     let statement = analyzed.statements().iter().find_map(|statement| match statement {
-        sql_semantic_protocol::protocol::Statement::Query(query) => Some(query),
+        sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
         _ => None,
     }).unwrap();
     assert!(statement.diagnostics().iter().any(|d|d.code()=="unsupported_natural_join_condition"));
