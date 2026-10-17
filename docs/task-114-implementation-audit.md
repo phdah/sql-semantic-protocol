@@ -1,6 +1,6 @@
 # TASK-114 independent acceptance audit
 
-**2026-10-17. Verdict: NOT SIGNED OFF.** TASK-114 AC #1-#5 remain open; no release/parent TASK-71 approval is implied. This document records what is independently proved and exactly why the existing criteria cannot yet be closed.
+**2026-10-17. Verdict: NOT SIGNED OFF.** TASK-114 AC #3 has independently passed; AC #1, #2, #4 and #5 remain open; no release/parent TASK-71 approval is implied. This document records what is independently proved and exactly why the existing criteria cannot yet be closed.
 
 | AC | Independently executed evidence | Unmet acceptance |
 | --- | --- | --- |
