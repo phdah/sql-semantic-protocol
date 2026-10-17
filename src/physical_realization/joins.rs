@@ -700,6 +700,14 @@ pub(super) fn physical_join_population_with_source_counts(
     {
         return Some(plan);
     }
+    if let Some(plan) = join_temporal::physical_temporal_join_count_plan(
+        bundle,
+        target_layer_id,
+        wanted,
+        exact_sources,
+    ) {
+        return Some(plan);
+    }
     if let Some(plan) = join_uniform::physical_uniform_join_count_plan(
         bundle,
         target_layer_id,
