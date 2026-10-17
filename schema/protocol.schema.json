@@ -6915,6 +6915,7 @@
                 "distinct_matched",
                 "common_matched",
                 "grouped_matched",
+                "disjoint_keys",
                 "empty_left",
                 "empty_right"
               ]
