@@ -318,6 +318,46 @@ impl JoinPopulationPattern {
     }
 }
 
+/// Closed-world two-source population whose ON predicate is uniform over
+/// every physical pair. Non-NULL signed integer assignments are chosen
+/// explicitly, so NULL-safe equality is never confused with ordinary SQL =.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UniformJoinLaw {
+    /// CROSS JOIN has TRUE for every pair without a join key.
+    Cartesian,
+    /// Strict less-than of signed integer join columns.
+    LessThan,
+    /// SQL IS NOT DISTINCT FROM over non-NULL signed integer columns.
+    NullSafeEquality,
+    /// Equality disjoined with left-key IS NULL, evaluated with non-NULL keys.
+    EqualityOrLeftNull,
+}
+
+impl UniformJoinLaw {
+    /// Stable name for the public population contract.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Cartesian => "cartesian",
+            Self::LessThan => "less_than",
+            Self::NullSafeEquality => "null_safe_equality",
+            Self::EqualityOrLeftNull => "equality_or_left_null",
+        }
+    }
+
+    /// TRUE for every source pair under the complete constant-key assignment.
+    /// Returns None for an ill-formed Cartesian/key combination.
+    pub const fn pair_matches(self, left: Option<i64>, right: Option<i64>) -> Option<bool> {
+        match (self, left, right) {
+            (Self::Cartesian, None, None) => Some(true),
+            (Self::LessThan, Some(left), Some(right)) => Some(left < right),
+            (Self::NullSafeEquality | Self::EqualityOrLeftNull, Some(left), Some(right)) => {
+                Some(left == right)
+            }
+            _ => None,
+        }
+    }
+}
+
 /// A second or later equality in a complete composite join-key assignment.
 /// Both sides are physical source columns controlled by the same key-group values
 /// as the primary equality. This is a complete bag law, not a sampled pair.
@@ -390,6 +430,23 @@ pub enum WitnessObligation {
         additional_keys: Vec<JoinKeyEquality>,
         join_kind: crate::protocol::JoinKind,
         pattern: JoinPopulationPattern,
+        left_rows: u64,
+        right_rows: u64,
+        output_rows: u64,
+        closed_world: bool,
+    },
+    /// Every pair of two complete physical bags has one proved SQL truth
+    /// outcome under an admitted portable Boolean predicate. Source rows
+    /// share the indicated typed constant key in each bag, or have no key
+    /// for CROSS. The relationship is verified before case construction.
+    UniformJoinPopulation {
+        left_row: RowVariable,
+        right_row: RowVariable,
+        left_key: Option<ColumnRef>,
+        right_key: Option<ColumnRef>,
+        law: UniformJoinLaw,
+        left_value: Option<i64>,
+        right_value: Option<i64>,
         left_rows: u64,
         right_rows: u64,
         output_rows: u64,

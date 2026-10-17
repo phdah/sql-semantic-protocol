@@ -392,6 +392,14 @@ their preserved side with a match, anti joins only rows with no match. Rejected
 directions describe source rows that do not independently produce an output row;
 a FULL join has no such source-row case before downstream filtering.
 
+Portable `NATURAL JOIN` analysis uses the intersection of authoritative,
+unambiguous visible column names on both inputs to construct canonical
+column equalities. Missing schema evidence produces
+`unsupported_natural_join_condition` instead of assuming an empty
+intersection. A proven empty intersection has `cross` join semantics.
+This normalization does not by itself certify complete physical source
+populations, native vendor collations, or NULL-safe comparison laws.
+
 The analyzer currently proves these witness directions only for one binary JOIN
 whose ON/USING condition normalizes to a single physical column-to-column
 comparison with unambiguous instance lineage. Self-joins preserve separate alias
