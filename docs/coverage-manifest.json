@@ -2,6 +2,18 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_109_join_acceptance": {
+    "owner": "TASK-109",
+    "parent": "TASK-71",
+    "status": "implementation_pending_final_verification",
+    "acceptance_freeze": "docs/task-109-acceptance-freeze.json",
+    "fixture_ids": ["71-C109-P", "71-C109-N"],
+    "mandatory_variants": 5,
+    "physical_composite_key_proof": "two-column AND equality with shared key-group assignment over entire closed source bags",
+    "test": "tests/task_109_composite_join.rs",
+    "contract_test": "tests/task_109_acceptance_freeze.rs",
+    "release_approved": false
+  },
   "task_71_join_acceptance": {
     "owner": "TASK-71",
     "status": "implementation_in_progress_unverified",
