@@ -301,7 +301,11 @@ fn physical_aliased_self_join_count_plan(
 
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    if walker.nodes.iter().filter(|node| matches!(node.id(), PhysicalPlanRef::Layer(_))).count()
+    if walker
+        .nodes
+        .iter()
+        .filter(|node| matches!(node.id(), PhysicalPlanRef::Layer(_)))
+        .count()
         != 1
     {
         return None;
@@ -341,8 +345,7 @@ fn physical_aliased_self_join_count_plan(
     let Predicate::Comparison(condition) = join.condition()? else {
         return None;
     };
-    let (Expression::Column(a), Expression::Column(b)) =
-        (condition.left(), condition.right())
+    let (Expression::Column(a), Expression::Column(b)) = (condition.left(), condition.right())
     else {
         return None;
     };
@@ -361,14 +364,10 @@ fn physical_aliased_self_join_count_plan(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == left.name())?;
-    let left_key = crate::protocol::ColumnRef::new(
-        Some(left.name().to_string()),
-        a.name().to_string(),
-    );
-    let right_key = crate::protocol::ColumnRef::new(
-        Some(right.name().to_string()),
-        b.name().to_string(),
-    );
+    let left_key =
+        crate::protocol::ColumnRef::new(Some(left.name().to_string()), a.name().to_string());
+    let right_key =
+        crate::protocol::ColumnRef::new(Some(right.name().to_string()), b.name().to_string());
     for key in [&left_key, &right_key] {
         let domain = physical_integer_evidence(schema, key)?;
         if domain.minimum > 0 || domain.maximum < 0 {
@@ -377,17 +376,15 @@ fn physical_aliased_self_join_count_plan(
     }
     let rows = wanted.isqrt();
     if rows.checked_mul(rows)? != wanted
-        || exact_sources.get(left.name()).is_some_and(|count| *count != rows)
+        || exact_sources
+            .get(left.name())
+            .is_some_and(|count| *count != rows)
     {
         return None;
     }
     let left_row = RowVariable::new(left.name(), aliases[0], "self_join_left")?;
     let right_row = RowVariable::new(right.name(), aliases[1], "self_join_right")?;
-    let boundary = WitnessBoundary::new(
-        left.name(),
-        GroupBoundaryKind::Physical,
-        target_layer_id,
-    )?;
+    let boundary = WitnessBoundary::new(left.name(), GroupBoundaryKind::Physical, target_layer_id)?;
     let mut obligations = vec![
         WitnessObligation::Rows {
             boundary: boundary.clone(),
