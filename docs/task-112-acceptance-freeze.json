@@ -2,7 +2,7 @@
   "version": 1,
   "owner": "TASK-112",
   "parent": "TASK-71",
-  "status": "verification_in_progress",
+  "status": "verified_bounded_child",
   "fixture_ids": [
     "71-C112-P",
     "71-C112-N"
@@ -1323,8 +1323,12 @@
   "signoff": {
     "mandatory_cases": 8,
     "mandatory_dialect_cells": 104,
-    "ci_green": false,
-    "reviewed": false,
-    "verified_parser_cells": 104
+    "ci_green": true,
+    "reviewed": true,
+    "verified_parser_cells": 104,
+    "verified_mandatory_cases": 8,
+    "implementation_ci_run": 39045626995,
+    "verified_implementation_sha": "1840c06f4816732d8f55fe53b3ddaf7edc30d0e0",
+    "release_approved": false
   }
 }
