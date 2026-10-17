@@ -574,29 +574,31 @@ fn filtered_outer_join_population_uses_sql_input_order_not_on_operand_order() {
             panic!("expected exact closed source population for {sql}: {plan:?}");
         };
         assert!(
-            cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-                matches!(
-                    obligation,
-                    WitnessObligation::JoinPopulation {
-                        left_row,
-                        right_row,
-                        left_key,
-                        right_key,
-                        pattern: actual_pattern,
-                        left_rows,
-                        right_rows,
-                        output_rows: 3,
-                        closed_world: true,
-                        ..
-                    } if left_row.relation() == "l"
-                        && right_row.relation() == "r"
-                        && left_key.relation() == Some("l")
-                        && right_key.relation() == Some("r")
-                        && *actual_pattern == pattern
-                        && *left_rows == expected_left
-                        && *right_rows == expected_right
-                )
-            })),
+            cases
+                .iter()
+                .any(|case| case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinPopulation {
+                            left_row,
+                            right_row,
+                            left_key,
+                            right_key,
+                            pattern: actual_pattern,
+                            left_rows,
+                            right_rows,
+                            output_rows: 3,
+                            closed_world: true,
+                            ..
+                        } if left_row.relation() == "l"
+                            && right_row.relation() == "r"
+                            && left_key.relation() == Some("l")
+                            && right_key.relation() == Some("r")
+                            && *actual_pattern == pattern
+                            && *left_rows == expected_left
+                            && *right_rows == expected_right
+                    )
+                })),
             "join proof must preserve SQL left/right input identity: {sql}: {plan:?}"
         );
     }
