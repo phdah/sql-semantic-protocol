@@ -97,14 +97,21 @@ pub(super) fn source_relation_to_value(source: &SourceRelation) -> Value {
 }
 
 pub(super) fn join_to_value(join: &Join) -> Value {
-    json!({
+    let mut value = json!({
         "kind": join.kind().as_str(),
         "left": relation_ref_to_value(join.left()),
         "right": relation_ref_to_value(join.right()),
         "condition": join
             .condition()
             .map_or(Value::Null, predicate_to_value)
-    })
+    });
+    if let Some(execution) = join.execution() {
+        value["evaluation"] = json!(execution.as_str());
+        if let Some(source) = join.right_physical_source() {
+            value["right_physical_source"] = json!(source);
+        }
+    }
+    value
 }
 
 pub(super) fn relation_ref_to_value(relation: &RelationRef) -> Value {
