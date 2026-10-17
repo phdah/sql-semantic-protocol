@@ -16,6 +16,10 @@ dependencies:
   - TASK-81
   - TASK-82
   - TASK-83
+  - TASK-161
+  - TASK-162
+  - TASK-163
+  - TASK-164
 references: 
   - 'TASK-23'
   - 'TASK-65'
@@ -56,3 +60,16 @@ The existing **AC #1..#6 remain required**. Interpret and verify them through th
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Bounded dependency-ordered child implementation queue (2026-10-17)
+
+TASK-84 is a **parent signoff**, not a single implementation PR. Preserve all original AC and only sign them off independently after all children are Done and merged. Pick the first unfinished dependency-ready child. Parent depends on the children only for closure; no child depends on its parent. Scope and fixed fixture IDs are in `docs/backlog-child-queue-plan.json`.
+
+- **[TASK-161](task-161%20-%20define-sequential-typed-state-graph-across-dml-ddl.md)** (1/4): INSERT/UPDATE/DELETE/MERGE/DDL; per-step before/after, producer/read identity. IDs `84-C161-P`, `84-C161-N`.
+- **[TASK-162](task-162%20-%20prove-duckdb-begin-commit-rollback-savepoint-transitions.md)** (2/4): BEGIN/COMMIT; ROLLBACK; SAVEPOINT/release/rollback-to; negative replay. IDs `84-C162-P`, `84-C162-N`.
+- **[TASK-163](task-163%20-%20classify-auto-commit-implicit-ddl-and-engine-isolation-boundaries.md)** (3/4): DDL implicit commits; temp tables; FK deferral; concurrent isolation; dialect transaction laws. IDs `84-C163-P`, `84-C163-N`.
+- **[TASK-164](task-164%20-%20certify-ordered-mixed-script-state-and-final-targets.md)** (4/4): mixed DDL,DML,MERGE/read; output counts; dbt/ODCS; dialects. IDs `84-C164-P`, `84-C164-N`.
+
+**Original AC mapping:** #1 -> TASK-161, TASK-163, TASK-164; #2 -> TASK-162, TASK-163, TASK-164; #3 -> TASK-161, TASK-162, TASK-163, TASK-164; #4 -> TASK-161, TASK-162, TASK-164; #5 -> TASK-161, TASK-162, TASK-163, TASK-164; #6 -> TASK-161, TASK-162, TASK-163, TASK-164.
+
+**No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
