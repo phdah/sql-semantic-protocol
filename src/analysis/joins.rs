@@ -90,31 +90,33 @@ pub(super) fn analyze_join_constraint(
             scope,
             diagnostics,
         )),
-        JoinConstraint::Using(columns) => {
-            let left_name = left.alias().unwrap_or(left.relation()).to_string();
-            let right_name = right.alias().unwrap_or(right.relation()).to_string();
-            let predicates = columns.iter().map(|column| {
-                Predicate::Comparison(ComparisonPredicate::new(
-                    Expression::Column(ColumnExpression::new(
-                        Some(left_name.clone()),
-                        column.to_string(),
-                    )),
-                    ComparisonOperator::Eq,
-                    Expression::Column(ColumnExpression::new(
-                        Some(right_name.clone()),
-                        column.to_string(),
-                    )),
-                ))
-            });
-            combine_conjunction(predicates)
-        }
+        JoinConstraint::Using(columns) => join_column_equalities(
+            columns.iter().map(ToString::to_string),
+            left,
+            right,
+        ),
         JoinConstraint::Natural => {
-            diagnostics.push(warning(
-                "unsupported_natural_join_condition",
-                DiagnosticArea::Join,
-                "NATURAL JOIN columns cannot be resolved without source schema information",
-            ));
-            None
+            // NATURAL is an equality conjunction over the intersection of
+            // both visible source schemas. With incomplete schemas, guessing
+            // an empty intersection would silently turn a join into CROSS.
+            match (
+                known_visible_join_columns(left, scope),
+                known_visible_join_columns(right, scope),
+            ) {
+                (Some(left_columns), Some(right_columns)) => join_column_equalities(
+                    left_columns.intersection(&right_columns).cloned(),
+                    left,
+                    right,
+                ),
+                _ => {
+                    diagnostics.push(warning(
+                        "unsupported_natural_join_condition",
+                        DiagnosticArea::Join,
+                        "NATURAL JOIN requires complete, unambiguous column names on both inputs",
+                    ));
+                    None
+                }
+            }
         }
         JoinConstraint::None => None,
     };
@@ -128,6 +130,51 @@ pub(super) fn analyze_join_constraint(
             remap_join_equality_columns(predicate, scope, diagnostics)
         }
     })
+}
+
+/// Resolve the complete set of visible columns for one NATURAL JOIN input.
+///
+/// Two scope entries sharing a qualifier are ambiguous. Missing metadata is
+/// never taken to mean an empty set of columns.
+fn known_visible_join_columns(
+    relation: &RelationRef,
+    scope: &[OutputRelation],
+) -> Option<BTreeSet<String>> {
+    let qualifier = relation.alias().unwrap_or(relation.relation());
+    let mut candidates = scope
+        .iter()
+        .filter(|entry| entry.qualifiers.iter().any(|name| name == qualifier));
+    let entry = candidates.next()?;
+    if candidates.next().is_some() {
+        return None;
+    }
+    let columns = match &entry.source {
+        OutputRelationSource::Physical { columns, .. } => columns.as_ref()?.clone(),
+        OutputRelationSource::Local(output) => output
+            .columns()
+            .iter()
+            .map(|column| column.name().to_string())
+            .collect(),
+    };
+    let unique = columns.iter().cloned().collect::<BTreeSet<_>>();
+    (unique.len() == columns.len()).then_some(unique)
+}
+
+/// Build the canonical equality conjunction for USING and NATURAL syntax.
+fn join_column_equalities(
+    columns: impl IntoIterator<Item = String>,
+    left: &RelationRef,
+    right: &RelationRef,
+) -> Option<Predicate> {
+    let left_name = left.alias().unwrap_or(left.relation()).to_string();
+    let right_name = right.alias().unwrap_or(right.relation()).to_string();
+    combine_conjunction(columns.into_iter().map(|name| {
+        Predicate::Comparison(ComparisonPredicate::new(
+            Expression::Column(ColumnExpression::new(Some(left_name.clone()), name.clone())),
+            ComparisonOperator::Eq,
+            Expression::Column(ColumnExpression::new(Some(right_name.clone()), name)),
+        ))
+    }))
 }
 
 pub(super) fn remap_join_equality_columns(
