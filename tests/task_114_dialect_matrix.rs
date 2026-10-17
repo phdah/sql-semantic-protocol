@@ -105,3 +105,26 @@ fn every_frozen_dialect_cell_has_a_reviewed_observed_classification() {
         }
     }
 }
+
+#[test]
+fn conditional_vendor_laws_have_named_missing_evidence_and_pending_release_reviews() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    let boundaries = matrix["conditional_boundaries"].as_array().unwrap();
+    assert_eq!(boundaries.len(), 5);
+    for id in [
+        "J114-ASOF-TIES",
+        "J114-TEMPORAL-SESSION",
+        "J114-LATERAL-CORRELATION",
+        "J114-APPLY-OUTER",
+        "J114-APPLY-PARSER",
+    ] {
+        let boundary = boundaries.iter().find(|item| item["id"] == id).unwrap();
+        assert_eq!(boundary["owner"], "TASK-114");
+        assert_eq!(boundary["classification"], "conditional");
+        assert_eq!(boundary["disposition"], "pending_release_review");
+        assert_eq!(boundary["native_engine_certified"], false);
+        assert!(boundary["missing_evidence"]
+            .as_str()
+            .is_some_and(|evidence| !evidence.trim().is_empty()));
+    }
+}
