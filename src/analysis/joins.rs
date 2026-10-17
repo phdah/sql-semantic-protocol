@@ -79,9 +79,33 @@ pub(super) fn analyze_join(
         );
     }
 
-    let condition = constraint.and_then(|constraint| {
+    let on_condition = constraint.and_then(|constraint| {
         analyze_join_constraint(constraint, left, right, scope.output_scope, diagnostics)
     });
+
+    // ASOF's match condition is the eligibility/order predicate, not a proof
+    // that every eligible pair is emitted. Preserve its canonical typed AST
+    // alongside the Unknown join kind and explicit nearest-row residual.
+    // The optional ON equality is a second conjunct, not a replacement for
+    // the nearest-prior ordering requirement.
+    let condition = if let JoinOperator::AsOf {
+        match_condition, ..
+    } = &join.join_operator
+    {
+        let eligibility = analyze_predicate_with_windows(
+            match_condition,
+            &[],
+            &BTreeMap::new(),
+            scope.output_scope,
+            diagnostics,
+        );
+        Some(match on_condition {
+            Some(on) => Predicate::And(LogicalPredicate::pair(eligibility, on)),
+            None => eligibility,
+        })
+    } else {
+        on_condition
+    };
 
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
 }
