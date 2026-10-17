@@ -130,7 +130,12 @@ schema:
         let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
         let dbt = analyze_dbt_manifest_with_schemas(&parsed, dialect, parser.as_ref()).unwrap();
         let input_sql = SqlInput::inline(sql);
-        let input = [ConfiguredSqlInput::new("task114", &input_sql, dialect, parser.as_ref())];
+        let input = [ConfiguredSqlInput::new(
+            "task114",
+            &input_sql,
+            dialect,
+            parser.as_ref(),
+        )];
         let direct = analyze_configured_inputs_with_catalog(&input, &catalog).unwrap();
         let odcs = analyze_configured_inputs_with_catalog(&input, &odcs_catalog).unwrap();
         let mut proof_bags = Vec::new();
@@ -139,41 +144,53 @@ schema:
                 .layers()
                 .iter()
                 .find(|layer| {
-                    sources.iter().all(|source| {
-                        layer.consumes().iter().any(|name| name == source)
-                    })
+                    sources
+                        .iter()
+                        .all(|source| layer.consumes().iter().any(|name| name == source))
                 })
                 .unwrap();
             let plan = physical_joint_source_plan(bundle, &[(layer.id(), 2)]);
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{variant}/{adapter}: no physical proof: {plan:?}");
             };
-            let bag = cases.iter().find_map(|case| {
-                case.obligations().iter().find_map(|obligation| {
-                    if let WitnessObligation::FiniteJoinPopulation {
-                        law: observed,
-                        left_values,
-                        right_values,
-                        output_rows: 2,
-                        closed_world: true,
-                        ..
-                    } = obligation {
-                        (observed.as_str() == law).then(|| {
-                            (
-                                left_values.clone(),
-                                right_values.clone(),
-                                observed.selected_rows(left_values, right_values).unwrap(),
-                                observed.unselected_pairs(left_values, right_values).unwrap(),
-                            )
-                        })
-                    } else {
-                        None
-                    }
+            let bag = cases
+                .iter()
+                .find_map(|case| {
+                    case.obligations().iter().find_map(|obligation| {
+                        if let WitnessObligation::FiniteJoinPopulation {
+                            law: observed,
+                            left_values,
+                            right_values,
+                            output_rows: 2,
+                            closed_world: true,
+                            ..
+                        } = obligation
+                        {
+                            (observed.as_str() == law).then(|| {
+                                (
+                                    left_values.clone(),
+                                    right_values.clone(),
+                                    observed.selected_rows(left_values, right_values).unwrap(),
+                                    observed
+                                        .unselected_pairs(left_values, right_values)
+                                        .unwrap(),
+                                )
+                            })
+                        } else {
+                            None
+                        }
+                    })
                 })
-            }).unwrap_or_else(|| panic!("{variant}/{adapter}: missing canonical row-bag law"));
+                .unwrap_or_else(|| panic!("{variant}/{adapter}: missing canonical row-bag law"));
             proof_bags.push(bag);
         }
-        assert_eq!(proof_bags[0], proof_bags[1], "{variant}: dbt canonical parity");
-        assert_eq!(proof_bags[0], proof_bags[2], "{variant}: ODCS canonical parity");
+        assert_eq!(
+            proof_bags[0], proof_bags[1],
+            "{variant}: dbt canonical parity"
+        );
+        assert_eq!(
+            proof_bags[0], proof_bags[2],
+            "{variant}: ODCS canonical parity"
+        );
     }
 }
