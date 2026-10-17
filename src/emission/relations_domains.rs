@@ -110,6 +110,9 @@ pub(super) fn join_to_value(join: &Join) -> Value {
         if let Some(source) = join.right_physical_source() {
             value["right_physical_source"] = json!(source);
         }
+        if let Some(instance) = join.right_physical_instance() {
+            value["right_physical_instance"] = json!(instance);
+        }
     }
     value
 }
