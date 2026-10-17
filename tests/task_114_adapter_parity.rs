@@ -105,7 +105,10 @@ schema:
         let dbt = analyze_dbt_manifest_with_schemas(&parsed, "generic", parser.as_ref()).unwrap();
         let source = SqlInput::inline(sql);
         let input = [ConfiguredSqlInput::new(
-            "task114", &source, "generic", parser.as_ref(),
+            "task114",
+            &source,
+            "generic",
+            parser.as_ref(),
         )];
         let direct = analyze_configured_inputs_with_catalog(&input, &catalog).unwrap();
         let odcs = analyze_configured_inputs_with_catalog(&input, &odcs_catalog).unwrap();
