@@ -2,6 +2,20 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_115_join_acceptance": {
+    "owner": "TASK-115",
+    "parent": "TASK-71",
+    "status": "in_progress_mandatory_cells_unverified",
+    "acceptance_freeze": "docs/task-115-acceptance-freeze.json",
+    "fixture_ids": ["71-C115-P", "71-C115-N"],
+    "named_variants": 4,
+    "mandatory_bags": 8,
+    "dialect_classification_cells": 104,
+    "duckdb_oracle_suite": "tests/task_115_join_filter_group.rs",
+    "unverified_cells_block_done": true,
+    "source_adapter_parity": "pending",
+    "independent_signoff": "pending"
+  },
   "task_114_join_acceptance": {
     "owner": "TASK-114",
     "parent": "TASK-71",
