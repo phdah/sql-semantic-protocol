@@ -7,20 +7,29 @@
     "parent": "TASK-71",
     "status": "in_progress_mandatory_cells_unverified",
     "acceptance_freeze": "docs/task-115-acceptance-freeze.json",
-    "fixture_ids": ["71-C115-P", "71-C115-N"],
+    "fixture_ids": [
+      "71-C115-P",
+      "71-C115-N"
+    ],
     "named_variants": 4,
     "mandatory_bags": 8,
     "dialect_classification_cells": 104,
     "duckdb_oracle_suite": "tests/task_115_join_filter_group.rs",
     "unverified_cells_block_done": true,
-    "source_adapter_parity": "pending",
-    "independent_signoff": "pending"
+    "source_adapter_parity": "filtered_homogeneous_chain_seam_only_other_frozen_variants_pending",
+    "independent_signoff": "pending",
+    "acceptance_audit": "docs/task-115-acceptance-audit.md",
+    "parser_layer_verified_cells": 104,
+    "duckdb_terminal_domain_bounds": "all_eight_complete_bags_verified"
   },
   "task_114_join_acceptance": {
     "owner": "TASK-114",
     "parent": "TASK-71",
     "status": "all_bounded_portable_child_acceptance_verified_native_runtime_boundaries_conditional",
-    "fixture_ids": ["71-C114-P", "71-C114-N"],
+    "fixture_ids": [
+      "71-C114-P",
+      "71-C114-N"
+    ],
     "acceptance_freeze": "docs/task-114-acceptance-freeze.json",
     "named_variants": 6,
     "case_cells": 12,
@@ -50,7 +59,10 @@
     "owner": "TASK-113",
     "parent": "TASK-71",
     "status": "verified_bounded_child",
-    "fixture_ids": ["71-C113-P", "71-C113-N"],
+    "fixture_ids": [
+      "71-C113-P",
+      "71-C113-N"
+    ],
     "acceptance_freeze": "docs/task-113-acceptance-freeze.json",
     "cases": 14,
     "named_variants": 7,
