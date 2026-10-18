@@ -1,7 +1,7 @@
 ---
 id: TASK-115
 title: Compose join plans through filters constraints and terminal row shaping
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -29,6 +29,17 @@ type: feature
 - **Concrete independent oracle baseline:** L keys [1,1,2] WHERE a>0, R keys [1,1], T keys [1] => positive joined count 4; rejecting NULL key excluded.
 - **Conditional/fail-closed boundary:** Must prove same complete physical input bag for upstream filters, all join instances and terminal count.
 - **Original parent AC ownership:** #1, #3, #4, #5, #6. Additive to project-wide outcome-first definition of done and TASK-66 capability inventory.
+
+## Implementation evidence in progress
+
+The [versioned eight-case source-bag matrix](../../docs/task-115-acceptance-freeze.json)
+fixes four named variants, positive/NOT TRUE physical triplet bags, nullable
+typed output domains, original source identities and 104 dialect obligations.
+[Public API and independent DuckDB tests](../../tests/task_115_join_filter_group.rs)
+cover an initial three-way filter/group proof seam. The remaining mandatory
+composite/NULL, PK/FK, adapter and dialect signoff cells are not verified; the
+task must remain In Progress until the complete frozen matrix, final-head CI
+and independent acceptance audit pass. No parent or sibling is unblocked.
 
 ## Acceptance Criteria
 
