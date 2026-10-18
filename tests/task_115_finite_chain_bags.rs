@@ -428,6 +428,28 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
         ),
         "unimplemented computed predicates must not masquerade as finite TRUE"
     );
+    for sql in [
+        "SELECT DISTINCT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+        "SELECT l.k FROM l JOIN r ON l.k IS NOT DISTINCT FROM r.k JOIN t ON r.k=t.k WHERE l.a>0",
+    ] {
+        let input = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task-115-unsupported-operator",
+            &input,
+            "postgresql",
+            parser.as_ref(),
+        )];
+        let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .expect("unsupported shape must still parse");
+        let target = analyzed.layers().last().expect("terminal");
+        assert!(
+            matches!(
+                physical_finite_chain_bag_plan(&analyzed, target.id(), &valid),
+                PhysicalFiniteChainProof::Residual { .. }
+            ),
+            "DISTINCT and NULL-safe comparison must not claim exact finite bags"
+        );
+    }
 }
 
 #[test]
