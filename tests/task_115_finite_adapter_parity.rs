@@ -90,7 +90,7 @@ fn source_manifest(case: &Value) -> Value {
             json!({
                 "unique_id": format!("source.demo.{relation}"),
                 "resource_type": "source",
-                "relation_name": relation,
+                "relation_name": format!("db.raw.{relation}"),
                 "database": "db",
                 "schema": "raw",
                 "name": relation,
@@ -105,7 +105,7 @@ fn model(id: &str, relation: &str, sql: &str, dependencies: Vec<String>) -> Valu
     json!({
         "unique_id": id,
         "resource_type": "model",
-        "relation_name": relation,
+        "relation_name": format!("db.analytics.{relation}"),
         "database": "db",
         "schema": "analytics",
         "original_file_path": format!("models/{relation}.sql"),
@@ -114,6 +114,13 @@ fn model(id: &str, relation: &str, sql: &str, dependencies: Vec<String>) -> Valu
         "compiled_code": sql,
         "depends_on": { "nodes": dependencies }
     })
+}
+
+fn qualified_dbt_sql(sql: &str) -> String {
+    sql.replace("FROM l", "FROM db.raw.l AS l")
+        .replace("JOIN r", "JOIN db.raw.r AS r")
+        .replace("JOIN t", "JOIN db.raw.t AS t")
+        .replace("FROM stage", "FROM db.analytics.stage AS stage")
 }
 
 fn dbt(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
@@ -137,21 +144,26 @@ fn dbt(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
             .expect("frozen CTAS producer");
         nodes.insert(
             "model.demo.stage".to_string(),
-            model("model.demo.stage", "stage", stage, all_sources),
+            model("model.demo.stage", "stage", &qualified_dbt_sql(stage), all_sources),
         );
         nodes.insert(
             "model.demo.task115".to_string(),
             model(
                 "model.demo.task115",
                 "task115_output",
-                statements[1].trim(),
+                &qualified_dbt_sql(statements[1].trim()),
                 vec!["model.demo.stage".to_string()],
             ),
         );
     } else {
         nodes.insert(
             "model.demo.task115".to_string(),
-            model("model.demo.task115", "task115_output", sql, all_sources),
+            model(
+                "model.demo.task115",
+                "task115_output",
+                &qualified_dbt_sql(sql),
+                all_sources,
+            ),
         );
     }
     let manifest = json!({
@@ -197,7 +209,23 @@ type CanonicalBag = (
 
 fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> CanonicalBag {
     let target = bundle.layers().last().expect("terminal");
-    let proof = physical_finite_chain_bag_plan(bundle, target.id(), &rows(case));
+    let snapshots = rows(case)
+        .into_iter()
+        .map(|state| {
+            let qualified = format!("db.raw.{}", state.relation());
+            if bundle
+                .source_schemas()
+                .iter()
+                .any(|schema| schema.relation() == qualified)
+            {
+                PhysicalWriteState::new(qualified, state.rows().to_vec())
+                    .expect("dbt physical relation identities")
+            } else {
+                state
+            }
+        })
+        .collect::<Vec<_>>();
+    let proof = physical_finite_chain_bag_plan(bundle, target.id(), &snapshots);
     let PhysicalFiniteChainProof::Exact(exact) = proof else {
         panic!("missing adapter physical bag proof: {proof:?}");
     };
