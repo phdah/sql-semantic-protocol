@@ -255,3 +255,116 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
         }
     }
 }
+
+#[test]
+fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() {
+    let schemas = [
+        ("l", vec![("id", "VARCHAR"), ("k", "INTEGER"), ("a", "INTEGER")]),
+        ("r", vec![("id", "VARCHAR"), ("k", "INTEGER")]),
+        ("t", vec![("id", "VARCHAR"), ("k", "INTEGER")]),
+    ]
+    .into_iter()
+    .map(|(relation, columns)| {
+        RelationSchema::new(
+            relation,
+            columns
+                .into_iter()
+                .map(|(name, kind)| {
+                    SchemaColumn::from_sql_type(name, kind, "postgresql")
+                        .expect("attested scalar")
+                })
+                .collect(),
+        )
+        .expect("physical relation")
+    })
+    .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).expect("typed source catalog");
+    let parser = dialect_from_name("postgresql").expect("portable SQL dialect");
+    let sql = SqlInput::inline(
+        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+    );
+    let configured = [ConfiguredSqlInput::new(
+        "task-115-negative",
+        &sql,
+        "postgresql",
+        parser.as_ref(),
+    )];
+    let analyzed =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
+    let target = analyzed.layers().last().expect("terminal");
+    let row = |pairs: Vec<(&str, LiteralValue)>| {
+        PhysicalWriteRow::new(
+            pairs
+                .into_iter()
+                .map(|(name, value)| (name.to_string(), value))
+                .collect(),
+        )
+        .expect("complete physical row")
+    };
+    let text = |value: &str| LiteralValue::Text(value.to_string());
+    let number = |value: i64| LiteralValue::Number(value.to_string());
+    let left = row(vec![("id", text("l1")), ("k", number(1)), ("a", number(1))]);
+    let right = row(vec![("id", text("r1")), ("k", number(1))]);
+    let third = row(vec![("id", text("t1")), ("k", number(1))]);
+    let make = |left_rows: Vec<PhysicalWriteRow>| {
+        vec![
+            PhysicalWriteState::new("l", left_rows).expect("left"),
+            PhysicalWriteState::new("r", vec![right.clone()]).expect("middle"),
+            PhysicalWriteState::new("t", vec![third.clone()]).expect("right"),
+        ]
+    };
+    let valid = make(vec![left.clone()]);
+    assert!(
+        matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &valid),
+            PhysicalFiniteChainProof::Exact { .. }
+        ),
+        "the same complete source bag should be provable"
+    );
+    assert!(
+        matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &make(vec![left.clone(), left])),
+            PhysicalFiniteChainProof::Impossible { .. }
+        ),
+        "duplicate physical row identities are inconsistent"
+    );
+    let wrong_type = row(vec![
+        ("id", text("l1")),
+        ("k", text("not an integer")),
+        ("a", number(1)),
+    ]);
+    assert!(
+        !matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &make(vec![wrong_type])),
+            PhysicalFiniteChainProof::Exact { .. }
+        ),
+        "invalid physical scalar type cannot certify a joined bag"
+    );
+    assert!(
+        !matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &[]),
+            PhysicalFiniteChainProof::Exact { .. }
+        ),
+        "missing complete source bags are not empty valid populations"
+    );
+
+    let unsupported = SqlInput::inline(
+        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a + 1 > 0",
+    );
+    let configured = [ConfiguredSqlInput::new(
+        "task-115-unproved",
+        &unsupported,
+        "postgresql",
+        parser.as_ref(),
+    )];
+    let analyzed =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
+    let target = analyzed.layers().last().expect("terminal");
+    assert!(
+        matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &valid),
+            PhysicalFiniteChainProof::Residual { .. }
+        ),
+        "unimplemented computed predicates must not masquerade as finite TRUE"
+    );
+}
