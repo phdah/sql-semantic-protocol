@@ -57,6 +57,7 @@ fn json_terminal(rows: Vec<BTreeMap<String, LiteralValue>>) -> Vec<Value> {
                             }
                             LiteralValue::Text(value) => json!(value),
                             LiteralValue::Boolean(value) => json!(value),
+                            _ => panic!("unsupported terminal literal"),
                         };
                         (column, json)
                     })
@@ -76,7 +77,10 @@ fn frozen_triplets(case: &Value, kind: &str) -> Vec<[String; 3]> {
         .map(|triplet| {
             let components = triplet.as_array().expect("source identities");
             std::array::from_fn(|index| {
-                components[index].as_str().expect("stable identity").to_string()
+                components[index]
+                    .as_str()
+                    .expect("stable identity")
+                    .to_string()
             })
         })
         .collect::<Vec<_>>();
@@ -116,10 +120,8 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 .chain(std::iter::once(
                     RelationSchema::new(
                         "stage",
-                        vec![
-                            SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
-                                .expect("stage key"),
-                        ],
+                        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
+                            .expect("stage key")],
                     )
                     .expect("stage schema"),
                 ))
@@ -144,11 +146,7 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
             let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog)
                 .unwrap_or_else(|error| panic!("{case_id}/{dialect}: {error:?}"));
             let target = analyzed.layers().last().expect("frozen terminal layer");
-            let proof = physical_finite_chain_bag_plan(
-                &analyzed,
-                target.id(),
-                &snapshots(case),
-            );
+            let proof = physical_finite_chain_bag_plan(&analyzed, target.id(), &snapshots(case));
             let PhysicalFiniteChainProof::Exact {
                 sources,
                 filtered_true_ids,
@@ -188,7 +186,11 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 ids.sort();
                 ids
             };
-            assert_eq!(actual_true, frozen_ids("filtered_true_ids"), "{case_id}/{dialect}");
+            assert_eq!(
+                actual_true,
+                frozen_ids("filtered_true_ids"),
+                "{case_id}/{dialect}"
+            );
             assert_eq!(
                 actual_not_true,
                 frozen_ids("filtered_not_true_ids"),
