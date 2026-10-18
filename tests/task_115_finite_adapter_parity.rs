@@ -188,17 +188,14 @@ fn direct(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::Ana
 fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> (Vec<[String; 3]>, Vec<[String; 3]>, Vec<BTreeMap<String, LiteralValue>>) {
     let target = bundle.layers().last().expect("terminal");
     let proof = physical_finite_chain_bag_plan(bundle, target.id(), &rows(case));
-    let PhysicalFiniteChainProof::Exact {
-        mut selected,
-        mut rejected,
-        terminal,
-        ..
-    } = proof else {
+    let PhysicalFiniteChainProof::Exact(exact) = proof else {
         panic!("missing adapter physical bag proof: {proof:?}");
     };
+    let mut selected = exact.selected.clone();
+    let mut rejected = exact.rejected.clone();
     selected.sort();
     rejected.sort();
-    (selected, rejected, terminal)
+    (selected, rejected, exact.terminal.clone())
 }
 
 #[test]
