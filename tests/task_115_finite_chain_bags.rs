@@ -458,20 +458,19 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
         PhysicalWriteState::new("r", vec![]).expect("empty complete middle bag"),
         valid[2].clone(),
     ];
-    let empty_proof = physical_finite_chain_bag_plan(
-        &analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(
-                "task-115-empty-middle",
-                &sql,
-                "postgresql",
-                parser.as_ref(),
-            )],
-            &catalog,
-        )
-        .expect("empty-bag SQL analysis"),
-        target.id(),
-        &empty_middle,
-    );
+    let empty_bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "task-115-empty-middle",
+            &sql,
+            "postgresql",
+            parser.as_ref(),
+        )],
+        &catalog,
+    )
+    .expect("empty-bag SQL analysis");
+    let empty_target = empty_bundle.layers().last().expect("empty-bag terminal");
+    let empty_proof =
+        physical_finite_chain_bag_plan(&empty_bundle, empty_target.id(), &empty_middle);
     let PhysicalFiniteChainProof::Exact(empty) = empty_proof else {
         panic!("empty physical middle bag must be exact: {empty_proof:?}");
     };
