@@ -8,7 +8,8 @@ use duckdb::Connection;
 use serde_json::{json, Value};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, RelationCatalog,
+    analyze_configured_inputs_with_catalog, dialect_from_name, ComparisonOperator,
+    ConfiguredSqlInput, JoinExecution, JoinKind, Predicate, ProtocolStatement, RelationCatalog,
     RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -440,6 +441,179 @@ fn all_parent_mandatory_and_post_outer_shared_sql_forms_parse_across_canonical_d
                 bundle.layers().len(),
                 1,
                 "{id}/{dialect}: analyzed, not silently omitted"
+            );
+            let query = bundle.inputs()[0]
+                .statements()
+                .iter()
+                .find_map(|statement| match statement {
+                    ProtocolStatement::Query(query) => Some(query),
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("{id}/{dialect}: missing canonical query"));
+            let expected_kinds: &[JoinKind] = match id {
+                "J71-I3-CHAIN" | "J71-I3-WHERE" => &[JoinKind::Inner, JoinKind::Inner],
+                "J71-LEFT-EMPTY" | "J71-OUTER-REVERSED" | "J71-OUTER-WHERE" => {
+                    &[JoinKind::Left]
+                }
+                "J71-RIGHT-EMPTY" => &[JoinKind::Right],
+                "J71-FULL-UNMATCHED" => &[JoinKind::Full],
+                "J71-SEMI-ABSENCE" => &[JoinKind::LeftSemi],
+                "J71-ANTI-ABSENCE" => &[JoinKind::LeftAnti],
+                _ => &[JoinKind::Inner],
+            };
+            let actual_kinds = query.joins().iter().map(|join| join.kind()).collect::<Vec<_>>();
+            assert_eq!(
+                actual_kinds, expected_kinds,
+                "{id}/{dialect}: canonical join kind and topology"
+            );
+            assert!(
+                query.joins().iter().all(|join| join.condition().is_some()),
+                "{id}/{dialect}: cannot silently omit the ON predicate"
+            );
+            assert!(
+                query.diagnostics().is_empty(),
+                "{id}/{dialect}: unexpected unsupported semantics: {:?}",
+                query.diagnostics()
+            );
+        }
+    }
+}
+
+#[test]
+fn every_conditional_parent_dialect_cell_checks_the_actual_canonical_boundary() {
+    // Check the original parent SQL, not only the child fixture ID or a
+    // statement count. A dialect parse is not evidence of native execution.
+    let freeze: Value = serde_json::from_str(FREEZE).expect("TASK-116 matrix");
+    let schemas = ["l", "r", "t"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                ["id", "k", "a"]
+                    .into_iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(
+                            column,
+                            if column == "id" { "VARCHAR" } else { "INTEGER" },
+                            "postgresql",
+                        )
+                        .expect("typed source column")
+                    })
+                    .collect(),
+            )
+            .expect("source schema")
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).expect("complete source catalog");
+    for cell in freeze["conditional"].as_array().expect("12 conditional cells") {
+        let id = cell["id"].as_str().expect("parent conditional ID");
+        let sql = cell["original_sql"].as_str().expect("original parent SQL");
+        for dialect in freeze["dialect_identities"].as_array().expect("13 parser paths") {
+            let dialect = dialect.as_str().expect("dialect name");
+            let parser = dialect_from_name(dialect).expect("known dialect parser");
+            let source = SqlInput::inline(sql);
+            let configured = ConfiguredSqlInput::new(id, &source, dialect, parser.as_ref());
+            let actual = match analyze_configured_inputs_with_catalog(&[configured], &catalog) {
+                Err(_) => "parser_boundary",
+                Ok(bundle) => {
+                    let query = bundle.inputs()[0]
+                        .statements()
+                        .iter()
+                        .find_map(|statement| match statement {
+                            ProtocolStatement::Query(query) => Some(query),
+                            _ => None,
+                        });
+                    if let Some(query) = query {
+                        let joins = query.joins();
+                        let first = joins.first();
+                        let expected_count = if id == "J71-ALIAS-REUSE" { 2 } else { 1 };
+                        let shape_ok = joins.len() == expected_count
+                            && match id {
+                                "J71-CROSS" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Cross && j.condition().is_none()
+                                }),
+                                "J71-USING" | "J71-NATURAL" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Inner && j.condition().is_some()
+                                }),
+                                "J71-OR-ON" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Inner
+                                        && matches!(j.condition(), Some(Predicate::Or(_)))
+                                }),
+                                "J71-NONEQUI" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Inner
+                                        && matches!(
+                                            j.condition(),
+                                            Some(Predicate::Comparison(c))
+                                                if c.operator() == ComparisonOperator::Lt
+                                        )
+                                }),
+                                "J71-NULLSAFE" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Inner
+                                        && matches!(
+                                            j.condition(),
+                                            Some(Predicate::Comparison(c))
+                                                if c.operator() == ComparisonOperator::IsNotDistinctFrom
+                                        )
+                                }),
+                                "J71-ASOF" => first.is_some_and(|j| {
+                                    j.execution() == Some(JoinExecution::AsOfNearest)
+                                }),
+                                "J71-RANGE-TIME" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Inner && j.condition().is_some()
+                                }),
+                                "J71-LATERAL" => first.is_some_and(|j| {
+                                    j.execution() == Some(JoinExecution::LateralInner)
+                                }),
+                                "J71-APPLY" => first.is_some_and(|j| {
+                                    j.execution() == Some(JoinExecution::CrossApply)
+                                }),
+                                "J71-ALIAS-REUSE" => {
+                                    joins.iter().all(|j| j.kind() == JoinKind::Inner)
+                                }
+                                "J71-OUTER-WHERE" => first.is_some_and(|j| {
+                                    j.kind() == JoinKind::Left && j.condition().is_some()
+                                }),
+                                _ => false,
+                            };
+                        if !shape_ok {
+                            "parsed_unclassified"
+                        } else {
+                            let codes = query
+                                .diagnostics()
+                                .iter()
+                                .map(|diagnostic| diagnostic.code())
+                                .collect::<Vec<_>>();
+                            match id {
+                                "J71-ASOF" if codes.contains(&"unsupported_asof_nearest_prior") => {
+                                    "parsed_asof_residual"
+                                }
+                                "J71-LATERAL" if codes.contains(&"unsupported_lateral_row_scope") => {
+                                    "parsed_lateral_residual"
+                                }
+                                "J71-APPLY" if codes.contains(&"unsupported_cross_apply") => {
+                                    "parsed_cross_apply_residual"
+                                }
+                                "J71-ASOF" | "J71-LATERAL" | "J71-APPLY" => {
+                                    "parsed_missing_residual"
+                                }
+                                "J71-OUTER-WHERE" if codes.is_empty() => {
+                                    "expected_parser_equivalent"
+                                }
+                                _ if codes.is_empty() => "parser_equivalent",
+                                _ => "parsed_with_residual",
+                            }
+                        }
+                    } else {
+                        "parsed_not_query"
+                    }
+                }
+            };
+            assert_eq!(
+                actual,
+                cell["dialect_classifications"][dialect]["parser"]
+                    .as_str()
+                    .expect("reviewed frozen parser status"),
+                "{id}/{dialect}: original parent parser and canonical residual classification"
             );
         }
     }
