@@ -19,18 +19,24 @@ fn insert_rows(db: &Connection, name: &str, rows: &[Value]) {
         let sql = match name {
             "l" => format!(
                 "INSERT INTO l(id,k,k2,a) VALUES ({},{},{},{})",
-                quote_sql(&row["id"]), quote_sql(&row["k"]),
-                quote_sql(&row["k2"]), quote_sql(&row["a"])
+                quote_sql(&row["id"]),
+                quote_sql(&row["k"]),
+                quote_sql(&row["k2"]),
+                quote_sql(&row["a"])
             ),
             "r" => format!(
                 "INSERT INTO r(id,k,k2,tid) VALUES ({},{},{},{})",
-                quote_sql(&row["id"]), quote_sql(&row["k"]),
-                quote_sql(&row["k2"]), quote_sql(&row["tid"])
+                quote_sql(&row["id"]),
+                quote_sql(&row["k"]),
+                quote_sql(&row["k2"]),
+                quote_sql(&row["tid"])
             ),
             "t" => format!(
                 "INSERT INTO t(id,k,k2,tid) VALUES ({},{},{},{})",
-                quote_sql(&row["id"]), quote_sql(&row["k"]),
-                quote_sql(&row["k2"]), quote_sql(&row["tid"])
+                quote_sql(&row["id"]),
+                quote_sql(&row["k"]),
+                quote_sql(&row["k2"]),
+                quote_sql(&row["tid"])
             ),
             _ => panic!("unknown source"),
         };
@@ -39,12 +45,19 @@ fn insert_rows(db: &Connection, name: &str, rows: &[Value]) {
 }
 
 fn identities(value: &Value) -> Vec<String> {
-    let mut rows = value.as_array().expect("fixture rows")
-        .iter().map(|triple| {
+    let mut rows = value
+        .as_array()
+        .expect("fixture rows")
+        .iter()
+        .map(|triple| {
             let parts = triple.as_array().expect("triple identity");
-            parts.iter().map(|v| v.as_str().expect("source row id"))
-                .collect::<Vec<_>>().join(":")
-        }).collect::<Vec<_>>();
+            parts
+                .iter()
+                .map(|v| v.as_str().expect("source row id"))
+                .collect::<Vec<_>>()
+                .join(":")
+        })
+        .collect::<Vec<_>>();
     rows.sort();
     rows
 }
@@ -57,17 +70,21 @@ fn actual_identity_bag(db: &Connection, truth: &str, select_true: bool) -> Vec<S
          WHERE ({truth}) IS {comparison}"
     );
     let mut statement = db.prepare(&sql).expect("identity cross-bag oracle");
-    let results = statement.query_map([], |row| row.get::<_, String>(0))
+    let results = statement
+        .query_map([], |row| row.get::<_, String>(0))
         .expect("source identity bag");
-    let mut bag = results.map(|result| result.expect("row identity")).collect::<Vec<_>>();
+    let mut bag = results
+        .map(|result| result.expect("row identity"))
+        .collect::<Vec<_>>();
     bag.sort();
     bag
 }
 
 #[test]
 fn frozen_eight_bags_are_independently_executable() {
-    let frozen: Value = serde_json::from_str(include_str!("../docs/task-115-acceptance-freeze.json"))
-        .expect("TASK-115 matrix");
+    let frozen: Value =
+        serde_json::from_str(include_str!("../docs/task-115-acceptance-freeze.json"))
+            .expect("TASK-115 matrix");
     for case in frozen["cases"].as_array().expect("cases") {
         let id = case["id"].as_str().expect("id");
         let db = Connection::open_in_memory().expect("DuckDB");
@@ -86,7 +103,9 @@ fn frozen_eight_bags_are_independently_executable() {
             insert_rows(
                 &db,
                 source,
-                case["physical_source_bags"][source].as_array().expect("physical rows"),
+                case["physical_source_bags"][source]
+                    .as_array()
+                    .expect("physical rows"),
             );
         }
         let composite = case["variant"] == "composite_nullable_keys";
@@ -105,34 +124,58 @@ fn frozen_eight_bags_are_independently_executable() {
             identities(&case["rejected_not_true_triplets"]),
             "{id}: SQL NOT TRUE source triplets"
         );
-        let statements = case["sql"].as_str().expect("SQL").split(';').collect::<Vec<_>>();
+        let statements = case["sql"]
+            .as_str()
+            .expect("SQL")
+            .split(';')
+            .collect::<Vec<_>>();
         let query = statements.last().expect("terminal");
         for statement in statements.iter().take(statements.len() - 1) {
-            db.execute_batch(statement).expect("produce stage from complete sources");
+            db.execute_batch(statement)
+                .expect("produce stage from complete sources");
         }
         let grouped = case["variant"] == "downstream_group_count";
         let mut result = db.prepare(query).expect("original terminal SQL");
         let actual = if grouped {
-            result.query_map([], |row| Ok(serde_json::json!({
-                "k": row.get::<_, Option<i64>>(0)?,
-                "n": row.get::<_, i64>(1)?,
-            }))).expect("group query").map(|r| r.expect("group")).collect::<Vec<_>>()
+            result
+                .query_map([], |row| {
+                    Ok(serde_json::json!({
+                        "k": row.get::<_, Option<i64>>(0)?,
+                        "n": row.get::<_, i64>(1)?,
+                    }))
+                })
+                .expect("group query")
+                .map(|r| r.expect("group"))
+                .collect::<Vec<_>>()
         } else {
-            result.query_map([], |row| Ok(serde_json::json!({
-                "k": row.get::<_, Option<i64>>(0)?,
-            }))).expect("join query").map(|r| r.expect("join")).collect::<Vec<_>>()
+            result
+                .query_map([], |row| {
+                    Ok(serde_json::json!({
+                        "k": row.get::<_, Option<i64>>(0)?,
+                    }))
+                })
+                .expect("join query")
+                .map(|r| r.expect("join"))
+                .collect::<Vec<_>>()
         };
-        let mut expected = case["expected_terminal_bag"].as_array().expect("terminal bag")
-            .iter().map(|item| {
+        let mut expected = case["expected_terminal_bag"]
+            .as_array()
+            .expect("terminal bag")
+            .iter()
+            .map(|item| {
                 if grouped {
                     serde_json::json!({"k":item["k"],"n":item["n"]})
                 } else {
                     serde_json::json!({"k":item["k"]})
                 }
-            }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
         let mut actual = actual;
         actual.sort_by_key(Value::to_string);
         expected.sort_by_key(Value::to_string);
-        assert_eq!(actual, expected, "{id}: SQL output exactly matches frozen bag");
+        assert_eq!(
+            actual, expected,
+            "{id}: SQL output exactly matches frozen bag"
+        );
     }
 }
