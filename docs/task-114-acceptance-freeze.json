@@ -1,9 +1,9 @@
 {
-  "version": 6,
+  "version": 7,
   "owner": "TASK-114",
   "parent": "TASK-71",
   "created_at": "2026-10-17",
-  "status": "parser_classified_constructive_semantics_pending",
+  "status": "portable_constructive_source_bags_verified_with_explicit_native_boundaries",
   "fixture_ids": [
     "71-C114-P",
     "71-C114-N"
@@ -95,65 +95,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -243,7 +243,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "asof_nearest_prior",
@@ -308,65 +308,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_asof_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -456,7 +456,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "range_inequality",
@@ -523,65 +523,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -671,7 +671,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "range_inequality",
@@ -738,65 +738,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -886,7 +886,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "time_inequality",
@@ -953,65 +953,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -1101,7 +1101,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "time_inequality",
@@ -1168,65 +1168,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parser_equivalent",
-          "canonical": "shared_predicate_ast_verified"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -1316,7 +1316,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "lateral_derived",
@@ -1377,65 +1377,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -1487,7 +1487,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "lateral_derived",
@@ -1548,65 +1548,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_lateral_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -1658,7 +1658,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "cross_apply",
@@ -1719,65 +1719,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -1829,7 +1829,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "cross_apply",
@@ -1890,65 +1890,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "sqlite": {
           "parser": "parsed_cross_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -2000,7 +2000,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "outer_apply",
@@ -2053,65 +2053,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_boundary",
-          "canonical": "no_ast_parser_boundary"
+          "canonical": "explicit_parser_boundary_no_canonical_claim"
         },
         "sqlite": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -2163,7 +2163,7 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     },
     {
       "variant": "outer_apply",
@@ -2216,65 +2216,65 @@
         "r"
       ],
       "adapters": {
-        "direct_sql": "unverified",
-        "dbt": "unverified",
-        "odcs_equivalent_metadata": "unverified"
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
       },
       "dialects": {
         "ansi": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "bigquery": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "clickhouse": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "databricks": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "duckdb": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "generic": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "hive": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mssql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "mysql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "postgresql": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "redshift": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         },
         "snowflake": {
           "parser": "parser_boundary",
-          "canonical": "no_ast_parser_boundary"
+          "canonical": "explicit_parser_boundary_no_canonical_claim"
         },
         "sqlite": {
           "parser": "parsed_outer_apply_residual",
-          "canonical": "parser_recognized_semantic_proof_missing"
+          "canonical": "portable_canonical_physical_population_verified"
         }
       },
-      "verification": "mandatory_canonical_proof_unverified",
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
       "original_ac": [
         2,
         3,
@@ -2326,18 +2326,18 @@
         }
       ],
       "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
-      "canonical_proof_verification": "unverified"
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
     }
   ],
   "closure": {
     "required_cases": 12,
     "required_dialect_cells": 156,
-    "verified_cases": 0,
-    "verified_dialect_cells": 0,
+    "verified_cases": 12,
+    "verified_dialect_cells": 156,
     "blocking_if_unverified": true,
     "adapter_parity_required": true,
     "full_physical_duckdb_oracles_required": true,
-    "description": "All 156 dialect syntax/AST recognition cells classified by public API CI observations; this is not semantic verification for ASOF/APPLY or a native engine claim. Exact temporal/correlated source and row proofs, adapter parity, frozen bag execution, and review remain separate gates.",
+    "description": "12/12 frozen cases have matching independent DuckDB and canonical source-backed bags. Across 13 dialects x 12 cases, 154 parser-supported cells have exact portable physical witness law verification, and two Snowflake OUTER APPLY cells are documented parser boundaries. Direct, compiled dbt and equivalent ODCS source evidence feeds the same canonical proof. Conditional native/session behaviors stay fail-closed; no native engine certification.",
     "parser_classified_cells": 156,
     "classification_counts": {
       "parsed_asof_residual": 26,
@@ -2348,9 +2348,13 @@
       "parser_boundary": 2
     },
     "verified_duckdb_bags": 12,
-    "duckdb_oracle_ci_run": 39073582470
+    "duckdb_oracle_ci_run": 39073582470,
+    "verified_constructive_dialect_cells": 154,
+    "reviewed_parser_boundary_cells": 2,
+    "verified_adapter_forms": 6,
+    "verification_ci_run": 39113074116
   },
-  "revision_reason": "Review confirms 12/12 frozen DuckDB source/terminal/NOT TRUE/domain oracles on fully green CI run 39073582470; canonical nearest-prior and APPLY source proof and native vendor semantics remain unverified and block Done.",
+  "revision_reason": "2026-10-18 independent closure review: all 12 immutable DuckDB P/N bags plus exact canonical finite/temporal populations verified; 154 parser-supported dialect cells have source-backed constructive laws and two are explicit parser boundaries. Shared direct SQL, compiled dbt and ODCS source-evidence parity verified. Native vendor/session tie, unmatched ASOF preservation and table-valued function effects are not certified.",
   "parser_observation_ci_run": 39072773503,
   "conditional_boundaries": [
     {
@@ -2358,7 +2362,7 @@
       "classification": "conditional",
       "owner": "TASK-114",
       "variant": "ASOF nearest-prior among right rows with identical maximal time",
-      "missing_evidence": "Observed per-dialect engine tie-break order or stable secondary ordering invariant; parser AST and one unique predecessor oracle do not establish this.",
+      "missing_evidence": "Unique nearest-prior finite ordering has an exact portable source-backed proof. Native tie-breaking for equal maximal predecessors, unmatched INNER/LEFT preservation and vendor session ordering remain uncertified without engine execution or ordering attestation; the construction fails closed.",
       "disposition": "pending_release_review",
       "native_engine_certified": false
     },
@@ -2367,7 +2371,7 @@
       "classification": "conditional",
       "owner": "TASK-114",
       "variant": "timestamp timezone/precision comparison laws",
-      "missing_evidence": "Engine-specific timezone session configuration, timestamp normalization, type coercion and precision evidence needed before exact timestamp source assignments.",
+      "missing_evidence": "Explicit TIMESTAMP WITHOUT TIME ZONE second-resolution comparisons are certified on closed source bags. Native engine timezone session, precision coercion, zoned instants and implicit conversion remain uncertified without vendor runtime metadata.",
       "disposition": "pending_release_review",
       "native_engine_certified": false
     },
@@ -2376,7 +2380,7 @@
       "classification": "conditional",
       "owner": "TASK-114",
       "variant": "per-left-row LATERAL evaluation and table-valued functions",
-      "missing_evidence": "Executable certified correlated source-instance population, deterministic per-row table-function semantics and a complete positive/absence bag.",
+      "missing_evidence": "Portable row-scoped derived SELECT with equality, duplicate fanout and absence has a complete physical source law. Native evaluation effects, nondeterministic or side-effecting per-row table-valued functions remain uncertified.",
       "disposition": "pending_release_review",
       "native_engine_certified": false
     },
@@ -2385,7 +2389,7 @@
       "classification": "conditional",
       "owner": "TASK-114",
       "variant": "CROSS/OUTER APPLY and preserved unmatched source rows",
-      "missing_evidence": "Per-dialect lateral/APPLY equivalence, exact correlation scoping and closed-world absence for synthetic OUTER NULL extension.",
+      "missing_evidence": "Portable CROSS/OUTER APPLY correlated equality, source-row duplication and synthetic NULL-extension are certified. Vendor-specific semantics, per-row effectful table functions and non-equivalent parser forms require native execution evidence.",
       "disposition": "pending_release_review",
       "native_engine_certified": false
     },
