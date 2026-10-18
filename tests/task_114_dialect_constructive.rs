@@ -5,8 +5,8 @@
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_source_plan,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessObligation,
+    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessObligation,
 };
 
 const MATRIX: &str = include_str!("../docs/task-114-acceptance-freeze.json");
@@ -62,14 +62,8 @@ fn every_parsed_frozen_dialect_cell_has_the_expected_canonical_source_bag() {
             let WitnessDirection::Feasible(candidates) = plan.outcome() else {
                 panic!("{id}/{dialect}: parsed SQL lacks complete canonical proof: {plan:?}");
             };
-            let numeric_left = left
-                .iter()
-                .map(|row| row[1].as_i64())
-                .collect::<Vec<_>>();
-            let numeric_right = right
-                .iter()
-                .map(|row| row[1].as_i64())
-                .collect::<Vec<_>>();
+            let numeric_left = left.iter().map(|row| row[1].as_i64()).collect::<Vec<_>>();
+            let numeric_right = right.iter().map(|row| row[1].as_i64()).collect::<Vec<_>>();
             let temporal_left = left
                 .iter()
                 .map(|row| row[1].as_str().map(ToString::to_string))
@@ -88,43 +82,59 @@ fn every_parsed_frozen_dialect_cell_has_the_expected_canonical_source_bag() {
                     .count()
                     == 2;
                 has_two_closed_sources
-                    && candidate.obligations().iter().any(|obligation| match obligation {
-                        WitnessObligation::FiniteJoinPopulation {
-                            law,
-                            left_values,
-                            right_values,
-                            output_rows,
-                            closed_world: true,
-                            ..
-                        } if !is_temporal => {
-                            left_values == &numeric_left
-                                && right_values == &numeric_right
-                                && *output_rows == expected_rows
-                                && law.selected_rows(left_values, right_values)
-                                    .is_some_and(|rows| rows.len() as u64 == expected_rows)
-                                && law.unselected_pairs(left_values, right_values)
-                                    .is_some_and(|pairs| pairs.len() == case["not_true"].as_array().unwrap().len())
-                        }
-                        WitnessObligation::TemporalJoinPopulation {
-                            law,
-                            left_values,
-                            right_values,
-                            output_rows,
-                            closed_world: true,
-                            ..
-                        } if is_temporal => {
-                            left_values == &temporal_left
-                                && right_values == &temporal_right
-                                && *output_rows == expected_rows
-                                && law.selected_rows(left_values, right_values)
-                                    .is_some_and(|rows| rows.len() as u64 == expected_rows)
-                                && law.unselected_pairs(left_values, right_values)
-                                    .is_some_and(|pairs| pairs.len() == case["not_true"].as_array().unwrap().len())
-                        }
-                        _ => false,
-                    })
+                    && candidate
+                        .obligations()
+                        .iter()
+                        .any(|obligation| match obligation {
+                            WitnessObligation::FiniteJoinPopulation {
+                                law,
+                                left_values,
+                                right_values,
+                                output_rows,
+                                closed_world: true,
+                                ..
+                            } if !is_temporal => {
+                                left_values == &numeric_left
+                                    && right_values == &numeric_right
+                                    && *output_rows == expected_rows
+                                    && law
+                                        .selected_rows(left_values, right_values)
+                                        .is_some_and(|rows| rows.len() as u64 == expected_rows)
+                                    && law.unselected_pairs(left_values, right_values).is_some_and(
+                                        |pairs| {
+                                            pairs.len()
+                                                == case["not_true"].as_array().unwrap().len()
+                                        },
+                                    )
+                            }
+                            WitnessObligation::TemporalJoinPopulation {
+                                law,
+                                left_values,
+                                right_values,
+                                output_rows,
+                                closed_world: true,
+                                ..
+                            } if is_temporal => {
+                                left_values == &temporal_left
+                                    && right_values == &temporal_right
+                                    && *output_rows == expected_rows
+                                    && law
+                                        .selected_rows(left_values, right_values)
+                                        .is_some_and(|rows| rows.len() as u64 == expected_rows)
+                                    && law.unselected_pairs(left_values, right_values).is_some_and(
+                                        |pairs| {
+                                            pairs.len()
+                                                == case["not_true"].as_array().unwrap().len()
+                                        },
+                                    )
+                            }
+                            _ => false,
+                        })
             });
-            assert!(found, "{id}/{dialect}: exact frozen source bag not in canonical proof");
+            assert!(
+                found,
+                "{id}/{dialect}: exact frozen source bag not in canonical proof"
+            );
             proven += 1;
         }
     }
