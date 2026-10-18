@@ -6,7 +6,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
     parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, LiteralValue,
     PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationConstraint, RelationSchema, SchemaColumn, SqlInput,
+    PhysicalWriteState, RelationCatalog, RelationConstraint, RelationSchema, SchemaColumn,
+    SqlInput,
 };
 
 fn rows(case: &Value) -> Vec<PhysicalWriteState> {
