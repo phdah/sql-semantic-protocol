@@ -455,9 +455,11 @@ pub fn physical_finite_chain_bag_plan(
     let mut terminal = Vec::new();
     let mut filtered_true_ids = Vec::new();
     let mut filtered_not_true_ids = Vec::new();
-    if join_query.predicates().where_predicate().is_some_and(|predicate| {
-        !independent_left_filter(predicate, &names[0], relations[0])
-    }) {
+    if join_query
+        .predicates()
+        .where_predicate()
+        .is_some_and(|predicate| !independent_left_filter(predicate, &names[0], relations[0]))
+    {
         return residual("WHERE predicate is not independently owned by the left source");
     }
     // Evaluate the left-source filter once per physical left row, including
