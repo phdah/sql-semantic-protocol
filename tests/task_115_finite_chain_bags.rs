@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_chain_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteChainProof, PhysicalWriteRow,
+    ConfiguredSqlInput, LiteralValue, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
+    PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
