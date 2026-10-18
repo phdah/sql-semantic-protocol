@@ -208,67 +208,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -373,67 +373,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -573,67 +573,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -725,67 +725,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -959,67 +959,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -1122,67 +1122,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -1350,67 +1350,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
@@ -1519,67 +1519,67 @@
       "dialect_matrix": [
         {
           "dialect": "ansi",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "databricks",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "generic",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "hive",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mssql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "mysql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "redshift",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "pending_parser_execution",
+          "parser_status": "shared_sql_parsed_layers_verified",
           "canonical_status": "pending_executable_proof"
         }
       ],
