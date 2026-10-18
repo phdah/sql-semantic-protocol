@@ -129,7 +129,7 @@
   },
   "task_71_join_acceptance": {
     "owner": "TASK-71",
-    "status": "independent_parent_signoff_in_progress",
+    "status": "independently_verified_portable_parent_unmerged",
     "acceptance_freeze": "docs/task-71-acceptance-freeze.json",
     "mandatory_fixture_cells": 15,
     "conditional_variant_cells": 12,
@@ -152,7 +152,8 @@
     "last_verified_child": "TASK-115",
     "next_child": "TASK-116",
     "task_116_parent_freeze": "docs/task-116-acceptance-freeze.json",
-    "task_116_parent_oracle": "tests/task_116_parent_join_oracles.rs"
+    "task_116_parent_oracle": "tests/task_116_parent_join_oracles.rs",
+    "task_116_acceptance_audit": "docs/task-116-acceptance-audit.md"
   },
   "task_107_oracle_evidence": {
     "owner": "TASK-107",
@@ -12136,7 +12137,7 @@
   "task_116_join_acceptance": {
     "owner": "TASK-116",
     "parent": "TASK-71",
-    "status": "independent_parent_reconciliation_in_progress",
+    "status": "verified_bounded_child_parent_merge_pending",
     "acceptance_freeze": "docs/task-116-acceptance-freeze.json",
     "fixture_ids": [
       "71-C116-P",
@@ -12150,7 +12151,10 @@
     "source_identity_positive_not_true_and_typed_domains": "independent_15_case_bag_oracle_with_closed_world_rejected_pairs",
     "conditional_release_classification": "portable_canonical_proofs_native_vendor_runtime_not_certified",
     "adapter_evidence": "verified_by_focused_child_SQL_dbt_ODCS_test_suites_in_full_CI",
-    "parent_original_ac_signoff": "pending_independent_review_of_original_AC_1_through_6",
-    "release_approved": false
+    "parent_original_ac_signoff": "independent_portable_AC1_to_AC6_reconciled_parent_task_closes_after_merge",
+    "release_approved": false,
+    "verified_ci_run": 39155624537,
+    "verified_ci_sha": "8f8b5b6785140039472758deaef5d6460967045a",
+    "independent_signoff": "five_of_five_TASK_116_AC_verified"
   }
 }
