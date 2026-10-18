@@ -261,10 +261,10 @@ fn frozen_eight_bags_produce_identical_odcs_source_proofs() {
         let odcs_catalog =
             RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS schema catalog");
         let direct_catalog = RelationCatalog::from_schemas(&schemas(case)).expect("direct catalog");
-        let direct = certified(case, &direct(case, &direct_catalog));
+        let baseline = certified(case, &direct(case, &direct_catalog));
         let odcs = certified(case, &direct(case, &odcs_catalog));
         assert_eq!(
-            odcs, direct,
+            odcs, baseline,
             "ODCS must not alter canonical source assignments"
         );
     }
