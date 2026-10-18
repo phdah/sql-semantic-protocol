@@ -588,8 +588,7 @@ fn physical_three_way_inner_count_plan(
     if source_filters.iter().any(|(source, filters)| {
         filters.iter().any(|filter| {
             keys.iter().any(|(key, _)| {
-                key.relation() == Some(source.as_str())
-                    && formula_references_column(filter, key)
+                key.relation() == Some(source.as_str()) && formula_references_column(filter, key)
             })
         })
     }) {
