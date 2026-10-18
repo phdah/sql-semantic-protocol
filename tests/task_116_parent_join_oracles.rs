@@ -1,0 +1,283 @@
+//! TASK-116 independent parent oracle for all fifteen frozen TASK-71 mandatory cells.
+//! Compare literal source/terminal bags and row identities against DuckDB, not
+//! the result of the protocol's own analysis or its child fixtures.
+
+use std::collections::BTreeSet;
+
+use duckdb::Connection;
+use serde_json::{json, Value};
+
+const FREEZE: &str = include_str!("../docs/task-116-acceptance-freeze.json");
+
+fn sorted(mut rows: Vec<Value>) -> Vec<Value> {
+    rows.sort_by_key(Value::to_string);
+    rows
+}
+
+fn numeric_rows(db: &Connection, sql: &str) -> Vec<Value> {
+    let mut stmt = db.prepare(sql).expect("independent terminal SQL");
+    let width = stmt.column_count();
+    let rows = stmt
+        .query_map([], |row| {
+            let columns = (0..width)
+                .map(|index| {
+                    row.get::<usize, Option<i64>>(index)
+                        .map_or_else(|err| panic!("typed INTEGER column {index}: {err}"), |v| {
+                            v.map_or(Value::Null, |v| json!(v))
+                        })
+                })
+                .collect::<Vec<_>>();
+            Ok(Value::Array(columns))
+        })
+        .expect("DuckDB output rows")
+        .map(|row| row.expect("numeric row"))
+        .collect::<Vec<_>>();
+    sorted(rows)
+}
+
+fn identity_rows(db: &Connection, sql: &str) -> Vec<Value> {
+    let mut stmt = db.prepare(sql).expect("source-identity SQL");
+    let width = stmt.column_count();
+    let rows = stmt
+        .query_map([], |row| {
+            let ids = (0..width)
+                .map(|index| {
+                    row.get::<usize, Option<String>>(index)
+                        .map_or_else(|err| panic!("source identity {index}: {err}"), |v| {
+                            v.map_or(Value::Null, |v| json!(v))
+                        })
+                })
+                .collect::<Vec<_>>();
+            Ok(Value::Array(ids))
+        })
+        .expect("DuckDB identified rows")
+        .map(|row| row.expect("source identity row"))
+        .collect::<Vec<_>>();
+    sorted(rows)
+}
+
+fn source_rows(db: &Connection, relation: &str) -> Vec<Value> {
+    let mut stmt = db
+        .prepare(&format!("SELECT id, k, a FROM {relation}"))
+        .expect("complete source bag query");
+    let rows = stmt
+        .query_map([], |row| {
+            Ok(json!({
+                "id": row.get::<_, String>(0)?,
+                "k": row.get::<_, Option<i64>>(1)?,
+                "a": row.get::<_, Option<i64>>(2)?,
+            }))
+        })
+        .expect("physical source rows")
+        .map(|row| row.expect("source row"))
+        .collect::<Vec<_>>();
+    sorted(rows)
+}
+
+fn seed(db: &Connection, case: &Value) {
+    let is_fk = case["id"] == "J71-FK-KEY";
+    // A referenced primary key must exist before the referencing table.
+    for name in ["r", "l", "t"] {
+        if !case["physical_sources"][name].is_array() {
+            continue;
+        }
+        let ddl = if is_fk && name == "r" {
+            "CREATE TABLE r (id VARCHAR NOT NULL, k INTEGER PRIMARY KEY, a INTEGER)".to_string()
+        } else if is_fk && name == "l" {
+            "CREATE TABLE l (id VARCHAR NOT NULL, k INTEGER REFERENCES r(k), a INTEGER)".to_string()
+        } else {
+            format!("CREATE TABLE {name} (id VARCHAR NOT NULL, k INTEGER, a INTEGER)")
+        };
+        db.execute_batch(&ddl).expect("typed physical source");
+    }
+    for name in ["r", "l", "t"] {
+        let Some(rows) = case["physical_sources"][name].as_array() else {
+            continue;
+        };
+        let mut source_ids = BTreeSet::new();
+        for row in rows {
+            let id = row["id"].as_str().expect("source identity");
+            assert!(source_ids.insert(id), "{}: duplicate source ID", case["id"]);
+            let k = row["k"].as_i64();
+            let a = row["a"].as_i64();
+            db.execute(
+                &format!("INSERT INTO {name}(id,k,a) VALUES (?1,?2,?3)"),
+                duckdb::params![id, k, a],
+            )
+            .expect("complete physical row seeded");
+        }
+        assert_eq!(
+            source_rows(db, name),
+            sorted(rows.clone()),
+            "{}: immutable whole {name} bag",
+            case["id"]
+        );
+    }
+}
+
+fn assert_domain(rows: &[Value], case: &Value) {
+    let domains = case["output_domains"].as_array().expect("typed domains");
+    assert_eq!(rows.first().map_or(domains.len(), |r| r.as_array().unwrap().len()), domains.len());
+    for (index, domain) in domains.iter().enumerate() {
+        let observed = rows.iter().map(|row| &row[index]).collect::<Vec<_>>();
+        let integers = observed.iter().filter_map(|value| value.as_i64()).collect::<Vec<_>>();
+        let lower = integers.iter().copied().min();
+        let upper = integers.iter().copied().max();
+        assert_eq!(lower, domain["lower"].as_i64(), "{}: lower", case["id"]);
+        assert_eq!(upper, domain["upper"].as_i64(), "{}: upper", case["id"]);
+        assert_eq!(observed.iter().any(|value| value.is_null()), domain["contains_null"].as_bool().unwrap(), "{}: NULL", case["id"]);
+        assert_eq!(rows.is_empty(), domain["empty"].as_bool().unwrap(), "{}: empty", case["id"]);
+        assert_eq!(domain["type"], "signed_integer");
+        assert_eq!(domain["lower_inclusive"], true);
+        assert_eq!(domain["upper_inclusive"], true);
+    }
+}
+
+#[test]
+fn every_mandatory_parent_cell_has_an_independent_closed_world_duckdb_oracle() {
+    let freeze: Value = serde_json::from_str(FREEZE).expect("versioned TASK-116 freeze");
+    let cases = freeze["mandatory"].as_array().expect("fifteen required cases");
+    assert_eq!(cases.len(), 15);
+    assert_eq!(freeze["fixture_ids"], json!(["71-C116-P", "71-C116-N"]));
+    let mut seen = BTreeSet::new();
+    let mut positive = 0;
+    let mut negative = 0;
+    for case in cases {
+        let id = case["id"].as_str().expect("canonical parent ID");
+        assert!(seen.insert(id), "duplicate parent cell {id}");
+        let fixture = case["fixture"].as_str().expect("frozen P/N fixture");
+        match fixture {
+            "71-C116-P" => positive += 1,
+            "71-C116-N" => negative += 1,
+            _ => panic!("{id}: unrecognized frozen fixture"),
+        }
+        assert_eq!(case["classification"], "exact_required");
+        assert_eq!(case["dialects"].as_array().unwrap().len(), 13);
+        assert_eq!(case["adapter_obligations"].as_array().unwrap().len(), 3);
+        assert!(case["source_instance_ids"].as_object().unwrap().len() > 0);
+        let db = Connection::open_in_memory().expect("DuckDB oracle");
+        seed(&db, case);
+
+        // Physical SQL, rather than the analyzed protocol, determines terminal truth.
+        let actual = numeric_rows(&db, case["duckdb_sql"].as_str().unwrap());
+        let expected = sorted(case["expected_output_rows"].as_array().unwrap().clone());
+        assert_eq!(actual, expected, "{id}: complete terminal output with multiplicity");
+        assert_eq!(actual.len(), case["expected_terminal_count"].as_u64().unwrap() as usize);
+        assert_domain(&actual, case);
+
+        // Source-instance identities distinguish duplicates and physical vs synthetic NULL.
+        assert_eq!(
+            identity_rows(&db, case["identity_sql"].as_str().unwrap()),
+            sorted(case["expected_source_identities"].as_array().unwrap().clone()),
+            "{id}: exact source-origin multiplicities"
+        );
+        if let Some(negative_sql) = case["not_true_sql"].as_str() {
+            let rejected = identity_rows(&db, negative_sql);
+            assert_eq!(
+                rejected,
+                sorted(case["expected_not_true_pairs"].as_array().unwrap().clone()),
+                "{id}: SQL FALSE or UNKNOWN, not TRUE"
+            );
+            let sources = &case["physical_sources"];
+            let pairs = sources["l"].as_array().unwrap().len()
+                * sources["r"].as_array().unwrap().len();
+            assert_eq!(
+                case["expected_source_identities"].as_array().unwrap().len() + rejected.len(),
+                pairs,
+                "{id}: complete positive/NOT TRUE Cartesian pair partition"
+            );
+        }
+        if id == "J71-FK-KEY" {
+            assert!(
+                db.execute("INSERT INTO l(id,k,a) VALUES ('bad',99,NULL)", []).is_err(),
+                "enforced physical foreign key must reject missing referenced source"
+            );
+        }
+    }
+    assert!(positive > 0 && negative > 0);
+    assert_eq!(seen.len(), 15);
+}
+
+#[test]
+fn conditional_post_outer_filter_keeps_synthetic_null_rows_without_creating_sources() {
+    // The original J71-OUTER-WHERE form is not covered by the TASK-111
+    // reversed-ON case: WHERE is evaluated AFTER right null-extension.
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(id VARCHAR NOT NULL,k INTEGER,a INTEGER);
+         CREATE TABLE r(id VARCHAR NOT NULL,k INTEGER,a INTEGER);
+         INSERT INTO l VALUES ('l1',1,NULL),('l2',2,NULL),('l3',NULL,NULL);
+         INSERT INTO r VALUES ('r1',1,NULL);",
+    )
+    .expect("complete source bags");
+    assert_eq!(
+        identity_rows(&db, "SELECT l.id FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL"),
+        sorted(vec![json!(["l2"]), json!(["l3"])]),
+        "two preserved outer rows, no invented physical right NULL"
+    );
+    assert_eq!(
+        numeric_rows(&db, "SELECT l.k FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL"),
+        sorted(vec![json!([2]), json!([null])]),
+        "post-null-extension selection must retain NULL-join-key left row"
+    );
+    assert_eq!(
+        identity_rows(&db, "SELECT l.id,r.id FROM l JOIN r ON l.k=r.k"),
+        vec![json!(["l1", "r1"])],
+        "only the left key 1 has a true physical partner"
+    );
+    assert_eq!(source_rows(&db, "r"), vec![json!({"id":"r1","k":1,"a":null})]);
+}
+
+#[test]
+fn conditional_parent_inventory_has_named_child_or_parent_evidence_without_native_overclaim() {
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    let child_110: Value = serde_json::from_str(include_str!("../docs/task-110-acceptance-freeze.json")).unwrap();
+    let child_113: Value = serde_json::from_str(include_str!("../docs/task-113-acceptance-freeze.json")).unwrap();
+    let child_114: Value = serde_json::from_str(include_str!("../docs/task-114-acceptance-freeze.json")).unwrap();
+    let mut ids = BTreeSet::new();
+    let conditional = freeze["conditional"].as_array().unwrap();
+    assert_eq!(conditional.len(), 12);
+    for cell in conditional {
+        let id = cell["id"].as_str().unwrap();
+        assert!(ids.insert(id), "duplicate conditional {id}");
+        assert_eq!(cell["classification"], "conditional");
+        assert_eq!(cell["dialects"].as_array().unwrap().len(), 13);
+        assert_eq!(cell["native_vendor_execution"], "not_certified_by_portable_DuckDB_or_parser");
+        assert_eq!(cell["release_disposition"], "reviewed_portable_only_native_laws_not_certified");
+        assert!(cell["residual_boundary"].as_str().is_some_and(|v| !v.is_empty()));
+        let owner = cell["owner"].as_str().unwrap();
+        if owner == "TASK-116" {
+            assert_eq!(id, "J71-OUTER-WHERE");
+            assert_eq!(cell["parent_fixture"], "71-C116-N-OUTER-WHERE");
+            continue;
+        }
+        let child = match owner {
+            "TASK-110" => &child_110,
+            "TASK-113" => &child_113,
+            "TASK-114" => &child_114,
+            other => panic!("{id}: no owning child evidence for {other}"),
+        };
+        let child_id = cell["child_fixture"].as_str().expect("concrete child oracle");
+        assert!(
+            child["cases"].as_array().unwrap().iter().any(|case| case["id"] == child_id),
+            "{id}: declared child witness {child_id} missing"
+        );
+    }
+    assert_eq!(freeze["postgres_spelling_alias"], "postgres");
+    assert_eq!(freeze["dialect_identities"].as_array().unwrap().len(), 13);
+    assert_eq!(ids.len(), 12);
+}
+
+#[test]
+fn frozen_parent_cells_cover_each_original_acceptance_criterion() {
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    for ac in 1..=6 {
+        let mandatory = freeze["mandatory"].as_array().unwrap().iter().any(|cell| {
+            cell["acceptance_criteria"].as_array().unwrap().contains(&json!(ac))
+        });
+        let conditional = freeze["conditional"].as_array().unwrap().iter().any(|cell| {
+            cell["acceptance_criteria"].as_array().unwrap().contains(&json!(ac))
+        });
+        assert!(mandatory || conditional, "parent original AC {ac} has no frozen proof cell");
+    }
+}
