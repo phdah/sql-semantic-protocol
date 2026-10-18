@@ -27,14 +27,16 @@ fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
         RelationConstraintSet::new(
             "l",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence()).expect("l PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence())
+                    .expect("l PK"),
             ],
         )
         .expect("l constraints"),
         RelationConstraintSet::new(
             "r",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence()).expect("r PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence())
+                    .expect("r PK"),
                 RelationConstraint::foreign_key(
                     vec!["tid".to_string()],
                     "t",
@@ -48,7 +50,8 @@ fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
         RelationConstraintSet::new(
             "t",
             vec![
-                RelationConstraint::primary_key(vec!["tid".to_string()], enforced_evidence()).expect("t PK"),
+                RelationConstraint::primary_key(vec!["tid".to_string()], enforced_evidence())
+                    .expect("t PK"),
             ],
         )
         .expect("t constraints"),
@@ -157,10 +160,9 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                                 .split_whitespace()
                                 .next()
                                 .expect("SQL datatype");
-                            let scalar = SchemaColumn::from_sql_type(
-                                column, sql_type, "postgresql",
-                            )
-                            .expect("attested physical scalar type");
+                            let scalar =
+                                SchemaColumn::from_sql_type(column, sql_type, "postgresql")
+                                    .expect("attested physical scalar type");
                             if case["variant"] == "pk_fk_constrained_sources" && column == "id" {
                                 scalar
                                     .with_text_comparison_law(
@@ -485,7 +487,12 @@ fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference(
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect("source schema analysis");
     bundle.enrich_relation_constraints(&attested_pk_fk_constraints());
-    let target = bundle.layers().last().expect("joined layer").id().to_string();
+    let target = bundle
+        .layers()
+        .last()
+        .expect("joined layer")
+        .id()
+        .to_string();
     let baseline = snapshots(case);
     assert!(matches!(
         physical_finite_chain_bag_plan(&bundle, &target, &baseline),
@@ -497,11 +504,8 @@ fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference(
     let mut duplicate_values = parent.rows()[0].values().clone();
     duplicate_values.insert("id".to_string(), LiteralValue::Text("t2".to_string()));
     let duplicate = PhysicalWriteRow::new(duplicate_values).expect("complete parent row");
-    repeated_tid[2] = PhysicalWriteState::new(
-        "t",
-        vec![parent.rows()[0].clone(), duplicate],
-    )
-    .expect("duplicate candidate");
+    repeated_tid[2] = PhysicalWriteState::new("t", vec![parent.rows()[0].clone(), duplicate])
+        .expect("duplicate candidate");
     assert!(
         matches!(
             physical_finite_chain_bag_plan(&bundle, &target, &repeated_tid),
@@ -515,9 +519,8 @@ fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference(
     let mut orphan_values = child.rows()[0].values().clone();
     orphan_values.insert("tid".to_string(), LiteralValue::Number("99".to_string()));
     let orphan = PhysicalWriteRow::new(orphan_values).expect("complete child row");
-    orphan_tid[1] =
-        PhysicalWriteState::new("r", vec![orphan, child.rows()[1].clone()])
-            .expect("orphan candidate");
+    orphan_tid[1] = PhysicalWriteState::new("r", vec![orphan, child.rows()[1].clone()])
+        .expect("orphan candidate");
     assert!(
         !matches!(
             physical_finite_chain_bag_plan(&bundle, &target, &orphan_tid),
