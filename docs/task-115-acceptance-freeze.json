@@ -189,7 +189,15 @@
           "allowed": [
             1
           ],
-          "null_allowed": false
+          "null_allowed": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          }
         }
       },
       "evidence_sources": [
@@ -546,7 +554,15 @@
           "allowed": [
             1
           ],
-          "null_allowed": false
+          "null_allowed": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          }
         }
       },
       "evidence_sources": [
@@ -924,7 +940,15 @@
           "allowed": [
             1
           ],
-          "null_allowed": false
+          "null_allowed": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          }
         }
       },
       "evidence_sources": [
