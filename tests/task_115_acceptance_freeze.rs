@@ -118,6 +118,54 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             }
         }
 
+        // An attested column name without a stable physical instance is not
+        // enough to correlate the canonical proof with a concrete source bag.
+        for relation in ["l", "r", "t"] {
+            let columns = case["source_column_types"][relation]
+                .as_object()
+                .expect("attested source columns");
+            let instances = case["source_column_instance_ids"][relation]
+                .as_object()
+                .expect("source-column identity mapping");
+            assert_eq!(instances.len(), columns.len(), "{id}: no omitted columns");
+            for column in columns.keys() {
+                assert_eq!(
+                    instances[column].as_str(),
+                    Some(format!("{relation}.{column}").as_str()),
+                    "{id}: canonical physical column identity"
+                );
+                for row in bags[relation].as_array().expect("source bag") {
+                    assert!(
+                        row.get(column).is_some(),
+                        "{id}: {relation}.{column} has explicit physical values including NULL"
+                    );
+                }
+            }
+        }
+
+        let expected_adapters = inventory["cases"][0]["evidence_sources"]
+            .as_array()
+            .expect("three supported evidence sources")
+            .iter()
+            .map(|source| source.as_str().expect("source name"))
+            .collect::<BTreeSet<_>>();
+        let adapter_cells = case["adapter_matrix"].as_array().expect("adapter proof cells");
+        assert_eq!(adapter_cells.len(), expected_adapters.len());
+        assert_eq!(
+            adapter_cells
+                .iter()
+                .map(|cell| cell["source"].as_str().expect("adapter source"))
+                .collect::<BTreeSet<_>>(),
+            expected_adapters,
+            "{id}: adapter parity cannot silently omit a source"
+        );
+        for cell in adapter_cells {
+            assert_eq!(cell["owner"], "TASK-115");
+            assert_eq!(cell["source_schema_status"], "typed_columns_specified");
+            assert_eq!(cell["canonical_population_status"], "pending_executable_proof");
+            assert_eq!(cell["release_disposition"], "pending_independent_review");
+        }
+
         let matrix = case["dialect_matrix"].as_array().expect("dialects");
         assert_eq!(matrix.len(), dialects.len());
         let covered = matrix
@@ -141,5 +189,23 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
         );
         assert_eq!(case["acceptance_status"], "mandatory_pending_verification");
     }
+    let conditional = inventory["conditional_boundaries"]
+        .as_array()
+        .expect("explicit conditional evidence boundaries");
+    assert_eq!(conditional.len(), 3);
+    let boundary_ids = conditional
+        .iter()
+        .map(|boundary| {
+            assert_eq!(boundary["owner"], "TASK-115");
+            assert_eq!(boundary["release_disposition"], "pending_independent_review");
+            assert_eq!(boundary["native_status"], "not_certified");
+            assert!(
+                boundary["missing_evidence"].as_str().is_some_and(|text| !text.is_empty()),
+                "conditional boundary must name the missing evidence"
+            );
+            boundary["id"].as_str().expect("boundary identifier")
+        })
+        .collect::<BTreeSet<_>>();
+    assert_eq!(boundary_ids.len(), conditional.len());
     assert_eq!(variants.len(), 4);
 }
