@@ -157,12 +157,12 @@ pub use physical_realization::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
     physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalFiniteChainColumnDomain,
-    PhysicalFiniteChainExact, PhysicalFiniteChainProof,
-    PhysicalIdentitySequence, PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef,
-    PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan, PhysicalTypeProof,
-    PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
+    PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalIdentitySequence,
+    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap,
+    PhysicalRowTarget, PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan,
+    PhysicalTypedValue, PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalWriteColumnDomain,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
+    PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
