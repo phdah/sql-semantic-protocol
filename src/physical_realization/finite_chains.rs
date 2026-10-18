@@ -163,6 +163,12 @@ fn compare(
     left: Option<i128>,
     right: Option<i128>,
 ) -> Result<Option<bool>, &'static str> {
+    if matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
+        return Err("NULL-safe and vendor-dependent comparisons not certified by this law");
+    }
     let (Some(left), Some(right)) = (left, right) else {
         return Ok(None);
     };
@@ -348,6 +354,11 @@ pub fn physical_finite_chain_bag_plan(
     } else {
         (query, None)
     };
+    if !join_query.filtered_join_goal_output_shape()
+        || grouped_query.is_some_and(|query| !query.group_rows_match_surviving_groups())
+    {
+        return residual("parser cannot certify the complete terminal row shape");
+    }
     let [left, middle, right] = join_query.sources() else {
         return residual("finite proof requires three original physical source instances");
     };
