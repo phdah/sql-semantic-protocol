@@ -19,9 +19,8 @@ fn sorted(mut rows: Vec<Value>) -> Vec<Value> {
     rows
 }
 
-fn numeric_rows(db: &Connection, sql: &str) -> Vec<Value> {
+fn numeric_rows(db: &Connection, sql: &str, width: usize) -> Vec<Value> {
     let mut stmt = db.prepare(sql).expect("independent terminal SQL");
-    let width = stmt.column_count();
     let rows = stmt
         .query_map([], |row| {
             let columns = (0..width)
@@ -40,9 +39,8 @@ fn numeric_rows(db: &Connection, sql: &str) -> Vec<Value> {
     sorted(rows)
 }
 
-fn identity_rows(db: &Connection, sql: &str) -> Vec<Value> {
+fn identity_rows(db: &Connection, sql: &str, width: usize) -> Vec<Value> {
     let mut stmt = db.prepare(sql).expect("source-identity SQL");
-    let width = stmt.column_count();
     let rows = stmt
         .query_map([], |row| {
             let ids = (0..width)
@@ -183,7 +181,11 @@ fn every_mandatory_parent_cell_has_an_independent_closed_world_duckdb_oracle() {
         seed(&db, case);
 
         // Physical SQL, rather than the analyzed protocol, determines terminal truth.
-        let actual = numeric_rows(&db, case["duckdb_sql"].as_str().unwrap());
+        let actual = numeric_rows(
+            &db,
+            case["duckdb_sql"].as_str().unwrap(),
+            case["output_domains"].as_array().unwrap().len(),
+        );
         let expected = sorted(case["expected_output_rows"].as_array().unwrap().clone());
         assert_eq!(
             actual, expected,
@@ -197,7 +199,11 @@ fn every_mandatory_parent_cell_has_an_independent_closed_world_duckdb_oracle() {
 
         // Source-instance identities distinguish duplicates and physical vs synthetic NULL.
         assert_eq!(
-            identity_rows(&db, case["identity_sql"].as_str().unwrap()),
+            identity_rows(
+                &db,
+                case["identity_sql"].as_str().unwrap(),
+                case["identity_column_count"].as_u64().unwrap() as usize,
+            ),
             sorted(
                 case["expected_source_identities"]
                     .as_array()
@@ -207,7 +213,7 @@ fn every_mandatory_parent_cell_has_an_independent_closed_world_duckdb_oracle() {
             "{id}: exact source-origin multiplicities"
         );
         if let Some(negative_sql) = case["not_true_sql"].as_str() {
-            let rejected = identity_rows(&db, negative_sql);
+            let rejected = identity_rows(&db, negative_sql, case["not_true_column_count"].as_u64().unwrap() as usize);
             assert_eq!(
                 rejected,
                 sorted(case["expected_not_true_pairs"].as_array().unwrap().clone()),
@@ -249,7 +255,8 @@ fn conditional_post_outer_filter_keeps_synthetic_null_rows_without_creating_sour
     assert_eq!(
         identity_rows(
             &db,
-            "SELECT l.id FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL"
+            "SELECT l.id FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL",
+            1,
         ),
         sorted(vec![json!(["l2"]), json!(["l3"])]),
         "two preserved outer rows, no invented physical right NULL"
@@ -257,13 +264,14 @@ fn conditional_post_outer_filter_keeps_synthetic_null_rows_without_creating_sour
     assert_eq!(
         numeric_rows(
             &db,
-            "SELECT l.k FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL"
+            "SELECT l.k FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL",
+            1,
         ),
         sorted(vec![json!([2]), json!([null])]),
         "post-null-extension selection must retain NULL-join-key left row"
     );
     assert_eq!(
-        identity_rows(&db, "SELECT l.id,r.id FROM l JOIN r ON l.k=r.k"),
+        identity_rows(&db, "SELECT l.id,r.id FROM l JOIN r ON l.k=r.k", 2),
         vec![json!(["l1", "r1"])],
         "only the left key 1 has a true physical partner"
     );
