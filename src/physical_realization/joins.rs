@@ -554,40 +554,55 @@ fn physical_three_way_inner_count_plan(
         }
         Some(mapped)
     };
-    let equality = |join: &crate::protocol::Join,
-                    a: usize,
-                    b: usize|
-     -> Option<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)> {
-        let Predicate::Comparison(comparison) = join.condition()? else {
-            return None;
-        };
-        if comparison.operator() != ComparisonOperator::Eq {
+    // Every ON conjunct must be an ordinary equality between the same
+    // adjacent source instances. Do not silently discard a composite key:
+    // that would certify rows rejected by the other conjunct.
+    let equalities = |join: &crate::protocol::Join,
+                      a: usize,
+                      b: usize|
+     -> Option<Vec<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)>> {
+        let mut conjuncts = Vec::new();
+        join_conjuncts(join.condition()?, &mut conjuncts);
+        if conjuncts.is_empty() || conjuncts.len() > 2 {
             return None;
         }
-        let (Expression::Column(left), Expression::Column(right)) =
-            (comparison.left(), comparison.right())
-        else {
-            return None;
-        };
-        if let (Some(x), Some(y)) = (resolve(a, left), resolve(b, right)) {
-            return Some((x, y));
-        }
-        Some((resolve(a, right)?, resolve(b, left)?))
+        conjuncts
+            .into_iter()
+            .map(|predicate| {
+                let Predicate::Comparison(comparison) = predicate else {
+                    return None;
+                };
+                if comparison.operator() != ComparisonOperator::Eq {
+                    return None;
+                }
+                let (Expression::Column(left), Expression::Column(right)) =
+                    (comparison.left(), comparison.right())
+                else {
+                    return None;
+                };
+                if let (Some(x), Some(y)) = (resolve(a, left), resolve(b, right)) {
+                    return Some((x, y));
+                }
+                Some((resolve(a, right)?, resolve(b, left)?))
+            })
+            .collect()
     };
-    let (left_key, middle_left_key) = equality(first_join, 0, 1)?;
-    let (middle_right_key, right_key) = equality(second_join, 1, 2)?;
-    let keys = [
-        (&left_key, 0usize),
-        (&middle_left_key, 1),
-        (&middle_right_key, 1),
-        (&right_key, 2),
-    ];
-    // A filter on any join key would require individual key-value
-    // reconciliation; neither independently sufficient facts nor the
-    // homogeneous key law proves such a conjunction.
+    let first_keys = equalities(first_join, 0, 1)?;
+    let second_keys = equalities(second_join, 1, 2)?;
+    let (left_key, middle_left_key) = first_keys.first()?.clone();
+    let (middle_right_key, right_key) = second_keys.first()?.clone();
+    let keys = first_keys
+        .iter()
+        .chain(&second_keys)
+        .flat_map(|(left, right)| [left, right])
+        .collect::<Vec<_>>();
+
+    // A source filter on any ON component needs literal reconciliation with
+    // the candidate population. The independent-scalar construction cannot
+    // infer that correlation, and must stay residual.
     if source_filters.iter().any(|(source, filters)| {
         filters.iter().any(|filter| {
-            keys.iter().any(|(key, _)| {
+            keys.iter().any(|key| {
                 key.relation() == Some(source.as_str()) && formula_references_column(filter, key)
             })
         })
@@ -595,9 +610,10 @@ fn physical_three_way_inner_count_plan(
         return None;
     }
 
-    // The sufficient construction chooses literal one, which must be
-    // representable in every attested physical signed-integer column type.
-    for (key, _) in keys {
+    // Every ON component uses one independently attested signed-integer value.
+    // If a source has cross-column or uniqueness constraints, the unrestricted
+    // all-equal construction cannot assert their satisfiability.
+    for key in &keys {
         let relation = key.relation()?;
         let schema = bundle
             .source_schemas()
@@ -609,6 +625,28 @@ fn physical_three_way_inner_count_plan(
             || blocks_unconstrained_physical_plans(bundle, relation)
         {
             return None;
+        }
+    }
+
+    // JoinChainPopulation owns the first edge of each pair. Additional ON
+    // equalities are independently certified on that *same closed source
+    // population* by requiring every physical row to carry matched_value=1.
+    // No extra physical rows or intermediate join results are invented.
+    for (left, right) in first_keys.iter().skip(1).chain(second_keys.iter().skip(1)) {
+        for key in [left, right] {
+            let relation = key.relation()?;
+            let row = RowVariable::new(relation, relation, "chain_composite")?;
+            source_filters
+                .entry(relation.to_string())
+                .or_default()
+                .push(WitnessFormula::Comparison {
+                    left: WitnessTerm::Column {
+                        row,
+                        column: key.clone(),
+                    },
+                    operator: ComparisonOperator::Eq,
+                    right: WitnessTerm::Integer(1),
+                });
         }
     }
 
