@@ -30,9 +30,14 @@ fn bundle(sql: &[&str], dialect: &str) -> sql_semantic_protocol::AnalysisBundle 
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
-    let sources = sql.iter().map(|statement| SqlInput::inline(*statement)).collect::<Vec<_>>();
+    let sources = sql
+        .iter()
+        .map(|statement| SqlInput::inline(*statement))
+        .collect::<Vec<_>>();
     let selected = dialect_from_name(dialect).expect("dialect");
-    let ids = (0..sql.len()).map(|index| format!("task-115-{index}")).collect::<Vec<_>>();
+    let ids = (0..sql.len())
+        .map(|index| format!("task-115-{index}"))
+        .collect::<Vec<_>>();
     let configured = sources
         .iter()
         .zip(&ids)
@@ -50,26 +55,39 @@ fn typed_nonkey_where_filter_is_on_the_same_three_way_physical_bags() {
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: expected finite complete join construction: {plan:?}");
         };
-        assert!(cases.iter().any(|case| {
-            let obligations = case.obligations();
-            obligations.iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::JoinChainPopulation {
-                    left_rows: 2,
-                    middle_rows: 2,
-                    right_rows: 1,
-                    output_rows: 4,
-                    closed_world: true,
-                    ..
-                }
-            )) && obligations.iter().filter(|o| matches!(
-                o, WitnessObligation::ClosedWorld { .. }
-            )).count() == 3 && obligations.iter().any(|o| match o {
-                WitnessObligation::Rows { boundary, predicate, .. } if boundary.relation() == "l" =>
-                    !format!("{predicate:?}").contains("All([])"),
-                _ => false,
-            })
-        }), "{dialect}: upstream TRUE condition must constrain original l source");
+        assert!(
+            cases.iter().any(|case| {
+                let obligations = case.obligations();
+                obligations.iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinChainPopulation {
+                            left_rows: 2,
+                            middle_rows: 2,
+                            right_rows: 1,
+                            output_rows: 4,
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                }) && obligations
+                    .iter()
+                    .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                    .count()
+                    == 3
+                    && obligations.iter().any(|o| match o {
+                        WitnessObligation::Rows {
+                            boundary,
+                            predicate,
+                            ..
+                        } if boundary.relation() == "l" => {
+                            !format!("{predicate:?}").contains("All([])")
+                        }
+                        _ => false,
+                    })
+            }),
+            "{dialect}: upstream TRUE condition must constrain original l source"
+        );
     }
 }
 
@@ -79,9 +97,13 @@ fn a_where_restriction_on_the_join_key_is_not_an_independent_proof() {
     let analyzed = bundle(&[sql], "postgresql");
     let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 4)]);
     if let WitnessDirection::Feasible(cases) = plan.outcome() {
-        assert!(cases.iter().all(|case| !case.obligations().iter().any(|o| matches!(
-            o, WitnessObligation::JoinChainPopulation { .. }
-        ))), "an unreconciled join-key restriction cannot claim the common-key construction");
+        assert!(
+            cases.iter().all(|case| !case
+                .obligations()
+                .iter()
+                .any(|o| matches!(o, WitnessObligation::JoinChainPopulation { .. }))),
+            "an unreconciled join-key restriction cannot claim the common-key construction"
+        );
     }
 }
 
@@ -96,17 +118,27 @@ fn downstream_count_having_reuses_exact_chain_bag() {
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("grouped terminal must lift one complete source assignment: {plan:?}");
     };
-    assert!(cases.iter().any(|case| {
-        let obligations = case.obligations();
-        obligations.iter().any(|o| matches!(
-            o, WitnessObligation::JoinChainPopulation { output_rows: 4, .. }
-        )) && obligations.iter().any(|o| matches!(
-            o, WitnessObligation::Group { rows, .. }
-                if rows.minimum() == 4 && rows.maximum() == Some(4)
-        )) && obligations.iter().filter(|o| matches!(
-            o, WitnessObligation::ClosedWorld { .. }
-        )).count() == 3
-    }), "COUNT(*)=4 must derive from the same original three closed leaves");
+    assert!(
+        cases.iter().any(|case| {
+            let obligations = case.obligations();
+            obligations.iter().any(|o| {
+                matches!(
+                    o,
+                    WitnessObligation::JoinChainPopulation { output_rows: 4, .. }
+                )
+            }) && obligations.iter().any(|o| {
+                matches!(
+                    o, WitnessObligation::Group { rows, .. }
+                        if rows.minimum() == 4 && rows.maximum() == Some(4)
+                )
+            }) && obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count()
+                == 3
+        }),
+        "COUNT(*)=4 must derive from the same original three closed leaves"
+    );
 }
 
 #[test]
@@ -119,8 +151,9 @@ fn duckdb_independently_checks_complete_source_and_terminal_identity_bags() {
          INSERT INTO l VALUES
            ('l1',1,10,1),('l2',1,10,2),('l3',2,20,-1),('l4',NULL,10,1);
          INSERT INTO r VALUES ('r1',1,10),('r2',1,10),('r3',2,20);
-         INSERT INTO t VALUES ('t1',1,10),('t2',NULL,10);"
-    ).expect("independent complete source bags");
+         INSERT INTO t VALUES ('t1',1,10),('t2',NULL,10);",
+    )
+    .expect("independent complete source bags");
 
     let joined = "FROM l JOIN r ON l.k=r.k AND l.k2=r.k2
                   JOIN t ON r.k=t.k AND r.k2=t.k2 WHERE l.a > 0";
@@ -131,21 +164,23 @@ fn duckdb_independently_checks_complete_source_and_terminal_identity_bags() {
     ).expect("terminal source-row identities");
     assert_eq!(output, "l1:r1:t1,l1:r2:t1,l2:r1:t1,l2:r2:t1");
 
-    let not_true: i64 = db.query_row(
-        "SELECT COUNT(*) FROM l CROSS JOIN r CROSS JOIN t
+    let not_true: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l CROSS JOIN r CROSS JOIN t
          WHERE (l.a>0 AND l.k=r.k AND l.k2=r.k2
                 AND r.k=t.k AND r.k2=t.k2) IS NOT TRUE",
-        [], |row| row.get(0),
-    ).expect("NOT TRUE cross-bag complement");
+            [],
+            |row| row.get(0),
+        )
+        .expect("NOT TRUE cross-bag complement");
     assert_eq!(not_true, 20);
     let grouped: i64 = db.query_row(
         &format!("SELECT COUNT(*) FROM (SELECT l.k, COUNT(*) AS n {joined} GROUP BY l.k HAVING COUNT(*)>3) g"),
         [], |row| row.get(0),
     ).expect("group cardinality");
     assert_eq!(grouped, 1);
-    let count_value: i64 = db.query_row(
-        &format!("SELECT COUNT(*) {joined}"),
-        [], |row| row.get(0),
-    ).expect("complete group contribution count");
+    let count_value: i64 = db
+        .query_row(&format!("SELECT COUNT(*) {joined}"), [], |row| row.get(0))
+        .expect("complete group contribution count");
     assert_eq!(count_value, 4);
 }
