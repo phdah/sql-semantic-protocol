@@ -1,0 +1,1610 @@
+{
+  "version": 1,
+  "owner": "TASK-115",
+  "parent": "TASK-71",
+  "status": "frozen_requirements_verification_pending",
+  "fixture_ids": [
+    "71-C115-P",
+    "71-C115-N"
+  ],
+  "matrix_revision": "2026-10-18-v1",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "mandatory_variants": [
+    "two_hop_where_join_join",
+    "composite_nullable_keys",
+    "pk_fk_constrained_sources",
+    "downstream_group_count"
+  ],
+  "oracle_semantics": "Complete closed physical L/R/T bags with row identity, SQL TRUE selected triplets and NOT TRUE complement across the full product. WHERE is applied before downstream GROUP; SQL NULL never satisfies ordinary equals. The emitted count is the multiplicity of surviving identity triplets.",
+  "proof_policy": "No mandatory cell may be downgraded to a residual; an unproved cell blocks TASK-115 Done. Direct, dbt and ODCS source facts must represent the same physical facts. Parser and runtime claims remain separately classified.",
+  "cases": [
+    {
+      "id": "71-C115-P-CHAIN",
+      "fixture": "71-C115-P",
+      "variant": "two_hop_where_join_join",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "k2": 10,
+            "a": 2
+          },
+          {
+            "id": "l3",
+            "k": 2,
+            "k2": 10,
+            "a": -1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1",
+        "l2"
+      ],
+      "filtered_not_true_ids": [
+        "l3"
+      ],
+      "selected_physical_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ],
+        [
+          "l1",
+          "r2",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r2",
+          "t1"
+        ]
+      ],
+      "rejected_not_true_triplets": [
+        [
+          "l3",
+          "r1",
+          "t1"
+        ],
+        [
+          "l3",
+          "r2",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1,
+          "source_identities": [
+            "l1",
+            "r1",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l1",
+            "r2",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l2",
+            "r1",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l2",
+            "r2",
+            "t1"
+          ]
+        }
+      ],
+      "expected_terminal_row_count": 4,
+      "terminal_domains": {
+        "k": {
+          "allowed": [
+            1
+          ],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-N-CHAIN",
+      "fixture": "71-C115-N",
+      "variant": "two_hop_where_join_join",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": null,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": 2,
+            "k2": 10,
+            "a": -1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1"
+      ],
+      "filtered_not_true_ids": [
+        "l2"
+      ],
+      "selected_physical_triplets": [],
+      "rejected_not_true_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [],
+      "expected_terminal_row_count": 0,
+      "terminal_domains": {
+        "k": {
+          "allowed": [],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-P-COMPOSITE",
+      "fixture": "71-C115-P",
+      "variant": "composite_nullable_keys",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k AND l.k2=r.k2 JOIN t ON r.k=t.k AND r.k2=t.k2 WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l_composite",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "k2": 10,
+            "a": 1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          },
+          {
+            "id": "r2",
+            "k": null,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1",
+        "l2"
+      ],
+      "filtered_not_true_ids": [],
+      "selected_physical_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ]
+      ],
+      "rejected_not_true_triplets": [
+        [
+          "l1",
+          "r2",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r2",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1,
+          "source_identities": [
+            "l1",
+            "r1",
+            "t1"
+          ]
+        }
+      ],
+      "expected_terminal_row_count": 1,
+      "terminal_domains": {
+        "k": {
+          "allowed": [
+            1
+          ],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-N-COMPOSITE",
+      "fixture": "71-C115-N",
+      "variant": "composite_nullable_keys",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k AND l.k2=r.k2 JOIN t ON r.k=t.k AND r.k2=t.k2 WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l_composite",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "k2": null,
+            "a": 1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": null,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1"
+      ],
+      "filtered_not_true_ids": [],
+      "selected_physical_triplets": [],
+      "rejected_not_true_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [],
+      "expected_terminal_row_count": 0,
+      "terminal_domains": {
+        "k": {
+          "allowed": [],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-P-CONSTRAINTS",
+      "fixture": "71-C115-P",
+      "variant": "pk_fk_constrained_sources",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "k2": 10,
+            "a": 2
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {
+        "l": [
+          "PRIMARY KEY(id)"
+        ],
+        "r": [
+          "PRIMARY KEY(id)",
+          "FOREIGN KEY(tid) REFERENCES t(tid)"
+        ],
+        "t": [
+          "PRIMARY KEY(tid)"
+        ]
+      },
+      "filtered_true_ids": [
+        "l1",
+        "l2"
+      ],
+      "filtered_not_true_ids": [],
+      "selected_physical_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ],
+        [
+          "l1",
+          "r2",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r2",
+          "t1"
+        ]
+      ],
+      "rejected_not_true_triplets": [],
+      "expected_terminal_bag": [
+        {
+          "k": 1,
+          "source_identities": [
+            "l1",
+            "r1",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l1",
+            "r2",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l2",
+            "r1",
+            "t1"
+          ]
+        },
+        {
+          "k": 1,
+          "source_identities": [
+            "l2",
+            "r2",
+            "t1"
+          ]
+        }
+      ],
+      "expected_terminal_row_count": 4,
+      "terminal_domains": {
+        "k": {
+          "allowed": [
+            1
+          ],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-N-CONSTRAINTS",
+      "fixture": "71-C115-N",
+      "variant": "pk_fk_constrained_sources",
+      "sql": "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 2,
+            "k2": 10,
+            "a": 1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {
+        "l": [
+          "PRIMARY KEY(id)"
+        ],
+        "r": [
+          "PRIMARY KEY(id)",
+          "FOREIGN KEY(tid) REFERENCES t(tid)"
+        ],
+        "t": [
+          "PRIMARY KEY(tid)"
+        ]
+      },
+      "filtered_true_ids": [
+        "l1"
+      ],
+      "filtered_not_true_ids": [],
+      "selected_physical_triplets": [],
+      "rejected_not_true_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [],
+      "expected_terminal_row_count": 0,
+      "terminal_domains": {
+        "k": {
+          "allowed": [],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-P-GROUP",
+      "fixture": "71-C115-P",
+      "variant": "downstream_group_count",
+      "sql": "CREATE TABLE stage AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0; SELECT stage.k, COUNT(*) AS n FROM stage GROUP BY stage.k HAVING COUNT(*) > 3",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l_group_count_having",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "k2": 10,
+            "a": 2
+          },
+          {
+            "id": "l3",
+            "k": 2,
+            "k2": 10,
+            "a": -1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          },
+          {
+            "id": "r2",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1",
+        "l2"
+      ],
+      "filtered_not_true_ids": [
+        "l3"
+      ],
+      "selected_physical_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ],
+        [
+          "l1",
+          "r2",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r2",
+          "t1"
+        ]
+      ],
+      "rejected_not_true_triplets": [
+        [
+          "l3",
+          "r1",
+          "t1"
+        ],
+        [
+          "l3",
+          "r2",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1,
+          "n": 4
+        }
+      ],
+      "expected_terminal_row_count": 1,
+      "terminal_domains": {
+        "k": {
+          "allowed": [
+            1
+          ],
+          "null_allowed": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "allowed": [
+            4
+          ],
+          "null_allowed": false,
+          "lower": {
+            "value": 4,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 4,
+            "inclusive": true
+          }
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    },
+    {
+      "id": "71-C115-N-GROUP",
+      "fixture": "71-C115-N",
+      "variant": "downstream_group_count",
+      "sql": "CREATE TABLE stage AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0; SELECT stage.k, COUNT(*) AS n FROM stage GROUP BY stage.k HAVING COUNT(*) > 3",
+      "sql_ast_classification": "three_way_inner_two_equality_edges_where_on_physical_l_group_count_having",
+      "physical_source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": null,
+            "k2": 10,
+            "a": 1
+          },
+          {
+            "id": "l2",
+            "k": 2,
+            "k2": 10,
+            "a": -1
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ],
+        "t": [
+          {
+            "id": "t1",
+            "k": 1,
+            "k2": 10,
+            "tid": 1
+          }
+        ]
+      },
+      "source_instances": {
+        "left": "l",
+        "middle": "r",
+        "right": "t"
+      },
+      "source_column_types": {
+        "l": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "a": "INTEGER NULL"
+        },
+        "r": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        },
+        "t": {
+          "id": "VARCHAR",
+          "k": "INTEGER NULL",
+          "k2": "INTEGER NULL",
+          "tid": "INTEGER"
+        }
+      },
+      "source_constraints": {},
+      "filtered_true_ids": [
+        "l1"
+      ],
+      "filtered_not_true_ids": [
+        "l2"
+      ],
+      "selected_physical_triplets": [],
+      "rejected_not_true_triplets": [
+        [
+          "l1",
+          "r1",
+          "t1"
+        ],
+        [
+          "l2",
+          "r1",
+          "t1"
+        ]
+      ],
+      "expected_terminal_bag": [],
+      "expected_terminal_row_count": 0,
+      "terminal_domains": {
+        "k": {
+          "allowed": [],
+          "null_allowed": false
+        },
+        "n": {
+          "allowed": [],
+          "null_allowed": false
+        }
+      },
+      "evidence_sources": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_equivalent_schema_when_attested"
+      ],
+      "dialect_matrix": [
+        {
+          "dialect": "ansi",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "bigquery",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "databricks",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "duckdb",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "generic",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "hive",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mssql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "mysql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "postgresql",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "redshift",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "snowflake",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        },
+        {
+          "dialect": "sqlite",
+          "parser_status": "pending_parser_execution",
+          "canonical_status": "pending_executable_proof"
+        }
+      ],
+      "acceptance_status": "mandatory_pending_verification"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "code": "J115-MULTI-BAG",
+      "owner": "TASK-115",
+      "missing_evidence": "Canonical constructive mixed-key and rejected filtered source bags with full tuple identities",
+      "release_disposition": "pending_review_blocks_done"
+    },
+    {
+      "code": "J115-PK-FK",
+      "owner": "TASK-115",
+      "missing_evidence": "Attested PK/FK enforcement and full-row feasibility, not a parser-only DDL assertion",
+      "release_disposition": "pending_review_blocks_done"
+    },
+    {
+      "code": "J115-ADAPTER",
+      "owner": "TASK-115",
+      "missing_evidence": "Compiled dbt manifest/catalog and ODCS parity against all applicable fixture facts",
+      "release_disposition": "pending_review_blocks_done"
+    },
+    {
+      "code": "J115-DIALECT",
+      "owner": "TASK-115",
+      "missing_evidence": "156 parser classifications and executable canonical outcomes for supported dialect cells",
+      "release_disposition": "pending_review_blocks_done"
+    }
+  ],
+  "original_parent_ac": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "required_verification": [
+    "public_Rust_API",
+    "full_DuckDB_source_and_terminal_bags",
+    "cargo_fmt_check",
+    "cargo_clippy_all_targets_all_features_D_warnings",
+    "cargo_test",
+    "cargo_test_no_default_features",
+    "cargo_doc_no_deps",
+    "dbt_e2e",
+    "schema_and_protocol_snapshots",
+    "independent_signoff_audit"
+  ]
+}
