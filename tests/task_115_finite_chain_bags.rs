@@ -450,6 +450,61 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
             "DISTINCT and NULL-safe comparison must not claim exact finite bags"
         );
     }
+
+    // Even an empty right-hand bag must not erase independently filtered
+    // left identities or invent any selected physical triplets.
+    let empty_middle = vec![
+        valid[0].clone(),
+        PhysicalWriteState::new("r", vec![]).expect("empty complete middle bag"),
+        valid[2].clone(),
+    ];
+    let empty_proof = physical_finite_chain_bag_plan(
+        &analyze_configured_inputs_with_catalog(
+            &[ConfiguredSqlInput::new(
+                "task-115-empty-middle",
+                &sql,
+                "postgresql",
+                parser.as_ref(),
+            )],
+            &catalog,
+        )
+        .expect("empty-bag SQL analysis"),
+        target.id(),
+        &empty_middle,
+    );
+    let PhysicalFiniteChainProof::Exact(empty) = empty_proof else {
+        panic!("empty physical middle bag must be exact: {empty_proof:?}");
+    };
+    assert_eq!(empty.filtered_true_ids, vec!["l1"]);
+    assert!(empty.filtered_not_true_ids.is_empty());
+    assert!(empty.selected.is_empty());
+    assert!(empty.rejected.is_empty());
+    assert!(empty.terminal.is_empty());
+
+    // Observed uniform right-side values cannot turn a right-dependent
+    // predicate into an independently provable left-source WHERE.
+    let right_filter = SqlInput::inline(
+        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE r.k>0",
+    );
+    let analyzed = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "task-115-right-dependent",
+            &right_filter,
+            "postgresql",
+            parser.as_ref(),
+        )],
+        &catalog,
+    )
+    .expect("right-dependent SQL parses");
+    let target = analyzed.layers().last().expect("right-dependent target");
+    assert!(
+        matches!(
+            physical_finite_chain_bag_plan(&analyzed, target.id(), &valid),
+            PhysicalFiniteChainProof::Residual { .. }
+        ),
+        "a coincidentally uniform right-dependent WHERE cannot be claimed source-local"
+    );
+
 }
 
 #[test]
