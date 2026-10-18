@@ -163,12 +163,16 @@ impl AnalysisBundle {
             .iter()
             .position(|schema| schema.relation() == relation)
         else {
-            return Err(invalid("comparison attestation names an unknown source relation"));
+            return Err(invalid(
+                "comparison attestation names an unknown source relation",
+            ));
         };
         let existing = &self.source_schemas[index];
         let mut columns = existing.columns().to_vec();
         let Some(column_index) = columns.iter().position(|item| item.name() == column) else {
-            return Err(invalid("comparison attestation names an unknown source column"));
+            return Err(invalid(
+                "comparison attestation names an unknown source column",
+            ));
         };
         if let Some(prior) = columns[column_index].text_comparison_law() {
             if prior != law {
