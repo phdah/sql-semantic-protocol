@@ -604,8 +604,8 @@ fn physical_three_way_inner_count_plan(
             .iter()
             .find(|schema| schema.relation() == relation)?;
         let bounds = physical_integer_evidence(schema, key)?;
-        if bounds.minimum > 0
-            || bounds.maximum < 0
+        if bounds.minimum > 1
+            || bounds.maximum < 1
             || blocks_unconstrained_physical_plans(bundle, relation)
         {
             return None;
