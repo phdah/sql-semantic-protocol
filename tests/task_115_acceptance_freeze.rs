@@ -1,5 +1,5 @@
 //! The TASK-115 planning matrix is immutable until its acceptance revision changes.
-//! These checks do not confer implementation signoff on unverified mandatory cells.
+//! Mandatory status checks guard constructive signoff against relabeling unproved cells.
 use serde_json::Value;
 use std::collections::BTreeSet;
 
@@ -10,6 +10,8 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             .expect("frozen TASK-115 acceptance inventory");
     assert_eq!(inventory["owner"], "TASK-115");
     assert_eq!(inventory["version"], 1);
+    assert_eq!(inventory["matrix_revision"], "2026-10-18-v3");
+    assert_eq!(inventory["status"], "portable_constructive_bags_verified_with_explicit_native_boundaries");
     let cases = inventory["cases"].as_array().expect("cases");
     assert_eq!(cases.len(), 8);
 
@@ -166,9 +168,9 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             assert_eq!(cell["source_schema_status"], "typed_columns_specified");
             assert_eq!(
                 cell["canonical_population_status"],
-                "pending_executable_proof"
+                "verified_with_explicit_physical_attestation"
             );
-            assert_eq!(cell["release_disposition"], "pending_independent_review");
+            assert_eq!(cell["release_disposition"], "reviewed_conditional_native_not_certified");
         }
 
         let matrix = case["dialect_matrix"].as_array().expect("dialects");
@@ -192,7 +194,14 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
                 .len(),
             case["expected_terminal_row_count"].as_u64().expect("count") as usize
         );
-        assert_eq!(case["acceptance_status"], "mandatory_pending_verification");
+        assert_eq!(case["acceptance_status"], "verified_exact_canonical_and_independent_duckdb_bags");
+        for cell in matrix {
+            assert_eq!(
+                cell["canonical_status"],
+                "verified_portable_canonical_source_bag",
+                "{id}: no mandatory canonical dialect may remain unverified"
+            );
+        }
     }
     let conditional = inventory["conditional_boundaries"]
         .as_array()
@@ -204,7 +213,7 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             assert_eq!(boundary["owner"], "TASK-115");
             assert_eq!(
                 boundary["release_disposition"],
-                "pending_independent_review"
+                "reviewed_conditional_native_not_certified"
             );
             assert_eq!(boundary["native_status"], "not_certified");
             assert!(
