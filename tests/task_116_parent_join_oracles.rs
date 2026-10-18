@@ -7,6 +7,11 @@ use std::collections::BTreeSet;
 use duckdb::Connection;
 use serde_json::{json, Value};
 
+use sql_semantic_protocol::{
+    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
+};
+
 const FREEZE: &str = include_str!("../docs/task-116-acceptance-freeze.json");
 
 fn sorted(mut rows: Vec<Value>) -> Vec<Value> {
@@ -349,5 +354,80 @@ fn frozen_parent_cells_cover_each_original_acceptance_criterion() {
             mandatory || conditional,
             "parent original AC {ac} has no frozen proof cell"
         );
+    }
+}
+
+#[test]
+fn all_parent_mandatory_and_post_outer_shared_sql_forms_parse_across_canonical_dialects() {
+    let freeze: Value = serde_json::from_str(FREEZE).expect("parent inventory");
+    let schemas = ["l", "r", "t"]
+        .into_iter()
+        .map(|name| {
+            RelationSchema::new(
+                name,
+                ["id", "k", "a"]
+                    .into_iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(
+                            column,
+                            if column == "id" { "VARCHAR" } else { "INTEGER" },
+                            "postgresql",
+                        )
+                        .expect("typed catalog evidence")
+                    })
+                    .collect(),
+            )
+            .expect("source schema")
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).expect("complete source types");
+    let conditional_sql = "SELECT l.k FROM l LEFT JOIN r ON l.k=r.k WHERE r.k IS NULL";
+    let mut sql_forms = freeze["mandatory"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|case| {
+            (
+                case["id"].as_str().unwrap(),
+                case["original_sql"].as_str().unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+    sql_forms.push(("J71-OUTER-WHERE", conditional_sql));
+
+    for (id, sql) in sql_forms {
+        for dialect in freeze["dialect_identities"].as_array().unwrap() {
+            let dialect = dialect.as_str().unwrap();
+            let entry = if id == "J71-OUTER-WHERE" {
+                freeze["conditional"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|case| case["id"] == id)
+                    .expect("outer WHERE parent variant")
+            } else {
+                freeze["mandatory"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|case| case["id"] == id)
+                    .expect("mandatory parent variant")
+            };
+            assert_eq!(
+                entry["dialect_classifications"][dialect]["parser"],
+                "expected_parser_equivalent",
+                "{id}/{dialect}: frozen parser expectation"
+            );
+            let dialect_impl = dialect_from_name(dialect).expect("one of 13 parser identities");
+            let source = SqlInput::inline(sql);
+            let input = ConfiguredSqlInput::new(id, &source, dialect, dialect_impl.as_ref());
+            let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog)
+                .unwrap_or_else(|error| panic!("{id}/{dialect}: parser/analysis boundary: {error}"));
+            assert_eq!(
+                bundle.layers().len(),
+                1,
+                "{id}/{dialect}: analyzed, not silently omitted"
+            );
+        }
     }
 }
