@@ -149,7 +149,9 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             .iter()
             .map(|source| source.as_str().expect("source name"))
             .collect::<BTreeSet<_>>();
-        let adapter_cells = case["adapter_matrix"].as_array().expect("adapter proof cells");
+        let adapter_cells = case["adapter_matrix"]
+            .as_array()
+            .expect("adapter proof cells");
         assert_eq!(adapter_cells.len(), expected_adapters.len());
         assert_eq!(
             adapter_cells
@@ -162,7 +164,10 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
         for cell in adapter_cells {
             assert_eq!(cell["owner"], "TASK-115");
             assert_eq!(cell["source_schema_status"], "typed_columns_specified");
-            assert_eq!(cell["canonical_population_status"], "pending_executable_proof");
+            assert_eq!(
+                cell["canonical_population_status"],
+                "pending_executable_proof"
+            );
             assert_eq!(cell["release_disposition"], "pending_independent_review");
         }
 
@@ -197,10 +202,15 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
         .iter()
         .map(|boundary| {
             assert_eq!(boundary["owner"], "TASK-115");
-            assert_eq!(boundary["release_disposition"], "pending_independent_review");
+            assert_eq!(
+                boundary["release_disposition"],
+                "pending_independent_review"
+            );
             assert_eq!(boundary["native_status"], "not_certified");
             assert!(
-                boundary["missing_evidence"].as_str().is_some_and(|text| !text.is_empty()),
+                boundary["missing_evidence"]
+                    .as_str()
+                    .is_some_and(|text| !text.is_empty()),
                 "conditional boundary must name the missing evidence"
             );
             boundary["id"].as_str().expect("boundary identifier")
