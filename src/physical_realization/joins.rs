@@ -704,8 +704,12 @@ pub(super) fn physical_join_population_with_source_counts(
         wanted,
         exact_sources,
     );
-    let finite =
-        join_finite::physical_finite_join_count_plan(bundle, target_layer_id, wanted, exact_sources);
+    let finite = join_finite::physical_finite_join_count_plan(
+        bundle,
+        target_layer_id,
+        wanted,
+        exact_sources,
+    );
     match (uniform, finite) {
         (Some(uniform), Some(finite)) => return Some(uniform.any(&finite)),
         (Some(proof), None) | (None, Some(proof)) => return Some(proof),
