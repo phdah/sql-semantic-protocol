@@ -460,7 +460,6 @@ fn physical_three_way_inner_count_plan(
     if [first_join, second_join]
         .iter()
         .any(|join| join.kind() != JoinKind::Inner)
-        || query.predicates().where_predicate().is_some()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
         || query.window_witness().is_some()
@@ -483,9 +482,14 @@ fn physical_three_way_inner_count_plan(
         return None;
     }
 
-    // Only plain-copy producers may sit upstream of the two SQL joins.
-    // In particular no second local join or filtered producer may make one
-    // alias a different (and hence incompatible) physical row selection.
+    // All physical rows that survive the upstream or terminal filter must
+    // satisfy its exact, typed TRUE predicate. This is a sufficient complete
+    // source assignment, not a claim to represent arbitrary rejected rows.
+    let mut source_filters = BTreeMap::<String, Vec<WitnessFormula>>::new();
+    if let Some(predicate) = query.predicates().where_predicate() {
+        let (source, filter) = source_filter_for_predicate(bundle, query.sources(), predicate)?;
+        source_filters.entry(source).or_default().push(filter);
+    }
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
@@ -494,11 +498,23 @@ fn physical_three_way_inner_count_plan(
             continue;
         }
         let producer = walker.layers.get(id.as_str()).copied()?;
-        if !matches!(node.write_kind(), None | Some(WriteKind::Definition))
-            || !transparent_projection(query_for(bundle, producer)?)
-        {
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
             return None;
         }
+        if transparent_projection(query_for(bundle, producer)?) {
+            continue;
+        }
+        let (source, filter) = direct_filtered_source(bundle, &walker, node)?;
+        source_filters.entry(source).or_default().push(filter);
+    }
+    if source_filters.iter().any(|(source, filters)| {
+        filters.len() > 1
+            && !matches!(
+                joint_source_truths_satisfiable(bundle, source, filters),
+                Some(true)
+            )
+    }) {
+        return None;
     }
 
     let sources = [left, middle, right];
@@ -566,6 +582,20 @@ fn physical_three_way_inner_count_plan(
         (&middle_right_key, 1),
         (&right_key, 2),
     ];
+    // A filter on any join key would require individual key-value
+    // reconciliation; neither independently sufficient facts nor the
+    // homogeneous key law proves such a conjunction.
+    if source_filters.iter().any(|(source, filters)| {
+        filters.iter().any(|filter| {
+            keys.iter().any(|(key, _)| {
+                key.relation() == Some(source.as_str())
+                    && formula_references_column(filter, key)
+            })
+        })
+    }) {
+        return None;
+    }
+
     // The sufficient construction chooses literal one, which must be
     // representable in every attested physical signed-integer column type.
     for (key, _) in keys {
@@ -635,7 +665,10 @@ fn physical_three_way_inner_count_plan(
                 boundary: boundary.clone(),
                 quantifier: RowQuantifier::ForAll,
                 bounds: CountBounds::new(*count, Some(*count))?,
-                predicate: count_tautology(),
+                predicate: source_filters
+                    .get(relation)
+                    .map(|filters| combined_filter(filters))
+                    .unwrap_or_else(count_tautology),
                 closed_world: true,
             });
             obligations.push(WitnessObligation::ClosedWorld {
