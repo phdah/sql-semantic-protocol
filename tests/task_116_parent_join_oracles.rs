@@ -213,7 +213,11 @@ fn every_mandatory_parent_cell_has_an_independent_closed_world_duckdb_oracle() {
             "{id}: exact source-origin multiplicities"
         );
         if let Some(negative_sql) = case["not_true_sql"].as_str() {
-            let rejected = identity_rows(&db, negative_sql, case["not_true_column_count"].as_u64().unwrap() as usize);
+            let rejected = identity_rows(
+                &db,
+                negative_sql,
+                case["not_true_column_count"].as_u64().unwrap() as usize,
+            );
             assert_eq!(
                 rejected,
                 sorted(case["expected_not_true_pairs"].as_array().unwrap().clone()),
@@ -422,15 +426,15 @@ fn all_parent_mandatory_and_post_outer_shared_sql_forms_parse_across_canonical_d
                     .expect("mandatory parent variant")
             };
             assert_eq!(
-                entry["dialect_classifications"][dialect]["parser"],
-                "expected_parser_equivalent",
+                entry["dialect_classifications"][dialect]["parser"], "expected_parser_equivalent",
                 "{id}/{dialect}: frozen parser expectation"
             );
             let dialect_impl = dialect_from_name(dialect).expect("one of 13 parser identities");
             let source = SqlInput::inline(sql);
             let input = ConfiguredSqlInput::new(id, &source, dialect, dialect_impl.as_ref());
-            let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog)
-                .unwrap_or_else(|error| panic!("{id}/{dialect}: parser/analysis boundary: {error}"));
+            let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap_or_else(
+                |error| panic!("{id}/{dialect}: parser/analysis boundary: {error}"),
+            );
             assert_eq!(
                 bundle.layers().len(),
                 1,
