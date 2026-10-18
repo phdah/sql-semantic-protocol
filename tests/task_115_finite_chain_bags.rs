@@ -414,3 +414,92 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
         "unimplemented computed predicates must not masquerade as finite TRUE"
     );
 }
+
+#[test]
+fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference() {
+    let inventory: Value =
+        serde_json::from_str(include_str!("../docs/task-115-acceptance-freeze.json"))
+            .expect("frozen matrix");
+    let case = inventory["cases"]
+        .as_array()
+        .expect("eight cases")
+        .iter()
+        .find(|case| case["id"] == "71-C115-P-CONSTRAINTS")
+        .expect("positive constrained proof cell");
+    let schemas = ["l", "r", "t"]
+        .into_iter()
+        .map(|relation| {
+            let columns = case["source_column_types"][relation]
+                .as_object()
+                .expect("source schema")
+                .iter()
+                .map(|(column, declaration)| {
+                    SchemaColumn::from_sql_type(
+                        column,
+                        declaration
+                            .as_str()
+                            .expect("SQL type")
+                            .split_whitespace()
+                            .next()
+                            .expect("base type"),
+                        "postgresql",
+                    )
+                    .expect("typed source column")
+                })
+                .collect();
+            RelationSchema::new(relation, columns).expect("source schema")
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
+    let dialect = dialect_from_name("postgresql").expect("dialect");
+    let sql = SqlInput::inline(case["sql"].as_str().expect("frozen SQL"));
+    let configured = [ConfiguredSqlInput::new(
+        "task-115-constrained-impossible",
+        &sql,
+        "postgresql",
+        dialect.as_ref(),
+    )];
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect("source schema analysis");
+    bundle.enrich_relation_constraints(&attested_pk_fk_constraints());
+    let target = bundle.layers().last().expect("joined layer").id().to_string();
+    let baseline = snapshots(case);
+    assert!(matches!(
+        physical_finite_chain_bag_plan(&bundle, &target, &baseline),
+        PhysicalFiniteChainProof::Exact(_)
+    ));
+
+    let mut repeated_tid = baseline.clone();
+    let parent = &baseline[2];
+    let mut duplicate_values = parent.rows()[0].values().clone();
+    duplicate_values.insert("id".to_string(), LiteralValue::Text("t2".to_string()));
+    let duplicate = PhysicalWriteRow::new(duplicate_values).expect("complete parent row");
+    repeated_tid[2] = PhysicalWriteState::new(
+        "t",
+        vec![parent.rows()[0].clone(), duplicate],
+    )
+    .expect("duplicate candidate");
+    assert!(
+        matches!(
+            physical_finite_chain_bag_plan(&bundle, &target, &repeated_tid),
+            PhysicalFiniteChainProof::Impossible { .. }
+        ),
+        "enforced primary key forbids duplicate t.tid even when row ids differ"
+    );
+
+    let mut orphan_tid = baseline.clone();
+    let child = &baseline[1];
+    let mut orphan_values = child.rows()[0].values().clone();
+    orphan_values.insert("tid".to_string(), LiteralValue::Number("99".to_string()));
+    let orphan = PhysicalWriteRow::new(orphan_values).expect("complete child row");
+    orphan_tid[1] =
+        PhysicalWriteState::new("r", vec![orphan, child.rows()[1].clone()])
+            .expect("orphan candidate");
+    assert!(
+        !matches!(
+            physical_finite_chain_bag_plan(&bundle, &target, &orphan_tid),
+            PhysicalFiniteChainProof::Exact(_)
+        ),
+        "unmatched enforced FK must remain a typed residual or impossible"
+    );
+}
