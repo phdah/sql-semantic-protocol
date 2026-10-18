@@ -211,7 +211,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     },
     {
       "id": "J71-I2-DUP",
@@ -423,7 +425,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     },
     {
       "id": "J71-I3-CHAIN",
@@ -628,7 +632,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 3,
+      "not_true_column_count": null
     },
     {
       "id": "J71-I3-WHERE",
@@ -833,7 +839,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 3,
+      "not_true_column_count": null
     },
     {
       "id": "J71-LEFT-EMPTY",
@@ -1012,7 +1020,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": null
     },
     {
       "id": "J71-RIGHT-EMPTY",
@@ -1191,7 +1201,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": null
     },
     {
       "id": "J71-FULL-UNMATCHED",
@@ -1382,7 +1394,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": null
     },
     {
       "id": "J71-SEMI-ABSENCE",
@@ -1533,7 +1547,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 1,
+      "not_true_column_count": null
     },
     {
       "id": "J71-ANTI-ABSENCE",
@@ -1698,7 +1714,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 1,
+      "not_true_column_count": null
     },
     {
       "id": "J71-SELF",
@@ -1878,7 +1896,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": null
     },
     {
       "id": "J71-COMPOSITE",
@@ -2066,7 +2086,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     },
     {
       "id": "J71-NULL-REJECT",
@@ -2223,7 +2245,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     },
     {
       "id": "J71-OUTER-REVERSED",
@@ -2402,7 +2426,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": null
     },
     {
       "id": "J71-MATCH-REJECTED",
@@ -2558,7 +2584,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     },
     {
       "id": "J71-FK-KEY",
@@ -2745,7 +2773,9 @@
         "direct_sql": "public_SQL_analysis_and_physical_DuckDB_oracle",
         "dbt_compiled_sql_with_authoritative_catalog": "child_compiled_dbt_parity_tests_in_full_CI",
         "odcs_when_equivalent_schema_evidence": "child_ODCS_parity_tests_in_default_feature_CI"
-      }
+      },
+      "identity_column_count": 2,
+      "not_true_column_count": 2
     }
   ],
   "conditional": [
