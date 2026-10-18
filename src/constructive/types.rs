@@ -375,7 +375,8 @@ impl UniformJoinLaw {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FiniteJoinLaw {
     /// For each left value choose the unique maximum non-NULL right value <= it.
-    /// Ties are not certified without explicit engine ordering evidence.
+    /// Ambiguous ties or missing predecessors are not certified because the
+    /// parsed ASOF form does not prove inner versus left-preserving absence.
     AsOfNearestPriorInclusive,
     /// Evaluate equality separately for each left row and emit all TRUE partners.
     CorrelatedInnerEquality,
@@ -440,7 +441,10 @@ impl FiniteJoinLaw {
                         }
                         selected.push((left_index, Some(nearest)));
                     } else {
-                        selected.push((left_index, None));
+                        // Engines differ on unmatched ASOF rows (INNER versus
+                        // LEFT-preserving). Without an attested join preservation
+                        // law neither a dropped row nor a synthetic NULL is safe.
+                        return None;
                     }
                 }
                 Self::IntegerGreaterThan
