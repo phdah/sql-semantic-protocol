@@ -247,6 +247,22 @@ fn all_frozen_sql_variants_parse_in_all_thirteen_shared_dialects() {
                 statements.len(),
                 "{id}: {dialect} must preserve every transformation layer"
             );
+            let canonical_name = if dialect == "postgres" {
+                "postgresql"
+            } else {
+                dialect
+            };
+            let cell = case["dialect_matrix"]
+                .as_array()
+                .expect("frozen dialects")
+                .iter()
+                .find(|cell| cell["dialect"] == canonical_name)
+                .expect("frozen canonical dialect cell");
+            assert_eq!(
+                cell["parser_status"],
+                "shared_sql_parsed_layers_verified",
+                "{id}/{dialect}: frozen parser classification must be verified"
+            );
         }
     }
 }
