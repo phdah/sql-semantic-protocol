@@ -473,6 +473,7 @@ mod composition;
 mod counts;
 mod distributions;
 mod filters;
+mod finite_chains;
 mod graph;
 mod grouping;
 mod join_finite;
