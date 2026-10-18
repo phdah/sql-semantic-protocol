@@ -8,37 +8,38 @@ use sql_semantic_protocol::{
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
     ConstraintSourceKind, LiteralValue, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
     PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationConstraint,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw,
 };
 
+fn enforced_evidence() -> Vec<ConstraintEvidence> {
+    vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(
+            ConstraintSourceKind::ExternalMetadata,
+            "task-115-enforced-source-evidence",
+        )
+        .expect("authoritative constraint provenance"),
+        ConstraintEnforcement::Enforced,
+    )]
+}
+
 fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
-    let evidence = || {
-        vec![ConstraintEvidence::new(
-            ConstraintProvenance::new(
-                ConstraintSourceKind::ExternalMetadata,
-                "task-115-enforced-source-evidence",
-            )
-            .expect("authoritative constraint provenance"),
-            ConstraintEnforcement::Enforced,
-        )]
-    };
     vec![
         RelationConstraintSet::new(
             "l",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], evidence()).expect("l PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence()).expect("l PK"),
             ],
         )
         .expect("l constraints"),
         RelationConstraintSet::new(
             "r",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], evidence()).expect("r PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced_evidence()).expect("r PK"),
                 RelationConstraint::foreign_key(
                     vec!["tid".to_string()],
                     "t",
                     vec!["tid".to_string()],
-                    evidence(),
+                    enforced_evidence(),
                 )
                 .expect("r->t FK"),
             ],
@@ -47,7 +48,7 @@ fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
         RelationConstraintSet::new(
             "t",
             vec![
-                RelationConstraint::primary_key(vec!["tid".to_string()], evidence()).expect("t PK"),
+                RelationConstraint::primary_key(vec!["tid".to_string()], enforced_evidence()).expect("t PK"),
             ],
         )
         .expect("t constraints"),
@@ -156,8 +157,20 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                                 .split_whitespace()
                                 .next()
                                 .expect("SQL datatype");
-                            SchemaColumn::from_sql_type(column, sql_type, "postgresql")
-                                .expect("attested physical scalar type")
+                            let scalar = SchemaColumn::from_sql_type(
+                                column, sql_type, "postgresql",
+                            )
+                            .expect("attested physical scalar type");
+                            if case["variant"] == "pk_fk_constrained_sources" && column == "id" {
+                                scalar
+                                    .with_text_comparison_law(
+                                        TextComparisonLaw::Binary,
+                                        enforced_evidence(),
+                                    )
+                                    .expect("binary text identity attested")
+                            } else {
+                                scalar
+                            }
                         })
                         .collect();
                     RelationSchema::new(source, columns).expect("source schema")
@@ -434,7 +447,7 @@ fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference(
                 .expect("source schema")
                 .iter()
                 .map(|(column, declaration)| {
-                    SchemaColumn::from_sql_type(
+                    let scalar = SchemaColumn::from_sql_type(
                         column,
                         declaration
                             .as_str()
@@ -444,7 +457,17 @@ fn enforced_pk_fk_on_frozen_bags_rejects_duplicate_parent_and_missing_reference(
                             .expect("base type"),
                         "postgresql",
                     )
-                    .expect("typed source column")
+                    .expect("typed source column");
+                    if column == "id" {
+                        scalar
+                            .with_text_comparison_law(
+                                TextComparisonLaw::Binary,
+                                enforced_evidence(),
+                            )
+                            .expect("binary text identity attested")
+                    } else {
+                        scalar
+                    }
                 })
                 .collect();
             RelationSchema::new(relation, columns).expect("source schema")
