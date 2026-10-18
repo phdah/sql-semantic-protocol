@@ -7,7 +7,7 @@
     "71-C115-P",
     "71-C115-N"
   ],
-  "matrix_revision": "2026-10-18-v1",
+  "matrix_revision": "2026-10-18-v2",
   "dialects": [
     "ansi",
     "bigquery",
@@ -272,7 +272,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-N-CHAIN",
@@ -437,7 +483,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-P-COMPOSITE",
@@ -637,7 +729,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-N-COMPOSITE",
@@ -789,7 +927,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-P-CONSTRAINTS",
@@ -1023,7 +1207,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-N-CONSTRAINTS",
@@ -1186,7 +1416,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-P-GROUP",
@@ -1414,7 +1690,53 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     },
     {
       "id": "71-C115-N-GROUP",
@@ -1583,33 +1905,82 @@
           "canonical_status": "pending_executable_proof"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification"
+      "acceptance_status": "mandatory_pending_verification",
+      "source_column_instance_ids": {
+        "l": {
+          "a": "l.a",
+          "id": "l.id",
+          "k": "l.k",
+          "k2": "l.k2"
+        },
+        "r": {
+          "id": "r.id",
+          "k": "r.k",
+          "k2": "r.k2",
+          "tid": "r.tid"
+        },
+        "t": {
+          "id": "t.id",
+          "k": "t.k",
+          "k2": "t.k2",
+          "tid": "t.tid"
+        }
+      },
+      "adapter_matrix": [
+        {
+          "source": "direct_sql",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "duckdb_oracle_only",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "compiled_dbt_manifest_catalog",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        },
+        {
+          "source": "odcs_equivalent_schema_when_attested",
+          "source_schema_status": "typed_columns_specified",
+          "canonical_population_status": "pending_executable_proof",
+          "native_status": "not_certified",
+          "release_disposition": "pending_independent_review",
+          "owner": "TASK-115"
+        }
+      ]
     }
   ],
   "conditional_boundaries": [
     {
-      "code": "J115-MULTI-BAG",
+      "id": "C115-VENDOR-EXECUTION",
+      "scope": "all non-duckdb dialects",
+      "missing_evidence": "No vendor-native execution of the full source/terminal identity bags or documented session comparison/null coercion settings",
       "owner": "TASK-115",
-      "missing_evidence": "Canonical constructive mixed-key and rejected filtered source bags with full tuple identities",
-      "release_disposition": "pending_review_blocks_done"
+      "canonical_disposition": "must pass parser-equivalent canonical proof using source attestation; do not substitute native certification",
+      "release_disposition": "pending_independent_review",
+      "native_status": "not_certified"
     },
     {
-      "code": "J115-PK-FK",
+      "id": "C115-NULLABLE-KEY-SESSION",
+      "scope": "nullable ordinary SQL equality and composite ON",
+      "missing_evidence": "Dialect-specific native coercion/collation/session behavior beyond SQL standard ordinary typed INTEGER equality was not executed",
       "owner": "TASK-115",
-      "missing_evidence": "Attested PK/FK enforcement and full-row feasibility, not a parser-only DDL assertion",
-      "release_disposition": "pending_review_blocks_done"
+      "canonical_disposition": "ordinary SQL = treats NULL as NOT TRUE; any materially different AST or comparison law must remain a typed residual",
+      "release_disposition": "pending_independent_review",
+      "native_status": "not_certified"
     },
     {
-      "code": "J115-ADAPTER",
+      "id": "C115-FK-ENFORCEMENT",
+      "scope": "PK/FK attested physical feasibility",
+      "missing_evidence": "Non-DuckDB enforcement mode, deferred constraint timing, and session enforcement switches not established for every vendor",
       "owner": "TASK-115",
-      "missing_evidence": "Compiled dbt manifest/catalog and ODCS parity against all applicable fixture facts",
-      "release_disposition": "pending_review_blocks_done"
-    },
-    {
-      "code": "J115-DIALECT",
-      "owner": "TASK-115",
-      "missing_evidence": "156 parser classifications and executable canonical outcomes for supported dialect cells",
-      "release_disposition": "pending_review_blocks_done"
+      "canonical_disposition": "canonical constraint proofs require authoritative enabled/enforced schema attestation; unproved enforcement cannot certify inserts",
+      "release_disposition": "pending_independent_review",
+      "native_status": "not_certified"
     }
   ],
   "original_parent_ac": [
@@ -1630,5 +2001,6 @@
     "dbt_e2e",
     "schema_and_protocol_snapshots",
     "independent_signoff_audit"
-  ]
+  ],
+  "acceptance_evidence_revision_note": "v2 adds explicit stable physical column-instance identities, per-adapter pending canonical proof cells, and conditional vendor/session evidence ownership. All v1 SQL, source bags, P/NOT TRUE partitions, and terminal outcomes are unchanged."
 }
