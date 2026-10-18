@@ -29,8 +29,10 @@ or TASK-91 release approval is implied by this audit.
   predicates and explicit diagnostics for all 15 mandatory original SQL forms
   across 13 dialects, rather than just checking a nonempty analysis layer.
   Every one of the 12 conditional original SQL forms is classified directly
-  across the same 13 parser paths, including ASOF/LATERAL/APPLY diagnostics
-  and explicitly unclaimed native execution. These checks are additional to
+  across the same 13 parser paths. The original ASOF ON spelling hits the
+  parser boundary for all 13 dialect paths; TASK-114 separately verifies the
+  accepted MATCH_CONDITION form. LATERAL/APPLY retain explicit diagnostics,
+  and native vendor execution is not claimed. These checks are additional to
   the independently observed child dialect/adapters and DuckDB oracles.
 
 ## Original parent AC reconciliation
