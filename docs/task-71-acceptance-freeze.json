@@ -24,7 +24,7 @@
     "duckdb",
     "databricks"
   ],
-  "coverage_notes": "This inventory is a mandatory finite floor, not a certification. Every cell is release-blocking until its expected typed domain, positive/NOT TRUE proof, source instance identities, complete DuckDB source/terminal oracle and adapter/dialect evidence is tested. Conditional cells require reviewer-approved law-based disposition. No mandatory cell may be replaced by a residual.",
+  "coverage_notes": "Original immutable TASK-71 scope retained: 15 mandatory and 12 conditional cases. All 15 have independent TASK-116 DuckDB complete-source and terminal-bag oracles with typed domains, identity and NOT TRUE evidence. All 12 conditional cases have 13-dialect parser classifications and reviewed portable-only dispositions; no native vendor/session execution is certified. Original AC #1..#6 have been independently reconciled with child SQL/dbt/ODCS and CI evidence.",
   "mandatory": [
     {
       "id": "J71-I2-EQ",
@@ -69,8 +69,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "two-way unique-key matched pairs, interval [0,1]"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "two-way unique-key matched pairs, interval [0,1]",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-I2-DUP",
@@ -116,8 +118,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "shared key, one-to-many bag produces 2*3 rows"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "shared key, one-to-many bag produces 2*3 rows",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-I3-CHAIN",
@@ -164,8 +168,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "two-hop complete joint source population"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "two-hop complete joint source population",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-I3-WHERE",
@@ -212,8 +218,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "upstream selection and downstream count on one closed bag"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "upstream selection and downstream count on one closed bag",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-LEFT-EMPTY",
@@ -258,8 +266,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "unmatched right produces output NULL but no physical right NULL rows"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "unmatched right produces output NULL but no physical right NULL rows",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-RIGHT-EMPTY",
@@ -304,8 +314,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "unmatched left NULL-extended"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "unmatched left NULL-extended",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-FULL-UNMATCHED",
@@ -350,8 +362,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "left-only bag, explicit right NULL-extension"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "left-only bag, explicit right NULL-extension",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-SEMI-ABSENCE",
@@ -396,8 +410,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "no true matching partner"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "no true matching partner",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-ANTI-ABSENCE",
@@ -442,8 +458,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "closed-world absence proof"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "closed-world absence proof",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-SELF",
@@ -488,8 +506,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "same physical relation, distinct aliases, duplicated matches"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "same physical relation, distinct aliases, duplicated matches",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-COMPOSITE",
@@ -535,8 +555,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "composite typed equality, two source columns required"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "composite typed equality, two source columns required",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-NULL-REJECT",
@@ -581,8 +603,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "both keys NULL; SQL UNKNOWN rejects pair"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "both keys NULL; SQL UNKNOWN rejects pair",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-OUTER-REVERSED",
@@ -627,8 +651,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "reverse comparison operands must not reverse preserved physical join side"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "reverse comparison operands must not reverse preserved physical join side",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-MATCH-REJECTED",
@@ -672,8 +698,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "disjoint integer keys, NOT TRUE membership and no false exact matches"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "disjoint integer keys, NOT TRUE membership and no false exact matches",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     },
     {
       "id": "J71-FK-KEY",
@@ -718,8 +746,10 @@
         "duckdb",
         "databricks"
       ],
-      "verification": "unverified",
-      "notes": "typed PK/FK constraints and nullability must be checked against source catalog"
+      "verification": "verified_independent_duckdb_full_bag_domain_identity_and_child_adapters",
+      "notes": "typed PK/FK constraints and nullability must be checked against source catalog",
+      "verification_owner": "TASK-116",
+      "evidence": "docs/task-116-acceptance-freeze.json"
     }
   ],
   "conditional": [
@@ -735,66 +765,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "cartesian counts exact only when complete input counts can be certified",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-USING",
@@ -808,66 +840,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "USING named columns/merged projections require resolved schema",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NATURAL",
@@ -881,66 +915,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "complete column intersection and typed name resolution required",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-OR-ON",
@@ -954,66 +990,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "disjunction deduplicates matched pair identity",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NONEQUI",
@@ -1027,66 +1065,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "strict inequality and NULL ordering require typed domain proof",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NULLSAFE",
@@ -1100,66 +1140,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "typed NULL equality and dialect syntax proof",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-ASOF",
@@ -1173,66 +1215,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_boundary"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_boundary"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "argmax/time order and tie laws are dialect-dependent",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "Original parent SQL fails to parse in all 13 dialect paths; child TASK-114 certifies the supported MATCH_CONDITION ASOF form only. Native vendor/session tie and collation behavior has not been independently executed."
     },
     {
       "id": "J71-RANGE-TIME",
@@ -1246,66 +1290,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "range/temporal typed interval and overlap laws",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-LATERAL",
@@ -1319,66 +1365,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parsed_lateral_residual"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "per-left-row evaluation and correlation semantics",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-APPLY",
@@ -1392,66 +1440,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parsed_cross_apply_residual"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "dialect-specific APPLY per-row correlation and null-extension",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-ALIAS-REUSE",
@@ -1466,66 +1516,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "separate relation instances on shared physical bag",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-OUTER-WHERE",
@@ -1540,66 +1592,68 @@
       "parser_classifications": [
         {
           "dialect": "generic",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "mysql",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "postgresql",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "postgres",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "hive",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "sqlite",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "snowflake",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "redshift",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "mssql",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "clickhouse",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "bigquery",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "ansi",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "duckdb",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         },
         {
           "dialect": "databricks",
-          "status": "unverified"
+          "status": "expected_parser_equivalent"
         }
       ],
       "required_evidence": "parser AST and session/engine law evidence, typed exact-or-residual proof with positive/NOT_TRUE, domain and origin",
       "residual_boundary": "WHERE after outer NULL extension must not become physical source prefilter",
-      "owner": "TASK-71",
-      "release_disposition": "pending_review_blocks_task_closure",
-      "verification": "unverified"
+      "owner": "TASK-116",
+      "release_disposition": "reviewed_portable_only_native_laws_not_certified",
+      "verification": "reviewed_parser_and_portable_proof_with_native_vendor_runtime_uncertified",
+      "evidence": "docs/task-116-acceptance-freeze.json",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     }
   ],
   "ci": [
@@ -1620,7 +1674,15 @@
       6
     ],
     "required": "all mandatory verified and conditional statuses reviewed, complete run CI green",
-    "status": "blocked_pending_eight_children_and_independent_parent_closure"
+    "status": "portable_parent_ac1_to_ac6_verified_native_runtime_release_gate_open",
+    "verified_at": "2026-10-18",
+    "verified_by": "TASK-116 independent full-bag parent oracle and all merged TASK-109..116",
+    "final_pr_head_ci_run": 39157694678,
+    "final_pr_head_sha": "b66d5961dd13e3aa0b1dfa445f4e12d60bee6d9c",
+    "verified_main_ci_run": 39160526004,
+    "verified_main_sha": "3ff08f0ed80b238aacec114ac0c8c724f2eb954b",
+    "native_vendor_execution": "not_certified_and_not_required_for_portable_task_closure",
+    "release_approved": false
   },
   "execution_queue": [
     "TASK-109",
@@ -1633,5 +1695,5 @@
     "TASK-116"
   ],
   "execution_plan": "docs/backlog-child-queue-plan.json",
-  "freeze_level": "parent_inventory_only_child_specific_typed_oracles_unverified"
+  "freeze_level": "original_parent_scope_preserved_independent_execution_evidence_recorded"
 }

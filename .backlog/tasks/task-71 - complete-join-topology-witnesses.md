@@ -1,10 +1,10 @@
 ---
 id: TASK-71
 title: Construct exact join trees and dialect join variants
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-17'
+updated_date: '2026-10-18'
 labels: []
 milestone: m-3
 dependencies: 
@@ -37,12 +37,12 @@ One-binary-join proofs cannot generate exact datasets for realistic multi-join, 
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Cover INNER/LEFT/RIGHT/FULL/CROSS, SEMI/ANTI, SELF, USING/NATURAL, composite ON, OR/non-equi/null-safe conditions, mixed and chained join trees, alias reuse and many-to-many multiplicities.
-- [ ] #2 Evaluate ASOF/range/time joins and LATERAL/APPLY constructs for each parser-supported dialect, translating supported semantics into the same typed plan.
-- [ ] #3 Construct matched, unmatched, NULL-extended and rejected rows with explicit source instance identity and complete absence obligations; never treat null-extension as inserted physical NULL rows.
-- [ ] #4 Compose upstream filters and downstream row-shaping, keys/FKs, nullable join columns and duplicate matches while satisfying output cardinality.
-- [ ] #5 Verify exact output row identities/counts in DuckDB and dialect engines where available; unsupported engine semantics retain traceable residuals.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Cover INNER/LEFT/RIGHT/FULL/CROSS, SEMI/ANTI, SELF, USING/NATURAL, composite ON, OR/non-equi/null-safe conditions, mixed and chained join trees, alias reuse and many-to-many multiplicities.
+- [x] #2 Evaluate ASOF/range/time joins and LATERAL/APPLY constructs for each parser-supported dialect, translating supported semantics into the same typed plan.
+- [x] #3 Construct matched, unmatched, NULL-extended and rejected rows with explicit source instance identity and complete absence obligations; never treat null-extension as inserted physical NULL rows.
+- [x] #4 Compose upstream filters and downstream row-shaping, keys/FKs, nullable join columns and duplicate matches while satisfying output cardinality.
+- [x] #5 Verify exact output row identities/counts in DuckDB and dialect engines where available; unsupported engine semantics retain traceable residuals.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -87,3 +87,14 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **TASK-113 child evidence:** Seven portable join variants, 14 complete DuckDB physical bag cases, 182 parser/canonical dialect cells, direct SQL/dbt/ODCS parity, and conditional boundary reviews passed on PR #122 implementation head. See [TASK-113 acceptance audit](../../docs/task-113-acceptance-audit.md). Child signoff remains gated on PR #122 merge; the parent original ACs are still open.
 
 **Independent closure:** The parent keeps all original AC unchecked until every required frozen cell is executed, all conditional limits reviewed, adapter/13-dialect and DuckDB evidence reconciled, and final CI verified. The parent acceptance inventory is `docs/task-71-acceptance-freeze.json`, with the child execution plan at `docs/backlog-child-queue-plan.json`. No partial PR is a release approval.
+
+## Final summary (2026-10-18)
+
+**TASK-71 original acceptance criteria #1..#6 independently signed off for the portable protocol.** All eight predecessor tasks TASK-109..116 are Done, and PRs #118..125 are merged on `main`.
+
+- The original [15 mandatory and 12 conditional cells](../../docs/task-71-acceptance-freeze.json) are preserved without reducing scope. Each mandatory cell has independently observed complete DuckDB source and terminal bags, identity/multiplicity, typed bounds/NULL and positive/NOT TRUE or absence evidence; the [TASK-116 oracles](../../tests/task_116_parent_join_oracles.rs) do not derive expected rows from the implementation.
+- All 12 conditional cells have explicit 13-dialect parser classification (the `postgres` spelling aliases `postgresql`), child portable semantic/adapter evidence or typed fail-closed boundaries, named TASK-116 ownership and a reviewed native-runtime limitation. Original ASOF `ON` syntax is an explicit parser boundary; TASK-114 separately covers accepted `MATCH_CONDITION` syntax.
+- The [independent original-AC reconciliation](../../docs/task-116-acceptance-audit.md) is supported by [final-head PR #125 CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/39157694678) and [merged-`main` CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/39160526004), both successful for all required checks.
+- **No native vendor/session behavior is certified by parser equivalence or DuckDB.** The reviewed conditional evidence gaps remain explicit; TASK-91 and protocol v3 release signoff are separate and **not approved** by this parent closure.
+
+**Next implementation child:** TASK-117 under TASK-72, subject to the normal dependency and task-specific acceptance-freeze rules.
