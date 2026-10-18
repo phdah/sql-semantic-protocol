@@ -513,7 +513,10 @@ pub fn physical_finite_chain_bag_plan(
                         return residual("joined contribution multiplicity overflow");
                     };
                     counts.insert(value, next);
-                    contributions.entry(value).or_default().push(identities.clone());
+                    contributions
+                        .entry(value)
+                        .or_default()
+                        .push(identities.clone());
                     if grouped_query.is_none() {
                         terminal.push(BTreeMap::from([(
                             output_name.to_string(),
