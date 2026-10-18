@@ -148,7 +148,10 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 .unwrap_or_else(|error| panic!("{case_id}/{dialect}: {error:?}"));
             let target = analyzed.layers().last().expect("frozen terminal layer");
             let proof = physical_finite_chain_bag_plan(&analyzed, target.id(), &snapshots(case));
-            let PhysicalFiniteChainProof::Exact {
+            let PhysicalFiniteChainProof::Exact(exact) = proof else {
+                panic!("{case_id}/{dialect}: finite canonical proof failed: {proof:?}");
+            };
+            let PhysicalFiniteChainExact {
                 sources,
                 filtered_true_ids,
                 filtered_not_true_ids,
@@ -157,10 +160,7 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 terminal,
                 terminal_domains,
                 ..
-            } = proof
-            else {
-                panic!("{case_id}/{dialect}: finite canonical proof failed: {proof:?}");
-            };
+            } = *exact;
             assert_eq!(sources, ["l", "r", "t"].map(str::to_string));
             selected.sort();
             rejected.sort();
@@ -318,7 +318,7 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
     assert!(
         matches!(
             physical_finite_chain_bag_plan(&analyzed, target.id(), &valid),
-            PhysicalFiniteChainProof::Exact { .. }
+            PhysicalFiniteChainProof::Exact(_)
         ),
         "the same complete source bag should be provable"
     );
@@ -337,14 +337,14 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
     assert!(
         !matches!(
             physical_finite_chain_bag_plan(&analyzed, target.id(), &make(vec![wrong_type])),
-            PhysicalFiniteChainProof::Exact { .. }
+            PhysicalFiniteChainProof::Exact(_)
         ),
         "invalid physical scalar type cannot certify a joined bag"
     );
     assert!(
         !matches!(
             physical_finite_chain_bag_plan(&analyzed, target.id(), &[]),
-            PhysicalFiniteChainProof::Exact { .. }
+            PhysicalFiniteChainProof::Exact(_)
         ),
         "missing complete source bags are not empty valid populations"
     );
