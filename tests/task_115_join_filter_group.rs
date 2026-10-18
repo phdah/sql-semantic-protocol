@@ -114,9 +114,14 @@ fn composite_on_edges_share_one_complete_filtered_three_source_population() {
                             ..
                         }
                     )
-                }) && case.obligations().iter().filter(|obligation| {
-                    matches!(obligation, WitnessObligation::ClosedWorld { .. })
-                }).count() == 3
+                }) && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    })
+                    .count()
+                    == 3
                     && ["l", "r", "t"].iter().all(|source| {
                         case.obligations().iter().any(|obligation| {
                             matches!(
