@@ -3424,81 +3424,81 @@
         "duckdb",
         "databricks"
       ],
-      "parser_evidence_file": "docs/task-114-acceptance-freeze.json",
+      "parser_evidence_file": "tests/task_116_parent_join_oracles.rs",
       "source_and_outcome_proof": "conditional_by_child_bounded_complete_bag_evidence",
-      "residual_boundary": "argmax/time order and tie laws are dialect-dependent",
+      "residual_boundary": "original parent ASOF ON syntax is not accepted by sqlparser 0.58; TASK-114 MATCH_CONDITION variant has portable argmax/time proof, with native tie/session laws uncertified",
       "native_vendor_execution": "not_certified_by_portable_DuckDB_or_parser",
       "release_disposition": "reviewed_portable_only_native_laws_not_certified",
       "terminal_proof_requirement": "exact_or_typed_residual_under_named_preconditions",
       "dialect_classifications": {
         "generic": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "mysql": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "postgresql": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "hive": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "sqlite": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "snowflake": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "redshift": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "mssql": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "clickhouse": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "bigquery": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "ansi": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "duckdb": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         },
         "databricks": {
-          "parser": "parsed_asof_residual",
-          "canonical": "portable_canonical_physical_population_verified",
+          "parser": "parser_boundary",
+          "canonical": "child_match_condition_form_verified_original_sql_unparsed",
           "native_execution": "not_claimed"
         }
       },
       "child_owner": "TASK-114",
-      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
+      "native_missing_evidence": "Original parent SQL fails to parse in all 13 dialect paths; child TASK-114 certifies the supported MATCH_CONDITION ASOF form only. Native vendor/session tie and collation behavior has not been independently executed."
     },
     {
       "id": "J71-RANGE-TIME",
