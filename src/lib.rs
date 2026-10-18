@@ -40,6 +40,7 @@
 //! - physical_typed_append_schema_plan checks caller-supplied nested inserts against preexisting complete target and source snapshots.
 //! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
 //! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
+//! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
