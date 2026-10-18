@@ -219,6 +219,7 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 filtered_not_true_ids,
                 mut selected,
                 mut rejected,
+                contributions,
                 terminal,
                 terminal_domains,
                 ..
@@ -260,6 +261,57 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 frozen_ids("filtered_not_true_ids"),
                 "{case_id}/{dialect}"
             );
+            // The grouped count law and each ungrouped output are tied to
+            // concrete physical source identities, not only a row total.
+            let mut expected_contributions = BTreeMap::<i128, Vec<[String; 3]>>::new();
+            for triplet in frozen_triplets(case, "selected_physical_triplets") {
+                let left_id = &triplet[0];
+                let source = case["physical_source_bags"]["l"]
+                    .as_array()
+                    .expect("left source bag")
+                    .iter()
+                    .find(|row| row["id"].as_str() == Some(left_id.as_str()))
+                    .expect("frozen left identity");
+                let key = i128::from(source["k"].as_i64().expect("selected integer key"));
+                expected_contributions
+                    .entry(key)
+                    .or_default()
+                    .push(triplet);
+            }
+            assert_eq!(
+                contributions, expected_contributions,
+                "{case_id}/{dialect}: per-key physical contributor identities"
+            );
+            for output in case["expected_terminal_bag"]
+                .as_array()
+                .expect("frozen terminal bag")
+            {
+                let key = i128::from(output["k"].as_i64().expect("terminal integer key"));
+                let contributors = contributions
+                    .get(&key)
+                    .expect("terminal key has physical contributors");
+                if case["variant"] == "downstream_group_count" {
+                    assert_eq!(
+                        output["n"].as_u64(),
+                        Some(contributors.len() as u64),
+                        "{case_id}/{dialect}: grouped COUNT(*) contribution law"
+                    );
+                } else {
+                    let identity = output["source_identities"]
+                        .as_array()
+                        .expect("ungrouped terminal provenance");
+                    let identity = std::array::from_fn(|index| {
+                        identity[index]
+                            .as_str()
+                            .expect("terminal source identity")
+                            .to_string()
+                    });
+                    assert!(
+                        contributors.contains(&identity),
+                        "{case_id}/{dialect}: terminal value must use its actual physical triplet"
+                    );
+                }
+            }
             let grouped = case["variant"] == "downstream_group_count";
             let mut expected = case["expected_terminal_bag"]
                 .as_array()
