@@ -58,9 +58,76 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             all.len(),
             "{id}: every source triple appears once"
         );
+
+        // A complete identity partition requires exactly the Cartesian product,
+        // with SQL NULL contributing to NOT TRUE rather than to equality.
+        // Counting identities alone would accept a forged or missing triple.
+        let positive_ids = positive
+            .iter()
+            .map(|triple| {
+                triple
+                    .as_array()
+                    .expect("positive triple")
+                    .iter()
+                    .map(|part| part.as_str().expect("identity"))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<BTreeSet<_>>();
+        let rejected_ids = not_true
+            .iter()
+            .map(|triple| {
+                triple
+                    .as_array()
+                    .expect("NOT TRUE triple")
+                    .iter()
+                    .map(|part| part.as_str().expect("identity"))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<BTreeSet<_>>();
+        let equality_is_true = |a: &Value, b: &Value| {
+            a.as_i64()
+                .zip(b.as_i64())
+                .is_some_and(|(left, right)| left == right)
+        };
+        let composite = case["variant"] == "composite_nullable_keys";
+        for l in bags["l"].as_array().expect("left bag") {
+            for r in bags["r"].as_array().expect("middle bag") {
+                for t in bags["t"].as_array().expect("right bag") {
+                    let triple = vec![
+                        l["id"].as_str().expect("left identity"),
+                        r["id"].as_str().expect("middle identity"),
+                        t["id"].as_str().expect("right identity"),
+                    ];
+                    let sql_true = l["a"].as_i64().is_some_and(|value| value > 0)
+                        && equality_is_true(&l["k"], &r["k"])
+                        && equality_is_true(&r["k"], &t["k"])
+                        && (!composite
+                            || (equality_is_true(&l["k2"], &r["k2"])
+                                && equality_is_true(&r["k2"], &t["k2"])));
+                    assert_eq!(
+                        positive_ids.contains(&triple),
+                        sql_true,
+                        "{id}: frozen TRUE truth table for {triple:?}"
+                    );
+                    assert_eq!(
+                        rejected_ids.contains(&triple),
+                        !sql_true,
+                        "{id}: frozen NOT TRUE truth table for {triple:?}"
+                    );
+                }
+            }
+        }
+
+        let matrix = case["dialect_matrix"].as_array().expect("dialects");
+        assert_eq!(matrix.len(), dialects.len());
+        let covered = matrix
+            .iter()
+            .map(|cell| cell["dialect"].as_str().expect("dialect"))
+            .collect::<BTreeSet<_>>();
         assert_eq!(
-            case["dialect_matrix"].as_array().expect("dialects").len(),
-            13
+            covered,
+            dialects.iter().map(|d| d.as_str().expect("dialect")).collect(),
+            "{id}: every exposed dialect must appear exactly once"
         );
         assert_eq!(
             case["expected_terminal_bag"]
