@@ -313,13 +313,14 @@ fn conditional_parent_inventory_has_named_child_or_parent_evidence_without_nativ
         assert!(cell["residual_boundary"]
             .as_str()
             .is_some_and(|v| !v.is_empty()));
-        let owner = cell["owner"].as_str().unwrap();
-        if owner == "TASK-116" {
-            assert_eq!(id, "J71-OUTER-WHERE");
+        assert_eq!(cell["owner"], "TASK-116", "{id}: release boundary owner");
+        assert!(cell["native_missing_evidence"].as_str().is_some());
+        if id == "J71-OUTER-WHERE" {
             assert_eq!(cell["parent_fixture"], "71-C116-N-OUTER-WHERE");
             continue;
         }
-        let child = match owner {
+        let child_owner = cell["child_owner"].as_str().expect("source child proof");
+        let child = match child_owner {
             "TASK-110" => &child_110,
             "TASK-113" => &child_113,
             "TASK-114" => &child_114,
