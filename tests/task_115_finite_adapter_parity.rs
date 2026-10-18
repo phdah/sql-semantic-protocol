@@ -3,10 +3,10 @@ use std::collections::BTreeMap;
 
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    dialect_from_name, parse_dbt_manifest, physical_finite_chain_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteChainProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
+    parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, LiteralValue,
+    PhysicalFiniteChainProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn rows(case: &Value) -> Vec<PhysicalWriteState> {
@@ -126,7 +126,11 @@ fn dbt(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
     let mut nodes = Map::new();
     if grouped {
         let statements = sql.split(';').collect::<Vec<_>>();
-        assert_eq!(statements.len(), 2, "grouped fixture consists of two stages");
+        assert_eq!(
+            statements.len(),
+            2,
+            "grouped fixture consists of two stages"
+        );
         let stage = statements[0]
             .trim()
             .strip_prefix("CREATE TABLE stage AS ")
@@ -185,7 +189,14 @@ fn direct(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::Ana
     analyze_configured_inputs_with_catalog(&configured, catalog).expect("direct SQL analysis")
 }
 
-fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> (Vec<[String; 3]>, Vec<[String; 3]>, Vec<BTreeMap<String, LiteralValue>>) {
+fn certified(
+    case: &Value,
+    bundle: &sql_semantic_protocol::AnalysisBundle,
+) -> (
+    Vec<[String; 3]>,
+    Vec<[String; 3]>,
+    Vec<BTreeMap<String, LiteralValue>>,
+) {
     let target = bundle.layers().last().expect("terminal");
     let proof = physical_finite_chain_bag_plan(bundle, target.id(), &rows(case));
     let PhysicalFiniteChainProof::Exact(exact) = proof else {
@@ -207,7 +218,10 @@ fn frozen_eight_bags_produce_identical_canonical_proofs_from_sql_and_dbt() {
         let catalog = RelationCatalog::from_schemas(&schemas(case)).expect("physical catalog");
         let direct = certified(case, &direct(case, &catalog));
         let dbt = certified(case, &dbt(case));
-        assert_eq!(dbt, direct, "dbt must not change source or terminal identity bags");
+        assert_eq!(
+            dbt, direct,
+            "dbt must not change source or terminal identity bags"
+        );
     }
 }
 
@@ -244,12 +258,14 @@ fn frozen_eight_bags_produce_identical_odcs_source_proofs() {
         }
         let names = RelationCatalog::new(&["l", "r", "t"]).expect("physical relation catalog");
         let odcs = parse_odcs_yaml(&contract, "postgresql", &names).expect("ODCS source adapter");
-        let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas())
-            .expect("ODCS schema catalog");
-        let direct_catalog =
-            RelationCatalog::from_schemas(&schemas(case)).expect("direct catalog");
+        let odcs_catalog =
+            RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS schema catalog");
+        let direct_catalog = RelationCatalog::from_schemas(&schemas(case)).expect("direct catalog");
         let direct = certified(case, &direct(case, &direct_catalog));
         let odcs = certified(case, &direct(case, &odcs_catalog));
-        assert_eq!(odcs, direct, "ODCS must not alter canonical source assignments");
+        assert_eq!(
+            odcs, direct,
+            "ODCS must not alter canonical source assignments"
+        );
     }
 }
