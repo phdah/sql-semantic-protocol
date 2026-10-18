@@ -150,7 +150,7 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_closed_world_schema_plan, physical_joint_distribution_plan,
+    physical_closed_world_schema_plan, physical_finite_chain_bag_plan, physical_joint_distribution_plan,
     physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
     physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
