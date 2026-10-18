@@ -85,6 +85,24 @@ fn source_manifest(case: &Value) -> Value {
                 }),
             );
         }
+        let constraints = if case["variant"] == "pk_fk_constrained_sources" {
+            match relation {
+                "l" => json!([{"type": "primary_key", "columns": ["id"]}]),
+                "r" => json!([
+                    {"type": "primary_key", "columns": ["id"]},
+                    {
+                        "type": "foreign_key",
+                        "columns": ["tid"],
+                        "to": "db.raw.t",
+                        "to_columns": ["tid"]
+                    }
+                ]),
+                "t" => json!([{"type": "primary_key", "columns": ["tid"]}]),
+                _ => unreachable!("frozen physical source"),
+            }
+        } else {
+            json!([])
+        };
         sources.insert(
             format!("source.demo.{relation}"),
             json!({
@@ -95,6 +113,7 @@ fn source_manifest(case: &Value) -> Value {
                 "schema": "raw",
                 "name": relation,
                 "columns": columns,
+                "constraints": constraints,
             }),
         );
     }
