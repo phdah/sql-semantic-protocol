@@ -5,10 +5,9 @@ use std::collections::BTreeSet;
 
 #[test]
 fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
-    let inventory: Value = serde_json::from_str(include_str!(
-        "../docs/task-115-acceptance-freeze.json"
-    ))
-    .expect("frozen TASK-115 acceptance inventory");
+    let inventory: Value =
+        serde_json::from_str(include_str!("../docs/task-115-acceptance-freeze.json"))
+            .expect("frozen TASK-115 acceptance inventory");
     assert_eq!(inventory["owner"], "TASK-115");
     assert_eq!(inventory["version"], 1);
     let cases = inventory["cases"].as_array().expect("cases");
@@ -38,17 +37,36 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
         let not_true = case["rejected_not_true_triplets"]
             .as_array()
             .expect("NOT TRUE physical identities");
-        assert_eq!(positive.len() + not_true.len(), counts.iter().product::<usize>());
-        let all = positive.iter().chain(not_true).collect::<Vec<_>>();
-        let triplets = all.iter().map(|triple| {
-            triple.as_array().expect("triplet").iter()
-                .map(|identity| identity.as_str().expect("row id"))
-                .collect::<Vec<_>>()
-        }).collect::<BTreeSet<_>>();
-        assert_eq!(triplets.len(), all.len(), "{id}: every source triple appears once");
-        assert_eq!(case["dialect_matrix"].as_array().expect("dialects").len(), 13);
         assert_eq!(
-            case["expected_terminal_bag"].as_array().expect("terminal rows").len(),
+            positive.len() + not_true.len(),
+            counts.iter().product::<usize>()
+        );
+        let all = positive.iter().chain(not_true).collect::<Vec<_>>();
+        let triplets = all
+            .iter()
+            .map(|triple| {
+                triple
+                    .as_array()
+                    .expect("triplet")
+                    .iter()
+                    .map(|identity| identity.as_str().expect("row id"))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            triplets.len(),
+            all.len(),
+            "{id}: every source triple appears once"
+        );
+        assert_eq!(
+            case["dialect_matrix"].as_array().expect("dialects").len(),
+            13
+        );
+        assert_eq!(
+            case["expected_terminal_bag"]
+                .as_array()
+                .expect("terminal rows")
+                .len(),
             case["expected_terminal_row_count"].as_u64().expect("count") as usize
         );
         assert_eq!(case["acceptance_status"], "mandatory_pending_verification");
