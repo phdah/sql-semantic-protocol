@@ -1,10 +1,10 @@
 ---
 id: TASK-116
 title: Independently certify TASK-71 join matrix and parent acceptance
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-18'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,11 @@ type: feature
 - **Concrete independent oracle baseline:** Verify all 15 mandatory, 12 conditional inventory cells, each original AC #1..#6 and full CI; zero unchecked mandatory cells.
 - **Conditional/fail-closed boundary:** Do not promote conditional parser only claims to native engine certification; parent only Done after cross-case signoff.
 - **Original parent AC ownership:** #1, #2, #3, #4, #5, #6. Additive to project-wide outcome-first definition of done and TASK-66 capability inventory.
+
+## Implementation evidence (2026-10-18)
+
+- Independent [TASK-116 versioned freeze](../../docs/task-116-acceptance-freeze.json) and [parent oracle](../../tests/task_116_parent_join_oracles.rs) cover 15 mandatory parent bags and 12 conditional source-law classifications, with independent SQL row identities, typed domains and closed-world NOT TRUE cases.
+- [Parent reconciliation audit](../../docs/task-116-acceptance-audit.md) preserves original TASK-71 signoff gates. CI and conditional vendor release verification are not assumed complete from child PR status.
 
 ## Acceptance Criteria
 
