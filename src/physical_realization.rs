@@ -473,6 +473,7 @@ mod composition;
 mod counts;
 mod distributions;
 mod filters;
+mod finite_chains;
 mod graph;
 mod grouping;
 mod join_finite;
@@ -495,6 +496,10 @@ pub(crate) use distributions::{
     physical_inverted_set_distribution_plan,
 };
 pub use filters::physical_source_plan;
+pub use finite_chains::{
+    physical_finite_chain_bag_plan, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
+    PhysicalFiniteChainProof,
+};
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{

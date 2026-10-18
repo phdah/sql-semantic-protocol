@@ -356,6 +356,224 @@ pub(super) fn physical_group_rank_count_plan(
     WitnessDirection::feasible(composed)
 }
 
+/// Lift one *complete* three-way INNER join bag through a single-key
+/// COUNT(*) grouping. The source bags and both join edges are constructed
+/// together by the chain solver; every row has the same non-NULL join key,
+/// so they form exactly one group with no independent intermediate seeding.
+fn physical_filtered_chain_single_group(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+) -> Option<WitnessDirection> {
+    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
+
+    if wanted != 1 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let target = walker.layers.get(target_layer_id).copied()?;
+    let group_query = query_for(bundle, target)?;
+    let group_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
+    let [PhysicalPlanRef::Layer(join_id)] = group_node.inputs() else {
+        return None;
+    };
+    let join_layer = walker.layers.get(join_id.as_str()).copied()?;
+    let join_query = query_for(bundle, join_layer)?;
+    let [source] = group_query.sources() else {
+        return None;
+    };
+    if !matches!(group_node.write_kind(), None | Some(WriteKind::Definition))
+        || !group_query.group_rows_match_surviving_groups()
+        || !group_query.joins().is_empty()
+        || group_query.predicates().where_predicate().is_some()
+        || group_query.predicates().qualify_predicate().is_some()
+        || group_query.window_witness().is_some()
+        || group_query.set_operation().is_some()
+        || !group_query.subquery_witnesses().is_empty()
+        || !group_query.diagnostics().is_empty()
+        || !group_query.output().columns().iter().all(|column| {
+            matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::AggregateFunction(_)
+            )
+        })
+        || join_query.joins().len() != 2
+        || !walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(join_id.clone()))?
+            .produced_relations()
+            .contains(&source.name().to_string())
+    {
+        return None;
+    }
+    let group_key = match group_query.aggregation()?.group_by()? {
+        GroupBy::Expressions(keys) if keys.len() == 1 => match &keys[0] {
+            GroupingExpression::Expression(Expression::Column(column)) => column,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    if group_key
+        .relation()
+        .is_some_and(|name| name != source.name() && source.alias() != Some(name))
+    {
+        return None;
+    }
+    // The only admitted aggregate projection is COUNT(*) itself. A different
+    // aggregate cannot borrow COUNT's physical contribution proof.
+    let mut count_projections = 0_u8;
+    for output in group_query.output().columns() {
+        match output.expression() {
+            Expression::Column(column) if column.name() == group_key.name() => {}
+            Expression::AggregateFunction(function)
+                if function.name().eq_ignore_ascii_case("count")
+                    && matches!(function.arguments(), [AggregateArgument::Wildcard])
+                    && !function.distinct()
+                    && function.filter().is_none() =>
+            {
+                count_projections += 1;
+            }
+            _ => return None,
+        }
+    }
+    if count_projections == 0 {
+        return None;
+    }
+    let projected = join_query
+        .output()
+        .columns()
+        .iter()
+        .filter(|column| column.name() == group_key.name())
+        .collect::<Vec<_>>();
+    let [projected] = projected.as_slice() else {
+        return None;
+    };
+    let origin = projected.plain_copy_source()?;
+    let physical_key = resolve_filter_column_with_evidence(
+        bundle,
+        &walker,
+        join_id,
+        &crate::protocol::ColumnRef::new(
+            Some(origin.relation().to_string()),
+            origin.column().to_string(),
+        ),
+        0,
+        true,
+    )?;
+
+    // Only a simple COUNT(*) condition can be evaluated from the exact
+    // group cardinality; DISTINCT, FILTER and arbitrary HAVING stay residual.
+    let test = if let Some(having) = group_query.predicates().having_predicate() {
+        let Predicate::Comparison(comparison) = having else {
+            return None;
+        };
+        let (function, operator, literal) = match (comparison.left(), comparison.right()) {
+            (Expression::AggregateFunction(function), Expression::Literal(literal)) => {
+                (function, comparison.operator(), literal)
+            }
+            (Expression::Literal(literal), Expression::AggregateFunction(function)) => {
+                (function, comparison.operator().reversed(), literal)
+            }
+            _ => return None,
+        };
+        if !function.name().eq_ignore_ascii_case("count")
+            || !matches!(function.arguments(), [AggregateArgument::Wildcard])
+            || function.distinct()
+            || function.filter().is_some()
+            || literal.literal_type() != LiteralType::Integer
+        {
+            return None;
+        }
+        let LiteralValue::Number(value) = literal.value() else {
+            return None;
+        };
+        Some((operator, value.parse::<i128>().ok()?))
+    } else {
+        None
+    };
+    let count_matches = |count: i128| match test {
+        None => true,
+        Some((ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom, value)) => {
+            count == value
+        }
+        Some((ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom, value)) => {
+            count != value
+        }
+        Some((ComparisonOperator::Lt, value)) => count < value,
+        Some((ComparisonOperator::Lte, value)) => count <= value,
+        Some((ComparisonOperator::Gt, value)) => count > value,
+        Some((ComparisonOperator::Gte, value)) => count >= value,
+    };
+
+    let group_boundary = WitnessBoundary::new(
+        source.name(),
+        GroupBoundaryKind::Intermediate,
+        target_layer_id,
+    )?;
+    let mut cases = Vec::new();
+    for join_rows in 1_u64..=64 {
+        if !count_matches(i128::from(join_rows)) {
+            continue;
+        }
+        let Some(WitnessDirection::Feasible(join_cases)) =
+            physical_join_population_count_plan(bundle, join_id, join_rows)
+        else {
+            continue;
+        };
+        for join_case in join_cases {
+            let same_key = join_case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::JoinChainPopulation {
+                        left_key, middle_left_key, middle_right_key, right_key,
+                        output_rows, closed_world: true, ..
+                    } if *output_rows == join_rows
+                        && [left_key, middle_left_key, middle_right_key, right_key]
+                            .contains(&&physical_key)
+                )
+            });
+            if !same_key {
+                continue;
+            }
+            let bounds = CountBounds::new(join_rows, Some(join_rows))?;
+            let mut obligations = join_case.obligations().to_vec();
+            obligations.push(WitnessObligation::Producer {
+                boundary: group_boundary.clone(),
+                physical_sources: walker.sources.iter().cloned().collect(),
+            });
+            obligations.push(WitnessObligation::Group {
+                boundary: group_boundary.clone(),
+                key: vec![crate::protocol::ColumnRef::new(
+                    Some(source.name().to_string()),
+                    group_key.name().to_string(),
+                )],
+                aggregate: crate::group_witness::GroupAggregate::CountRows,
+                distinct: false,
+                argument: None,
+                rows: bounds,
+                non_null: bounds,
+                tests: Vec::new(),
+            });
+            obligations.push(WitnessObligation::OutputRows {
+                layer_id: target_layer_id.to_string(),
+                bounds: CountBounds::new(1, Some(1))?,
+            });
+            if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+                cases.push(case);
+            }
+        }
+        if !cases.is_empty() {
+            break;
+        }
+    }
+    WitnessDirection::feasible(cases)
+}
+
 /// Prove the smallest nonempty GROUP/HAVING construction over a filtered
 /// two-parent join. One *complete* matching join pair produces exactly one
 /// group for any total scalar group key. A downstream WHERE is admitted only
@@ -626,6 +844,9 @@ pub(super) fn physical_join_group_count_plan(
     use crate::outcome_proofs::OutcomeWitness;
     if rows == 0 {
         return None;
+    }
+    if let Some(plan) = physical_filtered_chain_single_group(bundle, target_layer_id, rows) {
+        return Some(plan);
     }
     if let Some(plan) = physical_filtered_join_single_group(bundle, target_layer_id, rows) {
         return Some(plan);

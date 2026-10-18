@@ -142,6 +142,56 @@ impl AnalysisBundle {
         self.refresh_outcome_goals();
     }
 
+    /// Attach explicit physical text comparison evidence to an existing
+    /// source column without replacing the adapter's authoritative datatype,
+    /// identities or other schema metadata. Unattested binary comparison is
+    /// rejected by SchemaColumn; no backend defaults are inferred.
+    pub fn attest_source_text_comparison(
+        &mut self,
+        relation: &str,
+        column: &str,
+        law: crate::relation::TextComparisonLaw,
+        evidence: Vec<crate::constraints::ConstraintEvidence>,
+    ) -> Result<(), crate::relation::RelationMetadataError> {
+        use crate::relation::RelationMetadataError;
+        let invalid = |message: &str| RelationMetadataError::InvalidSchema {
+            relation: relation.to_string(),
+            message: message.to_string(),
+        };
+        let Some(index) = self
+            .source_schemas
+            .iter()
+            .position(|schema| schema.relation() == relation)
+        else {
+            return Err(invalid(
+                "comparison attestation names an unknown source relation",
+            ));
+        };
+        let existing = &self.source_schemas[index];
+        let mut columns = existing.columns().to_vec();
+        let Some(column_index) = columns.iter().position(|item| item.name() == column) else {
+            return Err(invalid(
+                "comparison attestation names an unknown source column",
+            ));
+        };
+        if let Some(prior) = columns[column_index].text_comparison_law() {
+            if prior != law {
+                return Err(invalid("comparison attestation contradicts the source law"));
+            }
+        }
+        columns[column_index] = columns[column_index]
+            .clone()
+            .with_text_comparison_law(law, evidence)?;
+        let mut schema = RelationSchema::new(relation, columns)?;
+        if let Some(kind) = existing.source_kind() {
+            schema = schema.with_source_kind(kind);
+        }
+        let mut updated = self.source_schemas.clone();
+        updated[index] = schema;
+        self.replace_source_schemas(updated);
+        Ok(())
+    }
+
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
     ///
     /// Identical facts coalesce evidence. Conflicting primary keys remain explicit diagnostics.

@@ -460,7 +460,6 @@ fn physical_three_way_inner_count_plan(
     if [first_join, second_join]
         .iter()
         .any(|join| join.kind() != JoinKind::Inner)
-        || query.predicates().where_predicate().is_some()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
         || query.window_witness().is_some()
@@ -483,9 +482,14 @@ fn physical_three_way_inner_count_plan(
         return None;
     }
 
-    // Only plain-copy producers may sit upstream of the two SQL joins.
-    // In particular no second local join or filtered producer may make one
-    // alias a different (and hence incompatible) physical row selection.
+    // All physical rows that survive the upstream or terminal filter must
+    // satisfy its exact, typed TRUE predicate. This is a sufficient complete
+    // source assignment, not a claim to represent arbitrary rejected rows.
+    let mut source_filters = BTreeMap::<String, Vec<WitnessFormula>>::new();
+    if let Some(predicate) = query.predicates().where_predicate() {
+        let (source, filter) = source_filter_for_predicate(bundle, query.sources(), predicate)?;
+        source_filters.entry(source).or_default().push(filter);
+    }
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
@@ -494,11 +498,23 @@ fn physical_three_way_inner_count_plan(
             continue;
         }
         let producer = walker.layers.get(id.as_str()).copied()?;
-        if !matches!(node.write_kind(), None | Some(WriteKind::Definition))
-            || !transparent_projection(query_for(bundle, producer)?)
-        {
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
             return None;
         }
+        if transparent_projection(query_for(bundle, producer)?) {
+            continue;
+        }
+        let (source, filter) = direct_filtered_source(bundle, &walker, node)?;
+        source_filters.entry(source).or_default().push(filter);
+    }
+    if source_filters.iter().any(|(source, filters)| {
+        filters.len() > 1
+            && !matches!(
+                joint_source_truths_satisfiable(bundle, source, filters),
+                Some(true)
+            )
+    }) {
+        return None;
     }
 
     let sources = [left, middle, right];
@@ -538,48 +554,99 @@ fn physical_three_way_inner_count_plan(
         }
         Some(mapped)
     };
-    let equality = |join: &crate::protocol::Join,
-                    a: usize,
-                    b: usize|
-     -> Option<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)> {
-        let Predicate::Comparison(comparison) = join.condition()? else {
-            return None;
-        };
-        if comparison.operator() != ComparisonOperator::Eq {
+    // Every ON conjunct must be an ordinary equality between the same
+    // adjacent source instances. Do not silently discard a composite key:
+    // that would certify rows rejected by the other conjunct.
+    let equalities = |join: &crate::protocol::Join,
+                      a: usize,
+                      b: usize|
+     -> Option<Vec<(crate::protocol::ColumnRef, crate::protocol::ColumnRef)>> {
+        let mut conjuncts = Vec::new();
+        join_conjuncts(join.condition()?, &mut conjuncts);
+        if conjuncts.is_empty() || conjuncts.len() > 2 {
             return None;
         }
-        let (Expression::Column(left), Expression::Column(right)) =
-            (comparison.left(), comparison.right())
-        else {
-            return None;
-        };
-        if let (Some(x), Some(y)) = (resolve(a, left), resolve(b, right)) {
-            return Some((x, y));
-        }
-        Some((resolve(a, right)?, resolve(b, left)?))
+        conjuncts
+            .into_iter()
+            .map(|predicate| {
+                let Predicate::Comparison(comparison) = predicate else {
+                    return None;
+                };
+                if comparison.operator() != ComparisonOperator::Eq {
+                    return None;
+                }
+                let (Expression::Column(left), Expression::Column(right)) =
+                    (comparison.left(), comparison.right())
+                else {
+                    return None;
+                };
+                if let (Some(x), Some(y)) = (resolve(a, left), resolve(b, right)) {
+                    return Some((x, y));
+                }
+                Some((resolve(a, right)?, resolve(b, left)?))
+            })
+            .collect()
     };
-    let (left_key, middle_left_key) = equality(first_join, 0, 1)?;
-    let (middle_right_key, right_key) = equality(second_join, 1, 2)?;
-    let keys = [
-        (&left_key, 0usize),
-        (&middle_left_key, 1),
-        (&middle_right_key, 1),
-        (&right_key, 2),
-    ];
-    // The sufficient construction chooses literal one, which must be
-    // representable in every attested physical signed-integer column type.
-    for (key, _) in keys {
+    let first_keys = equalities(first_join, 0, 1)?;
+    let second_keys = equalities(second_join, 1, 2)?;
+    let (left_key, middle_left_key) = first_keys.first()?.clone();
+    let (middle_right_key, right_key) = second_keys.first()?.clone();
+    let keys = first_keys
+        .iter()
+        .chain(&second_keys)
+        .flat_map(|(left, right)| [left, right])
+        .collect::<Vec<_>>();
+
+    // A source filter on any ON component needs literal reconciliation with
+    // the candidate population. The independent-scalar construction cannot
+    // infer that correlation, and must stay residual.
+    if source_filters.iter().any(|(source, filters)| {
+        filters.iter().any(|filter| {
+            keys.iter().any(|key| {
+                key.relation() == Some(source.as_str()) && formula_references_column(filter, key)
+            })
+        })
+    }) {
+        return None;
+    }
+
+    // Every ON component uses one independently attested signed-integer value.
+    // If a source has cross-column or uniqueness constraints, the unrestricted
+    // all-equal construction cannot assert their satisfiability.
+    for key in &keys {
         let relation = key.relation()?;
         let schema = bundle
             .source_schemas()
             .iter()
             .find(|schema| schema.relation() == relation)?;
         let bounds = physical_integer_evidence(schema, key)?;
-        if bounds.minimum > 0
-            || bounds.maximum < 0
+        if bounds.minimum > 1
+            || bounds.maximum < 1
             || blocks_unconstrained_physical_plans(bundle, relation)
         {
             return None;
+        }
+    }
+
+    // JoinChainPopulation owns the first edge of each pair. Additional ON
+    // equalities are independently certified on that *same closed source
+    // population* by requiring every physical row to carry matched_value=1.
+    // No extra physical rows or intermediate join results are invented.
+    for (left, right) in first_keys.iter().skip(1).chain(second_keys.iter().skip(1)) {
+        for key in [left, right] {
+            let relation = key.relation()?;
+            let row = RowVariable::new(relation, relation, "chain_composite")?;
+            source_filters
+                .entry(relation.to_string())
+                .or_default()
+                .push(WitnessFormula::Comparison {
+                    left: WitnessTerm::Column {
+                        row,
+                        column: key.clone(),
+                    },
+                    operator: ComparisonOperator::Eq,
+                    right: WitnessTerm::Integer(1),
+                });
         }
     }
 
@@ -635,7 +702,10 @@ fn physical_three_way_inner_count_plan(
                 boundary: boundary.clone(),
                 quantifier: RowQuantifier::ForAll,
                 bounds: CountBounds::new(*count, Some(*count))?,
-                predicate: count_tautology(),
+                predicate: source_filters
+                    .get(relation)
+                    .map(|filters| combined_filter(filters))
+                    .unwrap_or_else(count_tautology),
                 closed_world: true,
             });
             obligations.push(WitnessObligation::ClosedWorld {
