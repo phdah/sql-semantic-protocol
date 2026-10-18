@@ -33,7 +33,7 @@ type: feature
 ## Implementation evidence (2026-10-18)
 
 - Independent [TASK-116 versioned freeze](../../docs/task-116-acceptance-freeze.json) and [parent oracle](../../tests/task_116_parent_join_oracles.rs) cover 15 mandatory parent bags and 12 conditional source-law classifications, with independent SQL row identities, typed domains and closed-world NOT TRUE cases.
-- [Parent reconciliation audit](../../docs/task-116-acceptance-audit.md) preserves original TASK-71 signoff gates. Final-head CI verified in [run 39155624537](https://github.com/phdah/sql-semantic-protocol/actions/runs/39155624537) with all nine checks passing. All five bounded TASK-116 criteria are verified by independent parent bag tests and child SQL/dbt/ODCS plus dialect evidence. Native vendor/session runtime is explicitly uncertified; no portable parser claim is promoted to native proof. TASK-71 remains In Progress until this PR merges and parent closure is recorded.
+- [Parent reconciliation audit](../../docs/task-116-acceptance-audit.md) preserves original TASK-71 signoff gates. Initial implementation CI passed in [run 39155624537](https://github.com/phdah/sql-semantic-protocol/actions/runs/39155624537) with all nine checks. PR #125 subsequently strengthens parent canonical shape and all conditional dialect/residual assertions; final-head CI and signoff are recorded on the PR. All five bounded TASK-116 criteria are verified by independent parent bag tests and child SQL/dbt/ODCS plus dialect evidence. Native vendor/session runtime is explicitly uncertified; no portable parser claim is promoted to native proof. TASK-71 remains In Progress until this PR merges and parent closure is recorded.
 
 ## Acceptance Criteria
 
