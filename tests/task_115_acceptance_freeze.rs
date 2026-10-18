@@ -126,7 +126,10 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
             .collect::<BTreeSet<_>>();
         assert_eq!(
             covered,
-            dialects.iter().map(|d| d.as_str().expect("dialect")).collect(),
+            dialects
+                .iter()
+                .map(|d| d.as_str().expect("dialect"))
+                .collect(),
             "{id}: every exposed dialect must appear exactly once"
         );
         assert_eq!(
