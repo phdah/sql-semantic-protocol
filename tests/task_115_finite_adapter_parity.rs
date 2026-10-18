@@ -4,9 +4,9 @@ use std::collections::BTreeMap;
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
-    parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    LiteralValue, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
+    parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, LiteralValue,
+    PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
     SchemaColumn, SqlInput, TextComparisonLaw,
 };
@@ -33,8 +33,10 @@ fn enforced_constraints(qualified: bool) -> Vec<RelationConstraintSet> {
     vec![
         RelationConstraintSet::new(
             name("l"),
-            vec![RelationConstraint::primary_key(vec!["id".to_string()], enforced())
-                .expect("enforced l PK")],
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced())
+                    .expect("enforced l PK"),
+            ],
         )
         .expect("l source constraints"),
         RelationConstraintSet::new(
@@ -54,8 +56,10 @@ fn enforced_constraints(qualified: bool) -> Vec<RelationConstraintSet> {
         .expect("r source constraints"),
         RelationConstraintSet::new(
             name("t"),
-            vec![RelationConstraint::primary_key(vec!["tid".to_string()], enforced())
-                .expect("enforced t PK")],
+            vec![
+                RelationConstraint::primary_key(vec!["tid".to_string()], enforced())
+                    .expect("enforced t PK"),
+            ],
         )
         .expect("t source constraints"),
     ]
@@ -298,7 +302,10 @@ fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> Ca
         // physical enforcement and binary-text law is supplied explicitly.
         if !bundle.relation_constraints().is_empty() {
             let undecided = physical_finite_chain_bag_plan(&bundle, &target, &{
-                let qualified = bundle.source_schemas().iter().any(|s| s.relation() == "db.raw.l");
+                let qualified = bundle
+                    .source_schemas()
+                    .iter()
+                    .any(|s| s.relation() == "db.raw.l");
                 rows(case)
                     .into_iter()
                     .map(|state| {
@@ -317,7 +324,10 @@ fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> Ca
                 "unattested adapter constraints must never imply physical feasibility"
             );
         }
-        let qualified = bundle.source_schemas().iter().any(|s| s.relation() == "db.raw.l");
+        let qualified = bundle
+            .source_schemas()
+            .iter()
+            .any(|s| s.relation() == "db.raw.l");
         for source in ["l", "r"] {
             let relation = if qualified {
                 format!("db.raw.{source}")
