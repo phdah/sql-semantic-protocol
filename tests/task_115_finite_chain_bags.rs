@@ -482,9 +482,8 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
 
     // Observed uniform right-side values cannot turn a right-dependent
     // predicate into an independently provable left-source WHERE.
-    let right_filter = SqlInput::inline(
-        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE r.k>0",
-    );
+    let right_filter =
+        SqlInput::inline("SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE r.k>0");
     let analyzed = analyze_configured_inputs_with_catalog(
         &[ConfiguredSqlInput::new(
             "task-115-right-dependent",
@@ -503,7 +502,6 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
         ),
         "a coincidentally uniform right-dependent WHERE cannot be claimed source-local"
     );
-
 }
 
 #[test]
