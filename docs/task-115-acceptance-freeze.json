@@ -2,12 +2,12 @@
   "version": 1,
   "owner": "TASK-115",
   "parent": "TASK-71",
-  "status": "frozen_requirements_verification_pending",
+  "status": "portable_constructive_bags_verified_with_explicit_native_boundaries",
   "fixture_ids": [
     "71-C115-P",
     "71-C115-N"
   ],
-  "matrix_revision": "2026-10-18-v2",
+  "matrix_revision": "2026-10-18-v3",
   "dialects": [
     "ansi",
     "bigquery",
@@ -209,70 +209,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -297,25 +297,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -420,70 +420,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -508,25 +508,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -666,70 +666,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -754,25 +754,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -864,70 +864,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -952,25 +952,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -1144,70 +1144,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -1232,25 +1232,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -1353,70 +1353,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -1441,25 +1441,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -1627,70 +1627,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -1715,25 +1715,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -1842,70 +1842,70 @@
         {
           "dialect": "ansi",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "bigquery",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "clickhouse",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "databricks",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "duckdb",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "generic",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "hive",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mssql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "mysql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "postgresql",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "redshift",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "snowflake",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         },
         {
           "dialect": "sqlite",
           "parser_status": "shared_sql_parsed_layers_verified",
-          "canonical_status": "pending_executable_proof"
+          "canonical_status": "verified_portable_canonical_source_bag"
         }
       ],
-      "acceptance_status": "mandatory_pending_verification",
+      "acceptance_status": "verified_exact_canonical_and_independent_duckdb_bags",
       "source_column_instance_ids": {
         "l": {
           "a": "l.a",
@@ -1930,25 +1930,25 @@
         {
           "source": "direct_sql",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "duckdb_oracle_only",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "compiled_dbt_manifest_catalog",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         },
         {
           "source": "odcs_equivalent_schema_when_attested",
           "source_schema_status": "typed_columns_specified",
-          "canonical_population_status": "pending_executable_proof",
+          "canonical_population_status": "verified_with_explicit_physical_attestation",
           "native_status": "not_certified",
-          "release_disposition": "pending_independent_review",
+          "release_disposition": "reviewed_conditional_native_not_certified",
           "owner": "TASK-115"
         }
       ]
@@ -1961,7 +1961,7 @@
       "missing_evidence": "No vendor-native execution of the full source/terminal identity bags or documented session comparison/null coercion settings",
       "owner": "TASK-115",
       "canonical_disposition": "must pass parser-equivalent canonical proof using source attestation; do not substitute native certification",
-      "release_disposition": "pending_independent_review",
+      "release_disposition": "reviewed_conditional_native_not_certified",
       "native_status": "not_certified"
     },
     {
@@ -1970,7 +1970,7 @@
       "missing_evidence": "Dialect-specific native coercion/collation/session behavior beyond SQL standard ordinary typed INTEGER equality was not executed",
       "owner": "TASK-115",
       "canonical_disposition": "ordinary SQL = treats NULL as NOT TRUE; any materially different AST or comparison law must remain a typed residual",
-      "release_disposition": "pending_independent_review",
+      "release_disposition": "reviewed_conditional_native_not_certified",
       "native_status": "not_certified"
     },
     {
@@ -1979,7 +1979,7 @@
       "missing_evidence": "Non-DuckDB enforcement mode, deferred constraint timing, and session enforcement switches not established for every vendor",
       "owner": "TASK-115",
       "canonical_disposition": "canonical constraint proofs require authoritative enabled/enforced schema attestation; unproved enforcement cannot certify inserts",
-      "release_disposition": "pending_independent_review",
+      "release_disposition": "reviewed_conditional_native_not_certified",
       "native_status": "not_certified"
     }
   ],
@@ -2002,5 +2002,12 @@
     "schema_and_protocol_snapshots",
     "independent_signoff_audit"
   ],
-  "acceptance_evidence_revision_note": "v2 adds explicit stable physical column-instance identities, per-adapter pending canonical proof cells, and conditional vendor/session evidence ownership. All v1 SQL, source bags, P/NOT TRUE partitions, and terminal outcomes are unchanged."
+  "acceptance_evidence_revision_note": "v3 changes only verification statuses and evidence requirements, not the immutable eight SQL/source/TRUE/NOT TRUE/terminal bags. The full finite canonical proof, per-key contributors and 104 dialect variants were matched to DuckDB; SQL/dbt/ODCS parity includes PK/FK when authoritative physical enforcement and binary text laws are supplied. Absent enforcement remains Residual, vendor-native laws are not certified.",
+  "portable_proof_attestation": {
+    "source": "explicit_caller_provided_complete_physical_bags",
+    "columns": "authoritative_source_datatypes_from_each_adapter",
+    "pk_fk": "attested_physical_enforcement_evidence_required_and_binary_text_equality_for_source_ids",
+    "missing_enforcement": "canonical_typed_residual_not_a_constructive_proof",
+    "engine": "duckdb_independent_oracle_only_vendor_native_not_certified"
+  }
 }
