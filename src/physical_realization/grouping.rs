@@ -421,6 +421,26 @@ fn physical_filtered_chain_single_group(
     {
         return None;
     }
+    // The only admitted aggregate projection is COUNT(*) itself. A different
+    // aggregate cannot borrow COUNT's physical contribution proof.
+    let mut count_projections = 0_u8;
+    for output in group_query.output().columns() {
+        match output.expression() {
+            Expression::Column(column) if column.name() == group_key.name() => {}
+            Expression::AggregateFunction(function)
+                if function.name().eq_ignore_ascii_case("count")
+                    && matches!(function.arguments(), [AggregateArgument::Wildcard])
+                    && !function.distinct()
+                    && function.filter().is_none() =>
+            {
+                count_projections += 1;
+            }
+            _ => return None,
+        }
+    }
+    if count_projections == 0 {
+        return None;
+    }
     let projected = join_query
         .output()
         .columns()
@@ -493,8 +513,8 @@ fn physical_filtered_chain_single_group(
         if !count_matches(i128::from(join_rows)) {
             continue;
         }
-        let WitnessDirection::Feasible(join_cases) =
-            physical_join_population_count_plan(bundle, join_id, join_rows)?
+        let Some(WitnessDirection::Feasible(join_cases)) =
+            physical_join_population_count_plan(bundle, join_id, join_rows)
         else {
             continue;
         };
@@ -537,6 +557,9 @@ fn physical_filtered_chain_single_group(
             if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
                 cases.push(case);
             }
+        }
+        if !cases.is_empty() {
+            break;
         }
     }
     WitnessDirection::feasible(cases)
