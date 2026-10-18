@@ -26,16 +26,14 @@ fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
         RelationConstraintSet::new(
             "l",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], evidence())
-                    .expect("l PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], evidence()).expect("l PK"),
             ],
         )
         .expect("l constraints"),
         RelationConstraintSet::new(
             "r",
             vec![
-                RelationConstraint::primary_key(vec!["id".to_string()], evidence())
-                    .expect("r PK"),
+                RelationConstraint::primary_key(vec!["id".to_string()], evidence()).expect("r PK"),
                 RelationConstraint::foreign_key(
                     vec!["tid".to_string()],
                     "t",
@@ -49,8 +47,7 @@ fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
         RelationConstraintSet::new(
             "t",
             vec![
-                RelationConstraint::primary_key(vec!["tid".to_string()], evidence())
-                    .expect("t PK"),
+                RelationConstraint::primary_key(vec!["tid".to_string()], evidence()).expect("t PK"),
             ],
         )
         .expect("t constraints"),
