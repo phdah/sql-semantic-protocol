@@ -507,6 +507,7 @@ fn every_conditional_parent_dialect_cell_checks_the_actual_canonical_boundary() 
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("complete source catalog");
+    let mut mismatches = Vec::new();
     for cell in freeze["conditional"]
         .as_array()
         .expect("12 conditional cells")
@@ -613,15 +614,15 @@ fn every_conditional_parent_dialect_cell_checks_the_actual_canonical_boundary() 
                     }
                 }
             };
-            assert_eq!(
-                actual,
-                cell["dialect_classifications"][dialect]["parser"]
-                    .as_str()
-                    .expect("reviewed frozen parser status"),
-                "{id}/{dialect}: original parent parser and canonical residual classification"
-            );
+            let frozen = cell["dialect_classifications"][dialect]["parser"]
+                .as_str()
+                .expect("reviewed frozen parser status");
+            if actual != frozen {
+                mismatches.push(json!({"id":id,"dialect":dialect,"observed":actual,"frozen":frozen}));
+            }
         }
     }
+    assert!(mismatches.is_empty(), "TASK116_CONDITIONAL_MISMATCHES={mismatches:?}");
 }
 
 #[test]
