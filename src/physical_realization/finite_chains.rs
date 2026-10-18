@@ -6,11 +6,13 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use super::write_states::{
+    physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan,
+};
 use super::*;
 use crate::protocol::{
     AggregateArgument, ComparisonOperator, GroupingExpression, JoinKind, LiteralValue,
 };
-use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan};
 
 /// Exact physical row identities together with their surviving source-backed
 /// terminal bag. NULL and bag multiplicity are preserved without SQL reparsing.
@@ -80,9 +82,7 @@ fn expression_value(
             let matches = names
                 .iter()
                 .enumerate()
-                .filter(|(index, alias)| {
-                    alias.as_str() == relation || rows[*index].0 == relation
-                })
+                .filter(|(index, alias)| alias.as_str() == relation || rows[*index].0 == relation)
                 .collect::<Vec<_>>();
             let [(index, _)] = matches.as_slice() else {
                 return Err("physical column does not identify exactly one source instance");
@@ -150,12 +150,14 @@ fn terminal_group(
     key: &str,
     counts: &BTreeMap<i128, u64>,
 ) -> Result<Vec<BTreeMap<String, LiteralValue>>, &'static str> {
-    let Some(crate::protocol::GroupBy::Expressions(group_keys)) =
-        query.aggregation().and_then(|aggregation| aggregation.group_by())
+    let Some(crate::protocol::GroupBy::Expressions(group_keys)) = query
+        .aggregation()
+        .and_then(|aggregation| aggregation.group_by())
     else {
         return Err("missing exact ordinary group key");
     };
-    let [GroupingExpression::Expression(Expression::Column(group_key))] = group_keys.as_slice() else {
+    let [GroupingExpression::Expression(Expression::Column(group_key))] = group_keys.as_slice()
+    else {
         return Err("unsupported grouped key shape");
     };
     if group_key.name() != key || query.output().columns().len() != 2 {
@@ -213,8 +215,14 @@ fn terminal_group(
             }
         }
         terminal.push(BTreeMap::from([
-            (output_key.to_string(), LiteralValue::Number(key_value.to_string())),
-            (output_count.to_string(), LiteralValue::Number(count.to_string())),
+            (
+                output_key.to_string(),
+                LiteralValue::Number(key_value.to_string()),
+            ),
+            (
+                output_count.to_string(),
+                LiteralValue::Number(count.to_string()),
+            ),
         ]));
     }
     Ok(terminal)
@@ -254,9 +262,11 @@ pub fn physical_finite_chain_bag_plan(
     };
     let grouped = query.joins().is_empty();
     let (join_query, grouped_query) = if grouped {
-        let Some(node) = walker.nodes.iter().find(|node| {
-            node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string())
-        }) else {
+        let Some(node) = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))
+        else {
             return residual("missing group producer");
         };
         let [PhysicalPlanRef::Layer(producer)] = node.inputs() else {
@@ -268,7 +278,10 @@ pub fn physical_finite_chain_bag_plan(
         let Some(join_query) = query_for(bundle, layer) else {
             return residual("group join producer has no canonical query");
         };
-        if untransported_materialization_laws(bundle, query.sources().first().map_or("", |source| source.name())) {
+        if untransported_materialization_laws(
+            bundle,
+            query.sources().first().map_or("", |source| source.name()),
+        ) {
             return residual("group stage carries untransported materialization constraints");
         }
         (join_query, Some(query))
@@ -296,9 +309,12 @@ pub fn physical_finite_chain_bag_plan(
     let sources = [left, middle, right];
     let names = sources.map(|source| source.alias().unwrap_or(source.name()).to_string());
     let relations = sources.map(|source| source.name());
-    if BTreeSet::from(relations).len() != 3 || BTreeSet::from(names.as_slice()).len() != 3
+    if BTreeSet::from(relations).len() != 3
+        || names.iter().collect::<BTreeSet<_>>().len() != 3
         || snapshots.len() != 3
-        || relations.iter().any(|relation| !snapshots.iter().any(|state| state.relation() == *relation))
+        || relations
+            .iter()
+            .any(|relation| !snapshots.iter().any(|state| state.relation() == *relation))
     {
         return residual("the exact source population must close three distinct physical bags");
     }
