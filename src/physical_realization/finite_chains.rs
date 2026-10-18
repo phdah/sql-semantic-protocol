@@ -14,6 +14,59 @@ use crate::protocol::{
     AggregateArgument, ComparisonOperator, GroupingExpression, JoinKind, LiteralValue,
 };
 
+/// Exact terminal scalar domain computed from the complete constructed bag.
+/// All finite non-NULL values are enumerated; bounds are inclusive.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalFiniteChainColumnDomain {
+    allowed: Vec<i128>,
+    null_allowed: bool,
+}
+
+impl PhysicalFiniteChainColumnDomain {
+    /// Ordered distinct signed-integer values appearing in the complete output.
+    pub fn allowed(&self) -> &[i128] {
+        &self.allowed
+    }
+
+    /// Whether SQL NULL actually appears in the terminal bag.
+    pub fn null_allowed(&self) -> bool {
+        self.null_allowed
+    }
+
+    /// Inclusive lowest and highest values; None for an empty integer domain.
+    pub fn bounds(&self) -> Option<(i128, i128)> {
+        Some((*self.allowed.first()?, *self.allowed.last()?))
+    }
+}
+
+fn exact_terminal_domains(
+    terminal: &[BTreeMap<String, LiteralValue>],
+    columns: &[&str],
+) -> Option<BTreeMap<String, PhysicalFiniteChainColumnDomain>> {
+    let mut domains = BTreeMap::new();
+    for name in columns {
+        let mut values = BTreeSet::new();
+        let mut null_allowed = false;
+        for row in terminal {
+            match row.get(*name)? {
+                LiteralValue::Null => null_allowed = true,
+                LiteralValue::Number(number) => {
+                    values.insert(number.parse::<i128>().ok()?);
+                }
+                _ => return None,
+            }
+        }
+        domains.insert(
+            name.to_string(),
+            PhysicalFiniteChainColumnDomain {
+                allowed: values.into_iter().collect(),
+                null_allowed,
+            },
+        );
+    }
+    Some(domains)
+}
+
 /// Exact physical row identities together with their surviving source-backed
 /// terminal bag. NULL and bag multiplicity are preserved without SQL reparsing.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,6 +88,8 @@ pub enum PhysicalFiniteChainProof {
         rejected: Vec<[String; 3]>,
         /// Exact terminal SQL bag with named, typed projected columns.
         terminal: Vec<BTreeMap<String, LiteralValue>>,
+        /// Domains inferred from that entire bag, with inclusive bounds.
+        terminal_domains: BTreeMap<String, PhysicalFiniteChainColumnDomain>,
     },
     /// Input rows violate an attested necessary physical constraint.
     Impossible { reason: String },
@@ -429,6 +484,19 @@ pub fn physical_finite_chain_bag_plan(
             Err(reason) => return residual(reason),
         }
     }
+    let columns = if let Some(group_query) = grouped_query {
+        group_query
+            .output()
+            .columns()
+            .iter()
+            .map(|column| column.name())
+            .collect::<Vec<_>>()
+    } else {
+        vec![output_name]
+    };
+    let Some(terminal_domains) = exact_terminal_domains(&terminal, &columns) else {
+        return residual("terminal domain has an unsupported scalar or incomplete projection");
+    };
     PhysicalFiniteChainProof::Exact {
         nodes: walker.nodes,
         sources: names,
@@ -437,5 +505,6 @@ pub fn physical_finite_chain_bag_plan(
         selected,
         rejected,
         terminal,
+        terminal_domains,
     }
 }
