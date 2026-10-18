@@ -67,31 +67,36 @@ fn exact_terminal_domains(
     Some(domains)
 }
 
+/// Complete exact finite chain result, including the canonical source graph
+/// and both sides of the three-valued SQL row-membership partition.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalFiniteChainExact {
+    /// Canonical graph used for both physical source bags and terminal.
+    pub nodes: Vec<PhysicalPlanNode>,
+    /// Named source instances, SQL left-to-right order.
+    pub sources: [String; 3],
+    /// Source identities for an independently TRUE left predicate.
+    pub filtered_true_ids: Vec<String>,
+    /// Source identities for FALSE or UNKNOWN left predicate.
+    pub filtered_not_true_ids: Vec<String>,
+    /// Complete selected physical identity triplets.
+    pub selected: Vec<[String; 3]>,
+    /// Complete SQL NOT TRUE Cartesian identity triplets.
+    pub rejected: Vec<[String; 3]>,
+    /// Exact named terminal SQL bag, retaining multiplicity.
+    pub terminal: Vec<BTreeMap<String, LiteralValue>>,
+    /// Exact finite value domains computed from the same terminal bag.
+    pub terminal_domains: BTreeMap<String, PhysicalFiniteChainColumnDomain>,
+}
+
 /// Exact physical row identities together with their surviving source-backed
 /// terminal bag. NULL and bag multiplicity are preserved without SQL reparsing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PhysicalFiniteChainProof {
-    /// All three supplied complete source bags satisfy attested schema laws
-    /// and the normalized SQL predicates have an exact integer comparison law.
-    Exact {
-        /// Canonical graph used for both the source bags and the terminal.
-        nodes: Vec<PhysicalPlanNode>,
-        /// Named source instances in SQL left-to-right order.
-        sources: [String; 3],
-        /// Source identities for rows whose independent left WHERE is TRUE.
-        filtered_true_ids: Vec<String>,
-        /// Source identities whose left WHERE is FALSE or UNKNOWN.
-        filtered_not_true_ids: Vec<String>,
-        /// Selected physical identity triplets, including duplicates by row.
-        selected: Vec<[String; 3]>,
-        /// SQL FALSE or UNKNOWN triplets over the full Cartesian source product.
-        rejected: Vec<[String; 3]>,
-        /// Exact terminal SQL bag with named, typed projected columns.
-        terminal: Vec<BTreeMap<String, LiteralValue>>,
-        /// Domains inferred from that entire bag, with inclusive bounds.
-        terminal_domains: BTreeMap<String, PhysicalFiniteChainColumnDomain>,
-    },
-    /// Input rows violate an attested necessary physical constraint.
+    /// All supplied complete source bags satisfy attested schema laws and
+    /// normalized SQL predicates have exact typed comparison laws.
+    Exact(Box<PhysicalFiniteChainExact>),
+    /// Physical rows violate an attested necessary schema or identity law.
     Impossible { reason: String },
     /// Parser, source, type, or comparison evidence is incomplete.
     Residual { reason: String },
@@ -497,7 +502,7 @@ pub fn physical_finite_chain_bag_plan(
     let Some(terminal_domains) = exact_terminal_domains(&terminal, &columns) else {
         return residual("terminal domain has an unsupported scalar or incomplete projection");
     };
-    PhysicalFiniteChainProof::Exact {
+    PhysicalFiniteChainProof::Exact(Box::new(PhysicalFiniteChainExact {
         nodes: walker.nodes,
         sources: names,
         filtered_true_ids,
@@ -506,5 +511,5 @@ pub fn physical_finite_chain_bag_plan(
         rejected,
         terminal,
         terminal_domains,
-    }
+    }))
 }
