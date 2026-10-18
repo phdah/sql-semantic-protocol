@@ -273,10 +273,7 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                     .find(|row| row["id"].as_str() == Some(left_id.as_str()))
                     .expect("frozen left identity");
                 let key = i128::from(source["k"].as_i64().expect("selected integer key"));
-                expected_contributions
-                    .entry(key)
-                    .or_default()
-                    .push(triplet);
+                expected_contributions.entry(key).or_default().push(triplet);
             }
             assert_eq!(
                 contributions, expected_contributions,
