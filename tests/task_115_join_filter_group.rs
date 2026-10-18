@@ -169,10 +169,9 @@ fn downstream_count_having_reuses_exact_chain_bag() {
 
 #[test]
 fn all_frozen_sql_variants_parse_in_all_thirteen_shared_dialects() {
-    let inventory: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-115-acceptance-freeze.json"
-    ))
-    .expect("frozen TASK-115 matrix");
+    let inventory: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-115-acceptance-freeze.json"))
+            .expect("frozen TASK-115 matrix");
     for case in inventory["cases"].as_array().expect("cases") {
         let id = case["id"].as_str().expect("fixture id");
         let sql = case["sql"].as_str().expect("SQL");
