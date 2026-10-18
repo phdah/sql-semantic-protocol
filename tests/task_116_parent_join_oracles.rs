@@ -466,29 +466,28 @@ fn every_original_task_71_inventory_cell_is_preserved_without_scope_waivers() {
                 .iter()
                 .find(|case| case["id"] == id)
                 .unwrap_or_else(|| panic!("{classification}: missing original {id}"));
-            assert!(seen.insert(id), "{classification}: duplicate original ID {id}");
+            assert!(
+                seen.insert(id),
+                "{classification}: duplicate original ID {id}"
+            );
             assert_eq!(
-                candidate["original_sql"],
-                original["sql"],
+                candidate["original_sql"], original["sql"],
                 "{id}: preserve frozen original SQL"
             );
             assert_eq!(
-                candidate["acceptance_criteria"],
-                original["acceptance_criteria"],
+                candidate["acceptance_criteria"], original["acceptance_criteria"],
                 "{id}: retain all original AC ownership"
             );
             if classification == "mandatory" {
                 assert_eq!(
-                    candidate["expected_terminal_count"],
-                    original["expected"]["terminal_count"],
+                    candidate["expected_terminal_count"], original["expected"]["terminal_count"],
                     "{id}: cannot weaken original terminal oracle"
                 );
                 assert_eq!(candidate["classification"], "exact_required");
             } else {
                 assert_eq!(candidate["classification"], "conditional");
                 assert_eq!(
-                    candidate["owner"],
-                    "TASK-116",
+                    candidate["owner"], "TASK-116",
                     "{id}: conditional review stays parent-owned"
                 );
             }
