@@ -154,6 +154,7 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 mut selected,
                 mut rejected,
                 terminal,
+                terminal_domains,
                 ..
             } = proof
             else {
@@ -215,6 +216,42 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 expected,
                 "{case_id}/{dialect}: exact canonical terminal bag"
             );
+            for (column, actual_domain) in terminal_domains {
+                let expected_domain = &case["terminal_domains"][&column];
+                assert_eq!(
+                    actual_domain.null_allowed(),
+                    expected_domain["null_allowed"].as_bool().expect("NULL domain"),
+                    "{case_id}/{dialect}: {column} NULL domain"
+                );
+                let expected_allowed = expected_domain["allowed"]
+                    .as_array()
+                    .expect("finite value domain")
+                    .iter()
+                    .map(|value| i128::from(value.as_i64().expect("integer value")))
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    actual_domain.allowed(),
+                    expected_allowed,
+                    "{case_id}/{dialect}: {column} finite values"
+                );
+                let expected_bounds = match (
+                    expected_domain["lower"]["value"].as_i64(),
+                    expected_domain["upper"]["value"].as_i64(),
+                ) {
+                    (Some(lower), Some(upper)) => {
+                        assert_eq!(expected_domain["lower"]["inclusive"], true);
+                        assert_eq!(expected_domain["upper"]["inclusive"], true);
+                        Some((i128::from(lower), i128::from(upper)))
+                    }
+                    _ => None,
+                };
+                assert_eq!(
+                    actual_domain.bounds(),
+                    expected_bounds,
+                    "{case_id}/{dialect}: {column} inclusive bounds"
+                );
+            }
+
         }
     }
 }
