@@ -189,14 +189,13 @@ fn direct(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::Ana
     analyze_configured_inputs_with_catalog(&configured, catalog).expect("direct SQL analysis")
 }
 
-fn certified(
-    case: &Value,
-    bundle: &sql_semantic_protocol::AnalysisBundle,
-) -> (
+type CanonicalBag = (
     Vec<[String; 3]>,
     Vec<[String; 3]>,
     Vec<BTreeMap<String, LiteralValue>>,
-) {
+);
+
+fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> CanonicalBag {
     let target = bundle.layers().last().expect("terminal");
     let proof = physical_finite_chain_bag_plan(bundle, target.id(), &rows(case));
     let PhysicalFiniteChainProof::Exact(exact) = proof else {
