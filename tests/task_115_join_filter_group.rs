@@ -259,8 +259,7 @@ fn all_frozen_sql_variants_parse_in_all_thirteen_shared_dialects() {
                 .find(|cell| cell["dialect"] == canonical_name)
                 .expect("frozen canonical dialect cell");
             assert_eq!(
-                cell["parser_status"],
-                "shared_sql_parsed_layers_verified",
+                cell["parser_status"], "shared_sql_parsed_layers_verified",
                 "{id}/{dialect}: frozen parser classification must be verified"
             );
         }
