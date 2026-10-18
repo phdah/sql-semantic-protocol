@@ -2020,8 +2020,8 @@
         6
       ],
       "owner": "TASK-110",
-      "child_variant": "shared_physical_source",
-      "child_fixture": null,
+      "child_variant": "shared_materialized_producer_chain",
+      "child_fixture": "71-C110-P-SHARED",
       "dialects": [
         "generic",
         "mysql",
@@ -2054,8 +2054,8 @@
         5,
         6
       ],
-      "owner": "TASK-111",
-      "child_variant": "left_where_is_null",
+      "owner": "TASK-116",
+      "child_variant": "post_outer_filter",
       "child_fixture": null,
       "dialects": [
         "generic",
@@ -2072,12 +2072,13 @@
         "duckdb",
         "databricks"
       ],
-      "parser_evidence_file": "docs/task-111-acceptance-freeze.json",
-      "source_and_outcome_proof": "conditional_by_child_bounded_complete_bag_evidence",
+      "parser_evidence_file": "tests/task_116_parent_join_oracles.rs",
+      "source_and_outcome_proof": "independent_complete_DuckDB_null_extension_where_filter",
       "residual_boundary": "WHERE after outer NULL extension must not become physical source prefilter",
       "native_vendor_execution": "not_certified_by_portable_DuckDB_or_parser",
       "release_disposition": "reviewed_portable_only_native_laws_not_certified",
-      "terminal_proof_requirement": "exact_or_typed_residual_under_named_preconditions"
+      "terminal_proof_requirement": "exact_or_typed_residual_under_named_preconditions",
+      "parent_fixture": "71-C116-N-OUTER-WHERE"
     }
   ],
   "original_ac_gates": [
