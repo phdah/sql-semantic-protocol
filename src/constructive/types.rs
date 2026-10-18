@@ -430,22 +430,19 @@ impl FiniteJoinLaw {
             match self {
                 Self::AsOfNearestPriorInclusive => {
                     let nearest = matches.iter().copied().max_by_key(|index| right[*index]);
-                    if let Some(nearest) = nearest {
-                        if matches
-                            .iter()
-                            .filter(|index| right[**index] == right[nearest])
-                            .count()
-                            != 1
-                        {
-                            return None;
-                        }
-                        selected.push((left_index, Some(nearest)));
-                    } else {
-                        // Engines differ on unmatched ASOF rows (INNER versus
-                        // LEFT-preserving). Without an attested join preservation
-                        // law neither a dropped row nor a synthetic NULL is safe.
+                    // Engines differ on unmatched ASOF rows (INNER versus
+                    // LEFT-preserving). Without an attested preservation law
+                    // neither a dropped row nor a synthetic NULL is safe.
+                    let nearest = nearest?;
+                    if matches
+                        .iter()
+                        .filter(|index| right[**index] == right[nearest])
+                        .count()
+                        != 1
+                    {
                         return None;
                     }
+                    selected.push((left_index, Some(nearest)));
                 }
                 Self::IntegerGreaterThan
                 | Self::IntegerGreaterThanOrEqual
