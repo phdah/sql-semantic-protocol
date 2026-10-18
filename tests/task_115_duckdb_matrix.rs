@@ -177,5 +177,46 @@ fn frozen_eight_bags_are_independently_executable() {
             actual, expected,
             "{id}: SQL output exactly matches frozen bag"
         );
+
+        // Domain claims are checked against the *complete* executed bag,
+        // including the empty-result and NULL cases. A correct row count
+        // alone does not verify bounds or non-NULL assertions.
+        for column in if grouped { vec!["k", "n"] } else { vec!["k"] } {
+            let domain = &case["terminal_domains"][column];
+            let null_present = actual.iter().any(|row| row[column].is_null());
+            assert_eq!(
+                domain["null_allowed"].as_bool().expect("NULL expectation"),
+                null_present,
+                "{id}: {column} NULL domain"
+            );
+            let mut values = actual
+                .iter()
+                .filter_map(|row| row[column].as_i64())
+                .collect::<Vec<_>>();
+            values.sort_unstable();
+            values.dedup();
+            assert_eq!(
+                serde_json::json!(values),
+                domain["allowed"],
+                "{id}: {column} complete finite domain"
+            );
+            if let (Some(lower), Some(upper)) = (values.first(), values.last()) {
+                assert_eq!(
+                    domain["lower"]["value"],
+                    serde_json::json!(lower),
+                    "{id}: {column} inclusive lower"
+                );
+                assert_eq!(
+                    domain["upper"]["value"],
+                    serde_json::json!(upper),
+                    "{id}: {column} inclusive upper"
+                );
+                assert_eq!(domain["lower"]["inclusive"], true, "{id}: lower closed");
+                assert_eq!(domain["upper"]["inclusive"], true, "{id}: upper closed");
+            } else {
+                assert!(domain.get("lower").is_none(), "{id}: empty lower");
+                assert!(domain.get("upper").is_none(), "{id}: empty upper");
+            }
+        }
     }
 }
