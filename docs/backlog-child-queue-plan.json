@@ -131,7 +131,11 @@
           "fixture_ids": [
             "71-C114-P",
             "71-C114-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "signoff_audit": "docs/task-114-implementation-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/123",
+          "dependency_gate": "TASK-115 remains blocked until PR #123 merged into main"
         },
         {
           "title": "Compose join plans through filters constraints and terminal row shaping",

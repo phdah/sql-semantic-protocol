@@ -939,8 +939,21 @@ pub(super) fn analyze_table_factor_with_locals(
             })
         }
         TableFactor::Derived {
-            subquery, alias, ..
+            subquery,
+            alias,
+            lateral,
+            ..
         } => {
+            // A lateral producer is evaluated for each row of the preceding
+            // sources. Ordinary derived-table scopes cannot prove that bag;
+            // retain its dependencies but never certify it as independent.
+            if *lateral {
+                diagnostics.push(warning(
+                    "unsupported_lateral_row_scope",
+                    DiagnosticArea::Source,
+                    "LATERAL subquery needs per-left-row correlated population and complete output/absence proof",
+                ));
+            }
             let mut nested = analyze_query_relations_with_locals(
                 subquery,
                 local_relations,

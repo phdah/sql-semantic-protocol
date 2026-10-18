@@ -115,9 +115,9 @@ pub use constraints::{
 };
 pub use constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
-    ConstructiveWitness, CountBounds, JoinKeyEquality, JoinPopulationPattern, ProofStrength,
-    RowQuantifier, RowVariable, UniformJoinLaw, WitnessBoundary, WitnessCase, WitnessDirection,
-    WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
+    ConstructiveWitness, CountBounds, FiniteJoinLaw, JoinKeyEquality, JoinPopulationPattern,
+    ProofStrength, RowQuantifier, RowVariable, TemporalJoinLaw, UniformJoinLaw, WitnessBoundary,
+    WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
@@ -168,8 +168,8 @@ pub use protocol::{
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, Diagnostic, DiagnosticArea,
     DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind,
-    LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType, LiteralValue,
+    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinExecution,
+    JoinKind, LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType, LiteralValue,
     LogicalPredicate, MergeAction, MergeAssignment, MergeClause, MergeMatchKind, NotPredicate,
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
     QueryStatement, RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason,

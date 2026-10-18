@@ -1,0 +1,2406 @@
+{
+  "version": 7,
+  "owner": "TASK-114",
+  "parent": "TASK-71",
+  "created_at": "2026-10-17",
+  "status": "portable_constructive_source_bags_verified_with_explicit_native_boundaries",
+  "fixture_ids": [
+    "71-C114-P",
+    "71-C114-N"
+  ],
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "mandatory_named_variants": [
+    "asof_nearest_prior",
+    "range_inequality",
+    "time_inequality",
+    "lateral_derived",
+    "cross_apply",
+    "outer_apply"
+  ],
+  "cases": [
+    {
+      "variant": "asof_nearest_prior",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r MATCH_CONDITION(l.t >= r.t)",
+      "duckdb_sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r ON l.t >= r.t",
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ],
+        [
+          "l10",
+          "r4"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "ASOF NOT TRUE complements include eligible-but-not-selected predecessors, in addition to false/UNKNOWN pairs; vendor/session tie-breaking without unique prior time is conditional",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-asof_nearest_prior",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "10",
+            "5"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "5",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "10",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "4",
+            "7"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "4",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "7",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "asof_nearest_prior",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r MATCH_CONDITION(l.t >= r.t)",
+      "duckdb_sql": "SELECT l.id, l.t, r.id, r.t FROM l ASOF JOIN r ON l.t >= r.t",
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ],
+        [
+          "l10",
+          "r4"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_asof_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "ASOF NOT TRUE complements include eligible-but-not-selected predecessors, in addition to false/UNKNOWN pairs; vendor/session tie-breaking without unique prior time is conditional",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-asof_nearest_prior",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "10",
+            "5"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "5",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "10",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "4",
+            "7"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "4",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "7",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "range_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t > r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-range_inequality",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 3,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "10",
+            "5"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "5",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "10",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "4",
+            "7"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "4",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "7",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "range_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t > r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l5",
+          5
+        ],
+        [
+          "l10",
+          10
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          4
+        ],
+        [
+          "r7",
+          7
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          5,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r4",
+          4
+        ],
+        [
+          "l10",
+          10,
+          "r7",
+          7
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[5,10]",
+        "right_t": "[4,7]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "collation/type-coercion and NULL UNKNOWN must not be silently treated as ordered",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-range_inequality",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 3,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "10",
+            "5"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "5",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "10",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "INTEGER",
+          "kind": "finite_set",
+          "values": [
+            "4",
+            "7"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "4",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "7",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "time_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t >= r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "TIMESTAMP"
+      },
+      "left": [
+        [
+          "l5",
+          "2026-10-17 00:05:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00"
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          "2026-10-17 00:05:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[2026-10-17T00:05:00,2026-10-17T00:10:00]",
+        "right_t": "[2026-10-17T00:04:00,2026-10-17T00:07:00]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-time_inequality",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 3,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "TIMESTAMP",
+          "kind": "finite_set",
+          "values": [
+            "2026-10-17 00:05:00",
+            "2026-10-17 00:10:00"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "2026-10-17 00:05:00",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "2026-10-17 00:10:00",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "TIMESTAMP",
+          "kind": "finite_set",
+          "values": [
+            "2026-10-17 00:04:00",
+            "2026-10-17 00:07:00"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "2026-10-17 00:04:00",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "2026-10-17 00:07:00",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "time_inequality",
+      "sql": "SELECT l.id, l.t, r.id, r.t FROM l JOIN r ON l.t >= r.t",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "TIMESTAMP"
+      },
+      "left": [
+        [
+          "l5",
+          "2026-10-17 00:05:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00"
+        ]
+      ],
+      "right": [
+        [
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "expected": [
+        [
+          "l5",
+          "2026-10-17 00:05:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r4",
+          "2026-10-17 00:04:00"
+        ],
+        [
+          "l10",
+          "2026-10-17 00:10:00",
+          "r7",
+          "2026-10-17 00:07:00"
+        ]
+      ],
+      "not_true": [
+        [
+          "l5",
+          "r7"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[2026-10-17T00:05:00,2026-10-17T00:10:00]",
+        "right_t": "[2026-10-17T00:04:00,2026-10-17T00:07:00]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parser_equivalent",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "session timezone/precision metadata required for TIMESTAMP comparisons",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-time_inequality",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 3,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l10",
+            "l5"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "l.t",
+          "source_column": "l.t",
+          "data_type": "TIMESTAMP",
+          "kind": "finite_set",
+          "values": [
+            "2026-10-17 00:05:00",
+            "2026-10-17 00:10:00"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "2026-10-17 00:05:00",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "2026-10-17 00:10:00",
+            "inclusive": true
+          }
+        },
+        {
+          "column": "r.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r4",
+            "r7"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "r.t",
+          "source_column": "r.t",
+          "data_type": "TIMESTAMP",
+          "kind": "finite_set",
+          "values": [
+            "2026-10-17 00:04:00",
+            "2026-10-17 00:07:00"
+          ],
+          "contains_null": false,
+          "lower": {
+            "value": "2026-10-17 00:04:00",
+            "inclusive": true
+          },
+          "upper": {
+            "value": "2026-10-17 00:07:00",
+            "inclusive": true
+          }
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "lateral_derived",
+      "sql": "SELECT l.id, q.id FROM l CROSS JOIN LATERAL (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "per-left-row correlated execution requires explicit row-instance scope",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-lateral_derived",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            "r2"
+          ],
+          "contains_null": false
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "lateral_derived",
+      "sql": "SELECT l.id, q.id FROM l CROSS JOIN LATERAL (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_lateral_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "per-left-row correlated execution requires explicit row-instance scope",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-lateral_derived",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            "r2"
+          ],
+          "contains_null": false
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "cross_apply",
+      "sql": "SELECT l.id, q.id FROM l CROSS APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-cross_apply",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            "r2"
+          ],
+          "contains_null": false
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "cross_apply",
+      "sql": "SELECT l.id, q.id FROM l CROSS APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ],
+        [
+          "r2",
+          2
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          "r2"
+        ]
+      ],
+      "not_true": [
+        [
+          "l1",
+          "r2"
+        ],
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,2]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "sqlite": {
+          "parser": "parsed_cross_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "dialect APPLY syntax requires a verified translation into per-row correlated inner evaluation",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-cross_apply",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 2
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 2,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            "r2"
+          ],
+          "contains_null": false
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "outer_apply",
+      "sql": "SELECT l.id, q.id FROM l OUTER APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "not_true": [
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,1]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_boundary",
+          "canonical": "explicit_parser_boundary_no_canonical_claim"
+        },
+        "sqlite": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "no-match null-extension must not be represented as a physical nullable right row",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-P-outer_apply",
+      "fixture": "71-C114-P",
+      "direction": "positive",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 1
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            null
+          ],
+          "contains_null": true
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    },
+    {
+      "variant": "outer_apply",
+      "sql": "SELECT l.id, q.id FROM l OUTER APPLY (SELECT r.id FROM r WHERE r.t = l.t) AS q",
+      "duckdb_sql": null,
+      "columns": {
+        "id": "VARCHAR NOT NULL",
+        "t": "INTEGER NULL"
+      },
+      "left": [
+        [
+          "l1",
+          1
+        ],
+        [
+          "l2",
+          2
+        ]
+      ],
+      "right": [
+        [
+          "r1",
+          1
+        ]
+      ],
+      "expected": [
+        [
+          "l1",
+          "r1"
+        ],
+        [
+          "l2",
+          null
+        ]
+      ],
+      "not_true": [
+        [
+          "l2",
+          "r1"
+        ]
+      ],
+      "typed_bounds": {
+        "left_t": "[1,2]",
+        "right_t": "[1,1]"
+      },
+      "positive_proof": "required_exact",
+      "not_true_proof": "required_exact_or_impossible",
+      "source_instance_ids": [
+        "l",
+        "r"
+      ],
+      "adapters": {
+        "direct_sql": "verified_source_backed_portable_law",
+        "dbt": "verified_source_backed_portable_law",
+        "odcs_equivalent_metadata": "verified_source_backed_portable_law"
+      },
+      "dialects": {
+        "ansi": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "bigquery": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "clickhouse": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "databricks": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "duckdb": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "generic": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "hive": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mssql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "mysql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "postgresql": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "redshift": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        },
+        "snowflake": {
+          "parser": "parser_boundary",
+          "canonical": "explicit_parser_boundary_no_canonical_claim"
+        },
+        "sqlite": {
+          "parser": "parsed_outer_apply_residual",
+          "canonical": "portable_canonical_physical_population_verified"
+        }
+      },
+      "verification": "canonical_source_bag_and_duckdb_oracle_verified",
+      "original_ac": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "conditional_boundary": {
+        "owner": "TASK-114",
+        "reason": "no-match null-extension must not be represented as a physical nullable right row",
+        "release_disposition": "pending_release_review"
+      },
+      "id": "71-C114-N-outer_apply",
+      "fixture": "71-C114-N",
+      "direction": "not_true",
+      "source_column_ids": [
+        "l.id",
+        "l.t",
+        "r.id",
+        "r.t"
+      ],
+      "source_bag_sizes": {
+        "l": 2,
+        "r": 1
+      },
+      "expected_output_count": 2,
+      "expected_not_true_count": 1,
+      "expected_output_domains": [
+        {
+          "column": "l.id",
+          "source_column": "l.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "l1",
+            "l2"
+          ],
+          "contains_null": false
+        },
+        {
+          "column": "q.id",
+          "source_column": "r.id",
+          "data_type": "VARCHAR",
+          "kind": "finite_set",
+          "values": [
+            "r1",
+            null
+          ],
+          "contains_null": true
+        }
+      ],
+      "duckdb_oracle_verification": "verified_all_rows_bounds_and_not_selected",
+      "canonical_proof_verification": "exact_selected_and_not_selected_physical_pairs_verified"
+    }
+  ],
+  "closure": {
+    "required_cases": 12,
+    "required_dialect_cells": 156,
+    "verified_cases": 12,
+    "verified_dialect_cells": 156,
+    "blocking_if_unverified": true,
+    "adapter_parity_required": true,
+    "full_physical_duckdb_oracles_required": true,
+    "description": "12/12 frozen cases have matching independent DuckDB and canonical source-backed bags. Across 13 dialects x 12 cases, 154 parser-supported cells have exact portable physical witness law verification, and two Snowflake OUTER APPLY cells are documented parser boundaries. Direct, compiled dbt and equivalent ODCS source evidence feeds the same canonical proof. Conditional native/session behaviors stay fail-closed; no native engine certification.",
+    "parser_classified_cells": 156,
+    "classification_counts": {
+      "parsed_asof_residual": 26,
+      "parser_equivalent": 52,
+      "parsed_lateral_residual": 26,
+      "parsed_cross_apply_residual": 26,
+      "parsed_outer_apply_residual": 24,
+      "parser_boundary": 2
+    },
+    "verified_duckdb_bags": 12,
+    "duckdb_oracle_ci_run": 39073582470,
+    "verified_constructive_dialect_cells": 154,
+    "reviewed_parser_boundary_cells": 2,
+    "verified_adapter_forms": 6,
+    "verification_ci_run": 39113074116
+  },
+  "revision_reason": "2026-10-18 independent closure review: all 12 immutable DuckDB P/N bags plus exact canonical finite/temporal populations verified; 154 parser-supported dialect cells have source-backed constructive laws and two are explicit parser boundaries. Shared direct SQL, compiled dbt and ODCS source-evidence parity verified. Native vendor/session tie, unmatched ASOF preservation and table-valued function effects are not certified.",
+  "parser_observation_ci_run": 39072773503,
+  "conditional_boundaries": [
+    {
+      "id": "J114-ASOF-TIES",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "ASOF nearest-prior among right rows with identical maximal time",
+      "missing_evidence": "Unique nearest-prior finite ordering has an exact portable source-backed proof. Native tie-breaking for equal maximal predecessors, unmatched INNER/LEFT preservation and vendor session ordering remain uncertified without engine execution or ordering attestation; the construction fails closed.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-TEMPORAL-SESSION",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "timestamp timezone/precision comparison laws",
+      "missing_evidence": "Explicit TIMESTAMP WITHOUT TIME ZONE second-resolution comparisons are certified on closed source bags. Native engine timezone session, precision coercion, zoned instants and implicit conversion remain uncertified without vendor runtime metadata.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-LATERAL-CORRELATION",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "per-left-row LATERAL evaluation and table-valued functions",
+      "missing_evidence": "Portable row-scoped derived SELECT with equality, duplicate fanout and absence has a complete physical source law. Native evaluation effects, nondeterministic or side-effecting per-row table-valued functions remain uncertified.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-APPLY-OUTER",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "CROSS/OUTER APPLY and preserved unmatched source rows",
+      "missing_evidence": "Portable CROSS/OUTER APPLY correlated equality, source-row duplication and synthetic NULL-extension are certified. Vendor-specific semantics, per-row effectful table functions and non-equivalent parser forms require native execution evidence.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    },
+    {
+      "id": "J114-APPLY-PARSER",
+      "classification": "conditional",
+      "owner": "TASK-114",
+      "variant": "OUTER APPLY Snowflake parser boundary",
+      "missing_evidence": "Frozen parser observation says syntax is not parsed for Snowflake; no native execution or semantic equivalence can be asserted from that failure.",
+      "disposition": "pending_release_review",
+      "native_engine_certified": false
+    }
+  ]
+}

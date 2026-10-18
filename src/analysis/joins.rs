@@ -32,11 +32,41 @@ pub(super) fn analyze_join(
     }
 
     if !exact_kind {
-        diagnostics.push(warning(
-            "unsupported_join_form",
-            DiagnosticArea::Join,
-            "join kind is parsed but is not represented precisely by protocol v0",
-        ));
+        let (code, message) = match &join.join_operator {
+            JoinOperator::AsOf { .. } => (
+                "unsupported_asof_nearest_prior",
+                "ASOF requires a nearest-row ordering and tie/absence proof; its match predicate is not an ordinary equijoin",
+            ),
+            JoinOperator::CrossApply => (
+                "unsupported_cross_apply",
+                "CROSS APPLY requires a correlated right-side population for each left source row",
+            ),
+            JoinOperator::OuterApply => (
+                "unsupported_outer_apply",
+                "OUTER APPLY requires correlated right-side evaluation and a complete null-extension absence proof",
+            ),
+            _ => (
+                "unsupported_join_form",
+                "join kind is parsed but is not represented precisely by the canonical protocol",
+            ),
+        };
+        diagnostics.push(warning(code, DiagnosticArea::Join, message));
+    }
+
+    // SQLparser exposes the temporal ASOF ordering predicate separately from
+    // the optional ON equality constraint. Both can contribute source lineage.
+    // Until nearest-prior matching is proven, the canonical kind stays Unknown.
+    if let JoinOperator::AsOf {
+        match_condition, ..
+    } = &join.join_operator
+    {
+        collect_expression_dependencies(
+            match_condition,
+            scope.local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
     }
 
     if let Some(JoinConstraint::On(expression)) = constraint {
@@ -49,11 +79,139 @@ pub(super) fn analyze_join(
         );
     }
 
-    let condition = constraint.and_then(|constraint| {
+    let on_condition = constraint.and_then(|constraint| {
         analyze_join_constraint(constraint, left, right, scope.output_scope, diagnostics)
     });
 
-    ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
+    // ASOF's match condition is the eligibility/order predicate, not a proof
+    // that every eligible pair is emitted. Preserve its canonical typed AST
+    // alongside the Unknown join kind and explicit nearest-row residual.
+    // The optional ON equality is a second conjunct, not a replacement for
+    // the nearest-prior ordering requirement.
+    let condition = if let JoinOperator::AsOf {
+        match_condition, ..
+    } = &join.join_operator
+    {
+        let eligibility = analyze_predicate_with_windows(
+            match_condition,
+            &[],
+            &BTreeMap::new(),
+            scope.output_scope,
+            diagnostics,
+        );
+        Some(match on_condition {
+            Some(on) => Predicate::And(LogicalPredicate::pair(eligibility, on)),
+            None => eligibility,
+        })
+    } else {
+        on_condition
+    };
+
+    // Normalize simple correlated-derived WHERE once at the SQL/AST boundary.
+    // Downstream physical planners consume typed column identities and never
+    // reparse the vendor's APPLY or LATERAL SQL text.
+    let (execution, physical_right, physical_right_instance, correlation) = match &join.relation {
+        TableFactor::Derived {
+            subquery, lateral, ..
+        } => {
+            let derived = match subquery.body.as_ref() {
+                SetExpr::Select(select)
+                    if subquery.with.is_none()
+                        && subquery.limit_clause.is_none()
+                        && subquery.fetch.is_none()
+                        && select.from.len() == 1
+                        && select.from[0].joins.is_empty()
+                        && select.distinct.is_none()
+                        && select.top.is_none()
+                        && select.having.is_none()
+                        && select.qualify.is_none()
+                        && select.prewhere.is_none()
+                        && select.lateral_views.is_empty()
+                        && select.connect_by.is_none()
+                        && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                            if items.is_empty() && modifiers.is_empty())
+                        && select.projection.iter().all(|item| {
+                            matches!(
+                                item,
+                                SelectItem::UnnamedExpr(Expr::CompoundIdentifier(_))
+                                    | SelectItem::ExprWithAlias {
+                                        expr: Expr::CompoundIdentifier(_),
+                                        ..
+                                    }
+                            )
+                        }) =>
+                {
+                    match &select.from[0].relation {
+                        TableFactor::Table {
+                            name,
+                            args: None,
+                            alias,
+                            sample: None,
+                            ..
+                        } => Some((
+                            name.to_string(),
+                            alias
+                                .as_ref()
+                                .map_or_else(|| name.to_string(), |a| a.name.to_string()),
+                            select.selection.as_ref(),
+                        )),
+                        _ => None,
+                    }
+                }
+                _ => None,
+            };
+            let (physical_right, physical_right_instance, correlation) =
+                if let Some((source, instance, Some(selection))) = derived {
+                    (
+                        Some(source),
+                        Some(instance),
+                        Some(analyze_predicate_with_windows(
+                            selection,
+                            &[],
+                            &BTreeMap::new(),
+                            scope.output_scope,
+                            diagnostics,
+                        )),
+                    )
+                } else {
+                    (None, None, None)
+                };
+            let execution = match &join.join_operator {
+                JoinOperator::CrossApply => Some(JoinExecution::CrossApply),
+                JoinOperator::OuterApply => Some(JoinExecution::OuterApply),
+                JoinOperator::CrossJoin if *lateral => Some(JoinExecution::LateralInner),
+                _ => None,
+            };
+            (
+                execution,
+                physical_right,
+                physical_right_instance,
+                correlation,
+            )
+        }
+        _ => (
+            matches!(&join.join_operator, JoinOperator::AsOf { .. })
+                .then_some(JoinExecution::AsOfNearest),
+            None,
+            None,
+            None,
+        ),
+    };
+    let condition = if execution.is_some_and(|form| {
+        matches!(
+            form,
+            JoinExecution::LateralInner | JoinExecution::CrossApply | JoinExecution::OuterApply
+        )
+    }) {
+        correlation.or(condition)
+    } else {
+        condition
+    };
+    let analyzed = ProtocolJoin::new(kind, left.clone(), right.clone(), condition);
+    match execution {
+        Some(form) => analyzed.with_execution(form, physical_right, physical_right_instance),
+        None => analyzed,
+    }
 }
 
 pub(super) fn analyze_join_operator(

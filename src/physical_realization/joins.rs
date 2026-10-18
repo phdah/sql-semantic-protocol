@@ -695,7 +695,27 @@ pub(super) fn physical_join_population_with_source_counts(
     use crate::join_witness::JoinWitnessDirection;
     use crate::protocol::JoinKind;
 
-    if let Some(plan) = join_uniform::physical_uniform_join_count_plan(
+    // Ordinary inequalities can have both a uniform proof and a complete
+    // nonuniform finite bag. Preserve both independently sufficient cases:
+    // dispatch precedence must not erase either public canonical witness.
+    let uniform = join_uniform::physical_uniform_join_count_plan(
+        bundle,
+        target_layer_id,
+        wanted,
+        exact_sources,
+    );
+    let finite = join_finite::physical_finite_join_count_plan(
+        bundle,
+        target_layer_id,
+        wanted,
+        exact_sources,
+    );
+    match (uniform, finite) {
+        (Some(uniform), Some(finite)) => return Some(uniform.any(&finite)),
+        (Some(proof), None) | (None, Some(proof)) => return Some(proof),
+        (None, None) => {}
+    }
+    if let Some(plan) = join_temporal::physical_temporal_join_count_plan(
         bundle,
         target_layer_id,
         wanted,

@@ -436,6 +436,24 @@ pub(super) fn analyze_query(
                 && select.from.len() == 1
                 && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. }));
 
+    let special_join_goal_output_shape = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && select.from[0].joins.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -454,6 +472,7 @@ pub(super) fn analyze_query(
     .with_group_row_correspondence(group_rows_match_surviving_groups)
     .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
     .with_filtered_join_goal_shape(filtered_join_goal_output_shape)
+    .with_special_join_goal_shape(special_join_goal_output_shape)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))

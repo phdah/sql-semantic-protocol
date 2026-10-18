@@ -8520,8 +8520,18 @@
             }
           }
         ],
-        "residual_conditions": [],
-        "status": "conditional"
+        "residual_conditions": [
+          {
+            "clause": "row_set_operator",
+            "identity": "diagnostic:unsupported_lateral_row_scope",
+            "origin": {
+              "layer_id": "layer-0010",
+              "scope": "query"
+            },
+            "reason": "analysis_diagnostic"
+          }
+        ],
+        "status": "residual"
       },
       "constructive_witnesses": [
         {

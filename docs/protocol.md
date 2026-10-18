@@ -1615,3 +1615,31 @@ the next planned major protocol release; no v2 release is certified by TASK-109.
 ### Three-instance common-key INNER chain
 
 A `join_chain_population` constructive obligation fixes three named row instances, four canonical physical key references, an explicit `matched_value`, their complete source-row counts, and `output_rows`. Each alias references one closed physical input bag, including when two aliases share the same physical source. Every row in each bag has the attested non-NULL integer key value (one in the frozen oracle); both `=` comparisons therefore hold on the same source assignment, and the exact INNER-chain bag multiplicity is the checked product of all three counts. It is not the composition of two independently sampled pair witnesses. Other ON shapes, filters, and unconstrained/opaque keys stay residual. The sufficient construction does not assert uniqueness or a universally fixed database state.
+
+### Uniform signed-integer inequality JOIN population (TASK-114 increment)
+
+For a direct, unconstrained, two-source `INNER JOIN` on one resolved signed-integer
+column pair, `uniform_join_population` represents one complete physical bag with
+constant source-key values and exact row counts. In addition to `less_than`,
+`cartesian` and the existing Boolean laws, its `law` may now be
+`greater_than`, `less_than_or_equal` or `greater_than_or_equal`.
+Operands are normalized to the physical left/right source instance, including
+SQL predicates written in reverse order. Inclusive equality and rejected
+opposing assignments are distinguished by the law's `pair_matches` semantics.
+
+The producer only claims `Feasible` if both input types have trusted signed
+integer bounds and every assigned key falls inside them; source bags are marked
+closed-world. This does **not** certify timestamp comparison, collation,
+correlated LATERAL evaluation, ASOF nearest-prior selection, or vendor
+tie-breaking. Those require further TASK-114 evidence and stay explicit
+residuals rather than borrowing this uniform integer construction.
+
+### Complete ASOF, correlated and timestamp source-bag evidence (TASK-114)
+
+The canonical `query.joins[]` entry carries an optional `evaluation` for ASOF nearest-predecessor, lateral inner evaluation, CROSS APPLY and OUTER APPLY. A supported correlated derived source also carries `right_physical_source` and `right_physical_instance` so consumers need not reparse SQL. The ordinary `kind` remains conservative where parser recognition alone does not certify cardinality.
+
+An exact `finite_join_population` obligation states **the complete physical left and right source key vectors**, their distinct source-row instances, an ordered law, full selected and unselected source-row index bags and closed-world source counts. The named laws `asof_nearest_prior_inclusive`, `correlated_inner_equality`, `correlated_outer_equality`, `integer_greater_than` and `integer_greater_than_or_equal` all preserve duplicate identity. ASOF selects at most one nearest predecessor per left row; an equally maximal right-side tie has no proof without vendor ordering evidence. When a left row has no predecessor, the finite law fails closed until INNER/LEFT preservation has been certified, rather than guessing either a dropped row or synthetic NULL. A physical pair satisfying the ASOF range condition may still be *unselected* when a nearer predecessor wins. Outer correlated NULL extension uses a `null` partner index and never pretends that a synthetic NULL output is an inserted physical right row.
+
+A separate `temporal_join_population` obligates complete `YYYY-MM-DD HH:MM:SS` physical wall-clock source values, inclusive `timestamp_greater_than_or_equal` pair comparison, selected/rejected index sets and closed-world cardinalities. This law requires explicit `WITHOUT TIME ZONE` schema evidence for **both** compared timestamp columns; generic `TIMESTAMP`, zoned instants, incompatible precision, implicit session conversion, vendor tie-breaking and per-row UDF side effects remain conditional/unsupported until corresponding source and execution evidence is attested. The temporal proof does not infer a native engine's session setting.
+
+These are schema-backed sufficient **physical source realizations**, not unqualified claims that an arbitrary SQL program or a vendor function is fully understood. The parser-certified outer and inner row shape, normalized column references, typed physical metadata, complete unique source instances, and absence of extra operators/constraints are all prerequisites; otherwise the plan fails closed with Residual. Direct SQL, compiled dbt and ODCS supply source evidence to the same canonical graph.

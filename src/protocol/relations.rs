@@ -216,6 +216,32 @@ impl JoinKind {
     }
 }
 
+/// The SQL evaluation law for a non-ordinary join, kept in the canonical
+/// model separately from ordinary Boolean pair eligibility.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JoinExecution {
+    /// Select at most one right row: the nearest eligible predecessor.
+    AsOfNearest,
+    /// Evaluate a correlated derived input once for each left row.
+    LateralInner,
+    /// SQL CROSS APPLY: inner correlated evaluation.
+    CrossApply,
+    /// SQL OUTER APPLY: left-preserved correlated evaluation.
+    OuterApply,
+}
+
+impl JoinExecution {
+    /// Stable protocol name for the evaluation law.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::AsOfNearest => "asof_nearest",
+            Self::LateralInner => "lateral_inner",
+            Self::CrossApply => "cross_apply",
+            Self::OuterApply => "outer_apply",
+        }
+    }
+}
+
 /// A normalized relationship between two query relations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Join {
@@ -223,6 +249,9 @@ pub struct Join {
     left: RelationRef,
     right: RelationRef,
     condition: Option<Predicate>,
+    execution: Option<JoinExecution>,
+    right_physical_source: Option<String>,
+    right_physical_instance: Option<String>,
 }
 
 impl Join {
@@ -237,7 +266,37 @@ impl Join {
             left,
             right,
             condition,
+            execution: None,
+            right_physical_source: None,
+            right_physical_instance: None,
         }
+    }
+
+    pub(crate) fn with_execution(
+        mut self,
+        execution: JoinExecution,
+        right_physical_source: Option<String>,
+        right_physical_instance: Option<String>,
+    ) -> Self {
+        self.execution = Some(execution);
+        self.right_physical_source = right_physical_source;
+        self.right_physical_instance = right_physical_instance;
+        self
+    }
+
+    /// Return the SQL evaluation law for ASOF and correlated joins.
+    pub fn execution(&self) -> Option<JoinExecution> {
+        self.execution
+    }
+
+    /// The physical source of a single, correlated derived input, if proven.
+    pub fn right_physical_source(&self) -> Option<&str> {
+        self.right_physical_source.as_deref()
+    }
+
+    /// Alias used for the physical right input inside a correlated subquery.
+    pub fn right_physical_instance(&self) -> Option<&str> {
+        self.right_physical_instance.as_deref()
     }
 
     /// Return the normalized join kind.

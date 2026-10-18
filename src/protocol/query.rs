@@ -47,6 +47,7 @@ pub struct QueryStatement {
     group_rows_match_surviving_groups: bool,
     plain_goal_output_shape: bool,
     filtered_join_goal_output_shape: bool,
+    special_join_goal_output_shape: bool,
     ranked_goal_output_shape: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
@@ -80,6 +81,7 @@ impl QueryStatement {
             group_rows_match_surviving_groups: false,
             plain_goal_output_shape: false,
             filtered_join_goal_output_shape: false,
+            special_join_goal_output_shape: false,
             ranked_goal_output_shape: false,
             set_operation: None,
             produced_relation: None,
@@ -168,6 +170,17 @@ impl QueryStatement {
     /// DISTINCT, TOP or grouping. The physical planner certifies its WHERE.
     pub(crate) fn filtered_join_goal_output_shape(&self) -> bool {
         self.filtered_join_goal_output_shape
+    }
+
+    pub(crate) fn with_special_join_goal_shape(mut self, proven: bool) -> Self {
+        self.special_join_goal_output_shape = proven;
+        self
+    }
+
+    /// Whether a nonordinary JOIN's outer query is an unshaped, transparent
+    /// projection; nested correlation is certified separately at the AST boundary.
+    pub fn special_join_goal_output_shape(&self) -> bool {
+        self.special_join_goal_output_shape
     }
 
     /// Whether QUALIFY is the sole row-shaping operation on a single direct table.
