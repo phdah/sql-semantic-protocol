@@ -83,6 +83,10 @@ pub struct PhysicalFiniteChainExact {
     pub selected: Vec<[String; 3]>,
     /// Complete SQL NOT TRUE Cartesian identity triplets.
     pub rejected: Vec<[String; 3]>,
+    /// Identity triplets contributing to each selected physical integer key.
+    /// A downstream GROUP/HAVING may remove the output row, never its upstream
+    /// contributions. COUNT(*) is the length of this complete bag per key.
+    pub contributions: BTreeMap<i128, Vec<[String; 3]>>,
     /// Exact named terminal SQL bag, retaining multiplicity.
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Exact finite value domains computed from the same terminal bag.
@@ -452,6 +456,7 @@ pub fn physical_finite_chain_bag_plan(
     let mut selected = Vec::new();
     let mut rejected = Vec::new();
     let mut counts = BTreeMap::<i128, u64>::new();
+    let mut contributions = BTreeMap::<i128, Vec<[String; 3]>>::new();
     let mut terminal = Vec::new();
     let mut filtered_true_ids = Vec::new();
     let mut filtered_not_true_ids = Vec::new();
@@ -508,6 +513,7 @@ pub fn physical_finite_chain_bag_plan(
                         return residual("joined contribution multiplicity overflow");
                     };
                     counts.insert(value, next);
+                    contributions.entry(value).or_default().push(identities.clone());
                     if grouped_query.is_none() {
                         terminal.push(BTreeMap::from([(
                             output_name.to_string(),
@@ -548,6 +554,7 @@ pub fn physical_finite_chain_bag_plan(
         filtered_not_true_ids,
         selected,
         rejected,
+        contributions,
         terminal,
         terminal_domains,
     }))
