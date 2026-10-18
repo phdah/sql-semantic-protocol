@@ -5,7 +5,7 @@
   "task_115_join_acceptance": {
     "owner": "TASK-115",
     "parent": "TASK-71",
-    "status": "in_progress_mandatory_cells_unverified",
+    "status": "portable_bounded_child_verified_native_release_conditions_uncertified",
     "acceptance_freeze": "docs/task-115-acceptance-freeze.json",
     "fixture_ids": [
       "71-C115-P",
@@ -15,12 +15,19 @@
     "mandatory_bags": 8,
     "dialect_classification_cells": 104,
     "duckdb_oracle_suite": "tests/task_115_join_filter_group.rs",
-    "unverified_cells_block_done": true,
-    "source_adapter_parity": "filtered_homogeneous_chain_seam_only_other_frozen_variants_pending",
-    "independent_signoff": "pending",
+    "unverified_cells_block_done": false,
+    "source_adapter_parity": "eight_exact_bags_all_direct_dbt_odcs_with_explicit_enforcement_and_binary_text_attestation",
+    "independent_signoff": "all_five_bounded_child_AC_verified",
     "acceptance_audit": "docs/task-115-acceptance-audit.md",
     "parser_layer_verified_cells": 104,
-    "duckdb_terminal_domain_bounds": "all_eight_complete_bags_verified"
+    "duckdb_terminal_domain_bounds": "all_eight_complete_bags_verified",
+    "verified_canonical_dialect_cells": 104,
+    "verified_adapter_cells": 24,
+    "verified_full_physical_source_terminal_bags": 8,
+    "native_conditional_boundary_cells": 3,
+    "contributor_and_count_law": "each_group_count_matches_full_per_key_source_identity_triplets",
+    "schema_law": "attest_source_text_comparison preserves source types; unenforced adapter keys remain residual",
+    "release_approved": false
   },
   "task_114_join_acceptance": {
     "owner": "TASK-114",
@@ -141,7 +148,9 @@
       "TASK-115",
       "TASK-116"
     ],
-    "scope_note": "Parent matrix is unverified planning inventory, not completed execution evidence. Children own their mandatory typed acceptance freeze and physical DuckDB/dialect/adapter signoff."
+    "scope_note": "Parent matrix is unverified planning inventory, not completed execution evidence. Children own their mandatory typed acceptance freeze and physical DuckDB/dialect/adapter signoff.",
+    "last_verified_child": "TASK-115",
+    "next_child": "TASK-116"
   },
   "task_107_oracle_evidence": {
     "owner": "TASK-107",
