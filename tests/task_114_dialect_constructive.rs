@@ -170,11 +170,7 @@ fn reviewed_acceptance_metadata_has_no_unverified_mandatory_cells() {
             case["canonical_proof_verification"],
             "exact_selected_and_not_selected_physical_pairs_verified"
         );
-        for adapter in [
-            "direct_sql",
-            "dbt",
-            "odcs_equivalent_metadata",
-        ] {
+        for adapter in ["direct_sql", "dbt", "odcs_equivalent_metadata"] {
             assert_eq!(
                 case["adapters"][adapter],
                 "verified_source_backed_portable_law"
