@@ -257,7 +257,11 @@ pub(super) fn physical_finite_join_count_plan(
         {
             continue;
         }
-        let selected = law.selected_rows(&left_values, &right_values)?;
+        // One ambiguous candidate cannot invalidate another independently
+        // sufficient source assignment already found for the same goal.
+        let Some(selected) = law.selected_rows(&left_values, &right_values) else {
+            continue;
+        };
         if u64::try_from(selected.len()).ok() != Some(wanted) {
             continue;
         }
