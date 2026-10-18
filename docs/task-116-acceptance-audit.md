@@ -25,6 +25,13 @@ or TASK-91 release approval is implied by this audit.
 - Parent evidence is intentionally **independent** of the fixture values used
   in TASK-109..115. It does not compute expected output by running protocol
   analysis or reusing the children's expected bags.
+- The parent also verifies canonical JOIN kinds/topology, retained ON
+  predicates and explicit diagnostics for all 15 mandatory original SQL forms
+  across 13 dialects, rather than just checking a nonempty analysis layer.
+  Every one of the 12 conditional original SQL forms is classified directly
+  across the same 13 parser paths, including ASOF/LATERAL/APPLY diagnostics
+  and explicitly unclaimed native execution. These checks are additional to
+  the independently observed child dialect/adapters and DuckDB oracles.
 
 ## Original parent AC reconciliation
 
@@ -45,7 +52,7 @@ native vendor execution on the strength of an sqlparser parse or DuckDB alone.
 ## Verified CI and remaining parent release gates
 
 1. Independent DuckDB checks pass for all 15 mandatory parent cases, including source/row multiplicities, bounds, NULL and negative/absence evidence. The six original parent ACs have been reconciled with the 12 parent-owned conditional cells.
-2. GitHub CI [run 39155624537](https://github.com/phdah/sql-semantic-protocol/actions/runs/39155624537) succeeded in all nine jobs: formatting, both strict Clippy configurations, default and no-default tests, docs, dependency check and dbt E2E.
+2. Initial GitHub CI [run 39155624537](https://github.com/phdah/sql-semantic-protocol/actions/runs/39155624537) succeeded in all nine jobs: formatting, both strict Clippy configurations, default and no-default tests, docs, dependency check and dbt E2E. The subsequent parent canonical/dialect assertion hardening requires a new passing final-head CI run, recorded in PR #125 signoff.
 3. Native vendor/session execution is still **not certified**. Every conditional cell retains its named evidence gap and owner TASK-116, and the v3 release is not approved on parser/DuckDB evidence alone.
 4. TASK-71 remains In Progress until TASK-116's PR merges and a separate parent task closure is recorded. TASK-91 and v3 release remain independent gates.
 
