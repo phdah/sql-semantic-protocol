@@ -5,9 +5,57 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_chain_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
-    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+    ConstraintSourceKind, LiteralValue, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
+
+fn attested_pk_fk_constraints() -> Vec<RelationConstraintSet> {
+    let evidence = || {
+        vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(
+                ConstraintSourceKind::ExternalMetadata,
+                "task-115-enforced-source-evidence",
+            )
+            .expect("authoritative constraint provenance"),
+            ConstraintEnforcement::Enforced,
+        )]
+    };
+    vec![
+        RelationConstraintSet::new(
+            "l",
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_string()], evidence())
+                    .expect("l PK"),
+            ],
+        )
+        .expect("l constraints"),
+        RelationConstraintSet::new(
+            "r",
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_string()], evidence())
+                    .expect("r PK"),
+                RelationConstraint::foreign_key(
+                    vec!["tid".to_string()],
+                    "t",
+                    vec!["tid".to_string()],
+                    evidence(),
+                )
+                .expect("r->t FK"),
+            ],
+        )
+        .expect("r constraints"),
+        RelationConstraintSet::new(
+            "t",
+            vec![
+                RelationConstraint::primary_key(vec!["tid".to_string()], evidence())
+                    .expect("t PK"),
+            ],
+        )
+        .expect("t constraints"),
+    ]
+}
 
 fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
     ["l", "r", "t"]
@@ -143,8 +191,11 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 .zip(&ids)
                 .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, dialect, parser.as_ref()))
                 .collect::<Vec<_>>();
-            let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            let mut analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog)
                 .unwrap_or_else(|error| panic!("{case_id}/{dialect}: {error:?}"));
+            if case["variant"] == "pk_fk_constrained_sources" {
+                analyzed.enrich_relation_constraints(&attested_pk_fk_constraints());
+            }
             let target = analyzed.layers().last().expect("frozen terminal layer");
             let proof = physical_finite_chain_bag_plan(&analyzed, target.id(), &snapshots(case));
             let PhysicalFiniteChainProof::Exact(exact) = proof else {
