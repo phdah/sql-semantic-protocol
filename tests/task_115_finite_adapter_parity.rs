@@ -6,7 +6,7 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
     parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, LiteralValue,
     PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    PhysicalWriteState, RelationCatalog, RelationConstraint, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn rows(case: &Value) -> Vec<PhysicalWriteState> {
@@ -287,7 +287,33 @@ fn frozen_eight_bags_produce_identical_canonical_proofs_from_sql_and_dbt() {
     for case in inventory["cases"].as_array().expect("eight cases") {
         let catalog = RelationCatalog::from_schemas(&schemas(case)).expect("physical catalog");
         let direct = certified(case, &direct(case, &catalog));
-        let dbt = certified(case, &dbt(case));
+        let dbt_bundle = dbt(case);
+        if case["variant"] == "pk_fk_constrained_sources" {
+            let constraints = |relation: &str| {
+                dbt_bundle
+                    .relation_constraints()
+                    .iter()
+                    .find(|set| set.relation() == relation)
+                    .expect("dbt must preserve frozen physical source constraints")
+                    .constraints()
+            };
+            assert!(constraints("db.raw.l").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["id"])
+            }));
+            assert!(constraints("db.raw.r").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["id"])
+            }));
+            assert!(constraints("db.raw.r").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::ForeignKey(fk)
+                    if fk.columns() == ["tid"]
+                        && fk.referenced_relation() == "db.raw.t"
+                        && fk.referenced_columns() == ["tid"])
+            }));
+            assert!(constraints("db.raw.t").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["tid"])
+            }));
+        }
+        let dbt = certified(case, &dbt_bundle);
         assert_eq!(
             dbt, direct,
             "dbt must not change source or terminal identity bags"
