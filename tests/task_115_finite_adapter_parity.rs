@@ -144,7 +144,12 @@ fn dbt(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
             .expect("frozen CTAS producer");
         nodes.insert(
             "model.demo.stage".to_string(),
-            model("model.demo.stage", "stage", &qualified_dbt_sql(stage), all_sources),
+            model(
+                "model.demo.stage",
+                "stage",
+                &qualified_dbt_sql(stage),
+                all_sources,
+            ),
         );
         nodes.insert(
             "model.demo.task115".to_string(),
