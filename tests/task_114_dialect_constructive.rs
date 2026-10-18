@@ -141,3 +141,71 @@ fn every_parsed_frozen_dialect_cell_has_the_expected_canonical_source_bag() {
     assert_eq!(proven, 154);
     assert_eq!(boundaries, 2);
 }
+
+#[test]
+fn reviewed_acceptance_metadata_has_no_unverified_mandatory_cells() {
+    let matrix: Value = serde_json::from_str(MATRIX).unwrap();
+    let manifest: Value =
+        serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
+    let closure = &matrix["closure"];
+    let registered = &manifest["task_114_join_acceptance"];
+    assert_eq!(matrix["version"], 7);
+    assert_eq!(closure["verified_cases"], 12);
+    assert_eq!(closure["verified_dialect_cells"], 156);
+    assert_eq!(closure["verified_constructive_dialect_cells"], 154);
+    assert_eq!(closure["reviewed_parser_boundary_cells"], 2);
+    assert_eq!(registered["verified_canonical_cells"], 12);
+    assert_eq!(registered["verified_constructive_dialect_cells"], 154);
+    assert_eq!(registered["reviewed_parser_boundaries"], 2);
+    assert_eq!(registered["release_approved"], false);
+
+    let mut constructive = 0;
+    let mut parser_boundaries = 0;
+    for case in matrix["cases"].as_array().unwrap() {
+        assert_eq!(
+            case["verification"],
+            "canonical_source_bag_and_duckdb_oracle_verified"
+        );
+        assert_eq!(
+            case["canonical_proof_verification"],
+            "exact_selected_and_not_selected_physical_pairs_verified"
+        );
+        for adapter in [
+            "direct_sql",
+            "dbt",
+            "odcs_equivalent_metadata",
+        ] {
+            assert_eq!(
+                case["adapters"][adapter],
+                "verified_source_backed_portable_law"
+            );
+        }
+        for dialect in matrix["dialects"].as_array().unwrap() {
+            let dialect = dialect.as_str().unwrap();
+            let evidence = &case["dialects"][dialect];
+            if evidence["parser"] == "parser_boundary" {
+                assert_eq!(
+                    evidence["canonical"],
+                    "explicit_parser_boundary_no_canonical_claim"
+                );
+                parser_boundaries += 1;
+            } else {
+                assert_eq!(
+                    evidence["canonical"],
+                    "portable_canonical_physical_population_verified"
+                );
+                constructive += 1;
+            }
+        }
+    }
+    assert_eq!(constructive, 154);
+    assert_eq!(parser_boundaries, 2);
+    for boundary in matrix["conditional_boundaries"].as_array().unwrap() {
+        assert_eq!(boundary["owner"], "TASK-114");
+        assert_eq!(boundary["disposition"], "pending_release_review");
+        assert_eq!(boundary["native_engine_certified"], false);
+        assert!(boundary["missing_evidence"]
+            .as_str()
+            .is_some_and(|evidence| !evidence.is_empty()));
+    }
+}
