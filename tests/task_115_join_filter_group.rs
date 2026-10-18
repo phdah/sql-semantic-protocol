@@ -92,6 +92,32 @@ fn typed_nonkey_where_filter_is_on_the_same_three_way_physical_bags() {
 }
 
 #[test]
+fn two_hop_filtered_producer_uses_only_the_original_physical_bags() {
+    let sql = [
+        "CREATE TABLE stage AS SELECT id,k,k2,a FROM l WHERE a > 0",
+        "SELECT stage.k FROM stage JOIN r ON stage.k=r.k JOIN t ON r.k=t.k",
+    ];
+    let analyzed = bundle(&sql, "postgresql");
+    let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[1].id(), 4)]);
+    assert_eq!(plan.sources(), &["l", "r", "t"].map(str::to_string));
+    let WitnessDirection::Feasible(cases) = plan.outcome() else {
+        panic!("filtered producer must use physical leaves: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        let obligations = case.obligations();
+        obligations.iter().any(|obligation| matches!(
+            obligation, WitnessObligation::JoinChainPopulation {
+                left_rows: 2, middle_rows: 2, right_rows: 1, output_rows: 4, ..
+            }
+        )) && obligations.iter().any(|obligation| match obligation {
+            WitnessObligation::Rows { boundary, predicate, .. } if boundary.relation() == "l" =>
+                !matches!(predicate, sql_semantic_protocol::WitnessFormula::All(terms) if terms.is_empty()),
+            _ => false,
+        })
+    }), "a filtered stage may not be seeded as a fourth physical source");
+}
+
+#[test]
 fn a_where_restriction_on_the_join_key_is_not_an_independent_proof() {
     let sql = "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.k = 2";
     let analyzed = bundle(&[sql], "postgresql");
