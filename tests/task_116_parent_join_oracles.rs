@@ -618,11 +618,15 @@ fn every_conditional_parent_dialect_cell_checks_the_actual_canonical_boundary() 
                 .as_str()
                 .expect("reviewed frozen parser status");
             if actual != frozen {
-                mismatches.push(json!({"id":id,"dialect":dialect,"observed":actual,"frozen":frozen}));
+                mismatches
+                    .push(json!({"id":id,"dialect":dialect,"observed":actual,"frozen":frozen}));
             }
         }
     }
-    assert!(mismatches.is_empty(), "TASK116_CONDITIONAL_MISMATCHES={mismatches:?}");
+    assert!(
+        mismatches.is_empty(),
+        "TASK116_CONDITIONAL_MISMATCHES={mismatches:?}"
+    );
 }
 
 #[test]
