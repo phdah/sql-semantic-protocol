@@ -168,6 +168,27 @@ fn downstream_count_having_reuses_exact_chain_bag() {
 }
 
 #[test]
+fn all_frozen_sql_variants_parse_in_all_thirteen_shared_dialects() {
+    let inventory: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-115-acceptance-freeze.json"
+    ))
+    .expect("frozen TASK-115 matrix");
+    for case in inventory["cases"].as_array().expect("cases") {
+        let id = case["id"].as_str().expect("fixture id");
+        let sql = case["sql"].as_str().expect("SQL");
+        let statements = sql.split(';').collect::<Vec<_>>();
+        for &dialect in DIALECTS {
+            let analyzed = bundle(&statements, dialect);
+            assert_eq!(
+                analyzed.layers().len(),
+                statements.len(),
+                "{id}: {dialect} must preserve every transformation layer"
+            );
+        }
+    }
+}
+
+#[test]
 fn duckdb_independently_checks_complete_source_and_terminal_identity_bags() {
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(
