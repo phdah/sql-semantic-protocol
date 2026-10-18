@@ -211,6 +211,32 @@ fn predicate_truth(
     }
 }
 
+// A finite sample agreeing on WHERE truth does not prove source-locality.
+// Inspect canonical column ownership so the law remains valid for every bag.
+fn left_source_expression(expression: &Expression, left_name: &str, left_relation: &str) -> bool {
+    match expression {
+        Expression::Literal(_) => true,
+        Expression::Column(column) => column
+            .relation()
+            .is_some_and(|relation| relation == left_name || relation == left_relation),
+        _ => false,
+    }
+}
+
+fn independent_left_filter(predicate: &Predicate, left_name: &str, left_relation: &str) -> bool {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            left_source_expression(comparison.left(), left_name, left_relation)
+                && left_source_expression(comparison.right(), left_name, left_relation)
+        }
+        Predicate::And(and) => and
+            .operands()
+            .iter()
+            .all(|item| independent_left_filter(item, left_name, left_relation)),
+        _ => false,
+    }
+}
+
 fn terminal_group(
     query: &QueryStatement,
     key: &str,
@@ -429,22 +455,34 @@ pub fn physical_finite_chain_bag_plan(
     let mut terminal = Vec::new();
     let mut filtered_true_ids = Vec::new();
     let mut filtered_not_true_ids = Vec::new();
+    if join_query.predicates().where_predicate().is_some_and(|predicate| {
+        !independent_left_filter(predicate, &names[0], relations[0])
+    }) {
+        return residual("WHERE predicate is not independently owned by the left source");
+    }
+    // Evaluate the left-source filter once per physical left row, including
+    // when either right-side bag is empty. Reusing the row in unused slots
+    // is safe only after checking canonical column ownership above.
     for l in ordered[0].rows() {
-        let mut left_truth = None;
+        let left_context = [(relations[0], l), (relations[1], l), (relations[2], l)];
+        let where_truth = match join_query.predicates().where_predicate() {
+            None => Ok(Some(true)),
+            Some(predicate) => predicate_truth(predicate, &left_context, &names),
+        };
+        let Ok(where_truth) = where_truth else {
+            return residual("WHERE lacks an exact signed-integer truth law");
+        };
+        let Some(id) = source_id(l) else {
+            return residual("unidentified left source row");
+        };
+        if where_truth == Some(true) {
+            filtered_true_ids.push(id);
+        } else {
+            filtered_not_true_ids.push(id);
+        }
         for r in ordered[1].rows() {
             for t in ordered[2].rows() {
                 let rows = [(relations[0], l), (relations[1], r), (relations[2], t)];
-                let where_truth = match join_query.predicates().where_predicate() {
-                    None => Ok(Some(true)),
-                    Some(predicate) => predicate_truth(predicate, &rows, &names),
-                };
-                let Ok(where_truth) = where_truth else {
-                    return residual("WHERE lacks an exact signed-integer truth law");
-                };
-                if left_truth.is_some_and(|previous| previous != where_truth) {
-                    return residual("WHERE depends on more than the independent left source");
-                }
-                left_truth = Some(where_truth);
                 let (Ok(first), Ok(second)) = (
                     predicate_truth(first_on, &rows, &names),
                     predicate_truth(second_on, &rows, &names),
@@ -479,18 +517,6 @@ pub fn physical_finite_chain_bag_plan(
                     rejected.push(identities);
                 }
             }
-        }
-        if let Some(truth) = left_truth {
-            let Some(id) = source_id(l) else {
-                return residual("unidentified left source row");
-            };
-            if truth == Some(true) {
-                filtered_true_ids.push(id);
-            } else {
-                filtered_not_true_ids.push(id);
-            }
-        } else if !ordered[1].rows().is_empty() || !ordered[2].rows().is_empty() {
-            return residual("missing complete left predicate evaluation");
         }
     }
     if let Some(group_query) = grouped_query {
