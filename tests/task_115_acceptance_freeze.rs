@@ -11,7 +11,10 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
     assert_eq!(inventory["owner"], "TASK-115");
     assert_eq!(inventory["version"], 1);
     assert_eq!(inventory["matrix_revision"], "2026-10-18-v3");
-    assert_eq!(inventory["status"], "portable_constructive_bags_verified_with_explicit_native_boundaries");
+    assert_eq!(
+        inventory["status"],
+        "portable_constructive_bags_verified_with_explicit_native_boundaries"
+    );
     let cases = inventory["cases"].as_array().expect("cases");
     assert_eq!(cases.len(), 8);
 
@@ -170,7 +173,10 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
                 cell["canonical_population_status"],
                 "verified_with_explicit_physical_attestation"
             );
-            assert_eq!(cell["release_disposition"], "reviewed_conditional_native_not_certified");
+            assert_eq!(
+                cell["release_disposition"],
+                "reviewed_conditional_native_not_certified"
+            );
         }
 
         let matrix = case["dialect_matrix"].as_array().expect("dialects");
@@ -194,11 +200,13 @@ fn frozen_mandatory_join_bags_have_complete_identity_and_truth_partitions() {
                 .len(),
             case["expected_terminal_row_count"].as_u64().expect("count") as usize
         );
-        assert_eq!(case["acceptance_status"], "verified_exact_canonical_and_independent_duckdb_bags");
+        assert_eq!(
+            case["acceptance_status"],
+            "verified_exact_canonical_and_independent_duckdb_bags"
+        );
         for cell in matrix {
             assert_eq!(
-                cell["canonical_status"],
-                "verified_portable_canonical_source_bag",
+                cell["canonical_status"], "verified_portable_canonical_source_bag",
                 "{id}: no mandatory canonical dialect may remain unverified"
             );
         }
