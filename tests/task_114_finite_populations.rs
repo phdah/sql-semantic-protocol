@@ -122,7 +122,8 @@ fn witness_laws_reject_ambiguous_asof_ties_and_distinguish_unselected_true_pairs
     assert_eq!(asof.selected_rows(&[Some(10)], &[Some(7), Some(7)]), None);
     assert_eq!(
         asof.selected_rows(&[None], &[Some(7)]),
-        Some(vec![(0, None)])
+        None,
+        "unmatched ASOF cannot assume INNER or LEFT preservation"
     );
     let inner = FiniteJoinLaw::CorrelatedInnerEquality;
     assert_eq!(
