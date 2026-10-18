@@ -2788,7 +2788,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "cross",
       "child_fixture": "71-C113-P-CROSS",
       "dialects": [
@@ -2878,7 +2878,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-USING",
@@ -2889,7 +2891,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "using",
       "child_fixture": "71-C113-P-USING",
       "dialects": [
@@ -2979,7 +2981,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NATURAL",
@@ -2990,7 +2994,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "natural",
       "child_fixture": "71-C113-P-NATURAL",
       "dialects": [
@@ -3080,7 +3084,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-OR-ON",
@@ -3091,7 +3097,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "or_on",
       "child_fixture": "71-C113-P-OR-ON",
       "dialects": [
@@ -3181,7 +3187,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NONEQUI",
@@ -3192,7 +3200,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "non_equi",
       "child_fixture": "71-C113-P-NON-EQUI",
       "dialects": [
@@ -3282,7 +3290,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-NULLSAFE",
@@ -3293,7 +3303,7 @@
         5,
         6
       ],
-      "owner": "TASK-113",
+      "owner": "TASK-116",
       "child_variant": "is_not_distinct_from",
       "child_fixture": "71-C113-P-IS-NOT-DISTINCT-FROM",
       "dialects": [
@@ -3383,7 +3393,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-113",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-ASOF",
@@ -3394,7 +3406,7 @@
         5,
         6
       ],
-      "owner": "TASK-114",
+      "owner": "TASK-116",
       "child_variant": "asof_nearest_prior",
       "child_fixture": "71-C114-P-asof_nearest_prior",
       "dialects": [
@@ -3484,7 +3496,9 @@
           "canonical": "portable_canonical_physical_population_verified",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-114",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-RANGE-TIME",
@@ -3495,7 +3509,7 @@
         5,
         6
       ],
-      "owner": "TASK-114",
+      "owner": "TASK-116",
       "child_variant": "time_inequality",
       "child_fixture": "71-C114-P-time_inequality",
       "dialects": [
@@ -3585,7 +3599,9 @@
           "canonical": "portable_canonical_physical_population_verified",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-114",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-LATERAL",
@@ -3596,7 +3612,7 @@
         5,
         6
       ],
-      "owner": "TASK-114",
+      "owner": "TASK-116",
       "child_variant": "lateral_derived",
       "child_fixture": "71-C114-P-lateral_derived",
       "dialects": [
@@ -3686,7 +3702,9 @@
           "canonical": "portable_canonical_physical_population_verified",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-114",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-APPLY",
@@ -3697,7 +3715,7 @@
         5,
         6
       ],
-      "owner": "TASK-114",
+      "owner": "TASK-116",
       "child_variant": "cross_apply",
       "child_fixture": "71-C114-P-cross_apply",
       "dialects": [
@@ -3787,7 +3805,9 @@
           "canonical": "portable_canonical_physical_population_verified",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-114",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-ALIAS-REUSE",
@@ -3799,7 +3819,7 @@
         5,
         6
       ],
-      "owner": "TASK-110",
+      "owner": "TASK-116",
       "child_variant": "shared_materialized_producer_chain",
       "child_fixture": "71-C110-P-SHARED",
       "dialects": [
@@ -3889,7 +3909,9 @@
           "canonical": "equivalent_when_parsed",
           "native_execution": "not_claimed"
         }
-      }
+      },
+      "child_owner": "TASK-110",
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     },
     {
       "id": "J71-OUTER-WHERE",
@@ -4051,7 +4073,9 @@
           }
         ],
         "complete_right_source_bag": true
-      }
+      },
+      "child_owner": null,
+      "native_missing_evidence": "No independently executed native vendor engine/session/collation/constraint proof for this dialect; portable canonical and DuckDB outcomes are not vendor-runtime certification"
     }
   ],
   "original_ac_gates": [
