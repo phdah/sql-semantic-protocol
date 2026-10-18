@@ -444,3 +444,55 @@ fn all_parent_mandatory_and_post_outer_shared_sql_forms_parse_across_canonical_d
         }
     }
 }
+
+#[test]
+fn every_original_task_71_inventory_cell_is_preserved_without_scope_waivers() {
+    let parent: Value =
+        serde_json::from_str(include_str!("../docs/task-71-acceptance-freeze.json"))
+            .expect("original canonical TASK-71 freeze");
+    let child: Value = serde_json::from_str(FREEZE).expect("TASK-116 independent freeze");
+    for classification in ["mandatory", "conditional"] {
+        let expected = parent[classification].as_array().unwrap();
+        let observed = child[classification].as_array().unwrap();
+        assert_eq!(
+            expected.len(),
+            observed.len(),
+            "{classification}: original case count unchanged"
+        );
+        let mut seen = BTreeSet::new();
+        for original in expected {
+            let id = original["id"].as_str().unwrap();
+            let candidate = observed
+                .iter()
+                .find(|case| case["id"] == id)
+                .unwrap_or_else(|| panic!("{classification}: missing original {id}"));
+            assert!(seen.insert(id), "{classification}: duplicate original ID {id}");
+            assert_eq!(
+                candidate["original_sql"],
+                original["sql"],
+                "{id}: preserve frozen original SQL"
+            );
+            assert_eq!(
+                candidate["acceptance_criteria"],
+                original["acceptance_criteria"],
+                "{id}: retain all original AC ownership"
+            );
+            if classification == "mandatory" {
+                assert_eq!(
+                    candidate["expected_terminal_count"],
+                    original["expected"]["terminal_count"],
+                    "{id}: cannot weaken original terminal oracle"
+                );
+                assert_eq!(candidate["classification"], "exact_required");
+            } else {
+                assert_eq!(candidate["classification"], "conditional");
+                assert_eq!(
+                    candidate["owner"],
+                    "TASK-116",
+                    "{id}: conditional review stays parent-owned"
+                );
+            }
+        }
+        assert_eq!(seen.len(), observed.len());
+    }
+}
