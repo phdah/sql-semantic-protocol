@@ -396,7 +396,10 @@ fn physical_filtered_chain_single_group(
         || !group_query.subquery_witnesses().is_empty()
         || !group_query.diagnostics().is_empty()
         || !group_query.output().columns().iter().all(|column| {
-            matches!(column.expression(), Expression::Column(_) | Expression::AggregateFunction(_))
+            matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::AggregateFunction(_)
+            )
         })
         || join_query.joins().len() != 2
         || !walker
@@ -495,8 +498,12 @@ fn physical_filtered_chain_single_group(
     };
     let count_matches = |count: i128| match test {
         None => true,
-        Some((ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom, value)) => count == value,
-        Some((ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom, value)) => count != value,
+        Some((ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom, value)) => {
+            count == value
+        }
+        Some((ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom, value)) => {
+            count != value
+        }
         Some((ComparisonOperator::Lt, value)) => count < value,
         Some((ComparisonOperator::Lte, value)) => count <= value,
         Some((ComparisonOperator::Gt, value)) => count > value,
@@ -519,15 +526,17 @@ fn physical_filtered_chain_single_group(
             continue;
         };
         for join_case in join_cases {
-            let same_key = join_case.obligations().iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::JoinChainPopulation {
-                    left_key, middle_left_key, middle_right_key, right_key,
-                    output_rows, closed_world: true, ..
-                } if *output_rows == join_rows
-                    && [left_key, middle_left_key, middle_right_key, right_key]
-                        .contains(&&physical_key)
-            ));
+            let same_key = join_case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::JoinChainPopulation {
+                        left_key, middle_left_key, middle_right_key, right_key,
+                        output_rows, closed_world: true, ..
+                    } if *output_rows == join_rows
+                        && [left_key, middle_left_key, middle_right_key, right_key]
+                            .contains(&&physical_key)
+                )
+            });
             if !same_key {
                 continue;
             }
