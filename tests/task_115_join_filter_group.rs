@@ -92,6 +92,65 @@ fn typed_nonkey_where_filter_is_on_the_same_three_way_physical_bags() {
 }
 
 #[test]
+fn composite_on_edges_share_one_complete_filtered_three_source_population() {
+    let sql = "SELECT l.k FROM l JOIN r ON l.k=r.k AND l.k2=r.k2 JOIN t ON r.k=t.k AND r.k2=t.k2 WHERE l.a>0";
+    for &dialect in DIALECTS {
+        let analyzed = bundle(&[sql], dialect);
+        let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 4)]);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("{dialect}: independently typed composite chain must construct: {plan:?}");
+        };
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinChainPopulation {
+                            left_rows: 2,
+                            middle_rows: 2,
+                            right_rows: 1,
+                            output_rows: 4,
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                }) && case.obligations().iter().filter(|obligation| {
+                    matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                }).count() == 3
+                    && ["l", "r", "t"].iter().all(|source| {
+                        case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::Rows { boundary, predicate, .. }
+                                    if boundary.relation() == *source
+                                        && format!("{predicate:?}").contains("k2")
+                            )
+                        })
+                    })
+            }),
+            "{dialect}: every composite equality must constrain the original source bag"
+        );
+    }
+}
+
+#[test]
+fn composite_join_key_restriction_cannot_bypass_shared_key_reconciliation() {
+    let sql = "SELECT l.k FROM l JOIN r ON l.k=r.k AND l.k2=r.k2 JOIN t ON r.k=t.k AND r.k2=t.k2 WHERE l.k2=2";
+    let analyzed = bundle(&[sql], "postgresql");
+    let plan = physical_joint_source_plan(&analyzed, &[(analyzed.layers()[0].id(), 4)]);
+    if let WitnessDirection::Feasible(cases) = plan.outcome() {
+        assert!(
+            cases.iter().all(|case| {
+                !case.obligations().iter().any(|obligation| {
+                    matches!(obligation, WitnessObligation::JoinChainPopulation { .. })
+                })
+            }),
+            "an independently restricted composite key cannot borrow the all-1 witness"
+        );
+    }
+}
+
+#[test]
 fn two_hop_filtered_producer_uses_only_the_original_physical_bags() {
     let sql = [
         "CREATE TABLE stage AS SELECT id,k,k2,a FROM l WHERE a > 0",
