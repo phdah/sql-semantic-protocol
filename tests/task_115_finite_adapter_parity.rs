@@ -4,11 +4,62 @@ use std::collections::BTreeMap;
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
-    parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, LiteralValue,
-    PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationConstraint, RelationSchema, SchemaColumn,
-    SqlInput,
+    parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    LiteralValue, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
+    SchemaColumn, SqlInput, TextComparisonLaw,
 };
+
+fn enforced() -> Vec<ConstraintEvidence> {
+    vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(
+            ConstraintSourceKind::ExternalMetadata,
+            "task-115-physical-source-enforcement-attestation",
+        )
+        .expect("named physical source provenance"),
+        ConstraintEnforcement::Enforced,
+    )]
+}
+
+fn enforced_constraints(qualified: bool) -> Vec<RelationConstraintSet> {
+    let name = |relation: &str| {
+        if qualified {
+            format!("db.raw.{relation}")
+        } else {
+            relation.to_string()
+        }
+    };
+    vec![
+        RelationConstraintSet::new(
+            name("l"),
+            vec![RelationConstraint::primary_key(vec!["id".to_string()], enforced())
+                .expect("enforced l PK")],
+        )
+        .expect("l source constraints"),
+        RelationConstraintSet::new(
+            name("r"),
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_string()], enforced())
+                    .expect("enforced r PK"),
+                RelationConstraint::foreign_key(
+                    vec!["tid".to_string()],
+                    name("t"),
+                    vec!["tid".to_string()],
+                    enforced(),
+                )
+                .expect("enforced source FK"),
+            ],
+        )
+        .expect("r source constraints"),
+        RelationConstraintSet::new(
+            name("t"),
+            vec![RelationConstraint::primary_key(vec!["tid".to_string()], enforced())
+                .expect("enforced t PK")],
+        )
+        .expect("t source constraints"),
+    ]
+}
 
 fn rows(case: &Value) -> Vec<PhysicalWriteState> {
     ["l", "r", "t"]
@@ -239,7 +290,51 @@ struct CanonicalBag {
 }
 
 fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> CanonicalBag {
-    let target = bundle.layers().last().expect("terminal");
+    let mut bundle = bundle.clone();
+    let target = bundle.layers().last().expect("terminal").id().to_string();
+    if case["variant"] == "pk_fk_constrained_sources" {
+        // An adapter's declared key is not proof of enforcement. The same
+        // frozen physical bag must be residual until an authoritative
+        // physical enforcement and binary-text law is supplied explicitly.
+        if !bundle.relation_constraints().is_empty() {
+            let undecided = physical_finite_chain_bag_plan(&bundle, &target, &{
+                let qualified = bundle.source_schemas().iter().any(|s| s.relation() == "db.raw.l");
+                rows(case)
+                    .into_iter()
+                    .map(|state| {
+                        let relation = if qualified {
+                            format!("db.raw.{}", state.relation())
+                        } else {
+                            state.relation().to_string()
+                        };
+                        PhysicalWriteState::new(relation, state.rows().to_vec())
+                            .expect("source population")
+                    })
+                    .collect::<Vec<_>>()
+            });
+            assert!(
+                matches!(undecided, PhysicalFiniteChainProof::Residual { .. }),
+                "unattested adapter constraints must never imply physical feasibility"
+            );
+        }
+        let qualified = bundle.source_schemas().iter().any(|s| s.relation() == "db.raw.l");
+        for source in ["l", "r"] {
+            let relation = if qualified {
+                format!("db.raw.{source}")
+            } else {
+                source.to_string()
+            };
+            bundle
+                .attest_source_text_comparison(
+                    &relation,
+                    "id",
+                    TextComparisonLaw::Binary,
+                    enforced(),
+                )
+                .expect("independently attested source collation");
+        }
+        bundle.enrich_relation_constraints(&enforced_constraints(qualified));
+    }
     let snapshots = rows(case)
         .into_iter()
         .map(|state| {
@@ -256,7 +351,7 @@ fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> Ca
             }
         })
         .collect::<Vec<_>>();
-    let proof = physical_finite_chain_bag_plan(bundle, target.id(), &snapshots);
+    let proof = physical_finite_chain_bag_plan(&bundle, &target, &snapshots);
     let PhysicalFiniteChainProof::Exact(exact) = proof else {
         panic!("missing adapter physical bag proof: {proof:?}");
     };
