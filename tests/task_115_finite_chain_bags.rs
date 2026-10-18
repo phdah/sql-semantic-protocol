@@ -6,8 +6,7 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_chain_bag_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
-    PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
@@ -221,7 +220,9 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                 let expected_domain = &case["terminal_domains"][&column];
                 assert_eq!(
                     actual_domain.null_allowed(),
-                    expected_domain["null_allowed"].as_bool().expect("NULL domain"),
+                    expected_domain["null_allowed"]
+                        .as_bool()
+                        .expect("NULL domain"),
                     "{case_id}/{dialect}: {column} NULL domain"
                 );
                 let expected_allowed = expected_domain["allowed"]
@@ -252,7 +253,6 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
                     "{case_id}/{dialect}: {column} inclusive bounds"
                 );
             }
-
         }
     }
 }
@@ -260,7 +260,10 @@ fn all_frozen_bags_match_normalized_sql_constructive_proof_in_thirteen_dialects(
 #[test]
 fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() {
     let schemas = [
-        ("l", vec![("id", "VARCHAR"), ("k", "INTEGER"), ("a", "INTEGER")]),
+        (
+            "l",
+            vec![("id", "VARCHAR"), ("k", "INTEGER"), ("a", "INTEGER")],
+        ),
         ("r", vec![("id", "VARCHAR"), ("k", "INTEGER")]),
         ("t", vec![("id", "VARCHAR"), ("k", "INTEGER")]),
     ]
@@ -271,8 +274,7 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
             columns
                 .into_iter()
                 .map(|(name, kind)| {
-                    SchemaColumn::from_sql_type(name, kind, "postgresql")
-                        .expect("attested scalar")
+                    SchemaColumn::from_sql_type(name, kind, "postgresql").expect("attested scalar")
                 })
                 .collect(),
         )
@@ -281,17 +283,14 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
     .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("typed source catalog");
     let parser = dialect_from_name("postgresql").expect("portable SQL dialect");
-    let sql = SqlInput::inline(
-        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0",
-    );
+    let sql = SqlInput::inline("SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a>0");
     let configured = [ConfiguredSqlInput::new(
         "task-115-negative",
         &sql,
         "postgresql",
         parser.as_ref(),
     )];
-    let analyzed =
-        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
+    let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
     let target = analyzed.layers().last().expect("terminal");
     let row = |pairs: Vec<(&str, LiteralValue)>| {
         PhysicalWriteRow::new(
@@ -349,17 +348,15 @@ fn incomplete_or_contradictory_physical_evidence_never_certifies_a_join_chain() 
         "missing complete source bags are not empty valid populations"
     );
 
-    let unsupported = SqlInput::inline(
-        "SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a + 1 > 0",
-    );
+    let unsupported =
+        SqlInput::inline("SELECT l.k FROM l JOIN r ON l.k=r.k JOIN t ON r.k=t.k WHERE l.a + 1 > 0");
     let configured = [ConfiguredSqlInput::new(
         "task-115-unproved",
         &unsupported,
         "postgresql",
         parser.as_ref(),
     )];
-    let analyzed =
-        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
+    let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
     let target = analyzed.layers().last().expect("terminal");
     assert!(
         matches!(
