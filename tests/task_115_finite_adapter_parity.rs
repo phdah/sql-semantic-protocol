@@ -334,9 +334,10 @@ fn frozen_eight_bags_produce_identical_odcs_source_proofs() {
         let mut contract = String::from(
             "apiVersion: v3.2.0\nkind: DataContract\nid: task115finite\nname: Frozen physical join metadata\nversion: 1.0.0\nstatus: active\nschema:\n",
         );
+        let constrained = case["variant"] == "pk_fk_constrained_sources";
         for relation in ["l", "r", "t"] {
             contract.push_str(&format!(
-                "  - name: {relation}\n    physicalName: {relation}\n    properties:\n"
+                "  - id: source_{relation}\n    name: {relation}\n    physicalName: {relation}\n    properties:\n"
             ));
             for (column, declaration) in case["source_column_types"][relation]
                 .as_object()
@@ -349,12 +350,47 @@ fn frozen_eight_bags_produce_identical_odcs_source_proofs() {
                     .next()
                     .expect("base type");
                 contract.push_str(&format!(
-                    "      - name: {column}\n        physicalType: {base}\n"
+                    "      - id: {relation}_{column}\n        name: {column}\n        physicalType: {base}\n"
                 ));
+                if constrained
+                    && ((relation == "l" || relation == "r") && column == "id"
+                        || relation == "t" && column == "tid")
+                {
+                    contract.push_str("        primaryKey: true\n");
+                }
+            }
+            if constrained && relation == "r" {
+                contract.push_str(
+                    "    relationships:\n      - id: r_t_fk\n        type: foreignKey\n        from:\n          - schema/source_r/properties/r_tid\n        to:\n          - schema/source_t/properties/t_tid\n",
+                );
             }
         }
         let names = RelationCatalog::new(&["l", "r", "t"]).expect("physical relation catalog");
         let odcs = parse_odcs_yaml(&contract, "postgresql", &names).expect("ODCS source adapter");
+        if constrained {
+            let constraints = |relation: &str| {
+                odcs.relation_constraints()
+                    .iter()
+                    .find(|set| set.relation() == relation)
+                    .expect("ODCS must retain frozen PK/FK source facts")
+                    .constraints()
+            };
+            assert!(constraints("l").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["id"])
+            }));
+            assert!(constraints("r").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["id"])
+            }));
+            assert!(constraints("r").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::ForeignKey(fk)
+                    if fk.columns() == ["tid"]
+                        && fk.referenced_relation() == "t"
+                        && fk.referenced_columns() == ["tid"])
+            }));
+            assert!(constraints("t").iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::PrimaryKey(pk) if pk.columns() == ["tid"])
+            }));
+        }
         let odcs_catalog =
             RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS schema catalog");
         let direct_catalog = RelationCatalog::from_schemas(&schemas(case)).expect("direct catalog");
