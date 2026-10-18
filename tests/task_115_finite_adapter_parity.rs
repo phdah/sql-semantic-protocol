@@ -5,8 +5,8 @@ use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
     parse_dbt_manifest, physical_finite_chain_bag_plan, ConfiguredSqlInput, LiteralValue,
-    PhysicalFiniteChainProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    PhysicalFiniteChainColumnDomain, PhysicalFiniteChainProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn rows(case: &Value) -> Vec<PhysicalWriteState> {
@@ -206,11 +206,17 @@ fn direct(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::Ana
     analyze_configured_inputs_with_catalog(&configured, catalog).expect("direct SQL analysis")
 }
 
-type CanonicalBag = (
-    Vec<[String; 3]>,
-    Vec<[String; 3]>,
-    Vec<BTreeMap<String, LiteralValue>>,
-);
+#[derive(Debug, PartialEq, Eq)]
+struct CanonicalBag {
+    sources: [String; 3],
+    filtered_true_ids: Vec<String>,
+    filtered_not_true_ids: Vec<String>,
+    selected: Vec<[String; 3]>,
+    rejected: Vec<[String; 3]>,
+    contributions: BTreeMap<i128, Vec<[String; 3]>>,
+    terminal: Vec<BTreeMap<String, LiteralValue>>,
+    terminal_domains: BTreeMap<String, PhysicalFiniteChainColumnDomain>,
+}
 
 fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> CanonicalBag {
     let target = bundle.layers().last().expect("terminal");
@@ -236,9 +242,22 @@ fn certified(case: &Value, bundle: &sql_semantic_protocol::AnalysisBundle) -> Ca
     };
     let mut selected = exact.selected.clone();
     let mut rejected = exact.rejected.clone();
+    let mut filtered_true_ids = exact.filtered_true_ids.clone();
+    let mut filtered_not_true_ids = exact.filtered_not_true_ids.clone();
     selected.sort();
     rejected.sort();
-    (selected, rejected, exact.terminal.clone())
+    filtered_true_ids.sort();
+    filtered_not_true_ids.sort();
+    CanonicalBag {
+        sources: exact.sources.clone(),
+        filtered_true_ids,
+        filtered_not_true_ids,
+        selected,
+        rejected,
+        contributions: exact.contributions.clone(),
+        terminal: exact.terminal.clone(),
+        terminal_domains: exact.terminal_domains.clone(),
+    }
 }
 
 #[test]
