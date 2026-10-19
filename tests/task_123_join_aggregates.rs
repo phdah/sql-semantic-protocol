@@ -330,6 +330,30 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
                 got.sort();
                 wanted.sort();
                 assert_eq!(got, wanted, "{id}:{name}: exact included values");
+                let has_null = set
+                    .values()
+                    .iter()
+                    .any(|value| value.value() == &LiteralValue::Null);
+                assert_eq!(
+                    has_null,
+                    expected_domain["contains_null"].as_bool().expect("NULL membership"),
+                    "{id}:{name}: exact NULL membership"
+                );
+                let numbers = set
+                    .values()
+                    .iter()
+                    .filter_map(|value| match value.value() {
+                        LiteralValue::Number(value) => Some(value.parse::<i64>().expect("typed integer")),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                if !numbers.is_empty() {
+                    let bounds = &expected_domain["inclusive_bounds"];
+                    assert_eq!(numbers.iter().min().copied(), bounds["lower"].as_i64());
+                    assert_eq!(numbers.iter().max().copied(), bounds["upper"].as_i64());
+                    assert_eq!(bounds["lower_inclusive"], true);
+                    assert_eq!(bounds["upper_inclusive"], true);
+                }
             }
         }
     }
