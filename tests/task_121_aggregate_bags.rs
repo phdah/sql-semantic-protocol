@@ -157,7 +157,7 @@ fn complete_aggregate_bags_match_frozen_source_oracles_and_duckdb() {
             .unwrap_or_else(|err| panic!("{id}: {err:?}"));
         let target = bundle.layers().last().expect("terminal").id();
         let state = source(case);
-        let proof = physical_finite_aggregate_bag_plan(&bundle, target, &[state.clone()]);
+        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
         let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
             panic!("{id}: expected exact canonical physical proof, got {proof:?}");
         };
@@ -283,7 +283,7 @@ fn nonintegral_avg_and_unproven_queries_never_masquerade_as_exact() {
         let target = bundle.layers().last().expect("terminal").id();
         assert!(
             matches!(
-                physical_finite_aggregate_bag_plan(&bundle, target, &[state.clone()]),
+                physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state)),
                 PhysicalFiniteAggregateProof::Residual { .. }
             ),
             "{sql}: unproved operator must fail closed"
