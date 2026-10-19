@@ -1,0 +1,1219 @@
+{
+  "version": 1,
+  "owner": "TASK-119",
+  "parent": "TASK-72",
+  "frozen_at": "2026-10-19",
+  "fixture_ids": [
+    "72-C119-P",
+    "72-C119-N"
+  ],
+  "case_count": 8,
+  "scope": "two-column positional output alignment, MINUS normalization, bounded integral ordered row limit/fetch, explicit coercion/name/vendor residuals",
+  "source_column_types": {
+    "id": "VARCHAR NOT NULL",
+    "k": "INTEGER NULL",
+    "v": "INTEGER NULL"
+  },
+  "required_variants": [
+    "positional_aliases",
+    "coercion",
+    "by_name",
+    "corresponding_vendor",
+    "minus",
+    "branch_local_limit",
+    "global_order_limit",
+    "fetch_only",
+    "nulls_explicit",
+    "complete_source_rejection"
+  ],
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schemas"
+  ],
+  "original_ac_mapping": {
+    "1": "case and dialect/adapter inventory plus typed expected outcomes",
+    "2": "canonical operators and source-attested physical result bag",
+    "3": "complete DuckDB source/terminal and SQL NULL, duplicate and negative oracles",
+    "4": "13 parser paths and three evidence adapters with fail-closed session/vendor boundaries",
+    "5": "final head CI and independent acceptance audit"
+  },
+  "conditional": {
+    "owner": "TASK-119",
+    "release_disposition": "needs independent review before merging",
+    "native_vendor_semantics": "not certified",
+    "unclaimed": [
+      "collation and coercion beyond attested integral copies",
+      "BY NAME/CORRESPONDING alignment until parser and name law proved",
+      "underordered ties with LIMIT",
+      "nested branch shaping and vendor FETCH PERCENT/WITH TIES"
+    ]
+  },
+  "cases": [
+    {
+      "id": "72-C119-P-ordered-limit",
+      "fixture": "72-C119-P",
+      "classification": "mandatory_exact",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC NULLS LAST, value_out ASC NULLS LAST LIMIT 2",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            10
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            20
+          ],
+          "count": 1
+        }
+      ],
+      "expected_count": 2,
+      "variants": [
+        "positional_aliases",
+        "global_order_limit",
+        "nulls_explicit",
+        "duplicates",
+        "positive"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "full closed-world source and terminal bags, inclusive exact domains, SQL TRUE/NOT TRUE membership, stable source ids",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_exact",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-N-ordered-offset",
+      "fixture": "72-C119-N",
+      "classification": "mandatory_exact",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC NULLS LAST, value_out ASC NULLS LAST LIMIT 2 OFFSET 5",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_tuple_histogram": [],
+      "expected_count": 0,
+      "variants": [
+        "set_limit_offset",
+        "complete_source_rejection",
+        "not_true",
+        "nulls_explicit"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "full closed-world source and terminal bags, inclusive exact domains, SQL TRUE/NOT TRUE membership, stable source ids",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_exact",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-P-fetch-only",
+      "fixture": "72-C119-P",
+      "classification": "mandatory_exact",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC NULLS LAST, value_out ASC NULLS LAST FETCH FIRST 2 ROWS ONLY",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            10
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            20
+          ],
+          "count": 1
+        }
+      ],
+      "expected_count": 2,
+      "variants": [
+        "fetch_only",
+        "global_order_limit",
+        "positive"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "full closed-world source and terminal bags, inclusive exact domains, SQL TRUE/NOT TRUE membership, stable source ids",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_exact",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-N-order-tie",
+      "fixture": "72-C119-N",
+      "classification": "mandatory_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC LIMIT 4",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 40
+          }
+        ]
+      },
+      "reason": "ORDER BY ties distinct output tuples without a total order",
+      "variants": [
+        "unstable_partial_order",
+        "negative"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_residual",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-N-by-name",
+      "fixture": "72-C119-N",
+      "classification": "conditional_parser_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION BY NAME SELECT v AS value_out, k AS key_out FROM b",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "reason": "unsupported name alignment",
+      "variants": [
+        "by_name",
+        "corresponding_vendor",
+        "conditional"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-P-minus",
+      "fixture": "72-C119-P",
+      "classification": "conditional_parser_canonical_except",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a MINUS SELECT k AS other_key, v AS other_value FROM b",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "variants": [
+        "minus",
+        "positional_aliases",
+        "conditional"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "conditional_parser_canonical_except",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "conditional_parser_canonical_except",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "conditional_parser_canonical_except",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-N-coercion",
+      "fixture": "72-C119-N",
+      "classification": "mandatory_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT CAST(k AS BIGINT) AS other_key, v AS other_value FROM b",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "variants": [
+        "coercion",
+        "typed_residual"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_residual",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      }
+    },
+    {
+      "id": "72-C119-N-branch-limit",
+      "fixture": "72-C119-N",
+      "classification": "mandatory_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL (SELECT k AS other_key, v AS other_value FROM b LIMIT 1)",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "variants": [
+        "branch_local_limit",
+        "typed_residual"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_residual",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_residual",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      }
+    }
+  ]
+}
