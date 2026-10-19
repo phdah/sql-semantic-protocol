@@ -485,8 +485,8 @@ mod joint_distributions;
 mod membership;
 mod operators;
 mod ranking;
-mod sets;
 mod set_bags;
+mod sets;
 mod write_states;
 
 pub use counts::{
@@ -497,8 +497,6 @@ pub(crate) use distributions::{
     physical_inverted_set_distribution_plan,
 };
 pub use filters::physical_source_plan;
-pub use set_bags::{physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
-    PhysicalSetColumnDomain, PhysicalSetTuple};
 pub use finite_chains::{
     physical_finite_chain_bag_plan, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
     PhysicalFiniteChainProof,
@@ -508,6 +506,10 @@ pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
+};
+pub use set_bags::{
+    physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
+    PhysicalSetColumnDomain, PhysicalSetTuple,
 };
 pub use write_states::{
     physical_closed_world_schema_plan, physical_ordered_write_state_plan,
