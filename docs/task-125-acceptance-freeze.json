@@ -930,7 +930,12 @@
       "source_bag": [],
       "full_terminal_bag": [],
       "exact": true,
-      "typed_terminal_domains": [],
+      "typed_terminal_domains": [
+        {"column": "d", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "k", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "r", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "x", "values": [], "contains_null": false, "inclusive_bounds": null}
+      ],
       "physical_positive_ids": [],
       "physical_not_true_ids": [],
       "expected_adapter_cells": {
