@@ -1,0 +1,1024 @@
+{
+  "version": 1,
+  "owner": "TASK-121",
+  "parent": "TASK-73",
+  "fixture_ids": [
+    "73-C121-P",
+    "73-C121-N"
+  ],
+  "baseline": "[1,1,NULL] -> COUNT(*)=3 COUNT(x)=2 SUM(x)=2 MIN/MAX/AVG=1; empty global COUNT(*)=0",
+  "scope": [
+    "COUNT(*)",
+    "COUNT(expr)",
+    "SUM",
+    "MIN",
+    "MAX",
+    "AVG",
+    "grouped",
+    "global",
+    "duplicate",
+    "NULL",
+    "empty"
+  ],
+  "original_ac_mapping": {
+    "1": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "3": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "4": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "5": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "6": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "cases": [
+    {
+      "id": "73-C121-P-global",
+      "kind": "mandatory",
+      "sql": "SELECT COUNT(*) AS count_all, COUNT(x) AS count_x, SUM(x) AS total, MIN(x) AS minimum, MAX(x) AS maximum, AVG(x) AS average FROM s",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 2,
+          "x": null
+        }
+      ],
+      "terminal_columns": [
+        "count_all",
+        "count_x",
+        "total",
+        "minimum",
+        "maximum",
+        "average"
+      ],
+      "full_terminal_bag": [
+        {
+          "count_all": 3,
+          "count_x": 2,
+          "total": 2,
+          "minimum": 1,
+          "maximum": 1,
+          "average": 1
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "count_all",
+          "values": [
+            3
+          ],
+          "inclusive_bounds": {
+            "lower": 3,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "count_x",
+          "values": [
+            2
+          ],
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "total",
+          "values": [
+            2
+          ],
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "minimum",
+          "values": [
+            1
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "maximum",
+          "values": [
+            1
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "average",
+          "values": [
+            1
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "complete_empty_or_excluded_group_proof"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C121-P-grouped",
+      "kind": "mandatory",
+      "sql": "SELECT k, COUNT(*) AS count_all, COUNT(x) AS count_x, SUM(x) AS total, MIN(x) AS minimum, MAX(x) AS maximum, AVG(x) AS average FROM s GROUP BY k",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 2,
+          "x": null
+        }
+      ],
+      "terminal_columns": [
+        "k",
+        "count_all",
+        "count_x",
+        "total",
+        "minimum",
+        "maximum",
+        "average"
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 1,
+          "count_all": 2,
+          "count_x": 2,
+          "total": 2,
+          "minimum": 1,
+          "maximum": 1,
+          "average": 1
+        },
+        {
+          "k": 2,
+          "count_all": 1,
+          "count_x": 0,
+          "total": null,
+          "minimum": null,
+          "maximum": null,
+          "average": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [
+            1,
+            2
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "count_all",
+          "values": [
+            2,
+            1
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "count_x",
+          "values": [
+            2,
+            0
+          ],
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "total",
+          "values": [
+            2,
+            null
+          ],
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": true
+        },
+        {
+          "column": "minimum",
+          "values": [
+            1,
+            null
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": true
+        },
+        {
+          "column": "maximum",
+          "values": [
+            1,
+            null
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": true
+        },
+        {
+          "column": "average",
+          "values": [
+            1,
+            null
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": true
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "complete_empty_or_excluded_group_proof"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C121-N-global-empty",
+      "kind": "mandatory",
+      "sql": "SELECT COUNT(*) AS count_all, COUNT(x) AS count_x, SUM(x) AS total, MIN(x) AS minimum, MAX(x) AS maximum, AVG(x) AS average FROM s",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [],
+      "terminal_columns": [
+        "count_all",
+        "count_x",
+        "total",
+        "minimum",
+        "maximum",
+        "average"
+      ],
+      "full_terminal_bag": [
+        {
+          "count_all": 0,
+          "count_x": 0,
+          "total": null,
+          "minimum": null,
+          "maximum": null,
+          "average": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "count_all",
+          "values": [
+            0
+          ],
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "count_x",
+          "values": [
+            0
+          ],
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "total",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "minimum",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "maximum",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "average",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "complete_empty_or_excluded_group_proof"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C121-N-grouped-empty",
+      "kind": "mandatory",
+      "sql": "SELECT k, COUNT(*) AS count_all, COUNT(x) AS count_x, SUM(x) AS total, MIN(x) AS minimum, MAX(x) AS maximum, AVG(x) AS average FROM s GROUP BY k",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [],
+      "terminal_columns": [
+        "k",
+        "count_all",
+        "count_x",
+        "total",
+        "minimum",
+        "maximum",
+        "average"
+      ],
+      "full_terminal_bag": [],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "count_all",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "count_x",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "total",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "minimum",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "maximum",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        },
+        {
+          "column": "average",
+          "values": [],
+          "inclusive_bounds": null,
+          "contains_null": false
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "complete_empty_or_excluded_group_proof"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C121-N-null-only",
+      "kind": "mandatory",
+      "sql": "SELECT COUNT(*) AS count_all, COUNT(x) AS count_x, SUM(x) AS total, MIN(x) AS minimum, MAX(x) AS maximum, AVG(x) AS average FROM s",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "null",
+          "k": null,
+          "x": null
+        }
+      ],
+      "terminal_columns": [
+        "count_all",
+        "count_x",
+        "total",
+        "minimum",
+        "maximum",
+        "average"
+      ],
+      "full_terminal_bag": [
+        {
+          "count_all": 1,
+          "count_x": 0,
+          "total": null,
+          "minimum": null,
+          "maximum": null,
+          "average": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "count_all",
+          "values": [
+            1
+          ],
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "count_x",
+          "values": [
+            0
+          ],
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "contains_null": false
+        },
+        {
+          "column": "total",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "minimum",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "maximum",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        },
+        {
+          "column": "average",
+          "values": [
+            null
+          ],
+          "inclusive_bounds": null,
+          "contains_null": true
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "complete_empty_or_excluded_group_proof"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "73-C121-C-decimal-average",
+      "law": "nonterminating or engine-specific AVG result coercion",
+      "reason": "precision, rounding and scale require authoritative engine/session laws",
+      "owner": "TASK-121",
+      "release_disposition": "not_certified_no_exactness_claim"
+    },
+    {
+      "id": "73-C121-C-overflow",
+      "law": "SUM source/result overflow",
+      "reason": "checked integer accumulation must reject overflow; vendor wider accumulator unsupported without type attestation",
+      "owner": "TASK-121",
+      "release_disposition": "fail_closed_residual"
+    },
+    {
+      "id": "73-C121-C-noninteger",
+      "law": "floating-point, typed decimal input, collated textual MIN/MAX",
+      "reason": "source scalar/collation type law not present in portable integer proof",
+      "owner": "TASK-121",
+      "release_disposition": "fail_closed_residual"
+    }
+  ],
+  "verification": {
+    "state": "not_yet_verified",
+    "required": [
+      "cargo fmt --check",
+      "cargo clippy --all-targets --all-features -- -D warnings",
+      "cargo test",
+      "cargo doc --no-deps",
+      "cargo test --no-default-features",
+      "dbt Core e2e",
+      "schema/golden snapshots"
+    ],
+    "native_vendor_execution_certified": false,
+    "parent_signoff": false
+  }
+}
