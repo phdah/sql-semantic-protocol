@@ -138,6 +138,12 @@ fn sql_comparison(
     lhs: Option<i128>,
     rhs: Option<i128>,
 ) -> Result<Option<bool>, &'static str> {
+    if matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
+        return Err("NULL-safe comparisons require a separately certified law");
+    }
     let (Some(lhs), Some(rhs)) = (lhs, rhs) else {
         return Ok(None);
     };
@@ -181,12 +187,20 @@ fn where_truth(
     }
 }
 
+/// Type-certified source projection and row-filter columns for one leaf.
+struct ResolvedSetBranch<'a> {
+    source: String,
+    relation: &'a str,
+    projected: Vec<String>,
+    predicate_columns: BTreeMap<String, String>,
+}
+
 fn branch_source<'a>(
     bundle: &AnalysisBundle,
     walker: &Walker<'_>,
     layer_id: &str,
     branch: &'a SetBranch,
-) -> Result<(String, &'a str, Vec<String>, BTreeMap<String, String>), &'static str> {
+) -> Result<ResolvedSetBranch<'a>, &'static str> {
     if !branch.condition_exactness().is_exact()
         || !branch.empty_input_preserving()
         || branch.predicates().having_predicate().is_some()
@@ -261,7 +275,12 @@ fn branch_source<'a>(
             columns.insert(name.to_string(), physical_name);
         }
     }
-    Ok((source, relation, mapped, columns))
+    Ok(ResolvedSetBranch {
+        source,
+        relation,
+        projected: mapped,
+        predicate_columns: columns,
+    })
 }
 
 fn tree_count(
@@ -369,11 +388,15 @@ pub fn physical_finite_set_tree_plan(
     let mut observed = BTreeMap::<Vec<Option<i128>>, Vec<Vec<String>>>::new();
     let mut branches = Vec::new();
     for (index, branch) in operation.branches().iter().enumerate() {
-        let Ok((source, relation, mapped, columns)) =
-            branch_source(bundle, &walker, target_layer_id, branch)
-        else {
+        let Ok(resolved) = branch_source(bundle, &walker, target_layer_id, branch) else {
             return residual("set branch cannot be proven through a lossless source boundary");
         };
+        let ResolvedSetBranch {
+            source,
+            relation,
+            projected: mapped,
+            predicate_columns: columns,
+        } = resolved;
         if mapped.len() != names.len() {
             return residual("set leaves disagree on positional output arity");
         }
