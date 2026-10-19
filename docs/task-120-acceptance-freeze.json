@@ -5068,7 +5068,11 @@
     "rule": "Do not upgrade parser-equivalent or residual to native exact without independent vendor oracle"
   },
   "signoff": {
-    "status": "pending_expanded_final_head_ci_and_independent_parent_review",
-    "parent": "TASK-72 remains To Do until merged children independently reviewed"
+    "status": "child_verified_bounded_pending_merge",
+    "parent": "TASK-72 remains To Do until merged children independently reviewed",
+    "audit": "docs/task-120-acceptance-audit.md",
+    "implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39250351880",
+    "implementation_head": "2605162c9fd07e1a0a27767cf368b8b86af99e79",
+    "final_metadata_head_ci": "required_after_signoff_commit"
   }
 }
