@@ -179,6 +179,22 @@ fn check_domains(
             .map(|number| i128::from(number.as_i64().expect("signed integer")))
             .collect::<Vec<_>>();
         assert_eq!(domain.values, allowed, "{id}: exact values {index}");
+        let has_finite_bounds = !allowed.is_empty();
+        assert_eq!(
+            frozen["lower_inclusive"].as_bool(),
+            has_finite_bounds.then_some(true),
+            "{id}: lower bound inclusivity {index}"
+        );
+        assert_eq!(
+            frozen["upper_inclusive"].as_bool(),
+            has_finite_bounds.then_some(true),
+            "{id}: upper bound inclusivity {index}"
+        );
+        assert_eq!(
+            frozen["empty"].as_bool(),
+            Some(!has_finite_bounds && !domain.contains_null),
+            "{id}: empty domain {index}"
+        );
     }
 }
 
@@ -242,7 +258,81 @@ fn frozen_matrix_is_finite_and_covers_every_original_parent_criterion() {
             assert!(case["release_disposition"].as_str().is_some(), "{id}");
         }
     }
+    for case in mandatory {
+        let id = case["id"].as_str().expect("mandatory ID");
+        let histogram = case["expected_terminal_tuple_histogram"]
+            .as_array()
+            .expect("mandatory exact histogram");
+        let full_count: u64 = histogram
+            .iter()
+            .map(|entry| entry["count"].as_u64().expect("tuple frequency"))
+            .sum();
+        assert_eq!(
+            full_count,
+            case["expected_count"].as_u64().expect("terminal count"),
+            "{id}: frozen frequencies cover the entire terminal"
+        );
+        assert!(
+            case["typed_terminal_domains"].as_array().is_some(),
+            "{id}: mandatory typed evidence"
+        );
+    }
     assert_eq!(mapped, BTreeSet::from([1, 2, 3, 4, 5, 6]));
+}
+
+#[test]
+fn every_conditional_dialect_cell_is_a_reviewed_boundary_not_an_empty_bag() {
+    let freeze = inventory();
+    let dialects = freeze["dialect_identities"].as_array().expect("13 dialect names");
+    for case in freeze["conditional_cases"].as_array().expect("6 conditional cases") {
+        let id = case["id"].as_str().expect("conditional ID");
+        assert_eq!(case["owner"], "TASK-120", "{id}: named owner");
+        assert!(case["expected_terminal_tuple_histogram"].is_null(), "{id}: not proven empty");
+        assert!(case["expected_count"].is_null(), "{id}: not proven zero");
+        assert!(case["positive_proof"].as_str().is_some(), "{id}: positive boundary");
+        assert!(case["not_true_proof"].as_str().is_some(), "{id}: absence boundary");
+        assert!(case["release_disposition"].as_str().is_some(), "{id}: reviewed disposition");
+        let cells = case["dialect_cells"].as_array().expect("complete conditional matrix");
+        assert_eq!(cells.len(), dialects.len(), "{id}: no missing dialect");
+        for (index, dialect_name) in dialects.iter().enumerate() {
+            let name = dialect_name.as_str().expect("dialect");
+            assert_eq!(cells[index]["name"], name, "{id}: dialect classification identity");
+            assert!(
+                cells[index]["classification"]
+                    .as_str()
+                    .is_some_and(|class| class.starts_with("conditional_")),
+                "{id}/{name}: no unqualified Exact claim"
+            );
+            let parser = dialect_from_name(name).expect("exposed parser");
+            let result = analyze_sql(case["sql"].as_str().expect("SQL"), name, parser.as_ref());
+            if let Ok(protocol) = result {
+                let query = protocol
+                    .statements()
+                    .iter()
+                    .find_map(|statement| match statement {
+                        ProtocolStatement::Query(query) => Some(query),
+                        _ => None,
+                    })
+                    .unwrap_or_else(|| panic!("{id}/{name}: parser output missing"));
+                let set = query
+                    .set_operation()
+                    .unwrap_or_else(|| panic!("{id}/{name}: conditional set missing"));
+                if id.ends_with("-by-name") || id.ends_with("-corresponding") {
+                    assert!(
+                        set.multiplicity_rule().is_none() || !query.diagnostics().is_empty(),
+                        "{id}/{name}: uncertified alignment must fail closed"
+                    );
+                }
+                if id.ends_with("-minus") {
+                    assert_eq!(
+                        set.operator(),
+                        sql_semantic_protocol::SetOperator::Except,
+                        "{id}/{name}: MINUS normalizes only to EXCEPT"
+                    );
+                }
+            }
+        }
+    }
 }
 
 #[test]
