@@ -9,24 +9,36 @@ fn every_mandatory_aggregate_case_has_exact_sql_dbt_and_odcs_source_parity() {
     use serde_json::{json, Value};
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml,
-        physical_finite_aggregate_bag_plan, physical_finite_join_aggregate_plan,
-        ConfiguredSqlInput, LiteralValue, PhysicalFiniteAggregateProof,
-        PhysicalJoinedAggregateProof, PhysicalWriteRow, PhysicalWriteState,
-        RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_aggregate_bag_plan,
+        physical_finite_join_aggregate_plan, ConfiguredSqlInput, LiteralValue,
+        PhysicalFiniteAggregateProof, PhysicalJoinedAggregateProof, PhysicalWriteRow,
+        PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     };
 
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-124-acceptance-freeze.json"))
             .expect("TASK-124 independent frozen adapter matrix");
     let relation_names = ["warehouse.raw.s", "warehouse.raw.l", "warehouse.raw.r"];
-    let schemas = relation_names.iter().map(|name| {
-        RelationSchema::new(*name, ["id", "k", "x"].into_iter().map(|column| {
-            SchemaColumn::from_sql_type(
-                column, if column == "id" { "VARCHAR" } else { "INTEGER" }, "postgresql",
-            ).expect("physical source type")
-        }).collect()).expect("typed source relation")
-    }).collect::<Vec<_>>();
+    let schemas = relation_names
+        .iter()
+        .map(|name| {
+            RelationSchema::new(
+                *name,
+                ["id", "k", "x"]
+                    .into_iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(
+                            column,
+                            if column == "id" { "VARCHAR" } else { "INTEGER" },
+                            "postgresql",
+                        )
+                        .expect("physical source type")
+                    })
+                    .collect(),
+            )
+            .expect("typed source relation")
+        })
+        .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(&schemas).expect("direct typed source");
     let known = RelationCatalog::new(&relation_names).expect("canonical physical sources");
     let odcs = parse_odcs_yaml(
@@ -65,14 +77,19 @@ schema:
         physicalType: INTEGER
       - name: x
         physicalType: INTEGER
-"#, "postgresql", &known,
-    ).expect("authoritative ODCS schema");
+"#,
+        "postgresql",
+        &known,
+    )
+    .expect("authoritative ODCS schema");
     let odcs_catalog =
         RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS canonical catalog");
     let parser = dialect_from_name("postgresql").expect("portable SQL dialect");
 
     for case in freeze["cases"].as_array().expect("finite aggregate matrix") {
-        if case["proof_kind"] != "mandatory" { continue; }
+        if case["proof_kind"] != "mandatory" {
+            continue;
+        }
         let fixture = case["id"].as_str().expect("case ID");
         let joined = case["scope"] == "joined";
         let source_names: &[&str] = if joined {
@@ -86,7 +103,9 @@ schema:
                 "FROM warehouse.raw.l AS l INNER JOIN warehouse.raw.r AS r",
             )
         } else {
-            case["sql"].as_str().expect("SQL")
+            case["sql"]
+                .as_str()
+                .expect("SQL")
                 .replace("FROM s", "FROM warehouse.raw.s")
         };
         let input = SqlInput::inline(&sql);
@@ -155,30 +174,60 @@ schema:
         let manifest = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt metadata");
         let dbt = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref())
             .unwrap_or_else(|error| panic!("{fixture}: compiled dbt: {error}"));
-        let states = source_names.iter().enumerate().map(|(index, name)| {
-            let short = if joined { if index == 0 { "l" } else { "r" } } else { "s" };
-            let rows = if joined { &case["source_bags"][short] } else { &case["source_bag"] };
-            PhysicalWriteState::new(
-                *name,
-                rows.as_array().expect("complete physical source").iter().map(|row| {
-                    PhysicalWriteRow::new(
-                        row.as_object().expect("physical source row").iter().map(|(column, v)| {
-                            let literal = if v.is_null() {
-                                LiteralValue::Null
-                            } else if let Some(n) = v.as_i64() {
-                                LiteralValue::Number(n.to_string())
-                            } else {
-                                LiteralValue::Text(v.as_str().expect("row identity").to_string())
-                            };
-                            (column.clone(), literal)
-                        }).collect::<BTreeMap<_, _>>()
-                    ).expect("typed source row")
-                }).collect(),
-            ).expect("source population")
-        }).collect::<Vec<_>>();
+        let states = source_names
+            .iter()
+            .enumerate()
+            .map(|(index, name)| {
+                let short = if joined {
+                    if index == 0 {
+                        "l"
+                    } else {
+                        "r"
+                    }
+                } else {
+                    "s"
+                };
+                let rows = if joined {
+                    &case["source_bags"][short]
+                } else {
+                    &case["source_bag"]
+                };
+                PhysicalWriteState::new(
+                    *name,
+                    rows.as_array()
+                        .expect("complete physical source")
+                        .iter()
+                        .map(|row| {
+                            PhysicalWriteRow::new(
+                                row.as_object()
+                                    .expect("physical source row")
+                                    .iter()
+                                    .map(|(column, v)| {
+                                        let literal = if v.is_null() {
+                                            LiteralValue::Null
+                                        } else if let Some(n) = v.as_i64() {
+                                            LiteralValue::Number(n.to_string())
+                                        } else {
+                                            LiteralValue::Text(
+                                                v.as_str().expect("row identity").to_string(),
+                                            )
+                                        };
+                                        (column.clone(), literal)
+                                    })
+                                    .collect::<BTreeMap<_, _>>(),
+                            )
+                            .expect("typed source row")
+                        })
+                        .collect(),
+                )
+                .expect("source population")
+            })
+            .collect::<Vec<_>>();
         let mut proofs = Vec::new();
         for (adapter, bundle) in [("direct", &direct), ("dbt", &dbt), ("ODCS", &external)] {
-            let layer = bundle.layers().iter()
+            let layer = bundle
+                .layers()
+                .iter()
                 .find(|layer| layer.consumes().iter().any(|name| name == source_names[0]))
                 .unwrap_or_else(|| panic!("{fixture}:{adapter}: no canonical physical source"));
             let evidence = if joined {
@@ -186,22 +235,37 @@ schema:
                 let PhysicalJoinedAggregateProof::Exact(exact) = proof else {
                     panic!("{fixture}:{adapter}: joined mandatory not exact: {proof:?}");
                 };
-                (format!("{:?}", exact.selected), format!("{:?}", exact.rejected),
-                    format!("{:?}", exact.groups), format!("{:?}", exact.terminal),
-                    format!("{:?}", exact.terminal_domains))
+                (
+                    format!("{:?}", exact.selected),
+                    format!("{:?}", exact.rejected),
+                    format!("{:?}", exact.groups),
+                    format!("{:?}", exact.terminal),
+                    format!("{:?}", exact.terminal_domains),
+                )
             } else {
                 let proof = physical_finite_aggregate_bag_plan(bundle, layer.id(), &states);
                 let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                     panic!("{fixture}:{adapter}: aggregate mandatory not exact: {proof:?}");
                 };
-                assert_eq!(exact.source, source_names[0], "{fixture}:{adapter}: source identity");
-                (String::new(), String::new(), format!("{:?}", exact.groups),
-                    format!("{:?}", exact.terminal), format!("{:?}", exact.terminal_domains))
+                assert_eq!(
+                    exact.source, source_names[0],
+                    "{fixture}:{adapter}: source identity"
+                );
+                (
+                    String::new(),
+                    String::new(),
+                    format!("{:?}", exact.groups),
+                    format!("{:?}", exact.terminal),
+                    format!("{:?}", exact.terminal_domains),
+                )
             };
             proofs.push(evidence);
         }
         assert_eq!(proofs.len(), 3, "{fixture}: every adapter executed");
-        assert_eq!(proofs[0], proofs[1], "{fixture}: compiled dbt canonical parity");
+        assert_eq!(
+            proofs[0], proofs[1],
+            "{fixture}: compiled dbt canonical parity"
+        );
         assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS canonical parity");
     }
 }
