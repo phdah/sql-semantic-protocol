@@ -487,11 +487,15 @@ mod joint_distributions;
 mod membership;
 mod operators;
 mod ranking;
+mod rank_bags;
 mod set_bags;
 mod set_trees;
 mod sets;
 mod write_states;
 
+pub use rank_bags::{
+    physical_finite_rank_bag_plan, PhysicalFiniteRankExact, PhysicalFiniteRankProof, PhysicalRankRow,
+};
 pub use aggregate_bags::{
     physical_finite_aggregate_bag_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
     PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof,
