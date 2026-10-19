@@ -369,3 +369,48 @@ fn duplicate_physical_source_identity_is_impossible_but_missing_evidence_is_resi
         PhysicalFiniteAggregateProof::Residual { .. }
     ));
 }
+
+#[test]
+fn global_row_limiting_cannot_claim_an_unshaped_exact_singleton() {
+    let catalog = RelationCatalog::from_schemas(&[schema()]).expect("catalog");
+    let parser = dialect_from_name("generic").expect("dialect");
+    let state = source(&fixture()["cases"][0]);
+    for sql in [
+        "SELECT COUNT(*) AS total FROM s LIMIT 0",
+        "SELECT COUNT(*) AS total FROM s OFFSET 1",
+    ] {
+        let input = SqlInput::inline(sql);
+        let configured = ConfiguredSqlInput::new("shape", &input, "generic", parser.as_ref());
+        let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
+            .expect("valid limited global SQL");
+        let target = bundle.layers().last().expect("terminal").id();
+        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
+        assert!(
+            matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
+            "{sql}: LIMIT/OFFSET must not certify an incorrect singleton: {proof:?}"
+        );
+    }
+}
+
+#[test]
+fn zero_group_rows_still_validate_the_aggregate_expression_and_column_identity() {
+    let catalog = RelationCatalog::from_schemas(&[schema()]).expect("catalog");
+    let parser = dialect_from_name("generic").expect("dialect");
+    let empty = source(&fixture()["cases"][3]);
+    for sql in [
+        "SELECT k, COUNT(DISTINCT x) AS n FROM s GROUP BY k",
+        "SELECT k, SUM(x + 1) AS n FROM s GROUP BY k",
+        "SELECT k, COUNT(*) AS n, SUM(x) AS n FROM s GROUP BY k",
+    ] {
+        let input = SqlInput::inline(sql);
+        let configured = ConfiguredSqlInput::new("empty", &input, "generic", parser.as_ref());
+        let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
+            .expect("valid grouped SQL");
+        let target = bundle.layers().last().expect("terminal").id();
+        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&empty));
+        assert!(
+            matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
+            "{sql}: no groups must not bypass aggregate validation: {proof:?}"
+        );
+    }
+}
