@@ -7,10 +7,9 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-    physical_finite_set_bag_plan, physical_finite_set_tree_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalFiniteSetProof, PhysicalFiniteSetTreeProof, PhysicalWriteRow,
-    PhysicalWriteState, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput,
+    physical_finite_set_bag_plan, physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue,
+    PhysicalFiniteSetProof, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn inventory() -> Value {
@@ -129,7 +128,9 @@ fn duckdb_histogram(case: &Value) -> Histogram {
             .expect("complete source bag");
         assert_eq!(actual_rows, expected_rows, "{source}: source identity/bag");
     }
-    let cols = case["output_columns"].as_array().expect("two output aliases");
+    let cols = case["output_columns"]
+        .as_array()
+        .expect("two output aliases");
     let key = cols[0].as_str().expect("key alias");
     let value = cols[1].as_str().expect("value alias");
     let sql = case["sql"].as_str().expect("frozen SQL");
@@ -161,7 +162,11 @@ fn check_domains(
             (Some(lower), Some(upper)) => Some((i128::from(lower), i128::from(upper))),
             _ => None,
         };
-        assert_eq!(domain.bounds(), expected_bounds, "{id}: typed bounds {index}");
+        assert_eq!(
+            domain.bounds(),
+            expected_bounds,
+            "{id}: typed bounds {index}"
+        );
         assert_eq!(
             domain.contains_null,
             frozen["contains_null"].as_bool().expect("frozen NULL"),
@@ -180,10 +185,23 @@ fn check_domains(
 #[test]
 fn frozen_matrix_is_finite_and_covers_every_original_parent_criterion() {
     let freeze = inventory();
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["72-C120-P", "72-C120-N"]));
-    assert_eq!(freeze["dialect_identities"].as_array().expect("dialects").len(), 13);
-    let mandatory = freeze["mandatory_cases"].as_array().expect("mandatory cells");
-    let conditional = freeze["conditional_cases"].as_array().expect("conditional cells");
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["72-C120-P", "72-C120-N"])
+    );
+    assert_eq!(
+        freeze["dialect_identities"]
+            .as_array()
+            .expect("dialects")
+            .len(),
+        13
+    );
+    let mandatory = freeze["mandatory_cases"]
+        .as_array()
+        .expect("mandatory cells");
+    let conditional = freeze["conditional_cases"]
+        .as_array()
+        .expect("conditional cells");
     assert_eq!(mandatory.len(), 21);
     assert_eq!(conditional.len(), 6);
     let mut seen = BTreeSet::new();
@@ -192,13 +210,31 @@ fn frozen_matrix_is_finite_and_covers_every_original_parent_criterion() {
         let id = case["id"].as_str().expect("stable fixture variant");
         assert!(seen.insert(id), "{id}: duplicate matrix cell");
         assert_eq!(
-            case["dialect_cells"].as_array().expect("13 dialect classifications").len(),
+            case["dialect_cells"]
+                .as_array()
+                .expect("13 dialect classifications")
+                .len(),
             13,
             "{id}: every supported dialect needs explicit classification"
         );
-        assert_eq!(case["typed_terminal_domains"].as_array().expect("typed outputs").len(), 2);
-        assert_eq!(case["output_columns"].as_array().expect("output names").len(), 2);
-        for ac in case["mapped_original_ac"].as_array().expect("parent criteria") {
+        assert_eq!(
+            case["typed_terminal_domains"]
+                .as_array()
+                .expect("typed outputs")
+                .len(),
+            2
+        );
+        assert_eq!(
+            case["output_columns"]
+                .as_array()
+                .expect("output names")
+                .len(),
+            2
+        );
+        for ac in case["mapped_original_ac"]
+            .as_array()
+            .expect("parent criteria")
+        {
             mapped.insert(ac.as_u64().expect("criterion number"));
         }
         if case["classification"] == "conditional" {
@@ -212,15 +248,22 @@ fn frozen_matrix_is_finite_and_covers_every_original_parent_criterion() {
 #[test]
 fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
     let freeze = inventory();
-    let catalog =
-        RelationCatalog::from_schemas(&[schema("a"), schema("b"), schema("c")])
-            .expect("source catalog");
-    for case in freeze["mandatory_cases"].as_array().expect("mandatory matrix") {
+    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b"), schema("c")])
+        .expect("source catalog");
+    for case in freeze["mandatory_cases"]
+        .as_array()
+        .expect("mandatory matrix")
+    {
         let id = case["id"].as_str().expect("case");
         let sql = case["sql"].as_str().expect("SQL");
         let dialect = dialect_from_name("generic").expect("generic dialect");
         let input = SqlInput::inline(sql);
-        let configured = [ConfiguredSqlInput::new(id, &input, "generic", dialect.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            id,
+            &input,
+            "generic",
+            dialect.as_ref(),
+        )];
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
             .unwrap_or_else(|error| panic!("{id}: cannot analyze: {error}"));
         let target = bundle.layers().last().expect("terminal layer").id();
@@ -232,7 +275,8 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                     panic!("{id}: unproved mandatory two-branch bag: {proof:?}");
                 };
                 (
-                    exact.tuples
+                    exact
+                        .tuples
                         .iter()
                         .filter(|t| t.output_count > 0)
                         .map(|t| (t.values.to_vec(), t.output_count))
@@ -247,7 +291,8 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                     panic!("{id}: unproved mandatory set tree: {proof:?}");
                 };
                 (
-                    exact.tuples
+                    exact
+                        .tuples
                         .iter()
                         .filter(|t| t.output_count > 0)
                         .map(|t| (t.values.clone(), t.output_count))
@@ -261,7 +306,9 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
         assert_eq!(actual, expected, "{id}: complete multiset including NULLs");
         assert_eq!(
             terminal_len,
-            case["expected_count"].as_u64().expect("full expected count") as usize,
+            case["expected_count"]
+                .as_u64()
+                .expect("full expected count") as usize,
             "{id}: exact terminal bag"
         );
         let expected_sources = case["source_bags"]
@@ -270,9 +317,16 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
             .keys()
             .cloned()
             .collect::<Vec<_>>();
-        assert_eq!(source_names, expected_sources, "{id}: physical source identities");
+        assert_eq!(
+            source_names, expected_sources,
+            "{id}: physical source identities"
+        );
         check_domains(id, &domains, case);
-        assert_eq!(duckdb_histogram(case), expected, "{id}: independent DuckDB execution");
+        assert_eq!(
+            duckdb_histogram(case),
+            expected,
+            "{id}: independent DuckDB execution"
+        );
     }
 }
 
@@ -286,7 +340,10 @@ fn all_thirteen_portable_dialects_preserve_canonical_set_output_shape() {
         .filter(|case| case["variant"] != "set_level_row_shaping")
     {
         let id = case["id"].as_str().expect("id");
-        for name in freeze["dialect_identities"].as_array().expect("13 dialects") {
+        for name in freeze["dialect_identities"]
+            .as_array()
+            .expect("13 dialects")
+        {
             let name = name.as_str().expect("dialect");
             let dialect = dialect_from_name(name).expect("exposed parser identity");
             let protocol = analyze_sql(case["sql"].as_str().expect("SQL"), name, dialect.as_ref())
