@@ -371,8 +371,8 @@ pub(super) fn analyze_set_row_shaping(
     query: &SqlQuery,
     branches: &[SetBranch],
 ) -> Option<crate::protocol::SetRowShaping> {
-    use sqlparser::ast::{LimitClause, OrderByKind};
     use crate::protocol::{SetRowShaping, SetSortKey};
+    use sqlparser::ast::{LimitClause, OrderByKind};
 
     fn nonnegative_literal(expression: &Expr) -> Option<usize> {
         match expression {
@@ -403,7 +403,9 @@ pub(super) fn analyze_set_row_shaping(
         let Expr::Identifier(name) = &expression.expr else {
             return None;
         };
-        let index = columns.iter().position(|column| column.name() == name.value)?;
+        let index = columns
+            .iter()
+            .position(|column| column.name() == name.value)?;
         if keys.iter().any(|key: &SetSortKey| key.index == index) {
             return None;
         }
@@ -442,7 +444,11 @@ pub(super) fn analyze_set_row_shaping(
         _ => return None,
     };
 
-    Some(SetRowShaping { keys, offset, limit })
+    Some(SetRowShaping {
+        keys,
+        offset,
+        limit,
+    })
 }
 
 pub(super) fn analyze_set_operator(operator: SqlSetOperator) -> SetOperator {
