@@ -295,7 +295,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-1-2",
@@ -537,7 +624,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-1-3",
@@ -712,7 +886,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-N-1-4",
@@ -863,7 +1124,94 @@
       "scope": "single",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-1-5",
@@ -1044,7 +1392,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-2-1",
@@ -1250,7 +1685,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-2-2",
@@ -1463,7 +1985,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "parse_or_reject",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-N-2-3",
@@ -1620,7 +2229,94 @@
       "scope": "single",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-2-4",
@@ -1851,7 +2547,94 @@
       "scope": "single",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-3-1",
@@ -2138,7 +2921,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-N-3-2",
@@ -2398,7 +3268,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-P-3-3",
@@ -2555,7 +3512,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-P",
       "required_adapter_proof": true,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "must_parse",
+          "canonical": "Exact_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "mandatory_source_terminal_oracle": "complete DuckDB bag and public exact typed domain",
+      "negative_proof": "TRUE/NOT TRUE source and group identities or closed-world empty group as frozen"
     },
     {
       "id": "73-C124-N-3-4",
@@ -2697,7 +3741,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": false,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual_if_parsed",
+        "dbt_compiled": "typed_Residual_if_parsed",
+        "odcs_schema": "typed_Residual_if_parsed"
+      },
+      "conditional_evidence": "grouping identity, vendor grouping semantics, and native session execution remain unproven",
+      "conditional_release_disposition": "pending_review_by_TASK-124_owner_before_TASK-73_closure"
     },
     {
       "id": "73-C124-N-3-5",
@@ -2839,7 +3970,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": false,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual_if_parsed",
+        "dbt_compiled": "typed_Residual_if_parsed",
+        "odcs_schema": "typed_Residual_if_parsed"
+      },
+      "conditional_evidence": "grouping identity, vendor grouping semantics, and native session execution remain unproven",
+      "conditional_release_disposition": "pending_review_by_TASK-124_owner_before_TASK-73_closure"
     },
     {
       "id": "73-C124-N-3-6",
@@ -2981,7 +4199,94 @@
       "scope": "joined",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": false,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual_if_parsed",
+        "dbt_compiled": "typed_Residual_if_parsed",
+        "odcs_schema": "typed_Residual_if_parsed"
+      },
+      "conditional_evidence": "grouping identity, vendor grouping semantics, and native session execution remain unproven",
+      "conditional_release_disposition": "pending_review_by_TASK-124_owner_before_TASK-73_closure"
     },
     {
       "id": "73-C124-N-3-7",
@@ -3123,7 +4428,100 @@
       "scope": "joined",
       "fixture_id": "73-C124-N",
       "required_adapter_proof": false,
-      "required_dialect_classifications": 13
+      "required_dialect_classifications": 13,
+      "expected_parser_dialect_cells": {
+        "generic": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mysql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "postgresql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "hive": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "sqlite": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "snowflake": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "redshift": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "mssql": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "clickhouse": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "bigquery": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "ansi": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "duckdb": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        },
+        "databricks": {
+          "parser": "may_parse_or_reject",
+          "canonical": "Residual_if_parsed",
+          "engine": "not_certified",
+          "owner": "TASK-124"
+        }
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual_if_parsed",
+        "dbt_compiled": "typed_Residual_if_parsed",
+        "odcs_schema": "typed_Residual_if_parsed"
+      },
+      "conditional_evidence": "grouping identity, vendor grouping semantics, and native session execution remain unproven",
+      "conditional_release_disposition": "pending_review_by_TASK-124_owner_before_TASK-73_closure"
     }
-  ]
+  ],
+  "frozen_cell_counts": {
+    "mandatory_dialects": 156,
+    "conditional_dialects": 52,
+    "mandatory_adapters": 36,
+    "conditional_adapters": 12
+  }
 }
