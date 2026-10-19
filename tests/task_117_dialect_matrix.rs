@@ -32,8 +32,7 @@ fn six_two_column_set_laws_are_identical_across_thirteen_parser_dialects() {
                 "{id}: frozen dialect identity"
             );
             assert_eq!(
-                case["dialects"][index]["classification"],
-                "parser_equivalent",
+                case["dialects"][index]["classification"], "parser_equivalent",
                 "{id}/{dialect_name}: frozen parser classification"
             );
             let parser = dialect_from_name(dialect_name).expect("supported dialect");
