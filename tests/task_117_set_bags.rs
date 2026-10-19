@@ -259,19 +259,18 @@ fn closed_world_set_bag_proofs_fail_closed_on_missing_identity_and_enforced_sche
 
     // A snapshot omitting a required relation cannot certify terminal absence.
     let missing = physical_finite_set_bag_plan(&bundle, &target, &snapshots[..1]);
-    assert!(matches!(missing, PhysicalFiniteSetProof::Residual { .. }), "{missing:?}");
+    assert!(
+        matches!(missing, PhysicalFiniteSetProof::Residual { .. }),
+        "{missing:?}"
+    );
 
     // The same logical bag can contain duplicate SQL rows, but not duplicate
     // caller-provided physical identities if the proof claims exact provenance.
     let mut duplicated_rows = snapshots[0].rows().to_vec();
     duplicated_rows.push(snapshots[0].rows()[0].clone());
-    let duplicated_source =
-        PhysicalWriteState::new("a", duplicated_rows).expect("physical source");
-    let ambiguous = physical_finite_set_bag_plan(
-        &bundle,
-        &target,
-        &[duplicated_source, snapshots[1].clone()],
-    );
+    let duplicated_source = PhysicalWriteState::new("a", duplicated_rows).expect("physical source");
+    let ambiguous =
+        physical_finite_set_bag_plan(&bundle, &target, &[duplicated_source, snapshots[1].clone()]);
     assert!(
         matches!(ambiguous, PhysicalFiniteSetProof::Residual { .. }),
         "{ambiguous:?}"
@@ -284,13 +283,11 @@ fn closed_world_set_bag_proofs_fail_closed_on_missing_identity_and_enforced_sche
             .expect("provenance"),
         ConstraintEnforcement::Enforced,
     )];
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "a",
-            vec![RelationConstraint::not_null("v", evidence).expect("constraint")],
-        )
-        .expect("constraint set"),
-    ]);
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "a",
+        vec![RelationConstraint::not_null("v", evidence).expect("constraint")],
+    )
+    .expect("constraint set")]);
     let impossible = physical_finite_set_bag_plan(&bundle, &target, &snapshots);
     assert!(
         matches!(impossible, PhysicalFiniteSetProof::Impossible { .. }),
