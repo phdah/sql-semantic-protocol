@@ -197,7 +197,7 @@ fn finite_having_bags_and_complete_false_unknown_groups_match_duckdb() {
             covered, expected,
             "{id}: no source rows erased by rejected groups"
         );
-        for column in &case["terminal_columns"].as_array().expect("output columns") {
+        for column in case["terminal_columns"].as_array().expect("output columns") {
             let name = column.as_str().expect("name");
             let actual = exact.terminal_domains.get(name).expect("exact domain");
             let expected = &case["typed_terminal_domains"]
