@@ -9,7 +9,8 @@ use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_aggregate_bag_plan,
     physical_finite_join_aggregate_plan, AnalysisBundle, ConfiguredSqlInput, LiteralValue,
-    PhysicalAggregateTruth, PhysicalFiniteAggregateProof, PhysicalJoinedAggregateProof,
+    PhysicalAggregateGroup, PhysicalAggregateTruth, PhysicalFiniteAggregateExact,
+    PhysicalFiniteAggregateProof, PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof,
     PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SetMode,
     SqlInput, ValueDomain,
 };
@@ -192,10 +193,16 @@ fn check_domains(case: &Value, actual: &BTreeMap<String, ValueDomain>) {
 
 fn check_group_evidence(
     expected: &Value,
+    actual_key: Option<i128>,
     actual_rows: &[String],
     actual_contributors: &BTreeMap<String, Vec<String>>,
     actual_truth: Option<PhysicalAggregateTruth>,
 ) {
+    assert_eq!(
+        actual_key,
+        expected["key"].as_i64().map(i128::from),
+        "canonical GROUP BY key identity"
+    );
     let wanted_truth = match expected["having"].as_str() {
         Some("TRUE") => Some(PhysicalAggregateTruth::True),
         Some("FALSE") => Some(PhysicalAggregateTruth::False),
@@ -250,6 +257,65 @@ fn check_exact_outcomes(
         "{label}: complete canonical terminal bag"
     );
     check_domains(case, domains);
+}
+
+fn check_groups(case: &Value, groups: &[PhysicalAggregateGroup], id: &str) {
+    if let Some(expected_groups) = case["groups"].as_array() {
+        assert_eq!(
+            groups.len(),
+            expected_groups.len(),
+            "{id}: every group classified"
+        );
+        for (got, wanted) in groups.iter().zip(expected_groups) {
+            check_group_evidence(
+                wanted,
+                got.key,
+                &got.source_row_ids,
+                &got.aggregate_row_ids,
+                got.having_truth,
+            );
+        }
+    }
+}
+
+fn expected_pairs(value: &Value) -> Vec<[String; 2]> {
+    value
+        .as_array()
+        .expect("pair rows")
+        .iter()
+        .map(|v| {
+            [
+                v[0].as_str().expect("left").to_string(),
+                v[1].as_str().expect("right").to_string(),
+            ]
+        })
+        .collect()
+}
+
+fn check_joined_exact(case: &Value, exact: &PhysicalJoinedAggregateExact, id: &str) {
+    check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+    assert_eq!(
+        exact.sources,
+        ["l".to_string(), "r".to_string()],
+        "{id}: source identities"
+    );
+    check_groups(case, &exact.groups, id);
+    assert_eq!(
+        exact.selected,
+        expected_pairs(&case["full_selected_pairs"]),
+        "{id}: TRUE physical pairs"
+    );
+    assert_eq!(
+        exact.rejected,
+        expected_pairs(&case["full_rejected_pairs"]),
+        "{id}: NOT TRUE physical pairs"
+    );
+}
+
+fn check_single_exact(case: &Value, exact: &PhysicalFiniteAggregateExact, id: &str) {
+    check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+    check_groups(case, &exact.groups, id);
+    assert_eq!(exact.source, "s", "{id}: physical source identity");
 }
 
 fn duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
@@ -430,71 +496,13 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
             let PhysicalJoinedAggregateProof::Exact(exact) = proof else {
                 panic!("{id}: joined source completeness not proven: {proof:?}");
             };
-            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
-
-            if let Some(expected_groups) = case["groups"].as_array() {
-                assert_eq!(
-                    exact.groups.len(),
-                    expected_groups.len(),
-                    "{id}: every group classified"
-                );
-                for (got, wanted) in exact.groups.iter().zip(expected_groups) {
-                    check_group_evidence(
-                        wanted,
-                        &got.source_row_ids,
-                        &got.aggregate_row_ids,
-                        got.having_truth,
-                    );
-                }
-            }
-
-            let pair_list = |value: &Value| {
-                value
-                    .as_array()
-                    .expect("pair rows")
-                    .iter()
-                    .map(|v| {
-                        [
-                            v[0].as_str().expect("left").to_string(),
-                            v[1].as_str().expect("right").to_string(),
-                        ]
-                    })
-                    .collect::<Vec<_>>()
-            };
-            assert_eq!(
-                exact.selected,
-                pair_list(&case["full_selected_pairs"]),
-                "{id}: TRUE physical pairs"
-            );
-            assert_eq!(
-                exact.rejected,
-                pair_list(&case["full_rejected_pairs"]),
-                "{id}: NOT TRUE physical pairs"
-            );
+            check_joined_exact(case, &exact, id);
         } else {
             let proof = physical_finite_aggregate_bag_plan(&bundle, target, &states);
             let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                 panic!("{id}: single-source closure not proven: {proof:?}");
             };
-            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
-
-            if let Some(expected_groups) = case["groups"].as_array() {
-                assert_eq!(
-                    exact.groups.len(),
-                    expected_groups.len(),
-                    "{id}: every group classified"
-                );
-                for (got, wanted) in exact.groups.iter().zip(expected_groups) {
-                    check_group_evidence(
-                        wanted,
-                        &got.source_row_ids,
-                        &got.aggregate_row_ids,
-                        got.having_truth,
-                    );
-                }
-            }
-
-            assert_eq!(exact.source, "s", "{id}: physical source identity");
+            check_single_exact(case, &exact, id);
         }
         assert_eq!(
             normalized(&duckdb(case)),
@@ -553,10 +561,10 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
                 match physical_finite_join_aggregate_plan(&bundle, target, &states) {
                     PhysicalJoinedAggregateProof::Exact(exact) => {
                         if expected_canonical == "Exact_if_parsed" {
-                            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+                            check_joined_exact(case, &exact, id);
                         }
                         true
-                    },
+                    }
                     PhysicalJoinedAggregateProof::Residual { .. } => false,
                     other => {
                         panic!("{dialect}:{id}: impossible is not a parser boundary: {other:?}")
@@ -566,10 +574,10 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
                 match physical_finite_aggregate_bag_plan(&bundle, target, &states) {
                     PhysicalFiniteAggregateProof::Exact(exact) => {
                         if expected_canonical == "Exact_if_parsed" {
-                            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+                            check_single_exact(case, &exact, id);
                         }
                         true
-                    },
+                    }
                     PhysicalFiniteAggregateProof::Residual { .. } => false,
                     other => {
                         panic!("{dialect}:{id}: impossible is not a parser boundary: {other:?}")
