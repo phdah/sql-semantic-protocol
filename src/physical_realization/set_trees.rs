@@ -5,9 +5,7 @@
 //! no branch can fabricate an independently writable intermediate bag.
 
 use super::*;
-use crate::protocol::{
-    ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule,
-};
+use crate::protocol::{ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule};
 
 /// Per-leaf proof of SQL TRUE and NOT TRUE source-row membership.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -95,9 +93,7 @@ fn mapped_column(
     column: &str,
 ) -> Option<(String, String)> {
     let original = crate::protocol::ColumnRef::new(Some(relation.to_string()), column.to_string());
-    let mapped = resolve_filter_column_with_evidence(
-        bundle, walker, layer_id, &original, 0, true,
-    )?;
+    let mapped = resolve_filter_column_with_evidence(bundle, walker, layer_id, &original, 0, true)?;
     let source = mapped.relation()?;
     walker
         .sources
@@ -225,10 +221,9 @@ fn branch_source<'a>(
         let copied = output
             .plain_copy_source()
             .ok_or("set projection is not a positional column copy")?;
-        let (physical_relation, name) = mapped_column(
-            bundle, walker, layer_id, copied.relation(), copied.column(),
-        )
-        .ok_or("set output column lacks type-certified physical provenance")?;
+        let (physical_relation, name) =
+            mapped_column(bundle, walker, layer_id, copied.relation(), copied.column())
+                .ok_or("set output column lacks type-certified physical provenance")?;
         if physical_relation != source {
             return Err("set output columns do not belong to one complete physical source");
         }
@@ -238,8 +233,10 @@ fn branch_source<'a>(
     // Also map a branch-local predicate column not projected in the result.
     // The physical source is the only binding allowed at this boundary.
     if let Some(predicate) = branch.predicates().where_predicate() {
-        fn collect_columns<'a>(predicate: &'a Predicate, out: &mut Vec<&'a str>)
-            -> Result<(), &'static str> {
+        fn collect_columns<'a>(
+            predicate: &'a Predicate,
+            out: &mut Vec<&'a str>,
+        ) -> Result<(), &'static str> {
             match predicate {
                 Predicate::Comparison(compare) => {
                     for expression in [compare.left(), compare.right()] {
@@ -359,7 +356,8 @@ pub fn physical_finite_set_tree_plan(
         .iter()
         .map(|column| column.name().to_string())
         .collect::<Vec<_>>();
-    if names.is_empty() || names.len() > 2
+    if names.is_empty()
+        || names.len() > 2
         || names.iter().collect::<BTreeSet<_>>().len() != names.len()
         || operation.branches().len() < 2
     {
@@ -367,11 +365,19 @@ pub fn physical_finite_set_tree_plan(
     }
     let sources = walker.sources.iter().cloned().collect::<Vec<_>>();
     if snapshots.len() != sources.len()
-        || snapshots.iter().map(|state| state.relation()).collect::<BTreeSet<_>>().len()
+        || snapshots
+            .iter()
+            .map(|state| state.relation())
+            .collect::<BTreeSet<_>>()
+            .len()
             != snapshots.len()
-        || snapshots.iter().any(|state| !walker.sources.contains(state.relation()))
+        || snapshots
+            .iter()
+            .any(|state| !walker.sources.contains(state.relation()))
     {
-        return residual("exactly one complete population per distinct physical source is required");
+        return residual(
+            "exactly one complete population per distinct physical source is required",
+        );
     }
     let mut identities = BTreeMap::<String, BTreeSet<String>>::new();
     for state in snapshots {
@@ -379,7 +385,11 @@ pub fn physical_finite_set_tree_plan(
             let Some(id) = physical_id(row) else {
                 return residual("every source row needs a nonempty stable text id");
             };
-            if !identities.entry(state.relation().to_string()).or_default().insert(id.to_string()) {
+            if !identities
+                .entry(state.relation().to_string())
+                .or_default()
+                .insert(id.to_string())
+            {
                 return residual("physical source contains duplicate row identities");
             }
         }
@@ -410,12 +420,15 @@ pub fn physical_finite_set_tree_plan(
             let Some(id) = physical_id(row) else {
                 return residual("source identity vanished while evaluating branch");
             };
-            let tuple = mapped.iter().map(|name| {
-                row.values()
-                    .get(name)
-                    .ok_or("missing projected physical value")
-                    .and_then(integer)
-            }).collect::<Result<Vec<_>, _>>();
+            let tuple = mapped
+                .iter()
+                .map(|name| {
+                    row.values()
+                        .get(name)
+                        .ok_or("missing projected physical value")
+                        .and_then(integer)
+                })
+                .collect::<Result<Vec<_>, _>>();
             let Ok(tuple) = tuple else {
                 return residual("set projection has unsupported physical scalar evidence");
             };
@@ -426,9 +439,9 @@ pub fn physical_finite_set_tree_plan(
             let Ok(truth) = truth else {
                 return residual("branch filter lacks exact physical SQL truth semantics");
             };
-            let rows = observed.entry(tuple).or_insert_with(|| {
-                vec![Vec::new(); operation.branches().len()]
-            });
+            let rows = observed
+                .entry(tuple)
+                .or_insert_with(|| vec![Vec::new(); operation.branches().len()]);
             match truth {
                 Some(true) => {
                     rows[index].push(id.to_string());
@@ -480,7 +493,9 @@ pub fn physical_finite_set_tree_plan(
                 .collect::<BTreeMap<_, _>>();
             for (index, value) in values.iter().enumerate() {
                 match value {
-                    Some(value) => { distinct[index].insert(*value); }
+                    Some(value) => {
+                        distinct[index].insert(*value);
+                    }
                     None => contains_null[index] = true,
                 }
             }
@@ -488,7 +503,11 @@ pub fn physical_finite_set_tree_plan(
                 terminal.push(named.clone());
             }
         }
-        tuples.push(PhysicalSetTreeTuple { values, branch_row_ids, output_count });
+        tuples.push(PhysicalSetTreeTuple {
+            values,
+            branch_row_ids,
+            output_count,
+        });
     }
     let terminal_domains = distinct
         .into_iter()
