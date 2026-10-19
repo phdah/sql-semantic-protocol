@@ -26,6 +26,15 @@ The adapter matrix is **12 × 3 = 36** mandatory direct SQL, compiled dbt and OD
 | #5 | Committed `aggregate_summary.sql`, dbt E2E, independent single/join DuckDB cases | Full dbt and physical source/terminal oracle |
 | #6 | 13 dialects, three adapters, impossible and residual paths, full CI | All checks green on final head; conditional review |
 
-## Verification and release decision
+## Final verification and release decision
 
-**Not yet signed off.** Review the final PR-head GitHub Actions execution (including `cargo fmt --check`, Clippy `-D warnings`, full `cargo test`, `cargo doc --no-deps`, no-default-features, schema/golden checks and `make dbt-e2e`). Failed or missing mandatory cells block checking TASK-124's five acceptance criteria. Do not mark TASK-73 Done from this child: its six original criteria require a separate post-merge independent review. TASK-91 and protocol release remain independent gates.
+**Bounded TASK-124 child signed off, TASK-73 parent and release remain open.** All 12 mandatory frozen complete physical source/output oracles, the 156 mandatory and 52 conditional dialect cells, 36 mandatory exact and 12 conditional fail-closed adapter cells, complete group TRUE/FALSE/UNKNOWN and contributor identities, and the actual materialized `aggregate_summary.sql` dbt output were independently reviewed against source assertions.
+
+**Reviewed semantic CI:** [run 39316409531](https://github.com/phdah/sql-semantic-protocol/actions/runs/39316409531) at `b74b94ea44be9133f8f0b8388340c61cda5e5c1f`, all **9/9** jobs passed: default/no-default Rust tests, strict Clippy, formatting, docs, no-default dependencies and actual dbt Core E2E with schema/golden regressions. The metadata-only closure commit requires a fresh final-head CI run before merge.
+
+### Matt code-review: two independent axes
+
+- **Standards:** no production semantic parser or adapter heuristic was introduced; independent acceptance oracles use public APIs with fully materialized source relations; NULL/typed sets and accepted interval bounds are checked. The intentionally independent TASK-124 fixture copy is documented as a separate signoff oracle, not a new canonical semantic definition. Conventional commits, no new dependencies, no unsafe, Rustfmt and strict Clippy have been checked. No remaining hard documented-standard violation found.
+- **Spec:** all five TASK-124 AC map to the immutable matrix and executable proof tests; tests assert full DuckDB source and terminal bags, selected/rejected physical pairs, per-aggregate group contributor identity, SQL three-valued HAVING, exact output domains, 13 portable parser dialects, compiled dbt and ODCS parity and fail-closed conditional extensions. All source tests, negative empty/NULL/duplicate cases and materialized dbt snapshots passed. No mandatory case has a residual or skipped adapter. No remaining blocking bounded TASK-124 spec gap found.
+
+**Conditional release disposition:** for GROUPING SETS, ROLLUP, CUBE and GROUP BY ALL, parser rejection or canonical typed Residual are the reviewed bounded outcomes. Native vendor/session engine laws and grouping-set identity remain uncertified; TASK-124 owns the pending parent/release disposition, not an assertion of native execution. TASK-73's original six acceptance criteria require **separate independent post-merge parent closure**; TASK-91/release remains separate and unapproved.
