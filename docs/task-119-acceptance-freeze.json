@@ -2332,6 +2332,8 @@
     "dialect_matrix": "tests/task_119_dialect_matrix.rs",
     "direct_dbt_odcs": "tests/task_119_set_adapters.rs",
     "complete_duckdb_source_and_terminal": "tests/task_119_ordered_set_bags.rs",
-    "final_head_ci": "pending"
+    "final_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39239403828",
+    "reviewed_head": "f1dee74558d8278751ea551c5eac31d692f926bb",
+    "closure_commit_caveat": "A metadata-only closure commit follows; final-head CI is required before PR becomes ready."
   }
 }
