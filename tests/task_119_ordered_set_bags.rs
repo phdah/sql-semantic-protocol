@@ -203,7 +203,10 @@ fn frozen_order_limit_fetch_and_exhausted_offset_are_complete_source_proofs() {
                 .iter()
                 .map(|value| i128::from(value.as_i64().expect("finite integer")))
                 .collect::<Vec<_>>();
-            assert_eq!(domain.values, allowed, "{id}: exact allowed values at {index}");
+            assert_eq!(
+                domain.values, allowed,
+                "{id}: exact allowed values at {index}"
+            );
             assert_eq!(
                 wanted["empty"].as_bool().expect("frozen domain emptiness"),
                 domain.values.is_empty() && !domain.contains_null,
@@ -287,8 +290,7 @@ fn unresolved_ties_coercion_and_nested_branch_limits_fail_closed() {
             );
         }
         assert_eq!(
-            case["typed_terminal_domains"][0]["proof"],
-            "unknown_not_empty",
+            case["typed_terminal_domains"][0]["proof"], "unknown_not_empty",
             "{id}: a residual is never an exact empty outcome"
         );
     }
