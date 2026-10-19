@@ -77,7 +77,10 @@ fn states(case: &Value) -> Vec<PhysicalWriteState> {
 }
 
 fn normalized(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut rows = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut rows = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     rows.sort();
     rows
 }
@@ -124,7 +127,9 @@ fn duckdb_bag(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
     )
     .expect("physical source schema");
     for source in ["l", "r"] {
-        let rows = case["source_bags"][source].as_array().expect("closed source");
+        let rows = case["source_bags"][source]
+            .as_array()
+            .expect("closed source");
         for row in rows {
             let number = |column: &str| {
                 row[column]
@@ -145,7 +150,10 @@ fn duckdb_bag(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         let from_engine = statement
             .query_map([], |row| {
                 Ok(BTreeMap::from([
-                    ("id".to_string(), LiteralValue::Text(row.get::<_, String>(0)?)),
+                    (
+                        "id".to_string(),
+                        LiteralValue::Text(row.get::<_, String>(0)?),
+                    ),
                     (
                         "k".to_string(),
                         row.get::<_, Option<i64>>(1)?
@@ -179,7 +187,9 @@ fn duckdb_bag(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
             "entire DuckDB source bag and stable identities"
         );
     }
-    let columns = case["terminal_columns"].as_array().expect("projected columns");
+    let columns = case["terminal_columns"]
+        .as_array()
+        .expect("projected columns");
     let mut sql = db
         .prepare(case["sql"].as_str().expect("query SQL"))
         .expect("independent SQL oracle");
@@ -237,7 +247,11 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
             pair_set(&case["full_rejected_pairs"]),
             "{id}: all NOT TRUE physical pairs"
         );
-        assert_eq!(normalized(&exact.terminal), normalized(&expected(case)), "{id}");
+        assert_eq!(
+            normalized(&exact.terminal),
+            normalized(&expected(case)),
+            "{id}"
+        );
         assert_eq!(
             normalized(&duckdb_bag(case)),
             normalized(&expected(case)),
@@ -248,7 +262,11 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
             case["groups"].as_array().expect("complete groups").len(),
             "{id}: all surviving and rejected group identities"
         );
-        for (actual, group) in exact.groups.iter().zip(case["groups"].as_array().expect("groups")) {
+        for (actual, group) in exact
+            .groups
+            .iter()
+            .zip(case["groups"].as_array().expect("groups"))
+        {
             let expected_truth = match group["having"].as_str() {
                 Some("TRUE") => Some(PhysicalAggregateTruth::True),
                 Some("FALSE") => Some(PhysicalAggregateTruth::False),
@@ -283,7 +301,10 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
         }
         for expected_domain in case["typed_terminal_domains"].as_array().expect("domains") {
             let name = expected_domain["column"].as_str().expect("column");
-            let domain = exact.terminal_domains.get(name).expect("column outcome domain");
+            let domain = exact
+                .terminal_domains
+                .get(name)
+                .expect("column outcome domain");
             let wanted = expected_domain["values"]
                 .as_array()
                 .expect("finite expected values")
@@ -291,7 +312,10 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
                 .map(|value| format!("{:?}", literal(value)))
                 .collect::<Vec<_>>();
             if wanted.is_empty() {
-                assert!(matches!(domain, ValueDomain::Empty), "{id}:{name}: empty set");
+                assert!(
+                    matches!(domain, ValueDomain::Empty),
+                    "{id}:{name}: empty set"
+                );
             } else {
                 let ValueDomain::Set(set) = domain else {
                     panic!("{id}:{name}: not an exact finite set: {domain:?}")
@@ -327,7 +351,8 @@ fn every_public_dialect_classifies_the_frozen_joined_sql() {
                 match parsed(case, dialect) {
                     Ok(bundle) => {
                         let layer = bundle.layers().last().expect("target").id();
-                        let result = physical_finite_join_aggregate_plan(&bundle, layer, &states(case));
+                        let result =
+                            physical_finite_join_aggregate_plan(&bundle, layer, &states(case));
                         assert!(
                             matches!(result, PhysicalJoinedAggregateProof::Residual { .. }),
                             "{dialect}:{}: extension cannot silently become exact: {result:?}",
@@ -352,7 +377,10 @@ fn rejected_null_join_pairs_and_unsupported_scalars_never_become_false_proofs() 
         panic!("complete nullable join bag must be exact");
     };
     assert!(
-        exact.rejected.iter().all(|pair| !exact.selected.contains(pair)),
+        exact
+            .rejected
+            .iter()
+            .all(|pair| !exact.selected.contains(pair)),
         "SQL NULL equality and WHERE UNKNOWN cannot be treated as TRUE"
     );
     let mut invalid = positive.clone();
