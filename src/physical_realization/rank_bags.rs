@@ -3,13 +3,13 @@
 //! Ranking uses canonical window expressions, not SQL reparsing. Peers have
 //! deterministic RANK/DENSE_RANK but no deterministic ROW_NUMBER identity.
 
-use std::cmp::Ordering;
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
 use crate::protocol::{
     ComparisonOperator, LiteralExpression, LiteralType, LiteralValue, SetMode, ValueDomain,
     WindowFunctionExpression, WindowSpecification,
 };
+use std::cmp::Ordering;
 
 /// Complete identity and ranking outcome for one supplied physical row.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,7 +53,9 @@ pub enum PhysicalFiniteRankProof {
 }
 
 fn residual(reason: impl Into<String>) -> PhysicalFiniteRankProof {
-    PhysicalFiniteRankProof::Residual { reason: reason.into() }
+    PhysicalFiniteRankProof::Residual {
+        reason: reason.into(),
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,7 +98,10 @@ fn source_column(
     let Expression::Column(column) = expression else {
         return Err("rank keys must be physical source columns");
     };
-    if column.relation().is_some_and(|name| name != source.name() && Some(name) != source.alias()) {
+    if column
+        .relation()
+        .is_some_and(|name| name != source.name() && Some(name) != source.alias())
+    {
         return Err("rank key refers to an unresolved relation");
     }
     let Some(declared) = schema.columns().iter().find(|c| c.name() == column.name()) else {
@@ -146,10 +151,12 @@ fn rank_filter(
         return Err("QUALIFY requires a single ranking comparison");
     };
     let (window, operator, literal) = match (compare.left(), compare.right()) {
-        (Expression::WindowFunction(window), Expression::Literal(literal)) =>
-            (window, compare.operator(), literal),
-        (Expression::Literal(literal), Expression::WindowFunction(window)) =>
-            (window, compare.operator().reversed(), literal),
+        (Expression::WindowFunction(window), Expression::Literal(literal)) => {
+            (window, compare.operator(), literal)
+        }
+        (Expression::Literal(literal), Expression::WindowFunction(window)) => {
+            (window, compare.operator().reversed(), literal)
+        }
         _ => return Err("QUALIFY does not compare a canonical rank and integer"),
     };
     if window.window() != spec {
@@ -161,7 +168,11 @@ fn rank_filter(
     let Some(value) = numeric(literal.value())? else {
         return Err("QUALIFY rank threshold is NULL");
     };
-    Ok((rank_function(window).ok_or("unsupported QUALIFY ranking function")?, operator, value))
+    Ok((
+        rank_function(window).ok_or("unsupported QUALIFY ranking function")?,
+        operator,
+        value,
+    ))
 }
 
 fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
@@ -176,17 +187,37 @@ fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
 }
 
 fn key_value(row: &PhysicalWriteRow, key: &str) -> Result<Option<i128>, &'static str> {
-    numeric(row.values().get(key).ok_or("rank key absent from source row")?)
+    numeric(
+        row.values()
+            .get(key)
+            .ok_or("rank key absent from source row")?,
+    )
 }
 
 fn compare_key(a: Option<i128>, b: Option<i128>, key: &RankSort) -> Ordering {
     match (a, b) {
         (None, None) => Ordering::Equal,
-        (None, Some(_)) => if key.nulls_first { Ordering::Less } else { Ordering::Greater },
-        (Some(_), None) => if key.nulls_first { Ordering::Greater } else { Ordering::Less },
+        (None, Some(_)) => {
+            if key.nulls_first {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        }
+        (Some(_), None) => {
+            if key.nulls_first {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        }
         (Some(left), Some(right)) => {
             let order = left.cmp(&right);
-            if key.ascending { order } else { order.reverse() }
+            if key.ascending {
+                order
+            } else {
+                order.reverse()
+            }
         }
     }
 }
@@ -217,8 +248,9 @@ pub fn physical_finite_rank_bag_plan(
     snapshots: &[PhysicalWriteState],
 ) -> PhysicalFiniteRankProof {
     match physical_closed_world_schema_plan(bundle, snapshots) {
-        PhysicalWriteStatePlan::Impossible { reason, .. } =>
-            return PhysicalFiniteRankProof::Impossible { reason },
+        PhysicalWriteStatePlan::Impossible { reason, .. } => {
+            return PhysicalFiniteRankProof::Impossible { reason }
+        }
         PhysicalWriteStatePlan::Residual { reason, .. } => return residual(reason),
         PhysicalWriteStatePlan::Feasible { .. } => {}
     }
@@ -247,14 +279,16 @@ pub fn physical_finite_rank_bag_plan(
         || query.predicates().having_predicate().is_some()
         || !query.subquery_witnesses().is_empty()
         || !query.diagnostics().is_empty()
-        || (query.predicates().qualify_predicate().is_some()
-            && !query.ranked_goal_output_shape())
-        || (query.predicates().qualify_predicate().is_none()
-            && !query.plain_goal_output_shape())
+        || (query.predicates().qualify_predicate().is_some() && !query.ranked_goal_output_shape())
+        || (query.predicates().qualify_predicate().is_none() && !query.plain_goal_output_shape())
     {
         return residual("query has unproved ranking row-shaping or source identity");
     }
-    let Some(schema) = bundle.source_schemas().iter().find(|s| s.relation() == source.name()) else {
+    let Some(schema) = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == source.name())
+    else {
         return residual("ranking needs authoritative physical source types");
     };
 
@@ -268,8 +302,13 @@ pub fn physical_finite_rank_bag_plan(
         }
         match column.expression() {
             Expression::Column(expr) => {
-                if expr.relation().is_some_and(|name| name != source.name() && Some(name) != source.alias())
-                    || !schema.columns().iter().any(|schema_col| schema_col.name() == expr.name())
+                if expr
+                    .relation()
+                    .is_some_and(|name| name != source.name() && Some(name) != source.alias())
+                    || !schema
+                        .columns()
+                        .iter()
+                        .any(|schema_col| schema_col.name() == expr.name())
                 {
                     return residual("unproved direct ranking projection");
                 }
@@ -315,20 +354,35 @@ pub fn physical_finite_rank_bag_plan(
     }
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
-        let partition = match keys.partition.iter().map(|key| key_value(row, key)).collect() {
+        let partition = match keys
+            .partition
+            .iter()
+            .map(|key| key_value(row, key))
+            .collect()
+        {
             Ok(values) => values,
             Err(reason) => return residual(reason),
         };
-        let order = match keys.sort.iter().map(|key| key_value(row, &key.column)).collect() {
+        let order = match keys
+            .sort
+            .iter()
+            .map(|key| key_value(row, &key.column))
+            .collect()
+        {
             Ok(values) => values,
             Err(reason) => return residual(reason),
         };
-        partitions.entry(partition).or_default().push((index, order));
+        partitions
+            .entry(partition)
+            .or_default()
+            .push((index, order));
     }
     let mut ranked = vec![None; snapshot.rows().len()];
     for rows in partitions.values_mut() {
         rows.sort_by(|(_, a), (_, b)| {
-            a.iter().zip(b.iter()).zip(&keys.sort)
+            a.iter()
+                .zip(b.iter())
+                .zip(&keys.sort)
                 .map(|((left, right), sort)| compare_key(*left, *right, sort))
                 .find(|result| *result != Ordering::Equal)
                 .unwrap_or(Ordering::Equal)
@@ -340,7 +394,9 @@ pub fn physical_finite_rank_bag_plan(
                 first_peer = index;
                 distinct_peers += 1;
             } else if contains_row_number {
-                return residual("ROW_NUMBER identity among equal ORDER BY peers is nondeterministic");
+                return residual(
+                    "ROW_NUMBER identity among equal ORDER BY peers is nondeterministic",
+                );
             }
             let rank = match u64::try_from(first_peer + 1) {
                 Ok(value) => value,
@@ -399,9 +455,14 @@ pub fn physical_finite_rank_bag_plan(
     }
     let mut domains = BTreeMap::new();
     for column in query.output().columns() {
-        domains.insert(column.name().to_string(), exact_domain(
-            terminal.iter().filter_map(|row| row.get(column.name()).cloned())
-        ));
+        domains.insert(
+            column.name().to_string(),
+            exact_domain(
+                terminal
+                    .iter()
+                    .filter_map(|row| row.get(column.name()).cloned()),
+            ),
+        );
     }
     PhysicalFiniteRankProof::Exact(Box::new(PhysicalFiniteRankExact {
         nodes: walker.nodes,
