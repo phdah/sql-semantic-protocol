@@ -427,13 +427,17 @@ fn impossible_populations_and_incomplete_source_evidence_have_distinct_proofs() 
         .iter()
         .find(|case| case["id"] == "72-C120-P-sum")
         .expect("nullable source bag");
-    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b")])
-        .expect("catalog");
+    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b")]).expect("catalog");
     let parser = dialect_from_name("generic").expect("generic");
     let input = SqlInput::inline(case["sql"].as_str().expect("sql"));
-    let configured = [ConfiguredSqlInput::new("classification", &input, "generic", parser.as_ref())];
-    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
-        .expect("analysis");
+    let configured = [ConfiguredSqlInput::new(
+        "classification",
+        &input,
+        "generic",
+        parser.as_ref(),
+    )];
+    let mut bundle =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("analysis");
     let target = bundle.layers().last().expect("terminal").id().to_string();
     let rows = states(case);
 
@@ -450,8 +454,7 @@ fn impossible_populations_and_incomplete_source_evidence_have_distinct_proofs() 
         ConstraintEnforcement::Enforced,
     )];
     let not_null = RelationConstraint::not_null("v", evidence).expect("typed not-null");
-    let constraints = RelationConstraintSet::new("a", vec![not_null])
-        .expect("source constraint");
+    let constraints = RelationConstraintSet::new("a", vec![not_null]).expect("source constraint");
     bundle.enrich_relation_constraints(&[constraints]);
     let impossible = physical_finite_set_bag_plan(&bundle, &target, &rows);
     assert!(
@@ -463,8 +466,8 @@ fn impossible_populations_and_incomplete_source_evidence_have_distinct_proofs() 
 #[test]
 fn uncertified_order_ties_and_casts_remain_typed_residuals() {
     let freeze = inventory();
-    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b")])
-        .expect("source catalog");
+    let catalog =
+        RelationCatalog::from_schemas(&[schema("a"), schema("b")]).expect("source catalog");
     for suffix in ["order-tie", "coercion", "branch-limit"] {
         let case = freeze["conditional_cases"]
             .as_array()
@@ -474,7 +477,12 @@ fn uncertified_order_ties_and_casts_remain_typed_residuals() {
             .expect("named conditional law");
         let parser = dialect_from_name("generic").expect("generic");
         let input = SqlInput::inline(case["sql"].as_str().expect("SQL"));
-        let configured = [ConfiguredSqlInput::new(suffix, &input, "generic", parser.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            suffix,
+            &input,
+            "generic",
+            parser.as_ref(),
+        )];
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
             .expect("parser accepted conditional law");
         let proof = physical_finite_set_tree_plan(
