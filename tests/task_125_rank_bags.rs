@@ -143,11 +143,11 @@ fn execute_duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
     assert_eq!(source_rows, expected_source, "physical bag and NULLs");
 
     let mut statement = db.prepare(case["sql"].as_str().unwrap()).unwrap();
-    let names = statement.column_names();
     statement
         .query_map([], |row| {
             let mut projected = BTreeMap::new();
-            for (index, name) in names.iter().enumerate() {
+            for index in 0..row.as_ref().column_count() {
+                let name = row.as_ref().column_name(index)?;
                 let output = if name == "id" {
                     row.get::<_, Option<String>>(index)?
                         .map(LiteralValue::Text)
@@ -157,7 +157,7 @@ fn execute_duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
                         .map(|n| LiteralValue::Number(n.to_string()))
                         .unwrap_or(LiteralValue::Null)
                 };
-                projected.insert(name.clone(), output);
+                projected.insert(name.to_string(), output);
             }
             Ok(projected)
         })
