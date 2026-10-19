@@ -362,6 +362,20 @@ fn nondeterministic_row_number_implicit_null_order_and_missing_evidence_fail_clo
         physical_finite_rank_bag_plan(&bundle, target, &[state.clone(), state]),
         PhysicalFiniteRankProof::Impossible { .. }
     ));
+    let invalid_integer_row = PhysicalWriteRow::new(BTreeMap::from([
+        ("id".to_string(), LiteralValue::Text("a".to_string())),
+        ("k".to_string(), LiteralValue::Number("0".to_string())),
+        (
+            "x".to_string(),
+            LiteralValue::Text("not-an-integer".to_string()),
+        ),
+    ]))
+    .unwrap();
+    let invalid_source = PhysicalWriteState::new("s", vec![invalid_integer_row]).unwrap();
+    assert!(matches!(
+        physical_finite_rank_bag_plan(&bundle, target, &[invalid_source]),
+        PhysicalFiniteRankProof::Impossible { .. }
+    ));
 }
 
 #[test]
