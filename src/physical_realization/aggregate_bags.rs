@@ -107,7 +107,10 @@ fn aggregate_value(
         if !matches_source(column, source, alias) {
             return Err("aggregate argument is not a direct physical source column");
         }
-        let schema_column = schema.columns().iter().find(|item| item.name() == column.name())
+        let schema_column = schema
+            .columns()
+            .iter()
+            .find(|item| item.name() == column.name())
             .ok_or("aggregate argument has no source schema")?;
         if !signed_integer(schema_column.data_type()) {
             return Err("aggregate source needs an exact signed integer type law");
@@ -124,7 +127,9 @@ fn aggregate_value(
             contributors.push(id);
             continue;
         }
-        let value = row.values().get(column.ok_or("missing aggregate column")?)
+        let value = row
+            .values()
+            .get(column.ok_or("missing aggregate column")?)
             .ok_or("aggregate source row lacks a declared column")?;
         if let Some(value) = numeric(value)? {
             numbers.push(value);
@@ -138,7 +143,9 @@ fn aggregate_value(
             if numbers.is_empty() {
                 LiteralValue::Null
             } else {
-                let sum = numbers.iter().try_fold(0_i128, |acc, n| acc.checked_add(*n))
+                let sum = numbers
+                    .iter()
+                    .try_fold(0_i128, |acc, n| acc.checked_add(*n))
                     .ok_or("aggregate accumulator overflow without an attested wider SQL type")?;
                 if function.name().eq_ignore_ascii_case("sum") {
                     LiteralValue::Number(sum.to_string())
@@ -146,15 +153,23 @@ fn aggregate_value(
                     let count = i128::try_from(numbers.len())
                         .map_err(|_| "aggregate contributor count exceeds signed integer range")?;
                     if sum % count != 0 {
-                        return Err("nonintegral AVG needs an attested decimal scale and rounding law");
+                        return Err(
+                            "nonintegral AVG needs an attested decimal scale and rounding law",
+                        );
                     }
                     LiteralValue::Number((sum / count).to_string())
                 }
             }
         }
-        "min" => numbers.iter().min().map(|n| LiteralValue::Number(n.to_string()))
+        "min" => numbers
+            .iter()
+            .min()
+            .map(|n| LiteralValue::Number(n.to_string()))
             .unwrap_or(LiteralValue::Null),
-        "max" => numbers.iter().max().map(|n| LiteralValue::Number(n.to_string()))
+        "max" => numbers
+            .iter()
+            .max()
+            .map(|n| LiteralValue::Number(n.to_string()))
             .unwrap_or(LiteralValue::Null),
         _ => return Err("aggregate function has no portable closed-world proof"),
     };
@@ -207,13 +222,18 @@ pub fn physical_finite_aggregate_bag_plan(
     {
         return residual("aggregate is not a direct unfiltered physical source");
     }
-    let Some(schema) = bundle.source_schemas().iter().find(|s| s.relation() == relation) else {
+    let Some(schema) = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == relation)
+    else {
         return residual("missing authoritative physical source schema");
     };
     let grouped_key = match query.aggregation() {
         None => None,
-        Some(aggregation) if aggregation.distinct() || !aggregation.distinct_on().is_empty() =>
-            return residual("aggregate DISTINCT has an unproved bag law"),
+        Some(aggregation) if aggregation.distinct() || !aggregation.distinct_on().is_empty() => {
+            return residual("aggregate DISTINCT has an unproved bag law")
+        }
         Some(aggregation) => match aggregation.group_by() {
             Some(GroupBy::Expressions(keys)) if keys.len() == 1 => {
                 let GroupingExpression::Expression(Expression::Column(column)) = &keys[0] else {
@@ -222,7 +242,8 @@ pub fn physical_finite_aggregate_bag_plan(
                 if !matches_source(column, relation, source.alias()) {
                     return residual("group key source identity is unresolved");
                 }
-                let Some(schema_column) = schema.columns().iter().find(|c| c.name() == column.name())
+                let Some(schema_column) =
+                    schema.columns().iter().find(|c| c.name() == column.name())
                 else {
                     return residual("group key lacks typed physical schema");
                 };
@@ -269,7 +290,14 @@ pub fn physical_finite_aggregate_bag_plan(
                 }
                 Expression::AggregateFunction(function) => {
                     has_aggregate = true;
-                    match aggregate_value(function, &members, snapshot, schema, relation, source.alias()) {
+                    match aggregate_value(
+                        function,
+                        &members,
+                        snapshot,
+                        schema,
+                        relation,
+                        source.alias(),
+                    ) {
                         Ok((value, contributors)) => {
                             aggregate_row_ids.insert(output.name().to_string(), contributors);
                             value
@@ -279,13 +307,19 @@ pub fn physical_finite_aggregate_bag_plan(
                 }
                 _ => return residual("output needs a direct group key or basic aggregate"),
             };
-            if projected.insert(output.name().to_string(), scalar).is_some() {
+            if projected
+                .insert(output.name().to_string(), scalar)
+                .is_some()
+            {
                 return residual("duplicate output column names prevent exact terminal identity");
             }
         }
         identities.push(PhysicalAggregateGroup {
             key,
-            source_row_ids: members.iter().map(|index| format!("{relation}#{index}")).collect(),
+            source_row_ids: members
+                .iter()
+                .map(|index| format!("{relation}#{index}"))
+                .collect(),
             aggregate_row_ids,
         });
         terminal.push(projected);
@@ -293,9 +327,11 @@ pub fn physical_finite_aggregate_bag_plan(
     // For GROUP BY on an empty bag the loop above has no groups. Detect
     // aggregate shape from the canonical output instead of requiring a row.
     if !has_aggregate
-        && !query.output().columns().iter().any(|col| {
-            matches!(col.expression(), Expression::AggregateFunction(_))
-        })
+        && !query
+            .output()
+            .columns()
+            .iter()
+            .any(|col| matches!(col.expression(), Expression::AggregateFunction(_)))
     {
         return residual("query contains no basic aggregate expression");
     }
@@ -307,7 +343,7 @@ pub fn physical_finite_aggregate_bag_plan(
             let Some(value) = row.get(name) else {
                 return residual("terminal output identity missing");
             };
-            if !exact_values.contains(value) {
+            if !exact_values.iter().any(|candidate: &LiteralExpression| candidate.value() == value) {
                 let literal_type = if matches!(value, LiteralValue::Null) {
                     LiteralType::Null
                 } else {
@@ -316,7 +352,10 @@ pub fn physical_finite_aggregate_bag_plan(
                 exact_values.push(LiteralExpression::new(literal_type, value.clone()));
             }
         }
-        terminal_domains.insert(name.to_string(), ValueDomain::set(SetMode::Include, exact_values));
+        terminal_domains.insert(
+            name.to_string(),
+            ValueDomain::set(SetMode::Include, exact_values),
+        );
     }
     PhysicalFiniteAggregateProof::Exact(Box::new(PhysicalFiniteAggregateExact {
         nodes: walker.nodes,
