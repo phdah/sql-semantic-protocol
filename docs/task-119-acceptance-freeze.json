@@ -7,7 +7,7 @@
     "72-C119-P",
     "72-C119-N"
   ],
-  "case_count": 10,
+  "case_count": 11,
   "scope": "two-column positional output alignment, MINUS normalization, bounded integral ordered row limit/fetch, explicit coercion/name/vendor residuals",
   "source_column_types": {
     "id": "VARCHAR NOT NULL",
@@ -24,7 +24,8 @@
     "global_order_limit",
     "fetch_only",
     "nulls_explicit",
-    "complete_source_rejection"
+    "complete_source_rejection",
+    "sql_three_valued_predicate"
   ],
   "dialect_identities": [
     "generic",
@@ -780,6 +781,184 @@
           "lower_inclusive": true,
           "upper_inclusive": true,
           "contains_null": true,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "id": "72-C119-P-filtered-null",
+      "fixture": "72-C119-P",
+      "classification": "mandatory_exact",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a WHERE k > 1 UNION ALL SELECT k AS other_key, v AS other_value FROM b WHERE k < 3 ORDER BY key_out ASC NULLS LAST, value_out ASC NULLS LAST LIMIT 2",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            2,
+            20
+          ],
+          "count": 1
+        }
+      ],
+      "expected_count": 1,
+      "variants": [
+        "positional_aliases",
+        "global_order_limit",
+        "nulls_explicit",
+        "sql_three_valued_predicate",
+        "positive",
+        "complete_source_rejection"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "full closed-world source and terminal bags, inclusive exact domains, SQL TRUE/NOT TRUE membership, stable source ids",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_exact",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": false
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            20
+          ],
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
           "empty": false
         }
       ]
@@ -1774,5 +1953,5 @@
       "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     }
   ],
-  "review_changes": "Signoff audit: add full NULL/duplicate positive and CORRESPONDING vendor cells, make tied distinct rows actually ambiguous, classify conditional residuals truthfully instead of mandatory residuals, and never encode an unknown domain as empty."
+  "review_changes": "Signoff audit: add full NULL/duplicate positive and CORRESPONDING vendor cells, make tied distinct rows actually ambiguous, classify conditional residuals truthfully instead of mandatory residuals, and never encode an unknown domain as empty. Adds exact filtered source populations with FALSE and SQL UNKNOWN membership."
 }
