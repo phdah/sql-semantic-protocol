@@ -9,8 +9,8 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
     parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_tree_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn sources() -> Vec<RelationSchema> {
@@ -24,7 +24,11 @@ fn sources() -> Vec<RelationSchema> {
                     .map(|column| {
                         SchemaColumn::from_sql_type(
                             column,
-                            if *column == "id" { "VARCHAR" } else { "INTEGER" },
+                            if *column == "id" {
+                                "VARCHAR"
+                            } else {
+                                "INTEGER"
+                            },
                             "postgresql",
                         )
                         .expect("schema type")
@@ -80,7 +84,10 @@ fn result(
         .iter()
         .find(|layer| {
             states.iter().all(|source| {
-                layer.consumes().iter().any(|used| used == source.relation())
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|used| used == source.relation())
             })
         })
         .expect("set terminal with complete physical inputs")
@@ -103,8 +110,8 @@ fn bounded_set_bags_have_direct_dbt_and_odcs_parity() {
         serde_json::from_str(include_str!("../docs/task-119-acceptance-freeze.json"))
             .expect("frozen cases");
     let direct_catalog = RelationCatalog::from_schemas(&sources()).expect("direct schemas");
-    let known = RelationCatalog::new(&["warehouse.raw.a", "warehouse.raw.b"])
-        .expect("ODCS identities");
+    let known =
+        RelationCatalog::new(&["warehouse.raw.a", "warehouse.raw.b"]).expect("ODCS identities");
     let odcs = parse_odcs_yaml(
         r#"
 apiVersion: v3.2.0
@@ -218,7 +225,12 @@ schema:
             .expect("compiled dbt manifest");
         let physical = snapshots(case);
         let expected = result(&direct, &physical);
-        assert_eq!(expected, result(&with_odcs, &physical), "ODCS: {}", case["id"]);
+        assert_eq!(
+            expected,
+            result(&with_odcs, &physical),
+            "ODCS: {}",
+            case["id"]
+        );
         assert_eq!(expected, result(&dbt, &physical), "dbt: {}", case["id"]);
     }
 }
