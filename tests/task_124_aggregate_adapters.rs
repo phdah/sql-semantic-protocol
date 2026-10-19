@@ -7,7 +7,6 @@ fn aggregate_adapters_certify_mandatory_exact_and_conditional_residual_cases() {
     use std::collections::BTreeMap;
 
     use serde_json::{json, Value};
-    use sqlparser::parser::Parser;
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
         dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_aggregate_bag_plan,
@@ -15,6 +14,7 @@ fn aggregate_adapters_certify_mandatory_exact_and_conditional_residual_cases() {
         PhysicalFiniteAggregateProof, PhysicalJoinedAggregateProof, PhysicalWriteRow,
         PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     };
+    use sqlparser::parser::Parser;
 
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-124-acceptance-freeze.json"))
