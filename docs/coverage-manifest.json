@@ -3,7 +3,7 @@
   "task_119_set_acceptance": {
     "owner": "TASK-119",
     "parent": "TASK-72",
-    "status": "reviewed_bounded_child_pending_final_head_ci",
+    "status": "verified_bounded_portable_child",
     "acceptance_freeze": "docs/task-119-acceptance-freeze.json",
     "acceptance_audit": "docs/task-119-acceptance-audit.md",
     "fixture_ids": [
@@ -27,7 +27,8 @@
     "unverified_mandatory_cells_block_done": true,
     "conditional_owner": "TASK-119",
     "release_approved": false,
-    "remaining_gate": "final-head 9-job CI plus merge; TASK-72 stays open and TASK-120 waits for merge"
+    "remaining_gate": "last-head CI after metadata signoff and merge; TASK-72 parent remains open and TASK-120 is blocked until merge",
+    "reviewed_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39239403828"
   },
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
