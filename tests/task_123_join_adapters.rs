@@ -179,7 +179,10 @@ schema:
         let mut proofs = Vec::new();
         for (name, bundle) in [("SQL", &direct), ("dbt", &dbt), ("ODCS", &odcs_bundle)] {
             let Ok(bundle) = bundle else {
-                assert!(!mandatory, "{name}:{fixture}: mandatory analysis failed: {bundle:?}");
+                assert!(
+                    !mandatory,
+                    "{name}:{fixture}: mandatory analysis failed: {bundle:?}"
+                );
                 continue;
             };
             let target = bundle
