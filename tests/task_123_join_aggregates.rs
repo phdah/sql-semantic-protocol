@@ -552,7 +552,21 @@ fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
 }
 
 #[test]
-fn joined_aggregate_contradictory_physical_schema_is_impossible() {
+fn joined_aggregate_duplicate_attested_source_is_impossible() {
+    let case = &freeze()["cases"][0];
+    let bundle = parsed(case, "generic").expect("mandatory SQL");
+    let target = bundle.layers().last().expect("terminal layer").id();
+
+    let source = states(case)[0].clone();
+    let result = physical_finite_join_aggregate_plan(&bundle, target, &[source.clone(), source]);
+    assert!(
+        matches!(result, PhysicalJoinedAggregateProof::Impossible { .. }),
+        "duplicated complete physical source identity is Impossible: {result:?}"
+    );
+}
+
+#[test]
+fn joined_aggregate_unproved_integer_coercion_is_residual() {
     let case = &freeze()["cases"][0];
     let bundle = parsed(case, "generic").expect("mandatory SQL");
     let target = bundle.layers().last().expect("terminal layer").id();
@@ -566,7 +580,7 @@ fn joined_aggregate_contradictory_physical_schema_is_impossible() {
     let result =
         physical_finite_join_aggregate_plan(&bundle, target, &[invalid_left, original[1].clone()]);
     assert!(
-        matches!(result, PhysicalJoinedAggregateProof::Impossible { .. }),
-        "contradicted typed source evidence is Impossible, not an Exact or Residual claim: {result:?}"
+        matches!(result, PhysicalJoinedAggregateProof::Residual { .. }),
+        "unattested integer coercion cannot be called Exact or Impossible: {result:?}"
     );
 }
