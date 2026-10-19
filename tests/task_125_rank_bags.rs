@@ -363,3 +363,111 @@ fn nondeterministic_row_number_implicit_null_order_and_missing_evidence_fail_clo
         PhysicalFiniteRankProof::Impossible { .. }
     ));
 }
+
+
+#[test]
+fn frozen_expected_physical_truth_and_typed_bounds_match_exact_output() {
+    let inventory = freeze();
+    for case in inventory["cases"].as_array().unwrap() {
+        if case["exact"] != true {
+            continue;
+        }
+        let id = case["id"].as_str().unwrap();
+        let bundle = analyze(case, "duckdb");
+        let target = bundle.layers().last().unwrap().id();
+        let proof = physical_finite_rank_bag_plan(&bundle, target, &[source(case)]);
+        let PhysicalFiniteRankProof::Exact(exact) = proof else {
+            panic!("{id}: mandatory proof must be exact: {proof:?}");
+        };
+        for (survives, frozen_key) in [
+            (true, "physical_positive_ids"),
+            (false, "physical_not_true_ids"),
+        ] {
+            let observed = exact
+                .ranked_rows
+                .iter()
+                .filter(|row| row.survives == survives)
+                .map(|row| row.source_row_id.clone())
+                .collect::<Vec<_>>();
+            let frozen = case[frozen_key]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|item| item.as_str().unwrap().to_string())
+                .collect::<Vec<_>>();
+            assert_eq!(observed, frozen, "{id}: frozen {frozen_key}");
+        }
+
+        let frozen_domains = case["typed_terminal_domains"].as_array().unwrap();
+        let frozen_columns = frozen_domains
+            .iter()
+            .map(|column| column["column"].as_str().unwrap().to_string())
+            .collect::<std::collections::BTreeSet<_>>();
+        let actual_columns = exact
+            .terminal_domains
+            .keys()
+            .cloned()
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(
+            actual_columns, frozen_columns,
+            "{id}: every projected column needs a frozen domain, even for the empty bag"
+        );
+
+        for frozen in frozen_domains {
+            let name = frozen["column"].as_str().unwrap();
+            let Some(ValueDomain::Set(set)) = exact.terminal_domains.get(name) else {
+                panic!("{id}/{name}: expected exact finite domain");
+            };
+            assert_eq!(set.mode(), SetMode::Include, "{id}/{name}");
+            let values = set
+                .values()
+                .iter()
+                .map(|item| item.value().clone())
+                .collect::<Vec<_>>();
+            let observed = values
+                .iter()
+                .map(|v| format!("{v:?}"))
+                .collect::<std::collections::BTreeSet<_>>();
+            let frozen_values = frozen["values"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(value)
+                .map(|v| format!("{v:?}"))
+                .collect::<std::collections::BTreeSet<_>>();
+            assert_eq!(observed, frozen_values, "{id}/{name}: frozen exact values");
+            assert_eq!(
+                observed.len(),
+                values.len(),
+                "{id}/{name}: finite value set must not contain duplicates"
+            );
+            let contains_null = values.iter().any(|v| matches!(v, LiteralValue::Null));
+            assert_eq!(
+                contains_null,
+                frozen["contains_null"] == true,
+                "{id}/{name}: frozen NULL domain"
+            );
+            let numbers = values
+                .iter()
+                .filter_map(|v| match v {
+                    LiteralValue::Number(n) => n.parse::<i128>().ok(),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            let observed_bounds = if numbers.is_empty() {
+                Value::Null
+            } else {
+                serde_json::json!({
+                    "lower": numbers.iter().min().unwrap(),
+                    "upper": numbers.iter().max().unwrap(),
+                    "lower_inclusive": true,
+                    "upper_inclusive": true
+                })
+            };
+            assert_eq!(
+                observed_bounds, frozen["inclusive_bounds"],
+                "{id}/{name}: frozen closed numeric envelope"
+            );
+        }
+    }
+}
