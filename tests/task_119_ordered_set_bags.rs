@@ -261,11 +261,17 @@ fn frozen_order_limit_fetch_and_exhausted_offset_are_complete_source_proofs() {
         }
         if id.ends_with("-filtered-null") {
             assert!(
-                exact.branches.iter().any(|branch| !branch.false_row_ids.is_empty()),
+                exact
+                    .branches
+                    .iter()
+                    .any(|branch| !branch.false_row_ids.is_empty()),
                 "{id}: prove filtered-out FALSE source rows"
             );
             assert!(
-                exact.branches.iter().any(|branch| !branch.unknown_row_ids.is_empty()),
+                exact
+                    .branches
+                    .iter()
+                    .any(|branch| !branch.unknown_row_ids.is_empty()),
                 "{id}: prove SQL UNKNOWN source rows"
             );
         }
@@ -392,13 +398,11 @@ fn enforced_nullability_contradiction_is_impossible_not_residual() {
             .expect("enforced source provenance"),
         ConstraintEnforcement::Enforced,
     )];
-    analyzed.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "a",
-            vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL rule")],
-        )
-        .expect("source constraints"),
-    ]);
+    analyzed.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "a",
+        vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL rule")],
+    )
+    .expect("source constraints")]);
     let proof = physical_finite_set_tree_plan(&analyzed, &target, &states(case));
     assert!(
         matches!(proof, PhysicalFiniteSetTreeProof::Impossible { .. }),
