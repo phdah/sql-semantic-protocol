@@ -235,7 +235,7 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                     exact.tuples
                         .iter()
                         .filter(|t| t.output_count > 0)
-                        .map(|t| (t.values.clone(), t.output_count))
+                        .map(|t| (t.values.to_vec(), t.output_count)
                         .collect::<Histogram>(),
                     exact.sources,
                     exact.terminal_domains,
