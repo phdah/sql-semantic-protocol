@@ -8,9 +8,10 @@ fn all_mandatory_set_trees_have_exact_direct_dbt_and_odcs_parity() {
     use serde_json::json;
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_bag_plan, physical_finite_set_tree_plan,
-        ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetProof, PhysicalWriteRow,
-        PhysicalWriteState, PhysicalFiniteSetTreeProof, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_bag_plan,
+        physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetProof,
+        PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+        RelationSchema, SchemaColumn, SqlInput,
     };
 
     let freeze: serde_json::Value =
@@ -221,11 +222,15 @@ schema:
                         panic!("{id}/{adapter}: adapter lost exact tuple bag: {proof:?}");
                     };
                     (
-                        exact.tuples.iter()
+                        exact
+                            .tuples
+                            .iter()
                             .filter(|tuple| tuple.output_count > 0)
                             .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
                             .collect::<BTreeMap<_, _>>(),
-                        exact.tuples.iter()
+                        exact
+                            .tuples
+                            .iter()
                             .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
                             .collect::<BTreeMap<_, _>>(),
                         exact.terminal.len(),
@@ -237,11 +242,15 @@ schema:
                         panic!("{id}/{adapter}: adapter lost exact set tree: {proof:?}");
                     };
                     (
-                        exact.tuples.iter()
+                        exact
+                            .tuples
+                            .iter()
                             .filter(|tuple| tuple.output_count > 0)
                             .map(|tuple| (tuple.values.clone(), tuple.output_count))
                             .collect::<BTreeMap<_, _>>(),
-                        exact.tuples.iter()
+                        exact
+                            .tuples
+                            .iter()
                             .map(|tuple| (tuple.values.clone(), tuple.output_count))
                             .collect::<BTreeMap<_, _>>(),
                         exact.terminal.len(),
@@ -253,14 +262,19 @@ schema:
                 .expect("independently frozen complete tuple bag")
                 .iter()
                 .map(|row| {
-                    let key = row["tuple"].as_array().expect("two columns")
+                    let key = row["tuple"]
+                        .as_array()
+                        .expect("two columns")
                         .iter()
                         .map(|value| value.as_i64().map(i128::from))
                         .collect::<Vec<_>>();
                     (key, row["count"].as_u64().expect("frequency"))
                 })
                 .collect::<BTreeMap<_, _>>();
-            assert_eq!(positive, frozen_counts, "{id}/{adapter}: complete tuple bag");
+            assert_eq!(
+                positive, frozen_counts,
+                "{id}/{adapter}: complete tuple bag"
+            );
             assert_eq!(
                 count,
                 case["expected_count"].as_u64().expect("count") as usize,
@@ -268,10 +282,16 @@ schema:
             );
             for (index, domain) in domains.iter().enumerate() {
                 let frozen = &case["typed_terminal_domains"][index];
-                let values = frozen["allowed"].as_array().expect("frozen finite domain")
-                    .iter().map(|value| i128::from(value.as_i64().expect("integer")))
+                let values = frozen["allowed"]
+                    .as_array()
+                    .expect("frozen finite domain")
+                    .iter()
+                    .map(|value| i128::from(value.as_i64().expect("integer")))
                     .collect::<Vec<_>>();
-                assert_eq!(domain.values, values, "{id}/{adapter}: column {index} values");
+                assert_eq!(
+                    domain.values, values,
+                    "{id}/{adapter}: column {index} values"
+                );
                 assert_eq!(
                     domain.contains_null,
                     frozen["contains_null"].as_bool().expect("NULL"),
@@ -281,7 +301,11 @@ schema:
                     (Some(lower), Some(upper)) => Some((i128::from(lower), i128::from(upper))),
                     _ => None,
                 };
-                assert_eq!(domain.bounds(), bounds, "{id}/{adapter}: column {index} bounds");
+                assert_eq!(
+                    domain.bounds(),
+                    bounds,
+                    "{id}/{adapter}: column {index} bounds"
+                );
             }
             let tuple_counts = all_counts;
             if let Some(first) = &expected {
