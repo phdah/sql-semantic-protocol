@@ -1,10 +1,10 @@
 ---
 id: TASK-125
 title: Prove ROW_NUMBER RANK DENSE_RANK with peers
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -46,3 +46,11 @@ type: feature
 ## Next
 
 Next: [TASK-126](task-126%20-%20prove-navigation-and-bounded-rows-frames.md), only after this child is Done and merged.
+
+## Implementation PR
+
+- [PR #135](https://github.com/phdah/sql-semantic-protocol/pull/135) uses Matt Pocock's `implement` skill.
+- Frozen executable matrix: `docs/task-125-acceptance-freeze.json`.
+- Canonical finite physical ranking proof: `src/physical_realization/rank_bags.rs`.
+- Public complete DuckDB oracle: `tests/task_125_rank_bags.rs`.
+- **Status: In Progress.** All acceptance criteria remain unchecked until final mandatory matrix, adapter, CI and independent review verification. Parent TASK-74 stays open.
