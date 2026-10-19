@@ -1297,6 +1297,30 @@
         },
         "membership": {
           "$ref": "#/$defs/setMembership"
+        },
+        "row_shaping": {
+          "description": "Parser-independent literal row shaping with ordered output column positions. Present only when exact integral ordering syntax has been modeled; physical execution still checks NULL/tie evidence.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["keys", "offset", "limit"],
+          "properties": {
+            "keys": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["position", "descending", "nulls_first"],
+                "properties": {
+                  "position": { "type": "integer", "minimum": 0 },
+                  "descending": { "type": "boolean" },
+                  "nulls_first": { "type": ["boolean", "null"] }
+                }
+              }
+            },
+            "offset": { "type": "integer", "minimum": 0 },
+            "limit": { "type": "integer", "minimum": 0 }
+          }
         }
       }
     },
