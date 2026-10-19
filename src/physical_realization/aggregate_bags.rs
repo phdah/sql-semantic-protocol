@@ -343,7 +343,10 @@ pub fn physical_finite_aggregate_bag_plan(
             let Some(value) = row.get(name) else {
                 return residual("terminal output identity missing");
             };
-            if !exact_values.iter().any(|candidate: &LiteralExpression| candidate.value() == value) {
+            if !exact_values
+                .iter()
+                .any(|candidate: &LiteralExpression| candidate.value() == value)
+            {
                 let literal_type = if matches!(value, LiteralValue::Null) {
                     LiteralType::Null
                 } else {
