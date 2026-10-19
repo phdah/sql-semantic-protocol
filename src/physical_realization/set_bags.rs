@@ -187,9 +187,9 @@ pub fn physical_finite_set_bag_plan(
                 return residual("source row requires a stable nonempty text id");
             };
             if !identities.insert(id) {
-                return PhysicalFiniteSetProof::Impossible {
-                    reason: format!("repeated physical row identity in {relation}"),
-                };
+                // A duplicate caller-supplied ID is an unproven identity map,
+                // not a contradiction of SQL bag semantics.
+                return residual("physical rows do not have distinct stable identities");
             }
             let Ok(key) = tuple_from_row(row, boundary.tuple_columns()) else {
                 return residual("set source projection lacks two exact nullable integer values");
