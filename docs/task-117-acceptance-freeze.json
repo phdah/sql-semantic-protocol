@@ -1,0 +1,1809 @@
+{
+  "version": 1,
+  "owner": "TASK-117",
+  "parent": "TASK-72",
+  "frozen_at": "2026-10-19",
+  "fixture_ids": [
+    "72-C117-P",
+    "72-C117-N"
+  ],
+  "case_count": 12,
+  "scope": "two-column independent physical-source set bags; no nested set tree or branch filters",
+  "source_column_types": {
+    "id": "VARCHAR NOT NULL",
+    "k": "INTEGER NOT NULL",
+    "v": "INTEGER NULL"
+  },
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_obligation": "shared syntaxes must be parser-equivalent, or explicitly classified as parser boundaries without native runtime claims",
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_with_authoritative_catalog",
+    "odcs_when_equivalent_schema_evidence"
+  ],
+  "conditional": {
+    "owner": "TASK-117",
+    "status": "pending_review",
+    "release_disposition": "review_before_child_signoff",
+    "reason": "no evidence for engine-specific coercion/collation or BY NAME rules; typed residual required"
+  },
+  "cases": [
+    {
+      "id": "72-C117-P-sum",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a UNION ALL SELECT k,v FROM b",
+      "kind": "sum",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 3
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            3,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 5,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-sum",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a UNION ALL SELECT k,v FROM b",
+      "kind": "sum",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 5
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 2
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 7,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-P-union_distinct",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a UNION SELECT k,v FROM b",
+      "kind": "union_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            3,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 3,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-union_distinct",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a UNION SELECT k,v FROM b",
+      "kind": "union_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 2,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-P-minimum",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a INTERSECT ALL SELECT k,v FROM b",
+      "kind": "minimum",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 1,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-minimum",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a INTERSECT ALL SELECT k,v FROM b",
+      "kind": "minimum",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 2
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 3,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-P-intersect_distinct",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a INTERSECT SELECT k,v FROM b",
+      "kind": "intersect_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 1,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-intersect_distinct",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a INTERSECT SELECT k,v FROM b",
+      "kind": "intersect_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 2,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-P-saturating_difference",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a EXCEPT ALL SELECT k,v FROM b",
+      "kind": "saturating_difference",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 1
+        },
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 2,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-saturating_difference",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a EXCEPT ALL SELECT k,v FROM b",
+      "kind": "saturating_difference",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": false,
+          "empty": true
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 0,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-P-except_distinct",
+      "fixture": "72-C117-P",
+      "sql": "SELECT k,v FROM a EXCEPT SELECT k,v FROM b",
+      "kind": "except_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            2,
+            4
+          ],
+          "count": 1
+        }
+      ],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": 4,
+          "upper": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 1,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "72-C117-N-except_distinct",
+      "fixture": "72-C117-N",
+      "sql": "SELECT k,v FROM a EXCEPT SELECT k,v FROM b",
+      "kind": "except_distinct",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": 2,
+            "v": 4
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b3",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "b4",
+            "k": 2,
+            "v": 4
+          }
+        ]
+      },
+      "source_instances": {
+        "a": "a",
+        "b": "b"
+      },
+      "full_terminal_tuple_histogram": [],
+      "terminal_value_domains": [
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "contains_null": false,
+          "empty": true
+        }
+      ],
+      "positive_proof": "complete physical tuple-histogram over all source rows",
+      "not_true_proof": "closed-world absence for any source tuple with zero result frequency",
+      "expected_count": 0,
+      "dialects": [
+        {
+          "name": "generic",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mysql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "postgresql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "hive",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "sqlite",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "snowflake",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "redshift",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "mssql",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "bigquery",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "ansi",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "duckdb",
+          "classification": "pending_parser_verification"
+        },
+        {
+          "name": "databricks",
+          "classification": "pending_parser_verification"
+        }
+      ],
+      "adapters": [
+        "sql",
+        "dbt",
+        "odcs"
+      ],
+      "mapped_original_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    }
+  ]
+}
