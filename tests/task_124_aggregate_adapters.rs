@@ -229,21 +229,36 @@ schema:
             ("ODCS", &external, "odcs_schema"),
         ] {
             let expected = case["expected_adapter_cells"][adapter_cell]
-                .as_str().expect("frozen adapter outcome");
-            assert_eq!(expected, if mandatory { "Exact_required" } else { "typed_Residual_if_parsed" });
+                .as_str()
+                .expect("frozen adapter outcome");
+            assert_eq!(
+                expected,
+                if mandatory {
+                    "Exact_required"
+                } else {
+                    "typed_Residual_if_parsed"
+                }
+            );
             let Ok(bundle) = analysis else {
-                assert!(!mandatory, "{fixture}:{adapter}: missing mandatory parser path: {analysis:?}");
+                assert!(
+                    !mandatory,
+                    "{fixture}:{adapter}: missing mandatory parser path: {analysis:?}"
+                );
                 classified += 1;
                 continue;
             };
-            let layer = bundle.layers().iter()
+            let layer = bundle
+                .layers()
+                .iter()
                 .find(|layer| layer.consumes().iter().any(|name| name == source_names[0]))
                 .unwrap_or_else(|| panic!("{fixture}:{adapter}: no canonical physical source"));
             if joined {
                 let proof = physical_finite_join_aggregate_plan(bundle, layer.id(), &states);
                 if !mandatory {
-                    assert!(matches!(proof, PhysicalJoinedAggregateProof::Residual { .. }),
-                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}");
+                    assert!(
+                        matches!(proof, PhysicalJoinedAggregateProof::Residual { .. }),
+                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}"
+                    );
                     classified += 1;
                     continue;
                 }
@@ -260,15 +275,20 @@ schema:
             } else {
                 let proof = physical_finite_aggregate_bag_plan(bundle, layer.id(), &states);
                 if !mandatory {
-                    assert!(matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
-                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}");
+                    assert!(
+                        matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
+                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}"
+                    );
                     classified += 1;
                     continue;
                 }
                 let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                     panic!("{fixture}:{adapter}: aggregate mandatory not exact: {proof:?}");
                 };
-                assert_eq!(exact.source, source_names[0], "{fixture}:{adapter}: source identity");
+                assert_eq!(
+                    exact.source, source_names[0],
+                    "{fixture}:{adapter}: source identity"
+                );
                 proofs.push((
                     String::new(),
                     String::new(),
@@ -280,10 +300,16 @@ schema:
         }
         if mandatory {
             assert_eq!(proofs.len(), 3, "{fixture}: every adapter executed");
-            assert_eq!(proofs[0], proofs[1], "{fixture}: compiled dbt canonical parity");
+            assert_eq!(
+                proofs[0], proofs[1],
+                "{fixture}: compiled dbt canonical parity"
+            );
             assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS canonical parity");
         } else {
-            assert_eq!(classified, 3, "{fixture}: each conditional adapter classified");
+            assert_eq!(
+                classified, 3,
+                "{fixture}: each conditional adapter classified"
+            );
         }
     }
 }
