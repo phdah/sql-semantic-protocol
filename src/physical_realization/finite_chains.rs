@@ -497,9 +497,9 @@ pub fn physical_finite_chain_bag_plan(
                     return residual("ON predicate lacks an exact signed-integer equality law");
                 };
                 let identities = [
-                    source_id(l).unwrap_or_default(),
-                    source_id(r).unwrap_or_default(),
-                    source_id(t).unwrap_or_default(),
+                    source_id(l).expect("source IDs validated before chain enumeration"),
+                    source_id(r).expect("source IDs validated before chain enumeration"),
+                    source_id(t).expect("source IDs validated before chain enumeration"),
                 ];
                 if where_truth == Some(true) && first == Some(true) && second == Some(true) {
                     let Ok(Some(value)) = expression_value(

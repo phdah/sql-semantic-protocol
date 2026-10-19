@@ -2,7 +2,7 @@
 
 **Status: all five bounded TASK-116 acceptance criteria verified.** Independent
 review of original TASK-71 AC #1..#6 is complete for portable certified cases,
-but TASK-71 stays In Progress until this PR merges. No native vendor-engine execution
+with parent TASK-71 closure now separately documented after PR #125 merged. No native vendor-engine execution
 or TASK-91 release approval is implied by this audit.
 
 ## Frozen independent verification boundary
@@ -56,7 +56,7 @@ native vendor execution on the strength of an sqlparser parse or DuckDB alone.
 1. Independent DuckDB checks pass for all 15 mandatory parent cases, including source/row multiplicities, bounds, NULL and negative/absence evidence. The six original parent ACs have been reconciled with the 12 parent-owned conditional cells.
 2. Initial GitHub CI [run 39155624537](https://github.com/phdah/sql-semantic-protocol/actions/runs/39155624537) succeeded in all nine jobs: formatting, both strict Clippy configurations, default and no-default tests, docs, dependency check and dbt E2E. The subsequent parent canonical/dialect assertion hardening requires a new passing final-head CI run, recorded in PR #125 signoff.
 3. Native vendor/session execution is still **not certified**. Every conditional cell retains its named evidence gap and owner TASK-116, and the v3 release is not approved on parser/DuckDB evidence alone.
-4. TASK-71 remains In Progress until TASK-116's PR merges and a separate parent task closure is recorded. TASK-91 and v3 release remain independent gates.
+4. Historical TASK-116 gate: TASK-71 remained In Progress until PR #125 merged and the separate parent closure documented below was reviewed. This gate is now satisfied. TASK-91 and v3 release remain independent gates.
 
 ## Implementation provenance
 
@@ -65,3 +65,9 @@ The single authoritative parent inventory remains
 The TASK-116 matrix adds independent source/terminal concrete values and
 provenance per parent cell without weakening any parent acceptance criterion.
 The [coverage manifest](coverage-manifest.json) links both contracts.
+
+## Post-merge independent parent closure (2026-10-18)
+
+PR [#125](https://github.com/phdah/sql-semantic-protocol/pull/125) merged as `3ff08f0ed80b238aacec114ac0c8c724f2eb954b` after [final-head CI #39157694678](https://github.com/phdah/sql-semantic-protocol/actions/runs/39157694678) succeeded. [Merged-main CI #39160526004](https://github.com/phdah/sql-semantic-protocol/actions/runs/39160526004) passed Rust fmt, both strict Clippy configurations, tests (default and no-default), docs (default and no-default), dependency validation and dbt Core E2E.
+
+After independently reconciling each original mandatory and conditional cell with the exact TASK-116 accepted SQL, counts, domains, source identity, parser classifications and reviewed residual boundaries, TASK-71 original AC #1..#6 are recorded Done. This is **portable parent task closure**, not TASK-91, v3 release approval, or a native vendor-runtime law attestation.
