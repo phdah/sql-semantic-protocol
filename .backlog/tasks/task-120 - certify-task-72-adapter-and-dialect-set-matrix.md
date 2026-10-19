@@ -1,10 +1,10 @@
 ---
 id: TASK-120
 title: Certify TASK-72 adapter and dialect set matrix
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -39,6 +39,13 @@ type: feature
 - [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-120; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-72 parent open.
 <!-- AC:END -->
+
+## Implementation evidence (in progress, not signed off)
+
+- Task-owned frozen fixture matrix: [docs/task-120-acceptance-freeze.json](../../docs/task-120-acceptance-freeze.json). It enumerates 21 mandatory portable cases (all six two-column NULL-sensitive set operator laws, nested shared-source cases, and deterministic ORDER/LIMIT/FETCH cases) and 6 conditional vendor/uncertified cases with 13 explicit dialect classifications.
+- Public source/terminal oracle: [tests/task_120_parent_set_matrix.rs](../../tests/task_120_parent_set_matrix.rs). It compares full DuckDB physical/terminal bags against canonical source-level proofs and exact nullable output bounds.
+- Independent adapter parity: [tests/task_120_set_adapters.rs](../../tests/task_120_set_adapters.rs). It compares frozen histogram outcomes for all six set operators and both positive/rejected source assignments through SQL, dbt, and ODCS.
+- CI, full matrix acceptance, and TASK-72 parent closure are deliberately not claimed by this in-progress task until the PR's final head is independently verified and merged.
 
 ## Next
 
