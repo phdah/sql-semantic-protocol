@@ -96,7 +96,10 @@ fn scalar(
         Expression::Column(column) => {
             let index = source_index(column, sources)?;
             match pair {
-                Some(pair) => sources.states[index].rows()[pair[index]]
+                Some(pair) => sources.states[index]
+                    .rows()
+                    .get(pair[index])
+                    .ok_or("joined physical row identity is outside the attested snapshot")?
                     .values()
                     .get(column.name())
                     .cloned()
