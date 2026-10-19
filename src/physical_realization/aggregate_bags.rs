@@ -98,7 +98,7 @@ fn residual(reason: impl Into<String>) -> PhysicalFiniteAggregateProof {
     }
 }
 
-fn signed_integer(data_type: &DataType) -> bool {
+pub(super) fn signed_integer(data_type: &DataType) -> bool {
     match data_type {
         DataType::SignedInteger { bits } => bits.is_none_or(|bits| bits <= 128),
         DataType::Nullable(inner) => signed_integer(inner),
@@ -112,7 +112,7 @@ fn matches_source(column: &ColumnExpression, name: &str, alias: Option<&str>) ->
         .is_none_or(|reference| reference == name || Some(reference) == alias)
 }
 
-fn numeric(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
+pub(super) fn numeric(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
     match value {
         LiteralValue::Null => Ok(None),
         LiteralValue::Number(v) => v
@@ -160,7 +160,7 @@ fn source_scalar(
 /// Validate the entire predicate tree even for empty physical bags or absent groups.
 /// Without this preflight an unsupported expression could incorrectly prove an
 /// empty GROUP BY output or a FILTER with no contributing rows.
-fn predicate_shape<F>(predicate: &Predicate, scalar: &F) -> Result<(), &'static str>
+pub(super) fn predicate_shape<F>(predicate: &Predicate, scalar: &F) -> Result<(), &'static str>
 where
     F: Fn(&Expression) -> Result<LiteralValue, &'static str>,
 {
@@ -191,7 +191,7 @@ where
     Ok(())
 }
 
-fn predicate_truth<F>(
+pub(super) fn predicate_truth<F>(
     predicate: &Predicate,
     scalar: &F,
 ) -> Result<PhysicalAggregateTruth, &'static str>
