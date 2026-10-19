@@ -1,4 +1,44 @@
 {
+  "task_124_aggregate_parent_acceptance": {
+    "owner": "TASK-124",
+    "parent": "TASK-73",
+    "status": "verified_bounded_pending_merge",
+    "acceptance_freeze": "docs/task-124-acceptance-freeze.json",
+    "fixture_ids": [
+      "73-C124-P",
+      "73-C124-N"
+    ],
+    "mandatory_cases": 12,
+    "conditional_grouping_cases": 4,
+    "mandatory_dialect_cells": 156,
+    "conditional_dialect_boundaries": 52,
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "mandatory_adapter_cells": 36,
+    "complete_duckdb_oracles": 12,
+    "conformance_model": "tests/fixtures/conformance/v1/dbt_core_project/models/aggregate_summary.sql",
+    "public_oracles": [
+      "tests/task_124_parent_aggregate_oracles.rs",
+      "tests/task_124_aggregate_adapters.rs",
+      "tests/protocol_conformance_dbt_e2e.rs"
+    ],
+    "conditional_owner": "TASK-124",
+    "unverified_mandatory_cells_block_done": false,
+    "native_vendor_execution_certified": false,
+    "parent_original_ac_signoff": "pending_independent_post_merge_review",
+    "release_approved": false,
+    "acceptance_audit": "docs/task-124-acceptance-audit.md",
+    "reviewed_semantic_head_sha": "b74b94ea44be9133f8f0b8388340c61cda5e5c1f",
+    "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39316409531",
+    "reviewed_semantic_ci_jobs_passed": 9,
+    "conditional_adapter_boundary_cells": 12,
+    "conditional_review_disposition": "parser boundary or typed Residual; native/session not certified; parent review and release approval pending",
+    "remaining_gate": "final metadata-head CI, merge PR #134, independent TASK-73 parent signoff"
+  },
   "task_123_joined_grouping_acceptance": {
     "owner": "TASK-123",
     "parent": "TASK-73",

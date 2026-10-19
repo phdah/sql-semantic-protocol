@@ -327,7 +327,11 @@
           "fixture_ids": [
             "73-C124-P",
             "73-C124-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_pending_merge",
+          "signoff_audit": "docs/task-124-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/134",
+          "dependency_gate": "TASK-73 independent parent closure requires TASK-124 merged and each original parent AC independently verified"
         }
       ]
     },
