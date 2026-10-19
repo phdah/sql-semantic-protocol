@@ -1,4 +1,28 @@
 {
+  "task_120_set_acceptance": {
+    "owner": "TASK-120",
+    "parent": "TASK-72",
+    "status": "verified_bounded_pending_merge",
+    "acceptance_freeze": "docs/task-120-acceptance-freeze.json",
+    "fixture_ids": ["72-C120-P", "72-C120-N"],
+    "mandatory_cases": 21,
+    "conditional_cases": 6,
+    "reviewed_dialect_cells": 351,
+    "required_adapters": ["direct_sql", "dbt", "odcs"],
+    "portable_oracles": ["tests/task_120_parent_set_matrix.rs", "tests/task_120_set_adapters.rs"],
+    "conditional_owner": "TASK-120",
+    "native_vendor_execution_certified": false,
+    "unverified_mandatory_cells_block_done": false,
+    "parent_original_acceptance_signoff": "pending_independent_post_merge_review",
+    "mandatory_dialect_exact_proofs": 273,
+    "conditional_dialect_boundaries": 78,
+    "mandatory_adapter_exact_proofs": 63,
+    "independent_audit": "docs/task-120-acceptance-audit.md",
+    "reviewed_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39250351880",
+    "reviewed_head_sha": "2605162c9fd07e1a0a27767cf368b8b86af99e79",
+    "remaining_gate": "final-head CI after metadata signoff and merge; TASK-72 parent original AC require independent post-merge review",
+    "release_approved": false
+  },
   "schema_version": 1,
   "task_119_set_acceptance": {
     "owner": "TASK-119",
