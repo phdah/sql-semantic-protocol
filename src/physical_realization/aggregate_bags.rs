@@ -166,8 +166,9 @@ where
 {
     match predicate {
         Predicate::Comparison(c) => {
-            scalar(c.left())?;
-            scalar(c.right())?;
+            // Empty bags still require both operands to have a certified numeric law.
+            numeric(&scalar(c.left())?)?;
+            numeric(&scalar(c.right())?)?;
         }
         Predicate::IsNull(c) => {
             scalar(c.expression())?;
