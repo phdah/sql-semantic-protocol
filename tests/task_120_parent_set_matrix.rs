@@ -380,23 +380,42 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
 }
 
 #[test]
-fn all_thirteen_portable_dialects_preserve_canonical_set_output_shape() {
+fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
     let freeze = inventory();
-    for case in freeze["mandatory_cases"]
-        .as_array()
-        .expect("cases")
-        .iter()
-        .filter(|case| case["variant"] != "set_level_row_shaping")
-    {
-        let id = case["id"].as_str().expect("id");
-        for name in freeze["dialect_identities"]
-            .as_array()
-            .expect("13 dialects")
-        {
-            let name = name.as_str().expect("dialect");
-            let dialect = dialect_from_name(name).expect("exposed parser identity");
-            let protocol = analyze_sql(case["sql"].as_str().expect("SQL"), name, dialect.as_ref())
-                .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
+    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b"), schema("c")])
+        .expect("canonical physical source types");
+    let dialects = freeze["dialect_identities"].as_array().expect("13 dialects");
+    let cases = freeze["mandatory_cases"].as_array().expect("mandatory matrix");
+    assert_eq!(dialects.len(), 13);
+    assert_eq!(cases.len(), 21);
+
+    for case in cases {
+        let id = case["id"].as_str().expect("frozen case");
+        let expected = expected_histogram(case);
+        let expected_sources = case["source_bags"]
+            .as_object()
+            .expect("physical source bag")
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let source_states = states(case);
+        let sql = case["sql"].as_str().expect("SQL");
+
+        for (index, dialect_name) in dialects.iter().enumerate() {
+            let name = dialect_name.as_str().expect("dialect");
+            let cell = &case["dialect_cells"][index];
+            assert_eq!(cell["name"], name, "{id}: every matrix cell is ordered");
+            assert!(
+                ["parser_equivalent", "portable_parser_equivalent_canonical_nested_bag",
+                 "mandatory_parser_and_canonical_equivalence"]
+                    .iter()
+                    .any(|classification| cell["classification"] == *classification),
+                "{id}/{name}: mandatory dialect must have a positive classification"
+            );
+
+            let dialect = dialect_from_name(name).expect("supported parser dialect");
+            let protocol = analyze_sql(sql, name, dialect.as_ref())
+                .unwrap_or_else(|error| panic!("{id}/{name}: parser boundary: {error}"));
             let query = protocol
                 .statements()
                 .iter()
@@ -404,11 +423,68 @@ fn all_thirteen_portable_dialects_preserve_canonical_set_output_shape() {
                     ProtocolStatement::Query(query) => Some(query),
                     _ => None,
                 })
-                .unwrap_or_else(|| panic!("{id}/{name}: query missing"));
-            let set = query
-                .set_operation()
-                .unwrap_or_else(|| panic!("{id}/{name}: set tree missing"));
-            assert_eq!(set.branches()[0].output().columns().len(), 2, "{id}/{name}");
+                .unwrap_or_else(|| panic!("{id}/{name}: no analyzed query"));
+            assert!(query.set_operation().is_some(), "{id}/{name}: set tree missing");
+            let actual_columns = query
+                .output()
+                .columns()
+                .iter()
+                .map(|column| column.name())
+                .collect::<Vec<_>>();
+            let expected_columns = case["output_columns"]
+                .as_array()
+                .expect("frozen column identities")
+                .iter()
+                .map(|column| column.as_str().expect("output name"))
+                .collect::<Vec<_>>();
+            assert_eq!(actual_columns, expected_columns, "{id}/{name}: positional identity");
+
+            let input = SqlInput::inline(sql);
+            let configured = [ConfiguredSqlInput::new(id, &input, name, dialect.as_ref())];
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .unwrap_or_else(|error| panic!("{id}/{name}: typed analysis: {error}"));
+            let target = bundle.layers().last().expect("terminal layer").id();
+            let (actual, domains, terminal_len, sources) =
+                if case["variant"] == "six_operator_nullable_bag" {
+                    let proof = physical_finite_set_bag_plan(&bundle, target, &source_states);
+                    let PhysicalFiniteSetProof::Exact(exact) = proof else {
+                        panic!("{id}/{name}: mandatory tuple proof not Exact: {proof:?}");
+                    };
+                    (
+                        exact.tuples
+                            .iter()
+                            .filter(|tuple| tuple.output_count > 0)
+                            .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
+                            .collect::<Histogram>(),
+                        exact.terminal_domains.to_vec(),
+                        exact.terminal.len(),
+                        exact.sources.to_vec(),
+                    )
+                } else {
+                    let proof = physical_finite_set_tree_plan(&bundle, target, &source_states);
+                    let PhysicalFiniteSetTreeProof::Exact(exact) = proof else {
+                        panic!("{id}/{name}: mandatory tree proof not Exact: {proof:?}");
+                    };
+                    (
+                        exact.tuples
+                            .iter()
+                            .filter(|tuple| tuple.output_count > 0)
+                            .map(|tuple| (tuple.values.clone(), tuple.output_count))
+                            .collect::<Histogram>(),
+                        exact.terminal_domains,
+                        exact.terminal.len(),
+                        exact.sources,
+                    )
+                };
+
+            assert_eq!(actual, expected, "{id}/{name}: full SQL bag, not just shape");
+            assert_eq!(sources, expected_sources, "{id}/{name}: source identities");
+            assert_eq!(
+                terminal_len,
+                case["expected_count"].as_u64().expect("row count") as usize,
+                "{id}/{name}: terminal multiplicity"
+            );
+            check_domains(&format!("{id}/{name}"), &domains, case);
         }
     }
 }
