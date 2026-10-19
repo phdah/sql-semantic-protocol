@@ -412,3 +412,79 @@ fn all_thirteen_portable_dialects_preserve_canonical_set_output_shape() {
         }
     }
 }
+
+#[test]
+fn impossible_populations_and_incomplete_source_evidence_have_distinct_proofs() {
+    use sql_semantic_protocol::{
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        RelationConstraint, RelationConstraintSet,
+    };
+
+    let freeze = inventory();
+    let case = freeze["mandatory_cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|case| case["id"] == "72-C120-P-sum")
+        .expect("nullable source bag");
+    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b")])
+        .expect("catalog");
+    let parser = dialect_from_name("generic").expect("generic");
+    let input = SqlInput::inline(case["sql"].as_str().expect("sql"));
+    let configured = [ConfiguredSqlInput::new("classification", &input, "generic", parser.as_ref())];
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect("analysis");
+    let target = bundle.layers().last().expect("terminal").id().to_string();
+    let rows = states(case);
+
+    let residual = physical_finite_set_bag_plan(&bundle, &target, &rows[..1]);
+    assert!(matches!(residual, PhysicalFiniteSetProof::Residual { .. }));
+
+    let provenance = ConstraintProvenance::new(
+        ConstraintSourceKind::ExternalMetadata,
+        "task-120-enforced-not-null",
+    )
+    .expect("named evidence");
+    let evidence = vec![ConstraintEvidence::new(
+        provenance,
+        ConstraintEnforcement::Enforced,
+    )];
+    let not_null = RelationConstraint::not_null("v", evidence).expect("typed not-null");
+    let constraints = RelationConstraintSet::new("a", vec![not_null])
+        .expect("source constraint");
+    bundle.enrich_relation_constraints(&[constraints]);
+    let impossible = physical_finite_set_bag_plan(&bundle, &target, &rows);
+    assert!(
+        matches!(impossible, PhysicalFiniteSetProof::Impossible { .. }),
+        "known NULL violates an enforced NOT NULL: {impossible:?}"
+    );
+}
+
+#[test]
+fn uncertified_order_ties_and_casts_remain_typed_residuals() {
+    let freeze = inventory();
+    let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b")])
+        .expect("source catalog");
+    for suffix in ["order-tie", "coercion", "branch-limit"] {
+        let case = freeze["conditional_cases"]
+            .as_array()
+            .expect("conditional cases")
+            .iter()
+            .find(|case| case["id"].as_str().is_some_and(|id| id.ends_with(suffix)))
+            .expect("named conditional law");
+        let parser = dialect_from_name("generic").expect("generic");
+        let input = SqlInput::inline(case["sql"].as_str().expect("SQL"));
+        let configured = [ConfiguredSqlInput::new(suffix, &input, "generic", parser.as_ref())];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .expect("parser accepted conditional law");
+        let proof = physical_finite_set_tree_plan(
+            &bundle,
+            bundle.layers().last().expect("terminal").id(),
+            &states(case),
+        );
+        assert!(
+            matches!(proof, PhysicalFiniteSetTreeProof::Residual { .. }),
+            "{suffix}: unsupported portable laws must not be Exact: {proof:?}"
+        );
+    }
+}
