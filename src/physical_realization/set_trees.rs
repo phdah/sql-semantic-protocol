@@ -398,8 +398,9 @@ pub fn physical_finite_set_tree_plan(
     let mut observed = BTreeMap::<Vec<Option<i128>>, Vec<Vec<String>>>::new();
     let mut branches = Vec::new();
     for (index, branch) in operation.branches().iter().enumerate() {
-        let Ok(resolved) = branch_source(bundle, &walker, target_layer_id, branch) else {
-            return residual("set branch cannot be proven through a lossless source boundary");
+        let resolved = match branch_source(bundle, &walker, target_layer_id, branch) {
+            Ok(resolved) => resolved,
+            Err(reason) => return residual(reason),
         };
         let ResolvedSetBranch {
             source,
