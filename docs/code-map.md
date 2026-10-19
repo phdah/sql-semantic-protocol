@@ -37,6 +37,8 @@ frequencies. The task-owned fixture matrix is
 and `tests/task_118_set_adapters.rs`. Unsupported CTE producer shapes,
 coercions, order/limits, and unattested scalar expressions remain Residual.
 
+TASK-121 basic grouped/global closed-world aggregate bags: `src/physical_realization/aggregate_bags.rs` certifies complete typed integer source bags through canonical COUNT(*), COUNT(column), SUM, MIN, MAX and exactly integral AVG. It returns exact terminal source identity, multiplicities, NULLs and finite output domains; unproved AVG scale, overflow, HAVING and DISTINCT fail closed. Public DuckDB regression: `tests/task_121_aggregate_bags.rs`; fixture matrix: `docs/task-121-acceptance-freeze.json`.
+
 ## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |
