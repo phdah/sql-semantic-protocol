@@ -11,7 +11,7 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_aggregate_bag_plan,
     physical_finite_join_aggregate_plan, AnalysisBundle, ConfiguredSqlInput, LiteralValue,
-    PhysicalFiniteAggregateProof, PhysicalJoinedAggregateProof, PhysicalWriteRow,
+    PhysicalAggregateTruth, PhysicalFiniteAggregateProof, PhysicalJoinedAggregateProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput,
     ValueDomain,
 };
@@ -190,6 +190,36 @@ fn check_domains(case: &Value, actual: &BTreeMap<String, ValueDomain>) {
             assert_eq!(interval["upper_inclusive"], true, "{name}: inclusive upper");
         }
     }
+}
+
+
+fn check_group_evidence(
+    expected: &Value,
+    actual_rows: &[String],
+    actual_contributors: &BTreeMap<String, Vec<String>>,
+    actual_truth: Option<PhysicalAggregateTruth>,
+) {
+    let wanted_truth = match expected["having"].as_str() {
+        Some("TRUE") => Some(PhysicalAggregateTruth::True),
+        Some("FALSE") => Some(PhysicalAggregateTruth::False),
+        Some("UNKNOWN") => Some(PhysicalAggregateTruth::Unknown),
+        None => None,
+        other => panic!("invalid group truth: {other:?}"),
+    };
+    assert_eq!(actual_truth, wanted_truth, "SQL three-valued HAVING group truth");
+    let wanted_rows = expected["source_row_ids"].as_array().expect("group source IDs")
+        .iter().map(|v| v.as_str().expect("row ID").to_string()).collect::<Vec<_>>();
+    assert_eq!(actual_rows, wanted_rows, "all physical contributing and rejected source rows");
+    let wanted_contributors = expected["aggregate_row_ids"]
+        .as_object().expect("per-aggregate identities")
+        .iter().map(|(name, rows)| (
+            name.clone(),
+            rows.as_array().expect("aggregate identities").iter()
+                .map(|v| v.as_str().expect("source identity").to_string())
+                .collect::<Vec<_>>(),
+        )).collect::<BTreeMap<_, _>>();
+    assert_eq!(actual_contributors, &wanted_contributors,
+        "multiplicity and NULL exclusions in every aggregate's actual contributors");
 }
 
 fn duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
@@ -376,6 +406,16 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
                 "{id}: canonical"
             );
             check_domains(case, &exact.terminal_domains);
+
+            if let Some(expected_groups) = case["groups"].as_array() {
+                assert_eq!(exact.groups.len(), expected_groups.len(), "{id}: every group classified");
+                for (got, wanted) in exact.groups.iter().zip(expected_groups) {
+                    check_group_evidence(
+                        wanted, &got.source_row_ids, &got.aggregate_row_ids, got.having_truth,
+                    );
+                }
+            }
+
             let pair_list = |value: &Value| {
                 value
                     .as_array()
@@ -410,6 +450,16 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
                 "{id}: canonical"
             );
             check_domains(case, &exact.terminal_domains);
+
+            if let Some(expected_groups) = case["groups"].as_array() {
+                assert_eq!(exact.groups.len(), expected_groups.len(), "{id}: every group classified");
+                for (got, wanted) in exact.groups.iter().zip(expected_groups) {
+                    check_group_evidence(
+                        wanted, &got.source_row_ids, &got.aggregate_row_ids, got.having_truth,
+                    );
+                }
+            }
+
             assert_eq!(exact.source, "s", "{id}: physical source identity");
         }
         assert_eq!(
