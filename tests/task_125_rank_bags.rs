@@ -34,7 +34,7 @@ fn source(case: &Value) -> PhysicalWriteState {
     PhysicalWriteState::new("s", case["source_bag"].as_array().unwrap().iter().map(|row| {
         PhysicalWriteRow::new(
             row.as_object().unwrap().iter()
-                .map(|(name, value)| (name.clone(), value(value)))
+                .map(|(name, cell)| (name.clone(), value(cell)))
                 .collect()
         ).unwrap()
     }).collect()).unwrap()
