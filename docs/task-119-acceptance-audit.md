@@ -24,4 +24,4 @@
 
 ## Closure
 
-Pending independent final-head CI verification. Only after all required jobs pass, confirm the frozen cell dispositions, update the task and manifest to Done/verified and mark this PR ready for review.
+All nine required GitHub Actions jobs passed for the audited implementation on commit `f1dee745`: [CI run 39239403828](https://github.com/phdah/sql-semantic-protocol/actions/runs/39239403828). The 143 dialect classifications, 15 exact SQL/dbt/ODCS adapter cells, 9 conditional residual adapter cells and all five independent DuckDB source/terminal oracles have reviewed dispositions in the frozen matrix. The task is marked Done, while TASK-72 remains In Progress. The closure-only metadata commit must itself pass final-head CI before converting the PR from draft to review-ready; merge is not automated.
