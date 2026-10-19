@@ -177,6 +177,12 @@ schema:
             .expect("direct SQL");
         let adapted = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
             .expect("ODCS enriched SQL");
+        let referenced_sources = case["source_bags"]
+            .as_object()
+            .expect("physical source bag names")
+            .keys()
+            .map(|source| format!("source.demo.{source}"))
+            .collect::<Vec<_>>();
         let manifest = json!({
             "metadata": {
                 "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -195,7 +201,7 @@ schema:
                     "raw_code": sql,
                     "compiled_code": sql,
                     "depends_on": {
-                        "nodes": ["source.demo.a", "source.demo.b", "source.demo.c"]
+                        "nodes": referenced_sources
                     }
                 }
             },
