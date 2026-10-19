@@ -248,20 +248,21 @@ fn all_thirteen_parser_dialects_classify_distinct_filter_having() {
             match analyze_configured_inputs_with_catalog(&[input], &catalog) {
                 Ok(bundle) => {
                     let target = bundle.layers().last().expect("terminal").id();
-                    let result = physical_finite_aggregate_bag_plan(
-                        &bundle, target, &[state(case)]
-                    );
+                    let result =
+                        physical_finite_aggregate_bag_plan(&bundle, target, &[state(case)]);
                     assert!(matches!(result, PhysicalFiniteAggregateProof::Exact(_)),
                         "{dialect}:{id}: parsed aggregate must have identical canonical proof: {result:?}");
                 }
                 Err(reason) if id == "73-C122-P-filter"
-                    && !matches!(dialect, "generic" | "postgresql" | "duckdb") =>
+                    && !matches!(*dialect, "generic" | "postgresql" | "duckdb") =>
                 {
                     // A dialect parser rejecting FILTER syntax is a documented
                     // parser boundary, never a claim about native SQL support.
                     eprintln!("{dialect}:{id}: FILTER parser boundary: {reason}");
                 }
-                Err(reason) => panic!("{dialect}:{id}: shared aggregate syntax not parsed: {reason}"),
+                Err(reason) => {
+                    panic!("{dialect}:{id}: shared aggregate syntax not parsed: {reason}")
+                }
             }
         }
     }
@@ -283,7 +284,8 @@ fn unsupported_filter_type_and_distinct_sum_fail_closed() {
         let config = ConfiguredSqlInput::new("fail-closed", &input, "generic", parser.as_ref());
         let bundle = analyze_configured_inputs_with_catalog(&[config], &catalog).expect("parse");
         let target = bundle.layers().last().expect("target").id();
-        let result = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
+        let result =
+            physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
         assert!(
             matches!(result, PhysicalFiniteAggregateProof::Residual { .. }),
             "{sql}: unproved execution law claimed exact: {result:?}"
