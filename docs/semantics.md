@@ -118,6 +118,8 @@ SELECT-level duplicate elimination and grouping are emitted under `aggregation` 
 
 HAVING is analyzed with projected aliases available in grouped scope. Aggregate comparisons remain aggregate-result semantics and do not get rewritten into scalar constraints on their source columns.
 
+`physical_finite_join_aggregate_plan` (TASK-123) separately proves a caller-attested **complete physical bag** for an ordinary two-source INNER JOIN through WHERE, one integer GROUP BY key (or global aggregation) and HAVING. It preserves each selected/NOT TRUE Cartesian pair identity, SQL NULL truth, aggregate contributor identities, entire grouped terminal rows and finite terminal value domains. COUNT(*), COUNT(column), COUNT(DISTINCT column), FILTER and exact integer SUM/MIN/MAX/AVG are supported only when the source schema and expression laws establish exact values. This physical execution proof does not turn a lineage or parser success into a construction oracle. GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL, decimal-scale AVG, unchecked overflows, general projection layers and unproved vendor/session semantics remain explicit Residual rather than producing falsely exact results. The [TASK-123 acceptance matrix](task-123-acceptance-freeze.json) fixes the supported numerical and rejected-row examples.
+
 ### Window functions
 
 Window calls are emitted as `window_function` expressions, distinct from ordinary function calls. The function arguments remain normalized expressions, while the resolved window specification records an optional local window name, `PARTITION BY` expressions, ordered `ORDER BY` expressions, and an explicit `ROWS`, `RANGE`, or `GROUPS` frame when present.
