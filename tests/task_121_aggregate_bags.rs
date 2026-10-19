@@ -119,7 +119,10 @@ fn duckdb_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
     let source_rows = source_stmt
         .query_map([], |row| {
             Ok(BTreeMap::from([
-                ("id".to_string(), LiteralValue::Text(row.get::<_, String>(0)?)),
+                (
+                    "id".to_string(),
+                    LiteralValue::Text(row.get::<_, String>(0)?),
+                ),
                 (
                     "k".to_string(),
                     row.get::<_, Option<i64>>(1)?
@@ -166,7 +169,10 @@ fn duckdb_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
                     let number = row.get::<_, Option<f64>>(index)?;
                     number
                         .map(|n| {
-                            assert!(n.is_finite() && n.fract() == 0.0, "AVG is not an exact integer");
+                            assert!(
+                                n.is_finite() && n.fract() == 0.0,
+                                "AVG is not an exact integer"
+                            );
                             LiteralValue::Number((n as i64).to_string())
                         })
                         .unwrap_or(LiteralValue::Null)
