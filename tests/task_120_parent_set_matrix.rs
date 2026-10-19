@@ -275,10 +275,9 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                     panic!("{id}: unproved mandatory two-branch bag: {proof:?}");
                 };
                 for tuple in &exact.tuples {
-                    for (source, identities) in [
-                        ("a", &tuple.left_row_ids),
-                        ("b", &tuple.right_row_ids),
-                    ] {
+                    for (source, identities) in
+                        [("a", &tuple.left_row_ids), ("b", &tuple.right_row_ids)]
+                    {
                         let expected_ids = case["source_bags"][source]
                             .as_array()
                             .expect("entire physical source")
@@ -291,7 +290,10 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                             })
                             .map(|row| row["id"].as_str().expect("row id").to_string())
                             .collect::<Vec<_>>();
-                        assert_eq!(*identities, expected_ids, "{id}/{source}: every source identity");
+                        assert_eq!(
+                            *identities, expected_ids,
+                            "{id}/{source}: every source identity"
+                        );
                     }
                 }
                 (
@@ -311,15 +313,20 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                     panic!("{id}: unproved mandatory set tree: {proof:?}");
                 };
                 for branch in &exact.branches {
-                    let physical = source_states.iter()
+                    let physical = source_states
+                        .iter()
                         .find(|source| source.relation() == branch.source)
                         .expect("one canonical physical source per branch");
-                    let mut actual_ids = branch.selected_row_ids.iter()
+                    let mut actual_ids = branch
+                        .selected_row_ids
+                        .iter()
                         .chain(&branch.false_row_ids)
                         .chain(&branch.unknown_row_ids)
                         .cloned()
                         .collect::<Vec<_>>();
-                    let mut expected_ids = physical.rows().iter()
+                    let mut expected_ids = physical
+                        .rows()
+                        .iter()
                         .map(|row| match row.values().get("id") {
                             Some(LiteralValue::Text(id)) => id.clone(),
                             _ => panic!("{id}: unidentifiable source row"),
@@ -327,7 +334,10 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                         .collect::<Vec<_>>();
                     actual_ids.sort();
                     expected_ids.sort();
-                    assert_eq!(actual_ids, expected_ids, "{id}: complete TRUE/FALSE/UNKNOWN partition");
+                    assert_eq!(
+                        actual_ids, expected_ids,
+                        "{id}: complete TRUE/FALSE/UNKNOWN partition"
+                    );
                 }
                 (
                     exact
