@@ -513,9 +513,9 @@ pub fn physical_finite_set_tree_plan(
                 return residual("ORDER BY references an absent set output column");
             }
             if key.nulls_first.is_none()
-                && evaluated.iter().any(|tuple| {
-                    tuple.output_count > 0 && tuple.values[key.index].is_none()
-                })
+                && evaluated
+                    .iter()
+                    .any(|tuple| tuple.output_count > 0 && tuple.values[key.index].is_none())
             {
                 return residual("dialect-dependent default NULL ordering has no certified law");
             }
@@ -526,7 +526,11 @@ pub fn physical_finite_set_tree_plan(
                 let rhs = right.values[key.index];
                 let ordering = match (lhs, rhs) {
                     (Some(a), Some(b)) => {
-                        if key.descending { b.cmp(&a) } else { a.cmp(&b) }
+                        if key.descending {
+                            b.cmp(&a)
+                        } else {
+                            a.cmp(&b)
+                        }
                     }
                     (None, None) => std::cmp::Ordering::Equal,
                     (None, Some(_)) => {
