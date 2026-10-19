@@ -247,7 +247,10 @@ schema:
                     .iter()
                     .find(|layer| {
                         physical.iter().all(|source| {
-                            layer.consumes().iter().any(|used| used == source.relation())
+                            layer
+                                .consumes()
+                                .iter()
+                                .any(|used| used == source.relation())
                         })
                     })
                     .expect("set terminal")
