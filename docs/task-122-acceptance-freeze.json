@@ -78,14 +78,31 @@
             "s#1",
             "s#2"
           ],
-          "having": "TRUE"
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "unique_x": [
+              "s#0"
+            ],
+            "count_x": [
+              "s#0",
+              "s#1"
+            ]
+          }
         },
         {
           "key": 2,
           "source_row_ids": [
             "s#3"
           ],
-          "having": "FALSE"
+          "having": "FALSE",
+          "aggregate_row_ids": {
+            "unique_x": [
+              "s#3"
+            ],
+            "count_x": [
+              "s#3"
+            ]
+          }
         }
       ],
       "typed_terminal_domains": [
@@ -265,14 +282,31 @@
             "s#1",
             "s#2"
           ],
-          "having": "TRUE"
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "filtered_count": [
+              "s#1"
+            ],
+            "count_x": [
+              "s#0",
+              "s#1"
+            ]
+          }
         },
         {
           "key": 2,
           "source_row_ids": [
             "s#3"
           ],
-          "having": "TRUE"
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "filtered_count": [
+              "s#3"
+            ],
+            "count_x": [
+              "s#3"
+            ]
+          }
         }
       ],
       "typed_terminal_domains": [
@@ -436,14 +470,22 @@
             "s#0",
             "s#1"
           ],
-          "having": "UNKNOWN"
+          "having": "UNKNOWN",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#1"
+            ]
+          }
         },
         {
           "key": 2,
           "source_row_ids": [
             "s#2"
           ],
-          "having": "UNKNOWN"
+          "having": "UNKNOWN",
+          "aggregate_row_ids": {
+            "count_x": []
+          }
         }
       ],
       "typed_terminal_domains": [
@@ -600,14 +642,32 @@
             "s#0",
             "s#1"
           ],
-          "having": "TRUE"
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#0",
+              "s#1"
+            ],
+            "total": [
+              "s#0",
+              "s#1"
+            ]
+          }
         },
         {
           "key": 2,
           "source_row_ids": [
             "s#2"
           ],
-          "having": "TRUE"
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#2"
+            ],
+            "total": [
+              "s#2"
+            ]
+          }
         },
         {
           "key": 3,
@@ -615,7 +675,11 @@
             "s#3",
             "s#4"
           ],
-          "having": "FALSE"
+          "having": "FALSE",
+          "aggregate_row_ids": {
+            "count_x": [],
+            "total": []
+          }
         }
       ],
       "typed_terminal_domains": [
