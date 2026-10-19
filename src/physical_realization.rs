@@ -469,6 +469,7 @@ impl<'a> Walker<'a> {
 }
 
 // Implementations are grouped by physical proof responsibility.
+mod aggregate_bags;
 mod composition;
 mod counts;
 mod distributions;
