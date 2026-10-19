@@ -56,8 +56,8 @@ schema:
         &known,
     )
     .expect("ODCS schema");
-    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas())
-        .expect("ODCS canonical schema");
+    let odcs_catalog =
+        RelationCatalog::from_schemas(odcs.source_schemas()).expect("ODCS canonical schema");
 
     let parser = dialect_from_name("postgresql").expect("postgresql");
     for case in frozen["cases"].as_array().expect("task-owned cases") {
@@ -160,7 +160,11 @@ schema:
                 panic!("{adapter}:{id}: missing exact same-source aggregate law: {proof:?}");
             };
             assert_eq!(exact.source, relation, "{adapter}:{id}: physical source");
-            results.push((exact.terminal.clone(), exact.terminal_domains.clone(), exact.groups.clone()));
+            results.push((
+                exact.terminal.clone(),
+                exact.terminal_domains.clone(),
+                exact.groups.clone(),
+            ));
         }
         assert_eq!(results[0], results[1], "{id}: compiled dbt parity");
         assert_eq!(results[0], results[2], "{id}: ODCS schema parity");
