@@ -259,10 +259,10 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
         } => {
             let selected = law
                 .selected_rows(left_values, right_values)
-                .unwrap_or_default();
+                .expect("WitnessCase validates finite join selection");
             let unselected = law
                 .unselected_pairs(left_values, right_values)
-                .unwrap_or_default();
+                .expect("WitnessCase validates finite join complement");
             json!({
                 "kind": "finite_join_population",
                 "left_row": constructive_row_to_value(left_row),
