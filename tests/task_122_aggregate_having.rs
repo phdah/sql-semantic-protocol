@@ -236,21 +236,33 @@ fn finite_having_bags_and_complete_false_unknown_groups_match_duckdb() {
 }
 
 #[test]
-fn all_thirteen_parser_dialects_prove_shared_distinct_having_semantics() {
+fn all_thirteen_parser_dialects_classify_distinct_filter_having() {
     let fixture = inventory();
+    let catalog = RelationCatalog::from_schemas(&[schema()]).expect("typed catalog");
     for dialect in DIALECTS {
-        for case in fixture["cases"].as_array().expect("cases") {
-            if case["id"] == "73-C122-P-filter" {
-                // FILTER grammar requires dialect-specific parser classification,
-                // not a claim of native warehouse FILTER execution.
-                continue;
+        let parser = dialect_from_name(dialect).expect("exposed parser");
+        for case in fixture["cases"].as_array().expect("frozen matrix") {
+            let id = case["id"].as_str().expect("case");
+            let sql = SqlInput::inline(case["sql"].as_str().expect("SQL"));
+            let input = ConfiguredSqlInput::new(id, &sql, dialect, parser.as_ref());
+            match analyze_configured_inputs_with_catalog(&[input], &catalog) {
+                Ok(bundle) => {
+                    let target = bundle.layers().last().expect("terminal").id();
+                    let result = physical_finite_aggregate_bag_plan(
+                        &bundle, target, &[state(case)]
+                    );
+                    assert!(matches!(result, PhysicalFiniteAggregateProof::Exact(_)),
+                        "{dialect}:{id}: parsed aggregate must have identical canonical proof: {result:?}");
+                }
+                Err(reason) if id == "73-C122-P-filter"
+                    && !matches!(dialect, "generic" | "postgresql" | "duckdb") =>
+                {
+                    // A dialect parser rejecting FILTER syntax is a documented
+                    // parser boundary, never a claim about native SQL support.
+                    eprintln!("{dialect}:{id}: FILTER parser boundary: {reason}");
+                }
+                Err(reason) => panic!("{dialect}:{id}: shared aggregate syntax not parsed: {reason}"),
             }
-            let result = proof(case, dialect);
-            assert!(
-                matches!(result, PhysicalFiniteAggregateProof::Exact(_)),
-                "{dialect}:{}: {result:?}",
-                case["id"]
-            );
         }
     }
 }
