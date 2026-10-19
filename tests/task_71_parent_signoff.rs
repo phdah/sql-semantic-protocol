@@ -100,19 +100,25 @@ fn parent_closure_preserves_every_original_cell_and_reviewed_boundary() {
                     "not_certified_by_portable_DuckDB_or_parser"
                 );
                 let classifications = case["parser_classifications"].as_array().unwrap();
-                assert_eq!(classifications.len(), 14, "{id}: 13 dialects plus postgres alias");
+                assert_eq!(
+                    classifications.len(),
+                    14,
+                    "{id}: 13 dialects plus postgres alias"
+                );
                 let mut parent_dialects = BTreeSet::new();
                 for classification in classifications {
                     let name = classification["dialect"].as_str().expect("named dialect");
-                    assert!(parent_dialects.insert(name), "{id}: duplicate dialect {name}");
+                    assert!(
+                        parent_dialects.insert(name),
+                        "{id}: duplicate dialect {name}"
+                    );
                 }
                 let alias = classifications
                     .iter()
                     .find(|entry| entry["dialect"] == "postgres")
                     .expect("postgres is a required spelling alias");
                 assert_eq!(
-                    alias["status"],
-                    proof["dialect_classifications"]["postgresql"]["parser"],
+                    alias["status"], proof["dialect_classifications"]["postgresql"]["parser"],
                     "{id}: postgres alias must match postgresql"
                 );
                 for dialect in evidence["dialect_identities"].as_array().unwrap() {
@@ -135,7 +141,8 @@ fn parent_closure_preserves_every_original_cell_and_reviewed_boundary() {
 fn original_join_acceptance_snapshot_cannot_be_changed_with_its_evidence() {
     // Pin the pre-signoff parent inventory independently of the child freeze.
     // A coordinated change to both editable files must not silently pass.
-    let golden: Value = serde_json::from_str(r#"{
+    let golden: Value = serde_json::from_str(
+        r#"{
   "mandatory": [
     [
       "J71-I2-EQ",
@@ -336,7 +343,9 @@ fn original_join_acceptance_snapshot_cannot_be_changed_with_its_evidence() {
       "expected_parser_equivalent"
     ]
   ]
-}"#).unwrap();
+}"#,
+    )
+    .unwrap();
     let original: Value =
         serde_json::from_str(include_str!("../docs/task-71-acceptance-freeze.json")).unwrap();
     let current = json!({
