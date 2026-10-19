@@ -234,20 +234,27 @@ fn complete_aggregate_bags_match_frozen_source_oracles_and_duckdb() {
 
 #[test]
 fn all_thirteen_shared_dialect_paths_analyze_the_same_aggregate_bags() {
-    let case = &fixture()["cases"][0];
+    let inventory = fixture();
     let catalog = RelationCatalog::from_schemas(&[schema()]).expect("catalog");
     for dialect in DIALECTS {
         let parser = dialect_from_name(dialect).expect("exposed dialect");
-        let sql = SqlInput::inline(case["sql"].as_str().expect("SQL"));
-        let configured = ConfiguredSqlInput::new("task121", &sql, dialect, parser.as_ref());
-        let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
-            .unwrap_or_else(|err| panic!("{dialect}: {err:?}"));
-        let target = bundle.layers().last().expect("target").id();
-        let proof = physical_finite_aggregate_bag_plan(&bundle, target, &[source(case)]);
-        assert!(
-            matches!(proof, PhysicalFiniteAggregateProof::Exact(_)),
-            "{dialect}: {proof:?}"
-        );
+        for case in inventory["cases"].as_array().expect("mandatory cases") {
+            let id = case["id"].as_str().expect("fixture");
+            let sql = SqlInput::inline(case["sql"].as_str().expect("SQL"));
+            let configured = ConfiguredSqlInput::new(id, &sql, dialect, parser.as_ref());
+            let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
+                .unwrap_or_else(|err| panic!("{dialect}:{id}: {err:?}"));
+            let target = bundle.layers().last().expect("target").id();
+            let proof = physical_finite_aggregate_bag_plan(&bundle, target, &[source(case)]);
+            let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
+                panic!("{dialect}:{id}: not exact: {proof:?}");
+            };
+            assert_eq!(
+                normalized(exact.terminal.clone()),
+                normalized(expected_terminal(case)),
+                "{dialect}:{id}: canonical full terminal bag"
+            );
+        }
     }
 }
 
@@ -289,4 +296,25 @@ fn nonintegral_avg_and_unproven_queries_never_masquerade_as_exact() {
             "{sql}: unproved operator must fail closed"
         );
     }
+}
+
+#[test]
+fn duplicate_physical_source_identity_is_impossible_but_missing_evidence_is_residual() {
+    let inventory = fixture();
+    let case = &inventory["cases"][0];
+    let catalog = RelationCatalog::from_schemas(&[schema()]).expect("catalog");
+    let parser = dialect_from_name("generic").expect("dialect");
+    let sql = SqlInput::inline(case["sql"].as_str().expect("SQL"));
+    let configured = ConfiguredSqlInput::new("negative", &sql, "generic", parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog).expect("SQL");
+    let target = bundle.layers().last().expect("terminal").id();
+    let state = source(case);
+    assert!(matches!(
+        physical_finite_aggregate_bag_plan(&bundle, target, &[state.clone(), state]),
+        PhysicalFiniteAggregateProof::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_finite_aggregate_bag_plan(&bundle, target, &[]),
+        PhysicalFiniteAggregateProof::Residual { .. }
+    ));
 }
