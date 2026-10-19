@@ -336,14 +336,18 @@ fn joined_grouped_having_and_empty_global_bags_match_independent_duckdb() {
                     .any(|value| value.value() == &LiteralValue::Null);
                 assert_eq!(
                     has_null,
-                    expected_domain["contains_null"].as_bool().expect("NULL membership"),
+                    expected_domain["contains_null"]
+                        .as_bool()
+                        .expect("NULL membership"),
                     "{id}:{name}: exact NULL membership"
                 );
                 let numbers = set
                     .values()
                     .iter()
                     .filter_map(|value| match value.value() {
-                        LiteralValue::Number(value) => Some(value.parse::<i64>().expect("typed integer")),
+                        LiteralValue::Number(value) => {
+                            Some(value.parse::<i64>().expect("typed integer"))
+                        }
                         _ => None,
                     })
                     .collect::<Vec<_>>();
