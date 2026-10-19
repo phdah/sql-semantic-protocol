@@ -1,29 +1,28 @@
-# TASK-123 implementation audit (in progress)
+# TASK-123 final bounded acceptance audit
 
-Owner: TASK-123. Parent: TASK-73 (remains open).
+Date: 2026-10-19
+Owner: TASK-123. Parent: TASK-73 (remains To Do).
 PR: https://github.com/phdah/sql-semantic-protocol/pull/133
+Frozen inventory: [task-123-acceptance-freeze.json](task-123-acceptance-freeze.json), version 1.
 
-## Frozen cases and semantic review
+## Independently reviewed mandatory physical cells
 
-- `73-C123-P-join`: expected complete INNER JOIN + WHERE selected pair bag contains five physical pairs, with the key=1 group contributing four pairs and the key=2 group contributing one. HAVING >= 2 retains only key=1, with terminal `(k=1, row_count=4, count_x=2)`.
-- `73-C123-N-rejected`: same complete source populations, HAVING COUNT(*) > 4 rejects both groups and produces an empty terminal value domain. The SQL predicate classifications must not treat NULL equality as TRUE.
-- `73-C123-P-empty-global`: an empty left source yields no join pairs but global COUNT(*) still emits exactly one row with zero.
-- `GROUPING SETS`, `ROLLUP`, `CUBE`, `GROUP BY ALL`: only explicit parser/analysis or typed Residual classification. No native/session grouping identity, subtotal NULL, or GROUPING(...) bit law has been certified. All conditional judgments remain owned by TASK-123.
+| Case | Complete source bag and pair evidence | SQL group and terminal oracle |
+| --- | --- | --- |
+| `73-C123-P-join` | Four key=1 joined pairs and one key=2 pair survive WHERE; all seven other physical Cartesian pairs are NOT TRUE (including NULL equality). | Group 1 passes HAVING with (k=1, row_count=4, count_x=2); group 2 fails. The terminal is exactly one row. |
+| `73-C123-N-rejected` | Same five selected and seven NOT TRUE pairs, preserving duplicate identities and NULL rejection. | Both groups fail HAVING COUNT(*) > 4; terminal bag and output domains are empty. |
+| `73-C123-P-empty-global` | Empty left bag, nonempty right bag, no selected or rejected Cartesian pairs. | Global COUNT(*) emits exactly one row, row_count=0, with inclusive finite output domain {0}. |
 
-All physical sources, exact required domain values, dialect identities and adapter paths are recorded in `docs/task-123-acceptance-freeze.json`.
+The complete frozen source bags, stable pair IDs, group identities, contributor IDs, full terminal bags, NULL membership, inclusive extrema and typed finite domains were reviewed against the implementation and integration assertions. `tests/task_123_join_aggregates.rs` independently reads back both entire DuckDB input bags and executes the terminal SQL for all mandatory cases. It checks all selected/rejected source pairs, the full terminal multiset, contributor identities, HAVING truth, NULL membership and included extrema. Empty-bag unsupported integer/Boolean comparisons also return Residual instead of an unsound Exact proof.
 
-## Standards review
+## Child acceptance mapping
 
-The implementation is in a focused physical engine, with no SQL reparsing, dependencies or protocol JSON contract mutation. It reuses TASK-122's shared predicate shape and SQL three-valued truth rules. Input physical rows are validated by the canonical closed-world schema validator; unproved expressions and decimal/overflow laws return Residual. Public docs, code map, and public API exports have been updated.
+1. **Freeze:** Three mandatory and four conditional cases with fixed IDs, SQL, physical populations, canonical identities, dialect/adapter cells, proof strength and named release boundaries are registered via `docs/coverage-manifest.json`. The frozen v1 fixture file is unchanged after semantic implementation.
+2. **Canonical semantics:** `src/physical_realization/aggregate_joins.rs` evaluates exactly two attested physical sources under an INNER JOIN, WHERE, an ordinary integer group key or a global aggregate, and HAVING. COUNT, typed SUM/MIN/MAX/AVG, distinct COUNT and aggregate FILTER are supported where arithmetic is provable. Every Cartesian pair is TRUE-selected or NOT TRUE-rejected; groups, contributors, multiplicities, terminal bags and exact finite ValueDomain sets share the same evidence. Contradictory input schema is Impossible, missing or unproved law is Residual.
+3. **Independent oracle:** All three mandatory terminal/source bags were checked with DuckDB, including NULL join rejection, duplicated contributors, a HAVING nonmembership counterexample and empty-global singleton behavior.
+4. **Dialect and adapters:** The complete 3 x 13 mandatory parser dialect matrix is required to return Exact; all 39 cells passed. The four conditional grouping families across 13 dialects (52 cells) must resolve to a named parser boundary or typed Residual, never false Exact. For equivalent typed source evidence, the 3 x 3 mandatory SQL/dbt-compiled/ODCS adapter proofs return identical physical and terminal results; the 4 x 3 conditional adapter checks similarly prohibit Exact. Parser failure is an explicit grammar boundary, not evidence for engine execution. GROUPING SETS, ROLLUP, CUBE and GROUP BY ALL retain TASK-123 ownership and a reviewed conditional nonrelease disposition until grouped subtotal identities, GROUPING bits and per-dialect engine/session behavior are certified.
+5. **Verified CI:** 9/9 GitHub Actions jobs passed on semantic head `84e9a0345591a36fbf51bd484731f44a33824f83`: [run 39305376784](https://github.com/phdah/sql-semantic-protocol/actions/runs/39305376784). Coverage includes rustfmt, strict Clippy (default and no-default-features), full Rust tests (default and no-default-features), docs, dependency checks and dbt E2E. Final metadata-only signoff-head CI remains a premerge check.
 
-**Pending:** cargo fmt, Clippy, tests, docs and all workflow checks. No local Rust toolchain was available to execute them in this session.
+## Deliberate scope boundary
 
-## Spec review and signoff blockers
-
-- TASK-123 AC #1: task-specific finite matrix recorded, but parser classifications, mandatory dialect/adapter cells and conditional release dispositions are not independently signed off.
-- AC #2: implementation covers directly joined two-source INNER JOIN, WHERE, one integer GROUP key or global aggregate, HAVING and supported integer aggregate families. General projection-layer compositions, chained/multi-join aggregate producers and grouping extensions are not proven.
-- AC #3: independent complete DuckDB source/terminal oracle tests and source-pair/group identity tests were added but have not passed CI.
-- AC #4: 13-dialect direct-SQL and SQL/dbt/ODCS parity tests added; no validated green evidence on current PR head. Native vendor engines are not claimed.
-- AC #5: no passing final-head CI or independent acceptance-cell signoff; **TASK-123 remains In Progress**, PR remains draft and **TASK-73 remains open**.
-
-Do not check any remaining task AC, mark Done or merge based on this document.
+This child certifies direct two-source INNER JOIN-to-group composition, not arbitrary joins, projection chains or nested grouping-set subtotal laws. Decimal/overflow and native vendor/session execution are not guessed. Those unsupported laws remain explicitly Residual, with TASK-124 and the original TASK-73 parent acceptance criteria still open for independent closure. This is child signoff only, not a v3 protocol release or parent signoff.
