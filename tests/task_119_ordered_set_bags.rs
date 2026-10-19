@@ -259,6 +259,16 @@ fn frozen_order_limit_fetch_and_exhausted_offset_are_complete_source_proofs() {
             source_ids.sort();
             assert_eq!(all, source_ids, "{id}: full physical source partition");
         }
+        if id.ends_with("-filtered-null") {
+            assert!(
+                exact.branches.iter().any(|branch| !branch.false_row_ids.is_empty()),
+                "{id}: prove filtered-out FALSE source rows"
+            );
+            assert!(
+                exact.branches.iter().any(|branch| !branch.unknown_row_ids.is_empty()),
+                "{id}: prove SQL UNKNOWN source rows"
+            );
+        }
         assert_eq!(duckdb_histogram(case), expected, "{id}: independent DuckDB");
     }
 }
@@ -359,4 +369,39 @@ fn portable_positional_alignment_has_thirteen_dialect_parser_classifications() {
         assert_eq!(query.output().columns()[0].name(), "key_out", "{name}");
         assert_eq!(query.output().columns()[1].name(), "value_out", "{name}");
     }
+}
+
+#[test]
+fn enforced_nullability_contradiction_is_impossible_not_residual() {
+    use sql_semantic_protocol::{
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        RelationConstraint, RelationConstraintSet,
+    };
+
+    let freeze = freeze();
+    let case = freeze["cases"]
+        .as_array()
+        .expect("frozen cases")
+        .iter()
+        .find(|case| case["id"] == "72-C119-P-null-duplicates")
+        .expect("nullable physical source");
+    let mut analyzed = bundle(case["sql"].as_str().expect("SQL"));
+    let target = analyzed.layers().last().expect("target").id().to_string();
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-119")
+            .expect("enforced source provenance"),
+        ConstraintEnforcement::Enforced,
+    )];
+    analyzed.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "a",
+            vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL rule")],
+        )
+        .expect("source constraints"),
+    ]);
+    let proof = physical_finite_set_tree_plan(&analyzed, &target, &states(case));
+    assert!(
+        matches!(proof, PhysicalFiniteSetTreeProof::Impossible { .. }),
+        "enforced impossible source cannot be a residual: {proof:?}"
+    );
 }
