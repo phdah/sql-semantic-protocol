@@ -123,11 +123,13 @@ fn duckdb_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
                 let name = column.as_str().expect("output name");
                 let value = if name == "average" {
                     let number = row.get::<_, Option<f64>>(index)?;
-                    number.map(|n| LiteralValue::Number((n as i64).to_string()))
+                    number
+                        .map(|n| LiteralValue::Number((n as i64).to_string()))
                         .unwrap_or(LiteralValue::Null)
                 } else {
                     let number = row.get::<_, Option<i64>>(index)?;
-                    number.map(|n| LiteralValue::Number(n.to_string()))
+                    number
+                        .map(|n| LiteralValue::Number(n.to_string()))
                         .unwrap_or(LiteralValue::Null)
                 };
                 values.insert(name.to_string(), value);
@@ -179,10 +181,17 @@ fn complete_aggregate_bags_match_frozen_source_oracles_and_duckdb() {
             .enumerate()
             .map(|(index, _)| format!("s#{index}"))
             .collect::<Vec<_>>();
-        let mut proven_ids = exact.groups.iter().flat_map(|g| &g.source_row_ids)
-            .cloned().collect::<Vec<_>>();
+        let mut proven_ids = exact
+            .groups
+            .iter()
+            .flat_map(|g| &g.source_row_ids)
+            .cloned()
+            .collect::<Vec<_>>();
         proven_ids.sort();
-        assert_eq!(proven_ids, ids, "{id}: all source row identities accounted for");
+        assert_eq!(
+            proven_ids, ids,
+            "{id}: all source row identities accounted for"
+        );
         for expected in case["typed_terminal_domains"]
             .as_array()
             .expect("typed exact output domains")
@@ -199,13 +208,18 @@ fn complete_aggregate_bags_match_frozen_source_oracles_and_duckdb() {
                 ValueDomain::Empty => assert!(expected_values.is_empty(), "{id}:{name}"),
                 ValueDomain::Set(values) => {
                     assert_eq!(values.mode(), SetMode::Include);
-                    let mut obtained = values.values().iter().map(|v| format!("{:?}",v.value()))
+                    let mut obtained = values
+                        .values()
+                        .iter()
+                        .map(|v| format!("{:?}", v.value()))
                         .collect::<Vec<_>>();
-                    let mut wanted = expected_values.iter().map(|v| format!("{v:?}"))
+                    let mut wanted = expected_values
+                        .iter()
+                        .map(|v| format!("{v:?}"))
                         .collect::<Vec<_>>();
                     obtained.sort();
                     wanted.sort();
-                    assert_eq!(obtained,wanted,"{id}:{name}: exact NULL/finite domain");
+                    assert_eq!(obtained, wanted, "{id}:{name}: exact NULL/finite domain");
                 }
                 other => panic!("{id}:{name} not exact domain: {other:?}"),
             }
@@ -243,14 +257,20 @@ fn nonintegral_avg_and_unproven_queries_never_masquerade_as_exact() {
     let parser = dialect_from_name("generic").expect("dialect");
     let state = PhysicalWriteState::new(
         "s",
-        [1, 2].into_iter().enumerate().map(|(index, value)| {
-            PhysicalWriteRow::new(BTreeMap::from([
-                ("id".to_string(), LiteralValue::Text(format!("{index}"))),
-                ("k".to_string(), LiteralValue::Number("1".into())),
-                ("x".to_string(), LiteralValue::Number(value.to_string())),
-            ])).expect("row")
-        }).collect()
-    ).expect("source");
+        [1, 2]
+            .into_iter()
+            .enumerate()
+            .map(|(index, value)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Text(format!("{index}"))),
+                    ("k".to_string(), LiteralValue::Number("1".into())),
+                    ("x".to_string(), LiteralValue::Number(value.to_string())),
+                ]))
+                .expect("row")
+            })
+            .collect(),
+    )
+    .expect("source");
 
     for sql in [
         "SELECT AVG(x) AS average FROM s",
