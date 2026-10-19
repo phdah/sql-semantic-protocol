@@ -7,10 +7,10 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    analyze_dbt_manifest_with_schemas, dialect_from_name, parse_dbt_catalog,
-    parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_tree_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_dbt_manifest_with_schemas, dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
+    parse_odcs_yaml, physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue,
+    PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn source_schemas() -> Vec<RelationSchema> {
@@ -395,8 +395,7 @@ fn produced_model_bag_proofs_reuse_one_source_assignment_across_sql_dbt_and_odcs
         },
         "nodes": nodes, "sources": sources,
     });
-    let parsed = parse_dbt_manifest(&manifest.to_string())
-        .expect("compiled model sources");
+    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled model sources");
     // Manifest-declared intermediate model columns alone are not authoritative
     // evidence that no materialized cast occurred. The paired dbt catalog
     // supplies the equal typed model schemas required for exact transport.
@@ -428,11 +427,10 @@ fn produced_model_bag_proofs_reuse_one_source_assignment_across_sql_dbt_and_odcs
         "sources": {},
         "errors": null,
     });
-    let parsed_catalog = parse_dbt_catalog(&catalog_artifact.to_string())
-        .expect("paired model relation catalog");
-    let dbt = analyze_dbt_artifacts(
-        &parsed, &parsed_catalog, "postgresql", parser.as_ref(),
-    ).expect("typed dbt materialized models");
+    let parsed_catalog =
+        parse_dbt_catalog(&catalog_artifact.to_string()).expect("paired model relation catalog");
+    let dbt = analyze_dbt_artifacts(&parsed, &parsed_catalog, "postgresql", parser.as_ref())
+        .expect("typed dbt materialized models");
     let states = snapshots(case);
     let proof = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         let target = bundle.layers().last().expect("terminal layer").id();
