@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-120",
   "parent": "TASK-72",
   "frozen_at": "2026-10-19",
@@ -822,8 +822,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": true,
           "empty": false,
           "allowed": []
@@ -1150,8 +1150,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": true,
           "empty": false,
           "allowed": []
@@ -1632,8 +1632,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true,
           "allowed": []
@@ -1642,8 +1642,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true,
           "allowed": []
@@ -1942,8 +1942,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true,
           "allowed": []
@@ -1952,8 +1952,8 @@
           "datatype": "signed_integer",
           "lower": null,
           "upper": null,
-          "lower_inclusive": false,
-          "upper_inclusive": false,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true,
           "allowed": []
@@ -2105,8 +2105,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": true,
           "empty": false
         }
@@ -2263,8 +2263,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true
         },
@@ -2273,8 +2273,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true
         }
@@ -2453,8 +2453,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": true,
           "empty": false
         }
@@ -2633,8 +2633,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": true,
           "empty": false
         }
@@ -3016,8 +3016,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true
         },
@@ -3026,8 +3026,8 @@
           "allowed": [],
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
           "contains_null": false,
           "empty": true
         }
