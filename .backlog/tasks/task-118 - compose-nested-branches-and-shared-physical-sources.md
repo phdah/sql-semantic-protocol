@@ -1,10 +1,10 @@
 ---
 id: TASK-118
 title: Compose nested branches and shared physical sources
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -39,6 +39,16 @@ type: feature
 - [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-118; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-72 parent open.
 <!-- AC:END -->
+
+## Implementation notes (2026-10-19)
+
+Task-owned acceptance inventory: [task-118-acceptance-freeze.json](../../docs/task-118-acceptance-freeze.json).
+The additive public physical set-tree proof interprets canonical nested multiplicities
+from one whole-source bag per distinct physical relation. It preserves stable row IDs,
+TRUE/FALSE/UNKNOWN branch membership, complete nullable tuple frequencies, and
+terminal domains. Independent DuckDB, thirteen-dialect parser, and SQL/dbt/ODCS
+adapter verification run in the PR CI. Until final CI and audit are verified,
+acceptance remains unchecked and TASK-72 remains open.
 
 ## Next
 
