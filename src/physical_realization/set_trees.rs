@@ -212,7 +212,9 @@ fn branch_source<'a>(
         .unwrap_or_else(|| branch.sources()[0].name());
     let certified_cte = relation != branch.sources()[0].name()
         && walker.sources.contains(relation)
-        && branch.witness_boundary().is_some_and(|witness| !witness.is_intermediate());
+        && branch
+            .witness_boundary()
+            .is_some_and(|witness| !witness.is_intermediate());
     let source = physical_transparent_producer_leaf(bundle, walker, relation)
         .ok_or("set branch producer is not a certified lossless physical projection")?;
     if !walker.sources.contains(&source) {
