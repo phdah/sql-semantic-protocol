@@ -239,7 +239,7 @@ pub fn physical_finite_rank_bag_plan(
         return residual("ranking requires a direct single source");
     };
     if snapshot.relation() != source.name()
-        || !walker.sources.contains(&source.name().to_string())
+        || !walker.sources.contains(source.name())
         || !query.joins().is_empty()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
