@@ -197,6 +197,28 @@ fn frozen_order_limit_fetch_and_exhausted_offset_are_complete_source_proofs() {
         );
         for (index, domain) in exact.terminal_domains.iter().enumerate() {
             let wanted = &case["typed_terminal_domains"][index];
+            let allowed = wanted["allowed"]
+                .as_array()
+                .expect("frozen complete allowed values")
+                .iter()
+                .map(|value| i128::from(value.as_i64().expect("finite integer")))
+                .collect::<Vec<_>>();
+            assert_eq!(domain.values, allowed, "{id}: exact allowed values at {index}");
+            assert_eq!(
+                wanted["empty"].as_bool().expect("frozen domain emptiness"),
+                domain.values.is_empty() && !domain.contains_null,
+                "{id}: exact empty domain at {index}"
+            );
+            assert_eq!(
+                wanted["lower_inclusive"].as_bool(),
+                Some(true),
+                "{id}: frozen lower bound inclusivity"
+            );
+            assert_eq!(
+                wanted["upper_inclusive"].as_bool(),
+                Some(true),
+                "{id}: frozen upper bound inclusivity"
+            );
             assert_eq!(
                 domain.bounds(),
                 match (wanted["lower"].as_i64(), wanted["upper"].as_i64()) {
@@ -254,12 +276,20 @@ fn unresolved_ties_coercion_and_nested_branch_limits_fail_closed() {
             .expect("frozen residual fixture");
         let analyzed = bundle(case["sql"].as_str().expect("SQL"));
         let target = analyzed.layers().last().expect("terminal").id();
-        assert!(
-            matches!(
-                physical_finite_set_tree_plan(&analyzed, target, &states(case)),
-                PhysicalFiniteSetTreeProof::Residual { .. }
-            ),
-            "{id} must not invent source-level exactness"
+        let proof = physical_finite_set_tree_plan(&analyzed, target, &states(case));
+        let PhysicalFiniteSetTreeProof::Residual { reason } = proof else {
+            panic!("{id} must not invent source-level exactness: {proof:?}");
+        };
+        if id.ends_with("-order-tie") {
+            assert!(
+                reason.contains("ties distinct output tuples"),
+                "{id}: must fail on the true ambiguous-tie law: {reason}"
+            );
+        }
+        assert_eq!(
+            case["typed_terminal_domains"][0]["proof"],
+            "unknown_not_empty",
+            "{id}: a residual is never an exact empty outcome"
         );
     }
 }
