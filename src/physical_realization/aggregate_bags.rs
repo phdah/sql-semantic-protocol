@@ -10,8 +10,8 @@ use super::write_states::{
 use super::*;
 use crate::data_type::DataType;
 use crate::protocol::{
-    AggregateArgument, ColumnExpression, LiteralExpression, LiteralType, LiteralValue, SetMode,
-    ValueDomain,
+    AggregateArgument, ColumnExpression, ComparisonOperator, LiteralExpression, LiteralType,
+    LiteralValue, Predicate, SetMode, ValueDomain,
 };
 
 /// Exact membership of a group, keeping duplicates as separate source rows.
@@ -23,6 +23,45 @@ pub struct PhysicalAggregateGroup {
     pub source_row_ids: Vec<String>,
     /// Non-NULL contributors for each named aggregate (COUNT(*) includes all).
     pub aggregate_row_ids: BTreeMap<String, Vec<String>>,
+    /// SQL HAVING truth for this entire group (None without HAVING).
+    pub having_truth: Option<PhysicalAggregateTruth>,
+}
+
+/// Exact SQL three-valued truth of a group condition or aggregate FILTER.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhysicalAggregateTruth {
+    /// The condition is satisfied.
+    True,
+    /// The condition is false.
+    False,
+    /// The condition is UNKNOWN due to SQL NULL.
+    Unknown,
+}
+
+impl PhysicalAggregateTruth {
+    fn and(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::False, _) | (_, Self::False) => Self::False,
+            (Self::Unknown, _) | (_, Self::Unknown) => Self::Unknown,
+            _ => Self::True,
+        }
+    }
+
+    fn or(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::True, _) | (_, Self::True) => Self::True,
+            (Self::Unknown, _) | (_, Self::Unknown) => Self::Unknown,
+            _ => Self::False,
+        }
+    }
+
+    fn not(self) -> Self {
+        match self {
+            Self::True => Self::False,
+            Self::False => Self::True,
+            Self::Unknown => Self::Unknown,
+        }
+    }
 }
 
 /// One fully evaluated source-backed aggregate query.
@@ -84,6 +123,204 @@ fn numeric(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
     }
 }
 
+fn source_scalar(
+    expression: &Expression,
+    row: Option<&PhysicalWriteRow>,
+    schema: &crate::relation::RelationSchema,
+    source: &str,
+    alias: Option<&str>,
+) -> Result<LiteralValue, &'static str> {
+    match expression {
+        Expression::Column(column) if matches_source(column, source, alias) => {
+            let Some(declared) = schema.columns().iter().find(|c| c.name() == column.name()) else {
+                return Err("filter column lacks physical schema");
+            };
+            if !signed_integer(declared.data_type()) {
+                return Err("filter column lacks a signed integer comparison law");
+            }
+            match row {
+                Some(row) => row
+                    .values()
+                    .get(column.name())
+                    .cloned()
+                    .ok_or("filter column absent from complete source row"),
+                None => Ok(LiteralValue::Null),
+            }
+        }
+        Expression::Literal(literal) => match literal.literal_type() {
+            LiteralType::Integer | LiteralType::Null | LiteralType::Boolean => {
+                Ok(literal.value().clone())
+            }
+            _ => Err("FILTER requires an exact integer/NULL/Boolean literal"),
+        },
+        _ => Err("FILTER scalar is not a typed physical integer expression"),
+    }
+}
+
+/// Validate the entire predicate tree even for empty physical bags or absent groups.
+/// Without this preflight an unsupported expression could incorrectly prove an
+/// empty GROUP BY output or a FILTER with no contributing rows.
+fn predicate_shape<F>(predicate: &Predicate, scalar: &F) -> Result<(), &'static str>
+where
+    F: Fn(&Expression) -> Result<LiteralValue, &'static str>,
+{
+    match predicate {
+        Predicate::Comparison(c) => {
+            scalar(c.left())?;
+            scalar(c.right())?;
+        }
+        Predicate::IsNull(c) => {
+            scalar(c.expression())?;
+        }
+        Predicate::And(c) | Predicate::Or(c) => {
+            for item in c.operands() {
+                predicate_shape(item, scalar)?;
+            }
+        }
+        Predicate::Not(c) => predicate_shape(c.operand(), scalar)?,
+        Predicate::BooleanExpression(Expression::BooleanPredicate(c)) => {
+            predicate_shape(c, scalar)?;
+        }
+        Predicate::BooleanExpression(e) => {
+            if !matches!(scalar(e)?, LiteralValue::Boolean(_) | LiteralValue::Null) {
+                return Err("predicate expression is not Boolean");
+            }
+        }
+        _ => return Err("predicate requires unproved SQL execution semantics"),
+    }
+    Ok(())
+}
+
+fn predicate_truth<F>(
+    predicate: &Predicate,
+    scalar: &F,
+) -> Result<PhysicalAggregateTruth, &'static str>
+where
+    F: Fn(&Expression) -> Result<LiteralValue, &'static str>,
+{
+    use PhysicalAggregateTruth::{False, True, Unknown};
+    match predicate {
+        Predicate::Comparison(c) => {
+            let lhs = scalar(c.left())?;
+            let rhs = scalar(c.right())?;
+            if lhs == LiteralValue::Null || rhs == LiteralValue::Null {
+                return Ok(match c.operator() {
+                    ComparisonOperator::IsDistinctFrom => {
+                        if lhs == rhs {
+                            False
+                        } else {
+                            True
+                        }
+                    }
+                    ComparisonOperator::IsNotDistinctFrom => {
+                        if lhs == rhs {
+                            True
+                        } else {
+                            False
+                        }
+                    }
+                    _ => Unknown,
+                });
+            }
+            let (Some(left), Some(right)) = (numeric(&lhs)?, numeric(&rhs)?) else {
+                return Err("integer predicate operand is unproved");
+            };
+            let applies = match c.operator() {
+                ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => left == right,
+                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => left != right,
+                ComparisonOperator::Lt => left < right,
+                ComparisonOperator::Lte => left <= right,
+                ComparisonOperator::Gt => left > right,
+                ComparisonOperator::Gte => left >= right,
+            };
+            Ok(if applies { True } else { False })
+        }
+        Predicate::IsNull(c) => {
+            let is_null = scalar(c.expression())? == LiteralValue::Null;
+            Ok(if is_null != c.negated() { True } else { False })
+        }
+        Predicate::And(c) => {
+            let mut result = True;
+            for child in c.operands() {
+                result = result.and(predicate_truth(child, scalar)?);
+            }
+            Ok(result)
+        }
+        Predicate::Or(c) => {
+            let mut result = False;
+            for child in c.operands() {
+                result = result.or(predicate_truth(child, scalar)?);
+            }
+            Ok(result)
+        }
+        Predicate::Not(c) => Ok(predicate_truth(c.operand(), scalar)?.not()),
+        Predicate::BooleanExpression(Expression::BooleanPredicate(c)) => predicate_truth(c, scalar),
+        Predicate::BooleanExpression(e) => match scalar(e)? {
+            LiteralValue::Boolean(true) => Ok(True),
+            LiteralValue::Boolean(false) => Ok(False),
+            LiteralValue::Null => Ok(Unknown),
+            _ => Err("predicate does not evaluate to Boolean"),
+        },
+        _ => Err("predicate has no complete signed integer Boolean law"),
+    }
+}
+
+struct HavingEvaluation<'a> {
+    projected: &'a BTreeMap<String, LiteralValue>,
+    key: Option<i128>,
+    group_key: Option<&'a str>,
+    members: &'a [usize],
+    snapshot: &'a PhysicalWriteState,
+    schema: &'a crate::relation::RelationSchema,
+    source: &'a str,
+    alias: Option<&'a str>,
+}
+
+fn having_scalar(
+    expression: &Expression,
+    context: &HavingEvaluation<'_>,
+) -> Result<LiteralValue, &'static str> {
+    let projected = context.projected;
+    let key = context.key;
+    let group_key = context.group_key;
+    let members = context.members;
+    let snapshot = context.snapshot;
+    let schema = context.schema;
+    let source = context.source;
+    let alias = context.alias;
+    match expression {
+        Expression::AggregateFunction(function) => {
+            aggregate_value(function, members, snapshot, schema, source, alias).map(|(v, _)| v)
+        }
+        Expression::Column(column) => {
+            if column.relation().is_some() && !matches_source(column, source, alias) {
+                return Err("HAVING expression references an unproved producer");
+            }
+            if group_key == Some(column.name()) {
+                return Ok(key
+                    .map(|k| LiteralValue::Number(k.to_string()))
+                    .unwrap_or(LiteralValue::Null));
+            }
+            if column.relation().is_none()
+                && !schema.columns().iter().any(|c| c.name() == column.name())
+            {
+                return projected
+                    .get(column.name())
+                    .cloned()
+                    .ok_or("HAVING alias does not name an output aggregate");
+            }
+            Err("HAVING column is neither the grouping key nor an unambiguous aggregate alias")
+        }
+        Expression::Literal(literal) => match literal.literal_type() {
+            LiteralType::Integer | LiteralType::Null | LiteralType::Boolean => {
+                Ok(literal.value().clone())
+            }
+            _ => Err("HAVING literal comparison lacks a portable type law"),
+        },
+        _ => Err("HAVING contains an unproved computed scalar expression"),
+    }
+}
+
 fn aggregate_value(
     function: &crate::protocol::AggregateFunctionExpression,
     members: &[usize],
@@ -92,8 +329,16 @@ fn aggregate_value(
     source: &str,
     alias: Option<&str>,
 ) -> Result<(LiteralValue, Vec<String>), &'static str> {
-    if function.distinct() || function.filter().is_some() {
-        return Err("DISTINCT and FILTER need separate grouped proofs");
+    if function.distinct() && !function.name().eq_ignore_ascii_case("count") {
+        return Err("only COUNT(DISTINCT column) has a certified integer law");
+    }
+    if function.distinct() && matches!(function.arguments(), [AggregateArgument::Wildcard]) {
+        return Err("COUNT(DISTINCT *) has no portable certified law");
+    }
+    if let Some(filter) = function.filter() {
+        predicate_shape(filter, &|expr| {
+            source_scalar(expr, None, schema, source, alias)
+        })?;
     }
     let count_all = function.name().eq_ignore_ascii_case("count")
         && matches!(function.arguments(), [AggregateArgument::Wildcard]);
@@ -120,9 +365,16 @@ fn aggregate_value(
 
     let mut numbers = Vec::new();
     let mut contributors = Vec::new();
+    let mut distinct_numbers = BTreeSet::new();
     for index in members {
         let row = &snapshot.rows()[*index];
         let id = format!("{source}#{index}");
+        if let Some(filter) = function.filter() {
+            let scalar = |expr: &Expression| source_scalar(expr, Some(row), schema, source, alias);
+            if predicate_truth(filter, &scalar)? != PhysicalAggregateTruth::True {
+                continue;
+            }
+        }
         if count_all {
             contributors.push(id);
             continue;
@@ -132,8 +384,10 @@ fn aggregate_value(
             .get(column.ok_or("missing aggregate column")?)
             .ok_or("aggregate source row lacks a declared column")?;
         if let Some(value) = numeric(value)? {
-            numbers.push(value);
-            contributors.push(id);
+            if !function.distinct() || distinct_numbers.insert(value) {
+                numbers.push(value);
+                contributors.push(id);
+            }
         }
     }
 
@@ -179,7 +433,7 @@ fn aggregate_value(
 /// Prove a direct single-source GROUP BY or global aggregation on the complete
 /// physical integer bag. Both SQL's empty-global singleton and empty-grouped
 /// zero-row result are evaluated from the same source identity. Runtime-specific
-/// AVG scale, overflowing SUM, HAVING, DISTINCT and other operators stay Residual.
+/// AVG scale, overflowing SUM and unsupported operators stay Residual.
 pub fn physical_finite_aggregate_bag_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -212,7 +466,6 @@ pub fn physical_finite_aggregate_bag_plan(
     if snapshot.relation() != relation
         || !walker.sources.contains(relation)
         || query.predicates().where_predicate().is_some()
-        || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
         || !query.joins().is_empty()
         || query.set_operation().is_some()
@@ -289,6 +542,29 @@ pub fn physical_finite_aggregate_bag_plan(
         return residual("query contains no basic aggregate expression");
     }
 
+    if let Some(having) = query.predicates().having_predicate() {
+        let prototype = query
+            .output()
+            .columns()
+            .iter()
+            .map(|output| (output.name().to_string(), LiteralValue::Null))
+            .collect::<BTreeMap<_, _>>();
+        let context = HavingEvaluation {
+            projected: &prototype,
+            key: None,
+            group_key: grouped_key,
+            members: &[],
+            snapshot,
+            schema,
+            source: relation,
+            alias: source.alias(),
+        };
+        let scalar = |expr: &Expression| having_scalar(expr, &context);
+        if let Err(reason) = predicate_shape(having, &scalar) {
+            return residual(reason);
+        }
+    }
+
     let mut groups = BTreeMap::<Option<i128>, Vec<usize>>::new();
     if grouped_key.is_none() {
         groups.insert(None, (0..snapshot.rows().len()).collect());
@@ -343,6 +619,26 @@ pub fn physical_finite_aggregate_bag_plan(
                 return residual("duplicate output column names prevent exact terminal identity");
             }
         }
+        let having_truth = match query.predicates().having_predicate() {
+            Some(predicate) => {
+                let context = HavingEvaluation {
+                    projected: &projected,
+                    key,
+                    group_key: grouped_key,
+                    members: &members,
+                    snapshot,
+                    schema,
+                    source: relation,
+                    alias: source.alias(),
+                };
+                let scalar = |expr: &Expression| having_scalar(expr, &context);
+                match predicate_truth(predicate, &scalar) {
+                    Ok(truth) => Some(truth),
+                    Err(reason) => return residual(reason),
+                }
+            }
+            None => None,
+        };
         identities.push(PhysicalAggregateGroup {
             key,
             source_row_ids: members
@@ -350,8 +646,11 @@ pub fn physical_finite_aggregate_bag_plan(
                 .map(|index| format!("{relation}#{index}"))
                 .collect(),
             aggregate_row_ids,
+            having_truth,
         });
-        terminal.push(projected);
+        if having_truth.is_none_or(|truth| truth == PhysicalAggregateTruth::True) {
+            terminal.push(projected);
+        }
     }
     let mut terminal_domains = BTreeMap::new();
     for output in query.output().columns() {

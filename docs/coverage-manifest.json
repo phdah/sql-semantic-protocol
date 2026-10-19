@@ -1,4 +1,32 @@
 {
+  "task_122_distinct_filter_having_acceptance": {
+    "owner": "TASK-122",
+    "parent": "TASK-73",
+    "status": "verified_bounded_pending_merge",
+    "acceptance_freeze": "docs/task-122-acceptance-freeze.json",
+    "fixture_ids": [
+      "73-C122-P",
+      "73-C122-N"
+    ],
+    "mandatory_cases": 4,
+    "required_parser_dialects": 13,
+    "reviewed_parser_dialect_cells": 52,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "mandatory_adapter_exact_proofs": 12,
+    "duckdb_source_terminal_bag_proofs": 4,
+    "conditional_owner": "TASK-122",
+    "unverified_mandatory_cells_block_done": false,
+    "acceptance_audit": "docs/task-122-acceptance-audit.md",
+    "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39275972342",
+    "reviewed_semantic_sha": "62642b51a763f8fcc0e7db63df13768a8364e545",
+    "release_approved": false,
+    "native_vendor_execution_certified": false,
+    "remaining_gate": "final metadata-head CI and merge PR #132; TASK-73 independent parent acceptance remains open"
+  },
   "task_121_grouped_global_aggregate_acceptance": {
     "owner": "TASK-121",
     "parent": "TASK-73",

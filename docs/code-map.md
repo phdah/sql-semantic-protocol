@@ -37,6 +37,8 @@ frequencies. The task-owned fixture matrix is
 and `tests/task_118_set_adapters.rs`. Unsupported CTE producer shapes,
 coercions, order/limits, and unattested scalar expressions remain Residual.
 
+TASK-122 DISTINCT and FILTER aggregate contributors and full HAVING group truth: `src/physical_realization/aggregate_bags.rs` owns complete typed integer input bags, distinct contributor identity, row-level FILTER three-valued selection and per-group HAVING TRUE/FALSE/UNKNOWN with exact surviving terminal domains. The frozen source/terminal oracle and complete rejected-group witnesses are in `tests/task_122_aggregate_having.rs` and `docs/task-122-acceptance-freeze.json`; unproved scalar, decimal or vendor laws fail closed.
+
 TASK-121 basic grouped/global closed-world aggregate bags: `src/physical_realization/aggregate_bags.rs` certifies complete typed integer source bags through canonical COUNT(*), COUNT(column), SUM, MIN, MAX and exactly integral AVG. It returns exact terminal source identity, multiplicities, NULLs and finite output domains; unproved AVG scale, overflow, HAVING and DISTINCT fail closed. Public DuckDB regression: `tests/task_121_aggregate_bags.rs`; fixture matrix: `docs/task-121-acceptance-freeze.json`.
 
 ## Starting points

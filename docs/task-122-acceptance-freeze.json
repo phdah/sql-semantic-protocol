@@ -1,0 +1,809 @@
+{
+  "version": 1,
+  "owner": "TASK-122",
+  "parent": "TASK-73",
+  "created": "2026-10-19",
+  "fixture_ids": [
+    "73-C122-P",
+    "73-C122-N"
+  ],
+  "source_identity": "s#<0-based index>",
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "conditional_owner": "TASK-122",
+  "conditional_boundary": "FILTER syntax parser availability by dialect; unsupported scalar types/aggregate laws fail closed",
+  "cases": [
+    {
+      "id": "73-C122-P-distinct",
+      "sql": "SELECT k, COUNT(DISTINCT x) AS unique_x, COUNT(x) AS count_x FROM s GROUP BY k HAVING COUNT(x) > 1 AND COUNT(DISTINCT x) = 1",
+      "kind": "mandatory",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 1,
+          "x": null
+        },
+        {
+          "id": "d",
+          "k": 2,
+          "x": 2
+        }
+      ],
+      "terminal_columns": [
+        "k",
+        "unique_x",
+        "count_x"
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 1,
+          "unique_x": 1,
+          "count_x": 2
+        }
+      ],
+      "groups": [
+        {
+          "key": 1,
+          "source_row_ids": [
+            "s#0",
+            "s#1",
+            "s#2"
+          ],
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "unique_x": [
+              "s#0"
+            ],
+            "count_x": [
+              "s#0",
+              "s#1"
+            ]
+          }
+        },
+        {
+          "key": 2,
+          "source_row_ids": [
+            "s#3"
+          ],
+          "having": "FALSE",
+          "aggregate_row_ids": {
+            "unique_x": [
+              "s#3"
+            ],
+            "count_x": [
+              "s#3"
+            ]
+          }
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "unique_x",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "count_x",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "FALSE_or_UNKNOWN_complete_group_rejection"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C122-P-filter",
+      "sql": "SELECT k, COUNT(*) FILTER (WHERE x > 1) AS filtered_count, COUNT(x) AS count_x FROM s GROUP BY k HAVING COUNT(*) FILTER (WHERE x > 1) > 0",
+      "kind": "mandatory_conditional_parser",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 2
+        },
+        {
+          "id": "c",
+          "k": 1,
+          "x": null
+        },
+        {
+          "id": "d",
+          "k": 2,
+          "x": 3
+        }
+      ],
+      "terminal_columns": [
+        "k",
+        "filtered_count",
+        "count_x"
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 1,
+          "filtered_count": 1,
+          "count_x": 2
+        },
+        {
+          "k": 2,
+          "filtered_count": 1,
+          "count_x": 1
+        }
+      ],
+      "groups": [
+        {
+          "key": 1,
+          "source_row_ids": [
+            "s#0",
+            "s#1",
+            "s#2"
+          ],
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "filtered_count": [
+              "s#1"
+            ],
+            "count_x": [
+              "s#0",
+              "s#1"
+            ]
+          }
+        },
+        {
+          "key": 2,
+          "source_row_ids": [
+            "s#3"
+          ],
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "filtered_count": [
+              "s#3"
+            ],
+            "count_x": [
+              "s#3"
+            ]
+          }
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "filtered_count",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "count_x",
+          "values": [
+            2,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "FALSE_or_UNKNOWN_complete_group_rejection"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C122-N-unknown",
+      "sql": "SELECT k, COUNT(x) AS count_x FROM s GROUP BY k HAVING COUNT(x) > 1 OR COUNT(x) > NULL",
+      "kind": "mandatory",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": null
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 2,
+          "x": null
+        }
+      ],
+      "terminal_columns": [
+        "k",
+        "count_x"
+      ],
+      "full_terminal_bag": [],
+      "groups": [
+        {
+          "key": 1,
+          "source_row_ids": [
+            "s#0",
+            "s#1"
+          ],
+          "having": "UNKNOWN",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#1"
+            ]
+          }
+        },
+        {
+          "key": 2,
+          "source_row_ids": [
+            "s#2"
+          ],
+          "having": "UNKNOWN",
+          "aggregate_row_ids": {
+            "count_x": []
+          }
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [],
+          "contains_null": false,
+          "inclusive_bounds": null
+        },
+        {
+          "column": "count_x",
+          "values": [],
+          "contains_null": false,
+          "inclusive_bounds": null
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "FALSE_or_UNKNOWN_complete_group_rejection"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    },
+    {
+      "id": "73-C122-P-boolean",
+      "sql": "SELECT k, COUNT(x) AS count_x, SUM(x) AS total FROM s GROUP BY k HAVING (COUNT(x) > 1 AND SUM(x) >= 2) OR COUNT(*) = 1",
+      "kind": "mandatory",
+      "source_relation": "s",
+      "source_columns": {
+        "id": "VARCHAR",
+        "k": "INTEGER",
+        "x": "INTEGER"
+      },
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 1,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 2,
+          "x": 3
+        },
+        {
+          "id": "d",
+          "k": 3,
+          "x": null
+        },
+        {
+          "id": "e",
+          "k": 3,
+          "x": null
+        }
+      ],
+      "terminal_columns": [
+        "k",
+        "count_x",
+        "total"
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 1,
+          "count_x": 2,
+          "total": 2
+        },
+        {
+          "k": 2,
+          "count_x": 1,
+          "total": 3
+        }
+      ],
+      "groups": [
+        {
+          "key": 1,
+          "source_row_ids": [
+            "s#0",
+            "s#1"
+          ],
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#0",
+              "s#1"
+            ],
+            "total": [
+              "s#0",
+              "s#1"
+            ]
+          }
+        },
+        {
+          "key": 2,
+          "source_row_ids": [
+            "s#2"
+          ],
+          "having": "TRUE",
+          "aggregate_row_ids": {
+            "count_x": [
+              "s#2"
+            ],
+            "total": [
+              "s#2"
+            ]
+          }
+        },
+        {
+          "key": 3,
+          "source_row_ids": [
+            "s#3",
+            "s#4"
+          ],
+          "having": "FALSE",
+          "aggregate_row_ids": {
+            "count_x": [],
+            "total": []
+          }
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "k",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "count_x",
+          "values": [
+            2,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "values": [
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": {
+        "source": "complete_attested_physical_bag",
+        "terminal": "Exact",
+        "not_true": "FALSE_or_UNKNOWN_complete_group_rejection"
+      },
+      "dialects": {
+        "generic": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mysql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "postgresql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "hive": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "sqlite": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "snowflake": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "redshift": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "mssql": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "clickhouse": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "bigquery": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "ansi": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "duckdb": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        },
+        "databricks": {
+          "parser": "must_verify",
+          "canonical": "must_verify",
+          "native_engine": "not_claimed"
+        }
+      },
+      "adapters": {
+        "direct_sql": "must_verify",
+        "dbt_compiled": "must_verify",
+        "odcs_schema": "must_verify"
+      },
+      "release_disposition": "mandatory_blocking_until_independently_verified"
+    }
+  ]
+}

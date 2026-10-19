@@ -492,8 +492,8 @@ mod sets;
 mod write_states;
 
 pub use aggregate_bags::{
-    physical_finite_aggregate_bag_plan, PhysicalAggregateGroup, PhysicalFiniteAggregateExact,
-    PhysicalFiniteAggregateProof,
+    physical_finite_aggregate_bag_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
+    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof,
 };
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,

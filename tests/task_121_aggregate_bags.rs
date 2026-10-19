@@ -333,7 +333,7 @@ fn nonintegral_avg_and_unproven_queries_never_masquerade_as_exact() {
     for sql in [
         "SELECT AVG(x) AS average FROM s",
         "SELECT SUM(x) AS total FROM s WHERE x > 1",
-        "SELECT COUNT(DISTINCT x) AS count_x FROM s",
+        "SELECT SUM(DISTINCT x) AS sum_x FROM s",
     ] {
         let input = SqlInput::inline(sql);
         let configured = ConfiguredSqlInput::new("negative", &input, "generic", parser.as_ref());
@@ -399,7 +399,7 @@ fn zero_group_rows_still_validate_the_aggregate_expression_and_column_identity()
     let parser = dialect_from_name("generic").expect("dialect");
     let empty = source(&fixture()["cases"][3]);
     for sql in [
-        "SELECT k, COUNT(DISTINCT x) AS n FROM s GROUP BY k",
+        "SELECT k, SUM(DISTINCT x) AS n FROM s GROUP BY k",
         "SELECT k, SUM(x + 1) AS n FROM s GROUP BY k",
         "SELECT k, COUNT(*) AS n, SUM(x) AS n FROM s GROUP BY k",
     ] {
