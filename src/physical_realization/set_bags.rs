@@ -87,7 +87,11 @@ fn tuple_from_row(
     };
     Ok([
         integer(row.values().get(first).ok_or("missing first set column")?)?,
-        integer(row.values().get(second).ok_or("missing second set column")?)?,
+        integer(
+            row.values()
+                .get(second)
+                .ok_or("missing second set column")?,
+        )?,
     ])
 }
 
@@ -190,7 +194,9 @@ pub fn physical_finite_set_bag_plan(
             let Ok(key) = tuple_from_row(row, boundary.tuple_columns()) else {
                 return residual("set source projection lacks two exact nullable integer values");
             };
-            observed.entry(key).or_insert_with(|| [Vec::new(), Vec::new()])[index]
+            observed
+                .entry(key)
+                .or_insert_with(|| [Vec::new(), Vec::new()])[index]
                 .push(id.to_string());
         }
     }
