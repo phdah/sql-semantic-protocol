@@ -447,3 +447,112 @@ fn empty_join_never_proves_comparison_without_numeric_execution_law() {
         );
     }
 }
+
+
+#[test]
+fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
+    let mut case = freeze()["cases"][0].clone();
+    case["sql"] = Value::String(
+        "SELECT l.k AS k, COUNT(DISTINCT r.x) AS distinct_x, SUM(r.x) AS sum_x, \
+         MIN(r.x) AS min_x, MAX(r.x) AS max_x, \
+         COUNT(*) FILTER (WHERE r.x IS NOT NULL) AS filtered_count \
+         FROM l INNER JOIN r ON l.k = r.k WHERE l.x > 0 \
+         GROUP BY l.k HAVING COUNT(*) >= 2"
+            .to_string(),
+    );
+    case["terminal_columns"] = serde_json::json!([
+        "k", "distinct_x", "sum_x", "min_x", "max_x", "filtered_count"
+    ]);
+    case["full_terminal_bag"] = serde_json::json!([{
+        "k": 1,
+        "distinct_x": 1,
+        "sum_x": 14,
+        "min_x": 7,
+        "max_x": 7,
+        "filtered_count": 2
+    }]);
+
+    let proof = joined_proof(&case, "generic");
+    let PhysicalJoinedAggregateProof::Exact(exact) = proof else {
+        panic!("typed joined aggregates must be exact: {proof:?}");
+    };
+    let wanted = expected(&case);
+    assert_eq!(normalized(&exact.terminal), normalized(&wanted));
+    assert_eq!(exact.selected.len(), 5, "duplicates preserve joined bag size");
+    assert_eq!(exact.rejected.len(), 7, "NULL and false pairs remain NOT TRUE");
+
+    for (name, number) in [
+        ("k", 1),
+        ("distinct_x", 1),
+        ("sum_x", 14),
+        ("min_x", 7),
+        ("max_x", 7),
+        ("filtered_count", 2),
+    ] {
+        let ValueDomain::Set(set) = exact.terminal_domains.get(name).expect("output domain")
+        else {
+            panic!("{name}: expected exact finite value domain");
+        };
+        assert_eq!(set.mode(), SetMode::Include);
+        assert_eq!(set.values().len(), 1, "{name}: singleton numeric domain");
+        assert_eq!(
+            set.values()[0].value(),
+            &LiteralValue::Number(number.to_string()),
+            "{name}: exact value and inclusive point bounds"
+        );
+    }
+
+    // DuckDB widens SUM(INTEGER) to HUGEINT; this lossless cast (14 fits
+    // BIGINT) allows the existing complete-bag reader to compare all columns.
+    let mut engine_case = case.clone();
+    engine_case["sql"] = Value::String(
+        case["sql"]
+            .as_str()
+            .expect("join SQL")
+            .replace("SUM(r.x) AS sum_x", "CAST(SUM(r.x) AS BIGINT) AS sum_x"),
+    );
+    assert_eq!(
+        normalized(&duckdb_bag(&engine_case)),
+        normalized(&wanted),
+        "independent source-attested DuckDB terminal bag"
+    );
+
+    case["sql"] = Value::String(
+        "SELECT l.k AS k, AVG(r.x) AS avg_x \
+         FROM l INNER JOIN r ON l.k = r.k WHERE l.x > 0 \
+         GROUP BY l.k HAVING COUNT(*) >= 2"
+            .to_string(),
+    );
+    let avg = joined_proof(&case, "generic");
+    let PhysicalJoinedAggregateProof::Exact(avg) = avg else {
+        panic!("integral AVG must retain exact joined contributors: {avg:?}");
+    };
+    assert_eq!(
+        avg.terminal[0].get("avg_x"),
+        Some(&LiteralValue::Number("7".to_string()))
+    );
+    let ValueDomain::Set(domain) = avg.terminal_domains.get("avg_x").expect("AVG domain") else {
+        panic!("integral AVG output must have an exact domain");
+    };
+    assert_eq!(domain.values()[0].value(), &LiteralValue::Number("7".to_string()));
+}
+
+#[test]
+fn joined_aggregate_contradictory_physical_schema_is_impossible() {
+    let case = &freeze()["cases"][0];
+    let bundle = parsed(case, "generic").expect("mandatory SQL");
+    let target = bundle.layers().last().expect("terminal layer").id();
+
+    let original = states(case);
+    let mut left_rows = original[0].rows().to_vec();
+    let mut wrong_values = left_rows[0].values().clone();
+    wrong_values.insert("k".to_string(), LiteralValue::Text("invalid".to_string()));
+    left_rows[0] = PhysicalWriteRow::new(wrong_values).expect("physical row");
+    let invalid_left = PhysicalWriteState::new("l", left_rows).expect("source bag");
+    let result =
+        physical_finite_join_aggregate_plan(&bundle, target, &[invalid_left, original[1].clone()]);
+    assert!(
+        matches!(result, PhysicalJoinedAggregateProof::Impossible { .. }),
+        "contradicted typed source evidence is Impossible, not an Exact or Residual claim: {result:?}"
+    );
+}
