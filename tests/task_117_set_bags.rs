@@ -7,8 +7,8 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_set_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn fixture() -> Value {
@@ -109,7 +109,10 @@ fn seed_duckdb(db: &Connection, case: &Value) {
     )
     .expect("physical tables");
     for relation in ["a", "b"] {
-        for row in case["source_bags"][relation].as_array().expect("source rows") {
+        for row in case["source_bags"][relation]
+            .as_array()
+            .expect("source rows")
+        {
             let id = row["id"].as_str().expect("source identity");
             let v = if row["v"].is_null() {
                 "NULL".to_string()
@@ -153,7 +156,11 @@ fn frozen_six_operators_prove_exact_two_column_source_and_terminal_bags() {
             .filter(|tuple| tuple.output_count > 0)
             .map(|tuple| (tuple.values, tuple.output_count))
             .collect::<BTreeMap<_, _>>();
-        assert_eq!(actual, expected_histogram(case), "{id}: full tuple histogram");
+        assert_eq!(
+            actual,
+            expected_histogram(case),
+            "{id}: full tuple histogram"
+        );
         assert_eq!(
             exact.terminal.len(),
             case["expected_count"].as_u64().expect("count") as usize,
@@ -161,10 +168,7 @@ fn frozen_six_operators_prove_exact_two_column_source_and_terminal_bags() {
         );
 
         for entry in &exact.tuples {
-            for (side, identities) in [
-                ("a", &entry.left_row_ids),
-                ("b", &entry.right_row_ids),
-            ] {
+            for (side, identities) in [("a", &entry.left_row_ids), ("b", &entry.right_row_ids)] {
                 let expected = case["source_bags"][side]
                     .as_array()
                     .expect("source")
@@ -213,8 +217,8 @@ fn absent_except_membership_is_proven_from_both_complete_source_bags() {
         .iter()
         .find(|case| case["id"] == "72-C117-N-saturating_difference")
         .expect("negative absence fixture");
-    let catalog = RelationCatalog::from_schemas(&[source_schema("a"), source_schema("b")])
-        .expect("catalog");
+    let catalog =
+        RelationCatalog::from_schemas(&[source_schema("a"), source_schema("b")]).expect("catalog");
     let dialect = dialect_from_name("generic").expect("parser");
     let input = SqlInput::inline(case["sql"].as_str().expect("SQL"));
     let configured = ConfiguredSqlInput::new("negative", &input, "generic", dialect.as_ref());
