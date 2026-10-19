@@ -215,7 +215,9 @@ fn having_scalar(
     sources: &JoinedSources<'_>,
 ) -> Result<LiteralValue, &'static str> {
     match expr {
-        Expression::AggregateFunction(function) => aggregate(function, members, sources).map(|v| v.0),
+        Expression::AggregateFunction(function) => {
+            aggregate(function, members, sources).map(|v| v.0)
+        }
         Expression::Column(column) => {
             if group_column.is_some_and(|group| group == column) {
                 return Ok(key.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())));
@@ -247,9 +249,16 @@ fn domains(
         let mut values = Vec::new();
         for row in terminal {
             let value = row.get(name).ok_or("terminal projection is incomplete")?;
-            if !values.iter().any(|candidate: &LiteralExpression| candidate.value() == value) {
+            if !values
+                .iter()
+                .any(|candidate: &LiteralExpression| candidate.value() == value)
+            {
                 values.push(LiteralExpression::new(
-                    if value == &LiteralValue::Null { LiteralType::Null } else { LiteralType::Integer },
+                    if value == &LiteralValue::Null {
+                        LiteralType::Null
+                    } else {
+                        LiteralType::Integer
+                    },
                     value.clone(),
                 ));
             }
@@ -302,7 +311,9 @@ pub fn physical_finite_join_aggregate_plan(
         || query.window_witness().is_some()
         || !query.subquery_witnesses().is_empty()
         || !query.diagnostics().is_empty()
-        || query.aggregation().is_some_and(|a| a.distinct() || !a.distinct_on().is_empty())
+        || query
+            .aggregation()
+            .is_some_and(|a| a.distinct() || !a.distinct_on().is_empty())
     {
         return residual("joined aggregate has an unsupported operator or SQL row-shaping law");
     }
@@ -316,15 +327,26 @@ pub fn physical_finite_join_aggregate_plan(
     if left_state.relation() != source_names[0] || right_state.relation() != source_names[1] {
         return residual("physical source order or identity disagrees with canonical join");
     }
-    let Some(left_schema) = bundle.source_schemas().iter().find(|s| s.relation() == source_names[0]) else {
+    let Some(left_schema) = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == source_names[0])
+    else {
         return residual("left source lacks attested schema");
     };
-    let Some(right_schema) = bundle.source_schemas().iter().find(|s| s.relation() == source_names[1]) else {
+    let Some(right_schema) = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == source_names[1])
+    else {
         return residual("right source lacks attested schema");
     };
     let sources = JoinedSources {
         names: source_names,
-        aliases: [left.alias().unwrap_or(left.name()), right.alias().unwrap_or(right.name())],
+        aliases: [
+            left.alias().unwrap_or(left.name()),
+            right.alias().unwrap_or(right.name()),
+        ],
         schemas: [left_schema, right_schema],
         states: [left_state, right_state],
     };
@@ -334,17 +356,16 @@ pub fn physical_finite_join_aggregate_plan(
     let Some(on) = join.condition() else {
         return residual("INNER JOIN requires a certified ON predicate");
     };
-    for predicate in [Some(on), query.predicates().where_predicate()] {
-        if let Some(predicate) = predicate {
-            if let Err(reason) = predicate_shape(predicate, &|expr| scalar(expr, None, &sources)) {
-                return residual(reason);
-            }
+    for predicate in [Some(on), query.predicates().where_predicate()].into_iter().flatten() {
+        if let Err(reason) = predicate_shape(predicate, &|expr| scalar(expr, None, &sources)) {
+            return residual(reason);
         }
     }
 
     let group_column = match query.aggregation().and_then(|a| a.group_by()) {
         Some(GroupBy::Expressions(keys)) => {
-            let [GroupingExpression::Expression(Expression::Column(column))] = keys.as_slice() else {
+            let [GroupingExpression::Expression(Expression::Column(column))] = keys.as_slice()
+            else {
                 return residual("GROUPING SETS, ROLLUP, CUBE or multi-key groups require explicit grouping identities");
             };
             if let Err(reason) = source_index(column, &sources) {
@@ -367,7 +388,10 @@ pub fn physical_finite_join_aggregate_plan(
     let mut output_names = Vec::new();
     let mut has_aggregate = false;
     for output in query.output().columns() {
-        if output_names.iter().any(|name: &String| name == output.name()) {
+        if output_names
+            .iter()
+            .any(|name: &String| name == output.name())
+        {
             return residual("duplicate terminal output names");
         }
         output_names.push(output.name().to_string());
@@ -379,7 +403,11 @@ pub fn physical_finite_join_aggregate_plan(
                     return residual(reason);
                 }
             }
-            _ => return residual("joined aggregate projection is not a group key or certified aggregate"),
+            _ => {
+                return residual(
+                    "joined aggregate projection is not a group key or certified aggregate",
+                )
+            }
         }
     }
     if !has_aggregate {
@@ -391,7 +419,8 @@ pub fn physical_finite_join_aggregate_plan(
             .iter()
             .map(|name| (name.to_string(), LiteralValue::Null))
             .collect::<BTreeMap<_, _>>();
-        let shape = |expr: &Expression| having_scalar(expr, &prototype, None, group_column, &[], &sources);
+        let shape =
+            |expr: &Expression| having_scalar(expr, &prototype, None, group_column, &[], &sources);
         if let Err(reason) = predicate_shape(having, &shape) {
             return residual(reason);
         }
@@ -409,17 +438,25 @@ pub fn physical_finite_join_aggregate_plan(
             let left_id = format!("{}#{l}", source_names[0]);
             let right_id = format!("{}#{r}", source_names[1]);
             let on_truth = predicate_truth(on, &|expr| scalar(expr, Some(pair), &sources));
-            let where_truth = query.predicates().where_predicate().map_or(
-                Ok(PhysicalAggregateTruth::True),
-                |predicate| predicate_truth(predicate, &|expr| scalar(expr, Some(pair), &sources)),
-            );
+            let where_truth = query
+                .predicates()
+                .where_predicate()
+                .map_or(Ok(PhysicalAggregateTruth::True), |predicate| {
+                    predicate_truth(predicate, &|expr| scalar(expr, Some(pair), &sources))
+                });
             let (Ok(on_truth), Ok(where_truth)) = (on_truth, where_truth) else {
-                return residual("joined predicate evaluation requires unproved data type semantics");
+                return residual(
+                    "joined predicate evaluation requires unproved data type semantics",
+                );
             };
-            if on_truth == PhysicalAggregateTruth::True && where_truth == PhysicalAggregateTruth::True {
+            if on_truth == PhysicalAggregateTruth::True
+                && where_truth == PhysicalAggregateTruth::True
+            {
                 let key = match group_column {
                     Some(column) => match numeric(&match scalar(
-                        &Expression::Column(column.clone()), Some(pair), &sources
+                        &Expression::Column(column.clone()),
+                        Some(pair),
+                        &sources,
                     ) {
                         Ok(value) => value,
                         Err(reason) => return residual(reason),
@@ -446,13 +483,15 @@ pub fn physical_finite_join_aggregate_plan(
                 Expression::Column(column) if group_column == Some(column) => key
                     .map(|v| LiteralValue::Number(v.to_string()))
                     .unwrap_or(LiteralValue::Null),
-                Expression::AggregateFunction(function) => match aggregate(function, &members, &sources) {
-                    Ok((value, ids)) => {
-                        contributor_ids.insert(output.name().to_string(), ids);
-                        value
+                Expression::AggregateFunction(function) => {
+                    match aggregate(function, &members, &sources) {
+                        Ok((value, ids)) => {
+                            contributor_ids.insert(output.name().to_string(), ids);
+                            value
+                        }
+                        Err(reason) => return residual(reason),
                     }
-                    Err(reason) => return residual(reason),
-                },
+                }
                 _ => return residual("unproved joined aggregate output"),
             };
             projected.insert(output.name().to_string(), value);
@@ -460,18 +499,24 @@ pub fn physical_finite_join_aggregate_plan(
         let having_truth = match query.predicates().having_predicate() {
             None => None,
             Some(predicate) => {
-                let evaluate = |expr: &Expression| having_scalar(
-                    expr, &projected, key, group_column, &members, &sources
-                );
+                let evaluate = |expr: &Expression| {
+                    having_scalar(expr, &projected, key, group_column, &members, &sources)
+                };
                 match predicate_truth(predicate, &evaluate) {
                     Ok(value) => Some(value),
                     Err(reason) => return residual(reason),
                 }
             }
         };
-        let member_ids = members.iter().map(|pair| {
-            format!("{}#{}|{}#{}", source_names[0], pair[0], source_names[1], pair[1])
-        }).collect();
+        let member_ids = members
+            .iter()
+            .map(|pair| {
+                format!(
+                    "{}#{}|{}#{}",
+                    source_names[0], pair[0], source_names[1], pair[1]
+                )
+            })
+            .collect();
         identities.push(PhysicalAggregateGroup {
             key,
             source_row_ids: member_ids,
