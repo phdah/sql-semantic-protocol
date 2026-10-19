@@ -320,7 +320,7 @@ pub(super) fn analyze_local_query_condition_exactness(
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
-    inspect_query_features(query, &mut diagnostics);
+    inspect_query_features(query, None, &mut diagnostics);
 
     let missing_columns = metadata.map_or_else(Vec::new, |metadata| {
         let output = analyze_query_output(query, local_outputs, &mut diagnostics, Some(metadata));
