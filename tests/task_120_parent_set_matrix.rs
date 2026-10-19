@@ -384,8 +384,12 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
     let freeze = inventory();
     let catalog = RelationCatalog::from_schemas(&[schema("a"), schema("b"), schema("c")])
         .expect("canonical physical source types");
-    let dialects = freeze["dialect_identities"].as_array().expect("13 dialects");
-    let cases = freeze["mandatory_cases"].as_array().expect("mandatory matrix");
+    let dialects = freeze["dialect_identities"]
+        .as_array()
+        .expect("13 dialects");
+    let cases = freeze["mandatory_cases"]
+        .as_array()
+        .expect("mandatory matrix");
     assert_eq!(dialects.len(), 13);
     assert_eq!(cases.len(), 21);
 
@@ -406,10 +410,13 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
             let cell = &case["dialect_cells"][index];
             assert_eq!(cell["name"], name, "{id}: every matrix cell is ordered");
             assert!(
-                ["parser_equivalent", "portable_parser_equivalent_canonical_nested_bag",
-                 "mandatory_parser_and_canonical_equivalence"]
-                    .iter()
-                    .any(|classification| cell["classification"] == *classification),
+                [
+                    "parser_equivalent",
+                    "portable_parser_equivalent_canonical_nested_bag",
+                    "mandatory_parser_and_canonical_equivalence"
+                ]
+                .iter()
+                .any(|classification| cell["classification"] == *classification),
                 "{id}/{name}: mandatory dialect must have a positive classification"
             );
 
@@ -424,7 +431,10 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
                     _ => None,
                 })
                 .unwrap_or_else(|| panic!("{id}/{name}: no analyzed query"));
-            assert!(query.set_operation().is_some(), "{id}/{name}: set tree missing");
+            assert!(
+                query.set_operation().is_some(),
+                "{id}/{name}: set tree missing"
+            );
             let actual_columns = query
                 .output()
                 .columns()
@@ -437,7 +447,10 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
                 .iter()
                 .map(|column| column.as_str().expect("output name"))
                 .collect::<Vec<_>>();
-            assert_eq!(actual_columns, expected_columns, "{id}/{name}: positional identity");
+            assert_eq!(
+                actual_columns, expected_columns,
+                "{id}/{name}: positional identity"
+            );
 
             let input = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(id, &input, name, dialect.as_ref())];
@@ -451,7 +464,8 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
                         panic!("{id}/{name}: mandatory tuple proof not Exact: {proof:?}");
                     };
                     (
-                        exact.tuples
+                        exact
+                            .tuples
                             .iter()
                             .filter(|tuple| tuple.output_count > 0)
                             .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
@@ -466,7 +480,8 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
                         panic!("{id}/{name}: mandatory tree proof not Exact: {proof:?}");
                     };
                     (
-                        exact.tuples
+                        exact
+                            .tuples
                             .iter()
                             .filter(|tuple| tuple.output_count > 0)
                             .map(|tuple| (tuple.values.clone(), tuple.output_count))
@@ -477,7 +492,10 @@ fn all_thirteen_dialects_prove_every_mandatory_frozen_tuple_bag() {
                     )
                 };
 
-            assert_eq!(actual, expected, "{id}/{name}: full SQL bag, not just shape");
+            assert_eq!(
+                actual, expected,
+                "{id}/{name}: full SQL bag, not just shape"
+            );
             assert_eq!(sources, expected_sources, "{id}/{name}: source identities");
             assert_eq!(
                 terminal_len,
