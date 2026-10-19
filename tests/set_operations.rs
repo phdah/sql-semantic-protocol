@@ -169,7 +169,10 @@ fn set_level_order_and_limit_remain_attached_to_the_result() {
     assert!(!shape.keys[0].descending);
     assert_eq!(shape.keys[0].nulls_first, None);
     assert!(!query.diagnostics().iter().any(|diagnostic| {
-        matches!(diagnostic.code(), "unsupported_order_by" | "unsupported_limit")
+        matches!(
+            diagnostic.code(),
+            "unsupported_order_by" | "unsupported_limit"
+        )
     }));
 }
 
