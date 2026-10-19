@@ -32,7 +32,7 @@ fn direct_dbt_and_odcs_retain_the_same_nullable_tuple_histograms() {
                 ["id", "k", "v"]
                     .iter()
                     .map(|column| {
-                        SchemaColumn::from_sql_type(column, sql_type(column), "postgresql")
+                        SchemaColumn::from_sql_type(*column, sql_type(column), "postgresql")
                             .expect("typed column")
                     })
                     .collect(),
