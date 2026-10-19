@@ -16,6 +16,18 @@ TASK-114 finite complete row bags: `src/protocol/relations.rs` owns typed ASOF a
 
 TASK-115 source-attested finite three-way joins: `src/physical_realization/finite_chains.rs` owns closed-world source-identity, normalized SQL TRUE/NOT TRUE, nullable composite equality, and downstream COUNT(*) bag evaluation. `src/physical_realization/write_states.rs` remains the canonical owner of physical datatype and PK/FK feasibility. `src/physical_realization/joins.rs` and `grouping.rs` retain the separate homogeneous sufficient count construction. The exact frozen eight-case SQL/DuckDB comparison is in `tests/task_115_finite_chain_bags.rs` and `tests/task_115_duckdb_matrix.rs`; `docs/task-115-acceptance-freeze.json` owns source/terminal values and pending adapter and session evidence. This evidence-driven evaluator does not imply that the solver automatically synthesizes those exact bags from cardinality goals.
 
+TASK-118 finite nested source-bag proof: `src/analysis/sets.rs` certifies the strict,
+lossless single-source CTE boundary and retains independent branch semantics;
+`src/protocol/sets.rs` owns the recursive operation tree and positional count
+laws; `src/physical_realization/set_trees.rs` evaluates complete source snapshots
+once per physical relation and proves nested exact membership/absence,
+SQL TRUE/FALSE/UNKNOWN branch partitions, typed terminal domains and duplicate
+frequencies. The task-owned fixture matrix is
+`docs/task-118-acceptance-freeze.json`; independent oracles are in
+`tests/task_118_nested_set_bags.rs`, `tests/task_118_dialect_matrix.rs`,
+and `tests/task_118_set_adapters.rs`. Unsupported CTE producer shapes,
+coercions, order/limits, and unattested scalar expressions remain Residual.
+
 ## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |
