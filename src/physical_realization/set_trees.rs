@@ -210,6 +210,9 @@ fn branch_source<'a>(
         .witness_boundary()
         .map(|boundary| boundary.relation())
         .unwrap_or_else(|| branch.sources()[0].name());
+    let certified_cte = relation != branch.sources()[0].name()
+        && walker.sources.contains(relation)
+        && branch.witness_boundary().is_some_and(|witness| !witness.is_intermediate());
     let source = physical_transparent_producer_leaf(bundle, walker, relation)
         .ok_or("set branch producer is not a certified lossless physical projection")?;
     if !walker.sources.contains(&source) {
@@ -217,16 +220,28 @@ fn branch_source<'a>(
     }
     let mut mapped = Vec::new();
     let mut columns = BTreeMap::new();
-    for output in branch.output().columns() {
+    for (index, output) in branch.output().columns().iter().enumerate() {
         let copied = output
             .plain_copy_source()
             .ok_or("set projection is not a positional column copy")?;
-        let (physical_relation, name) =
-            mapped_column(bundle, walker, layer_id, copied.relation(), copied.column())
-                .ok_or("set output column lacks type-certified physical provenance")?;
-        if physical_relation != source {
-            return Err("set output columns do not belong to one complete physical source");
-        }
+        let name = if certified_cte {
+            let name = branch
+                .witness_boundary()
+                .and_then(|witness| witness.tuple_columns().get(index))
+                .ok_or("CTE lacks a complete certified positional source map")?;
+            if copied.column() != name {
+                return Err("CTE output differs from its certified physical column");
+            }
+            name.clone()
+        } else {
+            let (physical_relation, name) =
+                mapped_column(bundle, walker, layer_id, copied.relation(), copied.column())
+                    .ok_or("set output column lacks type-certified physical provenance")?;
+            if physical_relation != source {
+                return Err("set output columns do not belong to one complete physical source");
+            }
+            name
+        };
         columns.insert(copied.column().to_string(), name.clone());
         mapped.push(name);
     }
@@ -263,6 +278,9 @@ fn branch_source<'a>(
             if columns.contains_key(name) {
                 continue;
             }
+            if certified_cte {
+                return Err("CTE predicate refers to an unproven unprojected source column");
+            }
             let (physical_relation, physical_name) =
                 mapped_column(bundle, walker, layer_id, relation, name)
                     .ok_or("WHERE column lacks physical provenance")?;
@@ -274,7 +292,7 @@ fn branch_source<'a>(
     }
     Ok(ResolvedSetBranch {
         source,
-        relation,
+        relation: branch.sources()[0].name(),
         projected: mapped,
         predicate_columns: columns,
     })
