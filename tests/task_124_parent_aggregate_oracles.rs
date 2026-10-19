@@ -1,11 +1,8 @@
 //! TASK-124: independent TASK-73 acceptance oracle at the public SQL/physical seam.
 //! Expectations are frozen independently of the child test modules. DuckDB executes
 //! complete physical inputs and full terminal outputs, not just row counts.
-mod common;
-
 use std::collections::BTreeMap;
 
-use common::DIALECTS;
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
@@ -504,11 +501,13 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
 
 #[test]
 fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fail_closed() {
-    for dialect in DIALECTS {
-        for case in freeze()["cases"].as_array().expect("cases") {
+    let matrix = freeze();
+    for dialect in matrix["required_dialects"].as_array().expect("13 dialects") {
+        let dialect = dialect.as_str().expect("dialect name");
+        for case in matrix["cases"].as_array().expect("cases") {
             let parsed = bundle(case, dialect);
             let id = case["id"].as_str().expect("case");
-            let expected = &case["expected_parser_dialect_cells"][*dialect];
+            let expected = &case["expected_parser_dialect_cells"][dialect];
             assert_eq!(
                 expected["owner"], "TASK-124",
                 "{dialect}:{id}: conditional owner"
