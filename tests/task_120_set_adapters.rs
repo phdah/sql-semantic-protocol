@@ -2,21 +2,21 @@
 
 #[cfg(feature = "odcs")]
 #[test]
-fn direct_dbt_and_odcs_retain_the_same_nullable_tuple_histograms() {
+fn all_mandatory_set_trees_have_exact_direct_dbt_and_odcs_parity() {
     use std::collections::BTreeMap;
 
     use serde_json::json;
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_bag_plan,
+        dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_bag_plan, physical_finite_set_tree_plan,
         ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetProof, PhysicalWriteRow,
-        PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+        PhysicalWriteState, PhysicalFiniteSetTreeProof, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     };
 
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-120-acceptance-freeze.json"))
             .expect("task-owned 21-case set matrix");
-    let names = ["warehouse.raw.a", "warehouse.raw.b"];
+    let names = ["warehouse.raw.a", "warehouse.raw.b", "warehouse.raw.c"];
     let sql_type = |name: &str| {
         if name == "id" {
             "VARCHAR"
@@ -68,6 +68,15 @@ schema:
         physicalType: INTEGER
       - name: v
         physicalType: INTEGER
+  - name: c
+    physicalName: warehouse.raw.c
+    properties:
+      - name: id
+        physicalType: VARCHAR
+      - name: k
+        physicalType: INTEGER
+      - name: v
+        physicalType: INTEGER
 "#;
     let known = RelationCatalog::new(&names).expect("known physical names");
     let odcs = parse_odcs_yaml(odcs_yaml, "postgresql", &known).expect("ODCS");
@@ -76,17 +85,17 @@ schema:
     let parser = dialect_from_name("postgresql").expect("postgresql parser");
     for case in freeze["mandatory_cases"]
         .as_array()
-        .expect("frozen cases")
-        .iter()
-        .filter(|case| case["variant"] == "six_operator_nullable_bag")
+        .expect("all 21 mandatory cases")
     {
         let id = case["id"].as_str().expect("case id");
-        let sql = case["sql"]
-            .as_str()
-            .expect("SQL")
-            .replace(" FROM a ", " FROM warehouse.raw.a ")
-            .replace(" FROM b", " FROM warehouse.raw.b");
-        let manifest = json!({
+        let mut sql = case["sql"].as_str().expect("SQL").to_string();
+        for source in ["a", "b", "c"] {
+            sql = sql.replace(
+                &format!("FROM {source}"),
+                &format!("FROM warehouse.raw.{source}"),
+            );
+        }
+        let mut manifest = json!({
             "metadata": {
                 "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
                 "dbt_version": "1.11.8",
@@ -135,6 +144,15 @@ schema:
                 }
             }
         });
+        // The same typed source catalog is visible to every adapter, even when
+        // a particular frozen tree consumes only a subset of the sources.
+        let mut third_source = manifest["sources"]["source.demo.b"].clone();
+        third_source["unique_id"] = json!("source.demo.c");
+        third_source["name"] = json!("c");
+        third_source["relation_name"] = json!("warehouse.raw.c");
+        manifest["sources"]["source.demo.c"] = third_source;
+        manifest["nodes"]["model.demo.task120"]["depends_on"]["nodes"] =
+            json!(["source.demo.a", "source.demo.b", "source.demo.c"]);
         let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
         let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
             .expect("dbt canonical analysis");
@@ -150,18 +168,19 @@ schema:
         let odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
             .expect("ODCS canonical analysis");
 
-        let physical = names
+        let physical = case["source_bags"]
+            .as_object()
+            .expect("closed-world inputs")
             .iter()
-            .zip(["a", "b"])
-            .map(|(relation, key)| {
-                let rows = case["source_bags"][key]
+            .map(|(source, rows)| {
+                let values = rows
                     .as_array()
-                    .expect("whole source bag")
+                    .expect("whole physical bag")
                     .iter()
                     .map(|row| {
                         let values = row
                             .as_object()
-                            .expect("row")
+                            .expect("source tuple")
                             .iter()
                             .map(|(column, value)| {
                                 let value = if value.is_null() {
@@ -176,10 +195,11 @@ schema:
                                 (column.to_string(), value)
                             })
                             .collect::<BTreeMap<_, _>>();
-                        PhysicalWriteRow::new(values).expect("row")
+                        PhysicalWriteRow::new(values).expect("valid physical row")
                     })
                     .collect();
-                PhysicalWriteState::new(*relation, rows).expect("physical source")
+                PhysicalWriteState::new(format!("warehouse.raw.{source}"), values)
+                    .expect("physical source identity")
             })
             .collect::<Vec<_>>();
 
@@ -194,43 +214,76 @@ schema:
                         .all(|relation| layer.consumes().iter().any(|source| source == relation))
                 })
                 .unwrap_or_else(|| panic!("{id}/{adapter}: no two-source set layer"));
-            let proof = physical_finite_set_bag_plan(bundle, layer.id(), &physical);
-            let PhysicalFiniteSetProof::Exact(exact) = proof else {
-                panic!("{id}/{adapter}: adapter lost canonical set proof: {proof:?}");
-            };
+            let (positive, all_counts, count, domains) =
+                if case["variant"] == "six_operator_nullable_bag" {
+                    let proof = physical_finite_set_bag_plan(bundle, layer.id(), &physical);
+                    let PhysicalFiniteSetProof::Exact(exact) = proof else {
+                        panic!("{id}/{adapter}: adapter lost exact tuple bag: {proof:?}");
+                    };
+                    (
+                        exact.tuples.iter()
+                            .filter(|tuple| tuple.output_count > 0)
+                            .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
+                            .collect::<BTreeMap<_, _>>(),
+                        exact.tuples.iter()
+                            .map(|tuple| (tuple.values.to_vec(), tuple.output_count))
+                            .collect::<BTreeMap<_, _>>(),
+                        exact.terminal.len(),
+                        exact.terminal_domains.to_vec(),
+                    )
+                } else {
+                    let proof = physical_finite_set_tree_plan(bundle, layer.id(), &physical);
+                    let PhysicalFiniteSetTreeProof::Exact(exact) = proof else {
+                        panic!("{id}/{adapter}: adapter lost exact set tree: {proof:?}");
+                    };
+                    (
+                        exact.tuples.iter()
+                            .filter(|tuple| tuple.output_count > 0)
+                            .map(|tuple| (tuple.values.clone(), tuple.output_count))
+                            .collect::<BTreeMap<_, _>>(),
+                        exact.tuples.iter()
+                            .map(|tuple| (tuple.values.clone(), tuple.output_count))
+                            .collect::<BTreeMap<_, _>>(),
+                        exact.terminal.len(),
+                        exact.terminal_domains,
+                    )
+                };
             let frozen_counts = case["expected_terminal_tuple_histogram"]
                 .as_array()
-                .expect("independent expected two-column bag")
+                .expect("independently frozen complete tuple bag")
                 .iter()
                 .map(|row| {
-                    let tuple = row["tuple"].as_array().expect("two columns");
-                    let key = [
-                        tuple[0].as_i64().map(i128::from),
-                        tuple[1].as_i64().map(i128::from),
-                    ];
-                    (key, row["count"].as_u64().expect("count"))
+                    let key = row["tuple"].as_array().expect("two columns")
+                        .iter()
+                        .map(|value| value.as_i64().map(i128::from))
+                        .collect::<Vec<_>>();
+                    (key, row["count"].as_u64().expect("frequency"))
                 })
                 .collect::<BTreeMap<_, _>>();
-            let actual_positive = exact
-                .tuples
-                .iter()
-                .filter(|tuple| tuple.output_count > 0)
-                .map(|tuple| (tuple.values, tuple.output_count))
-                .collect::<BTreeMap<_, _>>();
+            assert_eq!(positive, frozen_counts, "{id}/{adapter}: complete tuple bag");
             assert_eq!(
-                actual_positive, frozen_counts,
-                "{id}/{adapter}: independently frozen whole bag"
-            );
-            let tuple_counts = exact
-                .tuples
-                .iter()
-                .map(|tuple| (tuple.values, tuple.output_count))
-                .collect::<BTreeMap<_, _>>();
-            assert_eq!(
-                exact.terminal.len(),
+                count,
                 case["expected_count"].as_u64().expect("count") as usize,
-                "{id}/{adapter}: total"
+                "{id}/{adapter}: complete terminal multiplicity"
             );
+            for (index, domain) in domains.iter().enumerate() {
+                let frozen = &case["typed_terminal_domains"][index];
+                let values = frozen["allowed"].as_array().expect("frozen finite domain")
+                    .iter().map(|value| i128::from(value.as_i64().expect("integer")))
+                    .collect::<Vec<_>>();
+                assert_eq!(domain.values, values, "{id}/{adapter}: column {index} values");
+                assert_eq!(
+                    domain.contains_null,
+                    frozen["contains_null"].as_bool().expect("NULL"),
+                    "{id}/{adapter}: column {index} nullable"
+                );
+                let bounds = match (frozen["lower"].as_i64(), frozen["upper"].as_i64()) {
+                    (Some(lower), Some(upper)) => Some((i128::from(lower), i128::from(upper))),
+                    _ => None,
+                };
+                assert_eq!(domain.bounds(), bounds, "{id}/{adapter}: column {index} bounds");
+            }
+            let tuple_counts = all_counts;
             if let Some(first) = &expected {
                 assert_eq!(&tuple_counts, first, "{id}/{adapter}: tuple parity");
             } else {
