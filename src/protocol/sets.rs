@@ -544,6 +544,11 @@ impl SetOperation {
         &self.branches
     }
 
+    /// Whether the entire set scope excludes unproved set-level row shaping.
+    pub fn set_level_safe(&self) -> bool {
+        self.set_level_safe
+    }
+
     /// Return the set operator.
     pub fn operator(&self) -> SetOperator {
         self.operator
