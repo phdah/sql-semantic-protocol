@@ -1,4 +1,17 @@
 {
+  "task_121_grouped_global_aggregate_acceptance": {
+    "owner": "TASK-121",
+    "parent": "TASK-73",
+    "status": "implementation_in_progress",
+    "acceptance_freeze": "docs/task-121-acceptance-freeze.json",
+    "fixture_ids": ["73-C121-P", "73-C121-N"],
+    "mandatory_oracle_cases": 5,
+    "required_parser_dialects": 13,
+    "required_adapters": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "conditional_owner": "TASK-121",
+    "unverified_mandatory_cells_block_done": true,
+    "release_approved": false
+  },
   "task_120_set_acceptance": {
     "owner": "TASK-120",
     "parent": "TASK-72",
