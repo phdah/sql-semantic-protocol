@@ -259,3 +259,136 @@ schema:
         );
     }
 }
+
+#[test]
+fn produced_model_bag_proofs_reuse_one_source_assignment_across_sql_dbt_and_odcs() {
+    let freeze: Value = serde_json::from_str(include_str!(
+        "../docs/task-118-acceptance-freeze.json"
+    )).expect("frozen model");
+    let case = freeze["cases"].as_array().expect("cases").iter()
+        .find(|case| case["id"] == "72-C118-P-produced-model")
+        .expect("task model variant");
+    let names = ["a", "b", "c"];
+    let producer_names = ["sa", "sb", "sc"];
+    let model_relation = |relation: &str| format!("warehouse.raw.{relation}");
+    let direct_schemas = names.iter().map(|name| source_schemas()
+        .into_iter()
+        .find(|schema| schema.relation() == model_relation(name))
+        .expect("physical typed schema"))
+        .chain(producer_names.iter().map(|name| {
+            RelationSchema::new(model_relation(name),
+                ["k", "v"].into_iter().map(|column|
+                    SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
+                        .expect("model output type"))
+                    .collect())
+                .expect("named model schema")
+        })).collect::<Vec<_>>();
+    let known = direct_schemas.iter()
+        .map(|schema| schema.relation())
+        .collect::<Vec<_>>();
+    let known = RelationCatalog::new(&known).expect("all external and named relations");
+    let contract_entries = names.iter()
+        .chain(producer_names.iter())
+        .map(|name| format!(
+            "  - name: {name}\n    physicalName: warehouse.raw.{name}\n    properties:\n      - name: k\n        physicalType: INTEGER\n      - name: v\n        physicalType: INTEGER\n{}",
+            if producer_names.contains(name) { String::new() } else {
+                "      - name: id\n        physicalType: VARCHAR\n".to_string()
+            }
+        )).collect::<Vec<_>>().join("");
+    let contract = format!(
+        "apiVersion: v3.2.0\nkind: DataContract\nid: task118models\nname: Nested typed producers\nversion: 1.0.0\nstatus: active\nschema:\n{contract_entries}"
+    );
+    let odcs = parse_odcs_yaml(&contract, "postgresql", &known).expect("ODCS schemas");
+    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas())
+        .expect("ODCS catalog");
+    let direct_catalog = RelationCatalog::from_schemas(&direct_schemas)
+        .expect("full direct source and model schema");
+    let parser = dialect_from_name("postgresql").expect("parser");
+    let mut sql = names.iter().zip(producer_names.iter())
+        .map(|(source, target)| format!(
+            "CREATE TABLE warehouse.raw.{target} AS SELECT k,v FROM warehouse.raw.{source}"
+        )).collect::<Vec<_>>();
+    sql.push(
+        "(SELECT k,v FROM warehouse.raw.sa UNION ALL SELECT k,v FROM warehouse.raw.sb) EXCEPT ALL SELECT k,v FROM warehouse.raw.sc".to_string()
+    );
+    let input = sql.iter().map(SqlInput::inline).collect::<Vec<_>>();
+    let identities = (0..sql.len()).map(|n| format!("model-{n}")).collect::<Vec<_>>();
+    let configured = input.iter().zip(identities.iter()).map(|(sql, name)|
+        ConfiguredSqlInput::new(name, sql, "postgresql", parser.as_ref()))
+        .collect::<Vec<_>>();
+    let direct = analyze_configured_inputs_with_catalog(&configured, &direct_catalog)
+        .expect("direct materialized model");
+    let from_odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog)
+        .expect("ODCS source producer analysis");
+
+    let mut nodes = serde_json::Map::new();
+    for (source, target) in names.iter().zip(producer_names.iter()) {
+        let key = format!("model.demo.{target}");
+        let compiled = format!("SELECT k,v FROM warehouse.raw.{source}");
+        nodes.insert(key.clone(), json!({
+            "unique_id": key, "resource_type": "model",
+            "relation_name": model_relation(target), "database": "warehouse",
+            "schema": "raw", "original_file_path": format!("models/{target}.sql"),
+            "language": "sql", "raw_code": compiled, "compiled_code": compiled,
+            "depends_on": {"nodes": [format!("source.demo.{source}")]},
+            "columns": {"k": {"name": "k", "data_type": "INTEGER"},
+                        "v": {"name": "v", "data_type": "INTEGER"}}
+        }));
+    }
+    nodes.insert("model.demo.task118".to_string(), json!({
+        "unique_id": "model.demo.task118", "resource_type": "model",
+        "relation_name": "warehouse.analytics.task118",
+        "database": "warehouse", "schema": "analytics",
+        "original_file_path": "models/task118.sql", "language": "sql",
+        "raw_code": sql.last().expect("terminal model"),
+        "compiled_code": sql.last().expect("terminal model"),
+        "depends_on": {"nodes": ["model.demo.sa","model.demo.sb","model.demo.sc"]},
+        "columns": {"k": {"name": "k", "data_type": "INTEGER"},
+                    "v": {"name": "v", "data_type": "INTEGER"}}
+    }));
+    let mut sources = serde_json::Map::new();
+    for source in names {
+        let key = format!("source.demo.{source}");
+        sources.insert(key.clone(), json!({
+            "unique_id": key, "resource_type": "source",
+            "relation_name": model_relation(source), "database": "warehouse",
+            "schema": "raw", "name": source,
+            "columns": {"id": {"name": "id", "data_type": "VARCHAR"},
+                        "k": {"name": "k", "data_type": "INTEGER"},
+                        "v": {"name": "v", "data_type": "INTEGER"}}
+        }));
+    }
+    let manifest = json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+            "dbt_version": "1.11.8", "adapter_type": "postgres"
+        },
+        "nodes": nodes, "sources": sources,
+    });
+    let parsed = parse_dbt_manifest(&manifest.to_string())
+        .expect("compiled model sources");
+    let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
+        .expect("dbt materialized models");
+    let states = snapshots(case);
+    let proof = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        let target = bundle.layers().last().expect("terminal layer").id();
+        let result = physical_finite_set_tree_plan(bundle, target, &states);
+        let PhysicalFiniteSetTreeProof::Exact(exact) = result else {
+            panic!("named produced source lost full physical bag proof: {result:?}");
+        };
+        (exact.sources, exact.tuples.into_iter()
+            .map(|tuple| (tuple.values, tuple.output_count))
+            .collect::<BTreeMap<_, _>>())
+    };
+    let expected = proof(&direct);
+    assert_eq!(expected, proof(&from_odcs), "ODCS model outputs");
+    assert_eq!(expected, proof(&dbt), "dbt model outputs");
+    assert_eq!(
+        expected.0, names.iter().map(|name| model_relation(name)).collect::<Vec<_>>(),
+        "the only writable inputs are original physical relations",
+    );
+    assert_eq!(
+        expected.1.get(&vec![Some(1), None]),
+        Some(&2), "independent frozen nested SQL oracle",
+    );
+}
