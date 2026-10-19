@@ -6,7 +6,7 @@
 - Immutable fixtures: `72-C117-P`, `72-C117-N`.
 - Machine-readable matrix: [task-117-acceptance-freeze.json](task-117-acceptance-freeze.json), registered by `docs/coverage-manifest.json`.
 - Six set laws, each on two-column complete signed-integer/NULL bags: UNION/INTERSECT/EXCEPT DISTINCT/ALL. Twelve concrete cases.
-- Positive base: A=[(1,NULL),(1,NULL),(2,4)]; B=[(1,NULL),(3,4)]. UNIX/UNION ALL=5, UNION DISTINCT=3, INTERSECT ALL/DISTINCT=1, EXCEPT ALL=2, EXCEPT DISTINCT=1.
+- Positive base: A=[(1,NULL),(1,NULL),(2,4)]; B=[(1,NULL),(3,4)]. UNION ALL=5, UNION DISTINCT=3, INTERSECT ALL/DISTINCT=1, EXCEPT ALL=2, EXCEPT DISTINCT=1.
 - Negative source B=[(1,NULL),(1,NULL),(1,NULL),(2,4)] proves EXCEPT ALL and EXCEPT DISTINCT terminal absence without mistaking NULL equality for SQL predicate `=`.
 
 ## Public implementation and independent evidence
