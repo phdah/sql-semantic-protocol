@@ -78,7 +78,7 @@ fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
 fn result(
     bundle: &sql_semantic_protocol::AnalysisBundle,
     states: &[PhysicalWriteState],
-) -> BTreeMap<Vec<Option<i128>>, u64> {
+) -> (BTreeMap<Vec<Option<i128>>, u64>, Vec<(Vec<i128>, bool)>) {
     let target = bundle
         .layers()
         .iter()
@@ -96,12 +96,18 @@ fn result(
     let PhysicalFiniteSetTreeProof::Exact(exact) = proof else {
         panic!("adapter lost full physical set proof: {proof:?}");
     };
-    exact
+    let domains = exact
+        .terminal_domains
+        .iter()
+        .map(|domain| (domain.values.clone(), domain.contains_null))
+        .collect();
+    let bag = exact
         .tuples
         .into_iter()
         .filter(|tuple| tuple.output_count > 0)
         .map(|tuple| (tuple.values, tuple.output_count))
-        .collect()
+        .collect();
+    (bag, domains)
 }
 
 #[test]
@@ -225,6 +231,38 @@ schema:
             .expect("compiled dbt manifest");
         let physical = snapshots(case);
         let expected = result(&direct, &physical);
+        let expected_histogram = case["expected_terminal_tuple_histogram"]
+            .as_array()
+            .expect("independent frozen terminal bag")
+            .iter()
+            .map(|entry| {
+                let tuple = entry["tuple"]
+                    .as_array()
+                    .expect("tuple")
+                    .iter()
+                    .map(|scalar| scalar.as_i64().map(i128::from))
+                    .collect::<Vec<_>>();
+                (tuple, entry["count"].as_u64().expect("count"))
+            })
+            .collect::<BTreeMap<_, _>>();
+        assert_eq!(expected.0, expected_histogram, "direct SQL: {}", case["id"]);
+        let expected_domains = case["typed_terminal_domains"]
+            .as_array()
+            .expect("frozen output domains")
+            .iter()
+            .map(|domain| {
+                (
+                    domain["allowed"]
+                        .as_array()
+                        .expect("allowed finite values")
+                        .iter()
+                        .map(|value| i128::from(value.as_i64().expect("integer")))
+                        .collect::<Vec<_>>(),
+                    domain["contains_null"].as_bool().expect("NULL inclusion"),
+                )
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(expected.1, expected_domains, "direct SQL: {}", case["id"]);
         assert_eq!(
             expected,
             result(&with_odcs, &physical),
