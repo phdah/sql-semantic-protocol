@@ -591,7 +591,20 @@ Set-operation outputs align positionally. Column names follow the left branch. L
 
 Column domains remain source-column constraints. Equal constraints from multiple branches can be retained. Different constraints on the same source column degrade to an explicit unknown domain because flattening branch-local alternatives into one scalar restriction would over-claim.
 
-Set-level ORDER BY and LIMIT remain query-level semantics, so their existing explicit unsupported diagnostics attach to the combined set result rather than to an arbitrary branch.
+Portable set-level `ORDER BY` on named positional output columns combined with a
+nonnegative integral literal `LIMIT`/`OFFSET` or `FETCH FIRST ... ROWS ONLY`
+is emitted as the optional canonical `set_operation.row_shaping` object.
+Its `keys` contain zero-based output `position`, `descending`, and explicit
+`nulls_first` (or `null` if the dialect default is not attested); `offset`
+and `limit` are nonnegative integers. This representation is syntax-independent
+and does not itself assert physical feasibility. The closed-world finite set
+tree evaluator certifies exact row counts and terminal domains only when
+the source snapshots are complete, all sort values are integral, NULL ordering
+is resolved, and ties between distinct projected tuples cannot affect the
+truncation. Otherwise it returns a typed residual. Branch-local ORDER/LIMIT,
+coercion/collation and BY NAME/CORRESPONDING remain explicitly unsupported
+for complete population proofs. The public JSON schema documents the optional
+field; this is a protocol contract extension and consumers should version-gate it.
 
 ## Aggregation and grouping
 
