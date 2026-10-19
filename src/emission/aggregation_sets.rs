@@ -46,7 +46,7 @@ pub(super) fn grouping_sets_to_value(
 
 pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
     let (qualifying, non_qualifying) = operation.witness_directions();
-    json!({
+    let mut value = json!({
         "operator": operation.operator().as_str(),
         "quantifier": operation.quantifier().as_str(),
         "left": set_operand_to_value(operation.left()),
@@ -66,7 +66,19 @@ pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
             "qualifying_witness": set_witness_direction_to_value(&qualifying),
             "non_qualifying_witness": set_witness_direction_to_value(&non_qualifying)
         }
-    })
+    });
+    if let Some(shape) = operation.row_shaping() {
+        value["row_shaping"] = json!({
+            "keys": shape.keys.iter().map(|key| json!({
+                "position": key.index,
+                "descending": key.descending,
+                "nulls_first": key.nulls_first,
+            })).collect::<Vec<_>>(),
+            "offset": shape.offset,
+            "limit": shape.limit,
+        });
+    }
+    value
 }
 
 pub(super) fn set_witness_direction_to_value(
