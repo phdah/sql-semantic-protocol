@@ -6,7 +6,8 @@ use std::collections::BTreeMap;
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
+    analyze_dbt_manifest_with_schemas, dialect_from_name, parse_dbt_catalog,
     parse_dbt_manifest, parse_odcs_yaml, physical_finite_set_tree_plan, ConfiguredSqlInput,
     LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
@@ -394,9 +395,44 @@ fn produced_model_bag_proofs_reuse_one_source_assignment_across_sql_dbt_and_odcs
         },
         "nodes": nodes, "sources": sources,
     });
-    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled model sources");
-    let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
-        .expect("dbt materialized models");
+    let parsed = parse_dbt_manifest(&manifest.to_string())
+        .expect("compiled model sources");
+    // Manifest-declared intermediate model columns alone are not authoritative
+    // evidence that no materialized cast occurred. The paired dbt catalog
+    // supplies the equal typed model schemas required for exact transport.
+    let mut model_catalog_nodes = serde_json::Map::new();
+    for name in producer_names {
+        let key = format!("model.demo.{name}");
+        model_catalog_nodes.insert(
+            key.clone(),
+            json!({
+                "unique_id": key,
+                "metadata": {
+                    "type": "VIEW", "database": "warehouse",
+                    "schema": "raw", "name": name
+                },
+                "columns": {
+                    "k": {"name": "k", "type": "INTEGER", "index": 1},
+                    "v": {"name": "v", "type": "INTEGER", "index": 2}
+                },
+                "stats": {}
+            }),
+        );
+    }
+    let catalog_artifact = json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version": "1.11.8"
+        },
+        "nodes": model_catalog_nodes,
+        "sources": {},
+        "errors": null,
+    });
+    let parsed_catalog = parse_dbt_catalog(&catalog_artifact.to_string())
+        .expect("paired model relation catalog");
+    let dbt = analyze_dbt_artifacts(
+        &parsed, &parsed_catalog, "postgresql", parser.as_ref(),
+    ).expect("typed dbt materialized models");
     let states = snapshots(case);
     let proof = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         let target = bundle.layers().last().expect("terminal layer").id();
