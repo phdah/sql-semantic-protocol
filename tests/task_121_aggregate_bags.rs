@@ -157,7 +157,8 @@ fn complete_aggregate_bags_match_frozen_source_oracles_and_duckdb() {
             .unwrap_or_else(|err| panic!("{id}: {err:?}"));
         let target = bundle.layers().last().expect("terminal").id();
         let state = source(case);
-        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
+        let proof =
+            physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
         let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
             panic!("{id}: expected exact canonical physical proof, got {proof:?}");
         };
