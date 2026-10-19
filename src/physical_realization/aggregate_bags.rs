@@ -123,7 +123,6 @@ fn numeric(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
     }
 }
 
-
 fn source_scalar(
     expression: &Expression,
     row: Option<&PhysicalWriteRow>,
@@ -140,7 +139,10 @@ fn source_scalar(
                 return Err("filter column lacks a signed integer comparison law");
             }
             match row {
-                Some(row) => row.values().get(column.name()).cloned()
+                Some(row) => row
+                    .values()
+                    .get(column.name())
+                    .cloned()
                     .ok_or("filter column absent from complete source row"),
                 None => Ok(LiteralValue::Null),
             }
@@ -163,10 +165,17 @@ where
     F: Fn(&Expression) -> Result<LiteralValue, &'static str>,
 {
     match predicate {
-        Predicate::Comparison(c) => { scalar(c.left())?; scalar(c.right())?; }
-        Predicate::IsNull(c) => { scalar(c.expression())?; }
+        Predicate::Comparison(c) => {
+            scalar(c.left())?;
+            scalar(c.right())?;
+        }
+        Predicate::IsNull(c) => {
+            scalar(c.expression())?;
+        }
         Predicate::And(c) | Predicate::Or(c) => {
-            for item in c.operands() { predicate_shape(item, scalar)?; }
+            for item in c.operands() {
+                predicate_shape(item, scalar)?;
+            }
         }
         Predicate::Not(c) => predicate_shape(c.operand(), scalar)?,
         Predicate::BooleanExpression(Expression::BooleanPredicate(c)) => {
@@ -182,7 +191,10 @@ where
     Ok(())
 }
 
-fn predicate_truth<F>(predicate: &Predicate, scalar: &F) -> Result<PhysicalAggregateTruth, &'static str>
+fn predicate_truth<F>(
+    predicate: &Predicate,
+    scalar: &F,
+) -> Result<PhysicalAggregateTruth, &'static str>
 where
     F: Fn(&Expression) -> Result<LiteralValue, &'static str>,
 {
@@ -193,10 +205,20 @@ where
             let rhs = scalar(c.right())?;
             if lhs == LiteralValue::Null || rhs == LiteralValue::Null {
                 return Ok(match c.operator() {
-                    ComparisonOperator::IsDistinctFrom =>
-                        if lhs == rhs { False } else { True },
-                    ComparisonOperator::IsNotDistinctFrom =>
-                        if lhs == rhs { True } else { False },
+                    ComparisonOperator::IsDistinctFrom => {
+                        if lhs == rhs {
+                            False
+                        } else {
+                            True
+                        }
+                    }
+                    ComparisonOperator::IsNotDistinctFrom => {
+                        if lhs == rhs {
+                            True
+                        } else {
+                            False
+                        }
+                    }
                     _ => Unknown,
                 });
             }
@@ -219,17 +241,20 @@ where
         }
         Predicate::And(c) => {
             let mut result = True;
-            for child in c.operands() { result = result.and(predicate_truth(child, scalar)?); }
+            for child in c.operands() {
+                result = result.and(predicate_truth(child, scalar)?);
+            }
             Ok(result)
         }
         Predicate::Or(c) => {
             let mut result = False;
-            for child in c.operands() { result = result.or(predicate_truth(child, scalar)?); }
+            for child in c.operands() {
+                result = result.or(predicate_truth(child, scalar)?);
+            }
             Ok(result)
         }
         Predicate::Not(c) => Ok(predicate_truth(c.operand(), scalar)?.not()),
-        Predicate::BooleanExpression(Expression::BooleanPredicate(c)) =>
-            predicate_truth(c, scalar),
+        Predicate::BooleanExpression(Expression::BooleanPredicate(c)) => predicate_truth(c, scalar),
         Predicate::BooleanExpression(e) => match scalar(e)? {
             LiteralValue::Boolean(true) => Ok(True),
             LiteralValue::Boolean(false) => Ok(False),
@@ -252,23 +277,32 @@ fn having_scalar(
     alias: Option<&str>,
 ) -> Result<LiteralValue, &'static str> {
     match expression {
-        Expression::AggregateFunction(function) =>
-            aggregate_value(function, members, snapshot, schema, source, alias).map(|(v, _)| v),
+        Expression::AggregateFunction(function) => {
+            aggregate_value(function, members, snapshot, schema, source, alias).map(|(v, _)| v)
+        }
         Expression::Column(column) => {
             if column.relation().is_some() && !matches_source(column, source, alias) {
                 return Err("HAVING expression references an unproved producer");
             }
             if group_key == Some(column.name()) {
-                return Ok(key.map(|k| LiteralValue::Number(k.to_string())).unwrap_or(LiteralValue::Null));
+                return Ok(key
+                    .map(|k| LiteralValue::Number(k.to_string()))
+                    .unwrap_or(LiteralValue::Null));
             }
-            if column.relation().is_none() && !schema.columns().iter().any(|c| c.name() == column.name()) {
-                return projected.get(column.name()).cloned()
+            if column.relation().is_none()
+                && !schema.columns().iter().any(|c| c.name() == column.name())
+            {
+                return projected
+                    .get(column.name())
+                    .cloned()
                     .ok_or("HAVING alias does not name an output aggregate");
             }
             Err("HAVING column is neither the grouping key nor an unambiguous aggregate alias")
         }
         Expression::Literal(literal) => match literal.literal_type() {
-            LiteralType::Integer | LiteralType::Null | LiteralType::Boolean => Ok(literal.value().clone()),
+            LiteralType::Integer | LiteralType::Null | LiteralType::Boolean => {
+                Ok(literal.value().clone())
+            }
             _ => Err("HAVING literal comparison lacks a portable type law"),
         },
         _ => Err("HAVING contains an unproved computed scalar expression"),
@@ -290,7 +324,9 @@ fn aggregate_value(
         return Err("COUNT(DISTINCT *) has no portable certified law");
     }
     if let Some(filter) = function.filter() {
-        predicate_shape(filter, &|expr| source_scalar(expr, None, schema, source, alias))?;
+        predicate_shape(filter, &|expr| {
+            source_scalar(expr, None, schema, source, alias)
+        })?;
     }
     let count_all = function.name().eq_ignore_ascii_case("count")
         && matches!(function.arguments(), [AggregateArgument::Wildcard]);
@@ -495,12 +531,24 @@ pub fn physical_finite_aggregate_bag_plan(
     }
 
     if let Some(having) = query.predicates().having_predicate() {
-        let prototype = query.output().columns().iter()
+        let prototype = query
+            .output()
+            .columns()
+            .iter()
             .map(|output| (output.name().to_string(), LiteralValue::Null))
             .collect::<BTreeMap<_, _>>();
         let scalar = |expr: &Expression| {
-            having_scalar(expr, &prototype, None, grouped_key, &[], snapshot,
-                schema, relation, source.alias())
+            having_scalar(
+                expr,
+                &prototype,
+                None,
+                grouped_key,
+                &[],
+                snapshot,
+                schema,
+                relation,
+                source.alias(),
+            )
         };
         if let Err(reason) = predicate_shape(having, &scalar) {
             return residual(reason);
@@ -564,8 +612,17 @@ pub fn physical_finite_aggregate_bag_plan(
         let having_truth = match query.predicates().having_predicate() {
             Some(predicate) => {
                 let scalar = |expr: &Expression| {
-                    having_scalar(expr, &projected, key, grouped_key, &members,
-                        snapshot, schema, relation, source.alias())
+                    having_scalar(
+                        expr,
+                        &projected,
+                        key,
+                        grouped_key,
+                        &members,
+                        snapshot,
+                        schema,
+                        relation,
+                        source.alias(),
+                    )
                 };
                 match predicate_truth(predicate, &scalar) {
                     Ok(truth) => Some(truth),
