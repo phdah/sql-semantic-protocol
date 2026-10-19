@@ -1,10 +1,10 @@
 ---
 id: TASK-117
 title: Prove two-column set bag and NULL laws
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -32,6 +32,11 @@ type: feature
 - **Independent concrete oracle baseline:** A=[(1,NULL),(1,NULL),(2,4)], B=[(1,NULL),(3,4)]; UNION ALL=5; UNION DISTINCT=3; INTERSECT ALL=1; EXCEPT ALL=2.
 - **Fail-closed boundary and owner:** No independent per-column histogram substitution for tuple frequencies. TASK-117 owns every conditional variant and explicit review disposition.
 - **Mapped original TASK-72 AC:** #1, #3, #5, #6.
+
+
+## Acceptance freeze
+
+The versioned [twelve-case tuple-bag matrix](../../docs/task-117-acceptance-freeze.json) is registered in `docs/coverage-manifest.json` before semantic edits. Parser, adapter and final CI cells remain pending until verified.
 
 ## Acceptance Criteria
 
