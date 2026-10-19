@@ -356,7 +356,10 @@ pub fn physical_finite_join_aggregate_plan(
     let Some(on) = join.condition() else {
         return residual("INNER JOIN requires a certified ON predicate");
     };
-    for predicate in [Some(on), query.predicates().where_predicate()].into_iter().flatten() {
+    for predicate in [Some(on), query.predicates().where_predicate()]
+        .into_iter()
+        .flatten()
+    {
         if let Err(reason) = predicate_shape(predicate, &|expr| scalar(expr, None, &sources)) {
             return residual(reason);
         }
