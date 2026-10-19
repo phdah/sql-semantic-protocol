@@ -2,6 +2,17 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_117_set_acceptance": {
+    "owner": "TASK-117",
+    "parent": "TASK-72",
+    "status": "frozen_implementation_pending",
+    "acceptance_freeze": "docs/task-117-acceptance-freeze.json",
+    "fixture_ids": ["72-C117-P", "72-C117-N"],
+    "mandatory_cases": 12,
+    "dialects": 13,
+    "adapter_obligations": ["direct_sql", "dbt", "odcs"],
+    "remaining_gate": "all mandatory cases independently executed and CI verified"
+  },
   "task_115_join_acceptance": {
     "owner": "TASK-115",
     "parent": "TASK-71",
