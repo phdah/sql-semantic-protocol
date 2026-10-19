@@ -364,7 +364,6 @@ fn nondeterministic_row_number_implicit_null_order_and_missing_evidence_fail_clo
     ));
 }
 
-
 #[test]
 fn frozen_expected_physical_truth_and_typed_bounds_match_exact_output() {
     let inventory = freeze();
