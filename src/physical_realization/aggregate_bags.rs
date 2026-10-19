@@ -258,6 +258,37 @@ pub fn physical_finite_aggregate_bag_plan(
     if grouped_key.is_some() && !query.group_rows_match_surviving_groups() {
         return residual("parser did not certify the grouped terminal row shape");
     }
+    if grouped_key.is_none() && !query.proven_single_row_output() {
+        return residual("parser did not certify the unshaped global singleton result");
+    }
+
+    // A zero-row GROUP BY must not make unsupported SELECT expressions appear
+    // exact merely because evaluation never enters the per-group loop.
+    let mut output_names = BTreeSet::new();
+    let mut has_aggregate = false;
+    for output in query.output().columns() {
+        if !output_names.insert(output.name()) {
+            return residual("duplicate output column names prevent exact terminal identity");
+        }
+        match output.expression() {
+            Expression::Column(column)
+                if grouped_key == Some(column.name())
+                    && matches_source(column, relation, source.alias()) => {}
+            Expression::AggregateFunction(function) => {
+                has_aggregate = true;
+                if let Err(reason) =
+                    aggregate_value(function, &[], snapshot, schema, relation, source.alias())
+                {
+                    return residual(reason);
+                }
+            }
+            _ => return residual("output needs a direct group key or basic aggregate"),
+        }
+    }
+    if !has_aggregate {
+        return residual("query contains no basic aggregate expression");
+    }
+
     let mut groups = BTreeMap::<Option<i128>, Vec<usize>>::new();
     if grouped_key.is_none() {
         groups.insert(None, (0..snapshot.rows().len()).collect());
@@ -275,7 +306,6 @@ pub fn physical_finite_aggregate_bag_plan(
     }
     let mut terminal = Vec::new();
     let mut identities = Vec::new();
-    let mut has_aggregate = false;
     for (key, members) in groups {
         let mut projected = BTreeMap::new();
         let mut aggregate_row_ids = BTreeMap::new();
@@ -289,7 +319,6 @@ pub fn physical_finite_aggregate_bag_plan(
                         .unwrap_or(LiteralValue::Null)
                 }
                 Expression::AggregateFunction(function) => {
-                    has_aggregate = true;
                     match aggregate_value(
                         function,
                         &members,
@@ -323,17 +352,6 @@ pub fn physical_finite_aggregate_bag_plan(
             aggregate_row_ids,
         });
         terminal.push(projected);
-    }
-    // For GROUP BY on an empty bag the loop above has no groups. Detect
-    // aggregate shape from the canonical output instead of requiring a row.
-    if !has_aggregate
-        && !query
-            .output()
-            .columns()
-            .iter()
-            .any(|col| matches!(col.expression(), Expression::AggregateFunction(_)))
-    {
-        return residual("query contains no basic aggregate expression");
     }
     let mut terminal_domains = BTreeMap::new();
     for output in query.output().columns() {
