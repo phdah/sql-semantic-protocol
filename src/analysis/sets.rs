@@ -214,10 +214,20 @@ pub(super) fn certify_identity_set_cte(
     let [from] = outer.from.as_slice() else {
         return None;
     };
-    if !from.joins.is_empty() {
+    if !from.joins.is_empty()
+        || outer.distinct.is_some()
+        || outer.top.is_some()
+        || outer.having.is_some()
+        || outer.qualify.is_some()
+        || outer.prewhere.is_some()
+        || !outer.lateral_views.is_empty()
+        || outer.connect_by.is_some()
+        || !matches!(&outer.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+    {
         return None;
     }
-    let TableFactor::Table { name, .. } = &from.relation else {
+    let TableFactor::Table { name, args: None, sample: None, .. } = &from.relation else {
         return None;
     };
     if name.to_string() != cte.alias.name.value {
