@@ -399,3 +399,23 @@ fn rejected_null_join_pairs_and_unsupported_scalars_never_become_false_proofs() 
         );
     } // A parser error is an equally conservative unsupported boundary.
 }
+
+#[test]
+fn empty_join_never_proves_comparison_without_numeric_execution_law() {
+    let case = &freeze()["cases"][2];
+    let mut invalid = case.clone();
+    invalid["sql"] = Value::String(
+        "SELECT COUNT(*) AS row_count FROM l INNER JOIN r ON l.k = r.k WHERE l.x = TRUE"
+            .to_string(),
+    );
+    if let Ok(bundle) = parsed(&invalid, "generic") {
+        let target = bundle.layers().last().expect("target").id();
+        assert!(
+            matches!(
+                physical_finite_join_aggregate_plan(&bundle, target, &states(case)),
+                PhysicalJoinedAggregateProof::Residual { .. }
+            ),
+            "empty physical source does not certify integer/Boolean coercion"
+        );
+    }
+}
