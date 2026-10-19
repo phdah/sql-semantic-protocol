@@ -80,13 +80,10 @@ schema:
             continue;
         }
         let fixture = case["id"].as_str().expect("fixture");
-        let sql = case["sql"]
-            .as_str()
-            .expect("SQL")
-            .replace(
-                "FROM l INNER JOIN r",
-                "FROM warehouse.raw.l AS l INNER JOIN warehouse.raw.r AS r",
-            );
+        let sql = case["sql"].as_str().expect("SQL").replace(
+            "FROM l INNER JOIN r",
+            "FROM warehouse.raw.l AS l INNER JOIN warehouse.raw.r AS r",
+        );
         let input = SqlInput::inline(&sql);
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let direct = analyze_configured_inputs_with_catalog(&[config], &catalog)
@@ -164,7 +161,10 @@ schema:
                                             LiteralValue::Number(number.to_string())
                                         } else {
                                             LiteralValue::Text(
-                                                value.as_str().expect("source identity").to_string(),
+                                                value
+                                                    .as_str()
+                                                    .expect("source identity")
+                                                    .to_string(),
                                             )
                                         };
                                         (column.clone(), scalar)
