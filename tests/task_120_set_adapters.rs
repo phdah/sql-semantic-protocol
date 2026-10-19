@@ -217,7 +217,10 @@ schema:
                 .filter(|tuple| tuple.output_count > 0)
                 .map(|tuple| (tuple.values, tuple.output_count))
                 .collect::<BTreeMap<_, _>>();
-            assert_eq!(actual_positive, frozen_counts, "{id}/{adapter}: independently frozen whole bag");
+            assert_eq!(
+                actual_positive, frozen_counts,
+                "{id}/{adapter}: independently frozen whole bag"
+            );
             let tuple_counts = exact
                 .tuples
                 .iter()
