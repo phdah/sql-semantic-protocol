@@ -265,17 +265,29 @@ where
     }
 }
 
+struct HavingEvaluation<'a> {
+    projected: &'a BTreeMap<String, LiteralValue>,
+    key: Option<i128>,
+    group_key: Option<&'a str>,
+    members: &'a [usize],
+    snapshot: &'a PhysicalWriteState,
+    schema: &'a crate::relation::RelationSchema,
+    source: &'a str,
+    alias: Option<&'a str>,
+}
+
 fn having_scalar(
     expression: &Expression,
-    projected: &BTreeMap<String, LiteralValue>,
-    key: Option<i128>,
-    group_key: Option<&str>,
-    members: &[usize],
-    snapshot: &PhysicalWriteState,
-    schema: &crate::relation::RelationSchema,
-    source: &str,
-    alias: Option<&str>,
+    context: &HavingEvaluation<'_>,
 ) -> Result<LiteralValue, &'static str> {
+    let projected = context.projected;
+    let key = context.key;
+    let group_key = context.group_key;
+    let members = context.members;
+    let snapshot = context.snapshot;
+    let schema = context.schema;
+    let source = context.source;
+    let alias = context.alias;
     match expression {
         Expression::AggregateFunction(function) => {
             aggregate_value(function, members, snapshot, schema, source, alias).map(|(v, _)| v)
@@ -537,19 +549,11 @@ pub fn physical_finite_aggregate_bag_plan(
             .iter()
             .map(|output| (output.name().to_string(), LiteralValue::Null))
             .collect::<BTreeMap<_, _>>();
-        let scalar = |expr: &Expression| {
-            having_scalar(
-                expr,
-                &prototype,
-                None,
-                grouped_key,
-                &[],
-                snapshot,
-                schema,
-                relation,
-                source.alias(),
-            )
+        let context = HavingEvaluation {
+            projected: &prototype, key: None, group_key: grouped_key, members: &[],
+            snapshot, schema, source: relation, alias: source.alias(),
         };
+        let scalar = |expr: &Expression| having_scalar(expr, &context);
         if let Err(reason) = predicate_shape(having, &scalar) {
             return residual(reason);
         }
@@ -611,19 +615,11 @@ pub fn physical_finite_aggregate_bag_plan(
         }
         let having_truth = match query.predicates().having_predicate() {
             Some(predicate) => {
-                let scalar = |expr: &Expression| {
-                    having_scalar(
-                        expr,
-                        &projected,
-                        key,
-                        grouped_key,
-                        &members,
-                        snapshot,
-                        schema,
-                        relation,
-                        source.alias(),
-                    )
+                let context = HavingEvaluation {
+                    projected: &projected, key, group_key: grouped_key, members: &members,
+                    snapshot, schema, source: relation, alias: source.alias(),
                 };
+                let scalar = |expr: &Expression| having_scalar(expr, &context);
                 match predicate_truth(predicate, &scalar) {
                     Ok(truth) => Some(truth),
                     Err(reason) => return residual(reason),
