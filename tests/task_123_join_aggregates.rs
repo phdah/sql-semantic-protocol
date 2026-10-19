@@ -448,7 +448,6 @@ fn empty_join_never_proves_comparison_without_numeric_execution_law() {
     }
 }
 
-
 #[test]
 fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
     let mut case = freeze()["cases"][0].clone();
@@ -461,7 +460,12 @@ fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
             .to_string(),
     );
     case["terminal_columns"] = serde_json::json!([
-        "k", "distinct_x", "sum_x", "min_x", "max_x", "filtered_count"
+        "k",
+        "distinct_x",
+        "sum_x",
+        "min_x",
+        "max_x",
+        "filtered_count"
     ]);
     case["full_terminal_bag"] = serde_json::json!([{
         "k": 1,
@@ -478,8 +482,16 @@ fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
     };
     let wanted = expected(&case);
     assert_eq!(normalized(&exact.terminal), normalized(&wanted));
-    assert_eq!(exact.selected.len(), 5, "duplicates preserve joined bag size");
-    assert_eq!(exact.rejected.len(), 7, "NULL and false pairs remain NOT TRUE");
+    assert_eq!(
+        exact.selected.len(),
+        5,
+        "duplicates preserve joined bag size"
+    );
+    assert_eq!(
+        exact.rejected.len(),
+        7,
+        "NULL and false pairs remain NOT TRUE"
+    );
 
     for (name, number) in [
         ("k", 1),
@@ -489,8 +501,7 @@ fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
         ("max_x", 7),
         ("filtered_count", 2),
     ] {
-        let ValueDomain::Set(set) = exact.terminal_domains.get(name).expect("output domain")
-        else {
+        let ValueDomain::Set(set) = exact.terminal_domains.get(name).expect("output domain") else {
             panic!("{name}: expected exact finite value domain");
         };
         assert_eq!(set.mode(), SetMode::Include);
@@ -534,7 +545,10 @@ fn joined_distinct_filtered_and_integer_aggregate_domains_match_duckdb() {
     let ValueDomain::Set(domain) = avg.terminal_domains.get("avg_x").expect("AVG domain") else {
         panic!("integral AVG output must have an exact domain");
     };
-    assert_eq!(domain.values()[0].value(), &LiteralValue::Number("7".to_string()));
+    assert_eq!(
+        domain.values()[0].value(),
+        &LiteralValue::Number("7".to_string())
+    );
 }
 
 #[test]
