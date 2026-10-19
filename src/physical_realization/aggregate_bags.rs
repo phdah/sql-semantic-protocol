@@ -550,8 +550,14 @@ pub fn physical_finite_aggregate_bag_plan(
             .map(|output| (output.name().to_string(), LiteralValue::Null))
             .collect::<BTreeMap<_, _>>();
         let context = HavingEvaluation {
-            projected: &prototype, key: None, group_key: grouped_key, members: &[],
-            snapshot, schema, source: relation, alias: source.alias(),
+            projected: &prototype,
+            key: None,
+            group_key: grouped_key,
+            members: &[],
+            snapshot,
+            schema,
+            source: relation,
+            alias: source.alias(),
         };
         let scalar = |expr: &Expression| having_scalar(expr, &context);
         if let Err(reason) = predicate_shape(having, &scalar) {
@@ -616,8 +622,14 @@ pub fn physical_finite_aggregate_bag_plan(
         let having_truth = match query.predicates().having_predicate() {
             Some(predicate) => {
                 let context = HavingEvaluation {
-                    projected: &projected, key, group_key: grouped_key, members: &members,
-                    snapshot, schema, source: relation, alias: source.alias(),
+                    projected: &projected,
+                    key,
+                    group_key: grouped_key,
+                    members: &members,
+                    snapshot,
+                    schema,
+                    source: relation,
+                    alias: source.alias(),
                 };
                 let scalar = |expr: &Expression| having_scalar(expr, &context);
                 match predicate_truth(predicate, &scalar) {
