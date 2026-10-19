@@ -388,17 +388,14 @@ fn rejected_null_join_pairs_and_unsupported_scalars_never_become_false_proofs() 
         "SELECT l.k AS k, COUNT(*) AS row_count FROM l JOIN r ON l.k=r.k WHERE ABS(l.x)>0 GROUP BY l.k"
             .to_string(),
     );
-    match parsed(&invalid, "generic") {
-        Ok(bundle) => {
-            let target = bundle.layers().last().expect("target").id();
-            assert!(
-                matches!(
-                    physical_finite_join_aggregate_plan(&bundle, target, &states(positive)),
-                    PhysicalJoinedAggregateProof::Residual { .. }
-                ),
-                "unsupported computed WHERE must fail closed"
-            );
-        }
-        Err(_) => {} // Parser itself is a conservative unsupported boundary.
-    }
+    if let Ok(bundle) = parsed(&invalid, "generic") {
+        let target = bundle.layers().last().expect("target").id();
+        assert!(
+            matches!(
+                physical_finite_join_aggregate_plan(&bundle, target, &states(positive)),
+                PhysicalJoinedAggregateProof::Residual { .. }
+            ),
+            "unsupported computed WHERE must fail closed"
+        );
+    } // A parser error is an equally conservative unsupported boundary.
 }
