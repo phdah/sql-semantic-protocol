@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-119",
   "parent": "TASK-72",
   "frozen_at": "2026-10-19",
@@ -7,7 +7,7 @@
     "72-C119-P",
     "72-C119-N"
   ],
-  "case_count": 8,
+  "case_count": 10,
   "scope": "two-column positional output alignment, MINUS normalization, bounded integral ordered row limit/fetch, explicit coercion/name/vendor residuals",
   "source_column_types": {
     "id": "VARCHAR NOT NULL",
@@ -600,10 +600,10 @@
       ]
     },
     {
-      "id": "72-C119-N-order-tie",
-      "fixture": "72-C119-N",
-      "classification": "mandatory_residual",
-      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC LIMIT 4",
+      "id": "72-C119-P-null-duplicates",
+      "fixture": "72-C119-P",
+      "classification": "mandatory_exact",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC NULLS LAST, value_out ASC NULLS LAST LIMIT 3 OFFSET 2",
       "source_bags": {
         "a": [
           {
@@ -631,11 +631,196 @@
           {
             "id": "b2",
             "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            3,
+            30
+          ],
+          "count": 2
+        },
+        {
+          "tuple": [
+            null,
+            null
+          ],
+          "count": 1
+        }
+      ],
+      "expected_count": 3,
+      "variants": [
+        "positional_aliases",
+        "global_order_limit",
+        "set_limit_offset",
+        "nulls_explicit",
+        "duplicates",
+        "positive"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "full closed-world source and terminal bags, inclusive exact domains, SQL TRUE/NOT TRUE membership, stable source ids",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "mandatory_parser_and_canonical_equivalence",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "mandatory_exact",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "mandatory_exact",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": false
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            3
+          ],
+          "lower": 3,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            30
+          ],
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ]
+    },
+    {
+      "id": "72-C119-N-order-tie",
+      "fixture": "72-C119-N",
+      "classification": "conditional_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT k AS other_key, v AS other_value FROM b ORDER BY key_out ASC NULLS LAST LIMIT 2",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 2,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 2,
             "v": 40
           }
         ]
       },
-      "reason": "ORDER BY ties distinct output tuples without a total order",
+      "reason": "LIMIT crosses a tied ORDER BY key with different terminal tuples (2,20) versus (2,30)",
       "variants": [
         "unstable_partial_order",
         "negative"
@@ -719,17 +904,17 @@
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "odcs_equivalent_schemas",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         }
       ],
@@ -740,25 +925,29 @@
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         },
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         }
-      ]
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     },
     {
       "id": "72-C119-N-by-name",
@@ -902,25 +1091,194 @@
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         },
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         }
-      ]
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+    },
+    {
+      "id": "72-C119-N-corresponding",
+      "fixture": "72-C119-N",
+      "classification": "conditional_parser_residual",
+      "sql": "SELECT k AS key_out, v AS value_out FROM a UNION CORRESPONDING SELECT v AS value_out, k AS key_out FROM b",
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "a2",
+            "k": 2,
+            "v": 20
+          },
+          {
+            "id": "a3",
+            "k": null,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 3,
+            "v": 30
+          },
+          {
+            "id": "b2",
+            "k": 3,
+            "v": 30
+          }
+        ]
+      },
+      "reason": "CORRESPONDING vendor parser/column-alignment rule lacks a portable attested name law",
+      "variants": [
+        "corresponding_vendor",
+        "conditional"
+      ],
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_types": [
+        "signed_integer_nullable",
+        "signed_integer_nullable"
+      ],
+      "proof_contract": "typed residual or conditional parser boundary, never exact without attested law",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_parser_or_engine_session_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "classification": "conditional_parser_residual",
+          "verified": false
+        }
+      ],
+      "duckdb_oracle": {
+        "source_and_terminal_bags": "conditional",
+        "verified": false
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": null,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": null,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
+        }
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     },
     {
       "id": "72-C119-P-minus",
@@ -1063,30 +1421,34 @@
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         },
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         }
-      ]
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     },
     {
       "id": "72-C119-N-coercion",
       "fixture": "72-C119-N",
-      "classification": "mandatory_residual",
+      "classification": "conditional_residual",
       "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL SELECT CAST(k AS BIGINT) AS other_key, v AS other_value FROM b",
       "source_bags": {
         "a": [
@@ -1202,17 +1564,17 @@
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "odcs_equivalent_schemas",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         }
       ],
@@ -1223,30 +1585,34 @@
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         },
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         }
-      ]
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     },
     {
       "id": "72-C119-N-branch-limit",
       "fixture": "72-C119-N",
-      "classification": "mandatory_residual",
+      "classification": "conditional_residual",
       "sql": "SELECT k AS key_out, v AS value_out FROM a UNION ALL (SELECT k AS other_key, v AS other_value FROM b LIMIT 1)",
       "source_bags": {
         "a": [
@@ -1362,17 +1728,17 @@
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         },
         {
           "name": "odcs_equivalent_schemas",
-          "classification": "mandatory_residual",
+          "classification": "conditional_residual",
           "verified": false
         }
       ],
@@ -1383,25 +1749,30 @@
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         },
         {
           "datatype": "signed_integer",
-          "allowed": [],
+          "allowed": null,
           "lower": null,
           "upper": null,
-          "lower_inclusive": true,
-          "upper_inclusive": true,
-          "contains_null": false,
-          "empty": true
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "contains_null": null,
+          "empty": null,
+          "proof": "unknown_not_empty"
         }
-      ]
+      ],
+      "conditional_owner": "TASK-119",
+      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
     }
-  ]
+  ],
+  "review_changes": "Signoff audit: add full NULL/duplicate positive and CORRESPONDING vendor cells, make tied distinct rows actually ambiguous, classify conditional residuals truthfully instead of mandatory residuals, and never encode an unknown domain as empty."
 }
