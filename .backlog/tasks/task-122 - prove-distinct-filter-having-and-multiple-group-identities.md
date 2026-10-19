@@ -1,10 +1,10 @@
 ---
 id: TASK-122
 title: Prove DISTINCT FILTER HAVING and multiple group identities
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
