@@ -16,8 +16,8 @@ use std::cmp::Ordering;
 pub struct PhysicalRankRow {
     /// Physical source row identity, never collapsed for SQL duplicates.
     pub source_row_id: String,
-    /// ROW_NUMBER, proved only when all ordering tuples are distinct per partition.
-    pub row_number: u64,
+    /// ROW_NUMBER only for partitions with unique ordering tuples; peers are ambiguous.
+    pub row_number: Option<u64>,
     /// One plus the number of preceding rows, including preceding peers.
     pub rank: u64,
     /// One plus the number of distinct preceding peer groups.
@@ -387,16 +387,16 @@ pub fn physical_finite_rank_bag_plan(
                 .find(|result| *result != Ordering::Equal)
                 .unwrap_or(Ordering::Equal)
         });
+        let has_peers = rows.windows(2).any(|pair| pair[0].1 == pair[1].1);
+        if has_peers && contains_row_number {
+            return residual("ROW_NUMBER identity among equal ORDER BY peers is nondeterministic");
+        }
         let mut first_peer: usize = 0;
         let mut distinct_peers: u64 = 0;
         for index in 0..rows.len() {
             if index == 0 || rows[index].1 != rows[index - 1].1 {
                 first_peer = index;
                 distinct_peers += 1;
-            } else if contains_row_number {
-                return residual(
-                    "ROW_NUMBER identity among equal ORDER BY peers is nondeterministic",
-                );
             }
             let rank = match u64::try_from(first_peer + 1) {
                 Ok(value) => value,
@@ -416,7 +416,7 @@ pub fn physical_finite_rank_bag_plan(
             });
             ranked[rows[index].0] = Some(PhysicalRankRow {
                 source_row_id: format!("{}#{}", source.name(), rows[index].0),
-                row_number,
+                row_number: (!has_peers).then_some(row_number),
                 rank,
                 dense_rank: distinct_peers,
                 survives: selected,
@@ -440,7 +440,10 @@ pub fn physical_finite_rank_bag_plan(
                 },
                 Expression::WindowFunction(window) => {
                     let value = match rank_function(window) {
-                        Some(RankFunction::RowNumber) => rank.row_number,
+                        Some(RankFunction::RowNumber) => match rank.row_number {
+                            Some(value) => value,
+                            None => return residual("ROW_NUMBER peer identity is not exact"),
+                        },
                         Some(RankFunction::Rank) => rank.rank,
                         Some(RankFunction::DenseRank) => rank.dense_rank,
                         None => return residual("unsupported ranking output"),
