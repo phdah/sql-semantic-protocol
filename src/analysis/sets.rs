@@ -152,7 +152,7 @@ pub(super) fn collect_set_branch_evidence(
                                 let mut direct = branch_query.clone();
                                 direct.with = None;
                                 let independent = analyze_query(&direct, None, metadata);
-                                (analyze_set_leaf_boundary(expression, &independent), false)
+                                (analyze_set_leaf_boundary(expression, &independent), independent.row_preserving_projection() || independent.filter_only_row_shape())
                             }
                         }
                     }
