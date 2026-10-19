@@ -160,7 +160,7 @@ pub use physical_realization::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
     physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
-    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
+    PhysicalAggregateTruth, PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
     PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteSetExact,
     PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalIdentitySequence, PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef,
