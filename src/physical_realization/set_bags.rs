@@ -215,6 +215,9 @@ pub fn physical_finite_set_bag_plan(
         .iter()
         .map(|column| column.name().to_string())
         .collect::<Vec<_>>();
+    if names[0] == names[1] {
+        return residual("set output column names are ambiguous");
+    }
     for (values, [left_row_ids, right_row_ids]) in observed {
         let Ok(left_count) = u64::try_from(left_row_ids.len()) else {
             return residual("set input multiplicity overflow");
