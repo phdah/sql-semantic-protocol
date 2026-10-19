@@ -113,6 +113,47 @@ fn duckdb_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         ))
         .expect("independent source insertion");
     }
+    let mut source_stmt = db
+        .prepare("SELECT id, k, x FROM s")
+        .expect("physical source query");
+    let source_rows = source_stmt
+        .query_map([], |row| {
+            Ok(BTreeMap::from([
+                ("id".to_string(), LiteralValue::Text(row.get::<_, String>(0)?)),
+                (
+                    "k".to_string(),
+                    row.get::<_, Option<i64>>(1)?
+                        .map(|n| LiteralValue::Number(n.to_string()))
+                        .unwrap_or(LiteralValue::Null),
+                ),
+                (
+                    "x".to_string(),
+                    row.get::<_, Option<i64>>(2)?
+                        .map(|n| LiteralValue::Number(n.to_string()))
+                        .unwrap_or(LiteralValue::Null),
+                ),
+            ]))
+        })
+        .expect("read all physical source rows")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("complete source snapshot");
+    let expected_rows = case["source_bag"]
+        .as_array()
+        .expect("frozen complete physical source")
+        .iter()
+        .map(|row| {
+            row.as_object()
+                .expect("source row")
+                .iter()
+                .map(|(name, value)| (name.clone(), literal(value)))
+                .collect::<BTreeMap<_, _>>()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        normalized(source_rows),
+        normalized(expected_rows),
+        "DuckDB source bag and identities must match the frozen physical bag"
+    );
     let sql = case["sql"].as_str().expect("frozen SQL");
     let columns = case["terminal_columns"].as_array().expect("projection");
     let mut stmt = db.prepare(sql).expect("valid DuckDB SQL");
@@ -124,7 +165,10 @@ fn duckdb_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
                 let value = if name == "average" {
                     let number = row.get::<_, Option<f64>>(index)?;
                     number
-                        .map(|n| LiteralValue::Number((n as i64).to_string()))
+                        .map(|n| {
+                            assert!(n.is_finite() && n.fract() == 0.0, "AVG is not an exact integer");
+                            LiteralValue::Number((n as i64).to_string())
+                        })
                         .unwrap_or(LiteralValue::Null)
                 } else {
                     let number = row.get::<_, Option<i64>>(index)?;
