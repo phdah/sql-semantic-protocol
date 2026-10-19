@@ -296,9 +296,6 @@ fn all_exposed_dialects_either_prove_portable_law_or_report_qualify_parser_bound
     for dialect in DIALECTS {
         let parser = dialect_from_name(dialect).unwrap();
         for case in inventory["cases"].as_array().unwrap() {
-            if case["exact"] != true {
-                continue;
-            }
             let sql = case["sql"].as_str().unwrap();
             if Parser::parse_sql(parser.as_ref(), sql).is_err() {
                 assert!(
@@ -311,15 +308,20 @@ fn all_exposed_dialects_either_prove_portable_law_or_report_qualify_parser_bound
             let bundle = analyze(case, dialect);
             let target = bundle.layers().last().unwrap().id();
             let proof = physical_finite_rank_bag_plan(&bundle, target, &[source(case)]);
-            let PhysicalFiniteRankProof::Exact(exact) = proof else {
-                panic!("{dialect}/{}: {proof:?}", case["id"]);
-            };
-            assert_eq!(
-                bag(&exact.terminal),
-                bag(&expected(case)),
-                "{dialect}/{}",
-                case["id"]
-            );
+            if case["proof"] == "Residual" {
+                assert!(matches!(proof, PhysicalFiniteRankProof::Residual { .. }),
+                    "{dialect}/{}: conditional ranking law was overclaimed: {proof:?}", case["id"]);
+            } else {
+                let PhysicalFiniteRankProof::Exact(exact) = proof else {
+                    panic!("{dialect}/{}: mandatory full-bag ranking is not Exact: {proof:?}", case["id"]);
+                };
+                assert_eq!(
+                    bag(&exact.terminal),
+                    bag(&expected(case)),
+                    "{dialect}/{}",
+                    case["id"]
+                );
+            }
         }
     }
 }
