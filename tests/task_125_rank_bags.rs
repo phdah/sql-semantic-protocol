@@ -309,11 +309,17 @@ fn all_exposed_dialects_either_prove_portable_law_or_report_qualify_parser_bound
             let target = bundle.layers().last().unwrap().id();
             let proof = physical_finite_rank_bag_plan(&bundle, target, &[source(case)]);
             if case["proof"] == "Residual" {
-                assert!(matches!(proof, PhysicalFiniteRankProof::Residual { .. }),
-                    "{dialect}/{}: conditional ranking law was overclaimed: {proof:?}", case["id"]);
+                assert!(
+                    matches!(proof, PhysicalFiniteRankProof::Residual { .. }),
+                    "{dialect}/{}: conditional ranking law was overclaimed: {proof:?}",
+                    case["id"]
+                );
             } else {
                 let PhysicalFiniteRankProof::Exact(exact) = proof else {
-                    panic!("{dialect}/{}: mandatory full-bag ranking is not Exact: {proof:?}", case["id"]);
+                    panic!(
+                        "{dialect}/{}: mandatory full-bag ranking is not Exact: {proof:?}",
+                        case["id"]
+                    );
                 };
                 assert_eq!(
                     bag(&exact.terminal),
