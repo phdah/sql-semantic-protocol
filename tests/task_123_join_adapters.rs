@@ -1,7 +1,7 @@
 //! TASK-123 source-independent aggregate semantics for SQL, dbt and ODCS.
 #[cfg(feature = "odcs")]
 #[test]
-fn joined_aggregate_exact_source_bags_are_identical_across_supported_adapters() {
+fn joined_aggregate_adapters_prove_exact_or_explicit_residual() {
     use std::collections::BTreeMap;
 
     use serde_json::{json, Value};
@@ -76,9 +76,7 @@ schema:
     let parser = dialect_from_name("postgresql").expect("portable parser");
 
     for case in inventory["cases"].as_array().expect("frozen cases") {
-        if case["kind"] != "mandatory" {
-            continue;
-        }
+        let mandatory = case["kind"] == "mandatory";
         let fixture = case["id"].as_str().expect("fixture");
         let sql = case["sql"].as_str().expect("SQL").replace(
             "FROM l INNER JOIN r",
@@ -87,10 +85,10 @@ schema:
         let input = SqlInput::inline(&sql);
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let direct = analyze_configured_inputs_with_catalog(&[config], &catalog)
-            .expect("direct physical source analysis");
+            .map_err(|error| error.to_string());
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let odcs_bundle = analyze_configured_inputs_with_catalog(&[config], &odcs_catalog)
-            .expect("ODCS physical source analysis");
+            .map_err(|error| error.to_string());
 
         let manifest = json!({
             "metadata": {
@@ -137,7 +135,7 @@ schema:
         });
         let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
         let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
-            .expect("compiled dbt analysis");
+            .map_err(|error| error.to_string());
 
         let states = ["l", "r"]
             .into_iter()
@@ -180,6 +178,10 @@ schema:
             .collect::<Vec<_>>();
         let mut proofs = Vec::new();
         for (name, bundle) in [("SQL", &direct), ("dbt", &dbt), ("ODCS", &odcs_bundle)] {
+            let Ok(bundle) = bundle else {
+                assert!(!mandatory, "{name}:{fixture}: mandatory analysis failed: {bundle:?}");
+                continue;
+            };
             let target = bundle
                 .layers()
                 .iter()
@@ -187,6 +189,13 @@ schema:
                 .unwrap_or_else(|| panic!("{name}:{fixture}: no physical input producer"))
                 .id();
             let result = physical_finite_join_aggregate_plan(bundle, target, &states);
+            if !mandatory {
+                assert!(
+                    matches!(result, PhysicalJoinedAggregateProof::Residual { .. }),
+                    "{name}:{fixture}: conditional grouping must fail closed: {result:?}"
+                );
+                continue;
+            }
             let PhysicalJoinedAggregateProof::Exact(exact) = result else {
                 panic!("{name}:{fixture}: missing exact joined canonical proof: {result:?}");
             };
@@ -199,7 +208,9 @@ schema:
                 exact.terminal_domains.clone(),
             ));
         }
-        assert_eq!(proofs[0], proofs[1], "{fixture}: compiled dbt parity");
-        assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS schema parity");
+        if mandatory {
+            assert_eq!(proofs[0], proofs[1], "{fixture}: compiled dbt parity");
+            assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS schema parity");
+        }
     }
 }
