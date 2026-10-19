@@ -1,4 +1,19 @@
 {
+  "task_125_peer_rank_acceptance": {
+    "owner": "TASK-125",
+    "parent": "TASK-74",
+    "status": "implementation_in_progress_not_signed_off",
+    "acceptance_freeze": "docs/task-125-acceptance-freeze.json",
+    "fixture_ids": ["74-C125-P", "74-C125-N"],
+    "mandatory_finite_bag_cases": 9,
+    "conditional_residual_cases": 2,
+    "canonical_implementation": "src/physical_realization/rank_bags.rs",
+    "public_oracles": ["tests/task_125_rank_bags.rs"],
+    "dialect_identities": 13,
+    "adapter_requirement": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "release_approved": false,
+    "unverified_mandatory_cells_block_done": true
+  },
   "task_124_aggregate_parent_acceptance": {
     "owner": "TASK-124",
     "parent": "TASK-73",
