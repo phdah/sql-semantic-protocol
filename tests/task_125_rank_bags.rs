@@ -470,3 +470,28 @@ fn frozen_expected_physical_truth_and_typed_bounds_match_exact_output() {
         }
     }
 }
+
+#[test]
+fn frozen_dialect_parser_status_matches_all_fixtures() {
+    let inventory = freeze();
+    let mut actual = BTreeMap::new();
+    for case in inventory["cases"].as_array().unwrap() {
+        let sql = case["sql"].as_str().unwrap();
+        let mut statuses = BTreeMap::new();
+        for dialect in DIALECTS {
+            let parser = dialect_from_name(dialect).unwrap();
+            let status = if Parser::parse_sql(parser.as_ref(), sql).is_ok() {
+                "parsed"
+            } else {
+                "parser_boundary"
+            };
+            statuses.insert(*dialect, status);
+        }
+        actual.insert(case["id"].as_str().unwrap(), statuses);
+    }
+    assert_eq!(
+        inventory["parser_status_matrix"],
+        serde_json::to_value(actual).unwrap(),
+        "every frozen SQL requires exact per-dialect parser boundary evidence"
+    );
+}
