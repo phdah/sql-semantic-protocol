@@ -152,8 +152,13 @@ schema:
         third_source["name"] = json!("c");
         third_source["relation_name"] = json!("warehouse.raw.c");
         manifest["sources"]["source.demo.c"] = third_source;
-        manifest["nodes"]["model.demo.task120"]["depends_on"]["nodes"] =
-            json!(["source.demo.a", "source.demo.b", "source.demo.c"]);
+        let dependencies = case["source_bags"]
+            .as_object()
+            .expect("actual physical dependencies")
+            .keys()
+            .map(|name| format!("source.demo.{name}"))
+            .collect::<Vec<_>>();
+        manifest["nodes"]["model.demo.task120"]["depends_on"]["nodes"] = json!(dependencies);
         let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
         let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
             .expect("dbt canonical analysis");
