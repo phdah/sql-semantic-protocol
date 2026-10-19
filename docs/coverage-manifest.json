@@ -1,4 +1,20 @@
 {
+  "task_123_joined_grouping_acceptance": {
+    "owner": "TASK-123",
+    "parent": "TASK-73",
+    "status": "in_progress_pending_full_verification",
+    "acceptance_freeze": "docs/task-123-acceptance-freeze.json",
+    "fixture_ids": ["73-C123-P", "73-C123-N"],
+    "mandatory_cases": 3,
+    "conditional_grouping_variants": ["GROUPING SETS", "ROLLUP", "CUBE", "GROUP BY ALL"],
+    "required_parser_dialects": 13,
+    "required_adapters": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "conditional_owner": "TASK-123",
+    "unverified_mandatory_cells_block_done": true,
+    "release_approved": false,
+    "native_vendor_execution_certified": false,
+    "remaining_gate": "final GitHub CI, adapters, conditional variant dispositions, independent signoff and parent TASK-73 review"
+  },
   "task_122_distinct_filter_having_acceptance": {
     "owner": "TASK-122",
     "parent": "TASK-73",
