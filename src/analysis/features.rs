@@ -80,7 +80,7 @@ pub(super) fn inspect_set_expr_features(expression: &SetExpr, diagnostics: &mut 
         SetExpr::Select(select) => inspect_select_features(select, diagnostics),
         SetExpr::Query(query) => {
             inspect_set_expr_features(query.body.as_ref(), diagnostics);
-            inspect_query_features(query, diagnostics);
+            inspect_query_features(query, None, diagnostics);
         }
         SetExpr::SetOperation { left, right, .. } => {
             inspect_set_expr_features(left, diagnostics);
@@ -94,22 +94,27 @@ pub(super) fn inspect_set_expr_features(expression: &SetExpr, diagnostics: &mut 
     }
 }
 
-pub(super) fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
-    if query.order_by.is_some() {
+pub(super) fn inspect_query_features(
+    query: &SqlQuery,
+    set_operation: Option<&SetOperation>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let finite_set_shape = set_operation.is_some_and(|operation| operation.row_shaping().is_some());
+    if query.order_by.is_some() && !finite_set_shape {
         diagnostics.push(warning(
             "unsupported_order_by",
             DiagnosticArea::Other,
             "ORDER BY semantics are not implemented yet",
         ));
     }
-    if query.limit_clause.is_some() {
+    if query.limit_clause.is_some() && !finite_set_shape {
         diagnostics.push(warning(
             "unsupported_limit",
             DiagnosticArea::Other,
             "LIMIT semantics are not implemented yet",
         ));
     }
-    if query.fetch.is_some() {
+    if query.fetch.is_some() && !finite_set_shape {
         diagnostics.push(warning(
             "unsupported_fetch",
             DiagnosticArea::Other,
