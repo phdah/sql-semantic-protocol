@@ -159,7 +159,10 @@ schema:
         .as_array()
         .expect("frozen cases")
         .iter()
-        .filter(|case| case["classification"] == "mandatory_exact")
+        .filter(|case| {
+            case["classification"] == "mandatory_exact"
+                || case["classification"] == "conditional_residual"
+        })
     {
         let sql = case["sql"]
             .as_str()
@@ -233,6 +236,31 @@ schema:
         let dbt = analyze_dbt_manifest_with_schemas(&artifacts, "postgresql", dialect.as_ref())
             .expect("compiled dbt manifest");
         let physical = snapshots(case);
+        if case["classification"] == "conditional_residual" {
+            for (label, bundle) in [
+                ("direct SQL", &direct),
+                ("ODCS", &with_odcs),
+                ("compiled dbt", &dbt),
+            ] {
+                let target = bundle
+                    .layers()
+                    .iter()
+                    .find(|layer| {
+                        physical.iter().all(|source| {
+                            layer.consumes().iter().any(|used| used == source.relation())
+                        })
+                    })
+                    .expect("set terminal")
+                    .id();
+                let proof = physical_finite_set_tree_plan(bundle, target, &physical);
+                assert!(
+                    matches!(proof, PhysicalFiniteSetTreeProof::Residual { .. }),
+                    "{label}/{} must fail closed: {proof:?}",
+                    case["id"]
+                );
+            }
+            continue;
+        }
         let expected = result(&direct, &physical);
         let expected_histogram = case["expected_terminal_tuple_histogram"]
             .as_array()
