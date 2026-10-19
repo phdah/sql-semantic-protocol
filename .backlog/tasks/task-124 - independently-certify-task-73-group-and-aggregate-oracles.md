@@ -1,10 +1,10 @@
 ---
 id: TASK-124
 title: Independently certify TASK-73 group and aggregate oracles
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,11 @@ type: feature
 ## Next
 
 Then independently sign off all original TASK-73 AC against the entire merged child evidence.
+
+## Implementation branch evidence (2026-10-19)
+
+- Task-owned finite freeze: [docs/task-124-acceptance-freeze.json](../../docs/task-124-acceptance-freeze.json) (12 mandatory and 4 conditional variants, 13 dialects, three adapters, positive and NOT TRUE frozen source/terminal bags).
+- Public DuckDB and canonical physical oracle: [tests/task_124_parent_aggregate_oracles.rs](../../tests/task_124_parent_aggregate_oracles.rs).
+- SQL/dbt/ODCS parity: [tests/task_124_aggregate_adapters.rs](../../tests/task_124_aggregate_adapters.rs); committed `aggregate_summary.sql` E2E remains required.
+- Per-AC [implementation audit](../../docs/task-124-acceptance-audit.md) and coverage manifest registration.
+- **Acceptance remains unchecked until final-head CI, executable dbt E2E and independent review verify every mandatory cell.** TASK-73 remains open.
