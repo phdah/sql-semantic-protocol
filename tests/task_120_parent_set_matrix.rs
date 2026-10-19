@@ -283,20 +283,42 @@ fn frozen_matrix_is_finite_and_covers_every_original_parent_criterion() {
 #[test]
 fn every_conditional_dialect_cell_is_a_reviewed_boundary_not_an_empty_bag() {
     let freeze = inventory();
-    let dialects = freeze["dialect_identities"].as_array().expect("13 dialect names");
-    for case in freeze["conditional_cases"].as_array().expect("6 conditional cases") {
+    let dialects = freeze["dialect_identities"]
+        .as_array()
+        .expect("13 dialect names");
+    for case in freeze["conditional_cases"]
+        .as_array()
+        .expect("6 conditional cases")
+    {
         let id = case["id"].as_str().expect("conditional ID");
         assert_eq!(case["owner"], "TASK-120", "{id}: named owner");
-        assert!(case["expected_terminal_tuple_histogram"].is_null(), "{id}: not proven empty");
+        assert!(
+            case["expected_terminal_tuple_histogram"].is_null(),
+            "{id}: not proven empty"
+        );
         assert!(case["expected_count"].is_null(), "{id}: not proven zero");
-        assert!(case["positive_proof"].as_str().is_some(), "{id}: positive boundary");
-        assert!(case["not_true_proof"].as_str().is_some(), "{id}: absence boundary");
-        assert!(case["release_disposition"].as_str().is_some(), "{id}: reviewed disposition");
-        let cells = case["dialect_cells"].as_array().expect("complete conditional matrix");
+        assert!(
+            case["positive_proof"].as_str().is_some(),
+            "{id}: positive boundary"
+        );
+        assert!(
+            case["not_true_proof"].as_str().is_some(),
+            "{id}: absence boundary"
+        );
+        assert!(
+            case["release_disposition"].as_str().is_some(),
+            "{id}: reviewed disposition"
+        );
+        let cells = case["dialect_cells"]
+            .as_array()
+            .expect("complete conditional matrix");
         assert_eq!(cells.len(), dialects.len(), "{id}: no missing dialect");
         for (index, dialect_name) in dialects.iter().enumerate() {
             let name = dialect_name.as_str().expect("dialect");
-            assert_eq!(cells[index]["name"], name, "{id}: dialect classification identity");
+            assert_eq!(
+                cells[index]["name"], name,
+                "{id}: dialect classification identity"
+            );
             assert!(
                 cells[index]["classification"]
                     .as_str()
