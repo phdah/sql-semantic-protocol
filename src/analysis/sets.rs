@@ -118,18 +118,59 @@ pub(super) fn collect_set_branch_evidence(
                 branch_query.fetch = None;
             }
             let analyzed = analyze_query(&branch_query, None, metadata);
-            // A nested branch's own LIMIT/FETCH/CTE can change the exact
-            // number of tuples at its physical boundary. Those modifiers
-            // cannot be discharged by a source-row witness for the branch.
-            let boundary = if branch_query.with.is_none()
-                && branch_query.limit_clause.is_none()
+            // Inner CTE rows are not independent physical bags. Only an
+            // identity-preserving single-source CTE, certified below, can be
+            // rebound to the complete underlying physical source assignment.
+            let (boundary, certified_local) = if branch_query.limit_clause.is_none()
                 && branch_query.fetch.is_none()
             {
-                analyze_set_leaf_boundary(expression, &analyzed)
+                match branch_query.with.as_ref() {
+                    None => (analyze_set_leaf_boundary(expression, &analyzed), false),
+                    Some(with) => {
+                        if let Some(cte_boundary) =
+                            certify_identity_set_cte(expression, &branch_query, metadata)
+                        {
+                            (Some(cte_boundary), true)
+                        } else {
+                            // An unrelated CTE does not invalidate a direct
+                            // physical branch, provided its relation is not
+                            // shadowed by a CTE name in this scope.
+                            let source_is_local = match expression {
+                                SetExpr::Select(select) => {
+                                    select.from.iter().any(|table| match &table.relation {
+                                        TableFactor::Table { name, .. } => with
+                                            .cte_tables
+                                            .iter()
+                                            .any(|cte| cte.alias.name.value == name.to_string()),
+                                        _ => true,
+                                    })
+                                }
+                                _ => true,
+                            };
+                            if source_is_local {
+                                (None, false)
+                            } else {
+                                let mut direct = branch_query.clone();
+                                direct.with = None;
+                                let independent = analyze_query(&direct, None, metadata);
+                                (
+                                    analyze_set_leaf_boundary(expression, &independent),
+                                    independent.row_preserving_projection()
+                                        || independent.filter_only_row_shape(),
+                                )
+                            }
+                        }
+                    }
+                }
             } else {
-                None
+                (None, false)
             };
-            branches.push(SetBranch::new(identity.to_string(), &analyzed, boundary));
+            branches.push(SetBranch::new(
+                identity.to_string(),
+                &analyzed,
+                boundary,
+                certified_local,
+            ));
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -139,6 +180,107 @@ pub(super) fn collect_set_branch_evidence(
             // These operands still have a set-operation residual on the outer query.
         }
     }
+}
+
+/// Certify the finite physical leaf of an exactly lossless local CTE.
+///
+/// This is intentionally more restrictive than lineage: the CTE must have
+/// one direct physical table, an unfiltered row-preserving SELECT of plain
+/// copies and the consuming leaf must select its named output columns
+/// positionally. A filtered, aggregated, recursive, renamed or shaped CTE
+/// cannot be substituted for a physical snapshot.
+pub(super) fn certify_identity_set_cte(
+    expression: &SetExpr,
+    context: &SqlQuery,
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<SetWitnessBoundary> {
+    let with = context.with.as_ref()?;
+    if with.recursive {
+        return None;
+    }
+    let [cte] = with.cte_tables.as_slice() else {
+        return None;
+    };
+    if !cte.alias.columns.is_empty()
+        || cte.query.with.is_some()
+        || cte.query.limit_clause.is_some()
+        || cte.query.fetch.is_some()
+    {
+        return None;
+    }
+    let SetExpr::Select(outer) = expression else {
+        return None;
+    };
+    let [from] = outer.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty()
+        || outer.distinct.is_some()
+        || outer.top.is_some()
+        || outer.having.is_some()
+        || outer.qualify.is_some()
+        || outer.prewhere.is_some()
+        || !outer.lateral_views.is_empty()
+        || outer.connect_by.is_some()
+        || !matches!(&outer.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+    {
+        return None;
+    }
+    let TableFactor::Table {
+        name,
+        args: None,
+        sample: None,
+        ..
+    } = &from.relation
+    else {
+        return None;
+    };
+    if name.to_string() != cte.alias.name.value {
+        return None;
+    }
+    let inner = analyze_query(&cte.query, None, metadata);
+    if !inner.row_preserving_projection()
+        || !inner.diagnostics().is_empty()
+        || inner.sources().len() != 1
+        || inner.dependencies().len() != 1
+        || inner.aggregation().is_some()
+        || inner.set_operation().is_some()
+        || inner.output().columns().is_empty()
+    {
+        return None;
+    }
+    let physical = inner.sources()[0].name();
+    if inner.dependencies()[0] != physical {
+        return None;
+    }
+    let mapped = inner
+        .output()
+        .columns()
+        .iter()
+        .map(|column| {
+            let copied = column.plain_copy_source()?;
+            if copied.relation() != physical || copied.column() != column.name() {
+                return None;
+            }
+            Some(copied.column().to_string())
+        })
+        .collect::<Option<Vec<_>>>()?;
+    let outer_columns = match &outer.projection[..] {
+        columns if columns.len() == mapped.len() => columns,
+        _ => return None,
+    };
+    for (item, name) in outer_columns.iter().zip(&mapped) {
+        match item {
+            SelectItem::UnnamedExpr(Expr::Identifier(column)) if &column.value == name => {}
+            SelectItem::UnnamedExpr(Expr::CompoundIdentifier(parts))
+                if parts.len() == 2
+                    && parts[0].value == cte.alias.name.value
+                    && &parts[1].value == name => {}
+            _ => return None,
+        }
+    }
+    Some(SetWitnessBoundary::new(physical.to_string(), mapped, false))
 }
 
 /// A row-preserving, single-relation SELECT has an exact positional tuple-count

@@ -128,6 +128,7 @@ impl SetBranch {
         identity: String,
         query: &QueryStatement,
         witness_boundary: Option<SetWitnessBoundary>,
+        certified_local_row_shape: bool,
     ) -> Self {
         Self {
             identity,
@@ -139,7 +140,9 @@ impl SetBranch {
             dependencies: query.dependencies().to_vec(),
             witness_boundary,
             empty_input_preserving: query.sources().len() == 1
-                && (query.row_preserving_projection() || query.filter_only_row_shape())
+                && (query.row_preserving_projection()
+                    || query.filter_only_row_shape()
+                    || certified_local_row_shape)
                 && query.aggregation().is_none()
                 && query.set_operation().is_none()
                 && query.window_witness().is_none()
@@ -542,6 +545,11 @@ impl SetOperation {
     /// Return all leaf branches with deterministic identities; nested branches are flattened.
     pub fn branches(&self) -> &[SetBranch] {
         &self.branches
+    }
+
+    /// Whether the entire set scope excludes unproved set-level row shaping.
+    pub fn set_level_safe(&self) -> bool {
+        self.set_level_safe
     }
 
     /// Return the set operator.

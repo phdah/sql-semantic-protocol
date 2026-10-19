@@ -486,6 +486,7 @@ mod membership;
 mod operators;
 mod ranking;
 mod set_bags;
+mod set_trees;
 mod sets;
 mod write_states;
 
@@ -510,6 +511,10 @@ pub(crate) use operators::{
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
     PhysicalSetColumnDomain, PhysicalSetTuple,
+};
+pub use set_trees::{
+    physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
+    PhysicalSetTreeBranch, PhysicalSetTreeTuple,
 };
 pub use write_states::{
     physical_closed_world_schema_plan, physical_ordered_write_state_plan,

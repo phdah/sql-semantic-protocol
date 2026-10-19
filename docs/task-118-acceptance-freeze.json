@@ -1,0 +1,895 @@
+{
+  "version": 1,
+  "owner": "TASK-118",
+  "parent": "TASK-72",
+  "frozen_at": "2026-10-19",
+  "fixture_ids": [
+    "72-C118-P",
+    "72-C118-N"
+  ],
+  "case_count": 5,
+  "scope": "portable exact nullable two-column nested set trees with branch filters, reused physical sources and transparent named producers",
+  "source_column_types": {
+    "id": "VARCHAR NOT NULL",
+    "k": "INTEGER NULL",
+    "v": "INTEGER NULL"
+  },
+  "required_variants": [
+    "three_branch_nested",
+    "branch_where",
+    "shared_physical_source",
+    "materialized_model",
+    "cte",
+    "positive",
+    "impossible_positive",
+    "sql_three_valued_not_true"
+  ],
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schemas"
+  ],
+  "conditional": {
+    "owner": "TASK-118",
+    "release_disposition": "portable_DuckDB_exact_native_vendor_runtime_uncertified",
+    "not_claimed": [
+      "native vendor coercion and collation",
+      "nontransparent producer evaluation",
+      "vendor row order"
+    ],
+    "mandatory_residuals_allowed": false
+  },
+  "cases": [
+    {
+      "id": "72-C118-P-nested",
+      "fixture": "72-C118-P",
+      "sql": "(SELECT k,v FROM a UNION ALL SELECT k,v FROM b) EXCEPT ALL SELECT k,v FROM c",
+      "statements": [],
+      "variants": [
+        "three_branch_nested",
+        "positive"
+      ],
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "c": [
+          {
+            "id": "c1",
+            "k": 1,
+            "v": null
+          }
+        ]
+      },
+      "physical_source_instances": [
+        "a",
+        "b",
+        "c"
+      ],
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 2
+        }
+      ],
+      "expected_count": 2,
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete per-source row assignment with exact nested multiset frequencies",
+      "not_true_proof": "all physical rows evaluated with SQL TRUE/FALSE/UNKNOWN; zero source tuple output includes all branch counts",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mysql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "postgresql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "hive",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "sqlite",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "snowflake",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "redshift",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mssql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "clickhouse",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "bigquery",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "ansi",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "duckdb",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "databricks",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        }
+      ],
+      "independent_duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": true
+      }
+    },
+    {
+      "id": "72-C118-N-nested",
+      "fixture": "72-C118-N",
+      "sql": "(SELECT k,v FROM a UNION ALL SELECT k,v FROM b) EXCEPT ALL SELECT k,v FROM c",
+      "statements": [],
+      "variants": [
+        "three_branch_nested",
+        "impossible_positive"
+      ],
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "c": [
+          {
+            "id": "c1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "c2",
+            "k": 1,
+            "v": null
+          }
+        ]
+      },
+      "physical_source_instances": [
+        "a",
+        "b",
+        "c"
+      ],
+      "expected_terminal_tuple_histogram": [],
+      "expected_count": 0,
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ],
+      "positive_proof": "complete per-source row assignment with exact nested multiset frequencies",
+      "not_true_proof": "all physical rows evaluated with SQL TRUE/FALSE/UNKNOWN; zero source tuple output includes all branch counts",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mysql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "postgresql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "hive",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "sqlite",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "snowflake",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "redshift",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mssql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "clickhouse",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "bigquery",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "ansi",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "duckdb",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "databricks",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        }
+      ],
+      "independent_duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": true
+      }
+    },
+    {
+      "id": "72-C118-P-shared-filter",
+      "fixture": "72-C118-P",
+      "sql": "(SELECT k,v FROM a WHERE k > 0 UNION ALL SELECT k,v FROM a WHERE k >= 0) EXCEPT ALL SELECT k,v FROM b",
+      "statements": [],
+      "variants": [
+        "branch_where",
+        "shared_physical_source",
+        "sql_three_valued_not_true"
+      ],
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": -1,
+            "v": 9
+          },
+          {
+            "id": "a4",
+            "k": null,
+            "v": 3
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          }
+        ]
+      },
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 3
+        }
+      ],
+      "expected_count": 3,
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete per-source row assignment with exact nested multiset frequencies",
+      "not_true_proof": "all physical rows evaluated with SQL TRUE/FALSE/UNKNOWN; zero source tuple output includes all branch counts",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mysql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "postgresql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "hive",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "sqlite",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "snowflake",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "redshift",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mssql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "clickhouse",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "bigquery",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "ansi",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "duckdb",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "databricks",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        }
+      ],
+      "independent_duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": true
+      }
+    },
+    {
+      "id": "72-C118-P-produced-model",
+      "fixture": "72-C118-P",
+      "sql": "(SELECT k,v FROM sa UNION ALL SELECT k,v FROM sb) EXCEPT ALL SELECT k,v FROM sc",
+      "statements": [
+        "CREATE TABLE sa AS SELECT k,v FROM a",
+        "CREATE TABLE sb AS SELECT k,v FROM b",
+        "CREATE TABLE sc AS SELECT k,v FROM c"
+      ],
+      "variants": [
+        "materialized_model",
+        "three_branch_nested"
+      ],
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          }
+        ],
+        "c": [
+          {
+            "id": "c1",
+            "k": 1,
+            "v": null
+          }
+        ]
+      },
+      "physical_source_instances": [
+        "a",
+        "b",
+        "c"
+      ],
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 2
+        }
+      ],
+      "expected_count": 2,
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete per-source row assignment with exact nested multiset frequencies",
+      "not_true_proof": "all physical rows evaluated with SQL TRUE/FALSE/UNKNOWN; zero source tuple output includes all branch counts",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mysql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "postgresql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "hive",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "sqlite",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "snowflake",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "redshift",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mssql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "clickhouse",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "bigquery",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "ansi",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "duckdb",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "databricks",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        }
+      ],
+      "independent_duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": true
+      }
+    },
+    {
+      "id": "72-C118-P-shared-cte",
+      "fixture": "72-C118-P",
+      "sql": "WITH s AS (SELECT k,v FROM a) SELECT k,v FROM s WHERE k > 0 UNION ALL SELECT k,v FROM a WHERE k > 0 EXCEPT ALL SELECT k,v FROM b",
+      "statements": [],
+      "variants": [
+        "cte",
+        "branch_where",
+        "shared_physical_source"
+      ],
+      "source_bags": {
+        "a": [
+          {
+            "id": "a1",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a2",
+            "k": 1,
+            "v": null
+          },
+          {
+            "id": "a3",
+            "k": -1,
+            "v": 9
+          },
+          {
+            "id": "a4",
+            "k": null,
+            "v": 3
+          }
+        ],
+        "b": [
+          {
+            "id": "b1",
+            "k": 1,
+            "v": null
+          }
+        ]
+      },
+      "physical_source_instances": [
+        "a",
+        "b"
+      ],
+      "expected_terminal_tuple_histogram": [
+        {
+          "tuple": [
+            1,
+            null
+          ],
+          "count": 3
+        }
+      ],
+      "expected_count": 3,
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": true,
+          "empty": false
+        }
+      ],
+      "positive_proof": "complete per-source row assignment with exact nested multiset frequencies",
+      "not_true_proof": "all physical rows evaluated with SQL TRUE/FALSE/UNKNOWN; zero source tuple output includes all branch counts",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mysql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "postgresql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "hive",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "sqlite",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "snowflake",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "redshift",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "mssql",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "clickhouse",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "bigquery",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "ansi",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "duckdb",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        },
+        {
+          "name": "databricks",
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
+        }
+      ],
+      "adapter_cells": [
+        {
+          "name": "direct_sql",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        },
+        {
+          "name": "dbt_compiled_sql_catalog",
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
+        },
+        {
+          "name": "odcs_equivalent_schemas",
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
+        }
+      ],
+      "independent_duckdb_oracle": {
+        "source_and_terminal_bags": "required",
+        "verified": true
+      }
+    }
+  ],
+  "audit": "docs/task-118-acceptance-audit.md"
+}
