@@ -151,14 +151,7 @@ schema:
         .as_array()
         .expect("all cases")
         .iter()
-        .filter(|case| {
-            case["statements"].as_array().expect("producer").is_empty()
-                && !case["variants"]
-                    .as_array()
-                    .expect("variants")
-                    .iter()
-                    .any(|v| v == "cte")
-        })
+        .filter(|case| case["statements"].as_array().expect("producer").is_empty())
     {
         let sql = case["sql"]
             .as_str()
