@@ -136,14 +136,15 @@ pub(super) fn collect_set_branch_evidence(
                             // physical branch, provided its relation is not
                             // shadowed by a CTE name in this scope.
                             let source_is_local = match expression {
-                                SetExpr::Select(select) => select.from.iter().any(|table| {
-                                    match &table.relation {
-                                        TableFactor::Table { name, .. } => with.cte_tables
+                                SetExpr::Select(select) => {
+                                    select.from.iter().any(|table| match &table.relation {
+                                        TableFactor::Table { name, .. } => with
+                                            .cte_tables
                                             .iter()
                                             .any(|cte| cte.alias.name.value == name.to_string()),
                                         _ => true,
-                                    }
-                                }),
+                                    })
+                                }
                                 _ => true,
                             };
                             if source_is_local {
@@ -152,7 +153,11 @@ pub(super) fn collect_set_branch_evidence(
                                 let mut direct = branch_query.clone();
                                 direct.with = None;
                                 let independent = analyze_query(&direct, None, metadata);
-                                (analyze_set_leaf_boundary(expression, &independent), independent.row_preserving_projection() || independent.filter_only_row_shape())
+                                (
+                                    analyze_set_leaf_boundary(expression, &independent),
+                                    independent.row_preserving_projection()
+                                        || independent.filter_only_row_shape(),
+                                )
                             }
                         }
                     }
@@ -253,15 +258,13 @@ pub(super) fn certify_identity_set_cte(
         match item {
             SelectItem::UnnamedExpr(Expr::Identifier(column)) if &column.value == name => {}
             SelectItem::UnnamedExpr(Expr::CompoundIdentifier(parts))
-                if parts.len() == 2 && parts[0].value == cte.alias.name.value && &parts[1].value == name => {}
+                if parts.len() == 2
+                    && parts[0].value == cte.alias.name.value
+                    && &parts[1].value == name => {}
             _ => return None,
         }
     }
-    Some(SetWitnessBoundary::new(
-        physical.to_string(),
-        mapped,
-        false,
-    ))
+    Some(SetWitnessBoundary::new(physical.to_string(), mapped, false))
 }
 
 /// A row-preserving, single-relation SELECT has an exact positional tuple-count
