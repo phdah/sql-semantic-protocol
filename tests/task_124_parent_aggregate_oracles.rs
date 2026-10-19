@@ -5,7 +5,6 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use serde_json::Value;
-use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_aggregate_bag_plan,
     physical_finite_join_aggregate_plan, AnalysisBundle, ConfiguredSqlInput, LiteralValue,
@@ -14,6 +13,7 @@ use sql_semantic_protocol::{
     PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SetMode,
     SqlInput, ValueDomain,
 };
+use sqlparser::parser::Parser;
 
 fn freeze() -> Value {
     serde_json::from_str(include_str!("../docs/task-124-acceptance-freeze.json"))
@@ -519,8 +519,7 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
         let dialect = dialect.as_str().expect("dialect name");
         for case in matrix["cases"].as_array().expect("cases") {
             let parser = dialect_from_name(dialect).expect("exposed parser");
-            let parsed_sql =
-                Parser::parse_sql(parser.as_ref(), case["sql"].as_str().expect("SQL"));
+            let parsed_sql = Parser::parse_sql(parser.as_ref(), case["sql"].as_str().expect("SQL"));
             let parsed = bundle(case, dialect);
             let id = case["id"].as_str().expect("case");
             let expected = &case["expected_parser_dialect_cells"][dialect];
