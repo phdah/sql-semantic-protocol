@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use serde_json::Value;
+use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_aggregate_bag_plan,
     physical_finite_join_aggregate_plan, AnalysisBundle, ConfiguredSqlInput, LiteralValue,
@@ -237,6 +238,20 @@ fn check_group_evidence(
     );
 }
 
+fn check_exact_outcomes(
+    case: &Value,
+    terminal: &[BTreeMap<String, LiteralValue>],
+    domains: &BTreeMap<String, ValueDomain>,
+    label: &str,
+) {
+    assert_eq!(
+        normalized(terminal),
+        normalized(&expected_rows(case)),
+        "{label}: complete canonical terminal bag"
+    );
+    check_domains(case, domains);
+}
+
 fn duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
     let db = Connection::open_in_memory().expect("independent DuckDB engine");
     for name in source_names(case) {
@@ -415,12 +430,7 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
             let PhysicalJoinedAggregateProof::Exact(exact) = proof else {
                 panic!("{id}: joined source completeness not proven: {proof:?}");
             };
-            assert_eq!(
-                normalized(&exact.terminal),
-                normalized(&expected_rows(case)),
-                "{id}: canonical"
-            );
-            check_domains(case, &exact.terminal_domains);
+            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
 
             if let Some(expected_groups) = case["groups"].as_array() {
                 assert_eq!(
@@ -466,12 +476,7 @@ fn independent_full_duckdb_bags_and_canonical_domains_certify_all_mandatory_case
             let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                 panic!("{id}: single-source closure not proven: {proof:?}");
             };
-            assert_eq!(
-                normalized(&exact.terminal),
-                normalized(&expected_rows(case)),
-                "{id}: canonical"
-            );
-            check_domains(case, &exact.terminal_domains);
+            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
 
             if let Some(expected_groups) = case["groups"].as_array() {
                 assert_eq!(
@@ -505,6 +510,9 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
     for dialect in matrix["required_dialects"].as_array().expect("13 dialects") {
         let dialect = dialect.as_str().expect("dialect name");
         for case in matrix["cases"].as_array().expect("cases") {
+            let parser = dialect_from_name(dialect).expect("exposed parser");
+            let parsed_sql =
+                Parser::parse_sql(parser.as_ref(), case["sql"].as_str().expect("SQL"));
             let parsed = bundle(case, dialect);
             let id = case["id"].as_str().expect("case");
             let expected = &case["expected_parser_dialect_cells"][dialect];
@@ -522,13 +530,20 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
                 expected_canonical,
                 "Exact_if_parsed" | "Residual_if_parsed"
             ));
-            let Ok(bundle) = parsed else {
+            if let Err(error) = parsed_sql {
                 assert_ne!(
                     expected_parser, "must_parse",
-                    "{dialect}:{id}: unexpected mandatory parser boundary: {parsed:?}"
+                    "{dialect}:{id}: unexpected parser rejection: {error}"
+                );
+                assert!(
+                    parsed.is_err(),
+                    "{dialect}:{id}: analyzer accepted SQL rejected by its parser"
                 );
                 continue;
-            };
+            }
+            let bundle = parsed.unwrap_or_else(|error| {
+                panic!("{dialect}:{id}: parser succeeded but semantic analysis failed: {error}")
+            });
             let target = bundle.layers().last().expect("target").id();
             let states = source_names(case)
                 .iter()
@@ -536,7 +551,12 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
                 .collect::<Vec<_>>();
             let exact = if case["scope"] == "joined" {
                 match physical_finite_join_aggregate_plan(&bundle, target, &states) {
-                    PhysicalJoinedAggregateProof::Exact(_) => true,
+                    PhysicalJoinedAggregateProof::Exact(exact) => {
+                        if expected_canonical == "Exact_if_parsed" {
+                            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+                        }
+                        true
+                    },
                     PhysicalJoinedAggregateProof::Residual { .. } => false,
                     other => {
                         panic!("{dialect}:{id}: impossible is not a parser boundary: {other:?}")
@@ -544,7 +564,12 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
                 }
             } else {
                 match physical_finite_aggregate_bag_plan(&bundle, target, &states) {
-                    PhysicalFiniteAggregateProof::Exact(_) => true,
+                    PhysicalFiniteAggregateProof::Exact(exact) => {
+                        if expected_canonical == "Exact_if_parsed" {
+                            check_exact_outcomes(case, &exact.terminal, &exact.terminal_domains, id);
+                        }
+                        true
+                    },
                     PhysicalFiniteAggregateProof::Residual { .. } => false,
                     other => {
                         panic!("{dialect}:{id}: impossible is not a parser boundary: {other:?}")
