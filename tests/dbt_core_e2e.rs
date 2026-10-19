@@ -861,8 +861,11 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(enabled_domain.to_string().contains("true"));
 
     let ordered_union = input_statement(&protocol, "ordered_limited_union");
-    assert!(contains_string(ordered_union, "unsupported_order_by"));
-    assert!(contains_string(ordered_union, "unsupported_limit"));
+    assert!(!contains_string(ordered_union, "unsupported_order_by"));
+    assert!(!contains_string(ordered_union, "unsupported_limit"));
+    let shaping = &ordered_union["set_operation"]["row_shaping"];
+    assert!(shaping["keys"].as_array().is_some_and(|keys| !keys.is_empty()));
+    assert!(shaping["limit"].as_u64().is_some(), "dbt compiled set LIMIT must remain typed");
 
     let final_layer = layer_for_model(&protocol, "final_orders");
     assert_closed_number_range(&output_column(final_layer, "amount")["domain"], "10", "50");
