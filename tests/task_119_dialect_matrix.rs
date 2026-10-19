@@ -53,14 +53,17 @@ fn every_frozen_set_variant_is_classified_in_every_exposed_dialect() {
 
             if mandatory {
                 assert_eq!(
-                    cells[index]["classification"],
-                    "mandatory_parser_and_canonical_equivalence",
+                    cells[index]["classification"], "mandatory_parser_and_canonical_equivalence",
                     "{id}/{name}: mandatory cell"
                 );
                 assert!(query.diagnostics().is_empty(), "{id}/{name}: diagnostics");
                 assert_eq!(operation.branches().len(), 2, "{id}/{name}: two leaves");
                 assert_eq!(
-                    query.output().columns().iter().map(|column| column.name())
+                    query
+                        .output()
+                        .columns()
+                        .iter()
+                        .map(|column| column.name())
                         .collect::<Vec<_>>(),
                     vec!["key_out", "value_out"],
                     "{id}/{name}: first branch owns positional names"
@@ -73,10 +76,17 @@ fn every_frozen_set_variant_is_classified_in_every_exposed_dialect() {
                     "72-C119-P-null-duplicates" => (3, 2),
                     _ => (2, 0),
                 };
-                assert_eq!((shaping.limit, shaping.offset), (limit, offset), "{id}/{name}");
+                assert_eq!(
+                    (shaping.limit, shaping.offset),
+                    (limit, offset),
+                    "{id}/{name}"
+                );
                 assert_eq!(shaping.keys.len(), 2, "{id}/{name}: total sort");
                 assert_eq!(
-                    shaping.keys.iter().map(|key| (key.index, key.descending, key.nulls_first))
+                    shaping
+                        .keys
+                        .iter()
+                        .map(|key| (key.index, key.descending, key.nulls_first))
                         .collect::<Vec<_>>(),
                     vec![(0, false, Some(false)), (1, false, Some(false))],
                     "{id}/{name}: exact NULLS LAST order"
