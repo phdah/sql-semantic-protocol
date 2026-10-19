@@ -486,6 +486,7 @@ mod membership;
 mod operators;
 mod ranking;
 mod set_bags;
+mod set_trees;
 mod sets;
 mod write_states;
 
@@ -506,6 +507,10 @@ pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
+};
+pub use set_trees::{
+    physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
+    PhysicalSetTreeBranch, PhysicalSetTreeTuple,
 };
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
