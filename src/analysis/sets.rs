@@ -114,6 +114,7 @@ pub(super) fn collect_set_branch_evidence(
             // Set-level shaping is not a filter on an individual branch. Nested
             // query-level shaping remains residual at the enclosing set scope.
             if strip_outer_set_modifiers {
+                branch_query.order_by = None;
                 branch_query.limit_clause = None;
                 branch_query.fetch = None;
             }
