@@ -508,13 +508,15 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
         for case in freeze()["cases"].as_array().expect("cases") {
             let parsed = bundle(case, dialect);
             let id = case["id"].as_str().expect("case");
-            let is_filter = case["source_fixture"] == "73-C122-P-filter";
+            let expected = &case["expected_parser_dialect_cells"][*dialect];
+            assert_eq!(expected["owner"], "TASK-124", "{dialect}:{id}: conditional owner");
+            let expected_parser = expected["parser"].as_str().expect("frozen parser law");
+            let expected_canonical = expected["canonical"].as_str().expect("frozen outcome");
+            assert!(matches!(expected_parser, "must_parse" | "parse_or_reject" | "may_parse_or_reject"));
+            assert!(matches!(expected_canonical, "Exact_if_parsed" | "Residual_if_parsed"));
             let Ok(bundle) = parsed else {
-                assert!(
-                    case["proof_kind"] == "conditional"
-                        || (is_filter && !matches!(*dialect, "generic" | "postgresql" | "duckdb")),
-                    "{dialect}:{id}: mandatory portable parser boundary: {parsed:?}"
-                );
+                assert_ne!(expected_parser, "must_parse",
+                    "{dialect}:{id}: unexpected mandatory parser boundary: {parsed:?}");
                 continue;
             };
             let target = bundle.layers().last().expect("target").id();
@@ -541,8 +543,8 @@ fn thirteen_parser_dialects_keep_mandatory_exactness_and_grouping_extensions_fai
             };
             assert_eq!(
                 exact,
-                case["proof_kind"] == "mandatory",
-                "{dialect}:{id}: exact mandatory or residual vendor syntax"
+                expected_canonical == "Exact_if_parsed",
+                "{dialect}:{id}: frozen exact mandatory or residual vendor syntax"
             );
         }
     }
