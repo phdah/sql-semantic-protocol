@@ -82,10 +82,7 @@ fn bundle_for(case: &Value, dialect: &str) -> sql_semantic_protocol::AnalysisBun
         .map(|value| value.as_str().expect("producer statement").to_string())
         .collect::<Vec<_>>();
     queries.push(case["sql"].as_str().expect("terminal SQL").to_string());
-    let inputs = queries
-        .iter()
-        .map(SqlInput::inline)
-        .collect::<Vec<_>>();
+    let inputs = queries.iter().map(SqlInput::inline).collect::<Vec<_>>();
     let names = (0..inputs.len())
         .map(|n| format!("task118-{n}"))
         .collect::<Vec<_>>();
