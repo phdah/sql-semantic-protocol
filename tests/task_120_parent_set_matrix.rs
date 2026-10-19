@@ -281,8 +281,8 @@ fn all_mandatory_set_families_have_complete_exact_source_and_duckdb_bags() {
                         .filter(|t| t.output_count > 0)
                         .map(|t| (t.values.to_vec(), t.output_count))
                         .collect::<Histogram>(),
-                    exact.sources,
-                    exact.terminal_domains,
+                    exact.sources.to_vec(),
+                    exact.terminal_domains.to_vec(),
                     exact.terminal.len(),
                 )
             } else {
