@@ -16,6 +16,15 @@ TASK-114 finite complete row bags: `src/protocol/relations.rs` owns typed ASOF a
 
 TASK-115 source-attested finite three-way joins: `src/physical_realization/finite_chains.rs` owns closed-world source-identity, normalized SQL TRUE/NOT TRUE, nullable composite equality, and downstream COUNT(*) bag evaluation. `src/physical_realization/write_states.rs` remains the canonical owner of physical datatype and PK/FK feasibility. `src/physical_realization/joins.rs` and `grouping.rs` retain the separate homogeneous sufficient count construction. The exact frozen eight-case SQL/DuckDB comparison is in `tests/task_115_finite_chain_bags.rs` and `tests/task_115_duckdb_matrix.rs`; `docs/task-115-acceptance-freeze.json` owns source/terminal values and pending adapter and session evidence. This evidence-driven evaluator does not imply that the solver automatically synthesizes those exact bags from cardinality goals.
 
+TASK-119 bounded set row-shaping: `src/analysis/sets.rs` normalizes typed
+literal LIMIT/OFFSET and FETCH ONLY with named ORDER BY output positions;
+`src/protocol/sets.rs` owns canonical sort keys and row shaping without AST;
+`src/physical_realization/set_trees.rs` certifies closed-world integer tuples,
+explicit NULL order, total tie-safe sorting and final exact output domains.
+Unattested coercion, BY NAME/CORRESPONDING and nested branch LIMIT remain
+Residual. Oracles: `tests/task_119_ordered_set_bags.rs`,
+`docs/task-119-acceptance-freeze.json`.
+
 TASK-118 finite nested source-bag proof: `src/analysis/sets.rs` certifies the strict,
 lossless single-source CTE boundary and retains independent branch semantics;
 `src/protocol/sets.rs` owns the recursive operation tree and positional count

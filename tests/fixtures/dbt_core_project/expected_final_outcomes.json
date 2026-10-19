@@ -9254,6 +9254,17 @@
             "quantifier": "all",
             "right": {
               "kind": "query"
+            },
+            "row_shaping": {
+              "keys": [
+                {
+                  "descending": false,
+                  "nulls_first": null,
+                  "position": 0
+                }
+              ],
+              "limit": 5,
+              "offset": 0
             }
           },
           "origin_layer_id": "layer-0012"

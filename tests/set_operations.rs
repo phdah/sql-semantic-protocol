@@ -157,14 +157,23 @@ fn set_level_order_and_limit_remain_attached_to_the_result() {
 
     let query = first_query(&protocol);
     assert_eq!(query.output().columns().len(), 1);
-    assert!(query
-        .diagnostics()
-        .iter()
-        .any(|diagnostic| diagnostic.code() == "unsupported_order_by"));
-    assert!(query
-        .diagnostics()
-        .iter()
-        .any(|diagnostic| diagnostic.code() == "unsupported_limit"));
+    let shape = query
+        .set_operation()
+        .expect("set operation")
+        .row_shaping()
+        .expect("set-level row shaping");
+    assert_eq!(shape.limit, 5);
+    assert_eq!(shape.offset, 0);
+    assert_eq!(shape.keys.len(), 1);
+    assert_eq!(shape.keys[0].index, 0);
+    assert!(!shape.keys[0].descending);
+    assert_eq!(shape.keys[0].nulls_first, None);
+    assert!(!query.diagnostics().iter().any(|diagnostic| {
+        matches!(
+            diagnostic.code(),
+            "unsupported_order_by" | "unsupported_limit"
+        )
+    }));
 }
 
 #[test]

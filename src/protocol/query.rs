@@ -49,7 +49,7 @@ pub struct QueryStatement {
     filtered_join_goal_output_shape: bool,
     special_join_goal_output_shape: bool,
     ranked_goal_output_shape: bool,
-    set_operation: Option<SetOperation>,
+    set_operation: Option<Box<SetOperation>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
     diagnostics: Vec<Diagnostic>,
@@ -235,7 +235,7 @@ impl QueryStatement {
     }
 
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
-        self.set_operation = set_operation;
+        self.set_operation = set_operation.map(Box::new);
         self
     }
 
@@ -348,7 +348,7 @@ impl QueryStatement {
 
     /// Return the set-operation tree when this query combines multiple query operands.
     pub fn set_operation(&self) -> Option<&SetOperation> {
-        self.set_operation.as_ref()
+        self.set_operation.as_deref()
     }
 
     /// Return the named relation written by this transformation, if any.

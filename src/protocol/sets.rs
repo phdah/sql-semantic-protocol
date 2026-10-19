@@ -318,6 +318,29 @@ pub enum SetWitnessDirection {
     },
 }
 
+/// One canonical ordering coordinate in a bounded set result.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetSortKey {
+    /// Zero-based position in the canonical set output.
+    pub index: usize,
+    /// Reverse numeric order for this coordinate.
+    pub descending: bool,
+    /// Explicit SQL NULL ordering; absent means dialect/session dependent.
+    pub nulls_first: Option<bool>,
+}
+
+/// Deterministic set-level row shaping, restricted to integral order keys and
+/// a literal nonnegative LIMIT/OFFSET or FETCH ONLY.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetRowShaping {
+    /// Ordered canonical output positions.
+    pub keys: Vec<SetSortKey>,
+    /// Rows to skip after ordering.
+    pub offset: usize,
+    /// Maximum rows retained.
+    pub limit: usize,
+}
+
 /// One UNION, INTERSECT, or EXCEPT operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetOperation {
@@ -327,6 +350,7 @@ pub struct SetOperation {
     right: SetOperand,
     branches: Vec<SetBranch>,
     set_level_safe: bool,
+    row_shaping: Option<Box<SetRowShaping>>,
 }
 
 impl SetOperation {
@@ -343,12 +367,23 @@ impl SetOperation {
             right,
             branches: Vec::new(),
             set_level_safe: false,
+            row_shaping: None,
         }
     }
 
     pub(crate) fn with_set_level_safety(mut self, safe: bool) -> Self {
         self.set_level_safe = safe;
         self
+    }
+
+    pub(crate) fn with_row_shaping(mut self, shape: Option<SetRowShaping>) -> Self {
+        self.row_shaping = shape.map(Box::new);
+        self
+    }
+
+    /// Exact integral order/limit instructions when parser and alignment allow them.
+    pub fn row_shaping(&self) -> Option<&SetRowShaping> {
+        self.row_shaping.as_deref()
     }
 
     pub(crate) fn with_branches(mut self, branches: Vec<SetBranch>) -> Self {
