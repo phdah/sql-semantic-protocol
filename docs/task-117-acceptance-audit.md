@@ -29,6 +29,8 @@
 - These portable parser paths and DuckDB oracles do **not** certify native vendor engine runtime/coercion/collation/session laws. Those stay conditionally reviewed and release-gated, with TASK-117 as named owner for its bounded slice.
 - Original TASK-72 mapped AC #1/#3/#5/#6 remain open until the entire parent queue closes.
 
-## Final acceptance gate
+## Verification and closure
 
-Pending: GitHub Actions full final-head checks; commit SHA/run to be entered only after successful completion. TASK-117 must remain In Progress and PR draft until this is verified.
+- CI [run 39212686864](https://github.com/phdah/sql-semantic-protocol/actions/runs/39212686864): nine successful jobs covering `cargo fmt --check`, strict Clippy, full Rust tests, no-default-features tests, Rust docs, dependencies and dbt Core E2E. This run includes the new dialect and adapter tests, as well as the twelve full-source DuckDB oracle cases.
+- Review axes: **Standards: 0 unresolved findings; Spec: 0 unresolved bounded TASK-117 findings.** Duplicate physical row IDs were downgraded from Impossible to Residual in review; duplicate output names also fail closed. No release or parent signoff is inferred from this child.
+- Final-head CI after this documentation and matrix-status commit must pass before merge. If it fails, reopen TASK-117 and resolve the failing check rather than treating this audit as sufficient.
