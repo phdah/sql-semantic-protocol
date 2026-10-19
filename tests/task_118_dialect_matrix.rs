@@ -30,7 +30,7 @@ fn frozen_nested_and_shared_source_trees_retain_three_canonical_leaves_in_all_di
                 .iter()
                 .find_map(|statement| match statement {
                     ProtocolStatement::Query(query) => Some(query),
-                    ProtocolStatement::Unsupported(_) => None,
+                    _ => None,
                 })
                 .unwrap_or_else(|| panic!("{id}/{name}: no query"));
             let set = query
