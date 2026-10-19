@@ -361,14 +361,16 @@ fn enforced_not_null_contradiction_is_impossible_not_a_residual() {
             .expect("source provenance"),
         ConstraintEnforcement::Enforced,
     )];
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "a",
-            vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL law")],
-        ).expect("source constraints"),
-    ]);
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "a",
+        vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL law")],
+    )
+    .expect("source constraints")]);
     let proof = physical_finite_set_tree_plan(&bundle, &target, &physical_states(case));
-    assert!(matches!(proof, PhysicalFiniteSetTreeProof::Impossible { .. }), "{proof:?}");
+    assert!(
+        matches!(proof, PhysicalFiniteSetTreeProof::Impossible { .. }),
+        "{proof:?}"
+    );
 }
 
 #[test]
@@ -376,13 +378,22 @@ fn filtered_or_limited_local_cte_cannot_be_promoted_to_lossless_physical_source(
     let mut case = freeze()["cases"][4].clone();
     let original = case["sql"].as_str().expect("frozen CTE SQL").to_string();
     for mutated in [
-        original.replace("WITH s AS (SELECT k,v FROM a)", "WITH s AS (SELECT k,v FROM a WHERE k > 0)"),
-        original.replace("WITH s AS (SELECT k,v FROM a)", "WITH s AS (SELECT k,v FROM a LIMIT 1)"),
+        original.replace(
+            "WITH s AS (SELECT k,v FROM a)",
+            "WITH s AS (SELECT k,v FROM a WHERE k > 0)",
+        ),
+        original.replace(
+            "WITH s AS (SELECT k,v FROM a)",
+            "WITH s AS (SELECT k,v FROM a LIMIT 1)",
+        ),
     ] {
         case["sql"] = Value::String(mutated);
         let bundle = bundle_for(&case, "postgresql");
         let target = bundle.layers().last().expect("target").id();
         let result = physical_finite_set_tree_plan(&bundle, target, &physical_states(&case));
-        assert!(matches!(result, PhysicalFiniteSetTreeProof::Residual { .. }), "{result:?}");
+        assert!(
+            matches!(result, PhysicalFiniteSetTreeProof::Residual { .. }),
+            "{result:?}"
+        );
     }
 }
