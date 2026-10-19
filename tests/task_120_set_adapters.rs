@@ -215,9 +215,12 @@ schema:
                 .layers()
                 .iter()
                 .find(|layer| {
-                    names
-                        .iter()
-                        .all(|relation| layer.consumes().iter().any(|source| source == relation))
+                    physical.iter().all(|source| {
+                        layer
+                            .consumes()
+                            .iter()
+                            .any(|used| used == source.relation())
+                    })
                 })
                 .unwrap_or_else(|| panic!("{id}/{adapter}: no two-source set layer"));
             let (positive, all_counts, count, domains) =
