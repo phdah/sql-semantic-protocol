@@ -365,6 +365,86 @@ pub(super) fn analyze_set_operand(expression: &SetExpr) -> SetOperand {
     }
 }
 
+/// Only attach row-shaping evidence that is independent of dialect defaults.
+/// An absent plan for a shaped query intentionally leaves set-level exactness false.
+pub(super) fn analyze_set_row_shaping(
+    query: &SqlQuery,
+    branches: &[SetBranch],
+) -> Option<crate::protocol::SetRowShaping> {
+    use sqlparser::ast::{LimitClause, OrderByKind};
+    use crate::protocol::{SetRowShaping, SetSortKey};
+
+    fn nonnegative_literal(expression: &Expr) -> Option<usize> {
+        match expression {
+            Expr::Value(value) => match &value.value {
+                Value::Number(number, _) => number.parse::<usize>().ok(),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    let columns = branches.first()?.output().columns();
+    let order = query.order_by.as_ref()?;
+    if order.interpolate.is_some() {
+        return None;
+    }
+    let OrderByKind::Expressions(expressions) = &order.kind else {
+        return None;
+    };
+    if expressions.is_empty() {
+        return None;
+    }
+    let mut keys = Vec::new();
+    for expression in expressions {
+        if expression.with_fill.is_some() {
+            return None;
+        }
+        let Expr::Identifier(name) = &expression.expr else {
+            return None;
+        };
+        let index = columns.iter().position(|column| column.name() == name.value)?;
+        if keys.iter().any(|key: &SetSortKey| key.index == index) {
+            return None;
+        }
+        keys.push(SetSortKey {
+            index,
+            descending: expression.options.asc == Some(false),
+            nulls_first: expression.options.nulls_first,
+        });
+    }
+
+    let (limit, offset) = match (&query.limit_clause, &query.fetch) {
+        (
+            Some(LimitClause::LimitOffset {
+                limit: Some(limit),
+                offset,
+                limit_by,
+            }),
+            None,
+        ) if limit_by.is_empty() => (
+            nonnegative_literal(limit)?,
+            match offset {
+                Some(offset) => nonnegative_literal(&offset.value)?,
+                None => 0,
+            },
+        ),
+        (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => {
+            (nonnegative_literal(limit)?, nonnegative_literal(offset)?)
+        }
+        (None, Some(fetch)) if !fetch.with_ties && !fetch.percent => (
+            match &fetch.quantity {
+                Some(quantity) => nonnegative_literal(quantity)?,
+                None => 1,
+            },
+            0,
+        ),
+        _ => return None,
+    };
+
+    Some(SetRowShaping { keys, offset, limit })
+}
+
 pub(super) fn analyze_set_operator(operator: SqlSetOperator) -> SetOperator {
     match operator {
         SqlSetOperator::Union => SetOperator::Union,
