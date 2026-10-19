@@ -305,7 +305,7 @@ fn tree_count(
     counts: &[u64],
     cursor: &mut usize,
 ) -> Result<u64, &'static str> {
-    if !operation.set_level_safe() {
+    if !operation.set_level_safe() && operation.row_shaping().is_none() {
         return Err("set or nested branch has unproved ORDER LIMIT FETCH semantics");
     }
     let rule = operation
@@ -367,7 +367,9 @@ pub fn physical_finite_set_tree_plan(
     let Some(operation) = query.set_operation() else {
         return residual("target is not a SQL set operation");
     };
-    if !query.diagnostics().is_empty() || !operation.set_level_safe() {
+    if !query.diagnostics().is_empty()
+        || (!operation.set_level_safe() && operation.row_shaping().is_none())
+    {
         return residual("set-level semantics are unknown or have unproved row shaping");
     }
     let names = query
@@ -480,10 +482,10 @@ pub fn physical_finite_set_tree_plan(
             unknown_row_ids,
         });
     }
-    let mut tuples = Vec::new();
-    let mut terminal = Vec::new();
-    let mut distinct = vec![BTreeSet::new(); names.len()];
-    let mut contains_null = vec![false; names.len()];
+    // Resolve all candidate tuple frequencies before applying global shaping.
+    // A truncated tie between different projected tuples is not a constructive
+    // membership proof: the engine may return either physical identity.
+    let mut evaluated = Vec::new();
     for (values, branch_row_ids) in observed {
         let counts = branch_row_ids
             .iter()
@@ -499,10 +501,86 @@ pub fn physical_finite_set_tree_plan(
         if cursor != branches.len() {
             return residual("canonical set leaves do not match the operator tree");
         }
-        if output_count > 0 {
+        evaluated.push(PhysicalSetTreeTuple {
+            values,
+            branch_row_ids,
+            output_count,
+        });
+    }
+    if let Some(shaping) = operation.row_shaping() {
+        for key in &shaping.keys {
+            if key.index >= names.len() {
+                return residual("ORDER BY references an absent set output column");
+            }
+            if key.nulls_first.is_none()
+                && evaluated.iter().any(|tuple| {
+                    tuple.output_count > 0 && tuple.values[key.index].is_none()
+                })
+            {
+                return residual("dialect-dependent default NULL ordering has no certified law");
+            }
+        }
+        let comparison = |left: &PhysicalSetTreeTuple, right: &PhysicalSetTreeTuple| {
+            for key in &shaping.keys {
+                let lhs = left.values[key.index];
+                let rhs = right.values[key.index];
+                let ordering = match (lhs, rhs) {
+                    (Some(a), Some(b)) => {
+                        if key.descending { b.cmp(&a) } else { a.cmp(&b) }
+                    }
+                    (None, None) => std::cmp::Ordering::Equal,
+                    (None, Some(_)) => {
+                        if key.nulls_first == Some(true) {
+                            std::cmp::Ordering::Less
+                        } else {
+                            std::cmp::Ordering::Greater
+                        }
+                    }
+                    (Some(_), None) => {
+                        if key.nulls_first == Some(true) {
+                            std::cmp::Ordering::Greater
+                        } else {
+                            std::cmp::Ordering::Less
+                        }
+                    }
+                };
+                if ordering != std::cmp::Ordering::Equal {
+                    return ordering;
+                }
+            }
+            std::cmp::Ordering::Equal
+        };
+        evaluated.sort_by(&comparison);
+        if evaluated.windows(2).any(|pair| {
+            pair[0].output_count > 0
+                && pair[1].output_count > 0
+                && pair[0].values != pair[1].values
+                && comparison(&pair[0], &pair[1]) == std::cmp::Ordering::Equal
+        }) {
+            return residual("ORDER BY ties distinct output tuples without a total order");
+        }
+        let mut skip = shaping.offset;
+        let mut keep = shaping.limit;
+        for tuple in &mut evaluated {
+            let Ok(count) = usize::try_from(tuple.output_count) else {
+                return residual("set output exceeds finite row-count representation");
+            };
+            let available = count.saturating_sub(skip);
+            skip = skip.saturating_sub(count);
+            let retained = available.min(keep);
+            keep -= retained;
+            tuple.output_count = retained as u64;
+        }
+    }
+    let mut tuples = Vec::new();
+    let mut terminal = Vec::new();
+    let mut distinct = vec![BTreeSet::new(); names.len()];
+    let mut contains_null = vec![false; names.len()];
+    for tuple in evaluated {
+        if tuple.output_count > 0 {
             let named = names
                 .iter()
-                .zip(values.iter())
+                .zip(&tuple.values)
                 .map(|(name, value)| {
                     (
                         name.clone(),
@@ -512,7 +590,7 @@ pub fn physical_finite_set_tree_plan(
                     )
                 })
                 .collect::<BTreeMap<_, _>>();
-            for (index, value) in values.iter().enumerate() {
+            for (index, value) in tuple.values.iter().enumerate() {
                 match value {
                     Some(value) => {
                         distinct[index].insert(*value);
@@ -520,15 +598,11 @@ pub fn physical_finite_set_tree_plan(
                     None => contains_null[index] = true,
                 }
             }
-            for _ in 0..output_count {
+            for _ in 0..tuple.output_count {
                 terminal.push(named.clone());
             }
         }
-        tuples.push(PhysicalSetTreeTuple {
-            values,
-            branch_row_ids,
-            output_count,
-        });
+        tuples.push(tuple);
     }
     let terminal_domains = distinct
         .into_iter()
