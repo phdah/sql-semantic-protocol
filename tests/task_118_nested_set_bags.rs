@@ -209,6 +209,21 @@ fn complete_physical_set_trees_match_independent_source_and_terminal_oracles() {
             .map(|tuple| (tuple.values.clone(), tuple.output_count))
             .collect::<BTreeMap<_, _>>();
         assert_eq!(observed, expected, "{id}: exact nullable tuple frequencies");
+        // Assert the independently named public terminal bag itself,
+        // not just counts recomputed from the evaluator's tuple summaries.
+        let mut named_terminal = BTreeMap::<Vec<Option<i128>>, u64>::new();
+        for named in &exact.terminal {
+            let values = ["k", "v"]
+                .iter()
+                .map(|name| match named.get(*name).expect("terminal column") {
+                    LiteralValue::Null => None,
+                    LiteralValue::Number(n) => Some(n.parse::<i128>().expect("integer")),
+                    _ => panic!("unattested terminal scalar"),
+                })
+                .collect::<Vec<_>>();
+            *named_terminal.entry(values).or_default() += 1;
+        }
+        assert_eq!(named_terminal, expected, "{id}: entire terminal SQL bag");
         assert_eq!(
             exact.terminal.len(),
             case["expected_count"].as_u64().expect("frozen count") as usize,
@@ -329,4 +344,45 @@ fn missing_shared_source_and_duplicate_row_id_fail_closed() {
         physical_finite_set_tree_plan(&bundle, target, &[wrong, states[1].clone()]),
         PhysicalFiniteSetTreeProof::Residual { .. },
     ));
+}
+
+#[test]
+fn enforced_not_null_contradiction_is_impossible_not_a_residual() {
+    use sql_semantic_protocol::{
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        RelationConstraint, RelationConstraintSet,
+    };
+
+    let case = &freeze()["cases"][0];
+    let mut bundle = bundle_for(case, "postgresql");
+    let target = bundle.layers().last().expect("target").id().to_string();
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-118")
+            .expect("source provenance"),
+        ConstraintEnforcement::Enforced,
+    )];
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "a",
+            vec![RelationConstraint::not_null("v", evidence).expect("NOT NULL law")],
+        ).expect("source constraints"),
+    ]);
+    let proof = physical_finite_set_tree_plan(&bundle, &target, &physical_states(case));
+    assert!(matches!(proof, PhysicalFiniteSetTreeProof::Impossible { .. }), "{proof:?}");
+}
+
+#[test]
+fn filtered_or_limited_local_cte_cannot_be_promoted_to_lossless_physical_source() {
+    let mut case = freeze()["cases"][4].clone();
+    let original = case["sql"].as_str().expect("frozen CTE SQL").to_string();
+    for mutated in [
+        original.replace("WITH s AS (SELECT k,v FROM a)", "WITH s AS (SELECT k,v FROM a WHERE k > 0)"),
+        original.replace("WITH s AS (SELECT k,v FROM a)", "WITH s AS (SELECT k,v FROM a LIMIT 1)"),
+    ] {
+        case["sql"] = Value::String(mutated);
+        let bundle = bundle_for(&case, "postgresql");
+        let target = bundle.layers().last().expect("target").id();
+        let result = physical_finite_set_tree_plan(&bundle, target, &physical_states(&case));
+        assert!(matches!(result, PhysicalFiniteSetTreeProof::Residual { .. }), "{result:?}");
+    }
 }
