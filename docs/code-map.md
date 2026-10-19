@@ -43,6 +43,8 @@ TASK-122 DISTINCT and FILTER aggregate contributors and full HAVING group truth:
 
 TASK-121 basic grouped/global closed-world aggregate bags: `src/physical_realization/aggregate_bags.rs` certifies complete typed integer source bags through canonical COUNT(*), COUNT(column), SUM, MIN, MAX and exactly integral AVG. It returns exact terminal source identity, multiplicities, NULLs and finite output domains; unproved AVG scale, overflow, HAVING and DISTINCT fail closed. Public DuckDB regression: `tests/task_121_aggregate_bags.rs`; fixture matrix: `docs/task-121-acceptance-freeze.json`.
 
+TASK-125 portable ranking on complete physical bags: `src/physical_realization/rank_bags.rs` evaluates ROW_NUMBER, RANK and DENSE_RANK with peer groups, explicit NULL order, whole-bag source identities and typed terminal domains. Tied ROW_NUMBER identity, implicit NULL ordering and unsupported window shapes fail closed; frozen cases are in `docs/task-125-acceptance-freeze.json` with independent DuckDB proofs in `tests/task_125_rank_bags.rs`. This does not grant exact grouped/joined ranking or native vendor/session execution laws.
+
 ## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |
