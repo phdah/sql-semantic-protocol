@@ -367,7 +367,7 @@ fn nondeterministic_row_number_implicit_null_order_and_missing_evidence_fail_clo
         ("k".to_string(), LiteralValue::Number("0".to_string())),
         (
             "x".to_string(),
-            LiteralValue::Text("not-an-integer".to_string()),
+            LiteralValue::Number("2147483648".to_string()),
         ),
     ]))
     .unwrap();
