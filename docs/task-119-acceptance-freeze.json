@@ -221,7 +221,35 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        }
+      ]
     },
     {
       "id": "72-C119-N-ordered-offset",
@@ -363,7 +391,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     },
     {
       "id": "72-C119-P-fetch-only",
@@ -519,7 +569,35 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": false
+        }
+      ]
     },
     {
       "id": "72-C119-N-order-tie",
@@ -658,7 +736,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     },
     {
       "id": "72-C119-N-by-name",
@@ -798,7 +898,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     },
     {
       "id": "72-C119-P-minus",
@@ -937,7 +1059,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     },
     {
       "id": "72-C119-N-coercion",
@@ -1075,7 +1219,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     },
     {
       "id": "72-C119-N-branch-limit",
@@ -1213,7 +1379,29 @@
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
         "verified": false
-      }
+      },
+      "typed_terminal_domains": [
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        },
+        {
+          "datatype": "signed_integer",
+          "allowed": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "contains_null": false,
+          "empty": true
+        }
+      ]
     }
   ]
 }
