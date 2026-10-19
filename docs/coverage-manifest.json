@@ -1,4 +1,28 @@
 {
+  "task_123_joined_grouping_acceptance": {
+    "owner": "TASK-123",
+    "parent": "TASK-73",
+    "status": "verified_bounded_pending_merge",
+    "acceptance_freeze": "docs/task-123-acceptance-freeze.json",
+    "fixture_ids": ["73-C123-P", "73-C123-N"],
+    "mandatory_cases": 3,
+    "conditional_grouping_variants": ["GROUPING SETS", "ROLLUP", "CUBE", "GROUP BY ALL"],
+    "required_parser_dialects": 13,
+    "reviewed_mandatory_dialect_cells": 39,
+    "reviewed_conditional_dialect_boundaries": 52,
+    "required_adapters": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "mandatory_adapter_exact_proofs": 9,
+    "conditional_adapter_boundary_cells": 12,
+    "duckdb_source_terminal_bag_proofs": 3,
+    "conditional_owner": "TASK-123",
+    "unverified_mandatory_cells_block_done": false,
+    "acceptance_audit": "docs/task-123-implementation-audit.md",
+    "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39305376784",
+    "reviewed_semantic_sha": "84e9a0345591a36fbf51bd484731f44a33824f83",
+    "release_approved": false,
+    "native_vendor_execution_certified": false,
+    "remaining_gate": "final metadata-head CI and merge PR #133; TASK-73 and TASK-124 retain independent acceptance gates"
+  },
   "task_122_distinct_filter_having_acceptance": {
     "owner": "TASK-122",
     "parent": "TASK-73",
