@@ -350,7 +350,7 @@ pub struct SetOperation {
     right: SetOperand,
     branches: Vec<SetBranch>,
     set_level_safe: bool,
-    row_shaping: Option<SetRowShaping>,
+    row_shaping: Option<Box<SetRowShaping>>,
 }
 
 impl SetOperation {
@@ -377,13 +377,13 @@ impl SetOperation {
     }
 
     pub(crate) fn with_row_shaping(mut self, shape: Option<SetRowShaping>) -> Self {
-        self.row_shaping = shape;
+        self.row_shaping = shape.map(Box::new);
         self
     }
 
     /// Exact integral order/limit instructions when parser and alignment allow them.
     pub fn row_shaping(&self) -> Option<&SetRowShaping> {
-        self.row_shaping.as_ref()
+        self.row_shaping.as_deref()
     }
 
     pub(crate) fn with_branches(mut self, branches: Vec<SetBranch>) -> Self {
