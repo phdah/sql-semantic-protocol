@@ -155,6 +155,7 @@ pub use parser::ParseError;
 pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
     physical_finite_chain_bag_plan, physical_finite_join_aggregate_plan,
+    physical_finite_rank_bag_plan,
     physical_finite_set_bag_plan, physical_finite_set_tree_plan, physical_joint_distribution_plan,
     physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
@@ -162,7 +163,8 @@ pub use physical_realization::{
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
     physical_typed_ordered_write_plan, physical_typed_value_plan,
     physical_unconditional_delete_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
-    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
+    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteRankExact,
+    PhysicalFiniteRankProof, PhysicalRankRow, PhysicalFiniteChainColumnDomain,
     PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteSetExact,
     PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalIdentitySequence, PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof,
