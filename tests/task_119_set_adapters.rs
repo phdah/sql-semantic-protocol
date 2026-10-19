@@ -75,10 +75,13 @@ fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
         .collect()
 }
 
+type TerminalBag = BTreeMap<Vec<Option<i128>>, u64>;
+type TerminalDomains = Vec<(Vec<i128>, bool)>;
+
 fn result(
     bundle: &sql_semantic_protocol::AnalysisBundle,
     states: &[PhysicalWriteState],
-) -> (BTreeMap<Vec<Option<i128>>, u64>, Vec<(Vec<i128>, bool)>) {
+) -> (TerminalBag, TerminalDomains) {
     let target = bundle
         .layers()
         .iter()
