@@ -7,6 +7,7 @@ fn aggregate_adapters_certify_mandatory_exact_and_conditional_residual_cases() {
     use std::collections::BTreeMap;
 
     use serde_json::{json, Value};
+    use sqlparser::parser::Parser;
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
         dialect_from_name, parse_dbt_manifest, parse_odcs_yaml, physical_finite_aggregate_bag_plan,
@@ -106,6 +107,13 @@ schema:
                 .expect("SQL")
                 .replace("FROM s", "FROM warehouse.raw.s")
         };
+        let parsed_sql = Parser::parse_sql(parser.as_ref(), &sql);
+        if mandatory {
+            assert!(
+                parsed_sql.is_ok(),
+                "{fixture}: mandatory SQL must parse: {parsed_sql:?}"
+            );
+        }
         let input = SqlInput::inline(&sql);
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let direct = analyze_configured_inputs_with_catalog(&[config], &direct_catalog)
@@ -241,8 +249,8 @@ schema:
             );
             let Ok(bundle) = analysis else {
                 assert!(
-                    !mandatory,
-                    "{fixture}:{adapter}: missing mandatory parser path: {analysis:?}"
+                    !mandatory && parsed_sql.is_err(),
+                    "{fixture}:{adapter}: semantic analysis failed rather than reaching a permitted conditional parser boundary: {analysis:?}"
                 );
                 classified += 1;
                 continue;
