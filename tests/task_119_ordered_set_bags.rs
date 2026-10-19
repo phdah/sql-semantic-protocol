@@ -151,7 +151,10 @@ fn duckdb_histogram(case: &Value) -> BTreeMap<Vec<Option<i128>>, u64> {
             })
             .collect::<Vec<_>>();
         expected.sort();
-        assert_eq!(actual, expected, "{relation}: full DuckDB physical source bag");
+        assert_eq!(
+            actual, expected,
+            "{relation}: full DuckDB physical source bag"
+        );
     }
     let sql = case["sql"].as_str().expect("SQL");
     let mut query = db
