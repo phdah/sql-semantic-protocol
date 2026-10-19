@@ -3,7 +3,7 @@
 
 #[cfg(feature = "odcs")]
 #[test]
-fn every_mandatory_aggregate_case_has_exact_sql_dbt_and_odcs_source_parity() {
+fn aggregate_adapters_certify_mandatory_exact_and_conditional_residual_cases() {
     use std::collections::BTreeMap;
 
     use serde_json::{json, Value};
@@ -87,9 +87,7 @@ schema:
     let parser = dialect_from_name("postgresql").expect("portable SQL dialect");
 
     for case in freeze["cases"].as_array().expect("finite aggregate matrix") {
-        if case["proof_kind"] != "mandatory" {
-            continue;
-        }
+        let mandatory = case["proof_kind"] == "mandatory";
         let fixture = case["id"].as_str().expect("case ID");
         let joined = case["scope"] == "joined";
         let source_names: &[&str] = if joined {
@@ -111,10 +109,10 @@ schema:
         let input = SqlInput::inline(&sql);
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let direct = analyze_configured_inputs_with_catalog(&[config], &direct_catalog)
-            .unwrap_or_else(|error| panic!("{fixture}: direct SQL: {error}"));
+            .map_err(|error| error.to_string());
         let config = ConfiguredSqlInput::new(fixture, &input, "postgresql", parser.as_ref());
         let external = analyze_configured_inputs_with_catalog(&[config], &odcs_catalog)
-            .unwrap_or_else(|error| panic!("{fixture}: ODCS: {error}"));
+            .map_err(|error| error.to_string());
 
         let dependencies = if joined {
             vec!["source.demo.l", "source.demo.r"]
@@ -173,7 +171,7 @@ schema:
         });
         let manifest = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt metadata");
         let dbt = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref())
-            .unwrap_or_else(|error| panic!("{fixture}: compiled dbt: {error}"));
+            .map_err(|error| error.to_string());
         let states = source_names
             .iter()
             .enumerate()
@@ -224,48 +222,68 @@ schema:
             })
             .collect::<Vec<_>>();
         let mut proofs = Vec::new();
-        for (adapter, bundle) in [("direct", &direct), ("dbt", &dbt), ("ODCS", &external)] {
-            let layer = bundle
-                .layers()
-                .iter()
+        let mut classified = 0;
+        for (adapter, analysis, adapter_cell) in [
+            ("direct", &direct, "direct_sql"),
+            ("dbt", &dbt, "dbt_compiled"),
+            ("ODCS", &external, "odcs_schema"),
+        ] {
+            let expected = case["expected_adapter_cells"][adapter_cell]
+                .as_str().expect("frozen adapter outcome");
+            assert_eq!(expected, if mandatory { "Exact_required" } else { "typed_Residual_if_parsed" });
+            let Ok(bundle) = analysis else {
+                assert!(!mandatory, "{fixture}:{adapter}: missing mandatory parser path: {analysis:?}");
+                classified += 1;
+                continue;
+            };
+            let layer = bundle.layers().iter()
                 .find(|layer| layer.consumes().iter().any(|name| name == source_names[0]))
                 .unwrap_or_else(|| panic!("{fixture}:{adapter}: no canonical physical source"));
-            let evidence = if joined {
+            if joined {
                 let proof = physical_finite_join_aggregate_plan(bundle, layer.id(), &states);
+                if !mandatory {
+                    assert!(matches!(proof, PhysicalJoinedAggregateProof::Residual { .. }),
+                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}");
+                    classified += 1;
+                    continue;
+                }
                 let PhysicalJoinedAggregateProof::Exact(exact) = proof else {
                     panic!("{fixture}:{adapter}: joined mandatory not exact: {proof:?}");
                 };
-                (
+                proofs.push((
                     format!("{:?}", exact.selected),
                     format!("{:?}", exact.rejected),
                     format!("{:?}", exact.groups),
                     format!("{:?}", exact.terminal),
                     format!("{:?}", exact.terminal_domains),
-                )
+                ));
             } else {
                 let proof = physical_finite_aggregate_bag_plan(bundle, layer.id(), &states);
+                if !mandatory {
+                    assert!(matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
+                        "{fixture}:{adapter}: conditional grouping cannot be Exact: {proof:?}");
+                    classified += 1;
+                    continue;
+                }
                 let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                     panic!("{fixture}:{adapter}: aggregate mandatory not exact: {proof:?}");
                 };
-                assert_eq!(
-                    exact.source, source_names[0],
-                    "{fixture}:{adapter}: source identity"
-                );
-                (
+                assert_eq!(exact.source, source_names[0], "{fixture}:{adapter}: source identity");
+                proofs.push((
                     String::new(),
                     String::new(),
                     format!("{:?}", exact.groups),
                     format!("{:?}", exact.terminal),
                     format!("{:?}", exact.terminal_domains),
-                )
-            };
-            proofs.push(evidence);
+                ));
+            }
         }
-        assert_eq!(proofs.len(), 3, "{fixture}: every adapter executed");
-        assert_eq!(
-            proofs[0], proofs[1],
-            "{fixture}: compiled dbt canonical parity"
-        );
-        assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS canonical parity");
+        if mandatory {
+            assert_eq!(proofs.len(), 3, "{fixture}: every adapter executed");
+            assert_eq!(proofs[0], proofs[1], "{fixture}: compiled dbt canonical parity");
+            assert_eq!(proofs[0], proofs[2], "{fixture}: ODCS canonical parity");
+        } else {
+            assert_eq!(classified, 3, "{fixture}: each conditional adapter classified");
+        }
     }
 }
