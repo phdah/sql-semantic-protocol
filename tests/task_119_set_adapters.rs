@@ -18,12 +18,12 @@ fn sources() -> Vec<RelationSchema> {
         .iter()
         .map(|source| {
             RelationSchema::new(
-                source,
+                *source,
                 ["id", "k", "v"]
                     .iter()
                     .map(|column| {
                         SchemaColumn::from_sql_type(
-                            column,
+                            *column,
                             if *column == "id" {
                                 "VARCHAR"
                             } else {
