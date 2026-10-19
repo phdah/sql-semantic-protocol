@@ -5,12 +5,17 @@
   "task_118_set_acceptance": {
     "owner": "TASK-118",
     "parent": "TASK-72",
-    "status": "frozen_pending_implementation",
+    "status": "verified_bounded_portable_child",
     "acceptance_freeze": "docs/task-118-acceptance-freeze.json",
     "fixture_ids": ["72-C118-P", "72-C118-N"],
     "mandatory_cases": 5,
     "dialects": 13,
     "required_adapters": ["direct_sql", "dbt", "odcs"],
+    "verified_parser_cells": 65,
+    "verified_adapter_parity_cases": 15,
+    "duckdb_oracle_cases": 5,
+    "acceptance_audit": "docs/task-118-acceptance-audit.md",
+    "remaining_gate": "merge child PR after final-head CI; TASK-72 remains open; native vendor engine laws uncertified",
     "conditional_owner": "TASK-118",
     "release_approved": false
   },
