@@ -151,7 +151,7 @@ fn duckdb_histogram(case: &Value) -> Histogram {
 
 fn check_domains(
     id: &str,
-    actual: &[sql_semantic_protocol::PhysicalFiniteSetDomain],
+    actual: &[sql_semantic_protocol::PhysicalSetColumnDomain],
     case: &Value,
 ) {
     assert_eq!(actual.len(), 2, "{id}: two typed outputs");
