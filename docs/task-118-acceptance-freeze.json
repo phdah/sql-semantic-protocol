@@ -136,87 +136,90 @@
       "dialect_cells": [
         {
           "name": "generic",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mysql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "postgresql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "hive",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "sqlite",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "snowflake",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "redshift",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mssql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "clickhouse",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "bigquery",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "ansi",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "duckdb",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "databricks",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "verified": false
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
         },
         {
           "name": "odcs_equivalent_schemas",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         }
       ],
       "independent_duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true
       }
     },
     {
@@ -290,87 +293,90 @@
       "dialect_cells": [
         {
           "name": "generic",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mysql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "postgresql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "hive",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "sqlite",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "snowflake",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "redshift",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mssql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "clickhouse",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "bigquery",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "ansi",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "duckdb",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "databricks",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "verified": false
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
         },
         {
           "name": "odcs_equivalent_schemas",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         }
       ],
       "independent_duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true
       }
     },
     {
@@ -457,87 +463,90 @@
       "dialect_cells": [
         {
           "name": "generic",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mysql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "postgresql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "hive",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "sqlite",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "snowflake",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "redshift",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mssql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "clickhouse",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "bigquery",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "ansi",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "duckdb",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "databricks",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "verified": false
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
         },
         {
           "name": "odcs_equivalent_schemas",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         }
       ],
       "independent_duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true
       }
     },
     {
@@ -625,87 +634,90 @@
       "dialect_cells": [
         {
           "name": "generic",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mysql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "postgresql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "hive",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "sqlite",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "snowflake",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "redshift",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mssql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "clickhouse",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "bigquery",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "ansi",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "duckdb",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "databricks",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "verified": false
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
         },
         {
           "name": "odcs_equivalent_schemas",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         }
       ],
       "independent_duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true
       }
     },
     {
@@ -792,88 +804,92 @@
       "dialect_cells": [
         {
           "name": "generic",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mysql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "postgresql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "hive",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "sqlite",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "snowflake",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "redshift",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "mssql",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "clickhouse",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "bigquery",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "ansi",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "duckdb",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         },
         {
           "name": "databricks",
-          "classification": "required_shared_syntax_or_explicit_parser_boundary",
-          "verified": false
+          "classification": "portable_parser_equivalent_canonical_nested_bag",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         },
         {
           "name": "dbt_compiled_sql_catalog",
-          "verified": false
+          "verified": true,
+          "classification": "typed_compiled_manifest_and_paired_catalog_when_materialized"
         },
         {
           "name": "odcs_equivalent_schemas",
-          "verified": false
+          "verified": true,
+          "classification": "typed_equivalent_canonical_physical_sources"
         }
       ],
       "independent_duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true
       }
     }
-  ]
+  ],
+  "audit": "docs/task-118-acceptance-audit.md"
 }
