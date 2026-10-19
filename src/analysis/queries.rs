@@ -129,12 +129,14 @@ pub(super) fn analyze_query(
             true,
             &mut branches,
         );
+        let row_shaping = analyze_set_row_shaping(query, &branches);
         populate_set_operation_evidence(
             query.body.as_ref(),
             operation,
             &branches,
             query.limit_clause.is_none() && query.fetch.is_none(),
         )
+        .with_row_shaping(row_shaping)
     });
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
@@ -183,7 +185,7 @@ pub(super) fn analyze_query(
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
-    inspect_query_features(query, &mut diagnostics);
+    inspect_query_features(query, set_operation.as_ref(), &mut diagnostics);
     let missing_column_residuals = validate_schema_column_references(
         query,
         &predicates,
