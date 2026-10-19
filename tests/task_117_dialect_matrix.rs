@@ -20,11 +20,22 @@ fn six_two_column_set_laws_are_identical_across_thirteen_parser_dialects() {
     for case in freeze["cases"].as_array().expect("12 variant cases") {
         let id = case["id"].as_str().expect("case id");
         let sql = case["sql"].as_str().expect("SQL");
-        for dialect in freeze["dialect_identities"]
+        for (index, dialect) in freeze["dialect_identities"]
             .as_array()
             .expect("thirteen parser dialects")
+            .iter()
+            .enumerate()
         {
             let dialect_name = dialect.as_str().expect("dialect");
+            assert_eq!(
+                case["dialects"][index]["name"], *dialect,
+                "{id}: frozen dialect identity"
+            );
+            assert_eq!(
+                case["dialects"][index]["classification"],
+                "parser_equivalent",
+                "{id}/{dialect_name}: frozen parser classification"
+            );
             let parser = dialect_from_name(dialect_name).expect("supported dialect");
             let protocol = analyze_sql(sql, dialect_name, parser.as_ref())
                 .unwrap_or_else(|error| panic!("{id}/{dialect_name}: parser boundary: {error}"));
