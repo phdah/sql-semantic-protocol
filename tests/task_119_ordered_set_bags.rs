@@ -122,6 +122,36 @@ fn duckdb_histogram(case: &Value) -> BTreeMap<Vec<Option<i128>>, u64> {
             ))
             .expect("independently seeded row");
         }
+        // Read the entire independently executed source bag, including NULL
+        // values and stable row identities, before checking its terminal SQL.
+        let mut select = db
+            .prepare(&format!("SELECT id,k,v FROM {relation} ORDER BY id"))
+            .expect("source snapshot query");
+        let actual = select
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, Option<i64>>(1)?,
+                    row.get::<_, Option<i64>>(2)?,
+                ))
+            })
+            .expect("query source")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("complete source snapshot");
+        let mut expected = rows
+            .as_array()
+            .expect("frozen source bag")
+            .iter()
+            .map(|row| {
+                (
+                    row["id"].as_str().expect("id").to_string(),
+                    row["k"].as_i64(),
+                    row["v"].as_i64(),
+                )
+            })
+            .collect::<Vec<_>>();
+        expected.sort();
+        assert_eq!(actual, expected, "{relation}: full DuckDB physical source bag");
     }
     let sql = case["sql"].as_str().expect("SQL");
     let mut query = db
