@@ -37,9 +37,9 @@
   ],
   "conditional": {
     "owner": "TASK-117",
-    "status": "pending_review",
-    "release_disposition": "review_before_child_signoff",
-    "reason": "no evidence for engine-specific coercion/collation or BY NAME rules; typed residual required"
+    "status": "reviewed_native_vendor_uncertified",
+    "release_disposition": "portable_DuckDB_certified_native_engines_not_certified",
+    "reason": "Only parser equivalence, canonical proof and independent DuckDB oracle are attested. Native vendor collation, coercion and session semantics require vendor execution and are owned by later release/dialect gates; BY NAME, MINUS and complex branches belong to TASK-119."
   },
   "cases": [
     {
@@ -131,55 +131,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -286,55 +286,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -438,55 +438,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -593,55 +593,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -731,55 +731,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -886,55 +886,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1024,55 +1024,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1179,55 +1179,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1324,55 +1324,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1464,55 +1464,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1602,55 +1602,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1742,55 +1742,55 @@
       "dialects": [
         {
           "name": "generic",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mysql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "postgresql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "hive",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "sqlite",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "snowflake",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "redshift",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "mssql",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "clickhouse",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "bigquery",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "ansi",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "duckdb",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         },
         {
           "name": "databricks",
-          "classification": "pending_parser_verification"
+          "classification": "parser_equivalent"
         }
       ],
       "adapters": [
@@ -1805,5 +1805,7 @@
         6
       ]
     }
-  ]
+  ],
+  "verified_parser_equivalent_cells": 156,
+  "verified_adapter_parity_cases": 36
 }
