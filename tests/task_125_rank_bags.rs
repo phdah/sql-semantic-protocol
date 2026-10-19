@@ -414,6 +414,15 @@ fn frozen_expected_physical_truth_and_typed_bounds_match_exact_output() {
 
         for frozen in frozen_domains {
             let name = frozen["column"].as_str().unwrap();
+            if frozen["values"].as_array().unwrap().is_empty() {
+                assert!(
+                    matches!(exact.terminal_domains.get(name), Some(ValueDomain::Empty)),
+                    "{id}/{name}: empty bag must have canonical Empty domain"
+                );
+                assert_eq!(frozen["contains_null"], false, "{id}/{name}");
+                assert_eq!(frozen["inclusive_bounds"], Value::Null, "{id}/{name}");
+                continue;
+            }
             let Some(ValueDomain::Set(set)) = exact.terminal_domains.get(name) else {
                 panic!("{id}/{name}: expected exact finite domain");
             };
