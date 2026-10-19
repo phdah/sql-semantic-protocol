@@ -2,27 +2,56 @@
   "task_121_grouped_global_aggregate_acceptance": {
     "owner": "TASK-121",
     "parent": "TASK-73",
-    "status": "implementation_in_progress",
+    "status": "bounded_child_verified_pending_merge",
     "acceptance_freeze": "docs/task-121-acceptance-freeze.json",
-    "fixture_ids": ["73-C121-P", "73-C121-N"],
+    "fixture_ids": [
+      "73-C121-P",
+      "73-C121-N"
+    ],
     "mandatory_oracle_cases": 5,
     "required_parser_dialects": 13,
-    "required_adapters": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
     "conditional_owner": "TASK-121",
-    "unverified_mandatory_cells_block_done": true,
-    "release_approved": false
+    "unverified_mandatory_cells_block_done": false,
+    "release_approved": false,
+    "acceptance_audit": "docs/task-121-acceptance-audit.md",
+    "reviewed_parser_dialect_paths": 70,
+    "canonical_parser_dialects": 13,
+    "parser_aliases": [
+      "postgres"
+    ],
+    "mandatory_adapter_exact_proofs": 15,
+    "duckdb_source_terminal_bag_proofs": 5,
+    "reviewed_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39267305885",
+    "reviewed_head_sha": "dfd50662aa0fec3d45ca3fcd3cf7b427c9746fab",
+    "remaining_gate": "final metadata-head CI, merge; TASK-73 parent independent review",
+    "native_vendor_execution_certified": false
   },
   "task_120_set_acceptance": {
     "owner": "TASK-120",
     "parent": "TASK-72",
     "status": "verified_bounded_pending_merge",
     "acceptance_freeze": "docs/task-120-acceptance-freeze.json",
-    "fixture_ids": ["72-C120-P", "72-C120-N"],
+    "fixture_ids": [
+      "72-C120-P",
+      "72-C120-N"
+    ],
     "mandatory_cases": 21,
     "conditional_cases": 6,
     "reviewed_dialect_cells": 351,
-    "required_adapters": ["direct_sql", "dbt", "odcs"],
-    "portable_oracles": ["tests/task_120_parent_set_matrix.rs", "tests/task_120_set_adapters.rs"],
+    "required_adapters": [
+      "direct_sql",
+      "dbt",
+      "odcs"
+    ],
+    "portable_oracles": [
+      "tests/task_120_parent_set_matrix.rs",
+      "tests/task_120_set_adapters.rs"
+    ],
     "conditional_owner": "TASK-120",
     "native_vendor_execution_certified": false,
     "unverified_mandatory_cells_block_done": false,
