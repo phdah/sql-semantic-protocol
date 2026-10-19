@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-120",
   "parent": "TASK-72",
   "frozen_at": "2026-10-19",
@@ -3870,8 +3870,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -3896,8 +3896,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -4021,7 +4021,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -4077,8 +4077,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -4103,8 +4103,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -4228,7 +4228,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -4284,8 +4284,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -4310,8 +4310,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -4435,7 +4435,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -4491,8 +4491,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -4517,8 +4517,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -4642,7 +4642,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -4698,8 +4698,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -4724,8 +4724,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -4849,7 +4849,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -4905,8 +4905,8 @@
         "key_out",
         "value_out"
       ],
-      "expected_terminal_tuple_histogram": [],
-      "expected_count": 0,
+      "expected_terminal_tuple_histogram": null,
+      "expected_count": null,
       "typed_terminal_domains": [
         {
           "datatype": "signed_integer",
@@ -4931,8 +4931,8 @@
           "proof": "unknown_not_empty"
         }
       ],
-      "positive_proof": "whole closed-world source-to-output tuple frequencies are exact",
-      "not_true_proof": "zero frequency is proven by exhaustive source row partition",
+      "positive_proof": "not uniformly certified: parser, coercion, ordering or vendor/session semantics require independent evidence",
+      "not_true_proof": "not uniformly certified: unsupported and conditional cases must remain typed Residual or parser boundaries",
       "dialect_cells": [
         {
           "name": "generic",
@@ -5056,7 +5056,7 @@
         5,
         6
       ],
-      "oracle": "DuckDB complete source/terminal snapshots; Rust protocol Exact physical state",
+      "oracle": "no native vendor/session outcome oracle claimed; portable mandatory cases have independent DuckDB source/terminal oracles",
       "boundary": "Portable parser law or physical ordering/coercion is not certified; keep typed Residual or parser boundary",
       "owner": "TASK-120",
       "release_disposition": "not certified for native vendor/session execution; release gate review required"
@@ -5064,11 +5064,11 @@
   ],
   "conditional_release_disposition": {
     "owner": "TASK-120",
-    "status": "pending_separate_vendor_native_execution",
+    "status": "reviewed_conditional_not_native_certified",
     "rule": "Do not upgrade parser-equivalent or residual to native exact without independent vendor oracle"
   },
   "signoff": {
-    "status": "pending_final_head_ci_and_independent_parent_review",
+    "status": "pending_expanded_final_head_ci_and_independent_parent_review",
     "parent": "TASK-72 remains To Do until merged children independently reviewed"
   }
 }
