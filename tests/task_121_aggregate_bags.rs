@@ -384,7 +384,8 @@ fn global_row_limiting_cannot_claim_an_unshaped_exact_singleton() {
         let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
             .expect("valid limited global SQL");
         let target = bundle.layers().last().expect("terminal").id();
-        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
+        let proof =
+            physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
         assert!(
             matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
             "{sql}: LIMIT/OFFSET must not certify an incorrect singleton: {proof:?}"
@@ -407,7 +408,8 @@ fn zero_group_rows_still_validate_the_aggregate_expression_and_column_identity()
         let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog)
             .expect("valid grouped SQL");
         let target = bundle.layers().last().expect("terminal").id();
-        let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&empty));
+        let proof =
+            physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&empty));
         assert!(
             matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
             "{sql}: no groups must not bypass aggregate validation: {proof:?}"
