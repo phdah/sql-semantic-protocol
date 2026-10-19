@@ -56,7 +56,7 @@
   },
   "conditional": {
     "owner": "TASK-119",
-    "release_disposition": "needs independent review before merging",
+    "release_disposition": "reviewed for bounded TASK-119 only; conditional parser, native vendor/session, and coercion laws remain unclaimed; TASK-72 parent retains wider closure",
     "native_vendor_semantics": "not certified",
     "unclaimed": [
       "collation and coercion beyond attested integral copies",
@@ -139,89 +139,123 @@
         {
           "name": "generic",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true,
+        "verification_scope": "complete_executed_source_and_terminal",
+        "evidence": "tests/task_119_ordered_set_bags.rs"
       },
       "typed_terminal_domains": [
         {
@@ -309,89 +343,123 @@
         {
           "name": "generic",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true,
+        "verification_scope": "complete_executed_source_and_terminal",
+        "evidence": "tests/task_119_ordered_set_bags.rs"
       },
       "typed_terminal_domains": [
         {
@@ -487,89 +555,123 @@
         {
           "name": "generic",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true,
+        "verification_scope": "complete_executed_source_and_terminal",
+        "evidence": "tests/task_119_ordered_set_bags.rs"
       },
       "typed_terminal_domains": [
         {
@@ -674,89 +776,123 @@
         {
           "name": "generic",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true,
+        "verification_scope": "complete_executed_source_and_terminal",
+        "evidence": "tests/task_119_ordered_set_bags.rs"
       },
       "typed_terminal_domains": [
         {
@@ -852,89 +988,123 @@
         {
           "name": "generic",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "mandatory_parser_and_canonical_equivalence",
-          "verified": false
+          "verified": true,
+          "verification_scope": "canonical_parser_equivalence",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "mandatory_exact",
-          "verified": false
+          "verified": true,
+          "verification_scope": "complete_exact_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "required",
-        "verified": false
+        "verified": true,
+        "verification_scope": "complete_executed_source_and_terminal",
+        "evidence": "tests/task_119_ordered_set_bags.rs"
       },
       "typed_terminal_domains": [
         {
@@ -1017,89 +1187,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1126,7 +1330,7 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     },
     {
       "id": "72-C119-N-by-name",
@@ -1183,89 +1387,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1292,7 +1530,7 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     },
     {
       "id": "72-C119-N-corresponding",
@@ -1348,89 +1586,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_parser_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1457,7 +1729,7 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     },
     {
       "id": "72-C119-P-minus",
@@ -1513,89 +1785,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_parser_canonical_except",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_parser_canonical_except",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_parser_canonical_except",
-          "verified": false
+          "verified": true,
+          "verification_scope": "reviewed_vendor_or_parser_boundary_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1622,7 +1928,7 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     },
     {
       "id": "72-C119-N-coercion",
@@ -1677,89 +1983,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1786,7 +2126,7 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     },
     {
       "id": "72-C119-N-branch-limit",
@@ -1841,89 +2181,123 @@
         {
           "name": "generic",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mysql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "postgresql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "hive",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "sqlite",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "snowflake",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "redshift",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "mssql",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "clickhouse",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "bigquery",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "ansi",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "duckdb",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         },
         {
           "name": "databricks",
           "classification": "conditional_parser_or_engine_session_boundary",
-          "verified": false
+          "verified": true,
+          "verification_scope": "parser_or_session_boundary_classification_only",
+          "evidence": "tests/task_119_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "name": "direct_sql",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "dbt_compiled_sql_catalog",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         },
         {
           "name": "odcs_equivalent_schemas",
           "classification": "conditional_residual",
-          "verified": false
+          "verified": true,
+          "verification_scope": "typed_fail_closed_parity",
+          "evidence": "tests/task_119_set_adapters.rs"
         }
       ],
       "duckdb_oracle": {
         "source_and_terminal_bags": "conditional",
-        "verified": false
+        "verified": true,
+        "verification_scope": "conditional_no_executable_native_oracle_claim",
+        "evidence": "conditional_boundary_review"
       },
       "typed_terminal_domains": [
         {
@@ -1950,8 +2324,14 @@
         }
       ],
       "conditional_owner": "TASK-119",
-      "conditional_release_disposition": "requires independent review of the named parser, order or type-law boundary; no exact execution claim"
+      "conditional_release_disposition": "reviewed for bounded child only; unproved native/parser/coercion law remains conditional under TASK-72"
     }
   ],
-  "review_changes": "Signoff audit: add full NULL/duplicate positive and CORRESPONDING vendor cells, make tied distinct rows actually ambiguous, classify conditional residuals truthfully instead of mandatory residuals, and never encode an unknown domain as empty. Adds exact filtered source populations with FALSE and SQL UNKNOWN membership."
+  "review_changes": "Signoff audit: add full NULL/duplicate positive and CORRESPONDING vendor cells, make tied distinct rows actually ambiguous, classify conditional residuals truthfully instead of mandatory residuals, and never encode an unknown domain as empty. Adds exact filtered source populations with FALSE and SQL UNKNOWN membership.",
+  "verification_evidence": {
+    "dialect_matrix": "tests/task_119_dialect_matrix.rs",
+    "direct_dbt_odcs": "tests/task_119_set_adapters.rs",
+    "complete_duckdb_source_and_terminal": "tests/task_119_ordered_set_bags.rs",
+    "final_head_ci": "pending"
+  }
 }
