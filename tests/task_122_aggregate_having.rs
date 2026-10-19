@@ -279,8 +279,9 @@ fn all_thirteen_parser_dialects_classify_distinct_filter_having() {
                     assert!(matches!(result, PhysicalFiniteAggregateProof::Exact(_)),
                         "{dialect}:{id}: parsed aggregate must have identical canonical proof: {result:?}");
                 }
-                Err(reason) if id == "73-C122-P-filter"
-                    && !matches!(*dialect, "generic" | "postgresql" | "duckdb") =>
+                Err(reason)
+                    if id == "73-C122-P-filter"
+                        && !matches!(*dialect, "generic" | "postgresql" | "duckdb") =>
                 {
                     // A dialect parser rejecting FILTER syntax is a documented
                     // parser boundary, never a claim about native SQL support.
