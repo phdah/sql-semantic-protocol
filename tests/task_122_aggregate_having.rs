@@ -271,7 +271,7 @@ fn unsupported_filter_type_and_distinct_sum_fail_closed() {
         let config = ConfiguredSqlInput::new("fail-closed", &input, "generic", parser.as_ref());
         let bundle = analyze_configured_inputs_with_catalog(&[config], &catalog).expect("parse");
         let target = bundle.layers().last().expect("target").id();
-        let result = physical_finite_aggregate_bag_plan(&bundle, target, &[state.clone()]);
+        let result = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&state));
         assert!(
             matches!(result, PhysicalFiniteAggregateProof::Residual { .. }),
             "{sql}: unproved execution law claimed exact: {result:?}"
