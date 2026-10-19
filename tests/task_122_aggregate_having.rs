@@ -103,6 +103,22 @@ fn duckdb(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         ))
         .expect("insert complete source row");
     }
+    let mut physical = db.prepare("SELECT id, k, x FROM s").expect("source readback");
+    let source_rows = physical.query_map([], |row| {
+        Ok(serde_json::json!({
+            "id": row.get::<_, String>(0)?,
+            "k": row.get::<_, Option<i64>>(1)?,
+            "x": row.get::<_, Option<i64>>(2)?
+        }))
+    }).expect("independent source bag query")
+      .collect::<Result<Vec<_>, _>>().expect("source readback");
+    let mut actual = source_rows.iter().map(Value::to_string).collect::<Vec<_>>();
+    let mut expected = case["source_bag"].as_array().expect("frozen physical bag")
+        .iter().map(Value::to_string).collect::<Vec<_>>();
+    actual.sort();
+    expected.sort();
+    assert_eq!(actual, expected, "DuckDB source snapshot must match the frozen full physical bag");
+
     let mut stmt = db
         .prepare(case["sql"].as_str().expect("SQL"))
         .expect("DuckDB query");
@@ -183,6 +199,16 @@ fn finite_having_bags_and_complete_false_unknown_groups_match_duckdb() {
                 .map(|v| v.as_str().expect("source row").to_string())
                 .collect::<Vec<_>>();
             assert_eq!(group.source_row_ids, ids, "{id}: complete source identity");
+            let contributors = expected["aggregate_row_ids"].as_object()
+                .expect("frozen contributing row identity")
+                .iter()
+                .map(|(name, rows)| (
+                    name.clone(),
+                    rows.as_array().expect("group contributors").iter()
+                        .map(|v| v.as_str().expect("physical row").to_string()).collect::<Vec<_>>()
+                )).collect::<BTreeMap<_, _>>();
+            assert_eq!(group.aggregate_row_ids, contributors,
+                "{id}: distinct, FILTER, NULL and duplicate contributor identities");
         }
         let mut covered = exact
             .groups
