@@ -227,7 +227,13 @@ pub(super) fn certify_identity_set_cte(
     {
         return None;
     }
-    let TableFactor::Table { name, args: None, sample: None, .. } = &from.relation else {
+    let TableFactor::Table {
+        name,
+        args: None,
+        sample: None,
+        ..
+    } = &from.relation
+    else {
         return None;
     };
     if name.to_string() != cte.alias.name.value {
