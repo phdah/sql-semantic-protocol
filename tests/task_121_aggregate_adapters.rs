@@ -155,7 +155,11 @@ schema:
                 .iter()
                 .find(|layer| layer.consumes().iter().any(|input| input == relation))
                 .unwrap_or_else(|| panic!("{adapter}:{id}: source not in canonical graph"));
-            let proof = physical_finite_aggregate_bag_plan(bundle, layer.id(), std::slice::from_ref(&state));
+            let proof = physical_finite_aggregate_bag_plan(
+                bundle,
+                layer.id(),
+                std::slice::from_ref(&state),
+            );
             let PhysicalFiniteAggregateProof::Exact(exact) = proof else {
                 panic!("{adapter}:{id}: missing exact same-source aggregate law: {proof:?}");
             };
