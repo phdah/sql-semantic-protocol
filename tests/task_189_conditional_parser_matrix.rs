@@ -95,5 +95,8 @@ fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() 
             }
         }
     }
-    assert_eq!((native_duckdb, residual_vendor, parser_boundaries), (6, 65, 7));
+    assert_eq!(
+        (native_duckdb, residual_vendor, parser_boundaries),
+        (6, 65, 7)
+    );
 }
