@@ -7,11 +7,32 @@
     "queue": "docs/backlog-child-queue-plan.json",
     "depends_on": "TASK-126",
     "next": "TASK-127",
-    "fixed_initial_fixture_ids": ["74-C189-P", "74-C189-N"],
-    "mandatory_window_aggregates": ["COUNT(*)", "COUNT(expr)", "SUM(expr)", "AVG(expr)", "MIN(expr)", "MAX(expr)"],
-    "mandatory_frame_classes": ["whole_partition", "running_rows", "bounded_moving_rows", "empty_forward_rows"],
+    "fixed_initial_fixture_ids": [
+      "74-C189-P",
+      "74-C189-N"
+    ],
+    "mandatory_window_aggregates": [
+      "COUNT(*)",
+      "COUNT(expr)",
+      "SUM(expr)",
+      "AVG(expr)",
+      "MIN(expr)",
+      "MAX(expr)"
+    ],
+    "mandatory_frame_classes": [
+      "whole_partition",
+      "running_rows",
+      "bounded_moving_rows",
+      "empty_forward_rows"
+    ],
     "conditional_owner": "TASK-189",
-    "conditional_variants": ["DISTINCT_window_aggregate", "FILTER_window_aggregate", "implicit_ordered_frame", "unproven_tie_order", "engine_numeric_precision"],
+    "conditional_variants": [
+      "DISTINCT_window_aggregate",
+      "FILTER_window_aggregate",
+      "implicit_ordered_frame",
+      "unproven_tie_order",
+      "engine_numeric_precision"
+    ],
     "advanced_frames_owner": "TASK-128",
     "acceptance_freeze": null,
     "verification_status": "not_started",
@@ -20,7 +41,7 @@
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
     "parent": "TASK-74",
-    "status": "frozen_in_progress_unverified",
+    "status": "verified_pending_merge",
     "acceptance_freeze": "docs/task-126-acceptance-freeze.json",
     "fixture_ids": [
       "74-C126-P",
@@ -36,14 +57,20 @@
     ],
     "canonical_owner": "src/physical_realization/window_bags.rs",
     "release_approved": false,
-    "verification_status": "pending_impl_and_ci"
+    "verification_status": "independent_ac_1_to_5_verified_ci_3316",
+    "acceptance_audit": "docs/task-126-acceptance-audit.md",
+    "parser_matrix_cells": 104,
+    "adapter_proof_cells": 24
   },
   "task_125_peer_rank_acceptance": {
     "owner": "TASK-125",
     "parent": "TASK-74",
     "status": "verified_bounded_pending_merge",
     "acceptance_freeze": "docs/task-125-acceptance-freeze.json",
-    "fixture_ids": ["74-C125-P", "74-C125-N"],
+    "fixture_ids": [
+      "74-C125-P",
+      "74-C125-N"
+    ],
     "mandatory_finite_bag_cases": 9,
     "mandatory_parser_cells": 117,
     "conditional_parser_cells": 26,
@@ -55,16 +82,28 @@
     "acceptance_freeze_version": 2,
     "conditional_residual_cases": 2,
     "canonical_implementation": "src/physical_realization/rank_bags.rs",
-    "public_oracles": ["tests/task_125_rank_bags.rs"],
+    "public_oracles": [
+      "tests/task_125_rank_bags.rs"
+    ],
     "dialect_identities": 13,
-    "adapter_requirement": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "adapter_requirement": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
     "release_approved": false,
     "audit": "docs/task-125-acceptance-audit.md",
     "reviewed_semantic_head_sha": "a6e619417fb63020d307bdc5ca95be348b54ba55",
     "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39325182136",
     "reviewed_semantic_ci_jobs_passed": 9,
     "native_vendor_execution_certified": false,
-    "original_parent_ac_map": [1, 2, 4, 5, 6],
+    "original_parent_ac_map": [
+      1,
+      2,
+      4,
+      5,
+      6
+    ],
     "remaining_gate": "final metadata-head CI, merge PR #135, TASK-74 original independent signoff",
     "unverified_mandatory_cells_block_done": false
   },
@@ -113,13 +152,25 @@
     "parent": "TASK-73",
     "status": "verified_bounded_pending_merge",
     "acceptance_freeze": "docs/task-123-acceptance-freeze.json",
-    "fixture_ids": ["73-C123-P", "73-C123-N"],
+    "fixture_ids": [
+      "73-C123-P",
+      "73-C123-N"
+    ],
     "mandatory_cases": 3,
-    "conditional_grouping_variants": ["GROUPING SETS", "ROLLUP", "CUBE", "GROUP BY ALL"],
+    "conditional_grouping_variants": [
+      "GROUPING SETS",
+      "ROLLUP",
+      "CUBE",
+      "GROUP BY ALL"
+    ],
     "required_parser_dialects": 13,
     "reviewed_mandatory_dialect_cells": 39,
     "reviewed_conditional_dialect_boundaries": 52,
-    "required_adapters": ["direct_sql", "dbt_compiled", "odcs_schema"],
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
     "mandatory_adapter_exact_proofs": 9,
     "conditional_adapter_boundary_cells": 12,
     "duckdb_source_terminal_bag_proofs": 3,
