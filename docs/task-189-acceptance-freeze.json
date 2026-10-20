@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-189",
   "parent": "TASK-74",
   "frozen_at": "2026-10-20",
@@ -67,7 +67,7 @@
   ],
   "conditional_owner": "TASK-189",
   "conditional_disposition": "Residual only if parser or engine/session semantics genuinely unproved; missing mandatory exact cells block Done",
-  "exact_integer_submatrix": 4,
+  "exact_integer_submatrix": 5,
   "mandatory_unverified": [
     "fractional AVG",
     "DECIMAL precision and scale",
@@ -1259,6 +1259,192 @@
         "odcs_schema": "Exact_required"
       },
       "oracle": "complete independent DuckDB source and terminal bags, identities and bounded domains"
+    },
+    {
+      "id": "74-C189-P5",
+      "family": "qualify_count",
+      "sql": "SELECT id, k, x, COUNT(x) OVER (PARTITION BY k) AS n FROM s QUALIFY COUNT(x) OVER (PARTITION BY k) >= 2",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 2
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 2
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 2
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 2
+        }
+      ],
+      "surviving_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "rejected_source_ids": [
+        "s#5"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [
+        "s#5"
+      ],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and QUALIFY terminal bags, with surviving and NOT TRUE source identities"
     },
     {
       "id": "74-C189-C1",
