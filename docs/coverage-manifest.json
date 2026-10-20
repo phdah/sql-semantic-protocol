@@ -45,7 +45,7 @@
     "conditional_parser_cells_verified": 78,
     "conditional_parser_parsed": 71,
     "conditional_parser_boundaries": 7,
-    "numeric_exact_oracle_cases": 2,
+    "numeric_exact_oracle_cases": 5,
     "numeric_residual_oracle_cases": 2,
     "native_duckdb_conditional_execution_cases": 6,
     "numeric_oracle_tests": [
