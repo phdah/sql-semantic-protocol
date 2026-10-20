@@ -202,5 +202,5 @@ fn all_planned_parent_queues_have_acyclic_child_dependencies_and_complete_ac_map
         );
     }
     global_ids.sort_unstable();
-    assert_eq!(global_ids, (109..=188).collect::<Vec<_>>());
+    assert_eq!(global_ids, (109..=189).collect::<Vec<_>>());
 }
