@@ -493,3 +493,67 @@ fn precision_conditional_fixtures_are_distinct_from_integer_exact_cases() {
     assert_eq!(decimals["source_bag"][0]["x"], serde_json::json!(10.25));
     assert_eq!(decimals["source_bag"][2]["x"], serde_json::json!(30.75));
 }
+
+
+#[test]
+fn ranking_and_navigation_compose_with_exact_aggregate_rows_and_domains() {
+    // TASK-189 AC #5: preserve the complete source and DuckDB terminal bags.
+    let case = serde_json::json!({
+        "id": "74-C189-AC5-MIXED",
+        "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY id NULLS LAST) AS rn, RANK() OVER (PARTITION BY k ORDER BY id NULLS LAST) AS rk, DENSE_RANK() OVER (PARTITION BY k ORDER BY id NULLS LAST) AS dr, LAG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS previous_x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 10},
+            {"id": 2, "k": 0, "x": null},
+            {"id": 3, "k": 0, "x": 30},
+            {"id": 4, "k": 1, "x": 5}
+        ],
+        "full_terminal_bag": [
+            {"id": 1, "k": 0, "x": 10, "rn": 1, "rk": 1, "dr": 1, "previous_x": null, "n": 1, "total": 10},
+            {"id": 2, "k": 0, "x": null, "rn": 2, "rk": 2, "dr": 2, "previous_x": 10, "n": 2, "total": 10},
+            {"id": 3, "k": 0, "x": 30, "rn": 3, "rk": 3, "dr": 3, "previous_x": null, "n": 3, "total": 40},
+            {"id": 4, "k": 1, "x": 5, "rn": 1, "rk": 1, "dr": 1, "previous_x": null, "n": 1, "total": 5}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    let PhysicalFiniteWindowProof::Exact(exact) =
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)])
+    else {
+        panic!("unique ORDER BY must prove mixed ranking/navigation/aggregate windows");
+    };
+    assert_eq!(exact.source_row_ids, ["s#0", "s#1", "s#2", "s#3"]);
+    assert_eq!(exact.terminal_row_ids, exact.source_row_ids);
+    assert!(exact.rejected_row_ids.is_empty());
+    assert_eq!(bag(&exact.terminal), bag(&expected(&case)));
+    assert_eq!(bag(&exact.terminal), bag(&duckdb_oracle(&case)));
+    for column in ["rn", "rk", "dr", "n", "total", "previous_x"] {
+        let Some(ValueDomain::Set(domain)) = exact.terminal_domains.get(column) else {
+            panic!("missing exact physical domain for {column}");
+        };
+        let actual = domain.values().iter()
+            .map(|item| format!("{:?}", item.value()))
+            .collect::<BTreeSet<_>>();
+        let expected_values = exact.terminal.iter()
+            .map(|row| format!("{:?}", row.get(column).unwrap()))
+            .collect::<BTreeSet<_>>();
+        assert_eq!(actual, expected_values, "{column} exact finite domain");
+    }
+}
+
+#[test]
+fn mixed_ranking_and_rows_aggregates_reject_ambiguous_peers() {
+    let case = serde_json::json!({
+        "id": "74-C189-AC5-PEERS",
+        "sql": "SELECT id, ROW_NUMBER() OVER (PARTITION BY k ORDER BY id NULLS LAST) AS rn, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 10},
+            {"id": 1, "k": 0, "x": 30}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    assert!(matches!(
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)]),
+        PhysicalFiniteWindowProof::Residual { .. }
+    ));
+}
