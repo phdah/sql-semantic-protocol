@@ -13,3 +13,11 @@ models:
   sql_semantic_protocol_e2e:
     +materialized: view
     +schema: analytics
+
+seeds:
+  sql_semantic_protocol_e2e:
+    task189_decimal_source:
+      +column_types:
+        id: INTEGER
+        k: INTEGER
+        x: DECIMAL(10,2)
