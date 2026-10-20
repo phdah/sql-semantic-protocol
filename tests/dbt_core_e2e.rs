@@ -913,7 +913,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     legacy_catalog_json["sources"]
         .as_object_mut()
         .unwrap()
-        .retain(|_, value| value["name"] != "task189_decimal_source");
+        .retain(|id, _| !id.ends_with(".task189_decimal_source"));
     let legacy_catalog = parse_dbt_catalog(&legacy_catalog_json.to_string()).unwrap();
     let legacy_bundle = analyze_dbt_artifacts(
         &legacy_manifest,
