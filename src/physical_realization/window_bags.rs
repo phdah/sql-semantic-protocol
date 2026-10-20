@@ -108,13 +108,11 @@ fn numeric_law(kind: &DataType) -> Result<NumericLaw, &'static str> {
         DataType::Decimal {
             precision: Some(precision),
             scale: Some(scale),
-        } if *precision <= 38 && scale <= precision && *scale <= 18 => Ok(
-            NumericLaw::Decimal {
-                precision: *precision,
-                scale: u32::try_from(*scale)
-                    .map_err(|_| "DECIMAL scale exceeds supported fixed-point width")?,
-            },
-        ),
+        } if *precision <= 38 && scale <= precision && *scale <= 18 => Ok(NumericLaw::Decimal {
+            precision: *precision,
+            scale: u32::try_from(*scale)
+                .map_err(|_| "DECIMAL scale exceeds supported fixed-point width")?,
+        }),
         _ => Err("window arithmetic requires attested exact numeric precision and scale"),
     }
 }
@@ -137,11 +135,16 @@ fn decimal_units(text: &str, scale: u32) -> Result<i128, &'static str> {
     if significant.len() > scale {
         return Err("decimal source requires unproved rounding");
     }
-    let units = format!("{whole}{significant}{}", "0".repeat(scale - significant.len()))
-        .parse::<i128>()
-        .map_err(|_| "decimal value exceeds exact signed width")?;
+    let units = format!(
+        "{whole}{significant}{}",
+        "0".repeat(scale - significant.len())
+    )
+    .parse::<i128>()
+    .map_err(|_| "decimal value exceeds exact signed width")?;
     if negative {
-        units.checked_neg().ok_or("negative decimal exceeds signed width")
+        units
+            .checked_neg()
+            .ok_or("negative decimal exceeds signed width")
     } else {
         Ok(units)
     }
@@ -171,14 +174,14 @@ fn binary_exact(units: i128, scale: u32) -> bool {
 }
 
 fn within_precision(units: i128, precision: u64) -> bool {
-    u64::try_from(units.unsigned_abs().to_string().len())
-        .is_ok_and(|digits| digits <= precision)
+    u64::try_from(units.unsigned_abs().to_string().len()).is_ok_and(|digits| digits <= precision)
 }
 
 fn numeric_units(value: &LiteralValue, numeric: NumericLaw) -> Result<i128, &'static str> {
     match numeric {
-        NumericLaw::Integer => super::aggregate_bags::numeric(value)?
-            .ok_or("integer input is unexpectedly NULL"),
+        NumericLaw::Integer => {
+            super::aggregate_bags::numeric(value)?.ok_or("integer input is unexpectedly NULL")
+        }
         NumericLaw::Decimal { precision, scale } => {
             let LiteralValue::Number(text) = value else {
                 return Err("decimal aggregate argument has no numeric value");
@@ -197,16 +200,21 @@ fn numeric_output(units: i128, numeric: NumericLaw) -> Result<LiteralValue, &'st
         NumericLaw::Integer => Ok(LiteralValue::Number(units.to_string())),
         NumericLaw::Decimal { precision, scale } => {
             if !within_precision(units, precision) || !binary_exact(units, scale) {
-                return Err("decimal result exceeds declared precision or exact portable magnitude");
+                return Err(
+                    "decimal result exceeds declared precision or exact portable magnitude",
+                );
             }
             Ok(fixed_point(units, scale))
         }
     }
 }
 
-fn decimal_average(sum: i128, count: usize, precision: u64, scale: u32)
-    -> Result<LiteralValue, &'static str>
-{
+fn decimal_average(
+    sum: i128,
+    count: usize,
+    precision: u64,
+    scale: u32,
+) -> Result<LiteralValue, &'static str> {
     let count = i128::try_from(count).map_err(|_| "AVG count exceeds numeric width")?;
     if count == 0 {
         return Ok(LiteralValue::Null);
@@ -224,7 +232,9 @@ fn decimal_average(sum: i128, count: usize, precision: u64, scale: u32)
             }
             return Ok(fixed_point(mean, places));
         }
-        units = units.checked_mul(10).ok_or("DECIMAL AVG overflows exact width")?;
+        units = units
+            .checked_mul(10)
+            .ok_or("DECIMAL AVG overflows exact width")?;
     }
     Err("DECIMAL AVG requires engine rounding or repeating-fraction attestation")
 }
@@ -332,7 +342,10 @@ fn aggregate_kind(
         AggregateKind::CountAll => None,
         _ => Some(direct_source_column(argument, source, schema)?),
     };
-    let numeric = if matches!(operation, AggregateKind::CountAll | AggregateKind::CountExpr) {
+    let numeric = if matches!(
+        operation,
+        AggregateKind::CountAll | AggregateKind::CountExpr
+    ) {
         None
     } else {
         let Some(column) = value
