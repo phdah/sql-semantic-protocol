@@ -59,13 +59,13 @@ fn residual(reason: impl Into<String>) -> PhysicalFiniteRankProof {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum RankFunction {
+pub(super) enum RankFunction {
     RowNumber,
     Rank,
     DenseRank,
 }
 
-fn rank_function(window: &WindowFunctionExpression) -> Option<RankFunction> {
+pub(super) fn rank_function(window: &WindowFunctionExpression) -> Option<RankFunction> {
     if !window.function().arguments().is_empty() || window.function().distinct() {
         return None;
     }
