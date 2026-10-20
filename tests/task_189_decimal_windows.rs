@@ -125,7 +125,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
             val("id"), val("k"), val("x")
         )).unwrap();
     }
-    let original = db.prepare("SELECT CAST(x AS VARCHAR) FROM s ORDER BY id").unwrap();
+    let mut original = db.prepare("SELECT CAST(x AS VARCHAR) FROM s ORDER BY id").unwrap();
     let input = original.query_map([], |row| row.get::<_, Option<String>>(0))
         .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
     let wanted = case["source_bag"].as_array().unwrap().iter().map(|row| {
