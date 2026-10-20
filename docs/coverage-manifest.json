@@ -57,7 +57,11 @@
     "conditional_native_parser_boundaries": 7,
     "real_dbt_executable_oracle": "tests/task_189_dbt_core_e2e.rs",
     "real_dbt_model": "tests/fixtures/dbt_core_project/models/task189_decimal_windows.sql",
-    "real_dbt_seed": "tests/fixtures/dbt_core_project/seeds/task189_decimal_source.csv"
+    "real_dbt_seed": "tests/fixtures/dbt_core_project/seeds/task189_decimal_source.csv",
+    "numeric_native_residual_duckdb_oracles": 2,
+    "conditional_native_execution_matrix_test": "tests/task_189_conditional_parser_matrix.rs",
+    "conditional_native_session_executed_duckdb": 6,
+    "conditional_native_vendor_residual": 65
   },
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
