@@ -235,7 +235,10 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
                 _ => panic!("{name}: decimal domain contains nonnumeric value"),
             })
             .collect::<BTreeSet<_>>();
-        assert_eq!(actual_values, expected_values, "{name}: compiled dbt domain");
+        assert_eq!(
+            actual_values, expected_values,
+            "{name}: compiled dbt domain"
+        );
         assert_eq!(
             actual_values.contains("NULL"),
             specified["contains_null"].as_bool().unwrap(),
