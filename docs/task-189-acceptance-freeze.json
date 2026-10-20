@@ -1873,7 +1873,7 @@
       "source_schema": {
         "id": "INTEGER",
         "k": "INTEGER",
-        "x": "DECIMAL(10,2) NULL"
+        "x": "DECIMAL(10,2)"
       }
     }
   ],
