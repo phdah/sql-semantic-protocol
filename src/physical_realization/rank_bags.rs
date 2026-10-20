@@ -176,7 +176,7 @@ fn rank_filter(
     ))
 }
 
-fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
+pub(super) fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
     match op {
         ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => rank == threshold,
         ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => rank != threshold,
