@@ -8,7 +8,7 @@ updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies:
-  - TASK-126
+  - TASK-189
 references:
   - TASK-74
   - TASK-66
@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-74 child 3/4.** Implement only compose qualify and upstream grouped or joined row shaping in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
+**TASK-74 child 4/5 (originally 3/4).** Implement only compose qualify and upstream grouped or joined row shaping in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Finite preimplementation scope
