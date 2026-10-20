@@ -1,0 +1,1169 @@
+{
+  "version": 2,
+  "revision_note": "v2 corrects omitted empty-bag output domains and freezes 143 parser observations before final AC review",
+  "owner": "TASK-125",
+  "parent": "TASK-74",
+  "frozen_at": "2026-10-19",
+  "fixture_ids": [
+    "74-C125-P",
+    "74-C125-N"
+  ],
+  "owner_of_conditional_boundaries": "TASK-125",
+  "source_identity": "s#zero_based_index; duplicate bag elements keep distinct row IDs",
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_status_matrix": {
+    "74-C125-P1": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-N1": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P2": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P3": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P4": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P5": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P6": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-N2": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-P7": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-C1": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "74-C125-C2": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgresql": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    }
+  },
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_semantics": "exact full physical bag; rank=1+preceding rows, dense_rank=1+preceding distinct peer groups; ROW_NUMBER only unique total order, no engine-derived tie identity",
+  "required_domains": "exact finite value sets including NULL, signed-integer closed bounds inclusive for rank outputs",
+  "oracle": "independent DuckDB complete source/terminal bags, source row identity, per-rank rejected existing rows; parser-adapter parity across supported paths",
+  "conditional_policy": "exact sqlparser outcomes recorded for every dialect; native vendor/session execution is not asserted, typed residual for implicit NULL order and ROW_NUMBER peers; no mandatory case may become residual",
+  "original_parent_ac_map": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "cases": [
+    {
+      "id": "74-C125-P1",
+      "family": "asc_peers",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 2
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 2,
+          "r": 3,
+          "d": 2
+        }
+      ],
+      "expected_rank": [
+        1,
+        1,
+        3
+      ],
+      "expected_dense_rank": [
+        1,
+        1,
+        2
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-N1",
+      "family": "rank_qualify_negative",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s QUALIFY r <= 1",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 2
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        }
+      ],
+      "rejected_source_ids": [
+        "s#2"
+      ],
+      "exact": true,
+      "parser_condition": "All 13 sqlparser dialects parse QUALIFY; native vendor/session execution remains uncertified",
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "physical_not_true_ids": [
+        "s#2"
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P2",
+      "family": "desc_peers",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST) AS d FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 2
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 2,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 2,
+          "d": 2
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 2,
+          "d": 2
+        }
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            2,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P3",
+      "family": "row_number_total",
+      "sql": "SELECT id, x, ROW_NUMBER() OVER (ORDER BY x DESC NULLS LAST) AS rn FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 2
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 3
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": "c",
+          "x": 3,
+          "rn": 1
+        },
+        {
+          "id": "b",
+          "x": 2,
+          "rn": 2
+        },
+        {
+          "id": "a",
+          "x": 1,
+          "rn": 3
+        }
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            "c",
+            "b",
+            "a"
+          ],
+          "contains_null": false,
+          "inclusive_bounds": null
+        },
+        {
+          "column": "rn",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            3,
+            2,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P4",
+      "family": "partitioned",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 2
+        },
+        {
+          "id": "c",
+          "k": 1,
+          "x": 4
+        },
+        {
+          "id": "d",
+          "k": 1,
+          "x": 5
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 2,
+          "r": 2,
+          "d": 2
+        },
+        {
+          "k": 1,
+          "x": 4,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 1,
+          "x": 5,
+          "r": 2,
+          "d": 2
+        }
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            1,
+            2,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P5",
+      "family": "nulls_first",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS FIRST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS FIRST) AS d FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 1
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": null,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 2,
+          "d": 2
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 2,
+          "d": 2
+        }
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            null,
+            1
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P6",
+      "family": "nulls_last",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 1
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": 1,
+          "r": 1,
+          "d": 1
+        },
+        {
+          "k": 0,
+          "x": null,
+          "r": 3,
+          "d": 2
+        }
+      ],
+      "exact": true,
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            1,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            1,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-N2",
+      "family": "dense_qualify_negative",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s QUALIFY d = 2",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 2
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "k": 0,
+          "x": 2,
+          "r": 3,
+          "d": 2
+        }
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "exact": true,
+      "parser_condition": "All 13 sqlparser dialects parse QUALIFY; native vendor/session execution remains uncertified",
+      "typed_terminal_domains": [
+        {
+          "column": "d",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "r",
+          "values": [
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 3,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "physical_positive_ids": [
+        "s#2"
+      ],
+      "physical_not_true_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-P7",
+      "family": "empty",
+      "sql": "SELECT k, x, RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS r, DENSE_RANK() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS d FROM s",
+      "source_bag": [],
+      "full_terminal_bag": [],
+      "exact": true,
+      "typed_terminal_domains": [
+        {"column": "d", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "k", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "r", "values": [], "contains_null": false, "inclusive_bounds": null},
+        {"column": "x", "values": [], "contains_null": false, "inclusive_bounds": null}
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C125-C1",
+      "family": "row_number_ties",
+      "sql": "SELECT id, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x ASC NULLS LAST) AS rn FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": "c",
+          "k": 0,
+          "x": 2
+        }
+      ],
+      "proof": "Residual",
+      "reason": "ROW_NUMBER identity among peers is nondeterministic",
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual",
+        "dbt_compiled": "typed_Residual",
+        "odcs_schema": "typed_Residual"
+      }
+    },
+    {
+      "id": "74-C125-C2",
+      "family": "implicit_null_order",
+      "sql": "SELECT k, RANK() OVER (ORDER BY x) AS r FROM s",
+      "source_bag": [
+        {
+          "id": "a",
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": "b",
+          "k": 0,
+          "x": 1
+        }
+      ],
+      "proof": "Residual",
+      "reason": "NULL order depends on dialect/session",
+      "expected_adapter_cells": {
+        "direct_sql": "typed_Residual",
+        "dbt_compiled": "typed_Residual",
+        "odcs_schema": "typed_Residual"
+      }
+    }
+  ]
+}

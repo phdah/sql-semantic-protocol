@@ -16,6 +16,7 @@ dependencies:
   - TASK-126
   - TASK-127
   - TASK-128
+  - TASK-189
 references: 
   - 'TASK-60'
 priority: high
@@ -25,7 +26,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Current ROW_NUMBER-only strict ordering contract is insufficient for common ranking and analytic filters.
+Ranking-only strict ordering is insufficient for common analytic windows, including deterministic aggregate windows (COUNT, SUM, AVG, MIN and MAX) with frame-dependent results.
 
 **Release contract:** This task is a blocking prerequisite for the single protocol 3.0.0 release and sql-tdg milestone m-3. Implement canonical, source-independent, typed obligations; do not reparse SQL in the consumer. Preserve strongest safe value domains through composition, and distinguish exact, impossible and residual for positive and negative cases. Arbitrary unsupported behavior must fail closed and appear in the audited capability matrix.
 <!-- SECTION:DESCRIPTION:END -->
@@ -46,7 +47,7 @@ Current ROW_NUMBER-only strict ordering contract is insufficient for common rank
 
 The existing **AC #1..#6 remain required**. Interpret and verify them through the frozen TASK-74 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
 
-1. **Mandatory exact core:** Exact core: ROW_NUMBER, RANK, DENSE_RANK on explicit total or tied ordering; LAG/LEAD, FIRST/LAST_VALUE and a bounded ROWS frame, retaining NULL and peer semantics.
+1. **Mandatory exact core:** Exact core: ROW_NUMBER, RANK, DENSE_RANK on explicit total or tied ordering; LAG/LEAD, FIRST/LAST_VALUE and a bounded ROWS frame; windowed COUNT(*), COUNT(expr), SUM, AVG, MIN and MAX with deterministic partition-wide, running and moving ROWS frames, retaining NULL, multiplicity and peer semantics.
 2. **Mandatory cross-operator / adapter evidence:** Exact composition: PARTITION BY plus QUALIFY and one upstream filter/join or aggregate on a complete known bag, with both survivor and rejected output.
 3. **Conditional and non-exact boundary:** Inventory conditional: NTILE, RANGE/GROUPS frames, COLLATE and engine-default NULL ordering; unproven ties/order/session assumptions must not claim exact ranks.
 
@@ -58,13 +59,14 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Dependency-ordered bounded child queue (2026-10-17)
 
-**TASK-74 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+**TASK-74 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. The fifth child TASK-189 was added on 2026-10-20 to close the common aggregate-window gap without reopening the completed TASK-125 scope. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
 
-- **[TASK-125](task-125%20-%20prove-row-number-rank-dense-rank-with-peers.md)** (1/4): PARTITION BY; total versus tied ORDER BY; ASC/DESC; NULL handling. Fixtures `74-C125-P`, `74-C125-N`.
-- **[TASK-126](task-126%20-%20prove-navigation-and-bounded-rows-frames.md)** (2/4): LAG/LEAD; FIRST_VALUE/LAST_VALUE; bounded ROWS frame; NULLs; frame boundaries. Fixtures `74-C126-P`, `74-C126-N`.
-- **[TASK-127](task-127%20-%20compose-qualify-and-upstream-grouped-or-joined-row-shaping.md)** (3/4): QUALIFY ROW_NUMBER<=n; multiple rank conditions; joins and grouped inputs; rejected peers. Fixtures `74-C127-P`, `74-C127-N`.
-- **[TASK-128](task-128%20-%20certify-advanced-frames-vendor-laws-and-task-74-signoff.md)** (4/4): NTILE; RANGE/GROUPS; COLLATE; NULL ordering; ranked_orders.sql; 13 dialects. Fixtures `74-C128-P`, `74-C128-N`.
+- **[TASK-125](task-125%20-%20prove-row-number-rank-dense-rank-with-peers.md)** (1/5): PARTITION BY; total versus tied ORDER BY; ASC/DESC; NULL handling. Fixtures `74-C125-P`, `74-C125-N`.
+- **[TASK-126](task-126%20-%20prove-navigation-and-bounded-rows-frames.md)** (2/5): LAG/LEAD; FIRST_VALUE/LAST_VALUE; bounded ROWS frame; NULLs; frame boundaries. Fixtures `74-C126-P`, `74-C126-N`.
+- **[TASK-189](task-189%20-%20prove-common-aggregate-window-functions.md)** (3/5): COUNT(*), COUNT(expr), SUM, AVG, MIN and MAX OVER; partition-wide, running and moving ROWS frames; NULL/empty/typed numeric semantics; conditional DISTINCT/FILTER. Fixtures `74-C189-P`, `74-C189-N`. Depends on TASK-126; TASK-127 follows it.
+- **[TASK-127](task-127%20-%20compose-qualify-and-upstream-grouped-or-joined-row-shaping.md)** (4/5): QUALIFY ROW_NUMBER<=n; multiple rank conditions; joins and grouped inputs; rejected peers. Fixtures `74-C127-P`, `74-C127-N`.
+- **[TASK-128](task-128%20-%20certify-advanced-frames-vendor-laws-and-task-74-signoff.md)** (5/5): NTILE; RANGE/GROUPS; COLLATE; NULL ordering; ranked_orders.sql; 13 dialects. Fixtures `74-C128-P`, `74-C128-N`.
 
-**Original acceptance mapping:** #1 -> TASK-125, TASK-126, TASK-127, TASK-128; #2 -> TASK-125, TASK-126, TASK-128; #3 -> TASK-127, TASK-128; #4 -> TASK-125, TASK-126, TASK-127, TASK-128; #5 -> TASK-125, TASK-126, TASK-127, TASK-128; #6 -> TASK-125, TASK-126, TASK-127, TASK-128.
+**Original acceptance mapping:** #1 -> TASK-125, TASK-126, TASK-189, TASK-127, TASK-128; #2 -> TASK-125, TASK-126, TASK-189, TASK-128; #3 -> TASK-127, TASK-128 (with basic QUALIFY witness evidence also in TASK-189); #4 -> TASK-125, TASK-126, TASK-189, TASK-127, TASK-128; #5 -> TASK-125, TASK-126, TASK-189, TASK-127, TASK-128; #6 -> TASK-125, TASK-126, TASK-189, TASK-127, TASK-128.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.

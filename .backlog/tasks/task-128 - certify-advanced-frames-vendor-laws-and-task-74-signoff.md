@@ -19,14 +19,14 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-74 child 4/4.** Implement only certify advanced frames vendor laws and task-74 signoff in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
+**TASK-74 child 5/5 (originally 4/4).** Implement only certify advanced frames vendor laws and task-74 signoff in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Finite preimplementation scope
 
 - **Fixed fixture IDs:** `74-C128-P`, `74-C128-N` (positive and nonmembership/impossible case).
 - **Variants to implement/classify:** NTILE; RANGE/GROUPS; COLLATE; NULL ordering; ranked_orders.sql; 13 dialects.
-- **Independent concrete oracle baseline:** Oracle three ranking laws, one navigation, one ROWS frame, grouped QUALIFY and explicit parser/session boundaries.
+- **Independent concrete oracle baseline:** Oracle three ranking laws, one navigation, one ROWS frame, all five common aggregate-window families from TASK-189, grouped QUALIFY and explicit parser/session boundaries.
 - **Fail-closed boundary and owner:** No exact claim for underordered or engine-dependent windows; parent signoff independent. TASK-128 owns every conditional variant and explicit review disposition.
 - **Mapped original TASK-74 AC:** #1, #2, #3, #4, #5, #6.
 

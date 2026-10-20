@@ -41,6 +41,7 @@
 //! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
 //! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
 //! - physical_finite_join_aggregate_plan proves complete two-source INNER JOIN/WHERE/GROUP/HAVING bags and exact typed terminal domains.
+//! - physical_finite_rank_bag_plan proves complete peer-aware ROW_NUMBER/RANK/DENSE_RANK physical bags and exact finite terminal value domains.
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
 //! - AnalysisBundle::attest_source_text_comparison attaches independently enforced source text laws without silently replacing adapter datatypes.
@@ -155,18 +156,19 @@ pub use parser::ParseError;
 pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
     physical_finite_chain_bag_plan, physical_finite_join_aggregate_plan,
-    physical_finite_set_bag_plan, physical_finite_set_tree_plan, physical_joint_distribution_plan,
-    physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
-    physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
-    physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
-    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_ordered_write_plan, physical_typed_value_plan,
-    physical_unconditional_delete_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
-    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
-    PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteSetExact,
+    physical_finite_rank_bag_plan, physical_finite_set_bag_plan, physical_finite_set_tree_plan,
+    physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
+    physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
+    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
+    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
+    physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
+    physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
+    PhysicalAggregateTruth, PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof,
+    PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
+    PhysicalFiniteRankExact, PhysicalFiniteRankProof, PhysicalFiniteSetExact,
     PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalIdentitySequence, PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof,
-    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap,
+    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRankRow,
     PhysicalRowTarget, PhysicalSetColumnDomain, PhysicalSetTreeBranch, PhysicalSetTreeTuple,
     PhysicalSetTuple, PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan,
     PhysicalTypedValue, PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalWriteColumnDomain,
