@@ -95,15 +95,15 @@ enum AggregateKind {
 // so a floating implementation cannot silently round the claimed outcome.
 #[derive(Debug, Clone, Copy)]
 enum NumericLaw {
-    Integer,
+    Integer { bits: Option<u16> },
     Decimal { precision: u64, scale: u32 },
 }
 
 fn numeric_law(kind: &DataType) -> Result<NumericLaw, &'static str> {
     match kind {
         DataType::Nullable(inner) => numeric_law(inner),
-        DataType::SignedInteger { .. } if super::aggregate_bags::signed_integer(kind) => {
-            Ok(NumericLaw::Integer)
+        DataType::SignedInteger { bits } if super::aggregate_bags::signed_integer(kind) => {
+            Ok(NumericLaw::Integer { bits: *bits })
         }
         DataType::Decimal {
             precision: Some(precision),
@@ -179,7 +179,7 @@ fn within_precision(units: i128, precision: u64) -> bool {
 
 fn numeric_units(value: &LiteralValue, numeric: NumericLaw) -> Result<i128, &'static str> {
     match numeric {
-        NumericLaw::Integer => {
+        NumericLaw::Integer { .. } => {
             super::aggregate_bags::numeric(value)?.ok_or("integer input is unexpectedly NULL")
         }
         NumericLaw::Decimal { precision, scale } => {
@@ -197,7 +197,7 @@ fn numeric_units(value: &LiteralValue, numeric: NumericLaw) -> Result<i128, &'st
 
 fn numeric_output(units: i128, numeric: NumericLaw) -> Result<LiteralValue, &'static str> {
     match numeric {
-        NumericLaw::Integer => Ok(LiteralValue::Number(units.to_string())),
+        NumericLaw::Integer { .. } => Ok(LiteralValue::Number(units.to_string())),
         NumericLaw::Decimal { precision, scale } => {
             if !within_precision(units, precision) || !binary_exact(units, scale) {
                 return Err(
@@ -218,6 +218,9 @@ fn decimal_average(
     let count = i128::try_from(count).map_err(|_| "AVG count exceeds numeric width")?;
     if count == 0 {
         return Ok(LiteralValue::Null);
+    }
+    if !within_precision(sum, precision) {
+        return Err("DECIMAL AVG accumulator needs unproved engine promotion");
     }
     // Extend a declared source scale only when division terminates without
     // rounding and the exact result is representable on all admitted paths.
@@ -510,44 +513,41 @@ fn frame_members(
 
 // Exact finite decimal expansions preserve AVG's non-integral result without
 // asserting floating-point or repeating-fraction session behavior.
+// Integer AVG has engine-specific result datatypes. In particular SQL Server
+// returns INT for AVG(INT), so fractional integer AVG cannot be certified as
+// portable, even when a rational value terminates in base ten.
 fn exact_average(sum: i128, count: usize) -> Result<LiteralValue, &'static str> {
     let count = i128::try_from(count).map_err(|_| "AVG count exceeds numeric width")?;
     if count == 0 {
         return Ok(LiteralValue::Null);
     }
+    if sum % count != 0 {
+        return Err("fractional AVG of integer input needs attested engine result type");
+    }
     let quotient = sum / count;
-    let mut remainder = sum % count;
-    if remainder == 0 {
-        return Ok(LiteralValue::Number(quotient.to_string()));
+    if quotient.unsigned_abs() > (1_u128 << 53) {
+        return Err("integer AVG exceeds portable floating precision");
     }
-    let mut digits = String::new();
-    let mut places = 0usize;
-    while remainder != 0 {
-        if places >= 18 {
-            return Err("AVG requires unproven repeating fraction or numeric precision");
+    Ok(LiteralValue::Number(quotient.to_string()))
+}
+
+fn portable_integer_sum(sum: i128, bits: Option<u16>) -> Result<(), &'static str> {
+    let bits = bits.ok_or("integer accumulator requires attested signed width")?;
+    if bits == 0 || bits > 128 {
+        return Err("integer accumulator has an invalid signed width");
+    }
+    if bits < 128 {
+        let half = 1_i128
+            .checked_shl(u32::from(bits - 1))
+            .ok_or("integer accumulator width exceeds exact signed width")?;
+        if sum < -half || sum >= half {
+            return Err("integer SUM or AVG needs unproved engine widening");
         }
-        remainder = remainder
-            .checked_mul(10)
-            .ok_or("AVG exceeds exact numeric width")?;
-        let digit = remainder / count;
-        digits.push(char::from(
-            b'0' + u8::try_from(digit.abs()).map_err(|_| "invalid AVG digit")?,
-        ));
-        remainder %= count;
-        places += 1;
     }
-    // A signed division truncates toward zero. Preserve negative fractions
-    // including -0.x without using lossy floating-point arithmetic.
-    // A finite decimal expansion is not necessarily exactly representable by
-    // floating SQL engines. Only certify binary-exact rational results.
-    let scale = u32::try_from(places).map_err(|_| "AVG scale exceeds numeric width")?;
-    let sign = if sum < 0 { "-" } else { "" };
-    let result = format!("{sign}{}.{digits}", quotient.abs());
-    let units = decimal_units(&result, scale)?;
-    if !binary_exact(units, scale) {
-        return Err("AVG decimal result may round in a floating SQL engine");
+    if sum.unsigned_abs() > (1_u128 << 53) {
+        return Err("integer SUM or AVG exceeds portable numeric magnitude");
     }
-    Ok(LiteralValue::Number(result))
+    Ok(())
 }
 
 fn aggregate_value(
@@ -595,14 +595,19 @@ fn aggregate_value(
         min = Some(min.map_or(number, |current| current.min(number)));
         max = Some(max.map_or(number, |current| current.max(number)));
     }
-    let law = numeric.unwrap_or(NumericLaw::Integer);
+    let law = numeric.unwrap_or(NumericLaw::Integer { bits: None });
+    if count > 0 && matches!(operation, AggregateKind::Sum | AggregateKind::Avg) {
+        if let NumericLaw::Integer { bits } = law {
+            portable_integer_sum(sum, bits)?;
+        }
+    }
     match operation {
         AggregateKind::CountAll | AggregateKind::CountExpr => {
             Ok(LiteralValue::Number(count.to_string()))
         }
         AggregateKind::Sum if count > 0 => numeric_output(sum, law),
         AggregateKind::Avg if count > 0 => match law {
-            NumericLaw::Integer => exact_average(sum, count),
+            NumericLaw::Integer { .. } => exact_average(sum, count),
             NumericLaw::Decimal { precision, scale } => {
                 decimal_average(sum, count, precision, scale)
             }
