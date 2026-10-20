@@ -182,7 +182,7 @@ schema:
                 assert_eq!(exact.source, name);
                 outcomes.push(format!(
                     "{:?}",
-                    (exact.source_row_ids, exact.terminal, exact.terminal_domains)
+                    (exact.source_row_ids, exact.terminal_row_ids, exact.rejected_row_ids, exact.terminal, exact.terminal_domains)
                 ));
             } else {
                 assert_eq!(case["expected_adapter_cells"][adapter], "Residual_required");
