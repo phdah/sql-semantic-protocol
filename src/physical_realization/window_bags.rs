@@ -4,7 +4,9 @@
 //! are identified by their original physical positions; SQL ORDER BY determines
 //! window membership only when it has a provably total ordering.
 
-use super::rank_bags::{compare_key, exact_domain, key_value, qualifies, rank_keys, RankKeys};
+use super::rank_bags::{
+    compare_key, exact_domain, key_value, qualifies, rank_function, rank_keys, RankFunction, RankKeys,
+};
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
 use crate::protocol::{
@@ -71,6 +73,7 @@ enum WindowKind {
         value: Option<String>,
         frame: Option<WindowFrame>,
     },
+    Ranking(RankFunction),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -218,6 +221,14 @@ fn window_kind(
     }
     let args = function.arguments();
     match function.name().to_ascii_lowercase().as_str() {
+        "row_number" | "rank" | "dense_rank" => {
+            if window.window().frame().is_some() || window.window().order_by().is_empty() {
+                return Err("composed ranking requires ORDER BY without an explicit frame");
+            }
+            rank_function(window)
+                .map(WindowKind::Ranking)
+                .ok_or("composed ranking has unsupported arguments")
+        }
         "lag" | "lead" => {
             if window.window().frame().is_some() {
                 return Err("navigation with explicit frame has unproven vendor behavior");
@@ -484,6 +495,16 @@ fn frame_value(
             snapshot,
         );
     }
+    // A uniquely ordered partition makes ROW_NUMBER, RANK and DENSE_RANK
+    // identical. ORDER BY peers are rejected before any frame is evaluated.
+    if let WindowKind::Ranking(function) = kind {
+        return match function {
+            RankFunction::RowNumber | RankFunction::Rank | RankFunction::DenseRank => {
+                let ordinal = index.checked_add(1).ok_or("ranking ordinal overflow")?;
+                Ok(LiteralValue::Number(ordinal.to_string()))
+            }
+        };
+    }
     let position = match kind {
         WindowKind::Lag { offset, .. } => index.checked_sub(*offset),
         WindowKind::Lead { offset, .. } => index.checked_add(*offset),
@@ -495,7 +516,9 @@ fn frame_value(
             let range = frame_members(frame, index, rows.len())?;
             (!range.is_empty()).then_some(range.end - 1)
         }
-        WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+            return Err("unreachable window frame result")
+        }
     };
     let Some((source_index, _)) = position.and_then(|position| rows.get(position)) else {
         return Ok(LiteralValue::Null);
@@ -505,7 +528,9 @@ fn frame_value(
         | WindowKind::Lead { value, .. }
         | WindowKind::First { value, .. }
         | WindowKind::Last { value, .. } => value,
-        WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+            return Err("unreachable window frame result")
+        }
     };
     snapshot.rows()[*source_index]
         .values()
