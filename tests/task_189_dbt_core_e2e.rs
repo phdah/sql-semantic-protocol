@@ -175,10 +175,9 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
         );
     }
     let source_bag = PhysicalWriteState::new(source_name, rows).unwrap();
-    let PhysicalFiniteWindowProof::Exact(exact) =
-        physical_finite_window_bag_plan(&bundle, layer.id(), &[source_bag])
-    else {
-        panic!("compiled real dbt manifest/catalog must retain numeric exactness");
+    let proof = physical_finite_window_bag_plan(&bundle, layer.id(), &[source_bag]);
+    let PhysicalFiniteWindowProof::Exact(exact) = proof else {
+        panic!("compiled real dbt manifest/catalog lost numeric exactness: {proof:?}");
     };
     let wanted = rows_as_strings(&from_json(case));
     assert_eq!(rows_as_strings(&exact.terminal), wanted);
