@@ -183,6 +183,37 @@ fn fixed_point_exact_cases_match_all_dialects_and_independent_duckdb_bags() {
             assert_eq!(exact.source_row_ids.len(), case["source_bag"].as_array().unwrap().len());
             assert_eq!(exact.terminal_row_ids, exact.source_row_ids);
             assert!(exact.rejected_row_ids.is_empty());
+            for specified in case["typed_terminal_domains"].as_array().unwrap() {
+                let name = specified["column"].as_str().unwrap();
+                let Some(ValueDomain::Set(domain)) = exact.terminal_domains.get(name) else {
+                    panic!("{id}/{dialect}/{name}: required typed output domain missing");
+                };
+                let expected = specified["values"].as_array().unwrap().iter()
+                    .map(|value| if value.is_null() {
+                        "NULL".to_string()
+                    } else {
+                        canonical(&value.to_string())
+                    })
+                    .collect::<BTreeSet<_>>();
+                let actual = domain.values().iter().map(|value| match value.value() {
+                    LiteralValue::Null => "NULL".to_string(),
+                    LiteralValue::Number(number) => canonical(number),
+                    _ => panic!("unexpected nonnumeric typed domain"),
+                }).collect::<BTreeSet<_>>();
+                assert_eq!(actual, expected, "{id}/{dialect}/{name} frozen domain");
+                assert_eq!(actual.contains("NULL"), specified["contains_null"].as_bool().unwrap());
+                if specified["sql_type"].as_str().unwrap().starts_with("DECIMAL") {
+                    for value in domain.values() {
+                        if value.value() != &LiteralValue::Null {
+                            assert_eq!(
+                                value.literal_type(),
+                                sql_semantic_protocol::LiteralType::Decimal,
+                                "{id}/{dialect}/{name}: must retain decimal domain type"
+                            );
+                        }
+                    }
+                }
+            }
             for (name, domain) in &exact.terminal_domains {
                 let ValueDomain::Set(values) = domain else {
                     panic!("{id}/{name}: expected exact finite value set");
