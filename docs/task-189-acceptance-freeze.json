@@ -71,7 +71,6 @@
   "mandatory_unverified": [
     "fractional AVG",
     "DECIMAL precision and scale",
-    "QUALIFY TRUE/NOT TRUE",
     "dbt executable parity",
     "ODCS executable parity",
     "13-dialect executed parser matrix"
@@ -1872,5 +1871,6 @@
       },
       "typed_terminal_domains": []
     }
-  ]
+  ],
+  "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects"
 }
