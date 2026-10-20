@@ -206,7 +206,9 @@ fn frame_members(
 ) -> Result<std::ops::Range<usize>, &'static str> {
     let index = i128::try_from(index).map_err(|_| "frame row index exceeds signed width")?;
     let len = i128::try_from(len).map_err(|_| "frame count exceeds signed width")?;
-    let start = frame_position(frame.start_bound(), index, len)?.max(0).min(len);
+    let start = frame_position(frame.start_bound(), index, len)?
+        .max(0)
+        .min(len);
     let end = frame_position(frame.end_bound(), index, len)?
         .max(-1)
         .min(len - 1);
@@ -316,11 +318,9 @@ pub fn physical_finite_window_bag_plan(
         }
         match projected.expression() {
             Expression::Column(expression) => {
-                if let Err(reason) = direct_source_column(
-                    &Expression::Column(expression.clone()),
-                    source,
-                    schema,
-                ) {
+                if let Err(reason) =
+                    direct_source_column(&Expression::Column(expression.clone()), source, schema)
+                {
                     return residual(reason);
                 }
             }
@@ -350,15 +350,28 @@ pub fn physical_finite_window_bag_plan(
     };
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
-        let partition = match keys.partition.iter().map(|key| key_value(row, key)).collect() {
+        let partition = match keys
+            .partition
+            .iter()
+            .map(|key| key_value(row, key))
+            .collect()
+        {
             Ok(values) => values,
             Err(reason) => return residual(reason),
         };
-        let order = match keys.sort.iter().map(|key| key_value(row, &key.column)).collect() {
+        let order = match keys
+            .sort
+            .iter()
+            .map(|key| key_value(row, &key.column))
+            .collect()
+        {
             Ok(values) => values,
             Err(reason) => return residual(reason),
         };
-        partitions.entry(partition).or_default().push((index, order));
+        partitions
+            .entry(partition)
+            .or_default()
+            .push((index, order));
     }
     let mut evaluated = BTreeMap::<String, Vec<Option<LiteralValue>>>::new();
     for operation in &operations {
@@ -394,7 +407,9 @@ pub fn physical_finite_window_bag_plan(
         let mut projected = BTreeMap::new();
         for column in query.output().columns() {
             let value = match column.expression() {
-                Expression::Column(source_column) => row.values().get(source_column.name()).cloned(),
+                Expression::Column(source_column) => {
+                    row.values().get(source_column.name()).cloned()
+                }
                 Expression::WindowFunction(_) => evaluated
                     .get(column.name())
                     .and_then(|values| values.get(index))
