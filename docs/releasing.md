@@ -4,7 +4,7 @@
 
 SQL Semantic Protocol uses one version for the application and the protocol. The Cargo package version, emitted `protocol_version`, active protocol contract, Git tag, and GitHub release are the same release identity.
 
-SemVer compatibility is defined primarily by the public protocol contract. A breaking protocol change requires a major version bump. Backward-compatible protocol or application features use a minor bump, while compatible fixes and internal application changes use a patch bump. Non-protocol implementation changes therefore do not require a breaking release, but every release still advances the shared application/protocol version.
+SemVer compatibility is defined primarily by the public protocol contract. A breaking protocol change requires a major version bump. A source-breaking change to a public Rust library type also requires a major release even when the serialized protocol JSON shape is unchanged. Backward-compatible protocol or application features use a minor bump, while compatible fixes and internal application changes use a patch bump. Non-protocol implementation changes therefore do not require a breaking release, but every release still advances the shared application/protocol version.
 
 Release Please manages the shared application/protocol version from Conventional Commits. After the 1.0.0 bootstrap, breaking changes use major releases, backward-compatible features use minor releases, and compatible fixes or internal changes use patch releases.
 
