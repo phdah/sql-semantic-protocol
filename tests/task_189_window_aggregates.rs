@@ -326,3 +326,59 @@ fn freeze_preserves_adapter_dialect_and_conditional_ownership_without_fabricatin
         }
     }
 }
+
+#[test]
+fn fractional_avg_is_exact_when_the_decimal_expansion_terminates() {
+    let case = serde_json::json!({
+        "id": "74-C189-FRACTIONAL",
+        "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 1},
+            {"id": 2, "k": 0, "x": 2}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    let PhysicalFiniteWindowProof::Exact(exact) =
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)])
+    else {
+        panic!("a half-integer average has exactly representable decimal semantics");
+    };
+    for row in &exact.terminal {
+        assert_eq!(row.get("mean"), Some(&LiteralValue::Number("1.5".into())));
+    }
+    let Some(ValueDomain::Set(domain)) = exact.terminal_domains.get("mean") else {
+        panic!("AVG must retain an exact typed finite outcome domain");
+    };
+    assert_eq!(domain.values().len(), 1);
+    assert_eq!(domain.values()[0].literal_type(), sql_semantic_protocol::LiteralType::Decimal);
+    assert_eq!(domain.values()[0].value(), &LiteralValue::Number("1.5".into()));
+    let expected_duckdb = duckdb_oracle(&serde_json::json!({
+        "id": "74-C189-FRACTIONAL",
+        "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 1},
+            {"id": 2, "k": 0, "x": 2}
+        ]
+    }));
+    assert_eq!(bag(&exact.terminal), bag(&expected_duckdb));
+}
+
+#[test]
+fn repeating_average_is_residual_not_rounded_into_false_exactness() {
+    let case = serde_json::json!({
+        "id": "74-C189-REPEATING",
+        "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 1},
+            {"id": 2, "k": 0, "x": 2},
+            {"id": 3, "k": 0, "x": 2}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    assert!(matches!(
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)]),
+        PhysicalFiniteWindowProof::Residual { .. }
+    ));
+}
