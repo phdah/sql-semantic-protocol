@@ -2072,16 +2072,16 @@
         {
           "id": 1,
           "k": 0,
-          "x": 999.99
+          "x": 999.75
         },
         {
           "id": 2,
           "k": 0,
-          "x": 999.99
+          "x": 999.75
         }
       ],
       "proof": "Residual_expected",
-      "reason": "source DECIMAL(5,2) is valid but SUM exceeds source precision; vendor output promotion/overflow is unknown"
+      "reason": "source DECIMAL(5,2) contains binary-exact 999.75, but SUM(999.75+999.75) exceeds source precision; vendor result promotion or overflow requires session attestation"
     },
     {
       "id": "74-C189-P7",
