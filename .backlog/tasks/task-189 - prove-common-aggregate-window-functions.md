@@ -1,7 +1,7 @@
 ---
 id: TASK-189
 title: Prove common aggregate window functions and deterministic ROWS frames
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-20'
 updated_date: '2026-10-20'
@@ -50,3 +50,11 @@ Deliver a source-independent, canonical protocol and physical proof for determin
 ## Next
 
 After TASK-189 is **Done and merged**, implement [TASK-127](task-127%20-%20compose-qualify-and-upstream-grouped-or-joined-row-shaping.md), then TASK-128, then independently sign off parent TASK-74. TASK-91 remains a separate release gate.
+
+
+## Implementation in progress (2026-10-20)
+
+- Task-owned frozen integer submatrix: [TASK-189 v1](../../docs/task-189-acceptance-freeze.json), including complete two/three-partition source bags, running/moving/forward frame outputs, typed finite domains and conditional boundaries.
+- Canonical implementation: `src/physical_realization/window_bags.rs`; public DuckDB and 13-dialect tests: `tests/task_189_window_aggregates.rs`.
+- **No AC signoff yet.** Independent final-head CI, DECIMAL/AVG precision, QUALIFY TRUE/NOT TRUE, dbt/ODCS executed parity and conditional parser/session matrix remain unverified. No mandatory cell can be approved as Residual.
+- TASK-74 remains open and TASK-127 remains blocked until this child is Done and merged.
