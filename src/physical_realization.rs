@@ -487,11 +487,11 @@ mod joint_distributions;
 mod membership;
 mod operators;
 mod rank_bags;
-mod window_bags;
 mod ranking;
 mod set_bags;
 mod set_trees;
 mod sets;
+mod window_bags;
 mod write_states;
 
 pub use aggregate_bags::{
@@ -523,9 +523,6 @@ pub use rank_bags::{
     physical_finite_rank_bag_plan, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
     PhysicalRankRow,
 };
-pub use window_bags::{
-    physical_finite_window_bag_plan, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
-};
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
     PhysicalSetColumnDomain, PhysicalSetTuple,
@@ -533,6 +530,9 @@ pub use set_bags::{
 pub use set_trees::{
     physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalSetTreeBranch, PhysicalSetTreeTuple,
+};
+pub use window_bags::{
+    physical_finite_window_bag_plan, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
 };
 pub use write_states::{
     physical_closed_world_schema_plan, physical_ordered_write_state_plan,
