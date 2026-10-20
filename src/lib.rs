@@ -42,7 +42,7 @@
 //! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
 //! - physical_finite_join_aggregate_plan proves complete two-source INNER JOIN/WHERE/GROUP/HAVING bags and exact typed terminal domains.
 //! - physical_finite_rank_bag_plan proves complete peer-aware ROW_NUMBER/RANK/DENSE_RANK physical bags and exact finite terminal value domains.
-//! - physical_finite_window_bag_plan proves complete navigation and deterministic ROWS-frame physical bags, with exact terminal NULL/value domains.
+//! - physical_finite_window_bag_plan proves complete navigation and common deterministic ROWS/whole-partition aggregate physical bags, with exact finite terminal NULL/value domains.
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
 //! - AnalysisBundle::attest_source_text_comparison attaches independently enforced source text laws without silently replacing adapter datatypes.
