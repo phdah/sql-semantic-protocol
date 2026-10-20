@@ -122,7 +122,7 @@ schema:
                     "columns": {
                         "id": {"name":"id", "data_type":"INTEGER"},
                         "k": {"name":"k", "data_type":"INTEGER"},
-                        "x": {"name":"x", "data_type":"INTEGER"}
+                        "x": {"name":"x", "data_type":x_type}
                     }
                 }
             }
