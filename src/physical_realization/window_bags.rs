@@ -73,6 +73,7 @@ enum WindowKind {
         operation: AggregateKind,
         value: Option<String>,
         frame: Option<WindowFrame>,
+        numeric: Option<NumericLaw>,
     },
     Ranking(RankFunction),
 }
@@ -85,6 +86,146 @@ enum AggregateKind {
     Avg,
     Min,
     Max,
+}
+
+// Only exact, declared finite numeric storage is admitted. DECIMAL remains
+// fixed point throughout the physical evaluator; no f64 arithmetic or
+// implicit cast occurs. Decimal proof also requires binary-exact values,
+// so a floating implementation cannot silently round the claimed outcome.
+#[derive(Debug, Clone, Copy)]
+enum NumericLaw {
+    Integer,
+    Decimal { precision: u64, scale: u32 },
+}
+
+fn numeric_law(kind: &DataType) -> Result<NumericLaw, &'static str> {
+    match kind {
+        DataType::Nullable(inner) => numeric_law(inner),
+        DataType::SignedInteger { .. } if super::aggregate_bags::signed_integer(kind) => {
+            Ok(NumericLaw::Integer)
+        }
+        DataType::Decimal {
+            precision: Some(precision),
+            scale: Some(scale),
+        } if *precision <= 38 && scale <= precision && *scale <= 18 => Ok(
+            NumericLaw::Decimal {
+                precision: *precision,
+                scale: u32::try_from(*scale)
+                    .map_err(|_| "DECIMAL scale exceeds supported fixed-point width")?,
+            },
+        ),
+        _ => Err("window arithmetic requires attested exact numeric precision and scale"),
+    }
+}
+
+fn decimal_units(text: &str, scale: u32) -> Result<i128, &'static str> {
+    let (negative, magnitude) = if let Some(rest) = text.strip_prefix('-') {
+        (true, rest)
+    } else {
+        (false, text)
+    };
+    let (whole, fraction) = magnitude.split_once('.').unwrap_or((magnitude, ""));
+    if whole.is_empty()
+        || !whole.bytes().all(|b| b.is_ascii_digit())
+        || !fraction.bytes().all(|b| b.is_ascii_digit())
+    {
+        return Err("decimal source value has no exact fixed-point representation");
+    }
+    let significant = fraction.trim_end_matches('0');
+    let scale = usize::try_from(scale).map_err(|_| "invalid decimal scale")?;
+    if significant.len() > scale {
+        return Err("decimal source requires unproved rounding");
+    }
+    let units = format!("{whole}{significant}{}", "0".repeat(scale - significant.len()))
+        .parse::<i128>()
+        .map_err(|_| "decimal value exceeds exact signed width")?;
+    if negative {
+        units.checked_neg().ok_or("negative decimal exceeds signed width")
+    } else {
+        Ok(units)
+    }
+}
+
+fn fixed_point(units: i128, scale: u32) -> LiteralValue {
+    if scale == 0 {
+        return LiteralValue::Number(units.to_string());
+    }
+    let magnitude = units.unsigned_abs().to_string();
+    let scale = scale as usize;
+    let padded = format!("{magnitude:0>width$}", width = scale + 1);
+    let cut = padded.len() - scale;
+    let sign = if units < 0 { "-" } else { "" };
+    LiteralValue::Number(format!("{sign}{}.{}", &padded[..cut], &padded[cut..]))
+}
+
+fn binary_exact(units: i128, scale: u32) -> bool {
+    let mut numerator = units;
+    for _ in 0..scale {
+        if numerator % 5 != 0 {
+            return false;
+        }
+        numerator /= 5;
+    }
+    numerator.unsigned_abs() <= (1_u128 << 53)
+}
+
+fn within_precision(units: i128, precision: u64) -> bool {
+    u64::try_from(units.unsigned_abs().to_string().len())
+        .is_ok_and(|digits| digits <= precision)
+}
+
+fn numeric_units(value: &LiteralValue, numeric: NumericLaw) -> Result<i128, &'static str> {
+    match numeric {
+        NumericLaw::Integer => super::aggregate_bags::numeric(value)?
+            .ok_or("integer input is unexpectedly NULL"),
+        NumericLaw::Decimal { precision, scale } => {
+            let LiteralValue::Number(text) = value else {
+                return Err("decimal aggregate argument has no numeric value");
+            };
+            let units = decimal_units(text, scale)?;
+            if !within_precision(units, precision) || !binary_exact(units, scale) {
+                return Err("decimal source value lacks portable exact arithmetic law");
+            }
+            Ok(units)
+        }
+    }
+}
+
+fn numeric_output(units: i128, numeric: NumericLaw) -> Result<LiteralValue, &'static str> {
+    match numeric {
+        NumericLaw::Integer => Ok(LiteralValue::Number(units.to_string())),
+        NumericLaw::Decimal { precision, scale } => {
+            if !within_precision(units, precision) || !binary_exact(units, scale) {
+                return Err("decimal result exceeds declared precision or exact portable magnitude");
+            }
+            Ok(fixed_point(units, scale))
+        }
+    }
+}
+
+fn decimal_average(sum: i128, count: usize, precision: u64, scale: u32)
+    -> Result<LiteralValue, &'static str>
+{
+    let count = i128::try_from(count).map_err(|_| "AVG count exceeds numeric width")?;
+    if count == 0 {
+        return Ok(LiteralValue::Null);
+    }
+    // Extend a declared source scale only when division terminates without
+    // rounding and the exact result is representable on all admitted paths.
+    let mut units = sum;
+    for places in scale..=18 {
+        if units % count == 0 {
+            let mean = units / count;
+            if !within_precision(mean, precision.max(u64::from(places)))
+                || !binary_exact(mean, places)
+            {
+                return Err("DECIMAL AVG promotion or precision is unproven");
+            }
+            return Ok(fixed_point(mean, places));
+        }
+        units = units.checked_mul(10).ok_or("DECIMAL AVG overflows exact width")?;
+    }
+    Err("DECIMAL AVG requires engine rounding or repeating-fraction attestation")
 }
 
 #[derive(Debug, Clone)]
@@ -190,24 +331,22 @@ fn aggregate_kind(
         AggregateKind::CountAll => None,
         _ => Some(direct_source_column(argument, source, schema)?),
     };
-    if !matches!(
-        operation,
-        AggregateKind::CountAll | AggregateKind::CountExpr
-    ) {
+    let numeric = if matches!(operation, AggregateKind::CountAll | AggregateKind::CountExpr) {
+        None
+    } else {
         let Some(column) = value
             .as_deref()
             .and_then(|name| schema.columns().iter().find(|c| c.name() == name))
         else {
             return Err("window aggregate argument has no authoritative datatype");
         };
-        if !super::aggregate_bags::signed_integer(column.data_type()) {
-            return Err("window arithmetic requires an exact signed integer datatype");
-        }
-    }
+        Some(numeric_law(column.data_type())?)
+    };
     Ok(WindowKind::Aggregate {
         operation,
         value,
         frame: aggregate_frame(window)?,
+        numeric,
     })
 }
 
@@ -381,17 +520,23 @@ fn exact_average(sum: i128, count: usize) -> Result<LiteralValue, &'static str> 
     }
     // A signed division truncates toward zero. Preserve negative fractions
     // including -0.x without using lossy floating-point arithmetic.
+    // A finite decimal expansion is not necessarily exactly representable by
+    // floating SQL engines. Only certify binary-exact rational results.
+    let scale = u32::try_from(places).map_err(|_| "AVG scale exceeds numeric width")?;
     let sign = if sum < 0 { "-" } else { "" };
-    Ok(LiteralValue::Number(format!(
-        "{sign}{}.{digits}",
-        quotient.abs()
-    )))
+    let result = format!("{sign}{}.{digits}", quotient.abs());
+    let units = decimal_units(&result, scale)?;
+    if !binary_exact(units, scale) {
+        return Err("AVG decimal result may round in a floating SQL engine");
+    }
+    Ok(LiteralValue::Number(result))
 }
 
 fn aggregate_value(
     operation: AggregateKind,
     value: Option<&str>,
     frame: Option<&WindowFrame>,
+    numeric: Option<NumericLaw>,
     rows: &[(usize, Vec<Option<i128>>)],
     index: usize,
     snapshot: &PhysicalWriteState,
@@ -422,28 +567,37 @@ fn aggregate_value(
         if matches!(operation, AggregateKind::CountExpr) {
             continue;
         }
-        let number = super::aggregate_bags::numeric(scalar)?
-            .ok_or("non-null numeric aggregate argument missing")?;
+        let law = numeric.ok_or("window aggregate numeric law missing")?;
+        let number = numeric_units(scalar, law)?;
         if matches!(operation, AggregateKind::Sum | AggregateKind::Avg) {
             sum = sum
                 .checked_add(number)
-                .ok_or("SUM or AVG exact integer overflow")?;
+                .ok_or("SUM or AVG exact numeric overflow")?;
         }
         min = Some(min.map_or(number, |current| current.min(number)));
         max = Some(max.map_or(number, |current| current.max(number)));
     }
+    let law = numeric.unwrap_or(NumericLaw::Integer);
     match operation {
         AggregateKind::CountAll | AggregateKind::CountExpr => {
             Ok(LiteralValue::Number(count.to_string()))
         }
-        AggregateKind::Sum if count > 0 => Ok(LiteralValue::Number(sum.to_string())),
-        AggregateKind::Avg => exact_average(sum, count),
-        AggregateKind::Min => {
-            Ok(min.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())))
-        }
-        AggregateKind::Max => {
-            Ok(max.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())))
-        }
+        AggregateKind::Sum if count > 0 => numeric_output(sum, law),
+        AggregateKind::Avg if count > 0 => match law {
+            NumericLaw::Integer => exact_average(sum, count),
+            NumericLaw::Decimal { precision, scale } => {
+                decimal_average(sum, count, precision, scale)
+            }
+        },
+        AggregateKind::Avg => Ok(LiteralValue::Null),
+        AggregateKind::Min => match min {
+            Some(value) => numeric_output(value, law),
+            None => Ok(LiteralValue::Null),
+        },
+        AggregateKind::Max => match max {
+            Some(value) => numeric_output(value, law),
+            None => Ok(LiteralValue::Null),
+        },
         AggregateKind::Sum => Ok(LiteralValue::Null),
     }
 }
@@ -485,12 +639,14 @@ fn frame_value(
         operation,
         value,
         frame,
+        numeric,
     } = kind
     {
         return aggregate_value(
             *operation,
             value.as_deref(),
             frame.as_ref(),
+            *numeric,
             rows,
             index,
             snapshot,
