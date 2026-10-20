@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-189",
   "parent": "TASK-74",
   "frozen_at": "2026-10-20",
@@ -1731,24 +1731,24 @@
     },
     {
       "id": "74-C189-C5",
-      "family": "precision",
-      "sql": "SELECT id, AVG(x) OVER (PARTITION BY k ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS mean FROM s",
+      "family": "repeating_fraction_avg",
+      "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
       "source_relation": "s",
       "source_bag": [
         {
           "id": 1,
           "k": 0,
-          "x": 10
+          "x": 1
         },
         {
           "id": 2,
           "k": 0,
-          "x": null
+          "x": 2
         },
         {
           "id": 3,
           "k": 0,
-          "x": 30
+          "x": 2
         },
         {
           "id": 4,
@@ -1775,9 +1775,9 @@
         "s#5"
       ],
       "proof": "Residual_expected",
-      "reason": "numeric type promotion and repeating fractions require independent exact engine law",
+      "reason": "5/3 repeating fractional AVG has no portable finite-decimal physical outcome without engine-specific precision and rounding attestation",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Residual until a finite, typed and engine-attested fractional AVG domain and native precision/session oracle is frozen; not an Exact approval",
       "parser_status_by_dialect": {
         "generic": "to_verify",
         "mysql": "to_verify",
@@ -1802,14 +1802,14 @@
     },
     {
       "id": "74-C189-C6",
-      "family": "decimal",
+      "family": "decimal_precision_scale",
       "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
       "source_relation": "s",
       "source_bag": [
         {
           "id": 1,
           "k": 0,
-          "x": 10
+          "x": 10.25
         },
         {
           "id": 2,
@@ -1819,17 +1819,17 @@
         {
           "id": 3,
           "k": 0,
-          "x": 30
+          "x": 30.75
         },
         {
           "id": 4,
           "k": 1,
-          "x": 5
+          "x": 5.5
         },
         {
           "id": 5,
           "k": 1,
-          "x": 5
+          "x": 5.5
         },
         {
           "id": 6,
@@ -1846,9 +1846,9 @@
         "s#5"
       ],
       "proof": "Residual_expected",
-      "reason": "DECIMAL(p,s) precision, scale and overflow requires bounded physical proof",
+      "reason": "DECIMAL(10,2) arithmetic, result scale, promotion and precision/overflow are not yet attested by a physical engine oracle",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Residual until DECIMAL result type, scale, overflow and engine/session policy are independently attested; no integer-schema proxy",
       "parser_status_by_dialect": {
         "generic": "to_verify",
         "mysql": "to_verify",
@@ -1869,8 +1869,14 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2) NULL"
+      }
     }
   ],
-  "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects"
+  "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects",
+  "conditional_fixture_correction": "v3: C5 uses a genuine repeating 5/3 average; C6 uses a DECIMAL(10,2) physical source and fractional values. v2's INTEGER fixtures duplicated already-supported exact laws and did not justify Residual."
 }
