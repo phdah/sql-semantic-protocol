@@ -291,9 +291,7 @@ fn aggregate_qualify_filter(
     let threshold = number
         .parse::<i128>()
         .map_err(|_| "QUALIFY aggregate threshold exceeds signed width")?;
-    if !window.function().name().eq_ignore_ascii_case("count")
-        || window.function().distinct()
-    {
+    if !window.function().name().eq_ignore_ascii_case("count") || window.function().distinct() {
         return Err("QUALIFY numeric aggregate law is only certified for COUNT");
     }
     let output = query
