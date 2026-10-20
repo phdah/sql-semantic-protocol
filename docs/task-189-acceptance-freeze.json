@@ -2401,9 +2401,20 @@
         "clickhouse": "residual_native_vendor_or_session_unattested",
         "bigquery": "residual_native_vendor_or_session_unattested",
         "ansi": "residual_native_vendor_or_session_unattested",
-        "duckdb": "duckdb_native_oracle_pending_in_ci",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
         "databricks": "residual_native_vendor_or_session_unattested"
-      }
+      },
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 0.3
+        },
+        {
+          "id": 2,
+          "total": 0.3
+        }
+      ],
+      "native_duckdb_oracle": "DuckDB exact base-10 source and complete terminal decimal bags are executed while portable physical status remains Residual due unattested cross-vendor arithmetic/output promotion"
     },
     {
       "id": "74-C189-N3",
@@ -2466,9 +2477,20 @@
         "clickhouse": "residual_native_vendor_or_session_unattested",
         "bigquery": "residual_native_vendor_or_session_unattested",
         "ansi": "residual_native_vendor_or_session_unattested",
-        "duckdb": "duckdb_native_oracle_pending_in_ci",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
         "databricks": "residual_native_vendor_or_session_unattested"
-      }
+      },
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 1999.5
+        },
+        {
+          "id": 2,
+          "total": 1999.5
+        }
+      ],
+      "native_duckdb_oracle": "DuckDB exact base-10 source and complete terminal decimal bags are executed while portable physical status remains Residual due unattested cross-vendor arithmetic/output promotion"
     },
     {
       "id": "74-C189-P7",
