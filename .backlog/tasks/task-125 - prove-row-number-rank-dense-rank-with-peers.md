@@ -22,7 +22,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-74 child 1/4.** Implement only prove row_number rank dense_rank with peers in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
+**TASK-74 child 1/5 (originally 1/4).** Implement only prove row_number rank dense_rank with peers in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Finite preimplementation scope
