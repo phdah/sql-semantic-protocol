@@ -258,12 +258,19 @@ fn all_dialects_keep_the_same_exact_portable_results_or_a_named_parser_boundary(
         for case in matrix["cases"].as_array().unwrap() {
             let id = case["id"].as_str().unwrap();
             let sql = case["sql"].as_str().unwrap();
-            if let Err(err) = Parser::parse_sql(parser.as_ref(), sql) {
-                assert_ne!(
-                    case["proof"], "Exact",
-                    "{dialect}/{id}: frozen mandatory query cannot parse: {err}"
-                );
-                continue;
+            let expected_parser = case["parser_status_by_dialect"][*dialect]
+                .as_str()
+                .unwrap_or_else(|| panic!("{dialect}/{id}: missing frozen parser status"));
+            match (Parser::parse_sql(parser.as_ref(), sql), expected_parser) {
+                (Ok(_), "parsed") => {}
+                (Err(_), "parser_boundary") if case["proof"] == "Residual" => continue,
+                (Err(error), "parsed") => {
+                    panic!("{dialect}/{id}: expected parsed, got parser error: {error}")
+                }
+                (Ok(_), "parser_boundary") => {
+                    panic!("{dialect}/{id}: parser success changes frozen disposition")
+                }
+                (_, status) => panic!("{dialect}/{id}: invalid parser disposition {status}"),
             }
             let bundle = analyze(case, dialect);
             let target = bundle.layers().last().unwrap().id();
@@ -309,4 +316,69 @@ fn invalid_complete_source_is_impossible_and_missing_source_is_residual() {
         physical_finite_window_bag_plan(&bundle, target, &[invalid]),
         PhysicalFiniteWindowProof::Impossible { .. }
     ));
+}
+
+#[test]
+fn frozen_acceptance_matrix_has_no_implicit_parser_or_adapter_exclusions() {
+    let matrix = freeze();
+    assert_eq!(matrix["owner"], "TASK-126");
+    assert_eq!(
+        matrix["original_parent_ac_map"],
+        serde_json::json!([1, 2, 4, 5, 6])
+    );
+    assert_eq!(
+        matrix["required_adapters"],
+        serde_json::json!(["direct_sql", "dbt_compiled", "odcs_schema"])
+    );
+    assert_eq!(matrix["source_schema"]["s"]["id"], "INTEGER");
+    let cases = matrix["cases"].as_array().unwrap();
+    assert_eq!(cases.len(), 8);
+    let mut ids = BTreeSet::new();
+    let mut exact_count = 0;
+    let mut residual_count = 0;
+    for case in cases {
+        let id = case["id"].as_str().unwrap();
+        assert!(ids.insert(id), "duplicate frozen case {id}");
+        let parser = case["parser_status_by_dialect"].as_object().unwrap();
+        assert_eq!(parser.len(), DIALECTS.len(), "{id}: parser matrix not bounded");
+        for dialect in DIALECTS {
+            let status = parser.get(*dialect).and_then(Value::as_str);
+            assert!(
+                matches!(status, Some("parsed" | "parser_boundary")),
+                "{id}/{dialect}: no explicit parser disposition"
+            );
+            if case["proof"] == "Exact" {
+                assert_eq!(status, Some("parsed"), "{id}/{dialect}: mandatory gap");
+            }
+        }
+        for adapter in ["direct_sql", "dbt_compiled", "odcs_schema"] {
+            let expected = case["expected_adapter_cells"][adapter].as_str();
+            let required = if case["proof"] == "Exact" {
+                "Exact_required"
+            } else {
+                "Residual_required"
+            };
+            assert_eq!(expected, Some(required), "{id}/{adapter}: missing adapter cell");
+        }
+        match case["proof"].as_str() {
+            Some("Exact") => {
+                exact_count += 1;
+                assert_eq!(
+                    case["source_bag"].as_array().unwrap().len(),
+                    case["full_terminal_bag"].as_array().unwrap().len(),
+                    "{id}: full source and terminal bag cardinalities differ"
+                );
+                assert_eq!(case["physical_positive_ids"], case["source_row_ids"]);
+                assert_eq!(case["physical_not_true_ids"], serde_json::json!([]));
+                assert!(!case["typed_terminal_domains"].as_array().unwrap().is_empty());
+            }
+            Some("Residual") => {
+                residual_count += 1;
+                assert!(!case["reason"].as_str().unwrap().is_empty());
+                assert_eq!(case["typed_terminal_domains"], serde_json::json!([]));
+            }
+            _ => panic!("{id}: neither Exact nor conditional Residual"),
+        }
+    }
+    assert_eq!((exact_count, residual_count), (3, 5));
 }
