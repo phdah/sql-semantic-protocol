@@ -2174,7 +2174,171 @@
         "dbt_compiled": "Exact_required",
         "odcs_schema": "Exact_required"
       },
-      "oracle": "DuckDB DECIMAL(10,2) source snapshot and complete partitioned aggregate output, compared exactly in base-10 normalized form"
+      "oracle": "DuckDB DECIMAL(10,2) source snapshot and complete partitioned aggregate output, compared exactly in base-10 normalized form",
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10.25,
+            null,
+            30.75,
+            5.5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "n",
+          "values": [
+            3,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "nn",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            41,
+            11
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 11,
+            "upper": 41,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "mean",
+          "values": [
+            20.5,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 20.5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            10.25,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 10.25,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            30.75,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C189-N2",
@@ -2198,7 +2362,48 @@
         }
       ],
       "proof": "Residual_expected",
-      "reason": "0.10 and 0.20 cannot be represented exactly in a binary floating engine; cross-vendor promotion/rounding session law is unverified"
+      "reason": "0.10 and 0.20 cannot be represented exactly in a binary floating engine; cross-vendor promotion/rounding session law is unverified",
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "typed_terminal_domains": [],
+      "conditional_owner": "TASK-189",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_pending_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      }
     },
     {
       "id": "74-C189-N3",
@@ -2222,7 +2427,48 @@
         }
       ],
       "proof": "Residual_expected",
-      "reason": "source DECIMAL(5,2) contains binary-exact 999.75, but SUM(999.75+999.75) exceeds source precision; vendor result promotion or overflow requires session attestation"
+      "reason": "source DECIMAL(5,2) contains binary-exact 999.75, but SUM(999.75+999.75) exceeds source precision; vendor result promotion or overflow requires session attestation",
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "typed_terminal_domains": [],
+      "conditional_owner": "TASK-189",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_pending_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      }
     },
     {
       "id": "74-C189-P7",
@@ -2256,7 +2502,67 @@
         }
       ],
       "proof": "Exact",
-      "oracle": "DuckDB decimal AVG result expressed exactly as 10.375, not truncated or rounded"
+      "oracle": "DuckDB decimal AVG result expressed exactly as 10.375, not truncated or rounded",
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            10.375
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 10.375,
+            "upper": 10.375,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
     }
   ],
   "conditional_native_execution_scope": "DuckDB native engine execution is CI-attested for six conditional SQL cases with complete source snapshots. Non-DuckDB vendor/session cells remain explicit justified Residual, not assumed native support, until an executable vendor environment is available. Parser boundaries are distinct from native runtime claims."
