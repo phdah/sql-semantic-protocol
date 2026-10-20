@@ -36,7 +36,11 @@ fn every_conditional_parser_cell_matches_the_task_owned_freeze() {
         );
     }
 
-    assert_eq!(observed.len(), 6, "all conditional cases must be classified");
+    assert_eq!(
+        observed.len(),
+        6,
+        "all conditional cases must be classified"
+    );
     assert_eq!(
         observed, frozen,
         "replace unverified parser cells with observed parser boundaries, then review the freeze"
