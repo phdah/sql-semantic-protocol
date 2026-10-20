@@ -1,9 +1,9 @@
 //! TASK-126: direct SQL, compiled dbt SQL and ODCS evidence converge on
-//! the same canonical peer-aware physical source and terminal rank outcomes.
+//! the same closed-world navigation and ROWS-frame source and terminal outcomes.
 
 #[cfg(feature = "odcs")]
 #[test]
-fn all_three_adapters_preserve_frozen_peer_ranks_and_fail_closed_boundaries() {
+fn all_three_adapters_preserve_frozen_window_bags_and_fail_closed_boundaries() {
     use serde_json::{json, Value};
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
@@ -33,7 +33,7 @@ fn all_three_adapters_preserve_frozen_peer_ranks_and_fail_closed_boundaries() {
 apiVersion: v3.2.0
 kind: DataContract
 id: task126window
-name: Ranking canonical source
+name: Window navigation canonical source
 version: 1.0.0
 status: active
 schema:
