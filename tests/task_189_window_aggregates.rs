@@ -351,8 +351,14 @@ fn fractional_avg_is_exact_when_the_decimal_expansion_terminates() {
         panic!("AVG must retain an exact typed finite outcome domain");
     };
     assert_eq!(domain.values().len(), 1);
-    assert_eq!(domain.values()[0].literal_type(), sql_semantic_protocol::LiteralType::Decimal);
-    assert_eq!(domain.values()[0].value(), &LiteralValue::Number("1.5".into()));
+    assert_eq!(
+        domain.values()[0].literal_type(),
+        sql_semantic_protocol::LiteralType::Decimal
+    );
+    assert_eq!(
+        domain.values()[0].value(),
+        &LiteralValue::Number("1.5".into())
+    );
     let expected_duckdb = duckdb_oracle(&serde_json::json!({
         "id": "74-C189-FRACTIONAL",
         "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
