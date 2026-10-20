@@ -50,7 +50,6 @@ enum WindowKind {
     Lead { value: String, offset: usize },
     First { value: String, frame: WindowFrame },
     Last { value: String, frame: WindowFrame },
-    CountRows { frame: WindowFrame },
     Aggregate {
         operation: AggregateKind,
         value: Option<String>,
@@ -338,7 +337,9 @@ fn aggregate_value(
         }
         let number = super::aggregate_bags::numeric(scalar)?
             .ok_or("non-null numeric aggregate argument missing")?;
-        sum = sum.checked_add(number).ok_or("SUM or AVG exact integer overflow")?;
+        if matches!(operation, AggregateKind::Sum | AggregateKind::Avg) {
+            sum = sum.checked_add(number).ok_or("SUM or AVG exact integer overflow")?;
+        }
         min = Some(min.map_or(number, |current| current.min(number)));
         max = Some(max.map_or(number, |current| current.max(number)));
     }
@@ -394,10 +395,6 @@ fn frame_value(
             let range = frame_members(frame, index, rows.len())?;
             (!range.is_empty()).then_some(range.end - 1)
         }
-        WindowKind::CountRows { frame } => {
-            let range = frame_members(frame, index, rows.len())?;
-            return Ok(LiteralValue::Number(range.len().to_string()));
-        }
         WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
     };
     let Some((source_index, _)) = position.and_then(|position| rows.get(position)) else {
@@ -408,7 +405,7 @@ fn frame_value(
         | WindowKind::Lead { value, .. }
         | WindowKind::First { value, .. }
         | WindowKind::Last { value, .. } => value,
-        WindowKind::CountRows { .. } | WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
+        WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
     };
     snapshot.rows()[*source_index]
         .values()
@@ -498,7 +495,7 @@ pub fn physical_finite_window_bag_plan(
                     Ok(kind) => kind,
                     Err(reason) => return residual(reason),
                 };
-                if parsed.sort.is_empty() && !matches!(kind, WindowKind::Aggregate { .. }) {
+                if parsed.sort.is_empty() && !matches!(&kind, WindowKind::Aggregate { .. }) {
                     return residual("navigation requires a deterministic physical ordering");
                 }
                 operations.push(WindowColumn {
