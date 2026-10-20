@@ -30,7 +30,7 @@
   ],
   "source_schema": {
     "s": {
-      "id": "INTEGER NOT NULL",
+      "id": "INTEGER",
       "k": "INTEGER",
       "x": "INTEGER"
     }
@@ -47,7 +47,7 @@
     "empty frame",
     "whole physical identity bag"
   ],
-  "parser_boundary_policy": "mandatory SQL must parse on all 13 exposed dialects or receive explicit conditional disposition before Done",
+  "parser_boundary_policy": "Every frozen SQL/dialect cell has an explicit parsed or parser_boundary expectation, verified before canonical/physical classification; mandatory Exact cases cannot be parser boundaries",
   "conditional_owner": "TASK-126",
   "conditional_disposition": "typed Residual, no native vendor or session assertion",
   "original_parent_ac_map": [
@@ -199,7 +199,22 @@
         "dbt_compiled": "Exact_required",
         "odcs_schema": "Exact_required"
       },
-      "parser_expectation": "parsed_all_13_required"
+      "parser_expectation": "parsed_all_13_required",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-P2",
@@ -320,7 +335,22 @@
         "dbt_compiled": "Exact_required",
         "odcs_schema": "Exact_required"
       },
-      "parser_expectation": "parsed_all_13_required"
+      "parser_expectation": "parsed_all_13_required",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-N1",
@@ -407,7 +437,22 @@
         "dbt_compiled": "Exact_required",
         "odcs_schema": "Exact_required"
       },
-      "parser_expectation": "parsed_all_13_required"
+      "parser_expectation": "parsed_all_13_required",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-C1",
@@ -446,7 +491,22 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-C2",
@@ -485,7 +545,22 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-C3",
@@ -524,7 +599,22 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-C4",
@@ -563,7 +653,22 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     },
     {
       "id": "74-C126-C5",
@@ -602,7 +707,23 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
     }
-  ]
+  ],
+  "freeze_review_note": "Sign-off amendment: explicit 13-dialect parser cells close the conditional parser escape hatch; id physical NOT NULL claim removed because available canonical SQL/dbt/ODCS datatype evidence only attests INTEGER. All source and terminal bags, expected domains and required proof strengths remain unchanged."
 }
