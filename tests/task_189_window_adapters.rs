@@ -18,18 +18,25 @@ fn direct_dbt_and_odcs_preserve_exact_complete_window_aggregate_bags() {
         serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json"))
             .expect("frozen TASK-189 matrix");
     let name = "warehouse.raw.s";
-    let schema = RelationSchema::new(
-        name,
-        [("id", "INTEGER"), ("k", "INTEGER"), ("x", "INTEGER")]
-            .into_iter()
-            .map(|(column, kind)| SchemaColumn::from_sql_type(column, kind, "postgresql").unwrap())
-            .collect(),
-    )
-    .unwrap();
-    let direct_catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
-    let known = RelationCatalog::new(&[name]).unwrap();
-    let odcs = parse_odcs_yaml(
-        r#"
+    let dialect = "postgresql";
+    let parser = dialect_from_name(dialect).unwrap();
+
+    for case in freeze["cases"].as_array().unwrap() {
+        // Conditional DECIMAL evidence needs its real catalog type; otherwise
+        // invalid source values would mask an unproved semantic law.
+        let x_type = case["source_schema"]["x"].as_str().unwrap_or("INTEGER");
+        let schema = RelationSchema::new(
+            name,
+            [("id", "INTEGER"), ("k", "INTEGER"), ("x", x_type)]
+                .into_iter()
+                .map(|(column, kind)| SchemaColumn::from_sql_type(column, kind, dialect).unwrap())
+                .collect(),
+        )
+        .unwrap();
+        let direct_catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+        let known = RelationCatalog::new(&[name]).unwrap();
+        let contract = format!(
+            r#"
 apiVersion: v3.2.0
 kind: DataContract
 id: task189window
@@ -45,22 +52,12 @@ schema:
       - name: k
         physicalType: INTEGER
       - name: x
-        physicalType: INTEGER
-"#,
-        "postgresql",
-        &known,
-    )
-    .expect("source schema evidence");
-    let external_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
-    let dialect = "postgresql";
-    let parser = dialect_from_name(dialect).unwrap();
-
-    for case in freeze["cases"].as_array().unwrap() {
-        if case["proof"] != "Exact" {
-            // Conditional parser/runtime cells are deliberately not certified by
-            // the integer-only mandatory source-bag oracle.
-            continue;
-        }
+        physicalType: {x_type}
+"#
+        );
+        let odcs = parse_odcs_yaml(&contract, dialect, &known)
+            .expect("conditional source schema evidence");
+        let external_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"]
             .as_str()
@@ -147,8 +144,8 @@ schema:
                             .map(|(column, cell)| {
                                 let value = if cell.is_null() {
                                     LiteralValue::Null
-                                } else if let Some(n) = cell.as_i64() {
-                                    LiteralValue::Number(n.to_string())
+                                } else if cell.is_number() {
+                                    LiteralValue::Number(cell.to_string())
                                 } else {
                                     LiteralValue::Text(cell.as_str().unwrap().to_string())
                                 };
