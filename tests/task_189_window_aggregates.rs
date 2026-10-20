@@ -408,7 +408,10 @@ fn integer_sum_requiring_vendor_widening_fails_closed() {
     });
     let engine = duckdb_oracle(&case);
     assert_eq!(
-        engine.iter().map(|row| row.get("total")).collect::<Vec<_>>(),
+        engine
+            .iter()
+            .map(|row| row.get("total"))
+            .collect::<Vec<_>>(),
         vec![
             Some(&LiteralValue::Number("4000000000".into())),
             Some(&LiteralValue::Number("4000000000".into()))
