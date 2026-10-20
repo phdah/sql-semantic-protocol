@@ -1,7 +1,7 @@
 ---
 id: TASK-126
 title: Prove navigation and bounded ROWS frames
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -43,3 +43,7 @@ type: feature
 ## Next
 
 Next: [TASK-189](task-189%20-%20prove-common-aggregate-window-functions.md), only after this child is Done and merged. TASK-127 follows TASK-189.
+
+## Work in progress
+
+Frozen task-owned source and terminal oracles: `docs/task-126-acceptance-freeze.json` (v1). Implementation and CI verification pending. Parent TASK-74 remains open.
