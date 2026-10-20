@@ -1514,7 +1514,30 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "1",
+        "1",
+        "2",
+        "1",
+        "1",
+        "0"
+      ]
     },
     {
       "id": "74-C189-C2",
@@ -1585,7 +1608,30 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "parser_boundary",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "parser_boundary",
+        "redshift": "parser_boundary",
+        "mssql": "parser_boundary",
+        "clickhouse": "parser_boundary",
+        "bigquery": "parser_boundary",
+        "ansi": "parser_boundary",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "2",
+        "2",
+        "2",
+        "2",
+        "2",
+        "0"
+      ]
     },
     {
       "id": "74-C189-C3",
@@ -1656,7 +1702,30 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "10",
+        "10",
+        "40",
+        "5",
+        "10",
+        null
+      ]
     },
     {
       "id": "74-C189-C4",
@@ -1727,7 +1796,35 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_partial_oracle": {
+        "deterministic_rows": {
+          "1": "10",
+          "2": "30",
+          "3": "40",
+          "6": null
+        },
+        "peer_rows_in_ids_4_5": [
+          "5",
+          "10"
+        ],
+        "reason": "SQL ROWS peer identities not determined; values may swap between id 4 and 5"
+      }
     },
     {
       "id": "74-C189-C5",
@@ -1798,7 +1895,28 @@
         "dbt_compiled": "Residual_required",
         "odcs_schema": "Residual_required"
       },
-      "typed_terminal_domains": []
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_partial_oracle": {
+        "ids_1_3_avg_approximate": 1.6666666666666667,
+        "ids_4_5_exact": "5",
+        "id_6": null,
+        "reason": "engine-executed floating AVG is not a portable exact rational proof"
+      }
     },
     {
       "id": "74-C189-C6",
@@ -1874,7 +1992,30 @@
         "id": "INTEGER",
         "k": "INTEGER",
         "x": "DECIMAL(10,2)"
-      }
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "residual_native_vendor_or_session_unattested",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "40.9",
+        "40.9",
+        "40.9",
+        "11",
+        "11",
+        null
+      ]
     }
   ],
   "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects",
@@ -2117,5 +2258,6 @@
       "proof": "Exact",
       "oracle": "DuckDB decimal AVG result expressed exactly as 10.375, not truncated or rounded"
     }
-  ]
+  ],
+  "conditional_native_execution_scope": "DuckDB native engine execution is CI-attested for six conditional SQL cases with complete source snapshots. Non-DuckDB vendor/session cells remain explicit justified Residual, not assumed native support, until an executable vendor environment is available. Parser boundaries are distinct from native runtime claims."
 }
