@@ -10,6 +10,7 @@ use super::rank_bags::{
 };
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
+use crate::data_type::DataType;
 use crate::protocol::{
     ComparisonOperator, Expression, LiteralType, LiteralValue, WindowFrame, WindowFrameBound,
     WindowFrameUnits, WindowFunctionExpression,
@@ -412,9 +413,9 @@ fn window_kind(
     }
 }
 
-// A narrow aggregate QUALIFY law: a projected COUNT window compared with a
-// typed integer constant. Other boolean expressions and aggregate comparisons
-// stay Residual until their NULL and numeric/session laws are certified.
+// A narrow aggregate QUALIFY law: a projected aggregate window compared with
+// a typed integer constant. SQL NULL (including empty SUM/AVG/MIN/MAX) is
+// NOT TRUE, never TRUE. Other Boolean/decimal comparisons stay Residual.
 fn aggregate_qualify_filter(
     query: &QueryStatement,
 ) -> Result<Option<(String, ComparisonOperator, i128)>, &'static str> {
@@ -442,8 +443,12 @@ fn aggregate_qualify_filter(
     let threshold = number
         .parse::<i128>()
         .map_err(|_| "QUALIFY aggregate threshold exceeds signed width")?;
-    if !window.function().name().eq_ignore_ascii_case("count") || window.function().distinct() {
-        return Err("QUALIFY numeric aggregate law is only certified for COUNT");
+    if !matches!(
+        window.function().name().to_ascii_lowercase().as_str(),
+        "count" | "sum" | "avg" | "min" | "max"
+    ) || window.function().distinct()
+    {
+        return Err("QUALIFY aggregate function has no certified comparison law");
     }
     let output = query
         .output()
@@ -856,15 +861,22 @@ pub fn physical_finite_window_bag_plan(
     for (index, row) in snapshot.rows().iter().enumerate() {
         let row_id = format!("{}#{index}", source.name());
         if let Some((column, operator, threshold)) = &qualify {
-            let Some(Some(LiteralValue::Number(number))) =
-                evaluated.get(column).and_then(|values| values.get(index))
+            let Some(Some(value)) = evaluated.get(column).and_then(|values| values.get(index))
             else {
-                return residual("QUALIFY COUNT has no exact integer output");
+                return residual("QUALIFY has no exact aggregate output");
             };
-            let Ok(count) = number.parse::<i128>() else {
-                return residual("QUALIFY COUNT exceeds integer comparison width");
+            // SQL comparisons with NULL are UNKNOWN, hence NOT TRUE in QUALIFY.
+            let survives = match value {
+                LiteralValue::Null => false,
+                LiteralValue::Number(number) => {
+                    let Ok(number) = number.parse::<i128>() else {
+                        return residual("QUALIFY aggregate requires an exact integer comparison");
+                    };
+                    qualifies(number, *operator, *threshold)
+                }
+                _ => return residual("QUALIFY aggregate has no numeric comparison law"),
             };
-            if !qualifies(count, *operator, *threshold) {
+            if !survives {
                 rejected_row_ids.push(row_id);
                 continue;
             }
