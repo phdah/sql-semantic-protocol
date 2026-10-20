@@ -1,7 +1,7 @@
 //! TASK-189: real dbt Core execution, warehouse catalog and complete bag oracle.
 //! Run with `make dbt-e2e` after dbt seeds, run, and docs generate.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
 
@@ -9,7 +9,7 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_dbt_artifacts, parse_dbt_catalog, parse_dbt_manifest, physical_finite_window_bag_plan,
-    LiteralValue, PhysicalFiniteWindowProof, PhysicalWriteRow, PhysicalWriteState,
+    LiteralValue, PhysicalFiniteWindowProof, PhysicalWriteRow, PhysicalWriteState, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 
@@ -179,7 +179,7 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
         assert_eq!(
             actual.2.as_deref().map(canonical),
             expected["x"]
-                .as_f64()
+                .as_number()
                 .map(|number| canonical(&number.to_string()))
         );
         rows.push(
@@ -203,8 +203,45 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
     };
     let wanted = rows_as_strings(&from_json(case));
     assert_eq!(rows_as_strings(&exact.terminal), wanted);
-    assert_eq!(exact.terminal_row_ids.len(), records.len());
+    let source_ids = (0..records.len())
+        .map(|index| format!("{source_name}#{index}"))
+        .collect::<Vec<_>>();
+    assert_eq!(exact.source_row_ids, source_ids);
+    assert_eq!(exact.terminal_row_ids, source_ids);
     assert!(exact.rejected_row_ids.is_empty());
+    for specified in case["typed_terminal_domains"].as_array().unwrap() {
+        let name = specified["column"].as_str().unwrap();
+        let Some(ValueDomain::Set(domain)) = exact.terminal_domains.get(name) else {
+            panic!("{name}: compiled dbt decimal result lacks an exact finite domain");
+        };
+        let expected_values = specified["values"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| {
+                if value.is_null() {
+                    "NULL".to_string()
+                } else {
+                    canonical(&value.to_string())
+                }
+            })
+            .collect::<BTreeSet<_>>();
+        let actual_values = domain
+            .values()
+            .iter()
+            .map(|value| match value.value() {
+                LiteralValue::Null => "NULL".to_string(),
+                LiteralValue::Number(number) => canonical(number),
+                _ => panic!("{name}: decimal domain contains nonnumeric value"),
+            })
+            .collect::<BTreeSet<_>>();
+        assert_eq!(actual_values, expected_values, "{name}: compiled dbt domain");
+        assert_eq!(
+            actual_values.contains("NULL"),
+            specified["contains_null"].as_bool().unwrap(),
+            "{name}: compiled dbt NULL domain"
+        );
+    }
 
     let keys = case["full_terminal_bag"][0]
         .as_object()
