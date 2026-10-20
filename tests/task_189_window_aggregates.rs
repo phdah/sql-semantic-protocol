@@ -187,7 +187,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn complete_portable_partition_running_moving_and_empty_frame_bags_match_duckdb() {
     let matrix = freeze();
-    assert_eq!(matrix["version"], 3);
+    assert_eq!(matrix["version"], 4);
     assert_eq!(matrix["owner"], "TASK-189");
     assert_eq!(
         matrix["fixture_ids"],
@@ -490,8 +490,8 @@ fn precision_conditional_fixtures_are_distinct_from_integer_exact_cases() {
 
     // A DECIMAL precision fixture cannot reuse an INTEGER-typed source.
     assert_eq!(decimals["source_schema"]["x"], "DECIMAL(10,2)");
-    assert_eq!(decimals["source_bag"][0]["x"], serde_json::json!(10.25));
-    assert_eq!(decimals["source_bag"][2]["x"], serde_json::json!(30.75));
+    assert_eq!(decimals["source_bag"][0]["x"], serde_json::json!(10.2));
+    assert_eq!(decimals["source_bag"][2]["x"], serde_json::json!(30.7));
 }
 
 #[test]
@@ -551,6 +551,27 @@ fn mixed_ranking_and_rows_aggregates_reject_ambiguous_peers() {
         "source_bag": [
             {"id": 1, "k": 0, "x": 10},
             {"id": 1, "k": 0, "x": 30}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    assert!(matches!(
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)]),
+        PhysicalFiniteWindowProof::Residual { .. }
+    ));
+}
+
+#[test]
+fn fractional_fifth_is_residual_when_float_engine_cannot_represent_value_exactly() {
+    let case = serde_json::json!({
+        "id": "74-C189-FLOAT-ROUNDING",
+        "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 0},
+            {"id": 2, "k": 0, "x": 1},
+            {"id": 3, "k": 0, "x": 0},
+            {"id": 4, "k": 0, "x": 0},
+            {"id": 5, "k": 0, "x": 0}
         ]
     });
     let bundle = analyze(&case, "duckdb");
