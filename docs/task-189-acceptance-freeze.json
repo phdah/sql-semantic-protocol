@@ -1448,7 +1448,7 @@
     {
       "id": "74-C189-C1",
       "family": "distinct_window",
-      "sql": "SELECT id, COUNT(DISTINCT x) OVER (PARTITION BY k ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n FROM s",
+      "sql": "SELECT id, COUNT(DISTINCT x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n FROM s",
       "source_relation": "s",
       "source_bag": [
         {
@@ -1491,7 +1491,7 @@
         "s#5"
       ],
       "proof": "Residual_expected",
-      "reason": "DISTINCT aggregate window requires a certified frame-distinct execution law",
+      "reason": "DISTINCT frame membership and elimination remain unattested even with deterministic order and explicit NULL ordering",
       "conditional_owner": "TASK-189",
       "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
       "parser_status_by_dialect": {
@@ -1878,5 +1878,5 @@
     }
   ],
   "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects",
-  "conditional_fixture_correction": "v3: C5 uses a genuine repeating 5/3 average; C6 uses a DECIMAL(10,2) physical source and fractional values. v2's INTEGER fixtures duplicated already-supported exact laws and did not justify Residual."
+  "conditional_fixture_correction": "v3: C5 uses a genuine repeating 5/3 average; C6 uses a DECIMAL(10,2) physical source and fractional values. v2's INTEGER fixtures duplicated already-supported exact laws and did not justify Residual. C1 makes NULL ordering explicit so the DISTINCT condition is isolated."
 }
