@@ -5,7 +5,8 @@
 //! window membership only when it has a provably total ordering.
 
 use super::rank_bags::{
-    compare_key, exact_domain, key_value, qualifies, rank_function, rank_keys, RankFunction, RankKeys,
+    compare_key, exact_domain, key_value, qualifies, rank_function, rank_keys, RankFunction,
+    RankKeys,
 };
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
