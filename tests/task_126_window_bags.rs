@@ -143,7 +143,10 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         .iter()
         .map(|row| (row["id"].as_i64(), row["k"].as_i64(), row["x"].as_i64()))
         .collect::<Vec<_>>();
-    assert_eq!(actual_source, expected_source, "full independent DuckDB physical bag");
+    assert_eq!(
+        actual_source, expected_source,
+        "full independent DuckDB physical bag"
+    );
 
     let mut stmt = db.prepare(case["sql"].as_str().unwrap()).unwrap();
     stmt.query_map([], |row| {
@@ -167,7 +170,10 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 fn full_physical_and_terminal_oracles_are_exact_with_nulls_and_empty_frames() {
     let matrix = freeze();
     assert_eq!(matrix["version"], 1);
-    assert_eq!(matrix["fixture_ids"], serde_json::json!(["74-C126-P", "74-C126-N"]));
+    assert_eq!(
+        matrix["fixture_ids"],
+        serde_json::json!(["74-C126-P", "74-C126-N"])
+    );
     for case in matrix["cases"].as_array().unwrap() {
         if case["proof"] != "Exact" {
             continue;
@@ -190,7 +196,11 @@ fn full_physical_and_terminal_oracles_are_exact_with_nulls_and_empty_frames() {
                 .collect::<Vec<_>>(),
             "{id}: no physical source identity lost"
         );
-        assert_eq!(bag(&exact.terminal), bag(&expected(case)), "{id}: canonical terminal");
+        assert_eq!(
+            bag(&exact.terminal),
+            bag(&expected(case)),
+            "{id}: canonical terminal"
+        );
         assert_eq!(
             bag(&duckdb_oracle(case)),
             bag(&expected(case)),
@@ -285,7 +295,10 @@ fn invalid_complete_source_is_impossible_and_missing_source_is_residual() {
     let invalid = PhysicalWriteState::new(
         "s",
         vec![PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Number("2147483648".to_string())),
+            (
+                "id".to_string(),
+                LiteralValue::Number("2147483648".to_string()),
+            ),
             ("k".to_string(), LiteralValue::Number("0".to_string())),
             ("x".to_string(), LiteralValue::Number("1".to_string())),
         ]))
