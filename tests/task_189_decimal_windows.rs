@@ -398,10 +398,13 @@ fn conditional_decimal_native_duckdb_oracles_do_not_overclaim_portable_exactness
             }
             let bundle = analyze(case, dialect);
             let target = bundle.layers().last().unwrap().id();
-            assert!(matches!(
-                physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
-                PhysicalFiniteWindowProof::Residual { .. }
-            ), "{id}/{dialect}: native DuckDB result cannot prove vendor portability");
+            assert!(
+                matches!(
+                    physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
+                    PhysicalFiniteWindowProof::Residual { .. }
+                ),
+                "{id}/{dialect}: native DuckDB result cannot prove vendor portability"
+            );
         }
         executed += 1;
     }
