@@ -22,7 +22,12 @@ binary-exact and fit bounded declared precision, preventing an unreviewed
 engine's floating conversion from making a false exact decimal claim.
 Source rounding, nonterminating fractional AVG, overflowing SUM or uncertain
 promotion returns explicit `Residual`; schema contradictions remain
-`Impossible`. DuckDB native execution for conditional DISTINCT, FILTER,
+`Impossible`. Integer-typed AVG is exact only for integral means within
+attested arithmetic width: SQL Server can return an integer for AVG(INT),
+whereas DuckDB returns a fractional result. A decimal expansion terminating
+in base ten alone is not portable proof of an integer-input fractional AVG.
+Integer SUM/AVG accumulators additionally fail closed when a result exceeds
+the source's declared signed width or portable numeric magnitude. DuckDB native execution for conditional DISTINCT, FILTER,
 implicit frames, peer ties and uncertain numeric cases is separately
 attested in the TASK-189 native oracle matrix. It does not certify other
 native vendor or session semantics.
