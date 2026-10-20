@@ -62,12 +62,15 @@ schema:
             .unwrap()
             .replace("FROM s", "FROM warehouse.raw.s");
         let parsed = Parser::parse_sql(parser.as_ref(), &sql);
-        if parsed.is_err() {
-            assert!(
-                case["parser_condition"].is_string(),
-                "{id}: mandatory SQL is not parseable: {parsed:?}"
-            );
-            continue;
+        match case["parser_status_by_dialect"][dialect].as_str() {
+            Some("parsed") => {
+                assert!(parsed.is_ok(), "{id}/{dialect}: frozen parser cell failed: {parsed:?}");
+            }
+            Some("parser_boundary") if case["proof"] == "Residual" => {
+                assert!(parsed.is_err(), "{id}/{dialect}: parser boundary changed");
+                continue;
+            }
+            disposition => panic!("{id}/{dialect}: invalid parser cell {disposition:?}"),
         }
         let input = SqlInput::inline(&sql);
         let direct = analyze_configured_inputs_with_catalog(
