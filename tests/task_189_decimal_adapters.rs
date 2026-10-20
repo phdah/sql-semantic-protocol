@@ -39,31 +39,51 @@ schema:
 "#,
         sql_dialect,
         &external_names,
-    ).unwrap();
+    )
+    .unwrap();
     let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
 
-    for case in freeze["numeric_oracle_cases"].as_array().unwrap().iter()
+    for case in freeze["numeric_oracle_cases"]
+        .as_array()
+        .unwrap()
+        .iter()
         .filter(|case| case["proof"] == "Exact")
     {
         let id = case["id"].as_str().unwrap();
-        let sql = case["sql"].as_str().unwrap().replace("FROM s", "FROM warehouse.raw.s");
+        let sql = case["sql"]
+            .as_str()
+            .unwrap()
+            .replace("FROM s", "FROM warehouse.raw.s");
         let input = SqlInput::inline(&sql);
         let source_schema = RelationSchema::new(
             source_name,
             [("id", "INTEGER"), ("k", "INTEGER"), ("x", "DECIMAL(10,2)")]
-                .into_iter().map(|(name, ty)| {
-                    SchemaColumn::from_sql_type(name, ty, sql_dialect).unwrap()
-                }).collect(),
-        ).unwrap();
+                .into_iter()
+                .map(|(name, ty)| SchemaColumn::from_sql_type(name, ty, sql_dialect).unwrap())
+                .collect(),
+        )
+        .unwrap();
         let direct_catalog = RelationCatalog::from_schemas(&[source_schema]).unwrap();
         let direct = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, sql_dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                sql_dialect,
+                parser.as_ref(),
+            )],
             &direct_catalog,
-        ).unwrap();
+        )
+        .unwrap();
         let external = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, sql_dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                sql_dialect,
+                parser.as_ref(),
+            )],
             &odcs_catalog,
-        ).unwrap();
+        )
+        .unwrap();
         let manifest = json!({
             "metadata": {
                 "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -93,45 +113,68 @@ schema:
             }
         });
         let dbt_manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
-        let dbt = analyze_dbt_manifest_with_schemas(
-            &dbt_manifest, sql_dialect, parser.as_ref()
-        ).unwrap();
+        let dbt =
+            analyze_dbt_manifest_with_schemas(&dbt_manifest, sql_dialect, parser.as_ref()).unwrap();
         let physical = PhysicalWriteState::new(
             source_name,
-            case["source_bag"].as_array().unwrap().iter().map(|row| {
-                PhysicalWriteRow::new(
-                    row.as_object().unwrap().iter().map(|(name, val)| {
-                        let literal = if val.is_null() {
-                            LiteralValue::Null
-                        } else {
-                            LiteralValue::Number(val.to_string())
-                        };
-                        (name.clone(), literal)
-                    }).collect::<BTreeMap<_, _>>(),
-                ).unwrap()
-            }).collect(),
-        ).unwrap();
+            case["source_bag"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| {
+                    PhysicalWriteRow::new(
+                        row.as_object()
+                            .unwrap()
+                            .iter()
+                            .map(|(name, val)| {
+                                let literal = if val.is_null() {
+                                    LiteralValue::Null
+                                } else {
+                                    LiteralValue::Number(val.to_string())
+                                };
+                                (name.clone(), literal)
+                            })
+                            .collect::<BTreeMap<_, _>>(),
+                    )
+                    .unwrap()
+                })
+                .collect(),
+        )
+        .unwrap();
         let mut results = Vec::new();
         for (adapter, bundle) in [
             ("direct_sql", direct),
             ("dbt_compiled", dbt),
-            ("odcs_schema", external)
+            ("odcs_schema", external),
         ] {
-            let layer = bundle.layers().iter()
+            let layer = bundle
+                .layers()
+                .iter()
                 .find(|layer| layer.consumes().iter().any(|input| input == source_name))
                 .unwrap_or_else(|| panic!("{id}/{adapter}: no source-backed layer"));
             let proof = physical_finite_window_bag_plan(
-                &bundle, layer.id(), std::slice::from_ref(&physical)
+                &bundle,
+                layer.id(),
+                std::slice::from_ref(&physical),
             );
             let PhysicalFiniteWindowProof::Exact(exact) = proof else {
                 panic!("{id}/{adapter}: adapter lost decimal physical proof: {proof:?}");
             };
-            assert_eq!(case["expected_adapter_cells"][adapter], "Exact_required", "{id}");
+            assert_eq!(
+                case["expected_adapter_cells"][adapter], "Exact_required",
+                "{id}"
+            );
             assert_eq!(exact.source, source_name);
-            results.push(format!("{:?}", (
-                exact.source_row_ids, exact.terminal_row_ids, exact.rejected_row_ids,
-                exact.terminal, exact.terminal_domains
-            )));
+            results.push(format!(
+                "{:?}",
+                (
+                    exact.source_row_ids,
+                    exact.terminal_row_ids,
+                    exact.rejected_row_ids,
+                    exact.terminal,
+                    exact.terminal_domains
+                )
+            ));
         }
         assert_eq!(results.len(), 3, "{id}");
         assert_eq!(results[0], results[1], "{id}: compiled dbt decimal parity");
