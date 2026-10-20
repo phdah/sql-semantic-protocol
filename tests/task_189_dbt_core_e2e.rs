@@ -119,9 +119,13 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
     let manifest = parse_dbt_manifest(&isolated_manifest.to_string()).unwrap();
     let catalog = parse_dbt_catalog(&isolated_catalog.to_string()).unwrap();
     let dialect = dialect_from_str(manifest.adapter_type()).unwrap();
-    let bundle =
-        analyze_dbt_artifacts(&manifest, &catalog, manifest.adapter_type(), dialect.as_ref())
-            .unwrap();
+    let bundle = analyze_dbt_artifacts(
+        &manifest,
+        &catalog,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .unwrap();
     let source_name = bundle
         .source_schemas()
         .iter()
