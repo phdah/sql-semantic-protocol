@@ -248,6 +248,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "intersected_order_ids",
         "lateral_orders",
         "named_window_orders",
+        "task189_decimal_windows",
         "ordered_limited_union",
         "ranked_orders",
         "rollup_orders",
