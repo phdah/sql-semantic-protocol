@@ -63,10 +63,17 @@ fn source(case: &Value) -> PhysicalWriteState {
 fn catalog(case: &Value) -> RelationCatalog {
     let schema = RelationSchema::new(
         "s",
-        [("id", "INTEGER"), ("k", "INTEGER"), ("x", case["source_schema"]["x"].as_str().unwrap_or("INTEGER"))]
-            .into_iter()
-            .map(|(name, kind)| SchemaColumn::from_sql_type(name, kind, "postgresql").unwrap())
-            .collect(),
+        [
+            ("id", "INTEGER"),
+            ("k", "INTEGER"),
+            (
+                "x",
+                case["source_schema"]["x"].as_str().unwrap_or("INTEGER"),
+            ),
+        ]
+        .into_iter()
+        .map(|(name, kind)| SchemaColumn::from_sql_type(name, kind, "postgresql").unwrap())
+        .collect(),
     )
     .unwrap();
     RelationCatalog::from_schemas(&[schema]).unwrap()
@@ -449,17 +456,29 @@ fn conditional_windows_are_never_mistaken_for_portable_exact_bags() {
             );
             exercised.insert(format!("{id}/{dialect}"));
         }
-        assert!(parsed_dialects > 0, "{id}: no parser can exercise this conditional fixture");
+        assert!(
+            parsed_dialects > 0,
+            "{id}: no parser can exercise this conditional fixture"
+        );
     }
-    assert!(exercised.len() >= 6, "all six conditional laws must be exercised");
+    assert!(
+        exercised.len() >= 6,
+        "all six conditional laws must be exercised"
+    );
 }
 
 #[test]
 fn precision_conditional_fixtures_are_distinct_from_integer_exact_cases() {
     let matrix = freeze();
     let cases = matrix["cases"].as_array().unwrap();
-    let repeating = cases.iter().find(|case| case["id"] == "74-C189-C5").unwrap();
-    let decimals = cases.iter().find(|case| case["id"] == "74-C189-C6").unwrap();
+    let repeating = cases
+        .iter()
+        .find(|case| case["id"] == "74-C189-C5")
+        .unwrap();
+    let decimals = cases
+        .iter()
+        .find(|case| case["id"] == "74-C189-C6")
+        .unwrap();
 
     // The source's first partition has AVG=(1+2+2)/3, a repeating
     // fraction. v2 accidentally used only integral means.
