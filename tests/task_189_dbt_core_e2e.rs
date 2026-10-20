@@ -94,16 +94,34 @@ fn real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags() {
     let source_relation = source["relation_name"].as_str().unwrap();
     assert_eq!(source["columns"]["x"]["data_type"], "DECIMAL(10,2)");
 
-    let manifest = parse_dbt_manifest(&manifest_text).unwrap();
-    let catalog = parse_dbt_catalog(&catalog_text).unwrap();
+    // Only the tested source and model belong in this proof boundary.
+    // The full dbt project contains independent constrained sources; proving
+    // their omitted complete populations would be unsound. Retain real
+    // generated SQL and warehouse-introspected catalog facts for this subgraph.
+    let mut isolated_manifest = manifest_json.clone();
+    isolated_manifest["nodes"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id == model_id);
+    isolated_manifest["sources"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id.ends_with(".task189_decimal_source"));
+    let mut isolated_catalog: Value = serde_json::from_str(&catalog_text).unwrap();
+    isolated_catalog["nodes"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id == model_id);
+    isolated_catalog["sources"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id.ends_with(".task189_decimal_source"));
+    let manifest = parse_dbt_manifest(&isolated_manifest.to_string()).unwrap();
+    let catalog = parse_dbt_catalog(&isolated_catalog.to_string()).unwrap();
     let dialect = dialect_from_str(manifest.adapter_type()).unwrap();
-    let bundle = analyze_dbt_artifacts(
-        &manifest,
-        &catalog,
-        manifest.adapter_type(),
-        dialect.as_ref(),
-    )
-    .unwrap();
+    let bundle =
+        analyze_dbt_artifacts(&manifest, &catalog, manifest.adapter_type(), dialect.as_ref())
+            .unwrap();
     let source_name = bundle
         .source_schemas()
         .iter()
