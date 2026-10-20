@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-189",
   "parent": "TASK-74",
   "frozen_at": "2026-10-20",
@@ -1809,7 +1809,7 @@
         {
           "id": 1,
           "k": 0,
-          "x": 10.25
+          "x": 10.2
         },
         {
           "id": 2,
@@ -1819,7 +1819,7 @@
         {
           "id": 3,
           "k": 0,
-          "x": 30.75
+          "x": 30.7
         },
         {
           "id": 4,
@@ -1846,7 +1846,7 @@
         "s#5"
       ],
       "proof": "Residual_expected",
-      "reason": "DECIMAL(10,2) arithmetic, result scale, promotion and precision/overflow are not yet attested by a physical engine oracle",
+      "reason": "DECIMAL(10,2) fractional 10.20 and 30.70 inputs cannot be certified across decimal and floating numeric engines without native/session arithmetic attestation",
       "conditional_owner": "TASK-189",
       "release_disposition": "Residual until DECIMAL result type, scale, overflow and engine/session policy are independently attested; no integer-schema proxy",
       "parser_status_by_dialect": {
@@ -1885,5 +1885,237 @@
     "parsed": 71,
     "parser_boundaries": 7,
     "limitation": "sqlparser AST acceptance is not evidence of native engine execution or session numeric laws"
-  }
+  },
+  "numeric_acceptance_revision": "v4 extends the v3 frozen matrix with exact independently executed fixed-point DECIMAL window oracles and binary-rounding/overflow residual counterexamples. Conditional C6 now uses 10.20 and 30.70 to exercise actual non-binary-exact decimal arithmetic; v3 C6 10.25 and 30.75 were precisely representable.",
+  "numeric_oracle_cases": [
+    {
+      "id": "74-C189-P6",
+      "family": "decimal_partition",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k) AS n, COUNT(x) OVER (PARTITION BY k) AS nn, SUM(x) OVER (PARTITION BY k) AS total, AVG(x) OVER (PARTITION BY k) AS mean, MIN(x) OVER (PARTITION BY k) AS min_x, MAX(x) OVER (PARTITION BY k) AS max_x FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        }
+      ],
+      "typed_decimal_domains": {
+        "x": [
+          "10.25",
+          "30.75",
+          "5.50",
+          null
+        ],
+        "total": [
+          "41.00",
+          "11.00"
+        ],
+        "mean": [
+          "20.50",
+          "5.50"
+        ],
+        "min_x": [
+          "10.25",
+          "5.50"
+        ],
+        "max_x": [
+          "30.75",
+          "5.50"
+        ]
+      },
+      "proof": "Exact",
+      "required_dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "DuckDB DECIMAL(10,2) source snapshot and complete partitioned aggregate output, compared exactly in base-10 normalized form"
+    },
+    {
+      "id": "74-C189-N2",
+      "family": "decimal_unattested_rounding",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 0.1
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 0.2
+        }
+      ],
+      "proof": "Residual_expected",
+      "reason": "0.10 and 0.20 cannot be represented exactly in a binary floating engine; cross-vendor promotion/rounding session law is unverified"
+    },
+    {
+      "id": "74-C189-N3",
+      "family": "decimal_sum_precision_guard",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(5,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 999.99
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 999.99
+        }
+      ],
+      "proof": "Residual_expected",
+      "reason": "source DECIMAL(5,2) is valid but SUM exceeds source precision; vendor output promotion/overflow is unknown"
+    },
+    {
+      "id": "74-C189-P7",
+      "family": "decimal_fractional_avg",
+      "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10.5
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "mean": 10.375
+        },
+        {
+          "id": 2,
+          "mean": 10.375
+        }
+      ],
+      "proof": "Exact",
+      "oracle": "DuckDB decimal AVG result expressed exactly as 10.375, not truncated or rounded"
+    }
+  ]
 }
