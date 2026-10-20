@@ -64,7 +64,10 @@ schema:
         let parsed = Parser::parse_sql(parser.as_ref(), &sql);
         match case["parser_status_by_dialect"][dialect].as_str() {
             Some("parsed") => {
-                assert!(parsed.is_ok(), "{id}/{dialect}: frozen parser cell failed: {parsed:?}");
+                assert!(
+                    parsed.is_ok(),
+                    "{id}/{dialect}: frozen parser cell failed: {parsed:?}"
+                );
             }
             Some("parser_boundary") if case["proof"] == "Residual" => {
                 assert!(parsed.is_err(), "{id}/{dialect}: parser boundary changed");
