@@ -494,7 +494,6 @@ fn precision_conditional_fixtures_are_distinct_from_integer_exact_cases() {
     assert_eq!(decimals["source_bag"][2]["x"], serde_json::json!(30.75));
 }
 
-
 #[test]
 fn ranking_and_navigation_compose_with_exact_aggregate_rows_and_domains() {
     // TASK-189 AC #5: preserve the complete source and DuckDB terminal bags.
@@ -530,10 +529,14 @@ fn ranking_and_navigation_compose_with_exact_aggregate_rows_and_domains() {
         let Some(ValueDomain::Set(domain)) = exact.terminal_domains.get(column) else {
             panic!("missing exact physical domain for {column}");
         };
-        let actual = domain.values().iter()
+        let actual = domain
+            .values()
+            .iter()
             .map(|item| format!("{:?}", item.value()))
             .collect::<BTreeSet<_>>();
-        let expected_values = exact.terminal.iter()
+        let expected_values = exact
+            .terminal
+            .iter()
             .map(|row| format!("{:?}", row.get(column).unwrap()))
             .collect::<BTreeSet<_>>();
         assert_eq!(actual, expected_values, "{column} exact finite domain");
