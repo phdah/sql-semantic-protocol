@@ -17,6 +17,27 @@
     "verification_status": "not_started",
     "release_approved": false
   },
+  "task_126_navigation_acceptance": {
+    "owner": "TASK-126",
+    "parent": "TASK-74",
+    "status": "frozen_in_progress_unverified",
+    "acceptance_freeze": "docs/task-126-acceptance-freeze.json",
+    "fixture_ids": [
+      "74-C126-P",
+      "74-C126-N"
+    ],
+    "mandatory_complete_bag_cases": 3,
+    "conditional_residual_cases": 5,
+    "required_dialects": 13,
+    "adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "canonical_owner": "src/physical_realization/window_bags.rs",
+    "release_approved": false,
+    "verification_status": "pending_impl_and_ci"
+  },
   "task_125_peer_rank_acceptance": {
     "owner": "TASK-125",
     "parent": "TASK-74",
