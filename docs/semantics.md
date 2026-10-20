@@ -2,6 +2,31 @@
 
 Understand how SQL and metadata become normalized, deterministic protocol outcomes. For the normative JSON shape, see [the protocol contract](protocol.md). For runnable commands, see [CLI usage](cli.md).
 
+
+### Fixed-point physical aggregate window proofs (TASK-189)
+
+The physical closed-world evaluator accepts independently validated source bags
+with complete stable identities. For `COUNT(*)`, `COUNT(column)`, `SUM`,
+`AVG`, `MIN` and `MAX`, deterministic `ROWS` members and complete unordered
+partitions yield finite terminal value sets, including SQL NULL and duplicate
+multiplicity. An integer `QUALIFY` comparison against a projected aggregate
+window records surviving identities and separate SQL NOT TRUE identities;
+an all-NULL SUM/AVG/MIN/MAX result is SQL UNKNOWN in ordinary comparisons
+and therefore rejected. On uniquely ordered partitions, mixed ranking,
+navigation and aggregate projections share the same source-backed membership.
+
+Exact DECIMAL source aggregates use attested `DECIMAL(p,s)` storage and
+checked `i128` scaled integers, including terminating fractional AVG.
+The proof only returns `Exact` when input and output magnitudes are
+binary-exact and fit bounded declared precision, preventing an unreviewed
+engine's floating conversion from making a false exact decimal claim.
+Source rounding, nonterminating fractional AVG, overflowing SUM or uncertain
+promotion returns explicit `Residual`; schema contradictions remain
+`Impossible`. DuckDB native execution for conditional DISTINCT, FILTER,
+implicit frames, peer ties and uncertain numeric cases is separately
+attested in the TASK-189 native oracle matrix. It does not certify other
+native vendor or session semantics.
+
 ## Protocol contract
 
 The Cargo package version is the single active protocol version emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
