@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "created": "2026-10-17",
-  "purpose": "Finite child queues; parents retain all original acceptance criteria and signoff gates. Child tasks are not Done until their own frozen executable matrix and CI are verified.",
+  "purpose": "Finite child queues; parents retain all original acceptance criteria and signoff gates. Child tasks are not Done until their own frozen executable matrix and CI are verified. TASK-189 extends TASK-74's original four-child queue with common aggregate window proofs, before TASK-127.",
   "scope": "All unfinished release-blocking implementation parents TASK-71..90, excluding completed TASK-79; TASK-91 is a release gate and TASK-92 is post-v3.",
   "start_child_id": 109,
   "parents": [
@@ -373,6 +373,26 @@
             "74-C126-P",
             "74-C126-N"
           ]
+        },
+        {
+          "title": "Prove common aggregate window functions and deterministic ROWS frames",
+          "variants": "COUNT(*), COUNT(expr), SUM, AVG, MIN, MAX OVER; partition-only, running and bounded ROWS; NULL, duplicates, empty frames; conditional DISTINCT/FILTER",
+          "oracle": "ordered values [10,NULL,30] => running SUM [10,10,40], AVG [10,10,20], COUNT(*) [1,2,3], COUNT(expr) [1,1,2], MIN [10,10,10], MAX [10,10,30]; empty forward frame COUNT 0 vs other aggregates NULL",
+          "boundary": "Require exact numeric type and complete deterministic ROWS membership; implicit RANGE/default order, DISTINCT/FILTER and engine precision get conditional typed Residual with named owner TASK-189; advanced frames remain TASK-128",
+          "original_ac": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "id": 189,
+          "fixture_ids": [
+            "74-C189-P",
+            "74-C189-N"
+          ],
+          "dependency": 126,
+          "next_child": 127
         },
         {
           "title": "Compose QUALIFY and upstream grouped or joined row shaping",
@@ -1593,5 +1613,6 @@
       ]
     }
   ],
-  "next_unallocated_child_id": 189
+  "next_unallocated_child_id": 189,
+  "updated": "2026-10-20"
 }
