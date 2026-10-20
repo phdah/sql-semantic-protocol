@@ -1,0 +1,608 @@
+{
+  "version": 1,
+  "owner": "TASK-126",
+  "parent": "TASK-74",
+  "frozen_at": "2026-10-20",
+  "fixture_ids": [
+    "74-C126-P",
+    "74-C126-N"
+  ],
+  "sources": "canonical SQL query plus authoritative physical schema",
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "source_schema": {
+    "s": {
+      "id": "INTEGER NOT NULL",
+      "k": "INTEGER",
+      "x": "INTEGER"
+    }
+  },
+  "mandatory_semantics": [
+    "LAG",
+    "LEAD",
+    "FIRST_VALUE",
+    "LAST_VALUE",
+    "ROWS 1 PRECEDING CURRENT ROW",
+    "ROWS 1 FOLLOWING 1 FOLLOWING",
+    "SQL NULL",
+    "duplicate values",
+    "empty frame",
+    "whole physical identity bag"
+  ],
+  "parser_boundary_policy": "mandatory SQL must parse on all 13 exposed dialects or receive explicit conditional disposition before Done",
+  "conditional_owner": "TASK-126",
+  "conditional_disposition": "typed Residual, no native vendor or session assertion",
+  "original_parent_ac_map": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "oracle": {
+    "engine": "DuckDB",
+    "comparison": "full physical source row bag and terminal multiset",
+    "numeric_evidence": "signed 32-bit integers, inclusive singleton bounds",
+    "negative_evidence": "empty forward frame yields SQL NULL, invalid signed integer source yields Impossible"
+  },
+  "cases": [
+    {
+      "id": "74-C126-P1",
+      "family": "navigation_null",
+      "sql": "SELECT id, k, x, LAG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS prev, LEAD(x) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS next FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "prev": null,
+          "next": null
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "prev": 10,
+          "next": 30
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "prev": null,
+          "next": null
+        }
+      ],
+      "proof": "Exact",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "k",
+          "values": [
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "next",
+          "values": [
+            null,
+            30
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 30,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "prev",
+          "values": [
+            null,
+            10
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "parser_expectation": "parsed_all_13_required"
+    },
+    {
+      "id": "74-C126-P2",
+      "family": "bounded_rows",
+      "sql": "SELECT id, FIRST_VALUE(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS first, LAST_VALUE(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS last, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS n FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "first": 10,
+          "last": 10,
+          "n": 1
+        },
+        {
+          "id": 2,
+          "first": 10,
+          "last": null,
+          "n": 2
+        },
+        {
+          "id": 3,
+          "first": null,
+          "last": 30,
+          "n": 2
+        }
+      ],
+      "proof": "Exact",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "first",
+          "values": [
+            10,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "last",
+          "values": [
+            10,
+            null,
+            30
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "parser_expectation": "parsed_all_13_required"
+    },
+    {
+      "id": "74-C126-N1",
+      "family": "forward_empty_and_duplicates",
+      "sql": "SELECT id, FIRST_VALUE(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS f FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": null
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "f": 10
+        },
+        {
+          "id": 2,
+          "f": null
+        },
+        {
+          "id": 3,
+          "f": null
+        }
+      ],
+      "proof": "Exact",
+      "negative_oracle": "last row has no following frame member; f is NULL, no fabricated row",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "f",
+          "values": [
+            10,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "parser_expectation": "parsed_all_13_required"
+    },
+    {
+      "id": "74-C126-C1",
+      "family": "peer_order_ambiguity",
+      "sql": "SELECT id, LAG(x) OVER (PARTITION BY k ORDER BY x NULLS LAST) AS prev FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": null
+        }
+      ],
+      "proof": "Residual",
+      "reason": "window ORDER BY has equal peers without certified row identity",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+    },
+    {
+      "id": "74-C126-C2",
+      "family": "implicit_null_order",
+      "sql": "SELECT id, LEAD(x) OVER (PARTITION BY k ORDER BY x) AS nxt FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "proof": "Residual",
+      "reason": "implicit NULL ordering depends on engine/session",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+    },
+    {
+      "id": "74-C126-C3",
+      "family": "range_frame",
+      "sql": "SELECT id, FIRST_VALUE(x) OVER (PARTITION BY k ORDER BY id NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS first FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "proof": "Residual",
+      "reason": "RANGE and GROUPS frames belong to TASK-128",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+    },
+    {
+      "id": "74-C126-C4",
+      "family": "implicit_frame",
+      "sql": "SELECT id, LAST_VALUE(x) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS last FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "proof": "Residual",
+      "reason": "default ordered frame is RANGE not proven ROWS",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+    },
+    {
+      "id": "74-C126-C5",
+      "family": "nondeterministic_offset",
+      "sql": "SELECT id, LAG(x, x) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS prev FROM s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        }
+      ],
+      "proof": "Residual",
+      "reason": "offset is row-dependent and cannot be proven static",
+      "source_relation": "s",
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "physical_positive_ids": [],
+      "physical_not_true_ids": [],
+      "typed_terminal_domains": [],
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "parser_expectation": "conditional_parser_boundary_requires_explicit_test"
+    }
+  ]
+}
