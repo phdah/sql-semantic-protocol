@@ -46,10 +46,22 @@ fn residual(reason: impl Into<String>) -> PhysicalFiniteWindowProof {
 
 #[derive(Debug, Clone)]
 enum WindowKind {
-    Lag { value: String, offset: usize },
-    Lead { value: String, offset: usize },
-    First { value: String, frame: WindowFrame },
-    Last { value: String, frame: WindowFrame },
+    Lag {
+        value: String,
+        offset: usize,
+    },
+    Lead {
+        value: String,
+        offset: usize,
+    },
+    First {
+        value: String,
+        frame: WindowFrame,
+    },
+    Last {
+        value: String,
+        frame: WindowFrame,
+    },
     Aggregate {
         operation: AggregateKind,
         value: Option<String>,
@@ -170,8 +182,14 @@ fn aggregate_kind(
         AggregateKind::CountAll => None,
         _ => Some(direct_source_column(argument, source, schema)?),
     };
-    if !matches!(operation, AggregateKind::CountAll | AggregateKind::CountExpr) {
-        let Some(column) = value.as_deref().and_then(|name| schema.columns().iter().find(|c| c.name() == name)) else {
+    if !matches!(
+        operation,
+        AggregateKind::CountAll | AggregateKind::CountExpr
+    ) {
+        let Some(column) = value
+            .as_deref()
+            .and_then(|name| schema.columns().iter().find(|c| c.name() == name))
+        else {
             return Err("window aggregate argument has no authoritative datatype");
         };
         if !super::aggregate_bags::signed_integer(column.data_type()) {
@@ -291,16 +309,23 @@ fn exact_average(sum: i128, count: usize) -> Result<LiteralValue, &'static str> 
         if places >= 18 {
             return Err("AVG requires unproven repeating fraction or numeric precision");
         }
-        remainder = remainder.checked_mul(10).ok_or("AVG exceeds exact numeric width")?;
+        remainder = remainder
+            .checked_mul(10)
+            .ok_or("AVG exceeds exact numeric width")?;
         let digit = remainder / count;
-        digits.push(char::from(b'0' + u8::try_from(digit.abs()).map_err(|_| "invalid AVG digit")?));
+        digits.push(char::from(
+            b'0' + u8::try_from(digit.abs()).map_err(|_| "invalid AVG digit")?,
+        ));
         remainder %= count;
         places += 1;
     }
     // A signed division truncates toward zero. Preserve negative fractions
     // including -0.x without using lossy floating-point arithmetic.
     let sign = if sum < 0 { "-" } else { "" };
-    Ok(LiteralValue::Number(format!("{sign}{}.{digits}", quotient.abs())))
+    Ok(LiteralValue::Number(format!(
+        "{sign}{}.{digits}",
+        quotient.abs()
+    )))
 }
 
 fn aggregate_value(
@@ -325,7 +350,9 @@ fn aggregate_value(
     let mut max: Option<i128> = None;
     for position in indices {
         let (source_index, _) = rows.get(position).ok_or("missing aggregate frame row")?;
-        let scalar = snapshot.rows().get(*source_index)
+        let scalar = snapshot
+            .rows()
+            .get(*source_index)
             .and_then(|row| row.values().get(column))
             .ok_or("missing aggregate source column")?;
         if matches!(scalar, LiteralValue::Null) {
@@ -338,18 +365,25 @@ fn aggregate_value(
         let number = super::aggregate_bags::numeric(scalar)?
             .ok_or("non-null numeric aggregate argument missing")?;
         if matches!(operation, AggregateKind::Sum | AggregateKind::Avg) {
-            sum = sum.checked_add(number).ok_or("SUM or AVG exact integer overflow")?;
+            sum = sum
+                .checked_add(number)
+                .ok_or("SUM or AVG exact integer overflow")?;
         }
         min = Some(min.map_or(number, |current| current.min(number)));
         max = Some(max.map_or(number, |current| current.max(number)));
     }
     match operation {
-        AggregateKind::CountAll | AggregateKind::CountExpr =>
-            Ok(LiteralValue::Number(count.to_string())),
+        AggregateKind::CountAll | AggregateKind::CountExpr => {
+            Ok(LiteralValue::Number(count.to_string()))
+        }
         AggregateKind::Sum if count > 0 => Ok(LiteralValue::Number(sum.to_string())),
         AggregateKind::Avg => exact_average(sum, count),
-        AggregateKind::Min => Ok(min.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
-        AggregateKind::Max => Ok(max.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
+        AggregateKind::Min => {
+            Ok(min.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())))
+        }
+        AggregateKind::Max => {
+            Ok(max.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())))
+        }
         AggregateKind::Sum => Ok(LiteralValue::Null),
     }
 }
@@ -365,14 +399,20 @@ fn window_keys(
     let mut partition = Vec::new();
     for item in window.window().partition_by() {
         let column = direct_source_column(item, source, schema)?;
-        let datatype = schema.columns().iter().find(|c| c.name() == column)
+        let datatype = schema
+            .columns()
+            .iter()
+            .find(|c| c.name() == column)
             .ok_or("window partition key missing datatype")?;
         if !super::aggregate_bags::signed_integer(datatype.data_type()) {
             return Err("window partition key lacks exact integer equality");
         }
         partition.push(column);
     }
-    Ok(RankKeys { partition, sort: Vec::new() })
+    Ok(RankKeys {
+        partition,
+        sort: Vec::new(),
+    })
 }
 
 fn frame_value(
@@ -381,8 +421,20 @@ fn frame_value(
     index: usize,
     snapshot: &PhysicalWriteState,
 ) -> Result<LiteralValue, &'static str> {
-    if let WindowKind::Aggregate { operation, value, frame } = kind {
-        return aggregate_value(*operation, value.as_deref(), frame.as_ref(), rows, index, snapshot);
+    if let WindowKind::Aggregate {
+        operation,
+        value,
+        frame,
+    } = kind
+    {
+        return aggregate_value(
+            *operation,
+            value.as_deref(),
+            frame.as_ref(),
+            rows,
+            index,
+            snapshot,
+        );
     }
     let position = match kind {
         WindowKind::Lag { offset, .. } => index.checked_sub(*offset),
@@ -490,12 +542,13 @@ pub fn physical_finite_window_bag_plan(
                 if keys.as_ref().is_some_and(|existing| existing != &parsed) {
                     return residual("window expressions use incompatible partition or order keys");
                 }
+                let unordered = parsed.sort.is_empty();
                 keys = Some(parsed);
                 let kind = match window_kind(window, source, schema) {
                     Ok(kind) => kind,
                     Err(reason) => return residual(reason),
                 };
-                if parsed.sort.is_empty() && !matches!(&kind, WindowKind::Aggregate { .. }) {
+                if unordered && !matches!(&kind, WindowKind::Aggregate { .. }) {
                     return residual("navigation requires a deterministic physical ordering");
                 }
                 operations.push(WindowColumn {
