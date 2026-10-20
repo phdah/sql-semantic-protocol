@@ -888,13 +888,31 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "fixtures/dbt_core_project/expected_final_outcomes.json"
     ))
     .expect("expected final-outcome fixture should be valid JSON");
-    // Keep the established golden immutable. TASK-189's newly executed
-    // decimal model is independently certified by task_189_dbt_core_e2e.
-    let mut actual_final_outcomes = final_outcome_snapshot(&protocol);
-    actual_final_outcomes
-        .as_array_mut()
+    // The legacy golden uses stable canonical layer IDs. Re-analyze the
+    // original dbt inventory without the independently certified TASK-189
+    // model and seed rather than weakening or rewriting existing expectations.
+    let mut legacy_manifest_json = manifest_json.clone();
+    legacy_manifest_json["nodes"]
+        .as_object_mut()
         .unwrap()
-        .retain(|outcome| outcome["model_id"] != model_id("task189_decimal_windows"));
+        .retain(|id, _| {
+            !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task189_decimal_source")
+        });
+    legacy_manifest_json["sources"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|_, source| source["name"] != "task189_decimal_source");
+    let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
+    let legacy_bundle = analyze_dbt_artifacts(
+        &legacy_manifest,
+        &catalog,
+        legacy_manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .unwrap();
+    let legacy_protocol: Value = serde_json::from_str(&to_bundle_json(&legacy_bundle)).unwrap();
+    let actual_final_outcomes = final_outcome_snapshot(&legacy_protocol);
     assert_eq!(
         actual_final_outcomes,
         expected_final_outcomes,
