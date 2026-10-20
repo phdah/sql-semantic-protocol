@@ -1,4 +1,4 @@
-//! TASK-126: exact navigation and deterministic ROWS frames over complete source bags.
+//! TASK-126/189: exact navigation and deterministic aggregate ROWS windows over complete source bags.
 //!
 //! All operations consume parser-independent canonical window expressions. Rows
 //! are identified by their original physical positions; SQL ORDER BY determines
@@ -51,6 +51,21 @@ enum WindowKind {
     First { value: String, frame: WindowFrame },
     Last { value: String, frame: WindowFrame },
     CountRows { frame: WindowFrame },
+    Aggregate {
+        operation: AggregateKind,
+        value: Option<String>,
+        frame: Option<WindowFrame>,
+    },
+}
+
+#[derive(Debug, Clone, Copy)]
+enum AggregateKind {
+    CountAll,
+    CountExpr,
+    Sum,
+    Avg,
+    Min,
+    Max,
 }
 
 #[derive(Debug, Clone)]
@@ -116,6 +131,61 @@ fn rows_frame(window: &WindowFunctionExpression) -> Result<WindowFrame, &'static
     Ok(frame.clone())
 }
 
+fn aggregate_frame(window: &WindowFunctionExpression) -> Result<Option<WindowFrame>, &'static str> {
+    if window.window().order_by().is_empty() {
+        if window.window().frame().is_some() {
+            return Err("unordered ROWS frame has no deterministic physical membership");
+        }
+        return Ok(None); // An unordered window spans the entire partition.
+    }
+    rows_frame(window).map(Some)
+}
+
+fn aggregate_kind(
+    window: &WindowFunctionExpression,
+    source: &crate::protocol::SourceRelation,
+    schema: &crate::relation::RelationSchema,
+) -> Result<WindowKind, &'static str> {
+    let function = window.function();
+    let [argument] = function.arguments() else {
+        return Err("window aggregate requires one normalized argument");
+    };
+    let operation = match function.name().to_ascii_lowercase().as_str() {
+        "count" => {
+            if matches!(argument, Expression::Literal(lit)
+                if lit.literal_type() == LiteralType::Integer
+                && lit.value() == &LiteralValue::Number("1".to_string()))
+            {
+                AggregateKind::CountAll
+            } else {
+                AggregateKind::CountExpr
+            }
+        }
+        "sum" => AggregateKind::Sum,
+        "avg" => AggregateKind::Avg,
+        "min" => AggregateKind::Min,
+        "max" => AggregateKind::Max,
+        _ => return Err("aggregate window has no certified physical law"),
+    };
+    let value = match operation {
+        AggregateKind::CountAll => None,
+        _ => Some(direct_source_column(argument, source, schema)?),
+    };
+    if !matches!(operation, AggregateKind::CountAll | AggregateKind::CountExpr) {
+        let Some(column) = value.as_deref().and_then(|name| schema.columns().iter().find(|c| c.name() == name)) else {
+            return Err("window aggregate argument has no authoritative datatype");
+        };
+        if !super::aggregate_bags::signed_integer(column.data_type()) {
+            return Err("window arithmetic requires an exact signed integer datatype");
+        }
+    }
+    Ok(WindowKind::Aggregate {
+        operation,
+        value,
+        frame: aggregate_frame(window)?,
+    })
+}
+
 fn window_kind(
     window: &WindowFunctionExpression,
     source: &crate::protocol::SourceRelation,
@@ -164,22 +234,9 @@ fn window_kind(
                 Ok(WindowKind::Last { value, frame })
             }
         }
-        "count" => {
-            // The canonical analyzer rewrites COUNT(*) to COUNT(1). The
-            // constant non-NULL argument counts every physical frame member.
-            let [Expression::Literal(one)] = args else {
-                return Err("this bounded frame proof only certifies COUNT(*)");
-            };
-            if one.literal_type() != LiteralType::Integer
-                || one.value() != &LiteralValue::Number("1".to_string())
-            {
-                return Err("COUNT frame argument is not an exact non-NULL row constant");
-            }
-            Ok(WindowKind::CountRows {
-                frame: rows_frame(window)?,
-            })
-        }
-        _ => Err("navigation function has no certified physical window law"),
+        "count" => aggregate_kind(window, source, schema),
+        "sum" | "avg" | "min" | "max" => aggregate_kind(window, source, schema),
+        _ => Err("navigation or aggregate function has no certified physical window law"),
     }
 }
 
@@ -217,12 +274,115 @@ fn frame_members(
     Ok(start..end.max(start))
 }
 
+// Exact finite decimal expansions preserve AVG's non-integral result without
+// asserting floating-point or repeating-fraction session behavior.
+fn exact_average(sum: i128, count: usize) -> Result<LiteralValue, &'static str> {
+    let count = i128::try_from(count).map_err(|_| "AVG count exceeds numeric width")?;
+    if count == 0 {
+        return Ok(LiteralValue::Null);
+    }
+    let quotient = sum / count;
+    let mut remainder = sum % count;
+    if remainder == 0 {
+        return Ok(LiteralValue::Number(quotient.to_string()));
+    }
+    let mut digits = String::new();
+    let mut places = 0usize;
+    while remainder != 0 {
+        if places >= 18 {
+            return Err("AVG requires unproven repeating fraction or numeric precision");
+        }
+        remainder = remainder.checked_mul(10).ok_or("AVG exceeds exact numeric width")?;
+        let digit = remainder / count;
+        digits.push(char::from(b'0' + u8::try_from(digit.abs()).map_err(|_| "invalid AVG digit")?));
+        remainder %= count;
+        places += 1;
+    }
+    // A signed division truncates toward zero. Preserve negative fractions
+    // including -0.x without using lossy floating-point arithmetic.
+    let sign = if sum < 0 { "-" } else { "" };
+    Ok(LiteralValue::Number(format!("{sign}{}.{digits}", quotient.abs())))
+}
+
+fn aggregate_value(
+    operation: AggregateKind,
+    value: Option<&str>,
+    frame: Option<&WindowFrame>,
+    rows: &[(usize, Vec<Option<i128>>)],
+    index: usize,
+    snapshot: &PhysicalWriteState,
+) -> Result<LiteralValue, &'static str> {
+    let indices = match frame {
+        Some(frame) => frame_members(frame, index, rows.len())?,
+        None => 0..rows.len(),
+    };
+    if matches!(operation, AggregateKind::CountAll) {
+        return Ok(LiteralValue::Number(indices.len().to_string()));
+    }
+    let column = value.ok_or("missing window aggregate argument")?;
+    let mut count = 0usize;
+    let mut sum = 0i128;
+    let mut min: Option<i128> = None;
+    let mut max: Option<i128> = None;
+    for position in indices {
+        let (source_index, _) = rows.get(position).ok_or("missing aggregate frame row")?;
+        let scalar = snapshot.rows().get(*source_index)
+            .and_then(|row| row.values().get(column))
+            .ok_or("missing aggregate source column")?;
+        if matches!(scalar, LiteralValue::Null) {
+            continue;
+        }
+        count = count.checked_add(1).ok_or("COUNT overflow")?;
+        if matches!(operation, AggregateKind::CountExpr) {
+            continue;
+        }
+        let number = super::aggregate_bags::numeric(scalar)?
+            .ok_or("non-null numeric aggregate argument missing")?;
+        sum = sum.checked_add(number).ok_or("SUM or AVG exact integer overflow")?;
+        min = Some(min.map_or(number, |current| current.min(number)));
+        max = Some(max.map_or(number, |current| current.max(number)));
+    }
+    match operation {
+        AggregateKind::CountAll | AggregateKind::CountExpr =>
+            Ok(LiteralValue::Number(count.to_string())),
+        AggregateKind::Sum if count > 0 => Ok(LiteralValue::Number(sum.to_string())),
+        AggregateKind::Avg => exact_average(sum, count),
+        AggregateKind::Min => Ok(min.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
+        AggregateKind::Max => Ok(max.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
+        AggregateKind::Sum => Ok(LiteralValue::Null),
+    }
+}
+
+fn window_keys(
+    window: &WindowFunctionExpression,
+    source: &crate::protocol::SourceRelation,
+    schema: &crate::relation::RelationSchema,
+) -> Result<RankKeys, &'static str> {
+    if !window.window().order_by().is_empty() {
+        return rank_keys(window.window(), source, schema, true);
+    }
+    let mut partition = Vec::new();
+    for item in window.window().partition_by() {
+        let column = direct_source_column(item, source, schema)?;
+        let datatype = schema.columns().iter().find(|c| c.name() == column)
+            .ok_or("window partition key missing datatype")?;
+        if !super::aggregate_bags::signed_integer(datatype.data_type()) {
+            return Err("window partition key lacks exact integer equality");
+        }
+        partition.push(column);
+    }
+    Ok(RankKeys { partition, sort: Vec::new() })
+}
+
 fn frame_value(
     kind: &WindowKind,
     rows: &[(usize, Vec<Option<i128>>)],
     index: usize,
     snapshot: &PhysicalWriteState,
 ) -> Result<LiteralValue, &'static str> {
+    if let WindowKind::Aggregate { operation, value, frame } = kind {
+        return aggregate_value(*operation, value.as_deref(), frame.as_ref(), rows, index, snapshot);
+    }
     let position = match kind {
         WindowKind::Lag { offset, .. } => index.checked_sub(*offset),
         WindowKind::Lead { offset, .. } => index.checked_add(*offset),
@@ -238,6 +398,7 @@ fn frame_value(
             let range = frame_members(frame, index, rows.len())?;
             return Ok(LiteralValue::Number(range.len().to_string()));
         }
+        WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
     };
     let Some((source_index, _)) = position.and_then(|position| rows.get(position)) else {
         return Ok(LiteralValue::Null);
@@ -247,7 +408,7 @@ fn frame_value(
         | WindowKind::Lead { value, .. }
         | WindowKind::First { value, .. }
         | WindowKind::Last { value, .. } => value,
-        WindowKind::CountRows { .. } => return Err("unreachable COUNT frame result"),
+        WindowKind::CountRows { .. } | WindowKind::Aggregate { .. } => return Err("unreachable aggregate frame result"),
     };
     snapshot.rows()[*source_index]
         .values()
@@ -256,7 +417,7 @@ fn frame_value(
         .ok_or("window value column missing from complete source bag")
 }
 
-/// Evaluate portable LAG, LEAD, FIRST_VALUE, LAST_VALUE and bounded COUNT(*)
+/// Evaluate portable navigation and COUNT/SUM/AVG/MIN/MAX deterministic
 /// ROWS frames against one validated physical source bag. Unattested peer
 /// ordering, implicit NULL order, RANGE/GROUPS and complex row shaping remain
 /// typed Residual; contradictory source schemas yield Impossible.
@@ -325,7 +486,7 @@ pub fn physical_finite_window_bag_plan(
                 }
             }
             Expression::WindowFunction(window) => {
-                let parsed = match rank_keys(window.window(), source, schema, true) {
+                let parsed = match window_keys(window, source, schema) {
                     Ok(parsed) => parsed,
                     Err(reason) => return residual(reason),
                 };
@@ -337,6 +498,9 @@ pub fn physical_finite_window_bag_plan(
                     Ok(kind) => kind,
                     Err(reason) => return residual(reason),
                 };
+                if parsed.sort.is_empty() && !matches!(kind, WindowKind::Aggregate { .. }) {
+                    return residual("navigation requires a deterministic physical ordering");
+                }
                 operations.push(WindowColumn {
                     output: projected.name().to_string(),
                     kind,
@@ -386,7 +550,7 @@ pub fn physical_finite_window_bag_plan(
                 .find(|order| !order.is_eq())
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        if partition.windows(2).any(|rows| rows[0].1 == rows[1].1) {
+        if !keys.sort.is_empty() && partition.windows(2).any(|rows| rows[0].1 == rows[1].1) {
             return residual("window ORDER BY peers lack deterministic physical row order");
         }
         for (position, (source_index, _)) in partition.iter().enumerate() {
