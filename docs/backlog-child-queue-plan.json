@@ -375,7 +375,7 @@
           ]
         },
         {
-          "title": "Prove common aggregate window functions and deterministic ROWS frames",
+          "title": "Prove common aggregate window functions",
           "variants": "COUNT(*), COUNT(expr), SUM, AVG, MIN, MAX OVER; partition-only, running and bounded ROWS; NULL, duplicates, empty frames; conditional DISTINCT/FILTER",
           "oracle": "ordered values [10,NULL,30] => running SUM [10,10,40], AVG [10,10,20], COUNT(*) [1,2,3], COUNT(expr) [1,1,2], MIN [10,10,10], MAX [10,10,30]; empty forward frame COUNT 0 vs other aggregates NULL",
           "boundary": "Require exact numeric type and complete deterministic ROWS membership; implicit RANGE/default order, DISTINCT/FILTER and engine precision get conditional typed Residual with named owner TASK-189; advanced frames remain TASK-128",

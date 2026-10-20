@@ -77,17 +77,17 @@ fn rank_function(window: &WindowFunctionExpression) -> Option<RankFunction> {
     }
 }
 
-#[derive(Debug, Clone)]
-struct RankSort {
-    column: String,
-    ascending: bool,
-    nulls_first: bool,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct RankSort {
+    pub(super) column: String,
+    pub(super) ascending: bool,
+    pub(super) nulls_first: bool,
 }
 
-#[derive(Debug, Clone)]
-struct RankKeys {
-    partition: Vec<String>,
-    sort: Vec<RankSort>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct RankKeys {
+    pub(super) partition: Vec<String>,
+    pub(super) sort: Vec<RankSort>,
 }
 
 fn source_column(
@@ -113,12 +113,13 @@ fn source_column(
     Ok(column.name().to_string())
 }
 
-fn rank_keys(
+pub(super) fn rank_keys(
     spec: &WindowSpecification,
     source: &crate::protocol::SourceRelation,
     schema: &crate::relation::RelationSchema,
+    allow_frame: bool,
 ) -> Result<RankKeys, &'static str> {
-    if spec.frame().is_some() || spec.order_by().is_empty() {
+    if (spec.frame().is_some() && !allow_frame) || spec.order_by().is_empty() {
         return Err("ranking requires ORDER BY without unproved window frames");
     }
     let mut partition = Vec::new();
@@ -186,7 +187,7 @@ fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
     }
 }
 
-fn key_value(row: &PhysicalWriteRow, key: &str) -> Result<Option<i128>, &'static str> {
+pub(super) fn key_value(row: &PhysicalWriteRow, key: &str) -> Result<Option<i128>, &'static str> {
     numeric(
         row.values()
             .get(key)
@@ -194,7 +195,7 @@ fn key_value(row: &PhysicalWriteRow, key: &str) -> Result<Option<i128>, &'static
     )
 }
 
-fn compare_key(a: Option<i128>, b: Option<i128>, key: &RankSort) -> Ordering {
+pub(super) fn compare_key(a: Option<i128>, b: Option<i128>, key: &RankSort) -> Ordering {
     match (a, b) {
         (None, None) => Ordering::Equal,
         (None, Some(_)) => {
@@ -222,7 +223,7 @@ fn compare_key(a: Option<i128>, b: Option<i128>, key: &RankSort) -> Ordering {
     }
 }
 
-fn exact_domain(values: impl Iterator<Item = LiteralValue>) -> ValueDomain {
+pub(super) fn exact_domain(values: impl Iterator<Item = LiteralValue>) -> ValueDomain {
     let mut unique = Vec::<LiteralExpression>::new();
     for value in values {
         if unique.iter().any(|existing| existing.value() == &value) {
@@ -333,7 +334,7 @@ pub fn physical_finite_rank_bag_plan(
     let Some(spec) = spec else {
         return residual("missing ranking window specification");
     };
-    let keys = match rank_keys(spec, source, schema) {
+    let keys = match rank_keys(spec, source, schema, false) {
         Ok(value) => value,
         Err(reason) => return residual(reason),
     };
