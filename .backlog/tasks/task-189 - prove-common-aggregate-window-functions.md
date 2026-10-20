@@ -54,7 +54,7 @@ After TASK-189 is **Done and merged**, implement [TASK-127](task-127%20-%20compo
 
 ## Implementation in progress (2026-10-20)
 
-- Task-owned frozen integer submatrix: [TASK-189 v1](../../docs/task-189-acceptance-freeze.json), including complete two/three-partition source bags, running/moving/forward frame outputs, typed finite domains and conditional boundaries.
-- Canonical implementation: `src/physical_realization/window_bags.rs`; public DuckDB and 13-dialect tests: `tests/task_189_window_aggregates.rs`.
-- **No AC signoff yet.** Independent final-head CI, DECIMAL/AVG precision, QUALIFY TRUE/NOT TRUE, dbt/ODCS executed parity and conditional parser/session matrix remain unverified. No mandatory cell can be approved as Residual.
+- Task-owned frozen matrix: [TASK-189 v2](../../docs/task-189-acceptance-freeze.json), with complete partition/running/moving/forward source and terminal bags, typed domains, and a COUNT QUALIFY survivor/NOT TRUE oracle (`74-C189-P5`).
+- Canonical implementation: `src/physical_realization/window_bags.rs`; public DuckDB, 13-dialect and adapter tests: `tests/task_189_window_aggregates.rs`, `tests/task_189_window_adapters.rs`.
+- **No AC signoff yet.** Basic COUNT QUALIFY TRUE/NOT TRUE is covered and all 9 CI jobs passed on head `47b79db980f640d7367f4dda15c01bb26f9de697`. Full independent final-head acceptance audit, DECIMAL/fractional AVG engine and overflow laws, complete conditional parser/session disposition, and task-specific dbt E2E remain unverified. Public Rust API additions require SemVer review. No mandatory cell can be approved as Residual.
 - TASK-74 remains open and TASK-127 remains blocked until this child is Done and merged.
