@@ -231,6 +231,7 @@ pub(super) fn exact_domain(values: impl Iterator<Item = LiteralValue>) -> ValueD
         }
         let kind = match &value {
             LiteralValue::Null => LiteralType::Null,
+            LiteralValue::Number(number) if number.contains('.') => LiteralType::Decimal,
             LiteralValue::Number(_) => LiteralType::Integer,
             LiteralValue::Text(_) => LiteralType::String,
             LiteralValue::Boolean(_) => LiteralType::Boolean,
