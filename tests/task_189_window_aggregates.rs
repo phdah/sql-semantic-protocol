@@ -214,14 +214,29 @@ fn complete_portable_partition_running_moving_and_empty_frame_bags_match_duckdb(
             "{id}: canonical bag"
         );
         if let Some(ids) = case["surviving_source_ids"].as_array() {
-            let wanted = ids.iter().map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>();
-            let rejected = case["rejected_source_ids"].as_array().unwrap()
-                .iter().map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>();
-            assert_eq!(exact.terminal_row_ids, wanted, "{id}: QUALIFY TRUE row identities");
-            assert_eq!(exact.rejected_row_ids, rejected, "{id}: QUALIFY NOT TRUE row identities");
-            assert_eq!(exact.source_row_ids.len(),
+            let wanted = ids
+                .iter()
+                .map(|id| id.as_str().unwrap().to_string())
+                .collect::<Vec<_>>();
+            let rejected = case["rejected_source_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|id| id.as_str().unwrap().to_string())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                exact.terminal_row_ids, wanted,
+                "{id}: QUALIFY TRUE row identities"
+            );
+            assert_eq!(
+                exact.rejected_row_ids, rejected,
+                "{id}: QUALIFY NOT TRUE row identities"
+            );
+            assert_eq!(
+                exact.source_row_ids.len(),
                 exact.terminal_row_ids.len() + exact.rejected_row_ids.len(),
-                "{id}: every physical source row is classified");
+                "{id}: every physical source row is classified"
+            );
         } else {
             assert_eq!(exact.terminal_row_ids, exact.source_row_ids, "{id}");
             assert!(exact.rejected_row_ids.is_empty(), "{id}");
