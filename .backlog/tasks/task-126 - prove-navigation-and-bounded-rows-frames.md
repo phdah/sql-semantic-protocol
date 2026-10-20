@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-74 child 2/4.** Implement only prove navigation and bounded rows frames in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
+**TASK-74 child 2/5 (originally 2/4).** Implement only prove navigation and bounded rows frames in a focused PR against `main` after dependencies merge. The original TASK-74 acceptance criteria are additive and stay open until independently signed off. Never depend on TASK-74 itself.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Finite preimplementation scope
@@ -42,4 +42,4 @@ type: feature
 
 ## Next
 
-Next: [TASK-127](task-127%20-%20compose-qualify-and-upstream-grouped-or-joined-row-shaping.md), only after this child is Done and merged.
+Next: [TASK-189](task-189%20-%20prove-common-aggregate-window-functions.md), only after this child is Done and merged. TASK-127 follows TASK-189.
