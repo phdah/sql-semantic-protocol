@@ -25,16 +25,21 @@ fn all_six_conditional_native_duckdb_oracles_have_complete_source_and_terminal_b
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json")).unwrap();
     let mut count = 0;
-    for case in freeze["cases"].as_array().unwrap()
-        .iter().filter(|case| case["proof"] == "Residual_expected")
+    for case in freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|case| case["proof"] == "Residual_expected")
     {
         count += 1;
         let id = case["id"].as_str().unwrap();
         let db = Connection::open_in_memory().unwrap();
         let decimal = id == "74-C189-C6";
         let datatype = if decimal { "DECIMAL(10,2)" } else { "INTEGER" };
-        db.execute_batch(&format!("CREATE TABLE s(id INTEGER, k INTEGER, x {datatype});"))
-            .unwrap();
+        db.execute_batch(&format!(
+            "CREATE TABLE s(id INTEGER, k INTEGER, x {datatype});"
+        ))
+        .unwrap();
         for row in case["source_bag"].as_array().unwrap() {
             let value = if row["x"].is_null() {
                 "NULL".to_string()
@@ -44,21 +49,40 @@ fn all_six_conditional_native_duckdb_oracles_have_complete_source_and_terminal_b
             db.execute_batch(&format!(
                 "INSERT INTO s VALUES ({}, {}, {value});",
                 row["id"], row["k"],
-            )).unwrap();
-        }
-        let mut source = db.prepare("SELECT id,k,CAST(x AS VARCHAR) FROM s ORDER BY id").unwrap();
-        let full = source.query_map([], |row| {
-            Ok((
-                row.get::<_, i64>(0)?,
-                row.get::<_, i64>(1)?,
-                row.get::<_, Option<String>>(2)?,
             ))
-        }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            .unwrap();
+        }
+        let mut source = db
+            .prepare("SELECT id,k,CAST(x AS VARCHAR) FROM s ORDER BY id")
+            .unwrap();
+        let full = source
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, Option<String>>(2)?,
+                ))
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
         let expected_source = case["source_bag"].as_array().unwrap();
-        assert_eq!(full.len(), expected_source.len(), "{id}: complete native source");
+        assert_eq!(
+            full.len(),
+            expected_source.len(),
+            "{id}: complete native source"
+        );
         for (actual, expected) in full.iter().zip(expected_source) {
-            assert_eq!(actual.0, expected["id"].as_i64().unwrap(), "{id}: source id");
-            assert_eq!(actual.1, expected["k"].as_i64().unwrap(), "{id}: source partition");
+            assert_eq!(
+                actual.0,
+                expected["id"].as_i64().unwrap(),
+                "{id}: source id"
+            );
+            assert_eq!(
+                actual.1,
+                expected["k"].as_i64().unwrap(),
+                "{id}: source partition"
+            );
             let target = expected["x"].as_f64().map(|v| normalize(&v.to_string()));
             let actual = actual.2.as_deref().map(normalize);
             assert_eq!(actual, target, "{id}: source numeric value");
@@ -74,22 +98,30 @@ fn all_six_conditional_native_duckdb_oracles_have_complete_source_and_terminal_b
             case["sql"].as_str().unwrap()
         );
         let mut query = db.prepare(&statement).unwrap();
-        let actual = query.query_map([], |row| {
-            Ok((
-                row.get::<_, i64>(0)?,
-                row.get::<_, Option<String>>(1)?,
-            ))
-        }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
-        assert_eq!(actual.len(), expected_source.len(), "{id}: complete native terminal");
+        let actual = query
+            .query_map([], |row| {
+                Ok((row.get::<_, i64>(0)?, row.get::<_, Option<String>>(1)?))
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(
+            actual.len(),
+            expected_source.len(),
+            "{id}: complete native terminal"
+        );
         for (index, pair) in actual.iter().enumerate() {
             assert_eq!(pair.0, expected_source[index]["id"].as_i64().unwrap());
         }
         if let Some(expected) = case["native_duckdb_terminal_values_in_id_order"].as_array() {
-            let got = actual.iter().map(|(_, value)| value.as_deref().map(normalize))
+            let got = actual
+                .iter()
+                .map(|(_, value)| value.as_deref().map(normalize))
                 .collect::<Vec<_>>();
-            let wanted = expected.iter().map(|value| {
-                value.as_str().map(normalize)
-            }).collect::<Vec<_>>();
+            let wanted = expected
+                .iter()
+                .map(|value| value.as_str().map(normalize))
+                .collect::<Vec<_>>();
             assert_eq!(got, wanted, "{id}: numeric native oracle");
         } else if id == "74-C189-C4" {
             let mut values = BTreeMap::new();
@@ -99,7 +131,9 @@ fn all_six_conditional_native_duckdb_oracles_have_complete_source_and_terminal_b
             for (id, value) in [(1, Some("10")), (2, Some("30")), (3, Some("40")), (6, None)] {
                 assert_eq!(values.get(&id).and_then(|v| v.as_deref()), value);
             }
-            let mut peers = [4, 5].iter().map(|id| values.get(id).unwrap().clone())
+            let mut peers = [4, 5]
+                .iter()
+                .map(|id| values.get(id).unwrap().clone())
                 .collect::<Vec<_>>();
             peers.sort();
             assert_eq!(peers, [Some("10".to_string()), Some("5".to_string())]);
