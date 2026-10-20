@@ -35,16 +35,26 @@
     ],
     "advanced_frames_owner": "TASK-128",
     "acceptance_freeze": "docs/task-189-acceptance-freeze.json",
-    "verification_status": "v3_parser_cells_executed_native_session_decimal_composition_and_full_AC_signoff_pending",
+    "verification_status": "v4_numeric_and_native_duckdb_oracles_added_vendor_session_and_independent_original_AC_signoff_pending",
     "release_approved": false,
-    "frozen_version": 3,
+    "frozen_version": 4,
     "mandatory_complete_bag_cases": 5,
     "conditional_unverified_cases": 6,
     "conditional_parser_cells": 78,
     "conditional_parser_matrix_test": "tests/task_189_conditional_parser_matrix.rs",
     "conditional_parser_cells_verified": 78,
     "conditional_parser_parsed": 71,
-    "conditional_parser_boundaries": 7
+    "conditional_parser_boundaries": 7,
+    "numeric_exact_oracle_cases": 2,
+    "numeric_residual_oracle_cases": 2,
+    "native_duckdb_conditional_execution_cases": 6,
+    "numeric_oracle_tests": [
+      "tests/task_189_decimal_windows.rs",
+      "tests/task_189_decimal_adapters.rs",
+      "tests/task_189_native_duckdb_matrix.rs"
+    ],
+    "conditional_native_vendor_unverified_cells": 65,
+    "conditional_native_parser_boundaries": 7
   },
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
