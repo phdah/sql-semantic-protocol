@@ -340,7 +340,11 @@ fn frozen_acceptance_matrix_has_no_implicit_parser_or_adapter_exclusions() {
         let id = case["id"].as_str().unwrap();
         assert!(ids.insert(id), "duplicate frozen case {id}");
         let parser = case["parser_status_by_dialect"].as_object().unwrap();
-        assert_eq!(parser.len(), DIALECTS.len(), "{id}: parser matrix not bounded");
+        assert_eq!(
+            parser.len(),
+            DIALECTS.len(),
+            "{id}: parser matrix not bounded"
+        );
         for dialect in DIALECTS {
             let status = parser.get(*dialect).and_then(Value::as_str);
             assert!(
@@ -358,7 +362,11 @@ fn frozen_acceptance_matrix_has_no_implicit_parser_or_adapter_exclusions() {
             } else {
                 "Residual_required"
             };
-            assert_eq!(expected, Some(required), "{id}/{adapter}: missing adapter cell");
+            assert_eq!(
+                expected,
+                Some(required),
+                "{id}/{adapter}: missing adapter cell"
+            );
         }
         match case["proof"].as_str() {
             Some("Exact") => {
@@ -370,7 +378,10 @@ fn frozen_acceptance_matrix_has_no_implicit_parser_or_adapter_exclusions() {
                 );
                 assert_eq!(case["physical_positive_ids"], case["source_row_ids"]);
                 assert_eq!(case["physical_not_true_ids"], serde_json::json!([]));
-                assert!(!case["typed_terminal_domains"].as_array().unwrap().is_empty());
+                assert!(!case["typed_terminal_domains"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty());
             }
             Some("Residual") => {
                 residual_count += 1;
