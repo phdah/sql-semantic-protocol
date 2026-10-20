@@ -35,11 +35,13 @@
     ],
     "advanced_frames_owner": "TASK-128",
     "acceptance_freeze": "docs/task-189-acceptance-freeze.json",
-    "verification_status": "CI_pending_no_AC_signoff",
+    "verification_status": "v3_conditional_parser_matrix_pending_native_session_and_full_AC_signoff",
     "release_approved": false,
-    "frozen_version": 1,
-    "mandatory_complete_bag_cases": 4,
-    "conditional_unverified_cases": 6
+    "frozen_version": 3,
+    "mandatory_complete_bag_cases": 5,
+    "conditional_unverified_cases": 6,
+    "conditional_parser_cells": 78,
+    "conditional_parser_matrix_test": "tests/task_189_conditional_parser_matrix.rs"
   },
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
