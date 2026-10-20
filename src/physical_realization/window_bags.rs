@@ -4,12 +4,12 @@
 //! are identified by their original physical positions; SQL ORDER BY determines
 //! window membership only when it has a provably total ordering.
 
-use super::rank_bags::{compare_key, exact_domain, key_value, rank_keys, RankKeys};
+use super::rank_bags::{compare_key, exact_domain, key_value, qualifies, rank_keys, RankKeys};
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
 use crate::protocol::{
-    Expression, LiteralType, LiteralValue, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression,
+    ComparisonOperator, Expression, LiteralType, LiteralValue, WindowFrame, WindowFrameBound,
+    WindowFrameUnits, WindowFunctionExpression,
 };
 
 /// Complete source-attested physical identity and terminal window bag.
@@ -21,6 +21,10 @@ pub struct PhysicalFiniteWindowExact {
     pub source: String,
     /// All physical row identities, including SQL duplicates.
     pub source_row_ids: Vec<String>,
+    /// Source identities that survive the SQL QUALIFY filter, in terminal order.
+    pub terminal_row_ids: Vec<String>,
+    /// Source identities for which the SQL QUALIFY predicate is NOT TRUE.
+    pub rejected_row_ids: Vec<String>,
     /// Complete terminal row multiset in source identity order.
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Finite and inclusive terminal value domains, including SQL NULL.
@@ -255,6 +259,52 @@ fn window_kind(
         "sum" | "avg" | "min" | "max" => aggregate_kind(window, source, schema),
         _ => Err("navigation or aggregate function has no certified physical window law"),
     }
+}
+
+// A narrow aggregate QUALIFY law: a projected COUNT window compared with a
+// typed integer constant. Other boolean expressions and aggregate comparisons
+// stay Residual until their NULL and numeric/session laws are certified.
+fn aggregate_qualify_filter(
+    query: &QueryStatement,
+) -> Result<Option<(String, ComparisonOperator, i128)>, &'static str> {
+    let Some(predicate) = query.predicates().qualify_predicate() else {
+        return Ok(None);
+    };
+    let Predicate::Comparison(comparison) = predicate else {
+        return Err("QUALIFY aggregate requires one canonical comparison");
+    };
+    let (window, operator, threshold) = match (comparison.left(), comparison.right()) {
+        (Expression::WindowFunction(window), Expression::Literal(value)) => {
+            (window, comparison.operator(), value)
+        }
+        (Expression::Literal(value), Expression::WindowFunction(window)) => {
+            (window, comparison.operator().reversed(), value)
+        }
+        _ => return Err("QUALIFY comparison must use a projected window and integer literal"),
+    };
+    if threshold.literal_type() != LiteralType::Integer {
+        return Err("QUALIFY aggregate threshold requires an exact integer");
+    }
+    let LiteralValue::Number(number) = threshold.value() else {
+        return Err("QUALIFY aggregate threshold is not numeric");
+    };
+    let threshold = number
+        .parse::<i128>()
+        .map_err(|_| "QUALIFY aggregate threshold exceeds signed width")?;
+    if !window.function().name().eq_ignore_ascii_case("count")
+        || window.function().distinct()
+    {
+        return Err("QUALIFY numeric aggregate law is only certified for COUNT");
+    }
+    let output = query
+        .output()
+        .columns()
+        .iter()
+        .find(|column| {
+            matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == window)
+        })
+        .ok_or("QUALIFY COUNT must match a projected canonical window")?;
+    Ok(Some((output.name().to_string(), operator, threshold)))
 }
 
 fn frame_position(bound: &WindowFrameBound, index: i128, len: i128) -> Result<i128, &'static str> {
@@ -505,10 +555,10 @@ pub fn physical_finite_window_bag_plan(
         || query.set_operation().is_some()
         || query.predicates().where_predicate().is_some()
         || query.predicates().having_predicate().is_some()
-        || query.predicates().qualify_predicate().is_some()
         || !query.subquery_witnesses().is_empty()
         || !query.diagnostics().is_empty()
-        || !query.plain_goal_output_shape()
+        || (query.predicates().qualify_predicate().is_some() && !query.ranked_goal_output_shape())
+        || (query.predicates().qualify_predicate().is_none() && !query.plain_goal_output_shape())
     {
         return residual("window query has unproved source or terminal row shaping");
     }
@@ -561,6 +611,10 @@ pub fn physical_finite_window_bag_plan(
     }
     let Some(keys) = keys else {
         return residual("window target has no supported window function");
+    };
+    let qualify = match aggregate_qualify_filter(query) {
+        Ok(qualify) => qualify,
+        Err(reason) => return residual(reason),
     };
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
@@ -617,7 +671,25 @@ pub fn physical_finite_window_bag_plan(
         }
     }
     let mut terminal = Vec::new();
+    let mut terminal_row_ids = Vec::new();
+    let mut rejected_row_ids = Vec::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
+        let row_id = format!("{}#{index}", source.name());
+        if let Some((column, operator, threshold)) = &qualify {
+            let Some(Some(LiteralValue::Number(number))) =
+                evaluated.get(column).and_then(|values| values.get(index))
+            else {
+                return residual("QUALIFY COUNT has no exact integer output");
+            };
+            let Ok(count) = number.parse::<i128>() else {
+                return residual("QUALIFY COUNT exceeds integer comparison width");
+            };
+            if !qualifies(count, *operator, *threshold) {
+                rejected_row_ids.push(row_id);
+                continue;
+            }
+        }
+        terminal_row_ids.push(row_id);
         let mut projected = BTreeMap::new();
         for column in query.output().columns() {
             let value = match column.expression() {
@@ -655,6 +727,8 @@ pub fn physical_finite_window_bag_plan(
         source_row_ids: (0..snapshot.rows().len())
             .map(|index| format!("{}#{index}", source.name()))
             .collect(),
+        terminal_row_ids,
+        rejected_row_ids,
         terminal,
         terminal_domains: domains,
     }))
