@@ -2,7 +2,7 @@
   "task_189_common_window_aggregate_plan": {
     "owner": "TASK-189",
     "parent": "TASK-74",
-    "status": "planned_not_frozen_or_implemented",
+    "status": "implementation_in_progress",
     "task": ".backlog/tasks/task-189 - prove-common-aggregate-window-functions.md",
     "queue": "docs/backlog-child-queue-plan.json",
     "depends_on": "TASK-126",
@@ -34,9 +34,12 @@
       "engine_numeric_precision"
     ],
     "advanced_frames_owner": "TASK-128",
-    "acceptance_freeze": null,
-    "verification_status": "not_started",
-    "release_approved": false
+    "acceptance_freeze": "docs/task-189-acceptance-freeze.json",
+    "verification_status": "CI_pending_no_AC_signoff",
+    "release_approved": false,
+    "frozen_version": 1,
+    "mandatory_complete_bag_cases": 4,
+    "conditional_unverified_cases": 6
   },
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
