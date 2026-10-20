@@ -581,3 +581,66 @@ fn fractional_fifth_is_residual_when_float_engine_cannot_represent_value_exactly
         PhysicalFiniteWindowProof::Residual { .. }
     ));
 }
+
+#[test]
+fn nullable_sum_qualify_distinguishes_true_false_and_unknown() {
+    let case = serde_json::json!({
+        "id": "74-C189-QUALIFY-SUM",
+        "sql": "SELECT id, k, x, SUM(x) OVER (PARTITION BY k) AS total FROM s QUALIFY SUM(x) OVER (PARTITION BY k) >= 10",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 10},
+            {"id": 2, "k": 0, "x": null},
+            {"id": 3, "k": 0, "x": 30},
+            {"id": 4, "k": 1, "x": null},
+            {"id": 5, "k": 2, "x": 5}
+        ],
+        "full_terminal_bag": [
+            {"id": 1, "k": 0, "x": 10, "total": 40},
+            {"id": 2, "k": 0, "x": null, "total": 40},
+            {"id": 3, "k": 0, "x": 30, "total": 40}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    let PhysicalFiniteWindowProof::Exact(exact) =
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)])
+    else {
+        panic!("all-NULL and below-threshold partitions must remain NOT TRUE");
+    };
+    assert_eq!(exact.terminal_row_ids, ["s#0", "s#1", "s#2"]);
+    assert_eq!(exact.rejected_row_ids, ["s#3", "s#4"]);
+    assert_eq!(exact.source_row_ids.len(), 5);
+    assert_eq!(bag(&exact.terminal), bag(&expected(&case)));
+    assert_eq!(bag(&exact.terminal), bag(&duckdb_oracle(&case)));
+}
+
+#[test]
+fn rank_and_running_count_compose_through_qualify_without_expanding_rows() {
+    let case = serde_json::json!({
+        "id": "74-C189-QUALIFY-MIXED",
+        "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY id NULLS LAST) AS rn, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n FROM s QUALIFY COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) >= 2",
+        "source_bag": [
+            {"id": 1, "k": 0, "x": 10},
+            {"id": 2, "k": 0, "x": null},
+            {"id": 3, "k": 0, "x": 30},
+            {"id": 4, "k": 1, "x": 5},
+            {"id": 5, "k": 1, "x": 5}
+        ],
+        "full_terminal_bag": [
+            {"id": 2, "k": 0, "x": null, "rn": 2, "n": 2},
+            {"id": 3, "k": 0, "x": 30, "rn": 3, "n": 3},
+            {"id": 5, "k": 1, "x": 5, "rn": 2, "n": 2}
+        ]
+    });
+    let bundle = analyze(&case, "duckdb");
+    let target = bundle.layers().last().unwrap().id();
+    let PhysicalFiniteWindowProof::Exact(exact) =
+        physical_finite_window_bag_plan(&bundle, target, &[source(&case)])
+    else {
+        panic!("mixed ranking and bounded COUNT QUALIFY should be jointly exact");
+    };
+    assert_eq!(exact.terminal_row_ids, ["s#1", "s#2", "s#4"]);
+    assert_eq!(exact.rejected_row_ids, ["s#0", "s#3"]);
+    assert_eq!(bag(&exact.terminal), bag(&expected(&case)));
+    assert_eq!(bag(&exact.terminal), bag(&duckdb_oracle(&case)));
+}
