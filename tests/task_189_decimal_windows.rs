@@ -368,3 +368,42 @@ fn decimal_overflow_and_rounding_uncertainty_stay_residual() {
         );
     }
 }
+
+#[test]
+fn conditional_decimal_native_duckdb_oracles_do_not_overclaim_portable_exactness() {
+    let matrix = cases();
+    let mut executed = 0;
+    for case in matrix["numeric_oracle_cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|case| case["proof"] == "Residual_expected")
+    {
+        let id = case["id"].as_str().unwrap();
+        assert_eq!(
+            case["native_execution_disposition_by_dialect"]["duckdb"],
+            "duckdb_native_oracle_executed_in_ci"
+        );
+        assert_eq!(
+            normalized(&duckdb_oracle(case)),
+            normalized(&expected(case)),
+            "{id}: independently executed native decimal terminal bag"
+        );
+        for dialect in DIALECTS {
+            let status = case["native_execution_disposition_by_dialect"][dialect]
+                .as_str()
+                .unwrap();
+            if *dialect != "duckdb" {
+                assert_eq!(status, "residual_native_vendor_or_session_unattested");
+            }
+            let bundle = analyze(case, dialect);
+            let target = bundle.layers().last().unwrap().id();
+            assert!(matches!(
+                physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
+                PhysicalFiniteWindowProof::Residual { .. }
+            ), "{id}/{dialect}: native DuckDB result cannot prove vendor portability");
+        }
+        executed += 1;
+    }
+    assert_eq!(executed, 2);
+}
