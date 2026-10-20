@@ -907,7 +907,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     legacy_catalog_json["nodes"]
         .as_object_mut()
         .unwrap()
-        .retain(|id, _| id != model_id("task189_decimal_windows"));
+        .retain(|id, _| !id.ends_with(".task189_decimal_windows"));
     legacy_catalog_json["sources"]
         .as_object_mut()
         .unwrap()
