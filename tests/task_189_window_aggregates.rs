@@ -60,10 +60,10 @@ fn source(case: &Value) -> PhysicalWriteState {
     .unwrap()
 }
 
-fn catalog() -> RelationCatalog {
+fn catalog(case: &Value) -> RelationCatalog {
     let schema = RelationSchema::new(
         "s",
-        [("id", "INTEGER"), ("k", "INTEGER"), ("x", "INTEGER")]
+        [("id", "INTEGER"), ("k", "INTEGER"), ("x", case["source_schema"]["x"].as_str().unwrap_or("INTEGER"))]
             .into_iter()
             .map(|(name, kind)| SchemaColumn::from_sql_type(name, kind, "postgresql").unwrap())
             .collect(),
@@ -82,7 +82,7 @@ fn analyze(case: &Value, dialect: &str) -> sql_semantic_protocol::AnalysisBundle
             dialect,
             parser.as_ref(),
         )],
-        &catalog(),
+        &catalog(case),
     )
     .unwrap()
 }
@@ -180,7 +180,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn complete_portable_partition_running_moving_and_empty_frame_bags_match_duckdb() {
     let matrix = freeze();
-    assert_eq!(matrix["version"], 2);
+    assert_eq!(matrix["version"], 3);
     assert_eq!(matrix["owner"], "TASK-189");
     assert_eq!(
         matrix["fixture_ids"],
@@ -415,4 +415,62 @@ fn repeating_average_is_residual_not_rounded_into_false_exactness() {
         physical_finite_window_bag_plan(&bundle, target, &[source(&case)]),
         PhysicalFiniteWindowProof::Residual { .. }
     ));
+}
+
+#[test]
+fn conditional_windows_are_never_mistaken_for_portable_exact_bags() {
+    let matrix = freeze();
+    let conditional = matrix["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|case| case["proof"] == "Residual_expected")
+        .collect::<Vec<_>>();
+    assert_eq!(conditional.len(), 6);
+
+    // Exercise each of the 78 conditional dialect/parser cells. A parser
+    // boundary must not be construed as evidence for native engine behavior.
+    let mut exercised = BTreeSet::new();
+    for case in conditional {
+        let id = case["id"].as_str().unwrap();
+        let mut parsed_dialects = 0;
+        for dialect in DIALECTS {
+            let parser = dialect_from_name(dialect).unwrap();
+            if Parser::parse_sql(parser.as_ref(), case["sql"].as_str().unwrap()).is_err() {
+                continue;
+            }
+            parsed_dialects += 1;
+            let bundle = analyze(case, dialect);
+            let target = bundle.layers().last().unwrap().id();
+            let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
+            assert!(
+                matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
+                "{id}/{dialect}: unverified conditional SQL or session law must fail closed, got {proof:?}"
+            );
+            exercised.insert(format!("{id}/{dialect}"));
+        }
+        assert!(parsed_dialects > 0, "{id}: no parser can exercise this conditional fixture");
+    }
+    assert!(exercised.len() >= 6, "all six conditional laws must be exercised");
+}
+
+#[test]
+fn precision_conditional_fixtures_are_distinct_from_integer_exact_cases() {
+    let matrix = freeze();
+    let cases = matrix["cases"].as_array().unwrap();
+    let repeating = cases.iter().find(|case| case["id"] == "74-C189-C5").unwrap();
+    let decimals = cases.iter().find(|case| case["id"] == "74-C189-C6").unwrap();
+
+    // The source's first partition has AVG=(1+2+2)/3, a repeating
+    // fraction. v2 accidentally used only integral means.
+    let first_partition = repeating["source_bag"].as_array().unwrap();
+    assert_eq!(first_partition[0]["x"], 1);
+    assert_eq!(first_partition[1]["x"], 2);
+    assert_eq!(first_partition[2]["x"], 2);
+    assert_eq!(repeating["family"], "repeating_fraction_avg");
+
+    // A DECIMAL precision fixture cannot reuse an INTEGER-typed source.
+    assert_eq!(decimals["source_schema"]["x"], "DECIMAL(10,2)");
+    assert_eq!(decimals["source_bag"][0]["x"], serde_json::json!(10.25));
+    assert_eq!(decimals["source_bag"][2]["x"], serde_json::json!(30.75));
 }
