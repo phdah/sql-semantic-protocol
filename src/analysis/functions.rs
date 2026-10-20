@@ -44,6 +44,19 @@ pub(super) fn analyze_function(
                             diagnostics,
                         ));
                     }
+                    FunctionArg::Unnamed(FunctionArgExpr::Wildcard)
+                        if function.over.is_some()
+                            && function.name.to_string().eq_ignore_ascii_case("count") =>
+                    {
+                        // COUNT(*) and COUNT(1) are semantically identical for a
+                        // window row bag: the normalized argument is non-NULL.
+                        normalized_arguments.push(Expression::Literal(
+                            crate::protocol::LiteralExpression::new(
+                                crate::protocol::LiteralType::Integer,
+                                crate::protocol::LiteralValue::Number("1".to_string()),
+                            ),
+                        ));
+                    }
                     _ => {
                         return unsupported_expression(
                             "function",
