@@ -94,10 +94,10 @@ fn make_join(
     let [join] = query.joins() else {
         return Err("QUALIFY JOIN needs exactly one certified INNER JOIN");
     };
-    if join.kind() != JoinKind::Inner || join.execution().is_some()
+    if join.kind() != JoinKind::Inner
+        || join.execution().is_some()
         || left.name() == right.name()
-        || !(join.left().relation() == left.name()
-            || Some(join.left().relation()) == left.alias())
+        || !(join.left().relation() == left.name() || Some(join.left().relation()) == left.alias())
         || !(join.right().relation() == right.name()
             || Some(join.right().relation()) == right.alias())
     {
