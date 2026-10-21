@@ -906,14 +906,38 @@ pub fn physical_finite_window_bag_plan(
                 .find(|order| !order.is_eq())
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        if !keys.sort.is_empty() && partition.windows(2).any(|rows| rows[0].1 == rows[1].1) {
+        // Peer order is immaterial for RANK/DENSE_RANK, but matters for
+        // ROW_NUMBER, navigation, and ordered ROWS frame membership.
+        if !keys.sort.is_empty()
+            && partition.windows(2).any(|rows| rows[0].1 == rows[1].1)
+            && operations.iter().any(|operation| {
+                !matches!(
+                    operation.kind,
+                    WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
+                )
+            })
+        {
             return residual("window ORDER BY peers lack deterministic physical row order");
         }
-        for (position, (source_index, _)) in partition.iter().enumerate() {
+        let mut dense_rank = 0_usize;
+        let mut peer_rank = 0_usize;
+        for (position, (source_index, order)) in partition.iter().enumerate() {
+            if position == 0 || partition[position - 1].1 != *order {
+                dense_rank += 1;
+                peer_rank = position + 1;
+            }
             for operation in &operations {
-                let value = match frame_value(&operation.kind, partition, position, snapshot) {
-                    Ok(value) => value,
-                    Err(reason) => return residual(reason),
+                let value = match &operation.kind {
+                    WindowKind::Ranking(RankFunction::Rank) => {
+                        LiteralValue::Number(peer_rank.to_string())
+                    }
+                    WindowKind::Ranking(RankFunction::DenseRank) => {
+                        LiteralValue::Number(dense_rank.to_string())
+                    }
+                    _ => match frame_value(&operation.kind, partition, position, snapshot) {
+                        Ok(value) => value,
+                        Err(reason) => return residual(reason),
+                    },
                 };
                 let Some(column_values) = evaluated.get_mut(&operation.output) else {
                     return residual("missing window output assignment");
