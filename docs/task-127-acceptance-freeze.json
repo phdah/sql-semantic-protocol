@@ -594,7 +594,7 @@
           {
             "id": 2,
             "k": 0,
-            "x": 2
+            "x": 3
           },
           {
             "id": 3,
@@ -626,37 +626,14 @@
         "s#4",
         "s#5"
       ],
-      "selected_source_row_ids": [],
-      "rejected_source_row_ids": [
-        "s#0",
-        "s#1",
-        "s#2",
-        "s#3",
-        "s#4",
-        "s#5"
-      ],
-      "expected_full_terminal_bag": [],
-      "typed_terminal_domains": {
-        "id": {
-          "type": "INTEGER",
-          "nullable": false,
-          "inclusive_bounds": null
-        },
-        "k": {
-          "type": "INTEGER",
-          "nullable": false,
-          "inclusive_bounds": null
-        },
-        "x": {
-          "type": "INTEGER",
-          "nullable": false,
-          "inclusive_bounds": null
-        }
-      },
+      "selected_source_row_ids": null,
+      "rejected_source_row_ids": null,
+      "expected_full_terminal_bag": null,
+      "typed_terminal_domains": null,
       "membership": {
-        "positive": "Impossible",
-        "not_true": "Exact",
-        "sql_unknown_is_not_true": true
+        "positive": "Residual",
+        "not_true": "Residual",
+        "reason": "ROW_NUMBER peer identities are underordered"
       },
       "proof": "conditional_residual",
       "conditional_owner": "TASK-127",
@@ -681,7 +658,7 @@
         "dbt_compiled": "pending",
         "odcs_schema": "pending"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "conditional_without_unique_sort_tiebreaker"
     },
     {
       "id": "74-C127-P4",
