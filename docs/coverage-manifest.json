@@ -2,7 +2,7 @@
   "task_189_common_window_aggregate_plan": {
     "owner": "TASK-189",
     "parent": "TASK-74",
-    "status": "implementation_in_progress",
+    "status": "acceptance_implementation_complete_pending_independent_review",
     "task": ".backlog/tasks/task-189 - prove-common-aggregate-window-functions.md",
     "queue": "docs/backlog-child-queue-plan.json",
     "depends_on": "TASK-126",
@@ -35,11 +35,12 @@
     ],
     "advanced_frames_owner": "TASK-128",
     "acceptance_freeze": "docs/task-189-acceptance-freeze.json",
-    "verification_status": "v4_numeric_and_native_duckdb_oracles_added_vendor_session_and_independent_original_AC_signoff_pending",
+    "verification_status": "v5_exact_bags_and_two_native_engines_verified_final_head_independent_signoff_pending",
     "release_approved": false,
-    "frozen_version": 4,
+    "frozen_version": 5,
     "mandatory_complete_bag_cases": 5,
-    "conditional_unverified_cases": 6,
+    "conditional_unverified_cases": 0,
+    "conditional_reviewed_residual_cases": 6,
     "conditional_parser_cells": 78,
     "conditional_parser_matrix_test": "tests/task_189_conditional_parser_matrix.rs",
     "conditional_parser_cells_verified": 78,
@@ -53,7 +54,7 @@
       "tests/task_189_decimal_adapters.rs",
       "tests/task_189_native_duckdb_matrix.rs"
     ],
-    "conditional_native_vendor_unverified_cells": 65,
+    "conditional_native_vendor_unverified_cells": 59,
     "conditional_native_parser_boundaries": 7,
     "real_dbt_executable_oracle": "tests/task_189_dbt_core_e2e.rs",
     "real_dbt_model": "tests/fixtures/dbt_core_project/models/task189_decimal_windows.sql",
@@ -61,7 +62,13 @@
     "numeric_native_residual_duckdb_oracles": 2,
     "conditional_native_execution_matrix_test": "tests/task_189_conditional_parser_matrix.rs",
     "conditional_native_session_executed_duckdb": 6,
-    "conditional_native_vendor_residual": 65
+    "conditional_native_session_executed_sqlite": 5,
+    "conditional_native_sqlite_unsupported": 1,
+    "numeric_native_residual_sqlite_oracles": 2,
+    "native_sqlite_oracle_test": "tests/native/test_task_189_sqlite_native.py",
+    "acceptance_audit": "docs/task-189-acceptance-audit.md",
+    "non_duckdb_sqlite_vendor_session_policy": "Reviewed conditional Residual only: 59 cells have no native executable evidence and are not supported/Exact claims",
+    "conditional_native_vendor_residual": 59
   },
   "task_126_navigation_acceptance": {
     "owner": "TASK-126",
