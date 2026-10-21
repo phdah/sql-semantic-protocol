@@ -492,6 +492,7 @@ mod set_bags;
 mod set_trees;
 mod sets;
 mod window_bags;
+mod window_composition;
 mod write_states;
 
 pub use aggregate_bags::{
