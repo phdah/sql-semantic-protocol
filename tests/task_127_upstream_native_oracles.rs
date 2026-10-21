@@ -66,7 +66,10 @@ fn rows(db: &Connection, sql: &str) -> Vec<BTreeMap<String, Value>> {
 }
 
 fn bag(rows: &[BTreeMap<String, Value>]) -> Vec<String> {
-    let mut values = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut values = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     values.sort();
     values
 }
@@ -179,10 +182,7 @@ fn frozen_group_has_source_membership_and_ranked_group_rejection() {
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
-    assert_eq!(
-        membership,
-        [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (1, 5)]
-    );
+    assert_eq!(membership, [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (1, 5)]);
     let ranked = rows(
         &db,
         "SELECT k, total, ROW_NUMBER() OVER (
