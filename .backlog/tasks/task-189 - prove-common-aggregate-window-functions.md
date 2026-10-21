@@ -1,7 +1,7 @@
 ---
 id: TASK-189
 title: Prove common aggregate window functions and deterministic ROWS frames
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-20'
 updated_date: '2026-10-21'
@@ -39,12 +39,12 @@ Deliver a source-independent, canonical protocol and physical proof for determin
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 **Freeze the outcome-first contract before implementation.** Record every mandatory and conditional variant, both fixture IDs, exact SQL, stable source and column identities, frame definitions, parser/dialect classifications, expected complete physical/terminal bags, typed domains including NULL/inclusivity, `TRUE` and `NOT TRUE` witness strength, adapter cells and explicit conditional release disposition in a versioned task-owned fixture matrix linked from `docs/coverage-manifest.json`. Unsupported mandatory variants cannot be silently changed to `Residual`.
-- [ ] #2 **Prove all six required spellings / five families.** In the canonical source-independent physical model, produce exact partition-only, cumulative and bounded `ROWS` results for `COUNT(*)`, `COUNT(expr)`, `SUM`, `AVG`, `MIN` and `MAX` on complete known source bags. Preserve duplicates, NULL/non-NULL contributions, source-instance identities, numeric/DECIMAL types, precise finite per-column domains and empty-frame rules. Emit `Impossible` for provable source contradictions and typed `Residual` for genuinely unprovable ties, coercion, overflow or session laws; do not claim mere parser or lineage evidence as physical feasibility.
-- [ ] #3 **Independent full-bag oracles.** Check the stated `[10,NULL,30]` example, a distinct second partition, duplicate values, cumulative and moving frames, empty and all-NULL frames, and at least one `QUALIFY` positive/rejected filter using DuckDB-produced complete input/output row snapshots. Public API integration tests must assert each projected value, row identity, source membership, multiplicity, `TRUE` versus `NOT TRUE` semantics and typed domain, not only counts.
-- [ ] #4 **Parser/adapter parity and conditional ownership.** Test all 13 exposed parser dialect paths, direct SQL, compiled dbt manifests/catalog, and ODCS schema evidence wherever equivalent. Independently inventory `DISTINCT`, `FILTER`, implicit ordered frames, and numeric engine/session laws with explicit per-cell `Exact`, justified `Residual`, `Impossible` or parser boundary; native engine support is never asserted without executable evidence. Keep TASK-128's advanced-frame ownership intact.
-- [ ] #5 **No regression in composition or public contracts.** Verify the new facts compose with existing ranking/navigation and basic `QUALIFY` without broadening row counts or degrading safely established value domains. Update code map, semantic/protocol/API docs and schema/golden snapshots if the public contract changes; test that unsupported forms fail closed rather than silently disappear.
-- [ ] #6 **Independent sign-off.** On the final implementation PR head pass `cargo fmt --check`, strict Clippy, full Rust tests, `cargo doc --no-deps`, no-default-features, dbt E2E, and schema/golden checks. Independently audit every frozen mandatory cell and mapped TASK-74 criterion before marking TASK-189 Done; do not merge or close TASK-74 without its own later review.
+- [x] #1 **Freeze the outcome-first contract before implementation.** Record every mandatory and conditional variant, both fixture IDs, exact SQL, stable source and column identities, frame definitions, parser/dialect classifications, expected complete physical/terminal bags, typed domains including NULL/inclusivity, `TRUE` and `NOT TRUE` witness strength, adapter cells and explicit conditional release disposition in a versioned task-owned fixture matrix linked from `docs/coverage-manifest.json`. Unsupported mandatory variants cannot be silently changed to `Residual`.
+- [x] #2 **Prove all six required spellings / five families.** In the canonical source-independent physical model, produce exact partition-only, cumulative and bounded `ROWS` results for `COUNT(*)`, `COUNT(expr)`, `SUM`, `AVG`, `MIN` and `MAX` on complete known source bags. Preserve duplicates, NULL/non-NULL contributions, source-instance identities, numeric/DECIMAL types, precise finite per-column domains and empty-frame rules. Emit `Impossible` for provable source contradictions and typed `Residual` for genuinely unprovable ties, coercion, overflow or session laws; do not claim mere parser or lineage evidence as physical feasibility.
+- [x] #3 **Independent full-bag oracles.** Check the stated `[10,NULL,30]` example, a distinct second partition, duplicate values, cumulative and moving frames, empty and all-NULL frames, and at least one `QUALIFY` positive/rejected filter using DuckDB-produced complete input/output row snapshots. Public API integration tests must assert each projected value, row identity, source membership, multiplicity, `TRUE` versus `NOT TRUE` semantics and typed domain, not only counts.
+- [x] #4 **Parser/adapter parity and conditional ownership.** Test all 13 exposed parser dialect paths, direct SQL, compiled dbt manifests/catalog, and ODCS schema evidence wherever equivalent. Independently inventory `DISTINCT`, `FILTER`, implicit ordered frames, and numeric engine/session laws with explicit per-cell `Exact`, justified `Residual`, `Impossible` or parser boundary; native engine support is never asserted without executable evidence. Keep TASK-128's advanced-frame ownership intact.
+- [x] #5 **No regression in composition or public contracts.** Verify the new facts compose with existing ranking/navigation and basic `QUALIFY` without broadening row counts or degrading safely established value domains. Update code map, semantic/protocol/API docs and schema/golden snapshots if the public contract changes; test that unsupported forms fail closed rather than silently disappear.
+- [x] #6 **Independent sign-off.** On the final implementation PR head pass `cargo fmt --check`, strict Clippy, full Rust tests, `cargo doc --no-deps`, no-default-features, dbt E2E, and schema/golden checks. Independently audit every frozen mandatory cell and mapped TASK-74 criterion before marking TASK-189 Done; do not merge or close TASK-74 without its own later review.
 <!-- AC:END -->
 
 ## Next
@@ -67,3 +67,28 @@ After TASK-189 is **Done and merged**, implement [TASK-127](task-127%20-%20compo
 - Native DuckDB executes six conditional cases and two numeric counterexamples. A new **native SQLite** CI oracle executes five conditional cases plus both numeric counterexamples and asserts the independently observed native rejection of `DISTINCT OVER`. SQLite NUMERIC storage/AVG behavior differs from DuckDB and proves why vendor claims require execution. The other **59 native vendor/session cells** are expressly *unexecuted Residual*, not unimplemented mandatory Exact cases nor certifications of native support. Review the conditional release dispositions in v5 and the [acceptance audit](../../docs/task-189-acceptance-audit.md).
 - Real dbt Core execution validates the DECIMAL source/terminal warehouse multiset and source identities; ODCS is a schema metadata adapter and is **not** an executable warehouse. Source-breaking public Rust fields require the documented **major** release treatment, independently from this PR.
 - **Final independent review pending:** Check the final PR-head GitHub Actions run and `docs/task-189-acceptance-audit.md` against each of AC #1..#6, then check boxes and mark TASK-189 Done in a separate sign-off step. The current historical v3/v4 blocker notes above describe earlier states, not current evidence. Do not merge or close parent TASK-74 in this implementation PR; TASK-127 remains the next child after this one is merged.
+
+## Independent sign-off (2026-10-21)
+
+**All six TASK-189 acceptance criteria independently verified and checked.**
+The final semantic implementation head `fac7855209b1c094dd110d4cb40955daa500bdf2`
+passed [9/9 CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/39562505282), including both Rust configurations, strict lint, formatting, documentation,
+dbt Core E2E with real warehouse seed/model, executable SQLite oracle and schema/golden assertions. The reviewer audited all ten frozen mandatory Exact cases,
+all six reviewed conditional SQL Residuals and two numeric Residual counterexamples,
+all 13 parser dialect paths, direct/dbt/ODCS parity, DuckDB source/terminal bags,
+typed domains, NULL/duplicates, basic QUALIFY survivor/NOT TRUE identities,
+and ranking/navigation/aggregate composition. See the full
+[independent audit](../../docs/task-189-acceptance-audit.md) and
+[v5 acceptance contract](../../docs/task-189-acceptance-freeze.json).
+
+**Conditional portability disposition:** 59 vendor/session cells remain unexecuted
+`Residual`; no unverified native `Exact` or unsupported mandatory variant is
+claimed. Extending these cells requires native vendor execution before claiming
+`Exact`. This is an accepted conditional boundary, not incomplete TASK-189 core.
+
+**Done means child AC complete, not merged, released or parent-approved.** This PR
+must remain unmerged until maintainer action; TASK-74 remains To Do, TASK-127
+remains blocked until this PR merges, and TASK-128 retains the advanced-frame
+work. New `PhysicalFiniteWindowExact` public fields require a future major
+release under the documented SemVer contract. CI must be checked again on this
+metadata-only final PR head before merging.
