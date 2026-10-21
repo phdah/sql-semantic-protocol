@@ -1,7 +1,7 @@
 //! Root query orchestration and SELECT-level filtering.
 
-use crate::protocol::WindowGroupedCountSource;
 use super::*;
+use crate::protocol::WindowGroupedCountSource;
 
 /// A plain derived SELECT preserves physical row identity only when it adds
 /// neither filters nor row-shaping. Use this narrow certified path exclusively
@@ -111,51 +111,109 @@ fn qualify_grouped_count_source(
     query: &SqlQuery,
     dependencies: &BTreeSet<String>,
 ) -> Option<WindowGroupedCountSource> {
-    if dependencies.len() != 1 { return None; }
+    if dependencies.len() != 1 {
+        return None;
+    }
     let source = dependencies.iter().next()?;
-    let SetExpr::Select(outer) = query.body.as_ref() else { return None; };
-    let [from] = outer.from.as_slice() else { return None; };
-    if !from.joins.is_empty() { return None; }
-    let TableFactor::Derived { subquery, .. } = &from.relation else { return None; };
+    let SetExpr::Select(outer) = query.body.as_ref() else {
+        return None;
+    };
+    let [from] = outer.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
+    let TableFactor::Derived { subquery, .. } = &from.relation else {
+        return None;
+    };
     if subquery.with.is_some() || subquery.limit_clause.is_some() || subquery.fetch.is_some() {
         return None;
     }
-    let SetExpr::Select(inner) = subquery.body.as_ref() else { return None; };
-    let [inner_from] = inner.from.as_slice() else { return None; };
-    if !matches!(&inner_from.relation, TableFactor::Table { sample: None, .. })
-        || !inner_from.joins.is_empty() || inner.selection.is_some()
-        || inner.qualify.is_some() || inner.having.is_some()
-        || inner.distinct.is_some() || inner.top.is_some()
-        || inner.prewhere.is_some() || inner.connect_by.is_some()
+    let SetExpr::Select(inner) = subquery.body.as_ref() else {
+        return None;
+    };
+    let [inner_from] = inner.from.as_slice() else {
+        return None;
+    };
+    if !matches!(
+        &inner_from.relation,
+        TableFactor::Table { sample: None, .. }
+    ) || !inner_from.joins.is_empty()
+        || inner.selection.is_some()
+        || inner.qualify.is_some()
+        || inner.having.is_some()
+        || inner.distinct.is_some()
+        || inner.top.is_some()
+        || inner.prewhere.is_some()
+        || inner.connect_by.is_some()
         || !inner.lateral_views.is_empty()
-    { return None; }
-    let GroupByExpr::Expressions(group, modifiers) = &inner.group_by else { return None; };
-    let [Expr::Identifier(group_column)] = group.as_slice() else { return None; };
-    if !modifiers.is_empty() || inner.projection.len() != 2 { return None; }
-    let group_matches = inner.projection.iter().filter(|projection| match projection {
-        SelectItem::UnnamedExpr(Expr::Identifier(name)) => name.value == group_column.value,
-        SelectItem::ExprWithAlias { expr: Expr::Identifier(name), alias } =>
-            name.value == group_column.value && alias.value == group_column.value,
-        _ => false,
-    }).count() == 1;
-    if !group_matches { return None; }
+    {
+        return None;
+    }
+    let GroupByExpr::Expressions(group, modifiers) = &inner.group_by else {
+        return None;
+    };
+    let [Expr::Identifier(group_column)] = group.as_slice() else {
+        return None;
+    };
+    if !modifiers.is_empty() || inner.projection.len() != 2 {
+        return None;
+    }
+    let group_matches = inner
+        .projection
+        .iter()
+        .filter(|projection| match projection {
+            SelectItem::UnnamedExpr(Expr::Identifier(name)) => name.value == group_column.value,
+            SelectItem::ExprWithAlias {
+                expr: Expr::Identifier(name),
+                alias,
+            } => name.value == group_column.value && alias.value == group_column.value,
+            _ => false,
+        })
+        .count()
+        == 1;
+    if !group_matches {
+        return None;
+    }
     let mut count_alias = None;
     for projection in &inner.projection {
-        let SelectItem::ExprWithAlias { expr: Expr::Function(function), alias } = projection
-            else { continue; };
+        let SelectItem::ExprWithAlias {
+            expr: Expr::Function(function),
+            alias,
+        } = projection
+        else {
+            continue;
+        };
         if !function.name.to_string().eq_ignore_ascii_case("count")
-            || function.over.is_some() || function.filter.is_some() || function.null_treatment.is_some()
-        { continue; }
-        let FunctionArguments::List(args) = &function.args else { continue; };
-        if !args.clauses.is_empty() || args.duplicate_treatment.is_some()
-            || !matches!(args.args.as_slice(), [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)])
-        { continue; }
+            || function.over.is_some()
+            || function.filter.is_some()
+            || function.null_treatment.is_some()
+        {
+            continue;
+        }
+        let FunctionArguments::List(args) = &function.args else {
+            continue;
+        };
+        if !args.clauses.is_empty()
+            || args.duplicate_treatment.is_some()
+            || !matches!(
+                args.args.as_slice(),
+                [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)]
+            )
+        {
+            continue;
+        }
         count_alias = Some(alias.value.clone());
     }
     let count_alias = count_alias?;
-    if count_alias == group_column.value { return None; }
+    if count_alias == group_column.value {
+        return None;
+    }
     Some(WindowGroupedCountSource::new(
-        source.clone(), group_column.value.clone(), count_alias
+        source.clone(),
+        group_column.value.clone(),
+        count_alias,
     ))
 }
 
@@ -446,7 +504,8 @@ pub(super) fn analyze_query(
     // These are the only upstream row-shapes whose physical QUALIFY
     // composition is currently certified. Any unrelated row shaping fails closed.
     let composed_rank_outer = query.with.is_none()
-        && query.limit_clause.is_none() && query.fetch.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.qualify.is_some() && select.top.is_none()
                 && select.distinct.is_none() && select.selection.is_none()
