@@ -228,8 +228,8 @@ fn ambiguous_peer_ties_fail_closed_and_bad_source_is_impossible() {
     let target = bundle.layers().last().unwrap().id();
     assert!(matches!(
         physical_finite_window_bag_plan(&bundle, target, &[source(peers)]),
-        PhysicalFiniteWindowProof::Exact(_)
-    )); // Unique values happen not to tie: physical cardinality is authoritative.
+        PhysicalFiniteWindowProof::Residual { .. }
+    )); // Tied ROW_NUMBER identities cannot be chosen from source insertion order.
 
     let initial = &matrix["cases"][0];
     let bundle = analyze(initial);
