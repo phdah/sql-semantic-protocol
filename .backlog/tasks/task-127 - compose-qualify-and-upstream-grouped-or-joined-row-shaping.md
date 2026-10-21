@@ -1,7 +1,7 @@
 ---
 id: TASK-127
 title: Compose QUALIFY and upstream grouped or joined row shaping
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
