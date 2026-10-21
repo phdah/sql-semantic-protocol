@@ -393,8 +393,10 @@ fn conditional_decimal_native_duckdb_oracles_do_not_overclaim_portable_exactness
             let status = case["native_execution_disposition_by_dialect"][dialect]
                 .as_str()
                 .unwrap();
-            if *dialect != "duckdb" {
-                assert_eq!(status, "residual_native_vendor_or_session_unattested");
+            match *dialect {
+                "duckdb" => assert_eq!(status, "duckdb_native_oracle_executed_in_ci"),
+                "sqlite" => assert_eq!(status, "sqlite_native_oracle_executed_in_ci"),
+                _ => assert_eq!(status, "residual_native_vendor_or_session_unattested"),
             }
             let bundle = analyze(case, dialect);
             let target = bundle.layers().last().unwrap().id();
