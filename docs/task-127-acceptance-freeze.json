@@ -42,7 +42,8 @@
     "upstream two-input INNER JOIN",
     "upstream GROUP BY and COUNT",
     "peer-aware RANK/DENSE_RANK",
-    "rejected peers and no-survivor classification"
+    "rejected peers and no-survivor classification",
+    "peer-stable exact RANK/DENSE_RANK on duplicate ORDER BY keys"
   ],
   "conditional_inventory": [
     {
@@ -573,6 +574,143 @@
       "oracle_status": "pending_independent_duckdb"
     },
     {
+      "id": "74-C127-P6",
+      "fixture_id": "74-C127-P",
+      "family": "peer_stable_rank_dense_rank",
+      "sql": "SELECT id, k, x FROM s QUALIFY RANK() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST) = 1 AND DENSE_RANK() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST) = 1",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER NOT NULL",
+          "k": "INTEGER NOT NULL",
+          "x": "INTEGER NULL"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 3
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": 3
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 1
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": 3
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 2
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 1
+          }
+        ]
+      },
+      "physical_row_identities": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "selected_source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#3"
+      ],
+      "rejected_source_row_ids": [
+        "s#2",
+        "s#4",
+        "s#5"
+      ],
+      "expected_full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 3
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 3
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 3
+        }
+      ],
+      "typed_terminal_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "inclusive_bounds": [
+            1,
+            4
+          ]
+        },
+        "k": {
+          "type": "INTEGER",
+          "nullable": false,
+          "inclusive_bounds": [
+            0,
+            1
+          ]
+        },
+        "x": {
+          "type": "INTEGER",
+          "nullable": false,
+          "inclusive_bounds": [
+            3,
+            3
+          ]
+        }
+      },
+      "membership": {
+        "positive": "Exact",
+        "not_true": "Exact",
+        "sql_unknown_is_not_true": true
+      },
+      "proof": "mandatory_exact",
+      "conditional_owner": null,
+      "reason": null,
+      "parser_status_by_dialect": {
+        "generic": "pending_observation",
+        "mysql": "pending_observation",
+        "postgresql": "pending_observation",
+        "hive": "pending_observation",
+        "sqlite": "pending_observation",
+        "snowflake": "pending_observation",
+        "redshift": "pending_observation",
+        "mssql": "pending_observation",
+        "clickhouse": "pending_observation",
+        "bigquery": "pending_observation",
+        "ansi": "pending_observation",
+        "duckdb": "pending_observation",
+        "databricks": "pending_observation"
+      },
+      "adapter_status": {
+        "direct_sql": "pending",
+        "dbt_compiled": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle_status": "pending_independent_duckdb"
+    },
+    {
       "id": "74-C127-N2",
       "fixture_id": "74-C127-N",
       "family": "peer_tie_order",
@@ -864,7 +1002,8 @@
     "74-C127-P3",
     "74-C127-N1",
     "74-C127-P4",
-    "74-C127-P5"
+    "74-C127-P5",
+    "74-C127-P6"
   ],
   "status": "frozen_before_semantic_changes_verification_pending"
 }
