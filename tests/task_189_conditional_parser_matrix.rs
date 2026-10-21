@@ -122,7 +122,10 @@ fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
     let matrix: Value =
         serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json")).unwrap();
     assert_eq!(matrix["version"], 5);
-    assert!(matrix["mandatory_unverified"].as_array().unwrap().is_empty());
+    assert!(matrix["mandatory_unverified"]
+        .as_array()
+        .unwrap()
+        .is_empty());
     let dialects = matrix["required_dialects"].as_array().unwrap();
     let adapters = matrix["required_adapters"].as_array().unwrap();
     assert_eq!(dialects.len(), 13);
@@ -140,7 +143,10 @@ fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
             "Exact" => {
                 mandatory += 1;
                 assert!(!case["full_terminal_bag"].as_array().unwrap().is_empty());
-                assert!(!case["typed_terminal_domains"].as_array().unwrap().is_empty());
+                assert!(!case["typed_terminal_domains"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty());
                 assert_eq!(
                     case["source_bag"].as_array().unwrap().len(),
                     case["source_row_ids"].as_array().unwrap().len()
@@ -150,8 +156,7 @@ fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
                     assert_eq!(
                         case["parser_status_by_dialect"][dialect], "parsed",
                         "{}/{}",
-                        case["id"],
-                        dialect
+                        case["id"], dialect
                     );
                 }
                 for adapter in adapters {
@@ -159,8 +164,7 @@ fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
                     assert_eq!(
                         case["expected_adapter_cells"][adapter], "Exact_required",
                         "{}/{}",
-                        case["id"],
-                        adapter
+                        case["id"], adapter
                     );
                 }
             }
@@ -179,8 +183,7 @@ fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
                     assert_eq!(
                         case["expected_adapter_cells"][adapter], "Residual_required",
                         "{}/{}",
-                        case["id"],
-                        adapter
+                        case["id"], adapter
                     );
                 }
             }
