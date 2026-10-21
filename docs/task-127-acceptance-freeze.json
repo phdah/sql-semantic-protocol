@@ -49,20 +49,20 @@
     {
       "name": "peer_tie_order",
       "owner": "TASK-127",
-      "disposition": "Residual pending independent tie-break law",
-      "release_review": "pending"
+      "disposition": "Residual: underordered ROW_NUMBER has no physical row identity; RANK/DENSE_RANK with ties are independently proved",
+      "release_review": "reviewed_bounded_residual_pending_release"
     },
     {
       "name": "unattested native QUALIFY vendor laws",
       "owner": "TASK-127",
-      "disposition": "Residual, never parser-only native execution claim",
-      "release_review": "pending"
+      "disposition": "Residual: 13 dialects certify parser/canonical paths, not 13 native runtime laws; only DuckDB has an independent executable oracle",
+      "release_review": "reviewed_bounded_residual_pending_release"
     },
     {
       "name": "unsupported computed/grouped/joined projection",
       "owner": "TASK-127",
-      "disposition": "Residual pending typed source-producer and output laws",
-      "release_review": "pending"
+      "disposition": "Residual: grouped COUNT(*) and two-source INNER equality JOIN are exact only for certified canonical shapes and attested signed integer domains; other producers and projections fail closed",
+      "release_review": "reviewed_bounded_residual_pending_release"
     }
   ],
   "cases": [
@@ -196,7 +196,7 @@
         "dbt_compiled": "verified_exact",
         "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-P2",
@@ -328,7 +328,7 @@
         "dbt_compiled": "verified_exact",
         "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-P3",
@@ -460,7 +460,7 @@
         "dbt_compiled": "verified_exact",
         "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-N1",
@@ -571,7 +571,7 @@
         "dbt_compiled": "verified_exact",
         "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-P6",
@@ -708,7 +708,7 @@
         "dbt_compiled": "verified_exact",
         "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-N2",
@@ -895,11 +895,11 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     },
     {
       "id": "74-C127-P5",
@@ -989,21 +989,13 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
-      "oracle_status": "pending_independent_duckdb"
+      "oracle_status": "verified_independent_duckdb"
     }
   ],
-  "mandatory_unverified": [
-    "74-C127-P1",
-    "74-C127-P2",
-    "74-C127-P3",
-    "74-C127-N1",
-    "74-C127-P4",
-    "74-C127-P5",
-    "74-C127-P6"
-  ],
-  "status": "frozen_before_semantic_changes_verification_pending"
+  "mandatory_unverified": [],
+  "status": "verified_bounded_child"
 }
