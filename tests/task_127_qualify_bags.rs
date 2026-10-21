@@ -43,16 +43,14 @@ fn source(case: &Value) -> PhysicalWriteState {
 fn analyze(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
     let sql = SqlInput::inline(case["sql"].as_str().unwrap());
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "s",
-            ["id", "k", "x"]
-                .into_iter()
-                .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
-                .collect(),
-        )
-        .unwrap(),
-    ])
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "s",
+        ["id", "k", "x"]
+            .into_iter()
+            .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
+            .collect(),
+    )
+    .unwrap()])
     .unwrap();
     analyze_configured_inputs_with_catalog(
         &[ConfiguredSqlInput::new(
@@ -90,7 +88,10 @@ fn expected(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 }
 
 fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut sorted = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut sorted = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     sorted.sort();
     sorted
 }
@@ -191,13 +192,20 @@ fn selected_and_not_true_rank_conjunctions_match_complete_duckdb_bags() {
             exact.terminal_row_ids.len() + exact.rejected_row_ids.len(),
             "{id}: every source row must be classified"
         );
-        assert_eq!(bag(&exact.terminal), bag(&expected(case)), "{id}: protocol bag");
+        assert_eq!(
+            bag(&exact.terminal),
+            bag(&expected(case)),
+            "{id}: protocol bag"
+        );
         assert_eq!(bag(&exact.terminal), bag(&duckdb(case)), "{id}: DuckDB bag");
         for (column, domain) in case["typed_terminal_domains"].as_object().unwrap() {
             let bounds = &domain["inclusive_bounds"];
             let actual = exact.terminal_domains.get(column).unwrap();
             if bounds.is_null() {
-                assert!(matches!(actual, ValueDomain::Empty), "{id}/{column}: empty domain");
+                assert!(
+                    matches!(actual, ValueDomain::Empty),
+                    "{id}/{column}: empty domain"
+                );
             } else {
                 let expected_min = bounds[0].as_i64().unwrap();
                 let expected_max = bounds[1].as_i64().unwrap();
@@ -213,8 +221,16 @@ fn selected_and_not_true_rank_conjunctions_match_complete_duckdb_bags() {
                     })
                     .collect::<Vec<_>>();
                 integers.sort();
-                assert_eq!(integers.first().copied(), Some(expected_min), "{id}/{column}");
-                assert_eq!(integers.last().copied(), Some(expected_max), "{id}/{column}");
+                assert_eq!(
+                    integers.first().copied(),
+                    Some(expected_min),
+                    "{id}/{column}"
+                );
+                assert_eq!(
+                    integers.last().copied(),
+                    Some(expected_max),
+                    "{id}/{column}"
+                );
             }
         }
     }
@@ -241,7 +257,10 @@ fn ambiguous_peer_ties_fail_closed_and_bad_source_is_impossible() {
     let impossible = PhysicalWriteState::new(
         "s",
         vec![PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Number("2147483648".to_string())),
+            (
+                "id".to_string(),
+                LiteralValue::Number("2147483648".to_string()),
+            ),
             ("k".to_string(), LiteralValue::Number("0".to_string())),
             ("x".to_string(), LiteralValue::Number("3".to_string())),
         ]))
