@@ -241,7 +241,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn fixed_point_exact_cases_match_all_dialects_and_independent_duckdb_bags() {
     let freeze = cases();
-    assert_eq!(freeze["version"], 4);
+    assert_eq!(freeze["version"], 5);
     for case in freeze["numeric_oracle_cases"]
         .as_array()
         .unwrap()
