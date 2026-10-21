@@ -277,3 +277,28 @@ fn ambiguous_peer_ties_fail_closed_and_bad_source_is_impossible() {
         PhysicalFiniteWindowProof::Impossible { .. }
     ));
 }
+
+#[test]
+fn inspect_canonical_composed_queries_task127() {
+    let matrix = freeze();
+    for id in ["74-C127-P4", "74-C127-P5"] {
+        let case = matrix["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let mut schemas = Vec::new();
+        for (relation, columns) in case["source_schema"].as_object().unwrap() {
+            schemas.push(RelationSchema::new(relation, columns.as_object().unwrap().iter()
+                .map(|(n, ty)| SchemaColumn::from_sql_type(n, ty.as_str().unwrap(), "duckdb").unwrap())
+                .collect()).unwrap());
+        }
+        let parser = dialect_from_name("duckdb").unwrap();
+        let sql = SqlInput::inline(case["sql"].as_str().unwrap());
+        let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+        let bundle = analyze_configured_inputs_with_catalog(&[
+            ConfiguredSqlInput::new(id, &sql, "duckdb", parser.as_ref())
+        ], &catalog).unwrap();
+        eprintln!("INSPECT {id} layers={} graph={:#?}",bundle.layers().len(),bundle.graph());
+        for layer in bundle.layers() {
+            eprintln!("INSPECT {id} layer={} consumes={:?} produces={:?} semantics={:#?}",layer.id(),layer.consumes(),layer.produces(),layer.composed_semantics());
+        }
+    }
+    panic!("inspection only");
+}
