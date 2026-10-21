@@ -116,3 +116,76 @@ fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() 
         (6, 5, 1, 59, 7)
     );
 }
+
+#[test]
+fn exact_mandatory_cells_and_reviewed_residuals_are_distinct() {
+    let matrix: Value =
+        serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json")).unwrap();
+    assert_eq!(matrix["version"], 5);
+    assert!(matrix["mandatory_unverified"].as_array().unwrap().is_empty());
+    let dialects = matrix["required_dialects"].as_array().unwrap();
+    let adapters = matrix["required_adapters"].as_array().unwrap();
+    assert_eq!(dialects.len(), 13);
+    assert_eq!(adapters.len(), 3);
+
+    let mut mandatory = 0;
+    let mut conditional = 0;
+    for case in matrix["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .chain(matrix["numeric_oracle_cases"].as_array().unwrap())
+    {
+        match case["proof"].as_str().unwrap() {
+            "Exact" => {
+                mandatory += 1;
+                assert!(!case["full_terminal_bag"].as_array().unwrap().is_empty());
+                assert!(!case["typed_terminal_domains"].as_array().unwrap().is_empty());
+                assert_eq!(
+                    case["source_bag"].as_array().unwrap().len(),
+                    case["source_row_ids"].as_array().unwrap().len()
+                );
+                for dialect in dialects {
+                    let dialect = dialect.as_str().unwrap();
+                    assert_eq!(
+                        case["parser_status_by_dialect"][dialect], "parsed",
+                        "{}/{}",
+                        case["id"],
+                        dialect
+                    );
+                }
+                for adapter in adapters {
+                    let adapter = adapter.as_str().unwrap();
+                    assert_eq!(
+                        case["expected_adapter_cells"][adapter], "Exact_required",
+                        "{}/{}",
+                        case["id"],
+                        adapter
+                    );
+                }
+            }
+            "Residual_expected" => {
+                conditional += 1;
+                assert!(
+                    case["release_disposition"]
+                        .as_str()
+                        .unwrap()
+                        .starts_with("Reviewed conditional Residual:"),
+                    "{}: conditional release requires an explicit review",
+                    case["id"]
+                );
+                for adapter in adapters {
+                    let adapter = adapter.as_str().unwrap();
+                    assert_eq!(
+                        case["expected_adapter_cells"][adapter], "Residual_required",
+                        "{}/{}",
+                        case["id"],
+                        adapter
+                    );
+                }
+            }
+            other => panic!("unreviewed TASK-189 proof classification: {other}"),
+        }
+    }
+    assert_eq!((mandatory, conditional), (10, 8));
+}
