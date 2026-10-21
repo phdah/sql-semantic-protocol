@@ -18,8 +18,10 @@ fn fixed_point_decimal_results_agree_across_direct_compiled_dbt_and_odcs() {
     let parser = dialect_from_name("postgresql").unwrap();
     let sql_dialect = "postgresql";
     let external_names = RelationCatalog::new(&[source_name]).unwrap();
-    let odcs = parse_odcs_yaml(
-        r#"
+    for case in freeze["numeric_oracle_cases"].as_array().unwrap() {
+        let x_type = case["source_schema"]["x"].as_str().unwrap();
+        let contract = format!(
+            r#"
 apiVersion: v3.2.0
 kind: DataContract
 id: task189decimal
@@ -35,20 +37,11 @@ schema:
       - name: k
         physicalType: INTEGER
       - name: x
-        physicalType: DECIMAL(10,2)
-"#,
-        sql_dialect,
-        &external_names,
-    )
-    .unwrap();
-    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
-
-    for case in freeze["numeric_oracle_cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|case| case["proof"] == "Exact")
-    {
+        physicalType: {x_type}
+"#
+        );
+        let odcs = parse_odcs_yaml(&contract, sql_dialect, &external_names).unwrap();
+        let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"]
             .as_str()
@@ -57,7 +50,7 @@ schema:
         let input = SqlInput::inline(&sql);
         let source_schema = RelationSchema::new(
             source_name,
-            [("id", "INTEGER"), ("k", "INTEGER"), ("x", "DECIMAL(10,2)")]
+            [("id", "INTEGER"), ("k", "INTEGER"), ("x", x_type)]
                 .into_iter()
                 .map(|(name, ty)| SchemaColumn::from_sql_type(name, ty, sql_dialect).unwrap())
                 .collect(),
@@ -107,7 +100,7 @@ schema:
                     "columns": {
                         "id": {"name":"id", "data_type":"INTEGER"},
                         "k": {"name":"k", "data_type":"INTEGER"},
-                        "x": {"name":"x", "data_type":"DECIMAL(10,2)"}
+                        "x": {"name":"x", "data_type":x_type}
                     }
                 }
             }
@@ -157,24 +150,34 @@ schema:
                 layer.id(),
                 std::slice::from_ref(&physical),
             );
-            let PhysicalFiniteWindowProof::Exact(exact) = proof else {
-                panic!("{id}/{adapter}: adapter lost decimal physical proof: {proof:?}");
-            };
-            assert_eq!(
-                case["expected_adapter_cells"][adapter], "Exact_required",
-                "{id}"
-            );
-            assert_eq!(exact.source, source_name);
-            results.push(format!(
-                "{:?}",
-                (
-                    exact.source_row_ids,
-                    exact.terminal_row_ids,
-                    exact.rejected_row_ids,
-                    exact.terminal,
-                    exact.terminal_domains
-                )
-            ));
+            match case["proof"].as_str().unwrap() {
+                "Exact" => {
+                    assert_eq!(case["expected_adapter_cells"][adapter], "Exact_required");
+                    let PhysicalFiniteWindowProof::Exact(exact) = proof else {
+                        panic!("{id}/{adapter}: adapter lost decimal physical proof: {proof:?}");
+                    };
+                    assert_eq!(exact.source, source_name);
+                    results.push(format!(
+                        "{:?}",
+                        (
+                            exact.source_row_ids,
+                            exact.terminal_row_ids,
+                            exact.rejected_row_ids,
+                            exact.terminal,
+                            exact.terminal_domains
+                        )
+                    ));
+                }
+                "Residual_expected" => {
+                    assert_eq!(case["expected_adapter_cells"][adapter], "Residual_required");
+                    assert!(
+                        matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
+                        "{id}/{adapter}: unattested numeric law must stay Residual: {proof:?}"
+                    );
+                    results.push("Residual".into());
+                }
+                other => panic!("{id}/{adapter}: unreviewed numeric classification: {other}"),
+            }
         }
         assert_eq!(results.len(), 3, "{id}");
         assert_eq!(results[0], results[1], "{id}: compiled dbt decimal parity");
