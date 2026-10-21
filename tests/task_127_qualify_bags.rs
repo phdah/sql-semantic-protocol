@@ -278,28 +278,96 @@ fn ambiguous_peer_ties_fail_closed_and_bad_source_is_impossible() {
     ));
 }
 
+fn composed(case: &Value) -> PhysicalFiniteWindowProof {
+    let schemas = case["source_schema"].as_object().unwrap().iter()
+        .map(|(relation, columns)| {
+            RelationSchema::new(
+                relation,
+                columns.as_object().unwrap().iter()
+                    .map(|(name, kind)|
+                        SchemaColumn::from_sql_type(name,kind.as_str().unwrap(),"duckdb").unwrap()
+                    ).collect(),
+            ).unwrap()
+        }).collect::<Vec<_>>();
+    let parser = dialect_from_name("duckdb").unwrap();
+    let input = SqlInput::inline(case["sql"].as_str().unwrap());
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            case["id"].as_str().unwrap(), &input, "duckdb", parser.as_ref(),
+        )], &catalog,
+    ).unwrap();
+    let states = case["physical_source_bags"].as_object().unwrap().iter()
+        .map(|(relation,rows)| PhysicalWriteState::new(
+            relation,
+            rows.as_array().unwrap().iter().map(|row| PhysicalWriteRow::new(
+                row.as_object().unwrap().iter().map(|(name,value)|(
+                    name.clone(),
+                    if value.is_null() { LiteralValue::Null }
+                    else { LiteralValue::Number(value.to_string()) },
+                )).collect(),
+            ).unwrap()).collect(),
+        ).unwrap()).collect::<Vec<_>>();
+    physical_finite_window_bag_plan(
+        &bundle, bundle.layers().last().unwrap().id(), &states,
+    )
+}
+
 #[test]
-fn inspect_canonical_composed_queries_task127() {
+fn joined_and_grouped_qualify_have_complete_physical_contributors() {
     let matrix = freeze();
     for id in ["74-C127-P4", "74-C127-P5"] {
-        let case = matrix["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
-        let mut schemas = Vec::new();
-        for (relation, columns) in case["source_schema"].as_object().unwrap() {
-            schemas.push(RelationSchema::new(relation, columns.as_object().unwrap().iter()
-                .map(|(n, ty)| SchemaColumn::from_sql_type(n, ty.as_str().unwrap(), "duckdb").unwrap())
-                .collect()).unwrap());
+        let case = matrix["cases"].as_array().unwrap().iter()
+            .find(|case| case["id"] == id).unwrap();
+        let proof = composed(case);
+        let PhysicalFiniteWindowProof::Exact(exact) = proof else {
+            panic!("{id}: missing upstream source-backed exact proof: {proof:?}");
+        };
+        assert_eq!(bag(&exact.terminal),bag(&expected(case)),"{id}: terminal bag");
+        assert_eq!(
+            exact.source_row_ids.len(),
+            exact.terminal_row_ids.len() + exact.rejected_row_ids.len(),
+            "{id}: every materialized producer row classified",
+        );
+        for (name,domain) in case["typed_terminal_domains"].as_object().unwrap() {
+            let ValueDomain::Set(values) = &exact.terminal_domains[name] else {
+                panic!("{id}/{name}: missing finite output domain");
+            };
+            let mut numbers = values.values().iter().map(|value|match value.value() {
+                LiteralValue::Number(number) => number.parse::<i64>().unwrap(),
+                other => panic!("{id}/{name}: unexpected domain literal {other:?}"),
+            }).collect::<Vec<_>>();
+            numbers.sort();
+            assert_eq!(numbers.first().copied(),domain["inclusive_bounds"][0].as_i64());
+            assert_eq!(numbers.last().copied(),domain["inclusive_bounds"][1].as_i64());
         }
-        let parser = dialect_from_name("duckdb").unwrap();
-        let sql = SqlInput::inline(case["sql"].as_str().unwrap());
-        let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
-        let bundle = analyze_configured_inputs_with_catalog(&[
-            ConfiguredSqlInput::new(id, &sql, "duckdb", parser.as_ref())
-        ], &catalog).unwrap();
-        eprintln!("INSPECT {id} layers={}",bundle.layers().len());
-        let states = case["physical_source_bags"].as_object().unwrap().iter().map(|(name,rows)| PhysicalWriteState::new(name, rows.as_array().unwrap().iter().map(|row| PhysicalWriteRow::new(row.as_object().unwrap().iter().map(|(name,v)| (name.clone(),if v.is_null(){LiteralValue::Null}else{LiteralValue::Number(v.to_string())})).collect()).unwrap()).collect()).unwrap()).collect::<Vec<_>>();
-        let proof = physical_finite_window_bag_plan(&bundle, bundle.layers().last().unwrap().id(), &states);
-        eprintln!("PROOF {id}: {proof:?}");
-
+        if id == "74-C127-P4" {
+            assert_eq!(exact.physical_sources,["l","r"]);
+            assert_eq!(exact.source_row_ids,["l#0|r#0","l#0|r#1","l#1|r#2"]);
+            assert_eq!(exact.terminal_row_ids,["l#0|r#0","l#1|r#2"]);
+            assert_eq!(exact.rejected_row_ids,["l#0|r#1"]);
+            assert_eq!(exact.rejected_upstream_row_ids.len(),3);
+            assert_eq!(exact.physical_source_row_ids["l"],["l#0","l#1"]);
+            assert_eq!(exact.physical_source_row_ids["r"],["r#0","r#1","r#2"]);
+            assert_eq!(exact.producer_contributors["l#0|r#0"],["l#0","r#0"]);
+        } else {
+            assert_eq!(exact.physical_sources,["s"]);
+            assert_eq!(exact.source_row_ids,["group(k=0)","group(k=1)"]);
+            assert_eq!(exact.terminal_row_ids,["group(k=0)"]);
+            assert_eq!(exact.rejected_row_ids,["group(k=1)"]);
+            assert!(exact.rejected_upstream_row_ids.is_empty());
+            assert_eq!(exact.physical_source_row_ids["s"].len(),6);
+            assert_eq!(exact.producer_contributors["group(k=0)"],["s#0","s#1","s#2"]);
+            assert_eq!(exact.producer_contributors["group(k=1)"],["s#3","s#4","s#5"]);
+        }
     }
-    panic!("inspection only");
+}
+
+#[test]
+fn composed_join_underordered_peers_are_not_promoted_to_exact() {
+    let matrix = freeze();
+    let mut case = matrix["cases"].as_array().unwrap().iter()
+        .find(|case|case["id"]=="74-C127-P4").unwrap().clone();
+    case["physical_source_bags"]["r"][1]["x"] = serde_json::json!(3);
+    assert!(matches!(composed(&case),PhysicalFiniteWindowProof::Residual{..}));
 }
