@@ -82,21 +82,30 @@ fn frozen_qualify_matrix_has_all_complete_evidence_and_owned_residuals() {
                 "{id}/{name}",
             );
         }
-        assert!(case["sql"].as_str().unwrap().contains("QUALIFY"),"{id}");
-        assert!(!case["physical_source_bags"].as_object().unwrap().is_empty(),"{id}");
-        assert!(case["expected_full_terminal_bag"].is_array(),"{id}");
-        assert!(case["typed_terminal_domains"].is_object(),"{id}");
+        assert!(case["sql"].as_str().unwrap().contains("QUALIFY"), "{id}");
+        assert!(
+            !case["physical_source_bags"].as_object().unwrap().is_empty(),
+            "{id}"
+        );
+        assert!(case["expected_full_terminal_bag"].is_array(), "{id}");
+        assert!(case["typed_terminal_domains"].is_object(), "{id}");
     }
-    assert_eq!((exact,residual),(7,1));
-    assert_eq!(record["verified_mandatory_exact_cases"],exact);
-    assert_eq!(record["conditional_residual_cases"],residual);
-    assert_eq!(record["verified_adapter_cells"],24);
-    assert_eq!(record["verified_dialect_parser_cells"],104);
+    assert_eq!((exact, residual), (7, 1));
+    assert_eq!(record["verified_mandatory_exact_cases"], exact);
+    assert_eq!(record["conditional_residual_cases"], residual);
+    assert_eq!(record["verified_adapter_cells"], 24);
+    assert_eq!(record["verified_dialect_parser_cells"], 104);
     let boundaries = frozen["conditional_inventory"].as_array().unwrap();
-    assert_eq!(boundaries.len(),3);
+    assert_eq!(boundaries.len(), 3);
     for case in boundaries {
-        assert_eq!(case["owner"],"TASK-127");
-        assert_eq!(case["release_review"],"reviewed_bounded_residual_pending_release");
-        assert!(case["disposition"].as_str().unwrap().starts_with("Residual:"));
+        assert_eq!(case["owner"], "TASK-127");
+        assert_eq!(
+            case["release_review"],
+            "reviewed_bounded_residual_pending_release"
+        );
+        assert!(case["disposition"]
+            .as_str()
+            .unwrap()
+            .starts_with("Residual:"));
     }
 }
