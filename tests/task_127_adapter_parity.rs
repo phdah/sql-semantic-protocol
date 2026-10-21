@@ -53,8 +53,7 @@ schema:
         let id = case["id"].as_str().unwrap();
         if !matches!(
             id,
-            "74-C127-P1" | "74-C127-P2" | "74-C127-P3" | "74-C127-P6"
-                | "74-C127-N1" | "74-C127-N2"
+            "74-C127-P1" | "74-C127-P2" | "74-C127-P3" | "74-C127-P6" | "74-C127-N1" | "74-C127-N2"
         ) {
             continue;
         }
@@ -65,12 +64,22 @@ schema:
             .replace("FROM s", "FROM warehouse.raw.s");
         let input = SqlInput::inline(&sql);
         let direct = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                dialect,
+                parser.as_ref(),
+            )],
             &direct_catalog,
         )
         .unwrap();
         let from_odcs = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                dialect,
+                parser.as_ref(),
+            )],
             &external,
         )
         .unwrap();
@@ -104,8 +113,7 @@ schema:
             }
         });
         let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
-        let dbt =
-            analyze_dbt_manifest_with_schemas(&manifest, dialect, parser.as_ref()).unwrap();
+        let dbt = analyze_dbt_manifest_with_schemas(&manifest, dialect, parser.as_ref()).unwrap();
         let state = PhysicalWriteState::new(
             source,
             case["physical_source_bags"]["s"]
@@ -143,11 +151,8 @@ schema:
                 .iter()
                 .find(|layer| layer.consumes().iter().any(|name| name == source))
                 .unwrap_or_else(|| panic!("{id}/{adapter}: lost physical source"));
-            let proof = physical_finite_window_bag_plan(
-                &bundle,
-                target.id(),
-                std::slice::from_ref(&state),
-            );
+            let proof =
+                physical_finite_window_bag_plan(&bundle, target.id(), std::slice::from_ref(&state));
             if id == "74-C127-N2" {
                 assert!(
                     matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
@@ -174,8 +179,13 @@ schema:
                 assert_eq!(exact.rejected_row_ids, rejected, "{id}/{adapter}");
                 outcomes.push(format!(
                     "{:?}",
-                    (exact.source_row_ids, exact.terminal_row_ids, exact.rejected_row_ids,
-                     exact.terminal, exact.terminal_domains)
+                    (
+                        exact.source_row_ids,
+                        exact.terminal_row_ids,
+                        exact.rejected_row_ids,
+                        exact.terminal,
+                        exact.terminal_domains
+                    )
                 ));
             }
         }
