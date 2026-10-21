@@ -3,6 +3,7 @@
   "owner": "TASK-189",
   "parent": "TASK-74",
   "frozen_at": "2026-10-20",
+  "conditional_reviewed_at": "2026-10-21",
   "fixture_ids": [
     "74-C189-P",
     "74-C189-N"
@@ -2359,6 +2360,7 @@
       ],
       "proof": "Residual_expected",
       "reason": "0.10 and 0.20 cannot be represented exactly in a binary floating engine; cross-vendor promotion/rounding session law is unverified",
+      "release_disposition": "Reviewed conditional Residual: SQLite floating NUMERIC SUM and DuckDB DECIMAL SUM differ in arithmetic representation; exact cross-vendor fractional precision is not attested.",
       "source_row_ids": [
         "s#0",
         "s#1"
@@ -2435,6 +2437,7 @@
       ],
       "proof": "Residual_expected",
       "reason": "source DECIMAL(5,2) contains binary-exact 999.75, but SUM(999.75+999.75) exceeds source precision; vendor result promotion or overflow requires session attestation",
+      "release_disposition": "Reviewed conditional Residual: source DECIMAL(5,2) SUM exceeds source precision and engine-specific output promotion/overflow is not certified; DuckDB/SQLite runtime outcomes are not portable proof.",
       "source_row_ids": [
         "s#0",
         "s#1"
