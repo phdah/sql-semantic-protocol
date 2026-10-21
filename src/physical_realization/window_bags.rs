@@ -29,6 +29,14 @@ pub struct PhysicalFiniteWindowExact {
     pub terminal_row_ids: Vec<String>,
     /// Source identities for which the SQL QUALIFY predicate is NOT TRUE.
     pub rejected_row_ids: Vec<String>,
+    /// All independently controlled physical source relations; never a derived producer.
+    pub physical_sources: Vec<String>,
+    /// Every physical row identity per source, including JOIN and QUALIFY rejections.
+    pub physical_source_row_ids: BTreeMap<String, Vec<String>>,
+    /// Upstream join Cartesian candidates rejected before QUALIFY.
+    pub rejected_upstream_row_ids: Vec<String>,
+    /// Complete physical contributors for every joined or grouped producer row.
+    pub producer_contributors: BTreeMap<String, Vec<String>>,
     /// Complete terminal row multiset in source identity order.
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Finite and inclusive terminal value domains, including SQL NULL.
@@ -432,7 +440,7 @@ fn window_kind(
 // A conjunction of canonical window comparisons is evaluated against a single
 // complete physical bag. Every comparison is classified under SQL three-valued
 // truth: NULL is NOT TRUE. Unsupported Boolean shapes fail closed.
-fn qualify_comparisons(
+pub(super) fn qualify_comparisons(
     query: &QueryStatement,
 ) -> Result<Vec<(&WindowFunctionExpression, ComparisonOperator, i128)>, &'static str> {
     fn collect<'a>(
@@ -743,9 +751,6 @@ pub fn physical_finite_window_bag_plan(
         PhysicalWriteStatePlan::Residual { reason, .. } => return residual(reason),
         PhysicalWriteStatePlan::Feasible { .. } => {}
     }
-    let [snapshot] = snapshots else {
-        return residual("window evaluation requires one complete physical source");
-    };
     let mut walker = Walker::new(bundle);
     if let Err(gap) = walker.visit(target_layer_id) {
         return residual(gap.as_str());
@@ -756,7 +761,14 @@ pub fn physical_finite_window_bag_plan(
     let Some(query) = query_for(bundle, layer) else {
         return residual("window target has no canonical query");
     };
-    if query.joins().len()>0 || query.output().columns().iter().any(|c| c.name()=="total") { eprintln!("CANONICAL TASK127 query: {query:#?}"); }
+    if query.ranked_composed_goal_shape() {
+        return super::window_composition::composed_window_plan(
+            bundle, query, snapshots, walker.nodes,
+        );
+    }
+    let [snapshot] = snapshots else {
+        return residual("window evaluation requires one complete physical source");
+    };
     let [source] = query.sources() else {
         return residual("window proof requires one direct physical source");
     };
@@ -1018,6 +1030,15 @@ pub fn physical_finite_window_bag_plan(
             .collect(),
         terminal_row_ids,
         rejected_row_ids,
+        physical_sources: vec![source.name().to_string()],
+        physical_source_row_ids: BTreeMap::from([(
+            source.name().to_string(),
+            (0..snapshot.rows().len())
+                .map(|index| format!("{}#{index}", source.name()))
+                .collect(),
+        )]),
+        rejected_upstream_row_ids: Vec::new(),
+        producer_contributors: BTreeMap::new(),
         terminal,
         terminal_domains: domains,
     }))
