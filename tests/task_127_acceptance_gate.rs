@@ -14,27 +14,38 @@ fn frozen_qualify_matrix_has_all_complete_evidence_and_owned_residuals() {
     let dialects = frozen["required_dialects"].as_array().unwrap();
     let adapters = frozen["required_adapters"].as_array().unwrap();
 
-    assert_eq!(frozen["owner"],"TASK-127");
-    assert_eq!(frozen["parent"],"TASK-74");
-    assert_eq!(frozen["status"],"verified_bounded_child");
-    assert!(frozen["mandatory_unverified"].as_array().unwrap().is_empty());
-    assert_eq!(record["status"],"verified_bounded_child");
-    assert_eq!(record["task_127_child_acceptance_criteria_verified"],true);
-    assert_eq!(record["all_original_parent_criteria_verified"],false);
-    assert_eq!(record["release_approved"],false);
-    assert_eq!(cases.len(),8);
-    assert_eq!(dialects.len(),13);
-    assert_eq!(adapters.len(),3);
-    assert_eq!(cases.len()*dialects.len(),104);
-    assert_eq!(cases.len()*adapters.len(),24);
+    assert_eq!(frozen["owner"], "TASK-127");
+    assert_eq!(frozen["parent"], "TASK-74");
+    assert_eq!(frozen["status"], "verified_bounded_child");
+    assert!(frozen["mandatory_unverified"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert_eq!(record["status"], "verified_bounded_child");
+    assert_eq!(record["task_127_child_acceptance_criteria_verified"], true);
+    assert_eq!(record["all_original_parent_criteria_verified"], false);
+    assert_eq!(record["release_approved"], false);
+    assert_eq!(cases.len(), 8);
+    assert_eq!(dialects.len(), 13);
+    assert_eq!(adapters.len(), 3);
+    assert_eq!(cases.len() * dialects.len(), 104);
+    assert_eq!(cases.len() * adapters.len(), 24);
 
     let expected = [
-        "74-C127-P1","74-C127-P2","74-C127-P3","74-C127-P4",
-        "74-C127-P5","74-C127-P6","74-C127-N1","74-C127-N2",
+        "74-C127-P1",
+        "74-C127-P2",
+        "74-C127-P3",
+        "74-C127-P4",
+        "74-C127-P5",
+        "74-C127-P6",
+        "74-C127-N1",
+        "74-C127-N2",
     ];
-    let actual = cases.iter().map(|case|case["id"].as_str().unwrap())
+    let actual = cases
+        .iter()
+        .map(|case| case["id"].as_str().unwrap())
         .collect::<BTreeSet<_>>();
-    assert_eq!(actual,expected.into_iter().collect::<BTreeSet<_>>());
+    assert_eq!(actual, expected.into_iter().collect::<BTreeSet<_>>());
 
     let mut exact = 0;
     let mut residual = 0;
@@ -42,22 +53,32 @@ fn frozen_qualify_matrix_has_all_complete_evidence_and_owned_residuals() {
         let id = case["id"].as_str().unwrap();
         for dialect in dialects {
             let name = dialect.as_str().unwrap();
-            assert_eq!(case["parser_status_by_dialect"][name],"parsed","{id}/{name}");
+            assert_eq!(
+                case["parser_status_by_dialect"][name], "parsed",
+                "{id}/{name}"
+            );
         }
         let is_exact = case["proof"] == "mandatory_exact";
         if is_exact {
-            exact+=1;
-            assert_eq!(case["oracle_status"],"verified_independent_duckdb","{id}");
+            exact += 1;
+            assert_eq!(case["oracle_status"], "verified_independent_duckdb", "{id}");
         } else {
-            residual+=1;
-            assert_eq!(id,"74-C127-N2");
-            assert_eq!(case["oracle_status"],"conditional_without_unique_sort_tiebreaker");
+            residual += 1;
+            assert_eq!(id, "74-C127-N2");
+            assert_eq!(
+                case["oracle_status"],
+                "conditional_without_unique_sort_tiebreaker"
+            );
         }
         for adapter in adapters {
             let name = adapter.as_str().unwrap();
             assert_eq!(
                 case["adapter_status"][name],
-                if is_exact {"verified_exact"} else {"verified_residual"},
+                if is_exact {
+                    "verified_exact"
+                } else {
+                    "verified_residual"
+                },
                 "{id}/{name}",
             );
         }
