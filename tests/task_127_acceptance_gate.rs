@@ -87,8 +87,13 @@ fn frozen_qualify_matrix_has_all_complete_evidence_and_owned_residuals() {
             !case["physical_source_bags"].as_object().unwrap().is_empty(),
             "{id}"
         );
-        assert!(case["expected_full_terminal_bag"].is_array(), "{id}");
-        assert!(case["typed_terminal_domains"].is_object(), "{id}");
+        if is_exact {
+            assert!(case["expected_full_terminal_bag"].is_array(), "{id}");
+            assert!(case["typed_terminal_domains"].is_object(), "{id}");
+        } else {
+            assert!(case["expected_full_terminal_bag"].is_null(), "{id}");
+            assert!(case["typed_terminal_domains"].is_null(), "{id}");
+        }
     }
     assert_eq!((exact, residual), (7, 1));
     assert_eq!(record["verified_mandatory_exact_cases"], exact);
