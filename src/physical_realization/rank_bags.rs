@@ -59,13 +59,13 @@ fn residual(reason: impl Into<String>) -> PhysicalFiniteRankProof {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum RankFunction {
+pub(super) enum RankFunction {
     RowNumber,
     Rank,
     DenseRank,
 }
 
-fn rank_function(window: &WindowFunctionExpression) -> Option<RankFunction> {
+pub(super) fn rank_function(window: &WindowFunctionExpression) -> Option<RankFunction> {
     if !window.function().arguments().is_empty() || window.function().distinct() {
         return None;
     }
@@ -176,7 +176,7 @@ fn rank_filter(
     ))
 }
 
-fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
+pub(super) fn qualifies(rank: i128, op: ComparisonOperator, threshold: i128) -> bool {
     match op {
         ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => rank == threshold,
         ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => rank != threshold,
@@ -231,6 +231,7 @@ pub(super) fn exact_domain(values: impl Iterator<Item = LiteralValue>) -> ValueD
         }
         let kind = match &value {
             LiteralValue::Null => LiteralType::Null,
+            LiteralValue::Number(number) if number.contains('.') => LiteralType::Decimal,
             LiteralValue::Number(_) => LiteralType::Integer,
             LiteralValue::Text(_) => LiteralType::String,
             LiteralValue::Boolean(_) => LiteralType::Boolean,

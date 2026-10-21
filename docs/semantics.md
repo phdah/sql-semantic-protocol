@@ -2,6 +2,36 @@
 
 Understand how SQL and metadata become normalized, deterministic protocol outcomes. For the normative JSON shape, see [the protocol contract](protocol.md). For runnable commands, see [CLI usage](cli.md).
 
+
+### Fixed-point physical aggregate window proofs (TASK-189)
+
+The physical closed-world evaluator accepts independently validated source bags
+with complete stable identities. For `COUNT(*)`, `COUNT(column)`, `SUM`,
+`AVG`, `MIN` and `MAX`, deterministic `ROWS` members and complete unordered
+partitions yield finite terminal value sets, including SQL NULL and duplicate
+multiplicity. An integer `QUALIFY` comparison against a projected aggregate
+window records surviving identities and separate SQL NOT TRUE identities;
+an all-NULL SUM/AVG/MIN/MAX result is SQL UNKNOWN in ordinary comparisons
+and therefore rejected. On uniquely ordered partitions, mixed ranking,
+navigation and aggregate projections share the same source-backed membership.
+
+Exact DECIMAL source aggregates use attested `DECIMAL(p,s)` storage and
+checked `i128` scaled integers, including terminating fractional AVG.
+The proof only returns `Exact` when input and output magnitudes are
+binary-exact and fit bounded declared precision, preventing an unreviewed
+engine's floating conversion from making a false exact decimal claim.
+Source rounding, nonterminating fractional AVG, overflowing SUM or uncertain
+promotion returns explicit `Residual`; schema contradictions remain
+`Impossible`. Integer-typed AVG is exact only for integral means within
+attested arithmetic width: SQL Server can return an integer for AVG(INT),
+whereas DuckDB returns a fractional result. A decimal expansion terminating
+in base ten alone is not portable proof of an integer-input fractional AVG.
+Integer SUM/AVG accumulators additionally fail closed when a result exceeds
+the source's declared signed width or portable numeric magnitude. DuckDB native execution for conditional DISTINCT, FILTER,
+implicit frames, peer ties and uncertain numeric cases is separately
+attested in the TASK-189 native oracle matrix. It does not certify other
+native vendor or session semantics.
+
 ## Protocol contract
 
 The Cargo package version is the single active protocol version emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
@@ -133,6 +163,8 @@ For a direct supported `QUALIFY ROW_NUMBER() = 1` or `QUALIFY ROW_NUMBER() <= N`
 Exact local rank witnesses currently require one direct input, plain partition/order columns, an explicit NULLS FIRST/LAST, no explicit frame, no other row filters, joins or unsupported diagnostics. Consumers must satisfy the emitted strict ordering, partition identity and any upstream conditions. Arbitrary ties, implicit NULL placement, computed order keys, `RANK` and `DENSE_RANK` remain residual. When every ordering key is fixed by the partition keys, a rejected-row witness requiring predecessors remains residual because strictly distinct ordering tuples cannot be constructed. Projected-filter witnesses also reject outer grouping, TOP, and other row-shaping operations. This is a constructive proof for controlled witness rows, not a claim that existing source data has unique order keys. `layers[].composed_semantics.window_witnesses` retains local and upstream evidence with origin layer and input boundary classification. Such evidence does not automatically prove downstream row membership.
 
 For caller-attested **complete physical source bags**, `physical_finite_rank_bag_plan` additionally proves ROW_NUMBER, RANK and DENSE_RANK from canonical window expressions without reparsing SQL. Each partition is sorted by explicit ASC/DESC and NULLS FIRST/LAST; peer groups share `RANK` (with gaps) or `DENSE_RANK` (without gaps). The proof preserves each physical source-row identity, any QUALIFY survivor/rejected distinction, the complete terminal bag and exact finite terminal value domains including SQL NULL. `row_number` is absent for peer rows because their individual order is not determined; a projected/filtered ROW_NUMBER on those ties is Residual rather than assigning an arbitrary winner. Absent schema evidence, implicit NULL placement, incompatible windows and unsupported row shaping remain Residual; contradictory complete physical schemas are Impossible. This is a separate public physical proof API, **not** an upgrade of the general `window_witness` or a serialized protocol schema change. See `docs/task-125-acceptance-freeze.json` for the bounded independent DuckDB source/terminal matrix. GROUPED, JOINED and vendor-session window oracles remain scoped to subsequent TASK-74 children.
+
+The separate `physical_finite_window_bag_plan` proves complete-source deterministic ROWS outcomes for COUNT(*), COUNT(column), SUM, AVG, MIN and MAX and returns the original source identities, terminal identities and exact finite domains. A single `QUALIFY` comparison between a projected COUNT/SUM/AVG/MIN/MAX window and an exact integer literal preserves each surviving and NOT TRUE source identity, including SQL NULL (UNKNOWN) rejection. Conjunctive/complex QUALIFY, unproved numeric precision, implicit RANGE, tied ROWS ordering and unattested vendor/session arithmetic remain explicit `Residual`. The frozen v5 oracle includes both native DuckDB and SQLite executable conditional evidence; unexecuted vendors are not certified. ODCS contributes source schema facts, not SQL runtime execution. See `docs/task-189-acceptance-freeze.json` and `docs/task-189-acceptance-audit.md`.
 
 ### Subqueries and table sources
 

@@ -1,0 +1,3468 @@
+{
+  "version": 5,
+  "owner": "TASK-189",
+  "parent": "TASK-74",
+  "frozen_at": "2026-10-20",
+  "conditional_reviewed_at": "2026-10-21",
+  "fixture_ids": [
+    "74-C189-P",
+    "74-C189-N"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "source_schema": {
+    "s": {
+      "id": "INTEGER",
+      "k": "INTEGER",
+      "x": "INTEGER NULL"
+    }
+  },
+  "mandatory_semantics": {
+    "functions": [
+      "COUNT(*)",
+      "COUNT(x)",
+      "SUM(x)",
+      "AVG(x)",
+      "MIN(x)",
+      "MAX(x)"
+    ],
+    "frames": [
+      "partition",
+      "running",
+      "moving",
+      "forward"
+    ],
+    "identity": "full source row bag, SQL NULLs and duplicates",
+    "outcome": "typed full terminal exact finite value domains and Exact/Impossible/Residual",
+    "additional_mandatory": [
+      "fractional AVG",
+      "DECIMAL precision and scale",
+      "QUALIFY TRUE/NOT TRUE",
+      "dbt and ODCS parity"
+    ]
+  },
+  "original_parent_ac_map": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "conditional_owner": "TASK-189",
+  "conditional_disposition": "Residual only if parser or engine/session semantics genuinely unproved; missing mandatory exact cells block Done",
+  "exact_integer_submatrix": 5,
+  "mandatory_unverified": [],
+  "mandatory_evidence_scope": "All ten frozen Exact integer and finite-binary-decimal SQL/window bags have public complete DuckDB, 13 sqlparser dialect and direct/dbt/ODCS evidence. Real dbt Core executes its DECIMAL model with source and terminal snapshots. ODCS is schema evidence, not an executable SQL engine. No non-DuckDB/SQLite native vendor portability is certified by these tests.",
+  "conditional_release_review": "All six conditional cases and two numeric counterexamples are accepted only as conservative Residual at the canonical portable API boundary. Native SQLite/DuckDB results are engine-specific; unexecuted vendor/session cells remain explicitly Residual and must not be marketed as native support. TASK-128 advanced-frame and TASK-127 upstream composition obligations remain separate.",
+  "cases": [
+    {
+      "id": "74-C189-P1",
+      "family": "partition",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k) AS n, COUNT(x) OVER (PARTITION BY k) AS non_null, SUM(x) OVER (PARTITION BY k) AS total, AVG(x) OVER (PARTITION BY k) AS mean, MIN(x) OVER (PARTITION BY k) AS min_x, MAX(x) OVER (PARTITION BY k) AS max_x FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 3,
+          "non_null": 2,
+          "total": 40,
+          "mean": 20,
+          "min_x": 10,
+          "max_x": 30
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 3,
+          "non_null": 2,
+          "total": 40,
+          "mean": 20,
+          "min_x": 10,
+          "max_x": 30
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 3,
+          "non_null": 2,
+          "total": 40,
+          "mean": 20,
+          "min_x": 10,
+          "max_x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 2,
+          "non_null": 2,
+          "total": 10,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 2,
+          "non_null": 2,
+          "total": 10,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null,
+          "n": 1,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            3,
+            2,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "non_null",
+          "values": [
+            2,
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            40,
+            10,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 10,
+            "upper": 40,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            20,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "FLOAT (exactly representable integer in this fixture)"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            10,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and terminal bags, identities and bounded domains"
+    },
+    {
+      "id": "74-C189-P2",
+      "family": "running",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS non_null, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS max_x FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 1,
+          "non_null": 1,
+          "total": 10,
+          "mean": 10,
+          "min_x": 10,
+          "max_x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2,
+          "non_null": 1,
+          "total": 10,
+          "mean": 10,
+          "min_x": 10,
+          "max_x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 3,
+          "non_null": 2,
+          "total": 40,
+          "mean": 20,
+          "min_x": 10,
+          "max_x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 1,
+          "non_null": 1,
+          "total": 5,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 2,
+          "non_null": 2,
+          "total": 10,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null,
+          "n": 1,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "non_null",
+          "values": [
+            1,
+            2,
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            10,
+            40,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 40,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            10,
+            20,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "FLOAT (exactly representable integer in this fixture)"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            10,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            10,
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and terminal bags, identities and bounded domains"
+    },
+    {
+      "id": "74-C189-P3",
+      "family": "moving",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS non_null, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS max_x FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 1,
+          "non_null": 1,
+          "total": 10,
+          "mean": 10,
+          "min_x": 10,
+          "max_x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2,
+          "non_null": 1,
+          "total": 10,
+          "mean": 10,
+          "min_x": 10,
+          "max_x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 2,
+          "non_null": 1,
+          "total": 30,
+          "mean": 30,
+          "min_x": 30,
+          "max_x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 1,
+          "non_null": 1,
+          "total": 5,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 2,
+          "non_null": 2,
+          "total": 10,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null,
+          "n": 1,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "non_null",
+          "values": [
+            1,
+            2,
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            10,
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            10,
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "FLOAT (exactly representable integer in this fixture)"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            10,
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            10,
+            30,
+            5,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and terminal bags, identities and bounded domains"
+    },
+    {
+      "id": "74-C189-N1",
+      "family": "forward",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS non_null, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS max_x FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 1,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 1,
+          "non_null": 1,
+          "total": 30,
+          "mean": 30,
+          "min_x": 30,
+          "max_x": 30
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 0,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 1,
+          "non_null": 1,
+          "total": 5,
+          "mean": 5,
+          "min_x": 5,
+          "max_x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 0,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null,
+          "n": 0,
+          "non_null": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            0
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "non_null",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "FLOAT (exactly representable integer in this fixture)"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and terminal bags, identities and bounded domains"
+    },
+    {
+      "id": "74-C189-P5",
+      "family": "qualify_count",
+      "sql": "SELECT id, k, x, COUNT(x) OVER (PARTITION BY k) AS n FROM s QUALIFY COUNT(x) OVER (PARTITION BY k) >= 2",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10,
+          "n": 2
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "n": 2
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5,
+          "n": 2
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "n": 2
+        }
+      ],
+      "surviving_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "rejected_source_ids": [
+        "s#5"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10,
+            null,
+            30,
+            5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "n",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        }
+      ],
+      "proof": "Exact",
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [
+        "s#5"
+      ],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "complete independent DuckDB source and QUALIFY terminal bags, with surviving and NOT TRUE source identities"
+    },
+    {
+      "id": "74-C189-C1",
+      "family": "distinct_window",
+      "sql": "SELECT id, COUNT(DISTINCT x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "DISTINCT frame membership and elimination remain unattested even with deterministic order and explicit NULL ordering",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: DuckDB executes DISTINCT window; SQLite runtime rejects DISTINCT window, though sqlparser accepts. No portable framed DISTINCT law is claimed for other vendor/session cells.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_unsupported_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "1",
+        "1",
+        "2",
+        "1",
+        "1",
+        "0"
+      ]
+    },
+    {
+      "id": "74-C189-C2",
+      "family": "filter_window",
+      "sql": "SELECT id, COUNT(x) FILTER (WHERE x > 0) OVER (PARTITION BY k) AS n FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "FILTER requires SQL three-valued row selection certified per frame",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite execute FILTER with their native SQL semantics; portable three-valued frame FILTER evidence is not implemented, and untested vendors are not certified.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parser_boundary",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parser_boundary",
+        "redshift": "parser_boundary",
+        "mssql": "parser_boundary",
+        "clickhouse": "parser_boundary",
+        "bigquery": "parser_boundary",
+        "ansi": "parser_boundary",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "parser_boundary",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "parser_boundary",
+        "redshift": "parser_boundary",
+        "mssql": "parser_boundary",
+        "clickhouse": "parser_boundary",
+        "bigquery": "parser_boundary",
+        "ansi": "parser_boundary",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "2",
+        "2",
+        "2",
+        "2",
+        "2",
+        "0"
+      ]
+    },
+    {
+      "id": "74-C189-C3",
+      "family": "implicit_range",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY id) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "implicit ordered window uses vendor-default RANGE semantics",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite execute implicit ordered windows; implicit default RANGE and peer behavior require native/session attestation before any portable Exact claim.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "10",
+        "10",
+        "40",
+        "5",
+        "10",
+        null
+      ]
+    },
+    {
+      "id": "74-C189-C4",
+      "family": "peer_order",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "ROWS member identities are ambiguous under tied ORDER BY",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: tied ROWS ORDER BY cannot determine which physical peer contributes; DuckDB/SQLite complete bags support only value multiset/partial witnesses, not peer row identity.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_partial_oracle": {
+        "deterministic_rows": {
+          "1": "10",
+          "2": "30",
+          "3": "40",
+          "6": null
+        },
+        "peer_rows_in_ids_4_5": [
+          "5",
+          "10"
+        ],
+        "reason": "SQL ROWS peer identities not determined; values may swap between id 4 and 5"
+      }
+    },
+    {
+      "id": "74-C189-C5",
+      "family": "repeating_fraction_avg",
+      "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 1
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 2
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 2
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "5/3 repeating fractional AVG has no portable finite-decimal physical outcome without engine-specific precision and rounding attestation",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite produce approximate 5/3; exact finite AVG rational and precision/rounding laws are not portable without native/session evidence.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_partial_oracle": {
+        "ids_1_3_avg_approximate": 1.6666666666666667,
+        "ids_4_5_exact": "5",
+        "id_6": null,
+        "reason": "engine-executed floating AVG is not a portable exact rational proof"
+      }
+    },
+    {
+      "id": "74-C189-C6",
+      "family": "decimal_precision_scale",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.2
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.7
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 6,
+          "k": 2,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "proof": "Residual_expected",
+      "reason": "DECIMAL(10,2) fractional 10.20 and 30.70 inputs cannot be certified across decimal and floating numeric engines without native/session arithmetic attestation",
+      "conditional_owner": "TASK-189",
+      "release_disposition": "Reviewed conditional Residual: DuckDB DECIMAL and SQLite NUMERIC affinity differ in type/precision; exact arithmetic and overflow cannot be inferred for untested native vendor/session cells.",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "typed_terminal_domains": [],
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "native_duckdb_terminal_values_in_id_order": [
+        "40.9",
+        "40.9",
+        "40.9",
+        "11",
+        "11",
+        null
+      ]
+    }
+  ],
+  "basic_qualify_status": "74-C189-P5: verified complete-source COUNT(x) >= 2; all survivors and NOT TRUE identities, DuckDB terminal bag, direct/dbt/ODCS parity, 13 parser dialects",
+  "conditional_fixture_correction": "v3: C5 uses a genuine repeating 5/3 average; C6 uses a DECIMAL(10,2) physical source and fractional values. v2's INTEGER fixtures duplicated already-supported exact laws and did not justify Residual. C1 makes NULL ordering explicit so the DISTINCT condition is isolated.",
+  "conditional_parser_evidence": {
+    "source": "GitHub Actions CI 39445313819, no-default-features Rust test job 118705545734 on PR branch",
+    "observed_commit": "aeef9ad4211d75840529fac16bcc2a2b30f21676",
+    "parsed": 71,
+    "parser_boundaries": 7,
+    "limitation": "sqlparser AST acceptance is not evidence of native engine execution or session numeric laws"
+  },
+  "numeric_acceptance_revision": "v4 extends the v3 frozen matrix with exact independently executed fixed-point DECIMAL window oracles and binary-rounding/overflow residual counterexamples. Conditional C6 now uses 10.20 and 30.70 to exercise actual non-binary-exact decimal arithmetic; v3 C6 10.25 and 30.75 were precisely representable. v4 numeric additions P8, P9 and N4 close the exact DECIMAL running, moving and empty-forward ROWS families with complete DuckDB source/terminal oracles.",
+  "numeric_oracle_cases": [
+    {
+      "id": "74-C189-P6",
+      "family": "decimal_partition",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k) AS n, COUNT(x) OVER (PARTITION BY k) AS nn, SUM(x) OVER (PARTITION BY k) AS total, AVG(x) OVER (PARTITION BY k) AS mean, MIN(x) OVER (PARTITION BY k) AS min_x, MAX(x) OVER (PARTITION BY k) AS max_x FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        }
+      ],
+      "typed_decimal_domains": {
+        "x": [
+          "10.25",
+          "30.75",
+          "5.50",
+          null
+        ],
+        "total": [
+          "41.00",
+          "11.00"
+        ],
+        "mean": [
+          "20.50",
+          "5.50"
+        ],
+        "min_x": [
+          "10.25",
+          "5.50"
+        ],
+        "max_x": [
+          "30.75",
+          "5.50"
+        ]
+      },
+      "proof": "Exact",
+      "required_dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "oracle": "DuckDB DECIMAL(10,2) source snapshot and complete partitioned aggregate output, compared exactly in base-10 normalized form",
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            10.25,
+            null,
+            30.75,
+            5.5
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "n",
+          "values": [
+            3,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "nn",
+          "values": [
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            41,
+            11
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 11,
+            "upper": 41,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "mean",
+          "values": [
+            20.5,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 20.5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            10.25,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 10.25,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            30.75,
+            5.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        }
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      }
+    },
+    {
+      "id": "74-C189-N2",
+      "family": "decimal_unattested_rounding",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 0.1
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 0.2
+        }
+      ],
+      "proof": "Residual_expected",
+      "reason": "0.10 and 0.20 cannot be represented exactly in a binary floating engine; cross-vendor promotion/rounding session law is unverified",
+      "release_disposition": "Reviewed conditional Residual: SQLite floating NUMERIC SUM and DuckDB DECIMAL SUM differ in arithmetic representation; exact cross-vendor fractional precision is not attested.",
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "typed_terminal_domains": [],
+      "conditional_owner": "TASK-189",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 0.3
+        },
+        {
+          "id": 2,
+          "total": 0.3
+        }
+      ],
+      "native_duckdb_oracle": "DuckDB exact base-10 source and complete terminal decimal bags are executed while portable physical status remains Residual due unattested cross-vendor arithmetic/output promotion"
+    },
+    {
+      "id": "74-C189-N3",
+      "family": "decimal_sum_precision_guard",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k) AS total FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(5,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 999.75
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 999.75
+        }
+      ],
+      "proof": "Residual_expected",
+      "reason": "source DECIMAL(5,2) contains binary-exact 999.75, but SUM(999.75+999.75) exceeds source precision; vendor result promotion or overflow requires session attestation",
+      "release_disposition": "Reviewed conditional Residual: source DECIMAL(5,2) SUM exceeds source precision and engine-specific output promotion/overflow is not certified; DuckDB/SQLite runtime outcomes are not portable proof.",
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "typed_terminal_domains": [],
+      "conditional_owner": "TASK-189",
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Residual_required",
+        "dbt_compiled": "Residual_required",
+        "odcs_schema": "Residual_required"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_native_vendor_or_session_unattested",
+        "mysql": "residual_native_vendor_or_session_unattested",
+        "postgresql": "residual_native_vendor_or_session_unattested",
+        "hive": "residual_native_vendor_or_session_unattested",
+        "sqlite": "sqlite_native_oracle_executed_in_ci",
+        "snowflake": "residual_native_vendor_or_session_unattested",
+        "redshift": "residual_native_vendor_or_session_unattested",
+        "mssql": "residual_native_vendor_or_session_unattested",
+        "clickhouse": "residual_native_vendor_or_session_unattested",
+        "bigquery": "residual_native_vendor_or_session_unattested",
+        "ansi": "residual_native_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_oracle_executed_in_ci",
+        "databricks": "residual_native_vendor_or_session_unattested"
+      },
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 1999.5
+        },
+        {
+          "id": 2,
+          "total": 1999.5
+        }
+      ],
+      "native_duckdb_oracle": "DuckDB exact base-10 source and complete terminal decimal bags are executed while portable physical status remains Residual due unattested cross-vendor arithmetic/output promotion"
+    },
+    {
+      "id": "74-C189-P7",
+      "family": "decimal_fractional_avg",
+      "sql": "SELECT id, AVG(x) OVER (PARTITION BY k) AS mean FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10.5
+        }
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "mean": 10.375
+        },
+        {
+          "id": 2,
+          "mean": 10.375
+        }
+      ],
+      "proof": "Exact",
+      "oracle": "DuckDB decimal AVG result expressed exactly as 10.375, not truncated or rounded",
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "mean",
+          "values": [
+            10.375
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 10.375,
+            "upper": 10.375,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "physical_positive_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "physical_not_true_ids": [],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      }
+    },
+    {
+      "id": "74-C189-P8",
+      "family": "decimal_running",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS nn, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS max_x FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25,
+          "n": 1,
+          "nn": 1,
+          "total": 10.25,
+          "mean": 10.25,
+          "min_x": 10.25,
+          "max_x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2,
+          "nn": 1,
+          "total": 10.25,
+          "mean": 10.25,
+          "min_x": 10.25,
+          "max_x": 10.25
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75,
+          "n": 3,
+          "nn": 2,
+          "total": 41,
+          "mean": 20.5,
+          "min_x": 10.25,
+          "max_x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5,
+          "n": 1,
+          "nn": 1,
+          "total": 5.5,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            5.5,
+            10.25,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "nn",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            5.5,
+            10.25,
+            11,
+            41
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 41,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "mean",
+          "values": [
+            5.5,
+            10.25,
+            20.5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 20.5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            5.5,
+            10.25
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 10.25,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            5.5,
+            10.25,
+            30.75
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        }
+      ],
+      "proof": "Exact",
+      "required_dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [],
+      "oracle": "DuckDB independently checks complete source and terminal decimal ROWS bags, source identity and SQL NULL outcome"
+    },
+    {
+      "id": "74-C189-P9",
+      "family": "decimal_moving",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS nn, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) AS max_x FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25,
+          "n": 1,
+          "nn": 1,
+          "total": 10.25,
+          "mean": 10.25,
+          "min_x": 10.25,
+          "max_x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 2,
+          "nn": 1,
+          "total": 10.25,
+          "mean": 10.25,
+          "min_x": 10.25,
+          "max_x": 10.25
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75,
+          "n": 2,
+          "nn": 1,
+          "total": 30.75,
+          "mean": 30.75,
+          "min_x": 30.75,
+          "max_x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5,
+          "n": 1,
+          "nn": 1,
+          "total": 5.5,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5,
+          "n": 2,
+          "nn": 2,
+          "total": 11,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            5.5,
+            10.25,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "n",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "nn",
+          "values": [
+            1,
+            2
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            5.5,
+            10.25,
+            11,
+            30.75
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "mean",
+          "values": [
+            5.5,
+            10.25,
+            30.75
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            5.5,
+            10.25,
+            30.75
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            5.5,
+            10.25,
+            30.75
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        }
+      ],
+      "proof": "Exact",
+      "required_dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [],
+      "oracle": "DuckDB independently checks complete source and terminal decimal ROWS bags, source identity and SQL NULL outcome"
+    },
+    {
+      "id": "74-C189-N4",
+      "family": "decimal_forward_empty",
+      "sql": "SELECT id, k, x, COUNT(*) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS n, COUNT(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS nn, SUM(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS total, AVG(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS mean, MIN(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS min_x, MAX(x) OVER (PARTITION BY k ORDER BY id NULLS LAST ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) AS max_x FROM s",
+      "source_schema": {
+        "id": "INTEGER",
+        "k": "INTEGER",
+        "x": "DECIMAL(10,2)"
+      },
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10.25,
+          "n": 1,
+          "nn": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "n": 1,
+          "nn": 1,
+          "total": 30.75,
+          "mean": 30.75,
+          "min_x": 30.75,
+          "max_x": 30.75
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30.75,
+          "n": 0,
+          "nn": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": 5.5,
+          "n": 1,
+          "nn": 1,
+          "total": 5.5,
+          "mean": 5.5,
+          "min_x": 5.5,
+          "max_x": 5.5
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5.5,
+          "n": 0,
+          "nn": 0,
+          "total": null,
+          "mean": null,
+          "min_x": null,
+          "max_x": null
+        }
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 1,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "k",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "x",
+          "values": [
+            5.5,
+            10.25,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2)"
+        },
+        {
+          "column": "n",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "nn",
+          "values": [
+            0,
+            1
+          ],
+          "contains_null": false,
+          "inclusive_bounds": {
+            "lower": 0,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "INTEGER"
+        },
+        {
+          "column": "total",
+          "values": [
+            5.5,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "mean",
+          "values": [
+            5.5,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL AVG exact magnitude"
+        },
+        {
+          "column": "min_x",
+          "values": [
+            5.5,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        },
+        {
+          "column": "max_x",
+          "values": [
+            5.5,
+            30.75,
+            null
+          ],
+          "contains_null": true,
+          "inclusive_bounds": {
+            "lower": 5.5,
+            "upper": 30.75,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "sql_type": "DECIMAL(10,2) exact numeric magnitude"
+        }
+      ],
+      "proof": "Exact",
+      "required_dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "expected_adapter_cells": {
+        "direct_sql": "Exact_required",
+        "dbt_compiled": "Exact_required",
+        "odcs_schema": "Exact_required"
+      },
+      "physical_positive_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "physical_not_true_ids": [],
+      "oracle": "DuckDB independently checks complete source and terminal decimal ROWS bags, source identity and SQL NULL outcome"
+    }
+  ],
+  "conditional_native_execution_scope": "DuckDB native engine execution is CI-attested for six conditional SQL cases with complete source snapshots. SQLite native execution is attested separately for five conditional runtime result bags, one runtime DISTINCT OVER rejection and two numeric precision counterexamples; SQLite NUMERIC affinity is not a portable DECIMAL guarantee. Remaining non-DuckDB/non-SQLite vendor/session cells are explicitly unattested Residual, never native support claims. Parser boundaries are distinct from native runtime claims."
+}

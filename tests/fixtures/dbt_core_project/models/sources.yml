@@ -34,6 +34,14 @@ sources:
             data_type: TIMESTAMP
           - name: region
             data_type: VARCHAR
+      - name: task189_decimal_source
+        columns:
+          - name: id
+            data_type: INTEGER
+          - name: k
+            data_type: INTEGER
+          - name: x
+            data_type: DECIMAL(10,2)
       - name: customers
       - name: legacy_orders
       - name: returns

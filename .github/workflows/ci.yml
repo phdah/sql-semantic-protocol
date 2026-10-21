@@ -52,6 +52,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Execute SQLite native window oracle
+        run: python -m unittest discover -s tests/native -p 'test_task_189_sqlite_native.py' -v
+
       - name: Install dbt Core test dependencies
         run: python -m pip install -r tests/requirements-dbt-e2e.txt
 
