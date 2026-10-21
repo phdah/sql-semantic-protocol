@@ -51,7 +51,7 @@ fn every_conditional_parser_cell_matches_the_task_owned_freeze() {
 fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() {
     let matrix: Value =
         serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json")).unwrap();
-    assert_eq!(matrix["version"], 4);
+    assert_eq!(matrix["version"], 5);
     let dialects = matrix["required_dialects"].as_array().unwrap();
     let mut native_duckdb = 0;
     let mut native_sqlite = 0;
