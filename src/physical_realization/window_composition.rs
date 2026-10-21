@@ -139,7 +139,7 @@ fn make_join(
                 }
             }
             rows.push(PhysicalWriteRow::new(values)
-                .map_err(|_|"joined producer could not construct a physical row")?);
+                .ok_or("joined producer could not construct a physical row")?);
             contributors.insert(identity.clone(),
                 vec![format!("{}#{li}",left.name()),format!("{}#{ri}",right.name())]);
             row_ids.push(identity);
@@ -191,7 +191,7 @@ fn make_group(
             (producer.count_alias().to_string(),LiteralValue::Number(count.to_string())),
         ]);
         rows.push(PhysicalWriteRow::new(values)
-            .map_err(|_|"grouped producer could not construct a row")?);
+            .ok_or("grouped producer could not construct a row")?);
         contributors.insert(identity.clone(), members.into_iter()
             .map(|index|format!("{}#{index}",producer.source())).collect());
         row_ids.push(identity);
