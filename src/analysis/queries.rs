@@ -1,6 +1,6 @@
-use crate::protocol::WindowGroupedCountSource;
 //! Root query orchestration and SELECT-level filtering.
 
+use crate::protocol::WindowGroupedCountSource;
 use super::*;
 
 /// A plain derived SELECT preserves physical row identity only when it adds
@@ -111,7 +111,8 @@ fn qualify_grouped_count_source(
     query: &SqlQuery,
     dependencies: &BTreeSet<String>,
 ) -> Option<WindowGroupedCountSource> {
-    let [source] = dependencies.iter().collect::<Vec<_>>().as_slice() else { return None; };
+    if dependencies.len() != 1 { return None; }
+    let source = dependencies.iter().next()?;
     let SetExpr::Select(outer) = query.body.as_ref() else { return None; };
     let [from] = outer.from.as_slice() else { return None; };
     if !from.joins.is_empty() { return None; }
@@ -154,7 +155,7 @@ fn qualify_grouped_count_source(
     let count_alias = count_alias?;
     if count_alias == group_column.value { return None; }
     Some(WindowGroupedCountSource::new(
-        (*source).clone(), group_column.value.clone(), count_alias
+        source.clone(), group_column.value.clone(), count_alias
     ))
 }
 
