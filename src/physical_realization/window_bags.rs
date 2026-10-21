@@ -429,52 +429,59 @@ fn window_kind(
     }
 }
 
-// A narrow aggregate QUALIFY law: a projected aggregate window compared with
-// a typed integer constant. SQL NULL (including empty SUM/AVG/MIN/MAX) is
-// NOT TRUE, never TRUE. Other Boolean/decimal comparisons stay Residual.
-fn aggregate_qualify_filter(
-    query: &QueryStatement,
-) -> Result<Option<(String, ComparisonOperator, i128)>, &'static str> {
-    let Some(predicate) = query.predicates().qualify_predicate() else {
-        return Ok(None);
-    };
-    let Predicate::Comparison(comparison) = predicate else {
-        return Err("QUALIFY aggregate requires one canonical comparison");
-    };
-    let (window, operator, threshold) = match (comparison.left(), comparison.right()) {
-        (Expression::WindowFunction(window), Expression::Literal(value)) => {
-            (window, comparison.operator(), value)
+// A conjunction of canonical window comparisons is evaluated against a single
+// complete physical bag. Every comparison is classified under SQL three-valued
+// truth: NULL is NOT TRUE. Unsupported Boolean shapes fail closed.
+fn qualify_comparisons<'a>(
+    query: &'a QueryStatement,
+) -> Result<Vec<(&'a WindowFunctionExpression, ComparisonOperator, i128)>, &'static str> {
+    fn collect<'a>(
+        predicate: &'a Predicate,
+        comparisons: &mut Vec<(&'a WindowFunctionExpression, ComparisonOperator, i128)>,
+    ) -> Result<(), &'static str> {
+        match predicate {
+            Predicate::And(group) => {
+                for operand in group.operands() {
+                    collect(operand, comparisons)?;
+                }
+            }
+            Predicate::Comparison(comparison) => {
+                let (window, operator, threshold) =
+                    match (comparison.left(), comparison.right()) {
+                        (Expression::WindowFunction(window), Expression::Literal(value)) => {
+                            (window, comparison.operator(), value)
+                        }
+                        (Expression::Literal(value), Expression::WindowFunction(window)) => {
+                            (window, comparison.operator().reversed(), value)
+                        }
+                        _ => return Err("QUALIFY needs a canonical window and integer literal"),
+                    };
+                if matches!(
+                    operator,
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+                ) {
+                    return Err("NULL-safe QUALIFY needs explicit three-valued comparison evidence");
+                }
+                if threshold.literal_type() != LiteralType::Integer {
+                    return Err("QUALIFY threshold requires an exact integer");
+                }
+                let LiteralValue::Number(number) = threshold.value() else {
+                    return Err("QUALIFY threshold is nonnumeric or NULL");
+                };
+                let threshold = number
+                    .parse::<i128>()
+                    .map_err(|_| "QUALIFY threshold exceeds signed width")?;
+                comparisons.push((window, operator, threshold));
+            }
+            _ => return Err("QUALIFY Boolean expression lacks a complete execution law"),
         }
-        (Expression::Literal(value), Expression::WindowFunction(window)) => {
-            (window, comparison.operator().reversed(), value)
-        }
-        _ => return Err("QUALIFY comparison must use a projected window and integer literal"),
-    };
-    if threshold.literal_type() != LiteralType::Integer {
-        return Err("QUALIFY aggregate threshold requires an exact integer");
+        Ok(())
     }
-    let LiteralValue::Number(number) = threshold.value() else {
-        return Err("QUALIFY aggregate threshold is not numeric");
-    };
-    let threshold = number
-        .parse::<i128>()
-        .map_err(|_| "QUALIFY aggregate threshold exceeds signed width")?;
-    if !matches!(
-        window.function().name().to_ascii_lowercase().as_str(),
-        "count" | "sum" | "avg" | "min" | "max"
-    ) || window.function().distinct()
-    {
-        return Err("QUALIFY aggregate function has no certified comparison law");
+    let mut comparisons = Vec::new();
+    if let Some(predicate) = query.predicates().qualify_predicate() {
+        collect(predicate, &mut comparisons)?;
     }
-    let output = query
-        .output()
-        .columns()
-        .iter()
-        .find(|column| {
-            matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == window)
-        })
-        .ok_or("QUALIFY COUNT must match a projected canonical window")?;
-    Ok(Some((output.name().to_string(), operator, threshold)))
+    Ok(comparisons)
 }
 
 fn frame_position(bound: &WindowFrameBound, index: i128, len: i128) -> Result<i128, &'static str> {
@@ -812,12 +819,53 @@ pub fn physical_finite_window_bag_plan(
             _ => return residual("computed projection lacks a certified row-local value law"),
         }
     }
+    let comparisons = match qualify_comparisons(query) {
+        Ok(comparisons) => comparisons,
+        Err(reason) => return residual(reason),
+    };
+    let mut qualify = Vec::new();
+    for (index, (window, operator, threshold)) in comparisons.into_iter().enumerate() {
+        let projected = query.output().columns().iter().find(|column| {
+            matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == window)
+        });
+        let output = if let Some(column) = projected {
+            column.name().to_string()
+        } else {
+            // Internal evaluation slots never leak into terminal projections.
+            let output = format!("__task_127_qualify_{index}");
+            if !seen_names.insert(output.clone()) {
+                return residual("QUALIFY internal slot collides with output alias");
+            }
+            let parsed = match window_keys(window, source, schema) {
+                Ok(parsed) => parsed,
+                Err(reason) => return residual(reason),
+            };
+            if keys.as_ref().is_some_and(|existing| existing != &parsed) {
+                return residual("QUALIFY window uses incompatible partition or order keys");
+            }
+            if parsed.sort.is_empty()
+                && !matches!(
+                    window.function().name().to_ascii_lowercase().as_str(),
+                    "count" | "sum" | "avg" | "min" | "max"
+                )
+            {
+                return residual("QUALIFY ranking requires deterministic ORDER BY");
+            }
+            keys = Some(parsed);
+            let kind = match window_kind(window, source, schema) {
+                Ok(kind) => kind,
+                Err(reason) => return residual(reason),
+            };
+            operations.push(WindowColumn {
+                output: output.clone(),
+                kind,
+            });
+            output
+        };
+        qualify.push((output, operator, threshold));
+    }
     let Some(keys) = keys else {
         return residual("window target has no supported window function");
-    };
-    let qualify = match aggregate_qualify_filter(query) {
-        Ok(qualify) => qualify,
-        Err(reason) => return residual(reason),
     };
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
@@ -878,26 +926,31 @@ pub fn physical_finite_window_bag_plan(
     let mut rejected_row_ids = Vec::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
         let row_id = format!("{}#{index}", source.name());
-        if let Some((column, operator, threshold)) = &qualify {
+        let mut survives = true;
+        for (column, operator, threshold) in &qualify {
             let Some(Some(value)) = evaluated.get(column).and_then(|values| values.get(index))
             else {
-                return residual("QUALIFY has no exact aggregate output");
+                return residual("QUALIFY lacks a complete window evaluation");
             };
-            // SQL comparisons with NULL are UNKNOWN, hence NOT TRUE in QUALIFY.
-            let survives = match value {
+            // SQL NULL is UNKNOWN for ordinary comparisons and is NOT TRUE.
+            let matches = match value {
                 LiteralValue::Null => false,
                 LiteralValue::Number(number) => {
                     let Ok(number) = number.parse::<i128>() else {
-                        return residual("QUALIFY aggregate requires an exact integer comparison");
+                        return residual("QUALIFY requires an exact integer comparison");
                     };
                     qualifies(number, *operator, *threshold)
                 }
-                _ => return residual("QUALIFY aggregate has no numeric comparison law"),
+                _ => return residual("QUALIFY has no numeric comparison law"),
             };
-            if !survives {
-                rejected_row_ids.push(row_id);
-                continue;
+            if !matches {
+                survives = false;
+                break;
             }
+        }
+        if !survives {
+            rejected_row_ids.push(row_id);
+            continue;
         }
         terminal_row_ids.push(row_id);
         let mut projected = BTreeMap::new();
