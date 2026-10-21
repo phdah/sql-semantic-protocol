@@ -54,6 +54,8 @@ fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() 
     assert_eq!(matrix["version"], 4);
     let dialects = matrix["required_dialects"].as_array().unwrap();
     let mut native_duckdb = 0;
+    let mut native_sqlite = 0;
+    let mut sqlite_unsupported = 0;
     let mut residual_vendor = 0;
     let mut parser_boundaries = 0;
     for case in matrix["cases"].as_array().unwrap() {
@@ -87,6 +89,14 @@ fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() 
                     assert_eq!(native, "duckdb_native_oracle_executed_in_ci");
                     native_duckdb += 1;
                 }
+                ("parsed", "sqlite") if case["id"] == "74-C189-C1" => {
+                    assert_eq!(native, "sqlite_native_unsupported_executed_in_ci");
+                    sqlite_unsupported += 1;
+                }
+                ("parsed", "sqlite") => {
+                    assert_eq!(native, "sqlite_native_oracle_executed_in_ci");
+                    native_sqlite += 1;
+                }
                 ("parsed", _) => {
                     assert_eq!(native, "residual_native_vendor_or_session_unattested");
                     residual_vendor += 1;
@@ -96,7 +106,13 @@ fn every_conditional_native_session_cell_has_a_conservative_owned_disposition() 
         }
     }
     assert_eq!(
-        (native_duckdb, residual_vendor, parser_boundaries),
-        (6, 65, 7)
+        (
+            native_duckdb,
+            native_sqlite,
+            sqlite_unsupported,
+            residual_vendor,
+            parser_boundaries
+        ),
+        (6, 5, 1, 59, 7)
     );
 }
