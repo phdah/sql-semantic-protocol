@@ -12570,10 +12570,10 @@
       5,
       6
     ],
-    "mandatory_cases": 6,
+    "mandatory_cases": 7,
     "conditional_cases": 1,
-    "required_dialect_parser_cells": 91,
-    "required_adapter_cells": 21,
+    "required_dialect_parser_cells": 104,
+    "required_adapter_cells": 24,
     "full_duckdb_oracle": "tests/task_127_qualify_bags.rs",
     "canonical_implementation": "src/physical_realization/window_bags.rs",
     "release_approved": false
