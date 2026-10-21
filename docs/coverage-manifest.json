@@ -67,14 +67,7 @@
     "numeric_native_residual_sqlite_oracles": 2,
     "native_sqlite_oracle_test": "tests/native/test_task_189_sqlite_native.py",
     "acceptance_audit": "docs/task-189-acceptance-audit.md",
-    "independent_ac_signoff": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6
-    ],
+    "independent_ac_signoff": [1, 2, 3, 4, 5, 6],
     "reviewed_semantic_head_sha": "fac7855209b1c094dd110d4cb40955daa500bdf2",
     "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39562505282",
     "reviewed_semantic_ci_jobs_passed": 9,
