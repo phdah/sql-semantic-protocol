@@ -62,7 +62,7 @@ fn frozen_qualify_matrix_has_all_complete_evidence_and_owned_residuals() {
             );
         }
         assert!(case["sql"].as_str().unwrap().contains("QUALIFY"),"{id}");
-        assert!(case["physical_source_bags"].as_object().unwrap().len()>=1,"{id}");
+        assert!(!case["physical_source_bags"].as_object().unwrap().is_empty(),"{id}");
         assert!(case["expected_full_terminal_bag"].is_array(),"{id}");
         assert!(case["typed_terminal_domains"].is_object(),"{id}");
     }
