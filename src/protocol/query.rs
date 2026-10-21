@@ -33,11 +33,21 @@ pub struct WindowGroupedCountSource {
 }
 impl WindowGroupedCountSource {
     pub(crate) fn new(source: String, group_column: String, count_alias: String) -> Self {
-        Self { source, group_column, count_alias }
+        Self {
+            source,
+            group_column,
+            count_alias,
+        }
     }
-    pub fn source(&self) -> &str { &self.source }
-    pub fn group_column(&self) -> &str { &self.group_column }
-    pub fn count_alias(&self) -> &str { &self.count_alias }
+    pub fn source(&self) -> &str {
+        &self.source
+    }
+    pub fn group_column(&self) -> &str {
+        &self.group_column
+    }
+    pub fn count_alias(&self) -> &str {
+        &self.count_alias
+    }
 }
 
 /// Partially analyzed query semantics.
