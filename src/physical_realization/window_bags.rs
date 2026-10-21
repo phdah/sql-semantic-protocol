@@ -756,6 +756,7 @@ pub fn physical_finite_window_bag_plan(
     let Some(query) = query_for(bundle, layer) else {
         return residual("window target has no canonical query");
     };
+    if query.joins().len()>0 || query.output().columns().iter().any(|c| c.name()=="total") { eprintln!("CANONICAL TASK127 query: {query:#?}"); }
     let [source] = query.sources() else {
         return residual("window proof requires one direct physical source");
     };
