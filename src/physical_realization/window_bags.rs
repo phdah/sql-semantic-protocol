@@ -432,9 +432,9 @@ fn window_kind(
 // A conjunction of canonical window comparisons is evaluated against a single
 // complete physical bag. Every comparison is classified under SQL three-valued
 // truth: NULL is NOT TRUE. Unsupported Boolean shapes fail closed.
-fn qualify_comparisons<'a>(
-    query: &'a QueryStatement,
-) -> Result<Vec<(&'a WindowFunctionExpression, ComparisonOperator, i128)>, &'static str> {
+fn qualify_comparisons(
+    query: &QueryStatement,
+) -> Result<Vec<(&WindowFunctionExpression, ComparisonOperator, i128)>, &'static str> {
     fn collect<'a>(
         predicate: &'a Predicate,
         comparisons: &mut Vec<(&'a WindowFunctionExpression, ComparisonOperator, i128)>,
@@ -446,21 +446,22 @@ fn qualify_comparisons<'a>(
                 }
             }
             Predicate::Comparison(comparison) => {
-                let (window, operator, threshold) =
-                    match (comparison.left(), comparison.right()) {
-                        (Expression::WindowFunction(window), Expression::Literal(value)) => {
-                            (window, comparison.operator(), value)
-                        }
-                        (Expression::Literal(value), Expression::WindowFunction(window)) => {
-                            (window, comparison.operator().reversed(), value)
-                        }
-                        _ => return Err("QUALIFY needs a canonical window and integer literal"),
-                    };
+                let (window, operator, threshold) = match (comparison.left(), comparison.right()) {
+                    (Expression::WindowFunction(window), Expression::Literal(value)) => {
+                        (window, comparison.operator(), value)
+                    }
+                    (Expression::Literal(value), Expression::WindowFunction(window)) => {
+                        (window, comparison.operator().reversed(), value)
+                    }
+                    _ => return Err("QUALIFY needs a canonical window and integer literal"),
+                };
                 if matches!(
                     operator,
                     ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
                 ) {
-                    return Err("NULL-safe QUALIFY needs explicit three-valued comparison evidence");
+                    return Err(
+                        "NULL-safe QUALIFY needs explicit three-valued comparison evidence",
+                    );
                 }
                 if threshold.literal_type() != LiteralType::Integer {
                     return Err("QUALIFY threshold requires an exact integer");
