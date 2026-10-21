@@ -66,7 +66,7 @@ pub struct QueryStatement {
     special_join_goal_output_shape: bool,
     ranked_goal_output_shape: bool,
     ranked_composed_goal_shape: bool,
-    window_grouped_count_source: Option<WindowGroupedCountSource>,
+    window_grouped_count_source: Option<Box<WindowGroupedCountSource>>,
     set_operation: Option<Box<SetOperation>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -260,7 +260,7 @@ impl QueryStatement {
         grouped_count: Option<WindowGroupedCountSource>,
     ) -> Self {
         self.ranked_composed_goal_shape = safe_shape;
-        self.window_grouped_count_source = grouped_count;
+        self.window_grouped_count_source = grouped_count.map(Box::new);
         self
     }
 
@@ -271,7 +271,7 @@ impl QueryStatement {
 
     /// Canonical GROUP BY key and COUNT(*) alias for a certified derived producer.
     pub fn window_grouped_count_source(&self) -> Option<&WindowGroupedCountSource> {
-        self.window_grouped_count_source.as_ref()
+        self.window_grouped_count_source.as_deref()
     }
 
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
