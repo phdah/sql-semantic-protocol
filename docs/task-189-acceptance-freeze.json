@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-189",
   "parent": "TASK-74",
   "frozen_at": "2026-10-20",
@@ -68,13 +68,9 @@
   "conditional_owner": "TASK-189",
   "conditional_disposition": "Residual only if parser or engine/session semantics genuinely unproved; missing mandatory exact cells block Done",
   "exact_integer_submatrix": 5,
-  "mandatory_unverified": [
-    "fractional AVG",
-    "DECIMAL precision and scale",
-    "dbt executable parity",
-    "ODCS executable parity",
-    "native per-dialect numeric and FILTER execution/session oracle matrix"
-  ],
+  "mandatory_unverified": [],
+  "mandatory_evidence_scope": "All ten frozen Exact integer and finite-binary-decimal SQL/window bags have public complete DuckDB, 13 sqlparser dialect and direct/dbt/ODCS evidence. Real dbt Core executes its DECIMAL model with source and terminal snapshots. ODCS is schema evidence, not an executable SQL engine. No non-DuckDB/SQLite native vendor portability is certified by these tests.",
+  "conditional_release_review": "All six conditional cases and two numeric counterexamples are accepted only as conservative Residual at the canonical portable API boundary. Native SQLite/DuckDB results are engine-specific; unexecuted vendor/session cells remain explicitly Residual and must not be marketed as native support. TASK-128 advanced-frame and TASK-127 upstream composition obligations remain separate.",
   "cases": [
     {
       "id": "74-C189-P1",
@@ -1493,7 +1489,7 @@
       "proof": "Residual_expected",
       "reason": "DISTINCT frame membership and elimination remain unattested even with deterministic order and explicit NULL ordering",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Reviewed conditional Residual: DuckDB executes DISTINCT window; SQLite runtime rejects DISTINCT window, though sqlparser accepts. No portable framed DISTINCT law is claimed for other vendor/session cells.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parsed",
@@ -1587,7 +1583,7 @@
       "proof": "Residual_expected",
       "reason": "FILTER requires SQL three-valued row selection certified per frame",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite execute FILTER with their native SQL semantics; portable three-valued frame FILTER evidence is not implemented, and untested vendors are not certified.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parser_boundary",
@@ -1681,7 +1677,7 @@
       "proof": "Residual_expected",
       "reason": "implicit ordered window uses vendor-default RANGE semantics",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite execute implicit ordered windows; implicit default RANGE and peer behavior require native/session attestation before any portable Exact claim.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parsed",
@@ -1775,7 +1771,7 @@
       "proof": "Residual_expected",
       "reason": "ROWS member identities are ambiguous under tied ORDER BY",
       "conditional_owner": "TASK-189",
-      "release_disposition": "pending explicit numeric/vendor review, not approved as Exact",
+      "release_disposition": "Reviewed conditional Residual: tied ROWS ORDER BY cannot determine which physical peer contributes; DuckDB/SQLite complete bags support only value multiset/partial witnesses, not peer row identity.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parsed",
@@ -1874,7 +1870,7 @@
       "proof": "Residual_expected",
       "reason": "5/3 repeating fractional AVG has no portable finite-decimal physical outcome without engine-specific precision and rounding attestation",
       "conditional_owner": "TASK-189",
-      "release_disposition": "Residual until a finite, typed and engine-attested fractional AVG domain and native precision/session oracle is frozen; not an Exact approval",
+      "release_disposition": "Reviewed conditional Residual: DuckDB and SQLite produce approximate 5/3; exact finite AVG rational and precision/rounding laws are not portable without native/session evidence.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parsed",
@@ -1966,7 +1962,7 @@
       "proof": "Residual_expected",
       "reason": "DECIMAL(10,2) fractional 10.20 and 30.70 inputs cannot be certified across decimal and floating numeric engines without native/session arithmetic attestation",
       "conditional_owner": "TASK-189",
-      "release_disposition": "Residual until DECIMAL result type, scale, overflow and engine/session policy are independently attested; no integer-schema proxy",
+      "release_disposition": "Reviewed conditional Residual: DuckDB DECIMAL and SQLite NUMERIC affinity differ in type/precision; exact arithmetic and overflow cannot be inferred for untested native vendor/session cells.",
       "parser_status_by_dialect": {
         "generic": "parsed",
         "mysql": "parsed",
