@@ -763,7 +763,10 @@ pub fn physical_finite_window_bag_plan(
     };
     if query.ranked_composed_goal_shape() {
         return super::window_composition::composed_window_plan(
-            bundle, query, snapshots, walker.nodes,
+            bundle,
+            query,
+            snapshots,
+            walker.nodes,
         );
     }
     let [snapshot] = snapshots else {
