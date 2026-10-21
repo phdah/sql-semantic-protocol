@@ -1,3 +1,4 @@
+use crate::protocol::WindowGroupedCountSource;
 //! Root query orchestration and SELECT-level filtering.
 
 use super::*;
