@@ -104,6 +104,59 @@ fn direct_derived_case_witness_source(
     ))
 }
 
+/// Retain one precisely validated derived GROUP BY COUNT(*) producer in the
+/// canonical protocol. Never infer aggregate semantics from a projected alias.
+fn qualify_grouped_count_source(
+    query: &SqlQuery,
+    dependencies: &BTreeSet<String>,
+) -> Option<WindowGroupedCountSource> {
+    let [source] = dependencies.iter().collect::<Vec<_>>().as_slice() else { return None; };
+    let SetExpr::Select(outer) = query.body.as_ref() else { return None; };
+    let [from] = outer.from.as_slice() else { return None; };
+    if !from.joins.is_empty() { return None; }
+    let TableFactor::Derived { subquery, .. } = &from.relation else { return None; };
+    if subquery.with.is_some() || subquery.limit_clause.is_some() || subquery.fetch.is_some() {
+        return None;
+    }
+    let SetExpr::Select(inner) = subquery.body.as_ref() else { return None; };
+    let [inner_from] = inner.from.as_slice() else { return None; };
+    if !matches!(&inner_from.relation, TableFactor::Table { sample: None, .. })
+        || !inner_from.joins.is_empty() || inner.selection.is_some()
+        || inner.qualify.is_some() || inner.having.is_some()
+        || inner.distinct.is_some() || inner.top.is_some()
+        || inner.prewhere.is_some() || inner.connect_by.is_some()
+        || !inner.lateral_views.is_empty()
+    { return None; }
+    let GroupByExpr::Expressions(group, modifiers) = &inner.group_by else { return None; };
+    let [Expr::Identifier(group_column)] = group.as_slice() else { return None; };
+    if !modifiers.is_empty() || inner.projection.len() != 2 { return None; }
+    let group_matches = inner.projection.iter().filter(|projection| match projection {
+        SelectItem::UnnamedExpr(Expr::Identifier(name)) => name.value == group_column.value,
+        SelectItem::ExprWithAlias { expr: Expr::Identifier(name), alias } =>
+            name.value == group_column.value && alias.value == group_column.value,
+        _ => false,
+    }).count() == 1;
+    if !group_matches { return None; }
+    let mut count_alias = None;
+    for projection in &inner.projection {
+        let SelectItem::ExprWithAlias { expr: Expr::Function(function), alias } = projection
+            else { continue; };
+        if !function.name.to_string().eq_ignore_ascii_case("count")
+            || function.over.is_some() || function.filter.is_some() || function.null_treatment.is_some()
+        { continue; }
+        let FunctionArguments::List(args) = &function.args else { continue; };
+        if !args.clauses.is_empty() || args.duplicate_treatment.is_some()
+            || !matches!(args.args.as_slice(), [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)])
+        { continue; }
+        count_alias = Some(alias.value.clone());
+    }
+    let count_alias = count_alias?;
+    if count_alias == group_column.value { return None; }
+    Some(WindowGroupedCountSource::new(
+        (*source).clone(), group_column.value.clone(), count_alias
+    ))
+}
+
 pub(super) fn analyze_query(
     query: &SqlQuery,
     produced_relation: Option<String>,
@@ -388,6 +441,28 @@ pub(super) fn analyze_query(
                     if !items.is_empty() && modifiers.is_empty()
                         && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
 
+    // These are the only upstream row-shapes whose physical QUALIFY
+    // composition is currently certified. Any unrelated row shaping fails closed.
+    let composed_rank_outer = query.with.is_none()
+        && query.limit_clause.is_none() && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.qualify.is_some() && select.top.is_none()
+                && select.distinct.is_none() && select.selection.is_none()
+                && select.having.is_none() && select.prewhere.is_none()
+                && select.connect_by.is_none() && select.lateral_views.is_empty()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, mods)
+                    if items.is_empty() && mods.is_empty())
+                && select.from.len() == 1);
+    let grouped_count_source = composed_rank_outer
+        .then(|| qualify_grouped_count_source(query, &relation_analysis.dependencies))
+        .flatten();
+    let joined_qualify_shape = composed_rank_outer
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.len() == 1);
+    let ranked_composed_shape = joined_qualify_shape || grouped_count_source.is_some();
+
     let (plain_goal_output_shape, ranked_goal_output_shape) =
         if query.with.is_none() && query.limit_clause.is_none() && query.fetch.is_none() {
             match query.body.as_ref() {
@@ -473,6 +548,7 @@ pub(super) fn analyze_query(
     .with_proven_single_row_output(proven_single_row_output)
     .with_group_row_correspondence(group_rows_match_surviving_groups)
     .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
+    .with_ranked_composition(ranked_composed_shape, grouped_count_source)
     .with_filtered_join_goal_shape(filtered_join_goal_output_shape)
     .with_special_join_goal_shape(special_join_goal_output_shape)
     .with_group_witness()
