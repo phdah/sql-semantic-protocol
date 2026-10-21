@@ -192,9 +192,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
       "oracle_status": "pending_independent_duckdb"
     },
@@ -324,9 +324,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
       "oracle_status": "pending_independent_duckdb"
     },
@@ -456,9 +456,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
       "oracle_status": "pending_independent_duckdb"
     },
@@ -567,9 +567,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
       "oracle_status": "pending_independent_duckdb"
     },
@@ -704,9 +704,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_exact",
+        "dbt_compiled": "verified_exact",
+        "odcs_schema": "verified_exact"
       },
       "oracle_status": "pending_independent_duckdb"
     },
@@ -792,9 +792,9 @@
         "databricks": "parsed"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_residual",
+        "dbt_compiled": "verified_residual",
+        "odcs_schema": "verified_residual"
       },
       "oracle_status": "conditional_without_unique_sort_tiebreaker"
     },
