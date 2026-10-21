@@ -912,7 +912,7 @@ pub fn physical_finite_window_bag_plan(
             && partition.windows(2).any(|rows| rows[0].1 == rows[1].1)
             && operations.iter().any(|operation| {
                 !matches!(
-                    operation.kind,
+                    &operation.kind,
                     WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
                 )
             })
