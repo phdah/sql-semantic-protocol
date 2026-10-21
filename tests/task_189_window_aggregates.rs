@@ -187,7 +187,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn complete_portable_partition_running_moving_and_empty_frame_bags_match_duckdb() {
     let matrix = freeze();
-    assert_eq!(matrix["version"], 4);
+    assert_eq!(matrix["version"], 5);
     assert_eq!(matrix["owner"], "TASK-189");
     assert_eq!(
         matrix["fixture_ids"],
