@@ -439,38 +439,67 @@ fn composed_join_underordered_peers_are_not_promoted_to_exact() {
     ));
 }
 
-
 #[test]
 fn composed_null_keys_and_unsupported_source_shapes_fail_closed() {
     let matrix = freeze();
-    let mut joined = matrix["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"]=="74-C127-P4").unwrap().clone();
+    let mut joined = matrix["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "74-C127-P4")
+        .unwrap()
+        .clone();
     joined["physical_source_bags"]["r"][1]["k"] = Value::Null;
     let PhysicalFiniteWindowProof::Exact(joined_exact) = composed(&joined) else {
         panic!("NULL JOIN keys must not match but must keep complete physical identity");
     };
-    assert_eq!(joined_exact.source_row_ids,["l#0|r#0","l#1|r#2"]);
+    assert_eq!(joined_exact.source_row_ids, ["l#0|r#0", "l#1|r#2"]);
     assert!(joined_exact.rejected_row_ids.is_empty());
-    assert_eq!(joined_exact.rejected_upstream_row_ids.len(),4);
+    assert_eq!(joined_exact.rejected_upstream_row_ids.len(), 4);
 
-    let mut grouped = matrix["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"]=="74-C127-P5").unwrap().clone();
+    let mut grouped = matrix["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "74-C127-P5")
+        .unwrap()
+        .clone();
     grouped["physical_source_bags"]["s"][0]["k"] = Value::Null;
     let PhysicalFiniteWindowProof::Exact(group_exact) = composed(&grouped) else {
         panic!("NULL is a valid and separate GROUP BY group");
     };
-    assert_eq!(group_exact.source_row_ids.len(),3);
-    assert!(group_exact.source_row_ids.contains(&"group(k=NULL)".to_string()));
-    assert_eq!(group_exact.terminal_row_ids,["group(k=1)"]);
-    assert_eq!(group_exact.producer_contributors["group(k=NULL)"],["s#0"]);
+    assert_eq!(group_exact.source_row_ids.len(), 3);
+    assert!(group_exact
+        .source_row_ids
+        .contains(&"group(k=NULL)".to_string()));
+    assert_eq!(group_exact.terminal_row_ids, ["group(k=1)"]);
+    assert_eq!(group_exact.producer_contributors["group(k=NULL)"], ["s#0"]);
 
-    grouped["sql"] = Value::String(grouped["sql"].as_str().unwrap()
-        .replace("COUNT(*)","COUNT(x)"));
-    assert!(matches!(composed(&grouped),PhysicalFiniteWindowProof::Residual{..}),
-        "COUNT(expr) cannot borrow COUNT(*) source evidence");
+    grouped["sql"] = Value::String(
+        grouped["sql"]
+            .as_str()
+            .unwrap()
+            .replace("COUNT(*)", "COUNT(x)"),
+    );
+    assert!(
+        matches!(
+            composed(&grouped),
+            PhysicalFiniteWindowProof::Residual { .. }
+        ),
+        "COUNT(expr) cannot borrow COUNT(*) source evidence"
+    );
 
-    joined["sql"] = Value::String(joined["sql"].as_str().unwrap()
-        .replace("JOIN r","LEFT JOIN r"));
-    assert!(matches!(composed(&joined),PhysicalFiniteWindowProof::Residual{..}),
-        "outer JOIN is not the certified two-source inner law");
+    joined["sql"] = Value::String(
+        joined["sql"]
+            .as_str()
+            .unwrap()
+            .replace("JOIN r", "LEFT JOIN r"),
+    );
+    assert!(
+        matches!(
+            composed(&joined),
+            PhysicalFiniteWindowProof::Residual { .. }
+        ),
+        "outer JOIN is not the certified two-source inner law"
+    );
 }
