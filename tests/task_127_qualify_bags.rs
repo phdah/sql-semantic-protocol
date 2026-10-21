@@ -295,10 +295,11 @@ fn inspect_canonical_composed_queries_task127() {
         let bundle = analyze_configured_inputs_with_catalog(&[
             ConfiguredSqlInput::new(id, &sql, "duckdb", parser.as_ref())
         ], &catalog).unwrap();
-        eprintln!("INSPECT {id} layers={} graph={:#?}",bundle.layers().len(),bundle.graph());
-        for layer in bundle.layers() {
-            eprintln!("INSPECT {id} layer={} consumes={:?} produces={:?} semantics={:#?}",layer.id(),layer.consumes(),layer.produces(),layer.composed_semantics());
-        }
+        eprintln!("INSPECT {id} layers={}",bundle.layers().len());
+        let states = case["physical_source_bags"].as_object().unwrap().iter().map(|(name,rows)| PhysicalWriteState::new(name, rows.as_array().unwrap().iter().map(|row| PhysicalWriteRow::new(row.as_object().unwrap().iter().map(|(name,v)| (name.clone(),if v.is_null(){LiteralValue::Null}else{LiteralValue::Number(v.to_string())})).collect()).unwrap()).collect()).unwrap()).collect::<Vec<_>>();
+        let proof = physical_finite_window_bag_plan(&bundle, bundle.layers().last().unwrap().id(), &states);
+        eprintln!("PROOF {id}: {proof:?}");
+
     }
     panic!("inspection only");
 }
