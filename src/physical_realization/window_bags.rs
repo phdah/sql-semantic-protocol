@@ -783,7 +783,7 @@ pub fn physical_finite_window_bag_plan(
     let mut keys: Option<RankKeys> = None;
     let mut operations = Vec::<WindowColumn>::new();
     for projected in query.output().columns() {
-        if !seen_names.insert(projected.name()) {
+        if !seen_names.insert(projected.name().to_string()) {
             return residual("duplicate window output alias");
         }
         match projected.expression() {
