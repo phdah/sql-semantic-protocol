@@ -83,8 +83,10 @@ fn make_join(
     };
     if join.kind() != JoinKind::Inner || join.execution().is_some()
         || left.name() == right.name()
-        || join.left().relation() != left.name()
-        || join.right().relation() != right.name()
+        || !(join.left().relation() == left.name()
+            || Some(join.left().relation()) == left.alias())
+        || !(join.right().relation() == right.name()
+            || Some(join.right().relation()) == right.alias())
     {
         return Err("QUALIFY JOIN shape lacks a portable two-source INNER JOIN law");
     }
