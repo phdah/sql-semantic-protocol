@@ -1,9 +1,8 @@
-# TASK-189 pre-sign-off acceptance audit
+# TASK-189 independent acceptance sign-off
 
-**Scope:** TASK-189 only, child 3/5 of TASK-74. This is the implementation
-evidence for an independent final review, not a merge or release approval.
-Task status remains **In Progress** until that review verifies the final PR
-head. TASK-74 stays open, TASK-127 stays blocked, and TASK-128 retains advanced
+**Scope:** TASK-189 only, child 3/5 of TASK-74. This is the independent final
+acceptance review, not a merge or 3.0.0 release approval. TASK-74 stays open,
+TASK-127 remains blocked until this PR merges, and TASK-128 retains advanced
 frame/session ownership.
 
 ## Frozen evidence
@@ -67,9 +66,59 @@ and advanced RANGE/GROUPS, COLLATE, NULL defaults and NTILE are TASK-128.
 Neither may be silently marked complete here. This PR is not the 3.0.0 release
 gate and carries no independent release approval.
 
-## Final review checklist
+## Independent final acceptance review (2026-10-21)
 
-Review the actual final-head CI run and inspect regressions, including any
-changes made after this audit. Confirm the reviewed 59 vendor/session Residual
-cells do not imply native support. Only then check TASK-189's AC and change its
-status to Done; keep TASK-74 open and do not merge until the user approves.
+**Disposition: AC #1 through #6 independently verified for TASK-189's
+explicitly bounded exact core and reviewed conditional Residual inventory.**
+Reviewed the canonical physical evaluator and public source-bag identities,
+all ten frozen Exact cases, 13 parser paths, three canonical adapters,
+conditional and numeric Residual classification, parent TASK-74 scope mapping,
+and the actual GitHub Actions final-head test logs. None of the ten required
+Exact cases was reclassified as Residual.
+
+**Final verified semantic head:**
+`fac7855209b1c094dd110d4cb40955daa500bdf2`.
+**CI run:** https://github.com/phdah/sql-semantic-protocol/actions/runs/39562505282
+(completed successfully, **9/9 jobs**). Verified `Rust / fmt`, strict
+`Rust / lint`, `Rust / test`, `Rust / doc`, no-default-features lint,
+tests, docs and dependencies, and executed dbt Core E2E.
+
+Task-specific log assertions confirmed:
+- `exact_mandatory_cells_and_reviewed_residuals_are_distinct`, which guards
+  10 Exact and 8 reviewed Residual obligations: passed.
+- `every_conditional_native_session_cell_has_a_conservative_owned_disposition`:
+  passed, including 71 parser-accepted/7 parser-boundary cells.
+- `fixed_point_decimal_results_agree_across_direct_compiled_dbt_and_odcs`:
+  passed, including both numeric Residual counterexamples.
+- SQLite 3.45.1 native suite: all four tests passed, covering eight independent
+  runtime/boundary cases.
+- `real_compiled_dbt_decimal_windows_have_exact_physical_and_warehouse_bags`:
+  passed after executing the real dbt model and warehouse oracle.
+- The standard Rust test suite also covers complete DuckDB bags, schema/golden
+  checks, exact source/terminal identities, nullable QUALIFY, and mixed
+  ranking/navigation/aggregate regressions. The full default and
+  no-default-feature suites passed.
+
+### Child AC decision
+
+| AC | Independent decision |
+| --- | --- |
+| #1 | **PASS:** versioned v5 freeze inventories exact and conditional SQL, stable source/column identities, frames, complete oracle bags, true/not-true rows, inclusive typed domains and reviewed parser/session/adapter dispositions |
+| #2 | **PASS:** source-independent closed-world physical evaluator returns `Exact` for the six mandatory spellings and four frame shapes, `Impossible` for contradictory physical sources and `Residual` for unsupported numeric/session/order cases |
+| #3 | **PASS:** independently executed DuckDB full input/output oracles, duplicate/NULL/empty and second-partition witnesses, complete row membership, typed domains and QUALIFY survivor/rejection evidence |
+| #4 | **PASS:** 13 parser dialect paths, direct/compiled dbt/ODCS parity for exact and Residual numeric cases, conditional inventory with DuckDB/SQLite runtime evidence and explicit unexecuted vendor/session Residual cells; no universal native support claim |
+| #5 | **PASS:** mixed ranking/navigation/aggregate plus bounded QUALIFY regressions and fail-closed peer cases; source-breaking `PhysicalFiniteWindowExact` additions require a future major release, protocol JSON schema is unchanged |
+| #6 | **PASS:** independent original-AC crosswalk and code/test inspection plus 9/9 successful final semantic-head CI jobs; all child obligations checked |
+
+**Portability limitation deliberately retained:** the 59 parser-accepted
+vendor/session cells outside DuckDB and SQLite are conditional unexecuted
+`Residual`, not native-supported exact claims. The reviewer accepts this
+bounded conditional disposition; any later expansion to `Exact` requires
+independent native vendor/session execution. This does not excuse missing
+mandatory exact semantics and does not certify advanced TASK-128 frames or
+upstream TASK-127 composition.
+
+**Post-sign-off metadata note:** The status, checkboxes, this audit record,
+and the coverage manifest are documentation-only changes after the reviewed
+semantic head. Verify CI again on the resulting PR head before merging.
+TASK-189 may be marked **Done pending merge**; TASK-74 remains To Do.
