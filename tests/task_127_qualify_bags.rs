@@ -157,7 +157,7 @@ fn selected_and_not_true_rank_conjunctions_match_complete_duckdb_bags() {
     for case in cases.iter().filter(|case| {
         matches!(
             case["id"].as_str(),
-            Some("74-C127-P1" | "74-C127-P2" | "74-C127-P3" | "74-C127-N1")
+            Some("74-C127-P1" | "74-C127-P2" | "74-C127-P3" | "74-C127-P6" | "74-C127-N1")
         )
     }) {
         let id = case["id"].as_str().unwrap();
@@ -239,7 +239,12 @@ fn selected_and_not_true_rank_conjunctions_match_complete_duckdb_bags() {
 #[test]
 fn ambiguous_peer_ties_fail_closed_and_bad_source_is_impossible() {
     let matrix = freeze();
-    let peers = &matrix["cases"][4];
+    let peers = matrix["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "74-C127-N2")
+        .unwrap();
     let bundle = analyze(peers);
     let target = bundle.layers().last().unwrap().id();
     assert!(matches!(
