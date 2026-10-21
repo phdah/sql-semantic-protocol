@@ -31,7 +31,8 @@ fn frozen_qualify_parser_and_canonical_cells_match_all_thirteen_dialects() {
                         .unwrap()
                         .iter()
                         .map(|(name, ty)| {
-                            let parsed_type = ty.as_str().unwrap().split_whitespace().next().unwrap();
+                            let parsed_type =
+                                ty.as_str().unwrap().split_whitespace().next().unwrap();
                             SchemaColumn::from_sql_type(name, parsed_type, "postgresql").unwrap()
                         })
                         .collect(),
@@ -53,14 +54,23 @@ fn frozen_qualify_parser_and_canonical_cells_match_all_thirteen_dialects() {
                     &catalog,
                 ) {
                     Ok(bundle) => {
-                        let canonical = bundle.inputs().iter().flat_map(|input| input.statements())
+                        let canonical = bundle
+                            .inputs()
+                            .iter()
+                            .flat_map(|input| input.statements())
                             .filter_map(|statement| match statement {
                                 ProtocolStatement::Query(query) => Some(query),
                                 _ => None,
                             })
-                            .any(|query| query.predicates().qualify_predicate().is_some()
-                                && query.diagnostics().is_empty());
-                        if canonical { "parsed" } else { "semantic_residual" }
+                            .any(|query| {
+                                query.predicates().qualify_predicate().is_some()
+                                    && query.diagnostics().is_empty()
+                            });
+                        if canonical {
+                            "parsed"
+                        } else {
+                            "semantic_residual"
+                        }
                     }
                     Err(_) => "semantic_residual",
                 }
