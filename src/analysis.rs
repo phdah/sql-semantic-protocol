@@ -41,7 +41,7 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
+    ComparisonAssumption, ComparisonOperator, ComparisonPredicate, QuantifiedSubqueryPredicate, SubqueryQuantifier, ConditionClause,
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryOperand, InSubqueryPredicate, InSubqueryTuple, IsNullPredicate, Join as ProtocolJoin,

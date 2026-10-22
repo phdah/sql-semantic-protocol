@@ -235,7 +235,7 @@ pub(super) fn analyze_predicate_with_windows(
                 .collect(),
             *negated,
         )),
-        Expr::AnyOp { left, compare_op, right } | Expr::AllOp { left, compare_op, right } => {
+        Expr::AnyOp { left, compare_op, right, .. } | Expr::AllOp { left, compare_op, right } => {
             let quantifier = if matches!(expression, Expr::AnyOp { .. }) {
                 SubqueryQuantifier::Any
             } else {
