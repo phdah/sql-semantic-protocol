@@ -2,7 +2,8 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_sql, DiagnosticArea, Expression, Predicate, Protocol, ProtocolStatement, QueryStatement,
+    analyze_sql, to_json, DiagnosticArea, Expression, InSubqueryOperand, InSubqueryTuple,
+    Predicate, Protocol, ProtocolStatement, QueryStatement,
 };
 use sqlparser::dialect::{dialect_from_str, BigQueryDialect, GenericDialect, PostgreSqlDialect};
 
@@ -91,7 +92,10 @@ fn in_and_not_in_subqueries_preserve_membership_semantics() {
         };
 
         assert_eq!(membership.negated(), expected_negated);
-        assert!(matches!(membership.expression(), Expression::Column(_)));
+        assert!(matches!(
+            membership.operand(),
+            InSubqueryOperand::Scalar(Expression::Column(_))
+        ));
         assert_eq!(membership.subquery().dependencies(), ["customers"]);
     }
 }
@@ -277,4 +281,54 @@ fn shared_in_subquery_syntax_is_analyzed_across_all_exposed_dialects() {
             "dialect {dialect_name}"
         );
     }
+}
+
+#[test]
+fn tuple_membership_emits_complete_positional_keys_without_scalar_substitution() {
+    let protocol = analyze_sql(
+        "SELECT o.k FROM outer_rows o WHERE (o.k, o.v) IN (SELECT i.k, i.v FROM inner_rows i)",
+        "generic",
+        &GenericDialect {},
+    )
+    .expect("tuple SQL");
+    let query = first_query(&protocol);
+    let Some(Predicate::InSubquery(member)) = query.predicates().where_predicate() else {
+        panic!("canonical IN predicate");
+    };
+    let InSubqueryOperand::Tuple(fields) = member.operand() else {
+        panic!("tuple is not normalized to independent scalar fields");
+    };
+    assert_eq!(fields.expressions().len(), 2);
+    assert!(InSubqueryTuple::new(Vec::new()).is_none());
+    assert!(InSubqueryTuple::new(fields.expressions()[..1].to_vec()).is_none());
+    let keys = query.subquery_witnesses()[0].membership_keys();
+    assert_eq!(keys.len(), 2);
+    assert_eq!(keys[0].outer().name(), "k");
+    assert_eq!(keys[0].inner().name(), "k");
+    assert_eq!(keys[1].outer().name(), "v");
+    assert_eq!(keys[1].inner().name(), "v");
+    assert!(matches!(
+        query.subquery_witnesses()[0].qualifying(),
+        sql_semantic_protocol::SubqueryMembershipDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        query.subquery_witnesses()[0].rejected(),
+        sql_semantic_protocol::SubqueryMembershipDirection::Residual { .. }
+    ));
+
+    let emitted: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("protocol JSON");
+    let statement = &emitted["inputs"][0]["statements"][0];
+    let predicate = &statement["predicates"]["where"];
+    assert_eq!(predicate["expression"]["kind"], "tuple");
+    assert_eq!(
+        predicate["expression"]["expressions"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    let wire_keys = &statement["subquery_witnesses"][0]["membership_keys"];
+    assert_eq!(wire_keys.as_array().unwrap().len(), 2);
+    assert!(statement["subquery_witnesses"][0]["membership_key"].is_null());
 }

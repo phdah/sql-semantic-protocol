@@ -78,6 +78,18 @@ pub(super) fn physical_subquery_membership_plan(
     let [local] = query.subquery_witnesses() else {
         return None;
     };
+    // The constructive scalar sufficient-case laws must not be applied to a
+    // positional tuple. Complete tuple membership is evaluated independently
+    // by the finite closed-world physical bag proof.
+    if matches!(
+        local.kind(),
+        crate::subquery_witness::SubqueryMembershipKind::In
+            | crate::subquery_witness::SubqueryMembershipKind::NotIn
+    ) && local.membership_keys().len() != 1
+    {
+        return None;
+    }
+
     let inner_filter = match query.predicates().where_predicate()? {
         Predicate::Exists(exists) => exists.subquery().predicates().where_predicate(),
         Predicate::InSubquery(membership) => membership.subquery().predicates().where_predicate(),

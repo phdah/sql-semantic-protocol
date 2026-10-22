@@ -65,6 +65,8 @@ pub(super) fn analyze_subquery_semantics(
                     } if partitions.is_empty() && with_hints.is_empty() && index_hints.is_empty()
                 )
                 && select.from[0].joins.is_empty()
+                // DISTINCT preserves Boolean membership, but removes candidate rows.
+                && select.distinct.is_none()
                 && select.having.is_none()
                 && select.qualify.is_none()
                 && select.top.is_none()

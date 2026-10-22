@@ -583,7 +583,7 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
         Predicate::In(predicate) => derive_in(predicate, sources),
         Predicate::Exists(_) => DomainMap::new(),
         Predicate::InSubquery(predicate) => unknown_for_expressions(
-            [predicate.expression()],
+            predicate.operand().expressions().iter(),
             sources,
             "IN subquery cannot be reduced safely to a scalar domain",
         ),
@@ -887,7 +887,9 @@ fn collect_predicate_columns(
         }
         Predicate::Exists(_) => {}
         Predicate::InSubquery(predicate) => {
-            collect_expression_columns(predicate.expression(), sources, columns);
+            for expression in predicate.operand().expressions() {
+                collect_expression_columns(expression, sources, columns);
+            }
         }
         Predicate::Between(predicate) => {
             collect_expression_columns(predicate.expression(), sources, columns);

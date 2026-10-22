@@ -1656,3 +1656,18 @@ An exact `finite_join_population` obligation states **the complete physical left
 A separate `temporal_join_population` obligates complete `YYYY-MM-DD HH:MM:SS` physical wall-clock source values, inclusive `timestamp_greater_than_or_equal` pair comparison, selected/rejected index sets and closed-world cardinalities. This law requires explicit `WITHOUT TIME ZONE` schema evidence for **both** compared timestamp columns; generic `TIMESTAMP`, zoned instants, incompatible precision, implicit session conversion, vendor tie-breaking and per-row UDF side effects remain conditional/unsupported until corresponding source and execution evidence is attested. The temporal proof does not infer a native engine's session setting.
 
 These are schema-backed sufficient **physical source realizations**, not unqualified claims that an arbitrary SQL program or a vendor function is fully understood. The parser-certified outer and inner row shape, normalized column references, typed physical metadata, complete unique source instances, and absence of extra operators/constraints are all prerequisites; otherwise the plan fails closed with Residual. Direct SQL, compiled dbt and ODCS supply source evidence to the same canonical graph.
+
+### Tuple IN/NOT IN membership (TASK-130)
+
+An `in_subquery` predicate has a scalar `expression` for scalar membership,
+ or an explicit `{ "kind": "tuple", "expressions": [...] }` operand for
+positional multi-column membership. The operator-local witness preserves the
+ordered `membership_keys` field for tuples; scalar membership retains its
+existing `membership_key` field. No tuple is represented by only its first
+column. Source-backed complete-population membership uses SQL three-valued row
+equality: a definite unequal field makes a pair FALSE even if another field is
+NULL; in the absence of a mismatch, NULL makes the pair UNKNOWN. IN is TRUE if
+any candidate compares TRUE, UNKNOWN if none is TRUE but at least one is UNKNOWN,
+and FALSE otherwise. NOT IN negates this truth, preserving UNKNOWN. An empty
+candidate set is FALSE for IN and TRUE for NOT IN, including NULL outer keys.
+Scalar-only abstract qualifying/rejected witness cases are explicitly Residual for tuple operands; only independently attested complete candidate populations establish their exact positional truth. DISTINCT subqueries cannot certify the unmodified physical candidate identity bag. The finite population proof is not a claim of native non-DuckDB execution.

@@ -479,6 +479,7 @@ mod filters;
 mod finite_chains;
 mod graph;
 mod grouping;
+mod in_bags;
 mod join_finite;
 mod join_temporal;
 mod join_uniform;
@@ -518,6 +519,10 @@ pub use filters::physical_source_plan;
 pub use finite_chains::{
     physical_finite_chain_bag_plan, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
     PhysicalFiniteChainProof,
+};
+pub use in_bags::{
+    physical_finite_in_bag_plan, PhysicalFiniteInExact, PhysicalFiniteInProof,
+    PhysicalInColumnDomain, PhysicalInTruth,
 };
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;

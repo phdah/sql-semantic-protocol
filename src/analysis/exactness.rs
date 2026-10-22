@@ -685,7 +685,9 @@ pub(super) fn collect_predicate_column_refs(
             }
         }
         Predicate::InSubquery(predicate) => {
-            collect_expression_column_refs(predicate.expression(), sources, columns)
+            for expression in predicate.operand().expressions() {
+                collect_expression_column_refs(expression, sources, columns);
+            }
         }
         Predicate::Between(predicate) => {
             collect_expression_column_refs(predicate.expression(), sources, columns);

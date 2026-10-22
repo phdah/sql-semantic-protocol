@@ -96,7 +96,7 @@ pub(super) fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstrai
 pub(super) fn subquery_membership_witness_to_value(
     witness: &crate::subquery_witness::SubqueryMembershipWitness,
 ) -> Value {
-    json!({
+    let mut value = json!({
         "operator": witness.kind().as_str(),
         "outer_relation": witness.outer_relation(),
         "inner_relation": witness.inner_relation(),
@@ -111,7 +111,18 @@ pub(super) fn subquery_membership_witness_to_value(
         "inner_column_domains": witness.inner_column_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
         "qualifying": subquery_membership_direction_to_value(witness.qualifying()),
         "rejected": subquery_membership_direction_to_value(witness.rejected())
-    })
+    });
+    if witness.membership_keys().len() > 1 {
+        value["membership_keys"] = json!(witness
+            .membership_keys()
+            .iter()
+            .map(|key| json!({
+                "outer": column_ref_to_value(key.outer()),
+                "inner": column_ref_to_value(key.inner())
+            }))
+            .collect::<Vec<_>>());
+    }
+    value
 }
 
 pub(super) fn subquery_membership_direction_to_value(

@@ -1,0 +1,2624 @@
+{
+  "version": 2,
+  "owner": "TASK-130",
+  "parent": "TASK-75",
+  "status": "verified_bounded_child_pending_merge",
+  "scope": "Closed-world signed integer scalar and positional two-column tuple IN/NOT IN across independent physical outer/inner source bags, optionally with one correlated equality WHERE filter.",
+  "fixture_ids": [
+    "75-C130-P",
+    "75-C130-N"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_equivalent"
+  ],
+  "original_parent_acceptance_mapped": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "conditional": [
+    {
+      "id": "75-C130-vendor-session",
+      "classification": "Residual",
+      "reason": "Native cross-vendor session comparison laws lack independent execution",
+      "owner": "TASK-130",
+      "disposition": "uncertified"
+    },
+    {
+      "id": "75-C130-noninteger-tuple",
+      "classification": "Residual",
+      "owner": "TASK-130",
+      "reason": "Non-integer typed or collation-dependent tuple comparison lacks portable exact equality evidence",
+      "reviewed_release_disposition": "conditionally uncertified non-integer tuple semantics"
+    },
+    {
+      "id": "75-C130-native-duckdb-tuple-null",
+      "classification": "Residual",
+      "owner": "TASK-130",
+      "reason": "Native DuckDB tuple IN applies NULL-sensitive behavior that differs from SQL standard fieldwise three-valued row equality when another component is a definite mismatch",
+      "reviewed_release_disposition": "portable normative SQL TRUE/FALSE/UNKNOWN proven through independent DuckDB expanded fieldwise SQL oracle; native tuple IN behavior explicitly not certified"
+    }
+  ],
+  "cases": [
+    {
+      "id": "75-C130-P-uncorrelated-in",
+      "fixture": "75-C130-P",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k IN (SELECT i.k FROM inner_rows i)",
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "truth": {
+        "o1": "true",
+        "o2": "unknown",
+        "on": "unknown"
+      },
+      "terminal": [
+        {
+          "k": 1
+        }
+      ],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 7
+          }
+        ]
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "on": [
+          "i1",
+          "i2",
+          "in"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1
+        ],
+        "lower": 1,
+        "upper": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-N-uncorrelated-not-in",
+      "fixture": "75-C130-N",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k NOT IN (SELECT i.k FROM inner_rows i)",
+      "selected_outer_ids": [],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "unknown",
+        "on": "unknown"
+      },
+      "terminal": [],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 7
+          }
+        ]
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "on": [
+          "i1",
+          "i2",
+          "in"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [],
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-N-no-null-candidate",
+      "fixture": "75-C130-N",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k NOT IN (SELECT i.k FROM inner_rows i)",
+      "selected_outer_ids": [
+        "o2"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "on"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "true",
+        "on": "unknown"
+      },
+      "terminal": [
+        {
+          "k": 2
+        }
+      ],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 7
+          }
+        ]
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [
+          "i1",
+          "i2"
+        ],
+        "on": [
+          "i1",
+          "i2"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          2
+        ],
+        "lower": 2,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-N-empty-inner",
+      "fixture": "75-C130-N",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k NOT IN (SELECT i.k FROM inner_rows i)",
+      "selected_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [],
+      "truth": {
+        "o1": "true",
+        "o2": "true",
+        "on": "true"
+      },
+      "terminal": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": []
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [],
+        "o2": [],
+        "on": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          2
+        ],
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-P-correlated-in",
+      "fixture": "75-C130-P",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k IN (SELECT i.k FROM inner_rows i WHERE i.g = o.g)",
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "truth": {
+        "o1": "true",
+        "o2": "false",
+        "on": "unknown"
+      },
+      "terminal": [
+        {
+          "k": 1
+        }
+      ],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 3,
+            "g": 8
+          }
+        ]
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "in"
+        ],
+        "o2": [
+          "i2"
+        ],
+        "on": [
+          "i1",
+          "in"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1
+        ],
+        "lower": 1,
+        "upper": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-N-correlated-not-in",
+      "fixture": "75-C130-N",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE o.k NOT IN (SELECT i.k FROM inner_rows i WHERE i.g = o.g)",
+      "selected_outer_ids": [
+        "o2"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "on"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "true",
+        "on": "unknown"
+      },
+      "terminal": [
+        {
+          "k": 2
+        }
+      ],
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 8
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 7
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 7
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 3,
+            "g": 8
+          }
+        ]
+      },
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "in"
+        ],
+        "o2": [
+          "i2"
+        ],
+        "on": [
+          "i1",
+          "in"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          2
+        ],
+        "lower": 2,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
+    },
+    {
+      "id": "75-C130-P-tuple-in-null-duplicates",
+      "fixture": "75-C130-P",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i3",
+            "k": 2,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "i4",
+            "k": null,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "i5",
+            "k": 4,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "i7",
+            "k": 8,
+            "v": null,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o6"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o7"
+      ],
+      "truth": {
+        "o1": "true",
+        "o2": "unknown",
+        "o3": "unknown",
+        "o4": "unknown",
+        "o5": "unknown",
+        "o6": "true",
+        "o7": "unknown"
+      },
+      "terminal": [
+        {
+          "k": 1
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o5": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o6": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o7": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          8
+        ],
+        "lower": 1,
+        "upper": 8,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-N-tuple-not-in-null-duplicates",
+      "fixture": "75-C130-N",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i3",
+            "k": 2,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "i4",
+            "k": null,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "i5",
+            "k": 4,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "i7",
+            "k": 8,
+            "v": null,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o6",
+        "o7"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "unknown",
+        "o3": "unknown",
+        "o4": "unknown",
+        "o5": "unknown",
+        "o6": "false",
+        "o7": "unknown"
+      },
+      "terminal": [],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o5": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o6": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ],
+        "o7": [
+          "i1",
+          "i2",
+          "i3",
+          "i4",
+          "i5",
+          "i6",
+          "i7"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [],
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-P-tuple-no-null",
+      "fixture": "75-C130-P",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o6"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o7"
+      ],
+      "truth": {
+        "o1": "true",
+        "o2": "false",
+        "o3": "false",
+        "o4": "false",
+        "o5": "false",
+        "o6": "true",
+        "o7": "false"
+      },
+      "terminal": [
+        {
+          "k": 1
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o5": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o6": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o7": [
+          "i1",
+          "i2",
+          "i6"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          8
+        ],
+        "lower": 1,
+        "upper": 8,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-N-tuple-no-null",
+      "fixture": "75-C130-N",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o7"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o6"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "true",
+        "o3": "true",
+        "o4": "true",
+        "o5": "true",
+        "o6": "false",
+        "o7": "true"
+      },
+      "terminal": [
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        },
+        {
+          "k": null
+        },
+        {
+          "k": 9
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o5": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o6": [
+          "i1",
+          "i2",
+          "i6"
+        ],
+        "o7": [
+          "i1",
+          "i2",
+          "i6"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          2,
+          3,
+          8,
+          9
+        ],
+        "lower": 2,
+        "upper": 9,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-P-tuple-empty",
+      "fixture": "75-C130-P",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": []
+      },
+      "selected_outer_ids": [],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o6",
+        "o7"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "false",
+        "o3": "false",
+        "o4": "false",
+        "o5": "false",
+        "o6": "false",
+        "o7": "false"
+      },
+      "terminal": [],
+      "complete_candidate_inner_ids": {
+        "o1": [],
+        "o2": [],
+        "o3": [],
+        "o4": [],
+        "o5": [],
+        "o6": [],
+        "o7": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [],
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-N-tuple-empty",
+      "fixture": "75-C130-N",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": []
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o6",
+        "o7"
+      ],
+      "rejected_not_true_outer_ids": [],
+      "truth": {
+        "o1": "true",
+        "o2": "true",
+        "o3": "true",
+        "o4": "true",
+        "o5": "true",
+        "o6": "true",
+        "o7": "true"
+      },
+      "terminal": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        },
+        {
+          "k": null
+        },
+        {
+          "k": 9
+        },
+        {
+          "k": 8
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [],
+        "o2": [],
+        "o3": [],
+        "o4": [],
+        "o5": [],
+        "o6": [],
+        "o7": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          2,
+          3,
+          8,
+          9
+        ],
+        "lower": 1,
+        "upper": 9,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-P-tuple-correlated",
+      "fixture": "75-C130-P",
+      "variant": "correlated_two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) IN (SELECT i.k, i.v FROM inner_rows i WHERE i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i3",
+            "k": 2,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "i4",
+            "k": null,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "i5",
+            "k": 4,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "i7",
+            "k": 8,
+            "v": null,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o6"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "o3",
+        "o4",
+        "o5",
+        "o7"
+      ],
+      "truth": {
+        "o1": "true",
+        "o2": "unknown",
+        "o3": "false",
+        "o4": "unknown",
+        "o5": "unknown",
+        "o6": "true",
+        "o7": "false"
+      },
+      "terminal": [
+        {
+          "k": 1
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o2": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o5": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o6": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o7": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          8
+        ],
+        "lower": 1,
+        "upper": 8,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-N-tuple-correlated",
+      "fixture": "75-C130-N",
+      "variant": "correlated_two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT i.k, i.v FROM inner_rows i WHERE i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "o3",
+            "k": 3,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "o4",
+            "k": null,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          },
+          {
+            "id": "o6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "o7",
+            "k": 8,
+            "v": 2,
+            "g": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "v": 10,
+            "g": 7
+          },
+          {
+            "id": "i3",
+            "k": 2,
+            "v": null,
+            "g": 7
+          },
+          {
+            "id": "i4",
+            "k": null,
+            "v": 20,
+            "g": 8
+          },
+          {
+            "id": "i5",
+            "k": 4,
+            "v": 8,
+            "g": 7
+          },
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "i7",
+            "k": 8,
+            "v": null,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o3",
+        "o7"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "o4",
+        "o5",
+        "o6"
+      ],
+      "truth": {
+        "o1": "false",
+        "o2": "unknown",
+        "o3": "true",
+        "o4": "unknown",
+        "o5": "unknown",
+        "o6": "false",
+        "o7": "true"
+      },
+      "terminal": [
+        {
+          "k": 3
+        },
+        {
+          "k": 8
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o1": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o2": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o3": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o4": [
+          "i1",
+          "i2",
+          "i3",
+          "i5"
+        ],
+        "o5": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o6": [
+          "i4",
+          "i6",
+          "i7"
+        ],
+        "o7": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          3,
+          8
+        ],
+        "lower": 3,
+        "upper": 8,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    },
+    {
+      "id": "75-C130-N-tuple-definite-mismatch-with-null",
+      "fixture": "75-C130-N",
+      "variant": "two_field_tuple_membership",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT i.k, i.v FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o5",
+            "k": 9,
+            "v": null,
+            "g": 8
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i6",
+            "k": 8,
+            "v": 1,
+            "g": 8
+          },
+          {
+            "id": "i7",
+            "k": 8,
+            "v": null,
+            "g": 8
+          }
+        ]
+      },
+      "selected_outer_ids": [
+        "o5"
+      ],
+      "rejected_not_true_outer_ids": [],
+      "truth": {
+        "o5": "true"
+      },
+      "terminal": [
+        {
+          "k": 9
+        }
+      ],
+      "complete_candidate_inner_ids": {
+        "o5": [
+          "i6",
+          "i7"
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "inner_identity": "inner_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_key": "inner_rows.k",
+        "outer_tuple_value": "outer_rows.v",
+        "inner_tuple_value": "inner_rows.v",
+        "outer_correlation": "outer_rows.g",
+        "inner_correlation": "inner_rows.g"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "v": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          9
+        ],
+        "lower": 9,
+        "upper": 9,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
+      "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
+      "parser_status": {
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
+    }
+  ],
+  "required_oracles": "Complete source/terminal and rowwise three-valued outcomes in DuckDB; for tuple NULL divergence use independent fieldwise SQL truth oracle (not raw native tuple IN) with named conditional native boundary; SQL/dbt/ODCS adapter parity and 13 dialect parser classifications.",
+  "verification": {
+    "implementation_head": "985d284162334c79d0e512d56913fbde5cc0705e",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39821243913",
+    "nine_jobs": "passed",
+    "parser_cells_verified": 195,
+    "adapter_cells_verified": 45,
+    "independent_duckdb_oracles_verified": 15,
+    "mandatory_unverified": [],
+    "parent_signoff": false,
+    "release_approved": false
+  }
+}
