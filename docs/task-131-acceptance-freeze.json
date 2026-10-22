@@ -6,7 +6,7 @@
     "75-C131-P",
     "75-C131-N"
   ],
-  "status": "frozen_pending_implementation_and_independent_oracles",
+  "status": "frozen_implementation_in_progress_final_head_ci_pending",
   "projection_schema": {
     "relation": "inner_rows",
     "columns": {
@@ -73,9 +73,9 @@
     "native_vendor_laws": "TASK-131",
     "decimal_promotion": "TASK-131"
   },
-  "parser_matrix_status": "mandatory exercised across 13 dialects; conditional parser cells measured by task-131 conditional test",
+  "parser_matrix_status": "156 mandatory exact semantic cases + 39 conditional parser cases independently exercised",
   "adapter_matrix_status": "12 mandatory source-complete cases x direct SQL / compiled dbt / ODCS source contracts",
-  "duckdb_oracle_status": "12 mandatory independent DuckDB SQL outputs checked; conditional runtime oracle pending",
+  "duckdb_oracle_status": "12 mandatory native output oracles plus nested-cardinality and LATERAL duplicate-row native oracles; APPLY engine deliberately unverified",
   "ci_status": "final head pending",
   "mandatory_cases": 12,
   "conditional_cases": 3,
@@ -770,9 +770,41 @@
       },
       "terminal_oracle": {
         "status": "conditional_native_engine_only",
-        "native_duckdb_expected": [
-          2
-        ]
+        "native_duckdb_expected": "runtime_cardinality_error"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_vendor_or_session_unattested",
+        "mysql": "residual_vendor_or_session_unattested",
+        "postgres": "residual_vendor_or_session_unattested",
+        "hive": "residual_vendor_or_session_unattested",
+        "sqlite": "residual_vendor_or_session_unattested",
+        "snowflake": "residual_vendor_or_session_unattested",
+        "redshift": "residual_vendor_or_session_unattested",
+        "mssql": "residual_vendor_or_session_unattested",
+        "clickhouse": "residual_vendor_or_session_unattested",
+        "bigquery": "residual_vendor_or_session_unattested",
+        "ansi": "residual_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_conditional_oracle_executed_in_ci",
+        "databricks": "residual_vendor_or_session_unattested"
+      },
+      "review_evidence": {
+        "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
+        "engine": "DuckDB duplicate-row nested scalar raises cardinality error"
       }
     },
     {
@@ -821,6 +853,40 @@
           "o1",
           "o1"
         ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_vendor_or_session_unattested",
+        "mysql": "residual_vendor_or_session_unattested",
+        "postgres": "residual_vendor_or_session_unattested",
+        "hive": "residual_vendor_or_session_unattested",
+        "sqlite": "residual_vendor_or_session_unattested",
+        "snowflake": "residual_vendor_or_session_unattested",
+        "redshift": "residual_vendor_or_session_unattested",
+        "mssql": "residual_vendor_or_session_unattested",
+        "clickhouse": "residual_vendor_or_session_unattested",
+        "bigquery": "residual_vendor_or_session_unattested",
+        "ansi": "residual_vendor_or_session_unattested",
+        "duckdb": "duckdb_native_conditional_oracle_executed_in_ci",
+        "databricks": "residual_vendor_or_session_unattested"
+      },
+      "review_evidence": {
+        "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
+        "engine": "DuckDB CROSS JOIN LATERAL returns two o1 rows with duplicate inner candidates"
       }
     },
     {
@@ -866,11 +932,92 @@
       "terminal_oracle": {
         "status": "conditional_native_engine_only",
         "native_duckdb_expected": null
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "residual_vendor_or_session_unattested",
+        "mysql": "residual_vendor_or_session_unattested",
+        "postgres": "residual_vendor_or_session_unattested",
+        "hive": "residual_vendor_or_session_unattested",
+        "sqlite": "residual_vendor_or_session_unattested",
+        "snowflake": "residual_vendor_or_session_unattested",
+        "redshift": "residual_vendor_or_session_unattested",
+        "mssql": "residual_vendor_or_session_unattested",
+        "clickhouse": "residual_vendor_or_session_unattested",
+        "bigquery": "residual_vendor_or_session_unattested",
+        "ansi": "residual_vendor_or_session_unattested",
+        "duckdb": "residual_vendor_or_session_unattested",
+        "databricks": "residual_vendor_or_session_unattested"
+      },
+      "review_evidence": {
+        "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
+        "engine": "no native APPLY oracle; parser success alone is unproved"
       }
     }
   ],
   "reviewed_freeze_revision": "v2: remove unproved nested WHERE from zero-row scalar mandatory case, preserving fixture identity and SQL NULL oracle",
   "required_parser_cells": 156,
   "required_adapter_cells": 36,
-  "conditional_parser_cells": 39
+  "conditional_parser_cells": 39,
+  "conditional_parser_status_by_case": {
+    "75-C131-N6": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgres": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "75-C131-N7": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgres": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    },
+    "75-C131-N8": {
+      "generic": "parsed",
+      "mysql": "parsed",
+      "postgres": "parsed",
+      "hive": "parsed",
+      "sqlite": "parsed",
+      "snowflake": "parsed",
+      "redshift": "parsed",
+      "mssql": "parsed",
+      "clickhouse": "parsed",
+      "bigquery": "parsed",
+      "ansi": "parsed",
+      "duckdb": "parsed",
+      "databricks": "parsed"
+    }
+  }
 }
