@@ -1670,4 +1670,4 @@ NULL; in the absence of a mismatch, NULL makes the pair UNKNOWN. IN is TRUE if
 any candidate compares TRUE, UNKNOWN if none is TRUE but at least one is UNKNOWN,
 and FALSE otherwise. NOT IN negates this truth, preserving UNKNOWN. An empty
 candidate set is FALSE for IN and TRUE for NOT IN, including NULL outer keys.
-The finite population proof is not a claim of native non-DuckDB execution.
+Scalar-only abstract qualifying/rejected witness cases are explicitly Residual for tuple operands; only independently attested complete candidate populations establish their exact positional truth. DISTINCT subqueries cannot certify the unmodified physical candidate identity bag. The finite population proof is not a claim of native non-DuckDB execution.
