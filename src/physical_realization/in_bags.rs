@@ -251,9 +251,11 @@ pub fn physical_finite_in_bag_plan(
     // The scalar-only abstract witness must be exact. Tuple directional
     // cases deliberately remain residual until this physical evaluator
     // enumerates all candidates and establishes per-row SQL truth.
-    if matches!(membership.operand(), crate::protocol::InSubqueryOperand::Scalar(_))
-        && (!matches!(witness.qualifying(), SubqueryMembershipDirection::Exact(_))
-            || !matches!(witness.rejected(), SubqueryMembershipDirection::Exact(_)))
+    if matches!(
+        membership.operand(),
+        crate::protocol::InSubqueryOperand::Scalar(_)
+    ) && (!matches!(witness.qualifying(), SubqueryMembershipDirection::Exact(_))
+        || !matches!(witness.rejected(), SubqueryMembershipDirection::Exact(_)))
     {
         return residual("scalar membership has no exact directional witness");
     }
