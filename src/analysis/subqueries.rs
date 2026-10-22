@@ -50,7 +50,18 @@ pub(super) fn analyze_subquery_semantics(
         && query.fetch.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
-                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, args: None, .. })
+                && matches!(&select.from[0].relation,
+                    TableFactor::Table {
+                        args: None,
+                        sample: None,
+                        version: None,
+                        json_path: None,
+                        with_ordinality: false,
+                        partitions,
+                        with_hints,
+                        index_hints,
+                        ..
+                    } if partitions.is_empty() && with_hints.is_empty() && index_hints.is_empty())
                 && select.from[0].joins.is_empty()
                 && select.having.is_none()
                 && select.qualify.is_none()
