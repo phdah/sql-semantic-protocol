@@ -357,3 +357,32 @@ fn invalid_integer_source_is_impossible_not_residual() {
         "missing physical population must not be conflated with impossible"
     );
 }
+
+#[test]
+fn native_duckdb_conditional_frames_have_complete_attested_engine_specific_bags() {
+    let matrix = frozen();
+    let cases = matrix["cases"].as_array().unwrap();
+    let expected = [
+        ("74-C128-N3", vec![20, 20, 40, 50, 30, 7, 7]),
+        ("74-C128-N4", vec![20, 20, 20, 30, -1, 7, -1]),
+        ("74-C128-N5", vec![10, 20, 30, 50, 30, 7, 7]),
+    ];
+    for (id, totals) in expected {
+        let case = cases.iter().find(|case| case["id"] == id).unwrap();
+        let observed = duckdb_oracle(case);
+        let wanted = (1..=7).zip(totals).map(|(id, total)| {
+            BTreeMap::from([
+                ("id".into(), LiteralValue::Number(id.to_string())),
+                ("total".into(), if total < 0 { LiteralValue::Null }
+                    else { LiteralValue::Number(total.to_string()) }),
+            ])
+        }).collect::<Vec<_>>();
+        assert_eq!(sorted_bag(&observed), sorted_bag(&wanted),
+            "{id}: exact native DuckDB outputs do not imply a portable session default");
+        let bundle = analyze(case["sql"].as_str().unwrap());
+        let target = bundle.layers().last().unwrap().id();
+        assert!(matches!(physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
+            PhysicalFiniteWindowProof::Residual { .. }),
+            "{id}: absence of session evidence cannot be promoted by a native oracle");
+    }
+}
