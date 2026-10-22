@@ -433,15 +433,45 @@ fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() 
             )
             .unwrap();
         }
-        let mut native_source = db.prepare("SELECT id,v FROM inner_rows ORDER BY id").unwrap();
+        let mut native_source = db
+            .prepare("SELECT id,v FROM inner_rows ORDER BY id")
+            .unwrap();
         let source_readback = native_source
-            .query_map([], |row| Ok((row.get::<_,String>(0)?, row.get::<_,Option<i64>>(1)?)))
-            .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
-        let mut expected_source = values.iter().map(|(id,v)| ((*id).to_string(),*v)).collect::<Vec<_>>();
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, Option<i64>>(1)?))
+            })
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
+        let mut expected_source = values
+            .iter()
+            .map(|(id, v)| ((*id).to_string(), *v))
+            .collect::<Vec<_>>();
         expected_source.sort();
-        assert_eq!(source_readback,expected_source,"{} independent complete physical source bag",case["id"]);
-        assert_eq!(case["source_row_ids"].as_array().unwrap().len(),values.len());
-        assert_eq!(case["terminal_oracle"]["type"],if kind=="scalar"&&case["expect"]["type"]=="cardinality_error" { serde_json::Value::Null } else { serde_json::Value::String(if kind=="scalar" {"SIGNED_INTEGER"} else {"BOOLEAN"}.to_string()) });
+        assert_eq!(
+            source_readback, expected_source,
+            "{} independent complete physical source bag",
+            case["id"]
+        );
+        assert_eq!(
+            case["source_row_ids"].as_array().unwrap().len(),
+            values.len()
+        );
+        assert_eq!(
+            case["terminal_oracle"]["type"],
+            if kind == "scalar" && case["expect"]["type"] == "cardinality_error" {
+                serde_json::Value::Null
+            } else {
+                serde_json::Value::String(
+                    if kind == "scalar" {
+                        "SIGNED_INTEGER"
+                    } else {
+                        "BOOLEAN"
+                    }
+                    .to_string(),
+                )
+            }
+        );
         let want = &case["expect"];
         if kind == "scalar" {
             let native = db.query_row(sql, [], |row| row.get::<_, Option<i64>>(0));
@@ -680,102 +710,155 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
     ));
 }
 
-
 #[test]
 fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
     use sql_semantic_protocol::{analyze_sql, to_json};
     for (sql, quantifier, operator) in [
-        ("SELECT 1 = ANY (SELECT v FROM inner_rows) AS x","any","eq"),
-        ("SELECT 2 = SOME (SELECT v FROM inner_rows) AS x","any","eq"),
-        ("SELECT 5 < ALL (SELECT v FROM inner_rows) AS x","all","lt"),
+        (
+            "SELECT 1 = ANY (SELECT v FROM inner_rows) AS x",
+            "any",
+            "eq",
+        ),
+        (
+            "SELECT 2 = SOME (SELECT v FROM inner_rows) AS x",
+            "any",
+            "eq",
+        ),
+        (
+            "SELECT 5 < ALL (SELECT v FROM inner_rows) AS x",
+            "all",
+            "lt",
+        ),
     ] {
         let parser = dialect_from_name("duckdb").unwrap();
         let protocol = analyze_sql(sql, "duckdb", parser.as_ref()).expect("SQL normalization");
         let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
-        let projection = &emitted["inputs"][0]["statements"][0]["output"]["columns"][0]["expression"];
-        assert_eq!(projection["kind"],"boolean_predicate", "{sql}");
+        let projection =
+            &emitted["inputs"][0]["statements"][0]["output"]["columns"][0]["expression"];
+        assert_eq!(projection["kind"], "boolean_predicate", "{sql}");
         let predicate = &projection["predicate"];
-        assert_eq!(predicate["kind"],"quantified_subquery", "{sql}");
-        assert_eq!(predicate["quantifier"],quantifier, "{sql}");
-        assert_eq!(predicate["operator"],operator, "{sql}");
-        assert_eq!(predicate["subquery"]["dependencies"][0],"inner_rows", "{sql}");
-        assert!(predicate["operand"].is_object(),"{sql}: canonical typed operand missing");
+        assert_eq!(predicate["kind"], "quantified_subquery", "{sql}");
+        assert_eq!(predicate["quantifier"], quantifier, "{sql}");
+        assert_eq!(predicate["operator"], operator, "{sql}");
+        assert_eq!(
+            predicate["subquery"]["dependencies"][0], "inner_rows",
+            "{sql}"
+        );
+        assert!(
+            predicate["operand"].is_object(),
+            "{sql}: canonical typed operand missing"
+        );
     }
 }
-
 
 #[test]
 fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
     use serde_json::{json, Value};
     use std::collections::BTreeSet;
-    let frozen: Value = serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
-    assert_eq!(frozen["version"],4);
-    assert_eq!(frozen["owner"],"TASK-131");
-    assert_eq!(frozen["parent"],"TASK-75");
-    assert_eq!(frozen["fixture_ids"],json!(["75-C131-P","75-C131-N"]));
-    let dialects=frozen["dialects"].as_array().unwrap();
-    let adapters=frozen["required_adapters"].as_array().unwrap();
-    assert_eq!(dialects.len(),13);
-    assert_eq!(adapters,json!(["sql","dbt","odcs"]).as_array().unwrap());
-    let mut ids=BTreeSet::new();
-    let mut mandatory=0;
-    let mut conditional=0;
-    let mut parser_cells=0;
-    let mut adapter_cells=0;
+    let frozen: Value =
+        serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
+    assert_eq!(frozen["version"], 4);
+    assert_eq!(frozen["owner"], "TASK-131");
+    assert_eq!(frozen["parent"], "TASK-75");
+    assert_eq!(frozen["fixture_ids"], json!(["75-C131-P", "75-C131-N"]));
+    let dialects = frozen["dialects"].as_array().unwrap();
+    let adapters = frozen["required_adapters"].as_array().unwrap();
+    assert_eq!(dialects.len(), 13);
+    assert_eq!(adapters, json!(["sql", "dbt", "odcs"]).as_array().unwrap());
+    let mut ids = BTreeSet::new();
+    let mut mandatory = 0;
+    let mut conditional = 0;
+    let mut parser_cells = 0;
+    let mut adapter_cells = 0;
     for case in frozen["cases"].as_array().unwrap() {
-        let id=case["id"].as_str().unwrap();
+        let id = case["id"].as_str().unwrap();
         assert!(ids.insert(id));
-        assert!(case["sql"].as_str().is_some_and(|sql|!sql.is_empty()));
-        assert!(case["canonical_source_identities"].as_array().is_some_and(|sources|!sources.is_empty()));
-        assert!(case["canonical_column_identities"].as_object().is_some_and(|columns|!columns.is_empty()));
-        let sources=case["source_bags"].as_object().unwrap();
-        assert_eq!(sources["inner_rows"],case["inner"],"{id}: complete source snapshot");
-        assert_eq!(case["parser_status_by_dialect"].as_object().unwrap().len(),13);
-        assert_eq!(case["native_execution_disposition_by_dialect"].as_object().unwrap().len(),13);
+        assert!(case["sql"].as_str().is_some_and(|sql| !sql.is_empty()));
+        assert!(case["canonical_source_identities"]
+            .as_array()
+            .is_some_and(|sources| !sources.is_empty()));
+        assert!(case["canonical_column_identities"]
+            .as_object()
+            .is_some_and(|columns| !columns.is_empty()));
+        let sources = case["source_bags"].as_object().unwrap();
+        assert_eq!(
+            sources["inner_rows"], case["inner"],
+            "{id}: complete source snapshot"
+        );
+        assert_eq!(
+            case["parser_status_by_dialect"].as_object().unwrap().len(),
+            13
+        );
+        assert_eq!(
+            case["native_execution_disposition_by_dialect"]
+                .as_object()
+                .unwrap()
+                .len(),
+            13
+        );
         for dialect in dialects {
-            let name=dialect.as_str().unwrap();
-            assert_eq!(case["parser_status_by_dialect"][name],"parsed","{id}/{name}");
-            let engine=case["native_execution_disposition_by_dialect"][name].as_str().unwrap();
-            if name!="duckdb" { assert!(!engine.contains("executed_in_ci"),"{id}/{name}: no native vendor oracle"); }
-            parser_cells+=1;
+            let name = dialect.as_str().unwrap();
+            assert_eq!(
+                case["parser_status_by_dialect"][name], "parsed",
+                "{id}/{name}"
+            );
+            let engine = case["native_execution_disposition_by_dialect"][name]
+                .as_str()
+                .unwrap();
+            if name != "duckdb" {
+                assert!(
+                    !engine.contains("executed_in_ci"),
+                    "{id}/{name}: no native vendor oracle"
+                );
+            }
+            parser_cells += 1;
         }
         for adapter in adapters {
-            let name=adapter.as_str().unwrap();
-            let cell=case["expected_adapter_cells"][name].as_str().unwrap();
-            assert!(cell.contains("required")||cell=="Residual_conditional","{id}/{name}: unreviewed adapter");
-            adapter_cells+=1;
+            let name = adapter.as_str().unwrap();
+            let cell = case["expected_adapter_cells"][name].as_str().unwrap();
+            assert!(
+                cell.contains("required") || cell == "Residual_conditional",
+                "{id}/{name}: unreviewed adapter"
+            );
+            adapter_cells += 1;
         }
         match case["expected_proof"].as_str().unwrap() {
             "Exact" | "CardinalityViolation" => {
-                mandatory+=1;
-                let row_ids=case["source_row_ids"].as_array().unwrap();
-                assert_eq!(row_ids.len(),case["inner"].as_array().unwrap().len());
-                let oracle=&case["terminal_oracle"];
-                if case["expected_proof"]=="CardinalityViolation" {
-                    assert_eq!(oracle["status"],"runtime_cardinality_error");
+                mandatory += 1;
+                let row_ids = case["source_row_ids"].as_array().unwrap();
+                assert_eq!(row_ids.len(), case["inner"].as_array().unwrap().len());
+                let oracle = &case["terminal_oracle"];
+                if case["expected_proof"] == "CardinalityViolation" {
+                    assert_eq!(oracle["status"], "runtime_cardinality_error");
                     assert!(oracle["rows"].is_null());
                 } else {
-                    assert_eq!(oracle["status"],"exact");
-                    assert_eq!(oracle["rows"].as_array().unwrap().len(),1);
-                    assert_eq!(oracle["null_allowed"],oracle["rows"][0].is_null());
-                    if oracle["type"]=="SIGNED_INTEGER" {
-                        let value=case["expect"]["value"].as_i64();
-                        assert_eq!(oracle["inclusive_bounds"],value.map_or(Value::Null,|v|json!([v,v])));
+                    assert_eq!(oracle["status"], "exact");
+                    assert_eq!(oracle["rows"].as_array().unwrap().len(), 1);
+                    assert_eq!(oracle["null_allowed"], oracle["rows"][0].is_null());
+                    if oracle["type"] == "SIGNED_INTEGER" {
+                        let value = case["expect"]["value"].as_i64();
+                        assert_eq!(
+                            oracle["inclusive_bounds"],
+                            value.map_or(Value::Null, |v| json!([v, v]))
+                        );
                     } else {
-                        assert_eq!(oracle["type"],"BOOLEAN");
+                        assert_eq!(oracle["type"], "BOOLEAN");
                     }
                 }
             }
             "Residual" => {
-                conditional+=1;
-                assert_eq!(case["expect"]["owner"],"TASK-131");
-                assert!(case["release_disposition"].as_str().unwrap().contains("TASK-131 reviewed conditional"));
+                conditional += 1;
+                assert_eq!(case["expect"]["owner"], "TASK-131");
+                assert!(case["release_disposition"]
+                    .as_str()
+                    .unwrap()
+                    .contains("TASK-131 reviewed conditional"));
                 assert!(case["review_evidence"]["parser"].as_str().is_some());
             }
-            other=>panic!("unreviewed mandatory/conditional case {id}: {other}")
+            other => panic!("unreviewed mandatory/conditional case {id}: {other}"),
         }
     }
-    assert_eq!((mandatory,conditional),(12,3));
-    assert_eq!(parser_cells,195);
-    assert_eq!(adapter_cells,45);
+    assert_eq!((mandatory, conditional), (12, 3));
+    assert_eq!(parser_cells, 195);
+    assert_eq!(adapter_cells, 45);
 }
