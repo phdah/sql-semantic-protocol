@@ -125,6 +125,9 @@ pub fn physical_finite_scalar_subquery_plan(
         .iter()
         .filter_map(|row| row_id(row).map(str::to_string))
         .collect::<Vec<_>>();
+    if !ids.is_empty() && nested.predicates().where_predicate().is_some() {
+        return residual("nonempty nested WHERE requires a complete filter proof");
+    }
     if ids.len() > 1 {
         return PhysicalScalarSubqueryProof::CardinalityViolation {
             source_row_ids: ids,
@@ -139,9 +142,6 @@ pub fn physical_finite_scalar_subquery_plan(
             value: LiteralValue::Null,
             bounds: None,
         });
-    }
-    if nested.predicates().where_predicate().is_some() {
-        return residual("nonempty nested WHERE requires a complete filter proof");
     }
     let Some(row) = snapshot.rows().first() else {
         return residual("singleton source row disappeared");
