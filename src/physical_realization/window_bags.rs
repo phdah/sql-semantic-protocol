@@ -317,11 +317,30 @@ fn rows_frame(window: &WindowFunctionExpression) -> Result<WindowFrame, &'static
 fn aggregate_frame(window: &WindowFunctionExpression) -> Result<Option<WindowFrame>, &'static str> {
     if window.window().order_by().is_empty() {
         if window.window().frame().is_some() {
-            return Err("unordered ROWS frame has no deterministic physical membership");
+            return Err("unordered frame has no deterministic physical membership");
         }
         return Ok(None); // An unordered window spans the entire partition.
     }
-    rows_frame(window).map(Some)
+    let Some(frame) = window.window().frame() else {
+        return Err("ordered aggregate without explicit frame needs attested session semantics");
+    };
+    if frame.units() == WindowFrameUnits::Rows {
+        return rows_frame(window).map(Some);
+    }
+    if matches!(frame.start_bound(), WindowFrameBound::UnboundedFollowing)
+        || matches!(frame.end_bound(), WindowFrameBound::UnboundedPreceding)
+    {
+        return Err("invalid ordered frame direction");
+    }
+    for bound in [frame.start_bound(), frame.end_bound()] {
+        if let WindowFrameBound::Preceding(offset) | WindowFrameBound::Following(offset) = bound {
+            if frame.units() == WindowFrameUnits::Range {
+                return Err("bounded RANGE offset lacks a certified value-distance law");
+            }
+            positive_offset(offset)?;
+        }
+    }
+    Ok(Some(frame.clone()))
 }
 
 fn aggregate_kind(
@@ -708,8 +727,8 @@ fn frame_value(
     // A uniquely ordered partition makes ROW_NUMBER, RANK and DENSE_RANK
     // identical. ORDER BY peers are rejected before any frame is evaluated.
     if let WindowKind::Ntile { buckets } = kind {
-        let base = rows.len() / buckets;
-        let remainder = rows.len() % buckets;
+        let base = rows.len() / *buckets;
+        let remainder = rows.len() % *buckets;
         let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
         let wider_rows = remainder.checked_mul(wider).ok_or("NTILE bucket overflow")?;
         let bucket = if index < wider_rows {
