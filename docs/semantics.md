@@ -1105,27 +1105,39 @@ implicit coercion and full cross-dialect execution equivalence remain separate
 release gates and are not inferred from DuckDB observations alone.
 
 
-### Scalar subqueries and quantified predicates (TASK-131, partial)
+### Scalar subqueries and quantified predicates (TASK-131)
 
-On a complete attested source bag, a scalar subquery returning zero rows
-evaluates to SQL NULL; one row evaluates to its value (including NULL); more
-than one row is a SQL cardinality error, not an impossible input assignment.
-The dedicated physical proof distinguishes all three outcomes. It only
-certifies a simple uncorrelated, source-copied signed-integer scalar SELECT.
-Nonempty unsupported nested filters or cardinality-changing clauses are
-explicitly residual.
+The canonical protocol retains `Predicate::QuantifiedSubquery` with a typed
+outer operand, relational comparison operator, normalized ANY/SOME or ALL
+quantifier, and complete nested `SubquerySemantics`. SQL SOME is normalized to
+ANY. The JSON wire kind is `quantified_subquery`; its schema contract is
+`schema/protocol.schema.json`. SQL analysis and the physical proof share
+this canonical structure. The same proof API consumes source-attested evidence
+from direct SQL, compiled dbt manifests and ODCS schema contracts. None of the
+adapter paths invents a second SQL evaluator.
 
-The physical quantified-comparison helper evaluates the complete
-signed-integer input bags with SQL three-valued comparison semantics:
-ANY/SOME of an empty bag is FALSE, ALL of an empty bag is TRUE; TRUE
-dominates UNKNOWN for ANY, FALSE dominates UNKNOWN for ALL. Source
-row IDs, duplicate candidates, surviving/rejected outer identities and
-inclusive terminal domains are preserved.
+For scalar subqueries, zero matching rows produce SQL NULL, one row produces
+its value (including NULL), and two or more rows raise a cardinality error.
+That runtime error is not an `Impossible` source population. A false physical
+schema/duplicate authoritative row ID is `Impossible`; unproved shape, types,
+cardinality-changing nested clauses, or correlations are typed `Residual`.
+Empty source bags never cancel possible unsupported inner runtime errors.
 
-**Scope boundary:** The quantified evaluator accepts explicitly normalized
-operator arguments. It does not yet establish that parsed ANY/ALL SQL
-or dbt/ODCS evidence binds to those arguments. Correlated nested
-quantification, LATERAL/APPLY, non-integer comparison/coercion,
-native vendor/session laws and other TASK-131 acceptance cells remain
-uncertified pending their own executable matrix. Do not use this
-operator-local result to claim entire-query constructive exactness.
+For quantified comparisons, SQL three-valued laws apply to the complete
+candidate bag: ANY/SOME over empty is FALSE, ALL over empty is TRUE;
+TRUE dominates UNKNOWN for ANY, while FALSE dominates UNKNOWN for ALL.
+Every candidate retains its source row identity even when two values agree.
+The operator-local API also emits complete outer selected/NOT TRUE identities,
+terminal bag and inclusive finite signed integer domain. The SQL-bound
+`physical_finite_quantified_subquery_plan` supports a single source-free
+literal projection `SELECT literal OP ANY/ALL (SELECT value FROM source)`,
+subject to attested single-result outer row shape and exactly one direct
+nested physical signed-integer source. The result is one BOOLEAN/NULL row,
+never a WHERE-row omission for UNKNOWN.
+
+No SQL AST identity is inferred by the operator-local helper.
+Correlated nested scopes, LATERAL/APPLY per-outer-row execution, unsafe
+type coercions, unproved projection cardinality, vendor/session dialect
+defaults and null-safe quantification are explicit `Residual`. Parser acceptance
+across 13 configured dialects is not evidence of execution on those engines.
+The TASK-131 conditional inventory retains these boundaries with named owner.
