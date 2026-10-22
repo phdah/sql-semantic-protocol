@@ -2,7 +2,7 @@
 
 **Task:** [TASK-129](../.backlog/tasks/task-129%20-%20prove-exists-and-not-exists-correlated-uncorrelated.md), child 1 of TASK-75.  
 **PR:** [#140](https://github.com/phdah/sql-semantic-protocol/pull/140) (unmerged).  
-**Freeze:** [v1 acceptance cases](task-129-acceptance-freeze.json), registered in `docs/coverage-manifest.json`.
+**Freeze:** [v2 acceptance cases](task-129-acceptance-freeze.json), registered in `docs/coverage-manifest.json`.
 
 ## Scope and physical law
 
