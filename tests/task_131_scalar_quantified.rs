@@ -590,3 +590,42 @@ fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions(
     let expected = &frozen["conditional_parser_status_by_case"];
     assert_eq!(serde_json::to_value(&results).unwrap(),*expected,"record and review all 39 conditional parser dispositions");
 }
+
+
+#[test]
+fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proofs() {
+    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE inner_rows (id VARCHAR, v INTEGER);
+         CREATE TABLE outer_rows (id VARCHAR, v INTEGER);
+         CREATE TABLE control_rows (k INTEGER);
+         INSERT INTO inner_rows VALUES ('i1',2),('i2',2);
+         INSERT INTO outer_rows VALUES ('o1',2),('o2',3);
+         INSERT INTO control_rows VALUES (2);"
+    ).unwrap();
+    // A nested scalar filter is not an identity-preserving direct projection:
+    // here its two matching source rows cause a runtime cardinality failure.
+    let nested_sql = "SELECT (SELECT v FROM inner_rows WHERE v = (SELECT k FROM control_rows)) AS x";
+    assert!(db.query_row(nested_sql, [], |r|r.get::<_,Option<i64>>(0)).is_err());
+    let b = bundle(nested_sql);
+    let id = b.layers().last().unwrap().id().to_string();
+    assert!(matches!(
+        physical_finite_scalar_subquery_plan(&b, &id, &[state("inner_rows", &[("i1",Some(2)),("i2",Some(2))])]),
+        PhysicalScalarSubqueryProof::Residual { .. }
+    ));
+    // Correlated LATERAL is executable under native DuckDB, but a single
+    // globally evaluated nested source would invent the per-outer-row bag.
+    let lateral_sql = "SELECT o.id FROM outer_rows o CROSS JOIN LATERAL (SELECT v FROM inner_rows i WHERE i.v = o.v) s";
+    let mut stmt = db.prepare(lateral_sql).unwrap();
+    let mut ids = stmt.query_map([], |row|row.get::<_,String>(0)).unwrap()
+        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    ids.sort();
+    assert_eq!(ids, ["o1".to_string(),"o1".to_string()]);
+    let b = bundle(lateral_sql);
+    let id = b.layers().last().unwrap().id().to_string();
+    assert!(matches!(
+        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1",Some(2)),("i2",Some(2))])]),
+        PhysicalQuantifiedScalarProof::Residual { .. }
+    ));
+}
