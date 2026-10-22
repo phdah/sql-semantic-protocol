@@ -538,7 +538,7 @@ pub use rank_bags::{
 pub use scalar_quantified::{
     physical_finite_quantified_comparison, physical_finite_scalar_subquery_plan,
     PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof, PhysicalQuantifiedColumnDomain,
-    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
     PhysicalScalarSubqueryProof,
 };
 pub use set_bags::{
