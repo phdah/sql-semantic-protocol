@@ -97,9 +97,16 @@ pub(super) fn exists_predicate_to_value(predicate: &ExistsPredicate) -> Value {
 }
 
 pub(super) fn in_subquery_predicate_to_value(predicate: &InSubqueryPredicate) -> Value {
+    let expression = match predicate.operand() {
+        InSubqueryOperand::Scalar(expression) => expression_to_value(expression),
+        InSubqueryOperand::Tuple(tuple) => json!({
+            "kind": "tuple",
+            "expressions": tuple.expressions().iter().map(expression_to_value).collect::<Vec<_>>(),
+        }),
+    };
     json!({
         "kind": "in_subquery",
-        "expression": expression_to_value(predicate.expression()),
+        "expression": expression,
         "subquery": subquery_semantics_to_value(predicate.subquery()),
         "negated": predicate.negated()
     })

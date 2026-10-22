@@ -4,8 +4,8 @@
 //! query's independent column domains to an exact correlated row predicate.
 
 use crate::protocol::{
-    ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator, Expression, Predicate,
-    QueryStatement, ResidualConditionReason, SourceRelation, SubquerySemantics,
+    ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator, Expression, InSubqueryOperand,
+    Predicate, QueryStatement, ResidualConditionReason, SourceRelation, SubquerySemantics,
 };
 
 /// SQL subquery-membership operator.
@@ -117,7 +117,7 @@ pub struct SubqueryMembershipWitness {
     outer_source_relation: Option<String>,
     inner_relation: Option<String>,
     correlations: Vec<SubqueryCorrelation>,
-    membership_key: Option<SubqueryCorrelation>,
+    membership_keys: Vec<SubqueryCorrelation>,
     inner_column_domains: Vec<ColumnDomain>,
     qualifying: SubqueryMembershipDirection,
     rejected: SubqueryMembershipDirection,
@@ -149,9 +149,17 @@ impl SubqueryMembershipWitness {
         &self.correlations
     }
 
-    /// Key used by IN or NOT IN, separate from correlation keys.
+    /// Single scalar membership key, if this is not a compound tuple.
     pub fn membership_key(&self) -> Option<&SubqueryCorrelation> {
-        self.membership_key.as_ref()
+        match self.membership_keys.as_slice() {
+            [key] => Some(key),
+            _ => None,
+        }
+    }
+
+    /// Positional membership keys, distinct from the nested correlation keys.
+    pub fn membership_keys(&self) -> &[SubqueryCorrelation] {
+        &self.membership_keys
     }
 
     /// Constraints on the inner candidate set, before membership evaluation.
@@ -184,7 +192,7 @@ impl SubqueryMembershipWitness {
             outer_source_relation: None,
             inner_relation,
             correlations: Vec::new(),
-            membership_key: None,
+            membership_keys: Vec::new(),
             inner_column_domains: Vec::new(),
             qualifying: direction.clone(),
             rejected: direction,
@@ -230,7 +238,7 @@ fn collect(
                 SubqueryMembershipKind::In
             },
             membership.subquery(),
-            Some(membership.expression()),
+            Some(membership.operand()),
             outer_sources,
         )),
         _ => {}
@@ -240,7 +248,7 @@ fn collect(
 fn derive(
     kind: SubqueryMembershipKind,
     subquery: &SubquerySemantics,
-    expression: Option<&Expression>,
+    expression: Option<&InSubqueryOperand>,
     outer_sources: &[SourceRelation],
 ) -> SubqueryMembershipWitness {
     let outer_name = outer_sources
@@ -322,33 +330,47 @@ fn derive(
         return residual("correlation_not_physical");
     }
 
-    let membership_key = match expression {
-        None => None,
-        Some(Expression::Column(outer_column)) => {
-            let [projected] = subquery.output().columns() else {
-                return residual("membership_requires_one_inner_output_column");
-            };
-            // Without schema evidence, an unqualified SELECT column can resolve
-            // to an enclosing scope when the inner table lacks that column.
-            if !matches!(projected.expression(), Expression::Column(column) if column.relation().is_some())
-            {
-                return residual("membership_key_requires_qualified_inner_column");
+    let membership_keys = match expression {
+        None => Vec::new(),
+        Some(operand) => {
+            let columns = operand.expressions();
+            let projected = subquery.output().columns();
+            if columns.is_empty() || columns.len() != projected.len() {
+                return residual("membership_key_arity_mismatch");
             }
-            let Some(inner_column) = projected.plain_copy_source() else {
-                return residual("membership_key_must_be_plain_source_column");
-            };
-            if inner_column.relation() != inner {
-                return residual("unresolved_inner_membership_key");
+            if matches!(operand, InSubqueryOperand::Tuple(_)) && columns.len() < 2 {
+                return residual("tuple_membership_requires_multiple_columns");
             }
-            let Some(outer) = source_column(outer_column, outer_source, outer_instance) else {
-                return residual("membership_key_must_be_outer_source_column");
-            };
-            Some(SubqueryCorrelation {
-                outer,
-                inner: ColumnRef::new(Some(inner.to_string()), inner_column.column().to_string()),
-            })
+            let mut keys = Vec::new();
+            for (outer_expression, inner_output) in columns.iter().zip(projected) {
+                let Expression::Column(outer_column) = outer_expression else {
+                    return residual("membership_expression_not_plain_column");
+                };
+                // Require explicit inner qualification to exclude outer-scope
+                // fallback and ambiguous positional ownership.
+                if !matches!(inner_output.expression(), Expression::Column(column) if column.relation().is_some())
+                {
+                    return residual("membership_key_requires_qualified_inner_column");
+                }
+                let Some(inner_column) = inner_output.plain_copy_source() else {
+                    return residual("membership_key_must_be_plain_source_column");
+                };
+                if inner_column.relation() != inner {
+                    return residual("unresolved_inner_membership_key");
+                }
+                let Some(outer) = source_column(outer_column, outer_source, outer_instance) else {
+                    return residual("membership_key_must_be_outer_source_column");
+                };
+                keys.push(SubqueryCorrelation {
+                    outer,
+                    inner: ColumnRef::new(
+                        Some(inner.to_string()),
+                        inner_column.column().to_string(),
+                    ),
+                });
+            }
+            keys
         }
-        Some(_) => return residual("membership_expression_not_plain_column"),
     };
 
     let (qualifying, rejected) = match kind {
@@ -388,7 +410,7 @@ fn derive(
         outer_source_relation: Some(outer_source.name().to_string()),
         inner_relation: Some(inner.to_string()),
         correlations: pairs,
-        membership_key,
+        membership_keys,
         inner_column_domains: subquery.column_domains().to_vec(),
         qualifying: SubqueryMembershipDirection::Exact(qualifying),
         rejected: SubqueryMembershipDirection::Exact(rejected),

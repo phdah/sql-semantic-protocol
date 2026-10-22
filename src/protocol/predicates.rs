@@ -282,26 +282,70 @@ impl ExistsPredicate {
     }
 }
 
+/// Ordered SQL tuple operand with at least two members.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InSubqueryTuple {
+    expressions: Vec<Expression>,
+}
+
+impl InSubqueryTuple {
+    /// Validate the positional row arity before construction.
+    pub fn new(expressions: Vec<Expression>) -> Option<Self> {
+        if expressions.len() < 2 {
+            return None;
+        }
+        Some(Self { expressions })
+    }
+
+    /// Ordered tuple values, never fewer than two.
+    pub fn expressions(&self) -> &[Expression] {
+        &self.expressions
+    }
+}
+
+/// Canonical SQL subquery-membership operand, retaining positional row keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InSubqueryOperand {
+    /// One scalar value.
+    Scalar(Expression),
+    /// SQL row-value comparison with at least two positional fields.
+    Tuple(InSubqueryTuple),
+}
+
+impl InSubqueryOperand {
+    /// Ordered expressions, with one member for scalar membership.
+    pub fn expressions(&self) -> &[Expression] {
+        match self {
+            Self::Scalar(expression) => std::slice::from_ref(expression),
+            Self::Tuple(tuple) => tuple.expressions(),
+        }
+    }
+}
+
 /// An IN or NOT IN predicate whose candidate values come from a subquery.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InSubqueryPredicate {
-    expression: Expression,
+    operand: InSubqueryOperand,
     subquery: SubquerySemantics,
     negated: bool,
 }
 
 impl InSubqueryPredicate {
-    pub(crate) fn new(expression: Expression, subquery: SubquerySemantics, negated: bool) -> Self {
+    pub(crate) fn with_operand(
+        operand: InSubqueryOperand,
+        subquery: SubquerySemantics,
+        negated: bool,
+    ) -> Self {
         Self {
-            expression,
+            operand,
             subquery,
             negated,
         }
     }
 
-    /// Return the expression tested for membership.
-    pub fn expression(&self) -> &Expression {
-        &self.expression
+    /// Complete scalar or positional tuple operand, never only its first field.
+    pub fn operand(&self) -> &InSubqueryOperand {
+        &self.operand
     }
 
     /// Return the nested query that supplies candidate values.

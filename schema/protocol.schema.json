@@ -1302,7 +1302,11 @@
           "description": "Parser-independent literal row shaping with ordered output column positions. Present only when exact integral ordering syntax has been modeled; physical execution still checks NULL/tie evidence.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["keys", "offset", "limit"],
+          "required": [
+            "keys",
+            "offset",
+            "limit"
+          ],
           "properties": {
             "keys": {
               "type": "array",
@@ -1310,16 +1314,36 @@
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["position", "descending", "nulls_first"],
+                "required": [
+                  "position",
+                  "descending",
+                  "nulls_first"
+                ],
                 "properties": {
-                  "position": { "type": "integer", "minimum": 0 },
-                  "descending": { "type": "boolean" },
-                  "nulls_first": { "type": ["boolean", "null"] }
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "descending": {
+                    "type": "boolean"
+                  },
+                  "nulls_first": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  }
                 }
               }
             },
-            "offset": { "type": "integer", "minimum": 0 },
-            "limit": { "type": "integer", "minimum": 0 }
+            "offset": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         }
       }
@@ -2573,7 +2597,31 @@
           "const": "in_subquery"
         },
         "expression": {
-          "$ref": "#/$defs/expression"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/expression"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "expressions"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "tuple"
+                },
+                "expressions": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "$ref": "#/$defs/expression"
+                  }
+                }
+              }
+            }
+          ]
         },
         "subquery": {
           "$ref": "#/$defs/subquerySemantics"
@@ -5464,6 +5512,13 @@
         },
         "rejected": {
           "$ref": "#/$defs/subqueryMembershipDirection"
+        },
+        "membership_keys": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/subqueryCorrelation"
+          }
         }
       }
     },

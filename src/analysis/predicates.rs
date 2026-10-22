@@ -243,11 +243,39 @@ pub(super) fn analyze_predicate_with_windows(
             expr,
             subquery,
             negated,
-        } => Predicate::InSubquery(InSubqueryPredicate::new(
-            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
-            analyze_subquery_semantics(subquery, scope),
-            *negated,
-        )),
+        } => {
+            let operand = match expr.as_ref() {
+                Expr::Tuple(fields) if fields.len() >= 2 => InSubqueryOperand::Tuple(
+                    InSubqueryTuple::new(
+                        fields
+                            .iter()
+                            .map(|field| {
+                                analyze_predicate_expression(
+                                    field,
+                                    named_windows,
+                                    output_aliases,
+                                    scope,
+                                    diagnostics,
+                                )
+                            })
+                            .collect(),
+                    )
+                    .expect("tuple has at least two SQL expressions"),
+                ),
+                _ => InSubqueryOperand::Scalar(analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                )),
+            };
+            Predicate::InSubquery(InSubqueryPredicate::with_operand(
+                operand,
+                analyze_subquery_semantics(subquery, scope),
+                *negated,
+            ))
+        }
         Expr::Between {
             expr,
             negated,

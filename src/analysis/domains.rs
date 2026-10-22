@@ -417,11 +417,29 @@ pub(super) fn remap_predicate_for_domain_derivation(
             predicate.negated(),
         )),
         Predicate::Exists(predicate) => Predicate::Exists(predicate.clone()),
-        Predicate::InSubquery(predicate) => Predicate::InSubquery(InSubqueryPredicate::new(
-            remap_expression_for_domain_derivation(predicate.expression(), scope),
-            predicate.subquery().clone(),
-            predicate.negated(),
-        )),
+        Predicate::InSubquery(predicate) => {
+            Predicate::InSubquery(InSubqueryPredicate::with_operand(
+                match predicate.operand() {
+                    InSubqueryOperand::Scalar(expression) => InSubqueryOperand::Scalar(
+                        remap_expression_for_domain_derivation(expression, scope),
+                    ),
+                    InSubqueryOperand::Tuple(tuple) => InSubqueryOperand::Tuple(
+                        InSubqueryTuple::new(
+                            tuple
+                                .expressions()
+                                .iter()
+                                .map(|expression| {
+                                    remap_expression_for_domain_derivation(expression, scope)
+                                })
+                                .collect(),
+                        )
+                        .expect("remapping preserves tuple arity"),
+                    ),
+                },
+                predicate.subquery().clone(),
+                predicate.negated(),
+            ))
+        }
         Predicate::Between(predicate) => Predicate::Between(BetweenPredicate::new(
             remap_expression_for_domain_derivation(predicate.expression(), scope),
             remap_expression_for_domain_derivation(predicate.lower(), scope),

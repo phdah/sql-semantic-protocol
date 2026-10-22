@@ -1,10 +1,10 @@
 ---
 id: TASK-130
 title: Prove IN and NOT IN three-valued membership
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-22'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,17 @@ type: feature
 ## Next
 
 Next: [TASK-131](task-131%20-%20model-scalar-subqueries-any-all-and-nested-correlation-boundaries.md), only after this child is Done and merged.
+
+## Implementation progress (2026-10-22)
+
+A focused implementation PR introduces a complete two-source signed-integer scalar
+`IN`/`NOT IN` physical evaluator and records six fixed positive/NOT TRUE
+snapshots in [the TASK-130 acceptance inventory](../../docs/task-130-acceptance-freeze.json).
+The public [integration regression](../../tests/task_130_in_bags.rs) asserts
+per-row SQL TRUE/FALSE/UNKNOWN, full candidate and terminal bag obligations,
+nullable typed domains and a separately executed DuckDB SQL oracle.
+
+**Not signed off:** compound-key tuple membership is not yet normalized by the
+canonical expression model; dbt/ODCS paired parity and final full CI/independent
+review remain mandatory. These gaps block AC #1..#5, TASK-130 Done, and TASK-131
+start. No unverified mandatory cell is approved as a residual.

@@ -254,7 +254,9 @@ pub(super) fn collect_local_predicate_source_columns(
             collect_local_expression_source_column(predicate.expression(), scope, columns);
         }
         Predicate::InSubquery(predicate) => {
-            collect_local_expression_source_column(predicate.expression(), scope, columns);
+            for expression in predicate.operand().expressions() {
+                collect_local_expression_source_column(expression, scope, columns);
+            }
         }
         Predicate::Between(predicate) => {
             collect_local_expression_source_column(predicate.expression(), scope, columns);
