@@ -178,7 +178,7 @@ pub use physical_realization::{
     PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
     PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof, PhysicalJointSourcePlan,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalQuantifiedColumnDomain,
-    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
     PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof, PhysicalSetColumnDomain,
     PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSourcePlan,
     PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
