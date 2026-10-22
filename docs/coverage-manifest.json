@@ -1,5 +1,21 @@
 {
-  "task_130_in_subquery_plan": {
+  "task_131_scalar_quantified_plan": {
+      "owner": "TASK-131",
+      "parent": "TASK-75",
+      "status": "in_progress",
+      "task": ".backlog/tasks/task-131 - model-scalar-subqueries-any-all-and-nested-correlation-boundaries.md",
+      "freeze": "docs/task-131-acceptance-freeze.json",
+      "fixture_ids": [
+        "75-C131-P",
+        "75-C131-N"
+      ],
+      "mandatory_cases": 12,
+      "conditional_cases": 3,
+      "child_acceptance_criteria_verified": [],
+      "parent_signed_off": false,
+      "release_approved": false
+    },
+"task_130_in_subquery_plan": {
     "owner": "TASK-130",
     "parent": "TASK-75",
     "status": "verified_bounded_child_pending_merge",
