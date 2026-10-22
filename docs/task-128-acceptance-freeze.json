@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-128",
   "parent": "TASK-74",
   "frozen_at": "2026-10-22",
@@ -2126,6 +2126,7 @@
     "native_duckdb_exact_oracles": 5,
     "native_duckdb_conditional_oracles": 3,
     "non_duckdb_native_claims": 0,
-    "all_mandatory_unverified": 0
+    "all_mandatory_unverified": 0,
+    "v5_critique": "Review of PR #139 found the v4 NTILE tied-peer negative case did not cross a bucket boundary. v5 changes only the N2 source values to exercise genuine bucket-boundary ambiguity, adds independently executed ascending/descending DuckDB witnesses and an invariant-peer positive regression, stores native N3/N4/N5 expected bags as engine-specific frozen evidence, and asserts all parsed conditional dialect cells remain Residual. Original five mandatory Exact cases and six conditional case identities are unchanged."
   }
 }
