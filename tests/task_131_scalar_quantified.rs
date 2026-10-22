@@ -638,3 +638,26 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
         PhysicalQuantifiedScalarProof::Residual { .. }
     ));
 }
+
+
+#[test]
+fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
+    use sql_semantic_protocol::{analyze_sql, to_json};
+    for (sql, quantifier, operator) in [
+        ("SELECT 1 = ANY (SELECT v FROM inner_rows) AS x","any","eq"),
+        ("SELECT 2 = SOME (SELECT v FROM inner_rows) AS x","any","eq"),
+        ("SELECT 5 < ALL (SELECT v FROM inner_rows) AS x","all","lt"),
+    ] {
+        let parser = dialect_from_name("duckdb").unwrap();
+        let protocol = analyze_sql(sql, "duckdb", parser.as_ref()).expect("SQL normalization");
+        let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+        let projection = &emitted["inputs"][0]["statements"][0]["output"]["columns"][0]["expression"];
+        assert_eq!(projection["kind"],"boolean_predicate", "{sql}");
+        let predicate = &projection["predicate"];
+        assert_eq!(predicate["kind"],"quantified_subquery", "{sql}");
+        assert_eq!(predicate["quantifier"],quantifier, "{sql}");
+        assert_eq!(predicate["operator"],operator, "{sql}");
+        assert_eq!(predicate["subquery"]["sources"][0]["name"],"inner_rows", "{sql}");
+        assert!(predicate["operand"].is_object(),"{sql}: canonical typed operand missing");
+    }
+}
