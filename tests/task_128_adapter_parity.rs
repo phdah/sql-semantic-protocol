@@ -154,7 +154,9 @@ schema:
                 "Exact" => {
                     assert_eq!(case["classification"], "exact_required", "{id}/{adapter}");
                     let PhysicalFiniteWindowProof::Exact(exact) = proof else {
-                        panic!("{id}/{adapter}: adapter lost integer window physical proof: {proof:?}");
+                        panic!(
+                            "{id}/{adapter}: adapter lost integer window physical proof: {proof:?}"
+                        );
                     };
                     assert_eq!(exact.source, source_name);
                     results.push(format!(
