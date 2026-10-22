@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-128",
   "parent": "TASK-74",
   "frozen_at": "2026-10-22",
-  "status": "verification_in_progress",
+  "status": "oracle_verification_in_progress",
   "source_schema": {
     "s": {
       "id": "INTEGER",
@@ -1685,9 +1685,9 @@
     {
       "id": "74-C128-N5",
       "fixture_id": "74-C128-N",
-      "feature": "groups_value_peer_null_defaults",
+      "feature": "multi_key_groups_implicit_null_order",
       "classification": "conditional",
-      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x, id GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
       "source_relation": "s",
       "source_bag": [
         {
@@ -1740,7 +1740,152 @@
       "not_true_row_ids": [],
       "typed_terminal_domains": [],
       "proof": "Residual",
-      "conditional_reason": "Engine-default NULL placement changes peer group frame membership.",
+      "conditional_reason": "Composite ORDER BY preserves peer identity but engine-default NULL placement remains unattested.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N6",
+      "fixture_id": "74-C128-N",
+      "feature": "collation_session_law",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY CAST(x AS VARCHAR) COLLATE NOCASE) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [],
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Locale and collation rules on text-valued window order lack attested typed sort-key semantics; never choose exact peer identities.",
       "adapter_paths": [
         "direct_sql",
         "compiled_dbt_manifest_catalog",
@@ -1832,8 +1977,8 @@
     {
       "feature": "collation",
       "owner": "TASK-128",
-      "disposition": "pending_native_session_evidence",
-      "reason": "Non-integer locale-dependent sort keys require attested COLLATE and engine collation tables; typed Residual in bounded evaluator."
+      "disposition": "reviewed_conditional_residual_unattested_text_collation",
+      "reason": "The canonical source-attested evaluator accepts only integer ORDER BY comparators; CAST/COLLATE text order is explicitly a Residual, not an engine-independent exact rank."
     },
     {
       "feature": "range_value_offsets",
