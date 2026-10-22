@@ -14,7 +14,7 @@ The task-owned [v4 matrix](task-128-acceptance-freeze.json) retains fixed fixtur
 | P4 | Exact NTILE QUALIFY = 1: 3 TRUE, 4 NOT TRUE physical rows | Same public SQL API + DuckDB and real dbt Core native execution |
 | P5 | Exact cumulative RANGE QUALIFY > 20: 3 TRUE, 4 NOT TRUE rows | Same, preserving duplicates and NULL-aware membership |
 | N1 | Conditional Residual for invalid zero NTILE count | Physical evaluator refuses an unsupported bucket law; not marked an Impossible source contradiction |
-| N2 | Conditional Residual for NTILE peers with no total ORDER BY | Physical evaluator never chooses one peer's row identity arbitrarily |
+| N2 | Conditional Residual for NTILE peers straddling a bucket boundary | Native ascending/descending tie-breakers independently prove distinct legal physical assignments; peers within a single bucket remain Exact |
 | N3 | Conditional Residual for implicit NULL ordering in GROUPS | Native DuckDB complete bag is executed separately; no portable default claim |
 | N4 | Conditional Residual for bounded numeric RANGE offsets | Native DuckDB full bag is independently checked; no inferred portable arithmetic-distance/session law |
 | N5 | Conditional Residual for multi-key GROUPS with implicit NULL placement | Native DuckDB complete bag is independently checked; canonical proof stays Residual |
@@ -24,10 +24,10 @@ The task-owned [v4 matrix](task-128-acceptance-freeze.json) retains fixed fixtur
 
 ## Dialects, adapters, vendor boundaries
 
-- The public parser/canonical equivalence regression executes every recorded frozen query under **all 13 dialects**. The frozen expected parser status is asserted, not accepted from a successful parse alone; each parsed mandatory case is required to reproduce its whole exact canonical physical bag. Parser equivalence is not a claim of native execution in 13 database engines.
+- The public parser/canonical equivalence regression executes every recorded frozen query under **all 13 dialects**. The frozen expected parser status is asserted; each parsed mandatory case must reproduce its exact physical bag, and each parsed conditional case must retain its frozen Residual classification. Parser equivalence is not native execution in 13 database engines.
 - `tests/task_128_adapter_parity.rs` compares direct SQL, normalized compiled dbt manifests with source schemas, and ODCS source contracts through the same public physical proof API. ODCS is *schema evidence*, never a SQL runtime. No cross-adapter consumer reparse is used to fabricate a proof.
 - `tests/task_128_dbt_core_e2e.rs` is executed under `make dbt-e2e`: real seed/model, compiled `manifest.json`/`catalog.json`, independent native complete source and terminal bags, exact physical identities and typed domains for NTILE and GROUPS. It also checks the actual pre-existing `ranked_orders.sql` fixture's entire joined producer bag and terminal values (ROW_NUMBER, ROWS SUM and QUALIFY).
-- `tests/task_128_advanced_windows.rs` runs native DuckDB conditional full-bag oracles for implicit-NULL GROUPS, bounded numeric RANGE and composite GROUPS, while affirming the canonical result stays Residual. Other vendor engines and collation sessions are **not** certified or claimed as executable without independent native oracles. These are explicitly reviewed conditional residual boundaries, not omitted mandatory exact cases.
+- `tests/task_128_advanced_windows.rs` runs native DuckDB conditional full-bag oracles for implicit-NULL GROUPS, bounded numeric RANGE and composite GROUPS, using engine-specific expected bags stored in the versioned freeze while affirming the canonical result stays Residual. Other vendor engines and collation sessions are **not** certified or claimed as executable without independent native oracles. These are explicitly reviewed conditional residual boundaries, not omitted mandatory exact cases.
 - The existing `tests/dbt_core_e2e.rs` golden-snapshot gate remains unchanged in meaning: TASK-128 models are excluded from its legacy comparison and tested independently instead. The native dbt model inventory includes both new models.
 
 ## Original parent TASK-74 AC #1 through #6 crosswalk
