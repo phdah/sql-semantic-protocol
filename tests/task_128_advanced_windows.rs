@@ -1,13 +1,13 @@
 //! TASK-128: frozen public physical-window proofs and independent DuckDB full-bag oracle.
 use duckdb::Connection;
 use serde_json::Value;
-use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_window_bag_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalFiniteWindowProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput,
     ValueDomain,
 };
+use sqlparser::parser::Parser;
 use std::collections::{BTreeMap, BTreeSet};
 
 fn frozen() -> Value {
@@ -179,14 +179,31 @@ fn exact_windows_match_frozen_independent_complete_bags_and_domains() {
             .map(|v| v.as_str().unwrap().to_string())
             .collect::<Vec<_>>();
         assert_eq!(result.source_row_ids, expected_ids, "{id}");
-        let terminal_ids = case["terminal_row_ids"].as_array().unwrap().iter()
-            .map(|v| v.as_str().unwrap().to_string()).collect::<Vec<_>>();
-        let rejected_ids = case["not_true_row_ids"].as_array().unwrap().iter()
-            .map(|v| v.as_str().unwrap().to_string()).collect::<Vec<_>>();
-        assert_eq!(result.terminal_row_ids, terminal_ids, "{id}: survivor physical identities");
-        assert_eq!(result.rejected_row_ids, rejected_ids, "{id}: all NOT TRUE identities");
-        assert_eq!(result.terminal_row_ids.len() + result.rejected_row_ids.len(),
-            result.source_row_ids.len(), "{id}: complete membership conservation");
+        let terminal_ids = case["terminal_row_ids"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
+        let rejected_ids = case["not_true_row_ids"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            result.terminal_row_ids, terminal_ids,
+            "{id}: survivor physical identities"
+        );
+        assert_eq!(
+            result.rejected_row_ids, rejected_ids,
+            "{id}: all NOT TRUE identities"
+        );
+        assert_eq!(
+            result.terminal_row_ids.len() + result.rejected_row_ids.len(),
+            result.source_row_ids.len(),
+            "{id}: complete membership conservation"
+        );
         assert_eq!(
             sorted_bag(&result.terminal),
             sorted_bag(&expected_rows(case)),
@@ -267,25 +284,34 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
                 dialect,
                 parser.as_ref(),
             )];
-            let parser_status = if Parser::parse_sql(parser.as_ref(), case["sql"].as_str().unwrap()).is_ok() {
-                "parsed"
-            } else {
-                "parser_boundary"
-            };
-            assert_eq!(case["dialect_cells"][dialect]["parser"], parser_status,
-                "{}/{dialect}: frozen parser classification", case["id"]);
+            let parser_status =
+                if Parser::parse_sql(parser.as_ref(), case["sql"].as_str().unwrap()).is_ok() {
+                    "parsed"
+                } else {
+                    "parser_boundary"
+                };
+            assert_eq!(
+                case["dialect_cells"][dialect]["parser"], parser_status,
+                "{}/{dialect}: frozen parser classification",
+                case["id"]
+            );
             assert_eq!(case["dialect_cells"][dialect]["owner"], "TASK-128");
             if parser_status == "parsed" {
                 let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog());
                 if case["proof"] == "Exact" {
-                    let bundle = bundle.unwrap_or_else(|error| panic!("{}/{dialect}: {error}", case["id"]));
+                    let bundle =
+                        bundle.unwrap_or_else(|error| panic!("{}/{dialect}: {error}", case["id"]));
                     let target = bundle.layers().last().unwrap().id();
                     let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
                     let PhysicalFiniteWindowProof::Exact(exact) = proof else {
                         panic!("{}/{dialect}: parsed portable window lost exact physical semantics: {proof:?}", case["id"]);
                     };
-                    assert_eq!(sorted_bag(&exact.terminal), sorted_bag(&expected_rows(case)),
-                        "{}/{dialect}: complete canonical output bag", case["id"]);
+                    assert_eq!(
+                        sorted_bag(&exact.terminal),
+                        sorted_bag(&expected_rows(case)),
+                        "{}/{dialect}: complete canonical output bag",
+                        case["id"]
+                    );
                 }
             }
         }
@@ -295,21 +321,39 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
 #[test]
 fn invalid_integer_source_is_impossible_not_residual() {
     let fixture = frozen();
-    let case = fixture["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "74-C128-P1").unwrap();
+    let case = fixture["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "74-C128-P1")
+        .unwrap();
     let bundle = analyze(case["sql"].as_str().unwrap());
     let target = bundle.layers().last().unwrap().id();
-    let impossible = PhysicalWriteState::new("s", vec![
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Number("2147483648".to_string())),
+    let impossible = PhysicalWriteState::new(
+        "s",
+        vec![PhysicalWriteRow::new(BTreeMap::from([
+            (
+                "id".to_string(),
+                LiteralValue::Number("2147483648".to_string()),
+            ),
             ("k".to_string(), LiteralValue::Number("0".to_string())),
             ("x".to_string(), LiteralValue::Number("10".to_string())),
-        ])).unwrap()
-    ]).unwrap();
-    assert!(matches!(physical_finite_window_bag_plan(&bundle, target, &[impossible]),
-        PhysicalFiniteWindowProof::Impossible { .. }),
-        "an invalid physically attested source cannot be certified feasible");
-    assert!(matches!(physical_finite_window_bag_plan(&bundle, target, &[]),
-        PhysicalFiniteWindowProof::Residual { .. }),
-        "missing physical population must not be conflated with impossible");
+        ]))
+        .unwrap()],
+    )
+    .unwrap();
+    assert!(
+        matches!(
+            physical_finite_window_bag_plan(&bundle, target, &[impossible]),
+            PhysicalFiniteWindowProof::Impossible { .. }
+        ),
+        "an invalid physically attested source cannot be certified feasible"
+    );
+    assert!(
+        matches!(
+            physical_finite_window_bag_plan(&bundle, target, &[]),
+            PhysicalFiniteWindowProof::Residual { .. }
+        ),
+        "missing physical population must not be conflated with impossible"
+    );
 }
