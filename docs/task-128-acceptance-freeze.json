@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-128",
   "parent": "TASK-74",
   "frozen_at": "2026-10-22",
-  "status": "implementation_in_progress_not_signed_off",
+  "status": "verification_in_progress",
   "source_schema": {
     "s": {
       "id": "INTEGER",
@@ -185,56 +185,82 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     },
@@ -379,56 +405,82 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     },
@@ -574,56 +626,479 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "exact_required"
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P4",
+      "fixture_id": "74-C128-P",
+      "feature": "ntile_qualify_true_not_true",
+      "classification": "exact_required",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s QUALIFY NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) = 1",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "tile": 1
+        },
+        {
+          "id": 2,
+          "tile": 1
+        },
+        {
+          "id": 6,
+          "tile": 1
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#5"
+      ],
+      "not_true_row_ids": [
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#6"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            6
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "tile",
+          "kind": "integer",
+          "values": [
+            1
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P5",
+      "fixture_id": "74-C128-P",
+      "feature": "range_qualify_peer_true_not_true",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s QUALIFY SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 20",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 70
+        },
+        {
+          "id": 5,
+          "total": 70
+        }
+      ],
+      "terminal_row_ids": [
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "not_true_row_ids": [
+        "s#0",
+        "s#1",
+        "s#5",
+        "s#6"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            3,
+            4,
+            5
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 3,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            40,
+            70
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 40,
+            "upper": 70,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     },
@@ -693,56 +1168,82 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     },
@@ -812,56 +1313,82 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     },
@@ -931,56 +1458,372 @@
       ],
       "dialect_cells": {
         "generic": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mysql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "postgresql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "hive": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "sqlite": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "snowflake": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "redshift": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "mssql": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "clickhouse": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "bigquery": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "ansi": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         },
         "duckdb": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
         },
         "databricks": {
-          "parser": "to_verify",
-          "physical": "conditional_boundary"
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N4",
+      "fixture_id": "74-C128-N",
+      "feature": "bounded_range_numeric_offset",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [],
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Bounded numeric RANGE requires attested value-distance and overflow semantics.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N5",
+      "fixture_id": "74-C128-N",
+      "feature": "groups_value_peer_null_defaults",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [],
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Engine-default NULL placement changes peer group frame membership.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_boundary_oracle_to_check",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_not_attested",
+          "owner": "TASK-128"
         }
       }
     }
@@ -995,7 +1838,7 @@
     {
       "feature": "range_value_offsets",
       "owner": "TASK-128",
-      "disposition": "pending_exact_range_numeric_boundary",
+      "disposition": "reviewed_residual_pending_finite_numeric_offset_proof",
       "reason": "Numeric RANGE offset direction/overflow and vendor rules require an expanded frozen physical execution oracle."
     },
     {
@@ -1007,7 +1850,7 @@
     {
       "feature": "native_vendor_session",
       "owner": "TASK-128",
-      "disposition": "pending_native_execution",
+      "disposition": "native_unavailable_explicitly_unattested_no_portable_exact_claim",
       "reason": "All 13 parser dialects must be classified; parser evidence alone does not certify their engines."
     },
     {
