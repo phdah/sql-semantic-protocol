@@ -9,7 +9,7 @@
     "public_oracle": "tests/task_128_advanced_windows.rs",
     "adapter_parity_test": "tests/task_128_adapter_parity.rs",
     "native_compiled_dbt_oracle": "tests/task_128_dbt_core_e2e.rs",
-    "frozen_version": 4,
+    "frozen_version": 5,
     "full_exact_source_terminal_bag_cases": 5,
     "conditional_reviewed_residual_cases": 6,
     "dialect_parser_cells_verified": 143,
