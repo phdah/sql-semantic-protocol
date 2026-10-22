@@ -85,6 +85,7 @@ enum WindowKind {
         numeric: Option<NumericLaw>,
     },
     Ranking(RankFunction),
+    Ntile { buckets: usize },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -386,6 +387,19 @@ fn window_kind(
     }
     let args = function.arguments();
     match function.name().to_ascii_lowercase().as_str() {
+        "ntile" => {
+            let [argument] = args else {
+                return Err("NTILE requires one integer bucket count");
+            };
+            if window.window().order_by().is_empty() || window.window().frame().is_some() {
+                return Err("NTILE needs deterministic ORDER BY without an explicit frame");
+            }
+            let buckets = positive_offset(argument)?;
+            if buckets == 0 {
+                return Err("NTILE bucket count must be positive");
+            }
+            Ok(WindowKind::Ntile { buckets })
+        }
         "row_number" | "rank" | "dense_rank" => {
             if window.window().frame().is_some() || window.window().order_by().is_empty() {
                 return Err("composed ranking requires ORDER BY without an explicit frame");
@@ -693,6 +707,21 @@ fn frame_value(
     }
     // A uniquely ordered partition makes ROW_NUMBER, RANK and DENSE_RANK
     // identical. ORDER BY peers are rejected before any frame is evaluated.
+    if let WindowKind::Ntile { buckets } = kind {
+        let base = rows.len() / buckets;
+        let remainder = rows.len() % buckets;
+        let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
+        let wider_rows = remainder.checked_mul(wider).ok_or("NTILE bucket overflow")?;
+        let bucket = if index < wider_rows {
+            index / wider + 1
+        } else {
+            if base == 0 {
+                return Err("NTILE bucket count exceeds physical population");
+            }
+            remainder + (index - wider_rows) / base + 1
+        };
+        return Ok(LiteralValue::Number(bucket.to_string()));
+    }
     if let WindowKind::Ranking(function) = kind {
         return match function {
             RankFunction::RowNumber | RankFunction::Rank | RankFunction::DenseRank => {
@@ -712,7 +741,7 @@ fn frame_value(
             let range = frame_members(frame, index, rows.len())?;
             (!range.is_empty()).then_some(range.end - 1)
         }
-        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) | WindowKind::Ntile { .. } => {
             return Err("unreachable window frame result")
         }
     };
@@ -724,7 +753,7 @@ fn frame_value(
         | WindowKind::Lead { value, .. }
         | WindowKind::First { value, .. }
         | WindowKind::Last { value, .. } => value,
-        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) | WindowKind::Ntile { .. } => {
             return Err("unreachable window frame result")
         }
     };
