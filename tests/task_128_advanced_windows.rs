@@ -301,12 +301,20 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
                 case["id"]
             );
             assert_eq!(case["dialect_cells"][dialect]["owner"], "TASK-128");
-            let native = case["dialect_cells"][dialect]["native_engine_status"].as_str().unwrap();
-            assert!(!native.contains("to_check") && !native.contains("pending") && !native.is_empty(),
-                "{}/{dialect}: native classification must have a final owned boundary", case["id"]);
+            let native = case["dialect_cells"][dialect]["native_engine_status"]
+                .as_str()
+                .unwrap();
+            assert!(
+                !native.contains("to_check") && !native.contains("pending") && !native.is_empty(),
+                "{}/{dialect}: native classification must have a final owned boundary",
+                case["id"]
+            );
             if dialect != "duckdb" {
-                assert_eq!(native, "native_vendor_or_session_unattested_no_execution_claim",
-                    "{}/{dialect}: parser evidence never establishes native engine support", case["id"]);
+                assert_eq!(
+                    native, "native_vendor_or_session_unattested_no_execution_claim",
+                    "{}/{dialect}: parser evidence never establishes native engine support",
+                    case["id"]
+                );
             }
             if parser_status == "parsed" {
                 let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog());
