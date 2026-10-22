@@ -775,10 +775,11 @@ fn ntile_bucket(index: usize, row_count: usize, buckets: usize) -> Result<usize,
         .ok_or("NTILE bucket overflow")?;
     if index < wider_rows {
         Ok(index / wider + 1)
-    } else if base == 0 {
-        Err("NTILE bucket count exceeds physical population")
     } else {
-        Ok(remainder + (index - wider_rows) / base + 1)
+        let offset = (index - wider_rows)
+            .checked_div(base)
+            .ok_or("NTILE bucket count exceeds physical population")?;
+        Ok(remainder + offset + 1)
     }
 }
 
