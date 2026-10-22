@@ -194,6 +194,34 @@ fn independent_duckdb_oracles_assert_entire_source_and_terminal_bags() {
                     .expect("insert source row");
             }
         }
+        // Round-trip the complete source bags through the independent engine:
+        // frozen inputs are evidence, not assumptions about successful INSERTs.
+        for relation in ["outer_rows", "inner_rows"] {
+            let sql = format!("SELECT id, k FROM {relation} ORDER BY id");
+            let mut rows = db.prepare(&sql).expect("native complete source read");
+            let actual = rows
+                .query_map([], |row| {
+                    let id: String = row.get(0)?;
+                    let key: Option<i64> = row.get(1)?;
+                    Ok((id, key))
+                })
+                .expect("native complete source bag")
+                .collect::<duckdb::Result<Vec<_>>>()
+                .expect("all physical source identities");
+            let mut expected = case["source_bags"][relation]
+                .as_array()
+                .expect("frozen physical source")
+                .iter()
+                .map(|row| {
+                    (
+                        row["id"].as_str().expect("stable ID").to_string(),
+                        row["k"].as_i64(),
+                    )
+                })
+                .collect::<Vec<_>>();
+            expected.sort();
+            assert_eq!(actual, expected, "{}: {relation} full source", case["id"]);
+        }
         // Native query independently exposes IDs as well as projected values.
         // Expected rows are fixed by the acceptance freeze, not by the Rust evaluator.
         let sql = case["sql"].as_str().expect("frozen SQL").replacen(
@@ -231,6 +259,28 @@ fn independent_duckdb_oracles_assert_entire_source_and_terminal_bags() {
             .collect::<Vec<_>>();
         expected.sort();
         assert_eq!(actual, expected, "{}: native complete output", case["id"]);
+        // EXISTS and NOT EXISTS are logical complements for the same complete
+        // physical bags. Independently execute the inverse and assert every
+        // SQL NOT TRUE row, including outer NULL and unmatched non-NULL keys.
+        let inverse_sql = if sql.contains(" WHERE NOT EXISTS ") {
+            sql.replacen(" WHERE NOT EXISTS ", " WHERE EXISTS ", 1)
+        } else {
+            sql.replacen(" WHERE EXISTS ", " WHERE NOT EXISTS ", 1)
+        };
+        let mut inverse = db.prepare(&inverse_sql).expect("native inverse predicate");
+        let mut actual_rejected = inverse
+            .query_map([], |row| row.get::<_, String>(0))
+            .expect("native inverse output")
+            .collect::<duckdb::Result<Vec<_>>>()
+            .expect("complete NOT TRUE identities");
+        actual_rejected.sort();
+        let mut expected_rejected = expected_ids(case, "rejected_not_true_outer_ids");
+        expected_rejected.sort();
+        assert_eq!(
+            actual_rejected, expected_rejected,
+            "{}: independent NOT TRUE source identities",
+            case["id"]
+        );
     }
 }
 
