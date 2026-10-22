@@ -342,3 +342,33 @@ fn repeated_physical_row_ids_cannot_certify_closed_world_absence() {
         PhysicalFiniteExistsProof::Impossible { .. }
     ));
 }
+
+#[test]
+fn empty_terminal_cannot_certify_noninteger_projection() {
+    let frozen = freeze();
+    let case = &frozen["cases"][3]; // NOT EXISTS with a nonempty inner bag.
+    let mut variant = case.clone();
+    variant["sql"] = Value::String(
+        "SELECT o.id AS id FROM outer_rows o WHERE NOT EXISTS (SELECT 1 FROM inner_rows i)"
+            .to_string(),
+    );
+    assert!(matches!(
+        evaluate(&variant, "generic", &snapshots(case)),
+        PhysicalFiniteExistsProof::Residual { .. }
+    ));
+}
+
+#[test]
+fn nested_prewhere_cannot_certify_exists_from_unfiltered_source_bag() {
+    let frozen = freeze();
+    let case = &frozen["cases"][2]; // Nonempty inner would otherwise prove EXISTS.
+    let mut variant = case.clone();
+    variant["sql"] = Value::String(
+        "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i PREWHERE i.k = 999)"
+            .to_string(),
+    );
+    assert!(matches!(
+        evaluate(&variant, "clickhouse", &snapshots(case)),
+        PhysicalFiniteExistsProof::Residual { .. }
+    ));
+}
