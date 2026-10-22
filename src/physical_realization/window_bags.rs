@@ -761,6 +761,27 @@ fn window_keys(
     })
 }
 
+// NTILE assigns larger buckets first. A peer boundary only makes row identity
+// ambiguous when tied rows can land in different buckets.
+fn ntile_bucket(index: usize, row_count: usize, buckets: usize) -> Result<usize, &'static str> {
+    if buckets == 0 {
+        return Err("NTILE bucket count must be positive");
+    }
+    let base = row_count / buckets;
+    let remainder = row_count % buckets;
+    let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
+    let wider_rows = remainder
+        .checked_mul(wider)
+        .ok_or("NTILE bucket overflow")?;
+    if index < wider_rows {
+        Ok(index / wider + 1)
+    } else if base == 0 {
+        Err("NTILE bucket count exceeds physical population")
+    } else {
+        Ok(remainder + (index - wider_rows) / base + 1)
+    }
+}
+
 fn frame_value(
     kind: &WindowKind,
     rows: &[(usize, Vec<Option<i128>>)],
@@ -787,21 +808,9 @@ fn frame_value(
     // A uniquely ordered partition makes ROW_NUMBER, RANK and DENSE_RANK
     // identical. ORDER BY peers are rejected before any frame is evaluated.
     if let WindowKind::Ntile { buckets } = kind {
-        let base = rows.len() / *buckets;
-        let remainder = rows.len() % *buckets;
-        let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
-        let wider_rows = remainder
-            .checked_mul(wider)
-            .ok_or("NTILE bucket overflow")?;
-        let bucket = if index < wider_rows {
-            index / wider + 1
-        } else {
-            if base == 0 {
-                return Err("NTILE bucket count exceeds physical population");
-            }
-            remainder + (index - wider_rows) / base + 1
-        };
-        return Ok(LiteralValue::Number(bucket.to_string()));
+        return Ok(LiteralValue::Number(
+            ntile_bucket(index, rows.len(), *buckets)?.to_string(),
+        ));
     }
     if let WindowKind::Ranking(function) = kind {
         return match function {
@@ -1032,19 +1041,22 @@ pub fn physical_finite_window_bag_plan(
                 .find(|order| !order.is_eq())
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        // Peer order is immaterial for RANK/DENSE_RANK, but matters for
-        // ROW_NUMBER, navigation, and ordered ROWS frame membership.
+        // Peer order matters only when some operation assigns different
+        // results to tied physical rows. NTILE peers within one bucket are safe.
         if !keys.sort.is_empty()
-            && partition.windows(2).any(|rows| rows[0].1 == rows[1].1)
-            && operations.iter().any(|operation| {
-                !matches!(
-                    &operation.kind,
-                    WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
-                ) && !matches!(
-                    &operation.kind,
-                    WindowKind::Aggregate { frame: Some(frame), .. }
-                        if frame.units() != WindowFrameUnits::Rows
-                )
+            && partition.windows(2).enumerate().any(|(position, rows)| {
+                rows[0].1 == rows[1].1
+                    && operations.iter().any(|operation| match &operation.kind {
+                        WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank) => false,
+                        WindowKind::Aggregate {
+                            frame: Some(frame), ..
+                        } if frame.units() != WindowFrameUnits::Rows => false,
+                        WindowKind::Ntile { buckets } => {
+                            ntile_bucket(position, partition.len(), *buckets)
+                                != ntile_bucket(position + 1, partition.len(), *buckets)
+                        }
+                        _ => true,
+                    })
             })
         {
             return residual("window ORDER BY peers lack deterministic physical row order");
