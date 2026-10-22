@@ -1,0 +1,1028 @@
+{
+  "version": 1,
+  "owner": "TASK-128",
+  "parent": "TASK-74",
+  "frozen_at": "2026-10-22",
+  "status": "implementation_in_progress_not_signed_off",
+  "source_schema": {
+    "s": {
+      "id": "INTEGER",
+      "k": "INTEGER",
+      "x": "INTEGER"
+    }
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "compiled_dbt_manifest_catalog",
+    "odcs_schema"
+  ],
+  "fixture_ids": [
+    "74-C128-P",
+    "74-C128-N"
+  ],
+  "original_parent_ac_map": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "contract": "Only a fully validated physical source bag and explicit deterministic integer sort/null laws can yield Exact. All other native/session laws remain conditional and require executed evidence; parser success is not native execution.",
+  "cases": [
+    {
+      "id": "74-C128-P1",
+      "fixture_id": "74-C128-P",
+      "feature": "ntile_balanced_buckets",
+      "classification": "exact_required",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "tile": 1
+        },
+        {
+          "id": 2,
+          "tile": 1
+        },
+        {
+          "id": 3,
+          "tile": 2
+        },
+        {
+          "id": 4,
+          "tile": 2
+        },
+        {
+          "id": 5,
+          "tile": 3
+        },
+        {
+          "id": 6,
+          "tile": 1
+        },
+        {
+          "id": 7,
+          "tile": 2
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "tile",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P2",
+      "fixture_id": "74-C128-P",
+      "feature": "range_peer_cumulative",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 20
+        },
+        {
+          "id": 2,
+          "total": 20
+        },
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 70
+        },
+        {
+          "id": 5,
+          "total": 70
+        },
+        {
+          "id": 6,
+          "total": 7
+        },
+        {
+          "id": 7,
+          "total": 7
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            20,
+            40,
+            70,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 7,
+            "upper": 70,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P3",
+      "fixture_id": "74-C128-P",
+      "feature": "groups_preceding_peer_bags",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 20
+        },
+        {
+          "id": 2,
+          "total": 20
+        },
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 50
+        },
+        {
+          "id": 5,
+          "total": 30
+        },
+        {
+          "id": 6,
+          "total": 7
+        },
+        {
+          "id": 7,
+          "total": 7
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            20,
+            40,
+            50,
+            30,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 7,
+            "upper": 50,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "exact_required"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N1",
+      "fixture_id": "74-C128-N",
+      "feature": "ntile_zero_argument",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(0) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Zero bucket count is not a valid NTILE cardinality; do not fabricate physical terminal rows.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N2",
+      "fixture_id": "74-C128-N",
+      "feature": "ntile_peer_instability",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY x NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Physical identities of peers straddling NTILE bucket boundaries cannot be determined without a total order.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N3",
+      "fixture_id": "74-C128-N",
+      "feature": "implicit_null_order",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Explicit NULLS FIRST/LAST is required for portable physical ordering.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mysql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "postgresql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "hive": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "sqlite": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "snowflake": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "redshift": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "mssql": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "clickhouse": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "bigquery": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "ansi": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "duckdb": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        },
+        "databricks": {
+          "parser": "to_verify",
+          "physical": "conditional_boundary"
+        }
+      }
+    }
+  ],
+  "conditional_registry": [
+    {
+      "feature": "collation",
+      "owner": "TASK-128",
+      "disposition": "pending_native_session_evidence",
+      "reason": "Non-integer locale-dependent sort keys require attested COLLATE and engine collation tables; typed Residual in bounded evaluator."
+    },
+    {
+      "feature": "range_value_offsets",
+      "owner": "TASK-128",
+      "disposition": "pending_exact_range_numeric_boundary",
+      "reason": "Numeric RANGE offset direction/overflow and vendor rules require an expanded frozen physical execution oracle."
+    },
+    {
+      "feature": "range_groups_multi_key",
+      "owner": "TASK-128",
+      "disposition": "pending_native_session_evidence",
+      "reason": "RANGE bounded offsets with multiple keys are not portable; GROUPS peers can use explicit ordered tuples."
+    },
+    {
+      "feature": "native_vendor_session",
+      "owner": "TASK-128",
+      "disposition": "pending_native_execution",
+      "reason": "All 13 parser dialects must be classified; parser evidence alone does not certify their engines."
+    },
+    {
+      "feature": "parent_signoff",
+      "owner": "TASK-74",
+      "disposition": "blocked_until_all_original_parent_ac_reviewed",
+      "reason": "Child implementation and green CI do not close independent original TASK-74 AC."
+    }
+  ],
+  "signoff": {
+    "mandatory_cells_verified": false,
+    "adapter_cells_verified": false,
+    "parser_cells_verified": false,
+    "complete_native_oracles_verified": false,
+    "ci_verified": false,
+    "parent_closed": false
+  }
+}
