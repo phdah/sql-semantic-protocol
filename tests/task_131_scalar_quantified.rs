@@ -698,7 +698,7 @@ fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
         assert_eq!(predicate["kind"],"quantified_subquery", "{sql}");
         assert_eq!(predicate["quantifier"],quantifier, "{sql}");
         assert_eq!(predicate["operator"],operator, "{sql}");
-        assert_eq!(predicate["subquery"]["sources"][0]["name"],"inner_rows", "{sql}");
+        assert_eq!(predicate["subquery"]["dependencies"][0],"inner_rows", "{sql}");
         assert!(predicate["operand"].is_object(),"{sql}: canonical typed operand missing");
     }
 }
