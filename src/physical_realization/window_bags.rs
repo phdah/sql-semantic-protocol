@@ -85,7 +85,9 @@ enum WindowKind {
         numeric: Option<NumericLaw>,
     },
     Ranking(RankFunction),
-    Ntile { buckets: usize },
+    Ntile {
+        buckets: usize,
+    },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -560,9 +562,8 @@ fn frame_members(
     Ok(start..end.max(start))
 }
 
-
- // GROUPS is indexed by equality classes of the entire ORDER BY tuple.
- // RANGE CURRENT ROW includes its full peer class, never a single source row.
+// GROUPS is indexed by equality classes of the entire ORDER BY tuple.
+// RANGE CURRENT ROW includes its full peer class, never a single source row.
 fn ordered_frame_members(
     frame: &WindowFrame,
     rows: &[(usize, Vec<Option<i128>>)],
@@ -573,31 +574,47 @@ fn ordered_frame_members(
     }
     let mut peers = Vec::<std::ops::Range<usize>>::new();
     for (position, (_, keys)) in rows.iter().enumerate() {
-        if peers.last().is_none_or(|group| rows[group.start].1 != *keys) {
+        if peers
+            .last()
+            .is_none_or(|group| rows[group.start].1 != *keys)
+        {
             peers.push(position..position + 1);
         } else if let Some(group) = peers.last_mut() {
             group.end = position + 1;
         }
     }
-    let group_index = peers.iter().position(|group| group.contains(&index))
+    let group_index = peers
+        .iter()
+        .position(|group| group.contains(&index))
         .ok_or("window row missing from ordered peer group")?;
-    if frame.units() == WindowFrameUnits::Range &&
-        [frame.start_bound(), frame.end_bound()].iter().any(|bound| {
-            matches!(bound, WindowFrameBound::Preceding(_) | WindowFrameBound::Following(_))
-        })
+    if frame.units() == WindowFrameUnits::Range
+        && [frame.start_bound(), frame.end_bound()]
+            .iter()
+            .any(|bound| {
+                matches!(
+                    bound,
+                    WindowFrameBound::Preceding(_) | WindowFrameBound::Following(_)
+                )
+            })
     {
         return Err("bounded RANGE needs certified order-value distance semantics");
     }
     let group_count = i128::try_from(peers.len()).map_err(|_| "peer count exceeds signed width")?;
     let group_index = i128::try_from(group_index).map_err(|_| "peer index exceeds signed width")?;
     let first_group = frame_position(frame.start_bound(), group_index, group_count)?
-        .max(0).min(group_count);
+        .max(0)
+        .min(group_count);
     let last_group = frame_position(frame.end_bound(), group_index, group_count)?
-        .max(-1).min(group_count - 1);
+        .max(-1)
+        .min(group_count - 1);
     let first_group = usize::try_from(first_group).map_err(|_| "invalid frame peer start")?;
-    let first = peers.get(first_group).map_or(rows.len(), |group| group.start);
+    let first = peers
+        .get(first_group)
+        .map_or(rows.len(), |group| group.start);
     let last_group = usize::try_from(last_group + 1).map_err(|_| "invalid frame peer end")?;
-    let last = if last_group == 0 { 0 } else {
+    let last = if last_group == 0 {
+        0
+    } else {
         peers.get(last_group - 1).map_or(0, |group| group.end)
     };
     Ok(first..last.max(first))
@@ -773,7 +790,9 @@ fn frame_value(
         let base = rows.len() / *buckets;
         let remainder = rows.len() % *buckets;
         let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
-        let wider_rows = remainder.checked_mul(wider).ok_or("NTILE bucket overflow")?;
+        let wider_rows = remainder
+            .checked_mul(wider)
+            .ok_or("NTILE bucket overflow")?;
         let bucket = if index < wider_rows {
             index / wider + 1
         } else {
