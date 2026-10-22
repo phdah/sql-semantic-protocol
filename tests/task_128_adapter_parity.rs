@@ -1,4 +1,4 @@
-//! TASK-128: independent decimal window adapter parity on complete source bags.
+//! TASK-128: direct SQL, compiled dbt and ODCS integer-window parity on complete bags.
 
 #[cfg(feature = "odcs")]
 #[test]
@@ -25,7 +25,7 @@ fn advanced_windows_agree_across_direct_compiled_dbt_and_odcs_on_complete_bags()
 apiVersion: v3.2.0
 kind: DataContract
 id: task128windows
-name: Decimal window source
+name: Integer window source
 version: 1.0.0
 status: active
 schema:
@@ -154,7 +154,7 @@ schema:
                 "Exact" => {
                     assert_eq!(case["classification"], "exact_required", "{id}/{adapter}");
                     let PhysicalFiniteWindowProof::Exact(exact) = proof else {
-                        panic!("{id}/{adapter}: adapter lost decimal physical proof: {proof:?}");
+                        panic!("{id}/{adapter}: adapter lost integer window physical proof: {proof:?}");
                     };
                     assert_eq!(exact.source, source_name);
                     results.push(format!(
@@ -172,7 +172,7 @@ schema:
                     assert_eq!(case["classification"], "conditional", "{id}/{adapter}");
                     assert!(
                         matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
-                        "{id}/{adapter}: unattested numeric law must stay Residual: {proof:?}"
+                        "{id}/{adapter}: unattested window law must stay Residual: {proof:?}"
                     );
                     results.push("Residual".into());
                 }
