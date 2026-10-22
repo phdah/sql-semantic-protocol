@@ -1103,3 +1103,29 @@ cast overflow, TRY_CAST NULL-on-failure, exact signed boundaries, and safe
 decimal and integer arithmetic. These are local scoped proofs. Nonportable
 implicit coercion and full cross-dialect execution equivalence remain separate
 release gates and are not inferred from DuckDB observations alone.
+
+
+### Scalar subqueries and quantified predicates (TASK-131, partial)
+
+On a complete attested source bag, a scalar subquery returning zero rows
+evaluates to SQL NULL; one row evaluates to its value (including NULL); more
+than one row is a SQL cardinality error, not an impossible input assignment.
+The dedicated physical proof distinguishes all three outcomes. It only
+certifies a simple uncorrelated, source-copied signed-integer scalar SELECT.
+Nonempty unsupported nested filters or cardinality-changing clauses are
+explicitly residual.
+
+The physical quantified-comparison helper evaluates the complete
+signed-integer input bags with SQL three-valued comparison semantics:
+ANY/SOME of an empty bag is FALSE, ALL of an empty bag is TRUE; TRUE
+dominates UNKNOWN for ANY, FALSE dominates UNKNOWN for ALL. Source
+row IDs, duplicate candidates, surviving/rejected outer identities and
+inclusive terminal domains are preserved.
+
+**Scope boundary:** The quantified evaluator accepts explicitly normalized
+operator arguments. It does not yet establish that parsed ANY/ALL SQL
+or dbt/ODCS evidence binds to those arguments. Correlated nested
+quantification, LATERAL/APPLY, non-integer comparison/coercion,
+native vendor/session laws and other TASK-131 acceptance cells remain
+uncertified pending their own executable matrix. Do not use this
+operator-local result to claim entire-query constructive exactness.
