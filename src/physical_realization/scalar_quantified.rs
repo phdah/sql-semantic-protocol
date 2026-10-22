@@ -552,3 +552,97 @@ pub fn physical_finite_quantified_subquery_plan(
         terminal: vec![BTreeMap::from([(output.name().to_string(), value)])],
     })
 }
+
+
+/// Prove full WHERE ... OP ANY/SOME/ALL (...) membership over two complete source bags.
+///
+/// This is the SQL-bound counterpart to `physical_finite_quantified_comparison`.
+/// The canonical WHERE predicate supplies its comparison operator and quantifier;
+/// the caller does not supply either. Only a direct source-preserving outer
+/// projection with an independent direct nested column source may be Exact.
+pub fn physical_finite_quantified_where_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    snapshots: &[PhysicalWriteState],
+) -> PhysicalFiniteQuantifiedProof {
+    let residual = |reason: &str| PhysicalFiniteQuantifiedProof::Residual {
+        reason: reason.to_string(),
+    };
+    let mut walker = Walker::new(bundle);
+    if let Err(gap) = walker.visit(target_layer_id) {
+        return residual(gap.as_str());
+    }
+    let Some(target) = walker.layers.get(target_layer_id).copied() else {
+        return residual("quantified WHERE target is not a canonical layer");
+    };
+    let Some(query) = query_for(bundle, target) else {
+        return residual("quantified WHERE target is not a SELECT");
+    };
+    let Some(crate::protocol::Predicate::QuantifiedSubquery(comparison)) =
+        query.predicates().where_predicate() else {
+        return residual("WHERE is not one canonical quantified comparison");
+    };
+    let [outer_source] = query.sources() else {
+        return residual("quantified WHERE requires one direct outer source");
+    };
+    let [output] = query.output().columns() else {
+        return residual("quantified WHERE requires one unrenamed copied output column");
+    };
+    let Expression::Column(outer_operand) = comparison.operand() else {
+        return residual("outer quantified WHERE operand must copy a physical source column");
+    };
+    let Some(output_source) = output.plain_copy_source() else {
+        return residual("quantified WHERE output must be one plain physical column");
+    };
+    let qualifier_ok = outer_operand
+        .relation()
+        .is_none_or(|relation| relation == outer_source.name() || outer_source.alias() == Some(relation));
+    if !query.filter_only_row_shape()
+        || !query.joins().is_empty()
+        || query.aggregation().is_some()
+        || !query.diagnostics().is_empty()
+        || !qualifier_ok
+        || output_source.relation() != outer_source.name()
+        || output_source.column() != outer_operand.name()
+        || output.name() != outer_operand.name()
+    {
+        return residual("outer quantified WHERE row shape, alias, or source identity is unproved");
+    }
+    let nested = comparison.subquery();
+    let [inner_source] = nested.sources() else {
+        return residual("quantified WHERE nested query requires one direct physical source");
+    };
+    let [inner_output] = nested.output().columns() else {
+        return residual("quantified WHERE nested query must select one scalar");
+    };
+    let Some(inner_column) = inner_output.plain_copy_source() else {
+        return residual("quantified WHERE nested projection is not a source copy");
+    };
+    if !nested.row_shape_preserves_candidates()
+        || nested.predicates().where_predicate().is_some()
+        || !nested.joins().is_empty()
+        || !nested.correlations().is_empty()
+        || !nested.diagnostics().is_empty()
+        || inner_column.relation() != inner_source.name()
+        || outer_source.name() == inner_source.name()
+        || snapshots.len() != 2
+    {
+        return residual("quantified WHERE nested cardinality or scope is not certified");
+    }
+    let quantifier = match comparison.quantifier() {
+        crate::protocol::SubqueryQuantifier::Any => PhysicalQuantifier::Any,
+        crate::protocol::SubqueryQuantifier::All => PhysicalQuantifier::All,
+    };
+    physical_finite_quantified_comparison(
+        bundle,
+        snapshots,
+        PhysicalQuantifiedOperands {
+            outer_relation: outer_source.name(),
+            outer_column: output_source.column(),
+            inner_relation: inner_source.name(),
+            inner_column: inner_column.column(),
+        },
+        comparison.operator(),
+        quantifier,
+    )
+}
