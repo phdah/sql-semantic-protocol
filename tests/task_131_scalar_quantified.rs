@@ -9,8 +9,8 @@ use sql_semantic_protocol::{
     physical_finite_quantified_comparison, physical_finite_scalar_subquery_plan, AnalysisBundle,
     ComparisonOperator, ConfiguredSqlInput, LiteralValue, PhysicalFiniteQuantifiedProof,
     PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier,
-    PhysicalScalarSubqueryProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn catalog() -> RelationCatalog {
