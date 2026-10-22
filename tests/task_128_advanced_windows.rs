@@ -428,10 +428,22 @@ fn ntile_boundary_straddling_peers_have_two_distinct_legal_native_assignments() 
             .and_then(|row| row.get("tile"))
             .cloned()
     };
-    assert_eq!(tile_for(&ascending, 2), Some(LiteralValue::Number("1".into())));
-    assert_eq!(tile_for(&ascending, 3), Some(LiteralValue::Number("2".into())));
-    assert_eq!(tile_for(&descending, 2), Some(LiteralValue::Number("2".into())));
-    assert_eq!(tile_for(&descending, 3), Some(LiteralValue::Number("1".into())));
+    assert_eq!(
+        tile_for(&ascending, 2),
+        Some(LiteralValue::Number("1".into()))
+    );
+    assert_eq!(
+        tile_for(&ascending, 3),
+        Some(LiteralValue::Number("2".into()))
+    );
+    assert_eq!(
+        tile_for(&descending, 2),
+        Some(LiteralValue::Number("2".into()))
+    );
+    assert_eq!(
+        tile_for(&descending, 3),
+        Some(LiteralValue::Number("1".into()))
+    );
     let bundle = analyze(sql);
     let target = bundle.layers().last().unwrap().id();
     assert!(matches!(
