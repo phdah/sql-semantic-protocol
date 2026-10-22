@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-129",
   "parent": "TASK-75",
-  "status": "frozen_pending_implementation_and_ci",
+  "status": "independent_core_verified_pending_final_head_ci",
   "fixture_ids": [
     "75-C129-P",
     "75-C129-N"
@@ -37,14 +37,14 @@
       "classification": "Residual",
       "owner": "TASK-129",
       "reason": "Only equality comparator has portable finite signed-integer proof; unsupported non-equi condition must not be silently evaluated as equality",
-      "reviewed_release_disposition": "pending"
+      "reviewed_release_disposition": "reviewed_portable_integer_proof_only_native_vendor_uncertified"
     },
     {
       "id": "75-C129-conditional-native-vendor-session",
       "classification": "Residual",
       "owner": "TASK-129",
       "reason": "No thirteen native engine executions or vendor collations/session equality attestations",
-      "reviewed_release_disposition": "pending"
+      "reviewed_release_disposition": "reviewed_portable_integer_proof_only_native_vendor_uncertified"
     }
   ],
   "original_parent_acceptance_mapped": [
@@ -145,26 +145,32 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     },
     {
       "id": "75-C129-N-correlated-not-exists",
@@ -252,26 +258,32 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     },
     {
       "id": "75-C129-P-uncorrelated-exists",
@@ -371,26 +383,32 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     },
     {
       "id": "75-C129-N-uncorrelated-not-exists",
@@ -477,26 +495,32 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     },
     {
       "id": "75-C129-P-empty-inner-not-exists",
@@ -571,26 +595,32 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     },
     {
       "id": "75-C129-N-empty-inner-exists",
@@ -652,26 +682,45 @@
       "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
       "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
       "parser_status": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending"
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
     }
-  ]
+  ],
+  "verification": {
+    "parser_cells": 78,
+    "parser_equivalent": 78,
+    "parser_boundary": 0,
+    "adapter_cells": 18,
+    "complete_duckdb_source_selected_rejected_terminal_cases": 6,
+    "mandatory_cases": 6,
+    "mandatory_unverified": [],
+    "ci_oracle_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39790007300",
+    "native_vendor_engine_executions": 0,
+    "parent_signoff": false,
+    "release_approved": false
+  }
 }
