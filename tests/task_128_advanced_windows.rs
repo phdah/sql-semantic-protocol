@@ -317,21 +317,40 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
                 );
             }
             if parser_status == "parsed" {
-                let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog());
-                if case["proof"] == "Exact" {
-                    let bundle =
-                        bundle.unwrap_or_else(|error| panic!("{}/{dialect}: {error}", case["id"]));
-                    let target = bundle.layers().last().unwrap().id();
-                    let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
-                    let PhysicalFiniteWindowProof::Exact(exact) = proof else {
-                        panic!("{}/{dialect}: parsed portable window lost exact physical semantics: {proof:?}", case["id"]);
-                    };
-                    assert_eq!(
-                        sorted_bag(&exact.terminal),
-                        sorted_bag(&expected_rows(case)),
-                        "{}/{dialect}: complete canonical output bag",
-                        case["id"]
-                    );
+                let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog())
+                    .unwrap_or_else(|error| panic!("{}/{dialect}: {error}", case["id"]));
+                let target = bundle.layers().last().unwrap().id();
+                let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
+                match case["proof"].as_str().unwrap() {
+                    "Exact" => {
+                        assert_eq!(
+                            case["dialect_cells"][dialect]["physical"], "exact_required",
+                            "{}/{dialect}: frozen Exact classification",
+                            case["id"]
+                        );
+                        let PhysicalFiniteWindowProof::Exact(exact) = proof else {
+                            panic!("{}/{dialect}: parsed portable window lost exact physical semantics: {proof:?}", case["id"]);
+                        };
+                        assert_eq!(
+                            sorted_bag(&exact.terminal),
+                            sorted_bag(&expected_rows(case)),
+                            "{}/{dialect}: complete canonical output bag",
+                            case["id"]
+                        );
+                    }
+                    "Residual" => {
+                        assert_eq!(
+                            case["dialect_cells"][dialect]["physical"], "conditional_boundary",
+                            "{}/{dialect}: frozen conditional classification",
+                            case["id"]
+                        );
+                        assert!(
+                            matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
+                            "{}/{dialect}: conditional window must remain Residual: {proof:?}",
+                            case["id"]
+                        );
+                    }
+                    other => panic!("{}/{dialect}: unknown frozen proof {other}", case["id"]),
                 }
             }
         }
@@ -379,31 +398,105 @@ fn invalid_integer_source_is_impossible_not_residual() {
 }
 
 #[test]
+fn ntile_boundary_straddling_peers_have_two_distinct_legal_native_assignments() {
+    let freeze = frozen();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "74-C128-N2")
+        .unwrap();
+    let sql = case["sql"].as_str().unwrap();
+    let refine = |tiebreaker: &str| {
+        let mut native = case.clone();
+        native["sql"] = Value::String(sql.replace(
+            "ORDER BY x NULLS LAST",
+            &format!("ORDER BY x NULLS LAST, id {tiebreaker}"),
+        ));
+        duckdb_oracle(&native)
+    };
+    let ascending = refine("ASC");
+    let descending = refine("DESC");
+    assert_ne!(
+        sorted_bag(&ascending),
+        sorted_bag(&descending),
+        "ties straddling an NTILE boundary must yield different physical assignments"
+    );
+    let tile_for = |bag: &[BTreeMap<String, LiteralValue>], id: i32| {
+        bag.iter()
+            .find(|row| row.get("id") == Some(&LiteralValue::Number(id.to_string())))
+            .and_then(|row| row.get("tile"))
+            .cloned()
+    };
+    assert_eq!(tile_for(&ascending, 2), Some(LiteralValue::Number("1".into())));
+    assert_eq!(tile_for(&ascending, 3), Some(LiteralValue::Number("2".into())));
+    assert_eq!(tile_for(&descending, 2), Some(LiteralValue::Number("2".into())));
+    assert_eq!(tile_for(&descending, 3), Some(LiteralValue::Number("1".into())));
+    let bundle = analyze(sql);
+    let target = bundle.layers().last().unwrap().id();
+    assert!(matches!(
+        physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
+        PhysicalFiniteWindowProof::Residual { .. }
+    ));
+}
+
+#[test]
+fn ntile_peers_within_a_single_bucket_have_exact_physical_outcomes() {
+    let freeze = frozen();
+    let cases = freeze["cases"].as_array().unwrap();
+    let original_source = cases
+        .iter()
+        .find(|case| case["id"] == "74-C128-P1")
+        .unwrap();
+    let peer_sql = cases
+        .iter()
+        .find(|case| case["id"] == "74-C128-N2")
+        .unwrap()["sql"]
+        .as_str()
+        .unwrap();
+    let bundle = analyze(peer_sql);
+    let target = bundle.layers().last().unwrap().id();
+    let proof = physical_finite_window_bag_plan(&bundle, target, &[source(original_source)]);
+    let PhysicalFiniteWindowProof::Exact(exact) = proof else {
+        panic!("NTILE peers entirely inside bucket 1 must be identity-exact: {proof:?}");
+    };
+    let expected = [(1, 1), (2, 1), (3, 2), (4, 2), (5, 3), (6, 1), (7, 2)]
+        .into_iter()
+        .map(|(id, tile)| {
+            BTreeMap::from([
+                ("id".into(), LiteralValue::Number(id.to_string())),
+                ("tile".into(), LiteralValue::Number(tile.to_string())),
+            ])
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(sorted_bag(&exact.terminal), sorted_bag(&expected));
+    assert_eq!(exact.source_row_ids.len(), 7);
+    assert_eq!(exact.terminal_row_ids, exact.source_row_ids);
+    assert!(exact.rejected_row_ids.is_empty());
+    let mut native = original_source.clone();
+    native["sql"] = Value::String(peer_sql.to_string());
+    assert_eq!(sorted_bag(&duckdb_oracle(&native)), sorted_bag(&expected));
+}
+
+#[test]
 fn native_duckdb_conditional_frames_have_complete_attested_engine_specific_bags() {
     let matrix = frozen();
     let cases = matrix["cases"].as_array().unwrap();
-    let expected = [
-        ("74-C128-N3", vec![20, 20, 40, 50, 30, 7, 7]),
-        ("74-C128-N4", vec![20, 20, 20, 30, -1, 7, -1]),
-        ("74-C128-N5", vec![10, 20, 30, 50, 30, 7, 7]),
-    ];
-    for (id, totals) in expected {
+    for id in ["74-C128-N3", "74-C128-N4", "74-C128-N5"] {
         let case = cases.iter().find(|case| case["id"] == id).unwrap();
+        let oracle = &case["native_duckdb_oracle"];
+        assert_eq!(oracle["engine"], "duckdb", "{id}: frozen oracle engine");
         let observed = duckdb_oracle(case);
-        let wanted = (1..=7)
-            .zip(totals)
-            .map(|(id, total)| {
-                BTreeMap::from([
-                    ("id".into(), LiteralValue::Number(id.to_string())),
-                    (
-                        "total".into(),
-                        if total < 0 {
-                            LiteralValue::Null
-                        } else {
-                            LiteralValue::Number(total.to_string())
-                        },
-                    ),
-                ])
+        let wanted = oracle["full_terminal_bag"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                row.as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(column, value)| (column.clone(), scalar(value)))
+                    .collect::<BTreeMap<_, _>>()
             })
             .collect::<Vec<_>>();
         assert_eq!(
