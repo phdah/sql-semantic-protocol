@@ -8,14 +8,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::write_states::{
-    physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan,
+    physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
 };
 use super::*;
 use crate::protocol::{ComparisonOperator, LiteralValue};
-use crate::subquery_witness::{
-    SubqueryMembershipDirection, SubqueryMembershipKind,
-};
+use crate::subquery_witness::{SubqueryMembershipDirection, SubqueryMembershipKind};
 
 /// Exact finite values appearing in one output column, with inclusive bounds.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -193,14 +190,8 @@ pub fn physical_finite_exists_bag_plan(
         || projected.relation() != outer_name
         || outer_name == inner_name
         || snapshots.len() != 2
-        || !matches!(
-            witness.qualifying(),
-            SubqueryMembershipDirection::Exact(_)
-        )
-        || !matches!(
-            witness.rejected(),
-            SubqueryMembershipDirection::Exact(_)
-        )
+        || !matches!(witness.qualifying(), SubqueryMembershipDirection::Exact(_))
+        || !matches!(witness.rejected(), SubqueryMembershipDirection::Exact(_))
     {
         return residual("EXISTS outer query or local witness is not exactly supported");
     }
@@ -226,8 +217,7 @@ pub fn physical_finite_exists_bag_plan(
             // A single normalized equality is the complete inner WHERE.
             // Additional filters, disjunctions, or unknown comparisons are
             // not silently treated as TRUE or FALSE.
-            let Some(Predicate::Comparison(cmp)) =
-                exists.subquery().predicates().where_predicate()
+            let Some(Predicate::Comparison(cmp)) = exists.subquery().predicates().where_predicate()
             else {
                 return residual("inner filter is not one equality correlation");
             };
@@ -247,8 +237,12 @@ pub fn physical_finite_exists_bag_plan(
     };
 
     let [Some(outer_bag), Some(inner_bag)] = [
-        snapshots.iter().find(|state| state.relation() == outer_name),
-        snapshots.iter().find(|state| state.relation() == inner_name),
+        snapshots
+            .iter()
+            .find(|state| state.relation() == outer_name),
+        snapshots
+            .iter()
+            .find(|state| state.relation() == inner_name),
     ] else {
         return residual("both complete source snapshots are required");
     };
