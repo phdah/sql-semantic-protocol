@@ -1,10 +1,10 @@
 ---
 id: TASK-131
 title: Model scalar subqueries ANY ALL and nested correlation boundaries
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-22'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,13 @@ type: feature
 ## Next
 
 Next: [TASK-132](task-132%20-%20compose-grouped-joined-correlations-and-independently-certify-task-75.md), only after this child is Done and merged.
+
+## Implementation checkpoint (2026-10-22)
+
+- Versioned frozen TASK-131 case inventory: [freeze](../../docs/task-131-acceptance-freeze.json), registered in [coverage](../../docs/coverage-manifest.json) before semantic changes.
+- Initial canonical/operator-local physical implementation: `src/physical_realization/scalar_quantified.rs`.
+- Public API and independent DuckDB oracles: `tests/task_131_scalar_quantified.rs`.
+- Exact physical distinctions: empty scalar is NULL; singleton is its value; multiple source rows raise cardinality error, not Impossible. ANY/SOME/ALL preserve SQL TRUE/FALSE/UNKNOWN, vacuous empty truth, duplicate row identities and source-to-terminal bag membership.
+- **Still required before AC signoff:** SQL AST normalization and binding for quantified predicates; a complete mandatory and conditional per-dialect matrix; correlated nested scope/source identities; executable LATERAL/APPLY classification; independent direct/dbt/ODCS parity; full pinned acceptance bag/domain assertions; complete final-head CI, independent audit, and all five AC checks. The helper for ANY/ALL alone is NOT SQL parser-bound semantics or TASK-131 completion.
+
+**Do not mark Done, claim release certification, or start TASK-132 on this checkpoint.**
