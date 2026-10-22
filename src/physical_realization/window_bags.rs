@@ -85,6 +85,9 @@ enum WindowKind {
         numeric: Option<NumericLaw>,
     },
     Ranking(RankFunction),
+    Ntile {
+        buckets: usize,
+    },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -316,11 +319,30 @@ fn rows_frame(window: &WindowFunctionExpression) -> Result<WindowFrame, &'static
 fn aggregate_frame(window: &WindowFunctionExpression) -> Result<Option<WindowFrame>, &'static str> {
     if window.window().order_by().is_empty() {
         if window.window().frame().is_some() {
-            return Err("unordered ROWS frame has no deterministic physical membership");
+            return Err("unordered frame has no deterministic physical membership");
         }
         return Ok(None); // An unordered window spans the entire partition.
     }
-    rows_frame(window).map(Some)
+    let Some(frame) = window.window().frame() else {
+        return Err("ordered aggregate without explicit frame needs attested session semantics");
+    };
+    if frame.units() == WindowFrameUnits::Rows {
+        return rows_frame(window).map(Some);
+    }
+    if matches!(frame.start_bound(), WindowFrameBound::UnboundedFollowing)
+        || matches!(frame.end_bound(), WindowFrameBound::UnboundedPreceding)
+    {
+        return Err("invalid ordered frame direction");
+    }
+    for bound in [frame.start_bound(), frame.end_bound()] {
+        if let WindowFrameBound::Preceding(offset) | WindowFrameBound::Following(offset) = bound {
+            if frame.units() == WindowFrameUnits::Range {
+                return Err("bounded RANGE offset lacks a certified value-distance law");
+            }
+            positive_offset(offset)?;
+        }
+    }
+    Ok(Some(frame.clone()))
 }
 
 fn aggregate_kind(
@@ -386,6 +408,19 @@ fn window_kind(
     }
     let args = function.arguments();
     match function.name().to_ascii_lowercase().as_str() {
+        "ntile" => {
+            let [argument] = args else {
+                return Err("NTILE requires one integer bucket count");
+            };
+            if window.window().order_by().is_empty() || window.window().frame().is_some() {
+                return Err("NTILE needs deterministic ORDER BY without an explicit frame");
+            }
+            let buckets = positive_offset(argument)?;
+            if buckets == 0 {
+                return Err("NTILE bucket count must be positive");
+            }
+            Ok(WindowKind::Ntile { buckets })
+        }
         "row_number" | "rank" | "dense_rank" => {
             if window.window().frame().is_some() || window.window().order_by().is_empty() {
                 return Err("composed ranking requires ORDER BY without an explicit frame");
@@ -527,6 +562,64 @@ fn frame_members(
     Ok(start..end.max(start))
 }
 
+// GROUPS is indexed by equality classes of the entire ORDER BY tuple.
+// RANGE CURRENT ROW includes its full peer class, never a single source row.
+fn ordered_frame_members(
+    frame: &WindowFrame,
+    rows: &[(usize, Vec<Option<i128>>)],
+    index: usize,
+) -> Result<std::ops::Range<usize>, &'static str> {
+    if frame.units() == WindowFrameUnits::Rows {
+        return frame_members(frame, index, rows.len());
+    }
+    let mut peers = Vec::<std::ops::Range<usize>>::new();
+    for (position, (_, keys)) in rows.iter().enumerate() {
+        if peers
+            .last()
+            .is_none_or(|group| rows[group.start].1 != *keys)
+        {
+            peers.push(position..position + 1);
+        } else if let Some(group) = peers.last_mut() {
+            group.end = position + 1;
+        }
+    }
+    let group_index = peers
+        .iter()
+        .position(|group| group.contains(&index))
+        .ok_or("window row missing from ordered peer group")?;
+    if frame.units() == WindowFrameUnits::Range
+        && [frame.start_bound(), frame.end_bound()]
+            .iter()
+            .any(|bound| {
+                matches!(
+                    bound,
+                    WindowFrameBound::Preceding(_) | WindowFrameBound::Following(_)
+                )
+            })
+    {
+        return Err("bounded RANGE needs certified order-value distance semantics");
+    }
+    let group_count = i128::try_from(peers.len()).map_err(|_| "peer count exceeds signed width")?;
+    let group_index = i128::try_from(group_index).map_err(|_| "peer index exceeds signed width")?;
+    let first_group = frame_position(frame.start_bound(), group_index, group_count)?
+        .max(0)
+        .min(group_count);
+    let last_group = frame_position(frame.end_bound(), group_index, group_count)?
+        .max(-1)
+        .min(group_count - 1);
+    let first_group = usize::try_from(first_group).map_err(|_| "invalid frame peer start")?;
+    let first = peers
+        .get(first_group)
+        .map_or(rows.len(), |group| group.start);
+    let last_group = usize::try_from(last_group + 1).map_err(|_| "invalid frame peer end")?;
+    let last = if last_group == 0 {
+        0
+    } else {
+        peers.get(last_group - 1).map_or(0, |group| group.end)
+    };
+    Ok(first..last.max(first))
+}
+
 // Exact finite decimal expansions preserve AVG's non-integral result without
 // asserting floating-point or repeating-fraction session behavior.
 // Integer AVG has engine-specific result datatypes. In particular SQL Server
@@ -576,7 +669,7 @@ fn aggregate_value(
     snapshot: &PhysicalWriteState,
 ) -> Result<LiteralValue, &'static str> {
     let indices = match frame {
-        Some(frame) => frame_members(frame, index, rows.len())?,
+        Some(frame) => ordered_frame_members(frame, rows, index)?,
         None => 0..rows.len(),
     };
     if matches!(operation, AggregateKind::CountAll) {
@@ -668,6 +761,28 @@ fn window_keys(
     })
 }
 
+// NTILE assigns larger buckets first. A peer boundary only makes row identity
+// ambiguous when tied rows can land in different buckets.
+fn ntile_bucket(index: usize, row_count: usize, buckets: usize) -> Result<usize, &'static str> {
+    if buckets == 0 {
+        return Err("NTILE bucket count must be positive");
+    }
+    let base = row_count / buckets;
+    let remainder = row_count % buckets;
+    let wider = base.checked_add(1).ok_or("NTILE bucket overflow")?;
+    let wider_rows = remainder
+        .checked_mul(wider)
+        .ok_or("NTILE bucket overflow")?;
+    if index < wider_rows {
+        Ok(index / wider + 1)
+    } else {
+        let offset = (index - wider_rows)
+            .checked_div(base)
+            .ok_or("NTILE bucket count exceeds physical population")?;
+        Ok(remainder + offset + 1)
+    }
+}
+
 fn frame_value(
     kind: &WindowKind,
     rows: &[(usize, Vec<Option<i128>>)],
@@ -693,6 +808,11 @@ fn frame_value(
     }
     // A uniquely ordered partition makes ROW_NUMBER, RANK and DENSE_RANK
     // identical. ORDER BY peers are rejected before any frame is evaluated.
+    if let WindowKind::Ntile { buckets } = kind {
+        return Ok(LiteralValue::Number(
+            ntile_bucket(index, rows.len(), *buckets)?.to_string(),
+        ));
+    }
     if let WindowKind::Ranking(function) = kind {
         return match function {
             RankFunction::RowNumber | RankFunction::Rank | RankFunction::DenseRank => {
@@ -705,14 +825,14 @@ fn frame_value(
         WindowKind::Lag { offset, .. } => index.checked_sub(*offset),
         WindowKind::Lead { offset, .. } => index.checked_add(*offset),
         WindowKind::First { frame, .. } => {
-            let range = frame_members(frame, index, rows.len())?;
+            let range = ordered_frame_members(frame, rows, index)?;
             (!range.is_empty()).then_some(range.start)
         }
         WindowKind::Last { frame, .. } => {
-            let range = frame_members(frame, index, rows.len())?;
+            let range = ordered_frame_members(frame, rows, index)?;
             (!range.is_empty()).then_some(range.end - 1)
         }
-        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) | WindowKind::Ntile { .. } => {
             return Err("unreachable window frame result")
         }
     };
@@ -724,7 +844,7 @@ fn frame_value(
         | WindowKind::Lead { value, .. }
         | WindowKind::First { value, .. }
         | WindowKind::Last { value, .. } => value,
-        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) => {
+        WindowKind::Aggregate { .. } | WindowKind::Ranking(_) | WindowKind::Ntile { .. } => {
             return Err("unreachable window frame result")
         }
     };
@@ -735,10 +855,10 @@ fn frame_value(
         .ok_or("window value column missing from complete source bag")
 }
 
-/// Evaluate portable navigation and COUNT/SUM/AVG/MIN/MAX deterministic
-/// ROWS frames against one validated physical source bag. Unattested peer
-/// ordering, implicit NULL order, RANGE/GROUPS and complex row shaping remain
-/// typed Residual; contradictory source schemas yield Impossible.
+/// Evaluate portable navigation, deterministic NTILE and COUNT/SUM/AVG/MIN/MAX
+/// over attested ROWS and peer-aware RANGE/GROUPS frames. Unproved peer row
+/// identities, numeric RANGE offsets, implicit NULL order and complex shaping
+/// remain typed Residual; contradictory schemas yield Impossible.
 pub fn physical_finite_window_bag_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -922,15 +1042,22 @@ pub fn physical_finite_window_bag_plan(
                 .find(|order| !order.is_eq())
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        // Peer order is immaterial for RANK/DENSE_RANK, but matters for
-        // ROW_NUMBER, navigation, and ordered ROWS frame membership.
+        // Peer order matters only when some operation assigns different
+        // results to tied physical rows. NTILE peers within one bucket are safe.
         if !keys.sort.is_empty()
-            && partition.windows(2).any(|rows| rows[0].1 == rows[1].1)
-            && operations.iter().any(|operation| {
-                !matches!(
-                    &operation.kind,
-                    WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
-                )
+            && partition.windows(2).enumerate().any(|(position, rows)| {
+                rows[0].1 == rows[1].1
+                    && operations.iter().any(|operation| match &operation.kind {
+                        WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank) => false,
+                        WindowKind::Aggregate {
+                            frame: Some(frame), ..
+                        } if frame.units() != WindowFrameUnits::Rows => false,
+                        WindowKind::Ntile { buckets } => {
+                            ntile_bucket(position, partition.len(), *buckets)
+                                != ntile_bucket(position + 1, partition.len(), *buckets)
+                        }
+                        _ => true,
+                    })
             })
         {
             return residual("window ORDER BY peers lack deterministic physical row order");

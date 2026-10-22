@@ -1,4 +1,44 @@
 {
+  "task_128_advanced_window_frame_plan": {
+    "owner": "TASK-128",
+    "parent": "TASK-74",
+    "status": "verified_bounded_child_pending_merge",
+    "task": ".backlog/tasks/task-128 - certify-advanced-frames-vendor-laws-and-task-74-signoff.md",
+    "freeze": "docs/task-128-acceptance-freeze.json",
+    "acceptance_audit": "docs/task-128-acceptance-audit.md",
+    "public_oracle": "tests/task_128_advanced_windows.rs",
+    "adapter_parity_test": "tests/task_128_adapter_parity.rs",
+    "native_compiled_dbt_oracle": "tests/task_128_dbt_core_e2e.rs",
+    "frozen_version": 5,
+    "full_exact_source_terminal_bag_cases": 5,
+    "conditional_reviewed_residual_cases": 6,
+    "dialect_parser_cells_verified": 143,
+    "adapter_cells_verified": 33,
+    "duckdb_exact_oracle_cases": 5,
+    "duckdb_conditional_native_oracle_cases": 3,
+    "non_duckdb_native_execution_claims": 0,
+    "native_vendor_boundary": "Residual_unattested_no_implicit_portability",
+    "source_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39751701868",
+    "source_semantic_ci_success_jobs": 9,
+    "mandatory_unverified": [],
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_acceptance_mapped": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "parent_signoff": false,
+    "release_approved": false
+  },
   "task_189_common_window_aggregate_plan": {
     "owner": "TASK-189",
     "parent": "TASK-74",

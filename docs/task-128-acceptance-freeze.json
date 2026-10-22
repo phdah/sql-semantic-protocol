@@ -1,0 +1,2132 @@
+{
+  "version": 5,
+  "owner": "TASK-128",
+  "parent": "TASK-74",
+  "frozen_at": "2026-10-22",
+  "status": "verified_bounded_child_pending_merge",
+  "source_schema": {
+    "s": {
+      "id": "INTEGER",
+      "k": "INTEGER",
+      "x": "INTEGER"
+    }
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "compiled_dbt_manifest_catalog",
+    "odcs_schema"
+  ],
+  "fixture_ids": [
+    "74-C128-P",
+    "74-C128-N"
+  ],
+  "original_parent_ac_map": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "contract": "Only a fully validated physical source bag and explicit deterministic integer sort/null laws can yield Exact. All other native/session laws remain conditional and require executed evidence; parser success is not native execution.",
+  "cases": [
+    {
+      "id": "74-C128-P1",
+      "fixture_id": "74-C128-P",
+      "feature": "ntile_balanced_buckets",
+      "classification": "exact_required",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "tile": 1
+        },
+        {
+          "id": 2,
+          "tile": 1
+        },
+        {
+          "id": 3,
+          "tile": 2
+        },
+        {
+          "id": 4,
+          "tile": 2
+        },
+        {
+          "id": 5,
+          "tile": 3
+        },
+        {
+          "id": 6,
+          "tile": 1
+        },
+        {
+          "id": 7,
+          "tile": 2
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "tile",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_full_bag_oracle_executed",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P2",
+      "fixture_id": "74-C128-P",
+      "feature": "range_peer_cumulative",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 20
+        },
+        {
+          "id": 2,
+          "total": 20
+        },
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 70
+        },
+        {
+          "id": 5,
+          "total": 70
+        },
+        {
+          "id": 6,
+          "total": 7
+        },
+        {
+          "id": 7,
+          "total": 7
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            20,
+            40,
+            70,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 7,
+            "upper": 70,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_full_bag_oracle_executed",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P3",
+      "fixture_id": "74-C128-P",
+      "feature": "groups_preceding_peer_bags",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "total": 20
+        },
+        {
+          "id": 2,
+          "total": 20
+        },
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 50
+        },
+        {
+          "id": 5,
+          "total": 30
+        },
+        {
+          "id": 6,
+          "total": 7
+        },
+        {
+          "id": 7,
+          "total": 7
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 7,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            20,
+            40,
+            50,
+            30,
+            7
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 7,
+            "upper": 50,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_full_bag_oracle_executed",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P4",
+      "fixture_id": "74-C128-P",
+      "feature": "ntile_qualify_true_not_true",
+      "classification": "exact_required",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s QUALIFY NTILE(3) OVER (PARTITION BY k ORDER BY id NULLS LAST) = 1",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 1,
+          "tile": 1
+        },
+        {
+          "id": 2,
+          "tile": 1
+        },
+        {
+          "id": 6,
+          "tile": 1
+        }
+      ],
+      "terminal_row_ids": [
+        "s#0",
+        "s#1",
+        "s#5"
+      ],
+      "not_true_row_ids": [
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#6"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            1,
+            2,
+            6
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 6,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "tile",
+          "kind": "integer",
+          "values": [
+            1
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_full_bag_oracle_executed",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-P5",
+      "fixture_id": "74-C128-P",
+      "feature": "range_qualify_peer_true_not_true",
+      "classification": "exact_required",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS total FROM s QUALIFY SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 20",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": [
+        {
+          "id": 3,
+          "total": 40
+        },
+        {
+          "id": 4,
+          "total": 70
+        },
+        {
+          "id": 5,
+          "total": 70
+        }
+      ],
+      "terminal_row_ids": [
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "not_true_row_ids": [
+        "s#0",
+        "s#1",
+        "s#5",
+        "s#6"
+      ],
+      "typed_terminal_domains": [
+        {
+          "column": "id",
+          "kind": "integer",
+          "values": [
+            3,
+            4,
+            5
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 3,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        {
+          "column": "total",
+          "kind": "integer",
+          "values": [
+            40,
+            70
+          ],
+          "nullable": false,
+          "bounds": {
+            "lower": 40,
+            "upper": 70,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      ],
+      "proof": "Exact",
+      "conditional_reason": null,
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "duckdb_native_full_bag_oracle_executed",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "exact_required",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N1",
+      "fixture_id": "74-C128-N",
+      "feature": "ntile_zero_argument",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(0) OVER (PARTITION BY k ORDER BY id NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Zero bucket count is not a valid NTILE cardinality; do not fabricate physical terminal rows.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_law_unattested_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N2",
+      "fixture_id": "74-C128-N",
+      "feature": "ntile_peer_instability",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY x NULLS LAST) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 5
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "ORDER BY peers (ids 2 and 3, x=10) straddle NTILE(3) buckets 1 and 2 in the five-row k=0 partition, so the exact physical tile per id is unprovable without a total order.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_law_unattested_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    },
+    {
+      "id": "74-C128-N3",
+      "fixture_id": "74-C128-N",
+      "feature": "implicit_null_order",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": null,
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Explicit NULLS FIRST/LAST is required for portable physical ordering.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_conditional_native_full_bag_oracle_executed_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 20
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 40
+          },
+          {
+            "id": 4,
+            "total": 50
+          },
+          {
+            "id": 5,
+            "total": 30
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": 7
+          }
+        ]
+      }
+    },
+    {
+      "id": "74-C128-N4",
+      "fixture_id": "74-C128-N",
+      "feature": "bounded_range_numeric_offset",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x NULLS LAST RANGE BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Bounded numeric RANGE requires attested value-distance and overflow semantics.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_conditional_native_full_bag_oracle_executed_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 20
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 20
+          },
+          {
+            "id": 4,
+            "total": 30
+          },
+          {
+            "id": 5,
+            "total": null
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "74-C128-N5",
+      "fixture_id": "74-C128-N",
+      "feature": "multi_key_groups_implicit_null_order",
+      "classification": "conditional",
+      "sql": "SELECT id, SUM(x) OVER (PARTITION BY k ORDER BY x, id GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) AS total FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Composite ORDER BY preserves peer identity but engine-default NULL placement remains unattested.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_conditional_native_full_bag_oracle_executed_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 10
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 30
+          },
+          {
+            "id": 4,
+            "total": 50
+          },
+          {
+            "id": 5,
+            "total": 30
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": 7
+          }
+        ]
+      }
+    },
+    {
+      "id": "74-C128-N6",
+      "fixture_id": "74-C128-N",
+      "feature": "collation_session_law",
+      "classification": "conditional",
+      "sql": "SELECT id, NTILE(3) OVER (PARTITION BY k ORDER BY CAST(x AS VARCHAR) COLLATE NOCASE) AS tile FROM s",
+      "source_relation": "s",
+      "source_bag": [
+        {
+          "id": 1,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 2,
+          "k": 0,
+          "x": 10
+        },
+        {
+          "id": 3,
+          "k": 0,
+          "x": 20
+        },
+        {
+          "id": 4,
+          "k": 0,
+          "x": 30
+        },
+        {
+          "id": 5,
+          "k": 0,
+          "x": null
+        },
+        {
+          "id": 6,
+          "k": 1,
+          "x": 7
+        },
+        {
+          "id": 7,
+          "k": 1,
+          "x": null
+        }
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5",
+        "s#6"
+      ],
+      "full_terminal_bag": null,
+      "terminal_row_ids": [],
+      "not_true_row_ids": [],
+      "typed_terminal_domains": [],
+      "proof": "Residual",
+      "conditional_reason": "Locale and collation rules on text-valued window order lack attested typed sort-key semantics; never choose exact peer identities.",
+      "adapter_paths": [
+        "direct_sql",
+        "compiled_dbt_manifest_catalog",
+        "odcs_schema"
+      ],
+      "dialect_cells": {
+        "generic": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mysql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "postgresql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "hive": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "sqlite": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "snowflake": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "redshift": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "mssql": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "clickhouse": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "bigquery": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "ansi": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        },
+        "duckdb": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "duckdb_native_law_unattested_canonical_residual",
+          "owner": "TASK-128"
+        },
+        "databricks": {
+          "parser": "parsed",
+          "physical": "conditional_boundary",
+          "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
+          "owner": "TASK-128"
+        }
+      }
+    }
+  ],
+  "conditional_registry": [
+    {
+      "feature": "collation",
+      "owner": "TASK-128",
+      "disposition": "reviewed_conditional_residual_unattested_text_collation",
+      "reason": "The canonical source-attested evaluator accepts only integer ORDER BY comparators; CAST/COLLATE text order is explicitly a Residual, not an engine-independent exact rank."
+    },
+    {
+      "feature": "range_value_offsets",
+      "owner": "TASK-128",
+      "disposition": "reviewed_conditional_residual_native_duckdb_offset_oracle_not_portable",
+      "reason": "Numeric RANGE offset direction/overflow and vendor rules require an expanded frozen physical execution oracle."
+    },
+    {
+      "feature": "range_groups_multi_key",
+      "owner": "TASK-128",
+      "disposition": "reviewed_conditional_residual_native_duckdb_groups_oracle_no_default_null_law",
+      "reason": "RANGE bounded offsets with multiple keys are not portable; GROUPS peers can use explicit ordered tuples."
+    },
+    {
+      "feature": "native_vendor_session",
+      "owner": "TASK-128",
+      "disposition": "reviewed_conditional_residual_no_native_claim_outside_duckdb",
+      "reason": "All 13 parser dialects must be classified; parser evidence alone does not certify their engines."
+    },
+    {
+      "feature": "parent_signoff",
+      "owner": "TASK-74",
+      "disposition": "parent_held_until_child_merged_and_independently_audited",
+      "reason": "Child implementation and green CI do not close independent original TASK-74 AC."
+    }
+  ],
+  "signoff": {
+    "mandatory_cells_verified": true,
+    "adapter_cells_verified": true,
+    "parser_cells_verified": true,
+    "complete_native_oracles_verified": true,
+    "ci_verified": true,
+    "parent_closed": false
+  },
+  "review": {
+    "source_head_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39751701868",
+    "source_head_jobs_passed": 9,
+    "child_ac_review": "docs/task-128-acceptance-audit.md",
+    "exact": 5,
+    "reviewed_conditional_residual": 6,
+    "parser_cells": 143,
+    "adapter_cells": 33,
+    "native_duckdb_exact_oracles": 5,
+    "native_duckdb_conditional_oracles": 3,
+    "non_duckdb_native_claims": 0,
+    "all_mandatory_unverified": 0,
+    "v5_critique": "Review of PR #139 found the v4 NTILE tied-peer negative case did not cross a bucket boundary. v5 changes only the N2 source values to exercise genuine bucket-boundary ambiguity, adds independently executed ascending/descending DuckDB witnesses and an invariant-peer positive regression, stores native N3/N4/N5 expected bags as engine-specific frozen evidence, and asserts all parsed conditional dialect cells remain Residual. Original five mandatory Exact cases and six conditional case identities are unchanged."
+  }
+}
