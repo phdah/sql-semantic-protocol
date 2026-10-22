@@ -11,6 +11,7 @@ use super::write_states::{
     physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
 };
 use super::*;
+use crate::data_type::DataType;
 use crate::protocol::{ComparisonOperator, LiteralValue};
 use crate::subquery_witness::{SubqueryMembershipDirection, SubqueryMembershipKind};
 
@@ -95,6 +96,24 @@ fn checked_ids(snapshot: &PhysicalWriteState) -> Result<(), &'static str> {
         }
     }
     Ok(())
+}
+
+// An empty result has no values to inspect. The projected datatype and
+// correlated comparison law must therefore come from authoritative schemas.
+fn signed_integer_source(bundle: &AnalysisBundle, relation: &str, column: &str) -> bool {
+    fn is_signed_integer(data_type: &DataType) -> bool {
+        match data_type {
+            DataType::SignedInteger { .. } => true,
+            DataType::Nullable(inner) => is_signed_integer(inner),
+            _ => false,
+        }
+    }
+    bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)
+        .and_then(|schema| schema.columns().iter().find(|item| item.name() == column))
+        .is_some_and(|item| is_signed_integer(item.data_type()))
 }
 
 fn scalar(row: &PhysicalWriteRow, column: &str) -> Result<Option<i128>, &'static str> {
@@ -235,6 +254,17 @@ pub fn physical_finite_exists_bag_plan(
         }
         _ => return residual("only one correlated equality is certified"),
     };
+
+    if !signed_integer_source(bundle, outer_name, projected.column()) {
+        return residual("projected source column lacks an attested signed integer type");
+    }
+    if let Some((outer_column, inner_column)) = correlation {
+        if !signed_integer_source(bundle, outer_name, outer_column)
+            || !signed_integer_source(bundle, inner_name, inner_column)
+        {
+            return residual("correlated source equality lacks signed integer schema evidence");
+        }
+    }
 
     let [Some(outer_bag), Some(inner_bag)] = [
         snapshots
