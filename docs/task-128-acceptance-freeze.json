@@ -1258,7 +1258,7 @@
         {
           "id": 1,
           "k": 0,
-          "x": 10
+          "x": 5
         },
         {
           "id": 2,
@@ -1268,7 +1268,7 @@
         {
           "id": 3,
           "k": 0,
-          "x": 20
+          "x": 10
         },
         {
           "id": 4,
@@ -1305,7 +1305,7 @@
       "not_true_row_ids": [],
       "typed_terminal_domains": [],
       "proof": "Residual",
-      "conditional_reason": "Physical identities of peers straddling NTILE bucket boundaries cannot be determined without a total order.",
+      "conditional_reason": "ORDER BY peers (ids 2 and 3, x=10) straddle NTILE(3) buckets 1 and 2 in the five-row k=0 partition, so the exact physical tile per id is unprovable without a total order.",
       "adapter_paths": [
         "direct_sql",
         "compiled_dbt_manifest_catalog",
@@ -1535,6 +1535,40 @@
           "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
           "owner": "TASK-128"
         }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 20
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 40
+          },
+          {
+            "id": 4,
+            "total": 50
+          },
+          {
+            "id": 5,
+            "total": 30
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": 7
+          }
+        ]
       }
     },
     {
@@ -1590,7 +1624,7 @@
         "s#5",
         "s#6"
       ],
-      "full_terminal_bag": [],
+      "full_terminal_bag": null,
       "terminal_row_ids": [],
       "not_true_row_ids": [],
       "typed_terminal_domains": [],
@@ -1680,6 +1714,40 @@
           "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
           "owner": "TASK-128"
         }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 20
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 20
+          },
+          {
+            "id": 4,
+            "total": 30
+          },
+          {
+            "id": 5,
+            "total": null
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": null
+          }
+        ]
       }
     },
     {
@@ -1735,7 +1803,7 @@
         "s#5",
         "s#6"
       ],
-      "full_terminal_bag": [],
+      "full_terminal_bag": null,
       "terminal_row_ids": [],
       "not_true_row_ids": [],
       "typed_terminal_domains": [],
@@ -1825,6 +1893,40 @@
           "native_engine_status": "native_vendor_or_session_unattested_no_execution_claim",
           "owner": "TASK-128"
         }
+      },
+      "native_duckdb_oracle": {
+        "engine": "duckdb",
+        "boundary": "native_engine_specific_complete_bag_without_portable_exact_claim",
+        "full_terminal_bag": [
+          {
+            "id": 1,
+            "total": 10
+          },
+          {
+            "id": 2,
+            "total": 20
+          },
+          {
+            "id": 3,
+            "total": 30
+          },
+          {
+            "id": 4,
+            "total": 50
+          },
+          {
+            "id": 5,
+            "total": 30
+          },
+          {
+            "id": 6,
+            "total": 7
+          },
+          {
+            "id": 7,
+            "total": 7
+          }
+        ]
       }
     },
     {
@@ -1880,7 +1982,7 @@
         "s#5",
         "s#6"
       ],
-      "full_terminal_bag": [],
+      "full_terminal_bag": null,
       "terminal_row_ids": [],
       "not_true_row_ids": [],
       "typed_terminal_domains": [],
