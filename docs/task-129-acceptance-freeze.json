@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-129",
   "parent": "TASK-75",
-  "status": "independent_core_verified_pending_final_head_ci",
+  "status": "verified_bounded_child_pending_merge",
   "fixture_ids": [
     "75-C129-P",
     "75-C129-N"
@@ -718,9 +718,17 @@
     "complete_duckdb_source_selected_rejected_terminal_cases": 6,
     "mandatory_cases": 6,
     "mandatory_unverified": [],
-    "ci_oracle_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39790007300",
+    "ci_oracle_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39791120871",
     "native_vendor_engine_executions": 0,
     "parent_signoff": false,
-    "release_approved": false
+    "release_approved": false,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "reviewed_native_vendor_boundary": "native vendor/session execution not established, remain uncertified"
   }
 }
