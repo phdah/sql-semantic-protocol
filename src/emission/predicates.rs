@@ -30,6 +30,13 @@ pub(super) fn predicate_to_value(predicate: &Predicate) -> Value {
         Predicate::In(predicate) => in_predicate_to_value(predicate),
         Predicate::Exists(predicate) => exists_predicate_to_value(predicate),
         Predicate::InSubquery(predicate) => in_subquery_predicate_to_value(predicate),
+        Predicate::QuantifiedSubquery(predicate) => json!({
+            "kind": "quantified_subquery",
+            "operand": expression_to_value(predicate.operand()),
+            "operator": predicate.operator().as_str(),
+            "quantifier": predicate.quantifier().as_str(),
+            "subquery": subquery_semantics_to_value(predicate.subquery())
+        }),
         Predicate::Between(predicate) => between_predicate_to_value(predicate),
         Predicate::BooleanExpression(expression) => json!({
             "kind": "boolean_expression",

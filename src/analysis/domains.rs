@@ -440,6 +440,12 @@ pub(super) fn remap_predicate_for_domain_derivation(
                 predicate.negated(),
             ))
         }
+        Predicate::QuantifiedSubquery(predicate) => Predicate::QuantifiedSubquery(
+            QuantifiedSubqueryPredicate::new(
+                remap_expression_for_domain_derivation(predicate.operand(), scope),
+                predicate.operator(), predicate.quantifier(), predicate.subquery().clone(),
+            ),
+        ),
         Predicate::Between(predicate) => Predicate::Between(BetweenPredicate::new(
             remap_expression_for_domain_derivation(predicate.expression(), scope),
             remap_expression_for_domain_derivation(predicate.lower(), scope),

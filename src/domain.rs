@@ -292,7 +292,7 @@ fn derive_case_leaf_true_domains(
                 "CASE boolean branch cannot be reduced safely to source-column domains".to_string(),
             );
         }
-        Predicate::Exists(_) | Predicate::InSubquery(_) => {
+        Predicate::Exists(_) | Predicate::InSubquery(_) | Predicate::QuantifiedSubquery(_) => {
             return CaseDomainDerivation::Unknown(
                 "CASE subquery branch cannot be reduced safely to source-column domains"
                     .to_string(),
@@ -586,6 +586,9 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
             predicate.operand().expressions().iter(),
             sources,
             "IN subquery cannot be reduced safely to a scalar domain",
+        ),
+        Predicate::QuantifiedSubquery(predicate) => unknown_for_expressions(
+            [predicate.operand()], sources, "quantified nested source cannot be reduced to a scalar domain",
         ),
         Predicate::Between(predicate) => derive_between(predicate, sources),
         Predicate::BooleanExpression(expression) => unknown_for_expressions(
@@ -890,6 +893,9 @@ fn collect_predicate_columns(
             for expression in predicate.operand().expressions() {
                 collect_expression_columns(expression, sources, columns);
             }
+        }
+        Predicate::QuantifiedSubquery(predicate) => {
+            collect_expression_columns(predicate.operand(), sources, columns);
         }
         Predicate::Between(predicate) => {
             collect_expression_columns(predicate.expression(), sources, columns);

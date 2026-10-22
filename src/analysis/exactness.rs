@@ -604,7 +604,7 @@ pub(super) fn predicate_residual_reasons(
                 vec![ResidualConditionReason::ComputedExpression]
             }
         }
-        Predicate::Exists(_) | Predicate::InSubquery(_) => {
+        Predicate::Exists(_) | Predicate::InSubquery(_) | Predicate::QuantifiedSubquery(_) => {
             vec![ResidualConditionReason::SubqueryPredicate]
         }
         Predicate::BooleanExpression(Expression::Literal(literal)) => match literal.value() {
@@ -688,6 +688,9 @@ pub(super) fn collect_predicate_column_refs(
             for expression in predicate.operand().expressions() {
                 collect_expression_column_refs(expression, sources, columns);
             }
+        }
+        Predicate::QuantifiedSubquery(predicate) => {
+            collect_expression_column_refs(predicate.operand(), sources, columns);
         }
         Predicate::Between(predicate) => {
             collect_expression_column_refs(predicate.expression(), sources, columns);

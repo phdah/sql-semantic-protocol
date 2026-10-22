@@ -235,6 +235,25 @@ pub(super) fn analyze_predicate_with_windows(
                 .collect(),
             *negated,
         )),
+        Expr::AnyOp { left, compare_op, right } | Expr::AllOp { left, compare_op, right } => {
+            let quantifier = if matches!(expression, Expr::AnyOp { .. }) {
+                SubqueryQuantifier::Any
+            } else {
+                SubqueryQuantifier::All
+            };
+            if let (Some(operator), Expr::Subquery(subquery)) =
+                (comparison_operator(compare_op), right.as_ref())
+            {
+                Predicate::QuantifiedSubquery(QuantifiedSubqueryPredicate::new(
+                    analyze_predicate_expression(left, named_windows, output_aliases, scope, diagnostics),
+                    operator,
+                    quantifier,
+                    analyze_subquery_semantics(subquery, scope),
+                ))
+            } else {
+                Predicate::BooleanExpression(analyze_expression_with_windows(expression, named_windows, diagnostics))
+            }
+        }
         Expr::Exists { subquery, negated } => Predicate::Exists(ExistsPredicate::new(
             analyze_subquery_semantics(subquery, scope),
             *negated,
