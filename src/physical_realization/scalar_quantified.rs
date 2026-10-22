@@ -245,6 +245,21 @@ fn compare(a: Option<i128>, b: Option<i128>, operator: ComparisonOperator) -> Op
     })
 }
 
+/// Canonical source and column roles for one quantified comparison.
+///
+/// Borrowing preserves source identity without redundant owned strings.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PhysicalQuantifiedOperands<'a> {
+    /// Attested complete outer physical relation.
+    pub outer_relation: &'a str,
+    /// Signed-integer outer expression column.
+    pub outer_column: &'a str,
+    /// Attested complete inner physical relation.
+    pub inner_relation: &'a str,
+    /// Signed-integer nested projection column.
+    pub inner_column: &'a str,
+}
+
 /// Evaluate an explicitly normalized ANY/SOME/ALL integer comparison over two
 /// independently attested complete physical populations.
 ///
@@ -255,16 +270,19 @@ fn compare(a: Option<i128>, b: Option<i128>, operator: ComparisonOperator) -> Op
 pub fn physical_finite_quantified_comparison(
     bundle: &AnalysisBundle,
     snapshots: &[PhysicalWriteState],
-    outer_relation: &str,
-    outer_column: &str,
-    inner_relation: &str,
-    inner_column: &str,
+    operands: PhysicalQuantifiedOperands<'_>,
     operator: ComparisonOperator,
     quantifier: PhysicalQuantifier,
 ) -> PhysicalFiniteQuantifiedProof {
     let residual = |reason: &str| PhysicalFiniteQuantifiedProof::Residual {
         reason: reason.to_string(),
     };
+    let PhysicalQuantifiedOperands {
+        outer_relation,
+        outer_column,
+        inner_relation,
+        inner_column,
+    } = operands;
     if matches!(
         operator,
         ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
