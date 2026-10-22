@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-131",
   "parent": "TASK-75",
   "fixture_ids": [
@@ -73,10 +73,10 @@
     "native_vendor_laws": "TASK-131",
     "decimal_promotion": "TASK-131"
   },
-  "parser_matrix_status": "pending per-dialect classification",
-  "adapter_matrix_status": "pending",
-  "duckdb_oracle_status": "pending",
-  "ci_status": "pending",
+  "parser_matrix_status": "mandatory exercised across 13 dialects; conditional parser cells measured by task-131 conditional test",
+  "adapter_matrix_status": "12 mandatory source-complete cases x direct SQL / compiled dbt / ODCS source contracts",
+  "duckdb_oracle_status": "12 mandatory independent DuckDB SQL outputs checked; conditional runtime oracle pending",
+  "ci_status": "final head pending",
   "mandatory_cases": 12,
   "conditional_cases": 3,
   "acceptance_criteria": {
@@ -95,6 +95,30 @@
       "expect": {
         "type": "exact",
         "value": null
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": []
+      },
+      "source_row_ids": [],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          null
+        ],
+        "type": "SIGNED_INTEGER",
+        "null_allowed": true,
+        "values": [],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": []
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -110,6 +134,44 @@
       "expect": {
         "type": "exact",
         "value": 2
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          2
+        ],
+        "type": "SIGNED_INTEGER",
+        "null_allowed": false,
+        "values": [
+          2
+        ],
+        "inclusive_bounds": [
+          2,
+          2
+        ]
+      },
+      "truth_partition": {
+        "selected_source_ids": [
+          "i1"
+        ],
+        "rejected_not_true_source_ids": []
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -129,6 +191,36 @@
       "expect": {
         "type": "cardinality_error",
         "sqlstate": "21000"
+      },
+      "expected_proof": "CardinalityViolation",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          },
+          {
+            "id": "i2",
+            "v": 3
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ],
+      "terminal_oracle": {
+        "status": "runtime_cardinality_error",
+        "rows": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": []
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -144,6 +236,39 @@
       "expect": {
         "type": "exact",
         "value": null
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": null
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          null
+        ],
+        "type": "SIGNED_INTEGER",
+        "null_allowed": true,
+        "values": [],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [
+          "i1"
+        ],
+        "rejected_not_true_source_ids": []
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -156,6 +281,35 @@
       "expect": {
         "type": "truth",
         "value": "false"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": []
+      },
+      "source_row_ids": [],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          false
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": false,
+        "values": [
+          false
+        ],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "sql_truth": "false"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -168,6 +322,35 @@
       "expect": {
         "type": "truth",
         "value": "true"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": []
+      },
+      "source_row_ids": [],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          true
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": false,
+        "values": [
+          true
+        ],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "rejected_not_true_source_ids": [],
+        "sql_truth": "true"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -193,6 +376,52 @@
       "expect": {
         "type": "truth",
         "value": "true"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": null
+          },
+          {
+            "id": "i2",
+            "v": 1
+          },
+          {
+            "id": "i3",
+            "v": 1
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2",
+        "i3"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          true
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": false,
+        "values": [
+          true
+        ],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "rejected_not_true_source_ids": [],
+        "sql_truth": "true"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -214,6 +443,45 @@
       "expect": {
         "type": "truth",
         "value": "unknown"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 1
+          },
+          {
+            "id": "i2",
+            "v": null
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          null
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": true,
+        "values": [],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "sql_truth": "unknown"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -239,6 +507,52 @@
       "expect": {
         "type": "truth",
         "value": "false"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 6
+          },
+          {
+            "id": "i2",
+            "v": null
+          },
+          {
+            "id": "i3",
+            "v": 4
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2",
+        "i3"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          false
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": false,
+        "values": [
+          false
+        ],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "sql_truth": "false"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -260,6 +574,45 @@
       "expect": {
         "type": "truth",
         "value": "unknown"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 6
+          },
+          {
+            "id": "i2",
+            "v": null
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          null
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": true,
+        "values": [],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "sql_truth": "unknown"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -277,6 +630,40 @@
       "expect": {
         "type": "truth",
         "value": "unknown"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 4
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          null
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": true,
+        "values": [],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [],
+        "rejected_not_true_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "sql_truth": "unknown"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -298,6 +685,47 @@
       "expect": {
         "type": "truth",
         "value": "true"
+      },
+      "expected_proof": "Exact",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          },
+          {
+            "id": "i2",
+            "v": 5
+          }
+        ]
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ],
+      "terminal_oracle": {
+        "status": "exact",
+        "rows": [
+          true
+        ],
+        "type": "BOOLEAN",
+        "null_allowed": false,
+        "values": [
+          true
+        ],
+        "inclusive_bounds": null
+      },
+      "truth_partition": {
+        "selected_source_ids": [
+          "synthetic_outer_projection"
+        ],
+        "rejected_not_true_source_ids": [],
+        "sql_truth": "true"
+      },
+      "expected_adapter_cells": {
+        "sql": "Exact_or_CardinalityViolation_required",
+        "dbt": "Exact_or_CardinalityViolation_required",
+        "odcs": "Exact_or_CardinalityViolation_required"
       }
     },
     {
@@ -314,6 +742,37 @@
         "type": "conditional",
         "reason": "nested full-bag source binding and cardinality unproved",
         "owner": "TASK-131"
+      },
+      "release_disposition": "TASK-131 reviewed conditional: do not claim Exact without attested nested per-outer-row source evaluation or vendor/session laws; retain typed Residual, release approval is separate",
+      "expected_proof": "Residual",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          }
+        ],
+        "outer_rows": [
+          {
+            "id": "o1",
+            "v": 2
+          },
+          {
+            "id": "o2",
+            "v": 3
+          }
+        ],
+        "control_rows": [
+          {
+            "k": 2
+          }
+        ]
+      },
+      "terminal_oracle": {
+        "status": "conditional_native_engine_only",
+        "native_duckdb_expected": [
+          2
+        ]
       }
     },
     {
@@ -330,6 +789,38 @@
         "type": "conditional",
         "reason": "per-outer-row correlated lateral materialization unproved",
         "owner": "TASK-131"
+      },
+      "release_disposition": "TASK-131 reviewed conditional: do not claim Exact without attested nested per-outer-row source evaluation or vendor/session laws; retain typed Residual, release approval is separate",
+      "expected_proof": "Residual",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          }
+        ],
+        "outer_rows": [
+          {
+            "id": "o1",
+            "v": 2
+          },
+          {
+            "id": "o2",
+            "v": 3
+          }
+        ],
+        "control_rows": [
+          {
+            "k": 2
+          }
+        ]
+      },
+      "terminal_oracle": {
+        "status": "conditional_native_engine_only",
+        "native_duckdb_expected": [
+          "o1",
+          "o1"
+        ]
       }
     },
     {
@@ -346,8 +837,40 @@
         "type": "conditional",
         "reason": "vendor-specific APPLY parser/runtime law unproved",
         "owner": "TASK-131"
+      },
+      "release_disposition": "TASK-131 reviewed conditional: do not claim Exact without attested nested per-outer-row source evaluation or vendor/session laws; retain typed Residual, release approval is separate",
+      "expected_proof": "Residual",
+      "source_bags": {
+        "inner_rows": [
+          {
+            "id": "i1",
+            "v": 2
+          }
+        ],
+        "outer_rows": [
+          {
+            "id": "o1",
+            "v": 2
+          },
+          {
+            "id": "o2",
+            "v": 3
+          }
+        ],
+        "control_rows": [
+          {
+            "k": 2
+          }
+        ]
+      },
+      "terminal_oracle": {
+        "status": "conditional_native_engine_only",
+        "native_duckdb_expected": null
       }
     }
   ],
-  "reviewed_freeze_revision": "v2: remove unproved nested WHERE from zero-row scalar mandatory case, preserving fixture identity and SQL NULL oracle"
+  "reviewed_freeze_revision": "v2: remove unproved nested WHERE from zero-row scalar mandatory case, preserving fixture identity and SQL NULL oracle",
+  "required_parser_cells": 156,
+  "required_adapter_cells": 36,
+  "conditional_parser_cells": 39
 }
