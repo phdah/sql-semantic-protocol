@@ -702,3 +702,80 @@ fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
         assert!(predicate["operand"].is_object(),"{sql}: canonical typed operand missing");
     }
 }
+
+
+#[test]
+fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
+    use serde_json::{json, Value};
+    use std::collections::BTreeSet;
+    let frozen: Value = serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
+    assert_eq!(frozen["version"],4);
+    assert_eq!(frozen["owner"],"TASK-131");
+    assert_eq!(frozen["parent"],"TASK-75");
+    assert_eq!(frozen["fixture_ids"],json!(["75-C131-P","75-C131-N"]));
+    let dialects=frozen["dialects"].as_array().unwrap();
+    let adapters=frozen["required_adapters"].as_array().unwrap();
+    assert_eq!(dialects.len(),13);
+    assert_eq!(adapters,json!(["sql","dbt","odcs"]).as_array().unwrap());
+    let mut ids=BTreeSet::new();
+    let mut mandatory=0;
+    let mut conditional=0;
+    let mut parser_cells=0;
+    let mut adapter_cells=0;
+    for case in frozen["cases"].as_array().unwrap() {
+        let id=case["id"].as_str().unwrap();
+        assert!(ids.insert(id));
+        assert!(case["sql"].as_str().is_some_and(|sql|!sql.is_empty()));
+        assert!(case["canonical_source_identities"].as_array().is_some_and(|sources|!sources.is_empty()));
+        assert!(case["canonical_column_identities"].as_object().is_some_and(|columns|!columns.is_empty()));
+        let sources=case["source_bags"].as_object().unwrap();
+        assert_eq!(sources["inner_rows"],case["inner"],"{id}: complete source snapshot");
+        assert_eq!(case["parser_status_by_dialect"].as_object().unwrap().len(),13);
+        assert_eq!(case["native_execution_disposition_by_dialect"].as_object().unwrap().len(),13);
+        for dialect in dialects {
+            let name=dialect.as_str().unwrap();
+            assert_eq!(case["parser_status_by_dialect"][name],"parsed","{id}/{name}");
+            let engine=case["native_execution_disposition_by_dialect"][name].as_str().unwrap();
+            if name!="duckdb" { assert!(!engine.contains("executed_in_ci"),"{id}/{name}: no native vendor oracle"); }
+            parser_cells+=1;
+        }
+        for adapter in adapters {
+            let name=adapter.as_str().unwrap();
+            let cell=case["expected_adapter_cells"][name].as_str().unwrap();
+            assert!(cell.contains("required")||cell=="Residual_conditional","{id}/{name}: unreviewed adapter");
+            adapter_cells+=1;
+        }
+        match case["expected_proof"].as_str().unwrap() {
+            "Exact" | "CardinalityViolation" => {
+                mandatory+=1;
+                let row_ids=case["source_row_ids"].as_array().unwrap();
+                assert_eq!(row_ids.len(),case["inner"].as_array().unwrap().len());
+                let oracle=&case["terminal_oracle"];
+                if case["expected_proof"]=="CardinalityViolation" {
+                    assert_eq!(oracle["status"],"runtime_cardinality_error");
+                    assert!(oracle["rows"].is_null());
+                } else {
+                    assert_eq!(oracle["status"],"exact");
+                    assert_eq!(oracle["rows"].as_array().unwrap().len(),1);
+                    assert_eq!(oracle["null_allowed"],oracle["rows"][0].is_null());
+                    if oracle["type"]=="SIGNED_INTEGER" {
+                        let value=case["expect"]["value"].as_i64();
+                        assert_eq!(oracle["inclusive_bounds"],value.map_or(Value::Null,|v|json!([v,v])));
+                    } else {
+                        assert_eq!(oracle["type"],"BOOLEAN");
+                    }
+                }
+            }
+            "Residual" => {
+                conditional+=1;
+                assert_eq!(case["expect"]["owner"],"TASK-131");
+                assert!(case["release_disposition"].as_str().unwrap().contains("TASK-131 reviewed conditional"));
+                assert!(case["review_evidence"]["parser"].as_str().is_some());
+            }
+            other=>panic!("unreviewed mandatory/conditional case {id}: {other}")
+        }
+    }
+    assert_eq!((mandatory,conditional),(12,3));
+    assert_eq!(parser_cells,195);
+    assert_eq!(adapter_cells,45);
+}
