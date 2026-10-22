@@ -44,6 +44,7 @@
 //! - physical_finite_rank_bag_plan proves complete peer-aware ROW_NUMBER/RANK/DENSE_RANK physical bags and exact finite terminal value domains.
 //! - physical_finite_window_bag_plan proves complete navigation and common deterministic ROWS/whole-partition aggregate physical bags, with exact finite terminal NULL/value domains.
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
+//! - physical_finite_exists_bag_plan proves full correlated and uncorrelated EXISTS/NOT EXISTS source bags and rejected outer identities.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
 //! - AnalysisBundle::attest_source_text_comparison attaches independently enforced source text laws without silently replacing adapter datatypes.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
@@ -156,7 +157,8 @@ pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
-    physical_finite_chain_bag_plan, physical_finite_join_aggregate_plan,
+    physical_finite_chain_bag_plan, physical_finite_exists_bag_plan,
+    physical_finite_join_aggregate_plan,
     physical_finite_rank_bag_plan, physical_finite_set_bag_plan, physical_finite_set_tree_plan,
     physical_finite_window_bag_plan, physical_joint_distribution_plan,
     physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
