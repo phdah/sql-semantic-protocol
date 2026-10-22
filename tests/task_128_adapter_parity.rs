@@ -180,7 +180,10 @@ schema:
             }
         }
         assert_eq!(results.len(), 3, "{id}");
-        assert_eq!(results[0], results[1], "{id}: compiled dbt advanced-window parity");
+        assert_eq!(
+            results[0], results[1],
+            "{id}: compiled dbt advanced-window parity"
+        );
         assert_eq!(results[0], results[2], "{id}: ODCS advanced-window parity");
     }
 }
