@@ -891,31 +891,41 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     ))
     .expect("expected final-outcome fixture should be valid JSON");
     // The legacy golden uses stable canonical layer IDs. Re-analyze the
-    // original dbt inventory without the independently certified TASK-189
-    // model and seed rather than weakening or rewriting existing expectations.
+    // original dbt inventory without the separately validated TASK-128 and TASK-189
+    // models and seeds rather than weakening or rewriting existing expectations.
     let mut legacy_manifest_json = manifest_json.clone();
     legacy_manifest_json["nodes"]
         .as_object_mut()
         .unwrap()
         .retain(|id, _| {
-            !id.ends_with(".task189_decimal_windows") && !id.ends_with(".task189_decimal_source")
+            !id.ends_with(".task128_groups")
+                && !id.ends_with(".task128_ntile")
+                && !id.ends_with(".task128_window_source")
+                && !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]
         .as_object_mut()
         .unwrap()
-        .retain(|_, source| source["name"] != "task189_decimal_source");
+        .retain(|_, source| source["name"] != "task189_decimal_source"
+                && source["name"] != "task128_window_source");
     let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
     let mut legacy_catalog_json: Value = serde_json::from_str(&catalog_text).unwrap();
     legacy_catalog_json["nodes"]
         .as_object_mut()
         .unwrap()
         .retain(|id, _| {
-            !id.ends_with(".task189_decimal_windows") && !id.ends_with(".task189_decimal_source")
+            !id.ends_with(".task128_groups")
+                && !id.ends_with(".task128_ntile")
+                && !id.ends_with(".task128_window_source")
+                && !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task189_decimal_source")
         });
     legacy_catalog_json["sources"]
         .as_object_mut()
         .unwrap()
-        .retain(|id, _| !id.ends_with(".task189_decimal_source"));
+        .retain(|id, _| !id.ends_with(".task189_decimal_source")
+                && !id.ends_with(".task128_window_source"));
     let legacy_catalog = parse_dbt_catalog(&legacy_catalog_json.to_string()).unwrap();
     let legacy_bundle = analyze_dbt_artifacts(
         &legacy_manifest,
