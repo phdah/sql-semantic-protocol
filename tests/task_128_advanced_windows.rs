@@ -156,7 +156,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn exact_windows_match_frozen_independent_complete_bags_and_domains() {
     let freeze = frozen();
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     assert_eq!(
         freeze["fixture_ids"],
         serde_json::json!(["74-C128-P", "74-C128-N"])
@@ -262,6 +262,11 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
     let adapters = freeze["adapters"].as_array().unwrap();
     assert_eq!(dialects.len(), 13);
     assert_eq!(adapters.len(), 3);
+    assert_eq!(freeze["status"], "verified_bounded_child_pending_merge");
+    assert_eq!(freeze["signoff"]["mandatory_cells_verified"], true);
+    assert_eq!(freeze["signoff"]["adapter_cells_verified"], true);
+    assert_eq!(freeze["signoff"]["parser_cells_verified"], true);
+    assert_eq!(freeze["signoff"]["parent_closed"], false);
     let mut ids = BTreeSet::new();
     for case in freeze["cases"].as_array().unwrap() {
         assert!(ids.insert(case["id"].as_str().unwrap()));
@@ -296,6 +301,13 @@ fn frozen_window_coverage_has_individual_dialect_adapter_cells() {
                 case["id"]
             );
             assert_eq!(case["dialect_cells"][dialect]["owner"], "TASK-128");
+            let native = case["dialect_cells"][dialect]["native_engine_status"].as_str().unwrap();
+            assert!(!native.contains("to_check") && !native.contains("pending") && !native.is_empty(),
+                "{}/{dialect}: native classification must have a final owned boundary", case["id"]);
+            if dialect != "duckdb" {
+                assert_eq!(native, "native_vendor_or_session_unattested_no_execution_claim",
+                    "{}/{dialect}: parser evidence never establishes native engine support", case["id"]);
+            }
             if parser_status == "parsed" {
                 let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog());
                 if case["proof"] == "Exact" {
