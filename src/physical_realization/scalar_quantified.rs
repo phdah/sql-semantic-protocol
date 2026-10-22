@@ -92,7 +92,8 @@ pub fn physical_finite_scalar_subquery_plan(
     let Some(physical_column) = projected.plain_copy_source() else {
         return residual("scalar nested SELECT must copy one physical column");
     };
-    if !query.sources().is_empty()
+    if !query.proven_single_row_output()
+        || !query.sources().is_empty()
         || query.predicates().where_predicate().is_some()
         || query.aggregation().is_some()
         || !query.joins().is_empty()
@@ -481,7 +482,8 @@ pub fn physical_finite_quantified_subquery_plan(
     let Some(column) = projected.plain_copy_source() else {
         return residual("quantified nested projection must copy one source column");
     };
-    if !query.sources().is_empty()
+    if !query.proven_single_row_output()
+        || !query.sources().is_empty()
         || query.predicates().where_predicate().is_some()
         || query.aggregation().is_some()
         || !query.joins().is_empty()

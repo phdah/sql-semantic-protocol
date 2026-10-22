@@ -538,3 +538,22 @@ fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() 
     assert_eq!(duckdb_cases, 12, "all 12 mandatory frozen cases");
     assert_eq!(dialect_cells, 156, "12 cases across 13 dialect parsers");
 }
+
+#[test]
+fn source_free_outer_limit_and_unproved_outer_shape_do_not_claim_exactness() {
+    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    for sql in [
+        "SELECT (SELECT v FROM inner_rows) AS x LIMIT 0",
+        "SELECT (SELECT v FROM inner_rows) AS x LIMIT 1",
+    ] {
+        assert!(matches!(scalar_proof(sql, &[("i1", Some(2))]), PhysicalScalarSubqueryProof::Residual { .. }), "{sql}");
+    }
+    for sql in [
+        "SELECT 1 = ANY (SELECT v FROM inner_rows) AS x LIMIT 0",
+        "SELECT 1 = ANY (SELECT v FROM inner_rows) AS x LIMIT 1",
+    ] {
+        let b = bundle(sql);
+        let id = b.layers().last().unwrap().id().to_string();
+        assert!(matches!(physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(1))])]), PhysicalQuantifiedScalarProof::Residual { .. }), "{sql}");
+    }
+}
