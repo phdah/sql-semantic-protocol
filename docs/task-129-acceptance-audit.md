@@ -1,7 +1,7 @@
 # TASK-129 finite EXISTS / NOT EXISTS acceptance audit
 
 **Task:** [TASK-129](../.backlog/tasks/task-129%20-%20prove-exists-and-not-exists-correlated-uncorrelated.md), child 1 of TASK-75.  
-**PR:** [#140](https://github.com/phdah/sql-semantic-protocol/pull/140) (draft, unmerged).  
+**PR:** [#140](https://github.com/phdah/sql-semantic-protocol/pull/140) (unmerged).  
 **Freeze:** [v1 acceptance cases](task-129-acceptance-freeze.json), registered in `docs/coverage-manifest.json`.
 
 ## Scope and physical law
@@ -27,10 +27,18 @@ Each case fixes exact SQL, physical `id` and `k` source columns, full typed sour
 
 ## Acceptance and CI signoff
 
-- [ ] AC1: immutable six-case typed source/terminal matrix, all six variants and 13 dialect/three adapter obligations independently verified and updated in freeze
-- [ ] AC2: full physical exact/NULL/duplicate/multiplicity/Impossible/Residual semantics checked against independent expected bags
-- [ ] AC3: complete DuckDB source/selected/rejected/terminal and individual row identity oracles verified
-- [ ] AC4: 78 parser/canonical cells, 18 adapter parity cells and explicit conditional native/session review verified
-- [ ] AC5: final-head format, strict Clippy, Rust tests with/without defaults, docs, dbt E2E and active schema/snapshot CI all green, independent review completed
+- [x] AC1: immutable six-case typed source/terminal matrix, all six variants and 13 dialect/three adapter obligations independently verified and updated in freeze
+- [x] AC2: full physical exact/NULL/duplicate/multiplicity/Impossible/Residual semantics checked against independent expected bags
+- [x] AC3: complete DuckDB source/selected/rejected/terminal and individual row identity oracles verified
+- [x] AC4: 78 parser/canonical cells, 18 adapter parity cells and explicit conditional native/session review verified
+- [x] AC5: final-head format, strict Clippy, Rust tests with/without defaults, docs, dbt E2E and active schema/snapshot CI all green, independent review completed
 
-This audit starts unsigned; preserve the task as **In Progress** until the frozen mandatory cells and final PR-head CI have been inspected. Never infer parent or release closure from this child.
+## Independent acceptance review and CI
+
+All six frozen mandatory physical source/output cases passed the complete public API and independent DuckDB oracles, including explicit NOT TRUE complements. The six-case x 13-dialect canonical matrix proves 78 parser-equivalent cells, and six cases x direct SQL/dbt/ODCS proves 18 adapter parity cells. Every source and output has stable physical instance IDs and exact nullable integer bounds; missing evidence and forbidden native/vendor claims remain Residual.
+
+- **Standards review (Matt code-review axis):** physical laws live in the canonical Rust proof module; adapter paths only supply equivalent schemas; unsupported predicates and output shapes fail closed. No consumer SQL AST reparsing, uncontrolled input sampling, or false native engine certification. Public API and task-owned oracle fixtures are documented. No outstanding documented-standard findings in this bounded diff.
+- **Spec review (Matt code-review axis):** all four named variants, six frozen P/N cases and all five child AC are covered; duplicate and NULL inner rows and empty physical sources yield the independent SQL oracles, including per-outer closed-world absence. No unverified mandatory cells or identified scope additions.
+- **Final semantic-head CI:** [run 39791120871](https://github.com/phdah/sql-semantic-protocol/actions/runs/39791120871), **all nine jobs successful**: format, strict default/no-default Clippy, Rust default/no-default tests, docs, no-default dependency check and dbt Core E2E. Active snapshots and schema regressions run under the full test suite.
+
+**Decision:** All five bounded TASK-129 AC verified for the portable finite scope. TASK-129 Done is a child signoff, **not** TASK-75 parent or 3.0.0 release approval. PR #140 must merge before dependency TASK-130 may begin; vendor native/runtime/session behavior remains explicitly uncertified.
