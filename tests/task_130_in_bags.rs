@@ -301,6 +301,22 @@ fn duckdb_independently_proves_complete_terminal_bags_and_three_valued_truth() {
 }
 
 #[test]
+fn distinct_nested_candidates_cannot_certify_complete_physical_ids() {
+    let frozen = freeze();
+    for sql in [
+        "SELECT o.k AS k FROM outer_rows o WHERE o.k IN (SELECT DISTINCT i.k FROM inner_rows i)",
+        "SELECT o.k AS k FROM outer_rows o WHERE (o.k, o.v) NOT IN (SELECT DISTINCT i.k, i.v FROM inner_rows i)",
+    ] {
+        let mut case = frozen["cases"][0].clone();
+        case["sql"] = Value::String(sql.to_string());
+        assert!(
+            matches!(evaluate(&case, "generic"), PhysicalFiniteInProof::Residual { .. }),
+            "{sql}: DISTINCT cannot preserve complete candidate-row identity"
+        );
+    }
+}
+
+#[test]
 fn unsupported_nested_predicate_must_fail_closed() {
     let mut case = freeze()["cases"][4].clone();
     case["sql"] = Value::String(

@@ -404,6 +404,21 @@ fn derive(
         ),
     };
 
+    // Scalar direction cases cannot establish SQL tuple truth: a definite
+    // mismatch may dominate NULL in another field. The complete-bag proof
+    // evaluates positional truth independently.
+    let (qualifying, rejected) = if matches!(expression, Some(InSubqueryOperand::Tuple(_))) {
+        let gap = SubqueryMembershipDirection::Residual {
+            reason: "tuple membership requires complete candidate-row truth".to_string(),
+        };
+        (gap.clone(), gap)
+    } else {
+        (
+            SubqueryMembershipDirection::Exact(qualifying),
+            SubqueryMembershipDirection::Exact(rejected),
+        )
+    };
+
     SubqueryMembershipWitness {
         kind,
         outer_relation: outer_instance.to_string(),
@@ -412,8 +427,8 @@ fn derive(
         correlations: pairs,
         membership_keys,
         inner_column_domains: subquery.column_domains().to_vec(),
-        qualifying: SubqueryMembershipDirection::Exact(qualifying),
-        rejected: SubqueryMembershipDirection::Exact(rejected),
+        qualifying,
+        rejected,
     }
 }
 

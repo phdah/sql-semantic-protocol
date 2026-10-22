@@ -223,8 +223,6 @@ pub fn physical_finite_in_bag_plan(
         || projected.relation() != outer_name
         || outer_name == inner_name
         || snapshots.len() != 2
-        || !matches!(witness.qualifying(), SubqueryMembershipDirection::Exact(_))
-        || !matches!(witness.rejected(), SubqueryMembershipDirection::Exact(_))
     {
         return residual("IN outer query or local witness is not exactly supported");
     }
@@ -249,6 +247,15 @@ pub fn physical_finite_in_bag_plan(
     }
     if keys.len() != membership.operand().expressions().len() {
         return residual("membership tuple arity is not preserved");
+    }
+    // The scalar-only abstract witness must be exact. Tuple directional
+    // cases deliberately remain residual until this physical evaluator
+    // enumerates all candidates and establishes per-row SQL truth.
+    if matches!(membership.operand(), crate::protocol::InSubqueryOperand::Scalar(_))
+        && (!matches!(witness.qualifying(), SubqueryMembershipDirection::Exact(_))
+            || !matches!(witness.rejected(), SubqueryMembershipDirection::Exact(_)))
+    {
+        return residual("scalar membership has no exact directional witness");
     }
     let correlation = match witness.correlations() {
         [] => {

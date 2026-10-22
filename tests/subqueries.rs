@@ -307,6 +307,14 @@ fn tuple_membership_emits_complete_positional_keys_without_scalar_substitution()
     assert_eq!(keys[0].inner().name(), "k");
     assert_eq!(keys[1].outer().name(), "v");
     assert_eq!(keys[1].inner().name(), "v");
+    assert!(matches!(
+        query.subquery_witnesses()[0].qualifying(),
+        sql_semantic_protocol::SubqueryMembershipDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        query.subquery_witnesses()[0].rejected(),
+        sql_semantic_protocol::SubqueryMembershipDirection::Residual { .. }
+    ));
 
     let emitted: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON");
