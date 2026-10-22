@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-130",
   "parent": "TASK-75",
-  "status": "frozen_version_2_pending_verification",
+  "status": "verified_bounded_child_pending_merge",
   "scope": "Closed-world signed integer scalar and positional two-column tuple IN/NOT IN across independent physical outer/inner source bags, optionally with one correlated equality WHERE filter.",
   "fixture_ids": [
     "75-C130-P",
@@ -175,26 +175,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-N-uncorrelated-not-in",
@@ -305,26 +305,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-N-no-null-candidate",
@@ -434,26 +434,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-N-empty-inner",
@@ -549,26 +549,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-P-correlated-in",
@@ -682,26 +682,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-N-correlated-not-in",
@@ -815,26 +815,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_native_scalar_sql"
     },
     {
       "id": "75-C130-P-tuple-in-null-duplicates",
@@ -1067,26 +1067,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-N-tuple-not-in-null-duplicates",
@@ -1308,26 +1308,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-P-tuple-no-null",
@@ -1508,26 +1508,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-N-tuple-no-null",
@@ -1719,26 +1719,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-P-tuple-empty",
@@ -1861,26 +1861,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-N-tuple-empty",
@@ -2031,26 +2031,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-P-tuple-correlated",
@@ -2254,26 +2254,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-N-tuple-correlated",
@@ -2477,26 +2477,26 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     },
     {
       "id": "75-C130-N-tuple-definite-mismatch-with-null",
@@ -2587,27 +2587,38 @@
       "positive_proof": "selected IDs exactly SQL TRUE among complete correlated candidate inner bags",
       "not_true_proof": "all other outer IDs exactly SQL FALSE or UNKNOWN, every candidate identity closed-world enumerated",
       "parser_status": {
-        "generic": "pending_verification",
-        "mysql": "pending_verification",
-        "postgresql": "pending_verification",
-        "hive": "pending_verification",
-        "sqlite": "pending_verification",
-        "snowflake": "pending_verification",
-        "redshift": "pending_verification",
-        "mssql": "pending_verification",
-        "clickhouse": "pending_verification",
-        "bigquery": "pending_verification",
-        "ansi": "pending_verification",
-        "duckdb": "pending_verification",
-        "databricks": "pending_verification"
+        "generic": "verified_parser_and_canonical",
+        "mysql": "verified_parser_and_canonical",
+        "postgresql": "verified_parser_and_canonical",
+        "hive": "verified_parser_and_canonical",
+        "sqlite": "verified_parser_and_canonical",
+        "snowflake": "verified_parser_and_canonical",
+        "redshift": "verified_parser_and_canonical",
+        "mssql": "verified_parser_and_canonical",
+        "clickhouse": "verified_parser_and_canonical",
+        "bigquery": "verified_parser_and_canonical",
+        "ansi": "verified_parser_and_canonical",
+        "duckdb": "verified_parser_and_canonical",
+        "databricks": "verified_parser_and_canonical"
       },
       "adapter_status": {
-        "direct_sql": "pending_verification",
-        "dbt_compiled": "pending_verification",
-        "odcs": "pending_verification"
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
       },
-      "duckdb_source_and_terminal_oracle": "pending_verification"
+      "duckdb_source_and_terminal_oracle": "verified_independent_fieldwise_sql_reference"
     }
   ],
-  "required_oracles": "Complete source/terminal and rowwise three-valued outcomes in DuckDB; for tuple NULL divergence use independent fieldwise SQL truth oracle (not raw native tuple IN) with named conditional native boundary; SQL/dbt/ODCS adapter parity and 13 dialect parser classifications."
+  "required_oracles": "Complete source/terminal and rowwise three-valued outcomes in DuckDB; for tuple NULL divergence use independent fieldwise SQL truth oracle (not raw native tuple IN) with named conditional native boundary; SQL/dbt/ODCS adapter parity and 13 dialect parser classifications.",
+  "verification": {
+    "implementation_head": "985d284162334c79d0e512d56913fbde5cc0705e",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39821243913",
+    "nine_jobs": "passed",
+    "parser_cells_verified": 195,
+    "adapter_cells_verified": 45,
+    "independent_duckdb_oracles_verified": 15,
+    "mandatory_unverified": [],
+    "parent_signoff": false,
+    "release_approved": false
+  }
 }

@@ -2,7 +2,7 @@
   "task_130_in_subquery_plan": {
     "owner": "TASK-130",
     "parent": "TASK-75",
-    "status": "implementation_in_progress_not_signed_off",
+    "status": "verified_bounded_child_pending_merge",
     "task": ".backlog/tasks/task-130 - prove-in-and-not-in-three-valued-membership.md",
     "freeze": "docs/task-130-acceptance-freeze.json",
     "public_oracle": "tests/task_130_in_bags.rs",
@@ -11,19 +11,27 @@
       "75-C130-N"
     ],
     "mandatory_scalar_cases": 6,
-    "required_parser_cells": 78,
-    "required_adapter_cells": 18,
-    "mandatory_verified": false,
-    "child_acceptance_criteria_verified": [],
+    "required_parser_cells": 195,
+    "required_adapter_cells": 45,
+    "mandatory_verified": true,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
     "parent_signed_off": false,
     "release_approved": false,
-    "mandatory_unverified": [
-      "compound_key_tuple_in_not_in",
-      "complete_dbt_odcs_adapter_parity",
-      "native_engine_sql_dialect_matrix",
-      "final_ci_and_independent_review"
-    ],
-    "non_duckdb_native_engine_claims": 0
+    "mandatory_unverified": [],
+    "non_duckdb_native_engine_claims": 0,
+    "mandatory_tuple_cases": 9,
+    "mandatory_cases": 15,
+    "parser_cells_verified": 195,
+    "adapter_cells_verified": 45,
+    "duckdb_complete_oracle_cases_verified": 15,
+    "acceptance_audit": "docs/task-130-acceptance-audit.md",
+    "final_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39821243913"
   },
   "task_129_exists_subquery_plan": {
     "owner": "TASK-129",

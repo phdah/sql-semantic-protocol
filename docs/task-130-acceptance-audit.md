@@ -2,7 +2,7 @@
 
 **Owner:** TASK-130 (TASK-75 child 2/4). **PR:** [#141](https://github.com/phdah/sql-semantic-protocol/pull/141).
 **Acceptance freeze:** [task-130-acceptance-freeze.json](task-130-acceptance-freeze.json), version 2.
-**Status:** final-head CI and independent signoff pending. Do not mark Done or merge based on this document alone.
+**Status:** all five finite TASK-130 child acceptance criteria independently verified on implementation head. TASK-75 parent signoff and protocol release remain separate. Child PR remains unmerged.
 
 ## Frozen mandatory inventory
 
@@ -26,13 +26,13 @@
 
 ## Final-head signoff gate
 
-- [ ] `cargo fmt --check`
-- [ ] `cargo clippy --all-targets --all-features -- -D warnings`
-- [ ] `cargo test`
-- [ ] `cargo doc --no-deps`
-- [ ] no-default-features tests/docs/lint/dependencies
-- [ ] dbt Core E2E, schema/golden snapshots
-- [ ] audit every frozen mandatory row and original AC mapping, with no unchecked required cells
-- [ ] record final semantic-head CI link and reviewed residual dispositions
+- [x] `cargo fmt --check`
+- [x] `cargo clippy --all-targets --all-features -- -D warnings`
+- [x] `cargo test`
+- [x] `cargo doc --no-deps`
+- [x] no-default-features tests/docs/lint/dependencies
+- [x] dbt Core E2E, schema/golden snapshots
+- [x] audit every frozen mandatory row and original AC mapping, with no unchecked required cells
+- [x] record final semantic-head CI link and reviewed residual dispositions
 
-This audit must be updated from actual final-head evidence before TASK-130 is signed off.
+**Final semantic implementation head:** `985d284162334c79d0e512d56913fbde5cc0705e`, [CI evidence](https://github.com/phdah/sql-semantic-protocol/actions/runs/39821243913), all nine jobs successful. The code and public contract were independently reviewed against the five frozen child AC, including 195 parser/canonical and 45 adapter cells. No mandatory cell remains unchecked; native DuckDB NULL-tuple comparison, non-integer comparisons and non-DuckDB vendor/session laws remain conditional, with reviewed release dispositions. Closure record modifies documentation/metadata only; final PR-head CI still applies.

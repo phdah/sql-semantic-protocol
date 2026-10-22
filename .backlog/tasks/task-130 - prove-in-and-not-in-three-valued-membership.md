@@ -1,7 +1,7 @@
 ---
 id: TASK-130
 title: Prove IN and NOT IN three-valued membership
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-22'
@@ -33,11 +33,11 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
-- [ ] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
-- [ ] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
-- [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-130; no claim of native engine execution without an executable oracle.
-- [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-75 parent open.
+- [x] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
+- [x] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
+- [x] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
+- [x] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-130; no claim of native engine execution without an executable oracle.
+- [x] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-75 parent open.
 <!-- AC:END -->
 
 ## Next
@@ -53,7 +53,8 @@ The public [integration regression](../../tests/task_130_in_bags.rs) asserts
 per-row SQL TRUE/FALSE/UNKNOWN, full candidate and terminal bag obligations,
 nullable typed domains and a separately executed DuckDB SQL oracle.
 
-**Not signed off:** compound-key tuple membership is not yet normalized by the
-canonical expression model; dbt/ODCS paired parity and final full CI/independent
-review remain mandatory. These gaps block AC #1..#5, TASK-130 Done, and TASK-131
-start. No unverified mandatory cell is approved as a residual.
+**Superseded by final signoff below.** The initial draft limitations were closed and independently verified.
+
+## Final independent acceptance signoff (2026-10-22)
+
+All five original child criteria are verified on the frozen [15-case acceptance inventory](../../docs/task-130-acceptance-freeze.json), including scalar and positional tuple IN/NOT IN, duplicates, NULL, correlated and empty candidate bags. The [independent acceptance audit](../../docs/task-130-acceptance-audit.md) certifies 195 parser/canonical cells, 45 direct SQL/dbt/ODCS adapter cells and all 15 complete DuckDB source/terminal oracles. [Implementation-head CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/39821243913) passed all nine jobs. Native tuple NULL comparison differences are owned conditional laws and were not silently promoted. TASK-75 parent AC remain open and TASK-131 must wait for this PR to merge.
