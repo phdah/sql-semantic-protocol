@@ -310,6 +310,7 @@ fn unsupported_nested_filter_and_unshaped_queries_fail_closed() {
     let case = &frozen["cases"][0];
     for sql in [
         "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i WHERE i.k > o.k)",
+        "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i LIMIT 0)",
         "SELECT DISTINCT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i WHERE i.k = o.k)",
         "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i WHERE i.k = o.k) LIMIT 1",
     ] {
