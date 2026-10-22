@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-131",
   "parent": "TASK-75",
   "fixture_ids": [
@@ -73,8 +73,8 @@
     "native_vendor_laws": "TASK-131",
     "decimal_promotion": "TASK-131"
   },
-  "parser_matrix_status": "156 mandatory exact semantic cases + 39 conditional parser cases independently exercised",
-  "adapter_matrix_status": "12 mandatory source-complete cases x direct SQL / compiled dbt / ODCS source contracts",
+  "parser_matrix_status": "v4 frozen 195 cells: 156 mandatory parsed/canonical Exact or CardinalityViolation plus 39 conditional parsed/Residual",
+  "adapter_matrix_status": "v4 frozen 45 cells: 36 mandatory direct SQL, compiled dbt, ODCS exact/error proofs; 9 conditional typed residual adapters",
   "duckdb_oracle_status": "12 mandatory native output oracles plus nested-cardinality and LATERAL duplicate-row native oracles; APPLY engine deliberately unverified",
   "ci_status": "final head pending",
   "mandatory_cases": 12,
@@ -119,6 +119,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -172,6 +209,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -221,6 +295,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -269,6 +380,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -310,6 +458,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -351,6 +536,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -422,6 +644,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -482,6 +741,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -553,6 +849,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -613,6 +946,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -664,6 +1034,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -726,6 +1133,43 @@
         "sql": "Exact_or_CardinalityViolation_required",
         "dbt": "Exact_or_CardinalityViolation_required",
         "odcs": "Exact_or_CardinalityViolation_required"
+      },
+      "canonical_source_identities": [
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "source_row_id": "inner_rows.id"
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgres": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "native_execution_disposition_by_dialect": {
+        "generic": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mysql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "postgres": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "hive": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "sqlite": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "snowflake": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "redshift": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "mssql": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "clickhouse": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "bigquery": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "ansi": "only_parser_and_canonical_proof_not_native_engine_executed",
+        "duckdb": "duckdb_native_mandatory_oracle_executed_in_ci",
+        "databricks": "only_parser_and_canonical_proof_not_native_engine_executed"
       }
     },
     {
@@ -805,6 +1249,19 @@
       "review_evidence": {
         "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
         "engine": "DuckDB duplicate-row nested scalar raises cardinality error"
+      },
+      "canonical_source_identities": [
+        "inner_rows",
+        "control_rows"
+      ],
+      "canonical_column_identities": {
+        "inner": "inner_rows.v",
+        "control": "control_rows.k"
+      },
+      "expected_adapter_cells": {
+        "sql": "Residual_conditional",
+        "dbt": "Residual_conditional",
+        "odcs": "Residual_conditional"
       }
     },
     {
@@ -887,6 +1344,20 @@
       "review_evidence": {
         "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
         "engine": "DuckDB CROSS JOIN LATERAL returns two o1 rows with duplicate inner candidates"
+      },
+      "canonical_source_identities": [
+        "outer_rows",
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "outer": "outer_rows.id",
+        "outer_key": "outer_rows.v",
+        "inner": "inner_rows.v"
+      },
+      "expected_adapter_cells": {
+        "sql": "Residual_conditional",
+        "dbt": "Residual_conditional",
+        "odcs": "Residual_conditional"
       }
     },
     {
@@ -966,10 +1437,24 @@
       "review_evidence": {
         "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
         "engine": "no native APPLY oracle; parser success alone is unproved"
+      },
+      "canonical_source_identities": [
+        "outer_rows",
+        "inner_rows"
+      ],
+      "canonical_column_identities": {
+        "outer": "outer_rows.id",
+        "outer_key": "outer_rows.v",
+        "inner": "inner_rows.v"
+      },
+      "expected_adapter_cells": {
+        "sql": "Residual_conditional",
+        "dbt": "Residual_conditional",
+        "odcs": "Residual_conditional"
       }
     }
   ],
-  "reviewed_freeze_revision": "v2: remove unproved nested WHERE from zero-row scalar mandatory case, preserving fixture identity and SQL NULL oracle",
+  "reviewed_freeze_revision": "v4: retained v1 preimplementation fixed fixture IDs and 12/3 case inventory; expanded complete typed full-bag, parser and adapter disposition cells; v3 conditional parser outcomes independently observed in Actions run 39843884857",
   "required_parser_cells": 156,
   "required_adapter_cells": 36,
   "conditional_parser_cells": 39,
@@ -1019,5 +1504,7 @@
       "duckdb": "parsed",
       "databricks": "parsed"
     }
-  }
+  },
+  "native_session_boundary": "All 13 dialect parsers parse the 15 shapes; ONLY DuckDB is executed natively. Parser conformance is not certification for MySQL/PostgreSQL/Snowflake/other engines.",
+  "conditional_review_disposition": "Owned TASK-131 conditional Residual for unproved nested source cardinality/correlation, per-outer-row LATERAL materialization and vendor APPLY. Native DuckDB N6/N7 oracles independent. No native APPLY claim."
 }
