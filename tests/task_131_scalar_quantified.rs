@@ -6,11 +6,10 @@ use std::collections::BTreeMap;
 use duckdb::{params, Connection};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_finite_quantified_comparison, physical_finite_scalar_subquery_plan,
-    AnalysisBundle, ComparisonOperator, ConfiguredSqlInput, LiteralValue,
-    PhysicalFiniteQuantifiedProof, PhysicalQuantifiedTruth, PhysicalQuantifier,
-    PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    physical_finite_quantified_comparison, physical_finite_scalar_subquery_plan, AnalysisBundle,
+    ComparisonOperator, ConfiguredSqlInput, LiteralValue, PhysicalFiniteQuantifiedProof,
+    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn catalog() -> RelationCatalog {
@@ -24,8 +23,7 @@ fn catalog() -> RelationCatalog {
         )
         .expect("source schema")
     };
-    RelationCatalog::from_schemas(&[source("outer_rows"), source("inner_rows")])
-        .expect("catalog")
+    RelationCatalog::from_schemas(&[source("outer_rows"), source("inner_rows")]).expect("catalog")
 }
 
 fn bundle(sql: &str) -> AnalysisBundle {
@@ -56,10 +54,7 @@ fn state(relation: &str, data: &[(&str, Option<i64>)]) -> PhysicalWriteState {
     .expect("source")
 }
 
-fn scalar_proof(
-    sql: &str,
-    inner: &[(&str, Option<i64>)],
-) -> PhysicalScalarSubqueryProof {
+fn scalar_proof(sql: &str, inner: &[(&str, Option<i64>)]) -> PhysicalScalarSubqueryProof {
     let b = bundle(sql);
     let target = b.layers().last().expect("last layer");
     physical_finite_scalar_subquery_plan(&b, target.id(), &[state("inner_rows", inner)])
@@ -75,18 +70,14 @@ fn scalar_subquery_distinguishes_empty_singleton_null_and_cardinality_error() {
     assert_eq!(empty.bounds, None);
     assert!(empty.source_row_ids.is_empty());
 
-    let PhysicalScalarSubqueryProof::Exact(single) =
-        scalar_proof(sql, &[("i1", Some(2))])
-    else {
+    let PhysicalScalarSubqueryProof::Exact(single) = scalar_proof(sql, &[("i1", Some(2))]) else {
         panic!("one input row must produce the typed scalar");
     };
     assert_eq!(single.value, LiteralValue::Number("2".to_string()));
     assert_eq!(single.bounds, Some((2, 2)));
     assert_eq!(single.source_row_ids, ["i1"]);
 
-    let PhysicalScalarSubqueryProof::Exact(null) =
-        scalar_proof(sql, &[("i1", None)])
-    else {
+    let PhysicalScalarSubqueryProof::Exact(null) = scalar_proof(sql, &[("i1", None)]) else {
         panic!("one NULL value must remain SQL NULL");
     };
     assert_eq!(null.value, LiteralValue::Null);
@@ -189,7 +180,10 @@ fn any_all_prove_empty_bag_null_dominance_and_duplicates() {
             assert_eq!(exact.selected, ["o1"]);
             assert_eq!(
                 exact.terminal,
-                [BTreeMap::from([("v".to_string(), LiteralValue::Number("1".to_string()))])]
+                [BTreeMap::from([(
+                    "v".to_string(),
+                    LiteralValue::Number("1".to_string())
+                )])]
             );
             assert_eq!(exact.terminal_domain.bounds(), Some((1, 1)));
         } else {
@@ -221,7 +215,10 @@ fn quantified_null_outer_empty_source_and_unsupported_operator_are_safe() {
     };
     assert_eq!(exact.truth["o1"], PhysicalQuantifiedTruth::True);
     assert!(exact.terminal_domain.null_allowed);
-    assert_eq!(exact.terminal, [BTreeMap::from([("v".to_string(), LiteralValue::Null)])]);
+    assert_eq!(
+        exact.terminal,
+        [BTreeMap::from([("v".to_string(), LiteralValue::Null)])]
+    );
 
     assert!(matches!(
         quantified(
@@ -246,29 +243,32 @@ fn quantified_null_outer_empty_source_and_unsupported_operator_are_safe() {
 #[test]
 fn duckdb_independently_checks_scalar_cardinality_and_quantifier_truth() {
     let db = Connection::open_in_memory().expect("duckdb");
-    db.execute("CREATE TABLE inner_rows (id VARCHAR, v INTEGER)", []).unwrap();
+    db.execute("CREATE TABLE inner_rows (id VARCHAR, v INTEGER)", [])
+        .unwrap();
     let scalar_sql = "SELECT (SELECT v FROM inner_rows) AS x";
     let read = |db: &Connection| -> Option<i64> {
-        db.query_row(scalar_sql, [], |row| row.get(0)).expect("scalar")
+        db.query_row(scalar_sql, [], |row| row.get(0))
+            .expect("scalar")
     };
     assert_eq!(read(&db), None);
-    db.execute("INSERT INTO inner_rows VALUES ('i1', 2)", []).unwrap();
+    db.execute("INSERT INTO inner_rows VALUES ('i1', 2)", [])
+        .unwrap();
     assert_eq!(read(&db), Some(2));
-    db.execute("INSERT INTO inner_rows VALUES ('i2', 2)", []).unwrap();
+    db.execute("INSERT INTO inner_rows VALUES ('i2', 2)", [])
+        .unwrap();
     assert!(
-        db.query_row(scalar_sql, [], |row| row.get::<_, Option<i64>>(0)).is_err(),
+        db.query_row(scalar_sql, [], |row| row.get::<_, Option<i64>>(0))
+            .is_err(),
         "two equal-valued rows are still a cardinality violation"
     );
     db.execute("DELETE FROM inner_rows", []).unwrap();
     for (id, value) in [("i1", Some(1)), ("i2", None), ("i3", Some(1))] {
-        db.execute(
-            "INSERT INTO inner_rows VALUES (?, ?)",
-            params![id, value],
-        )
-        .unwrap();
+        db.execute("INSERT INTO inner_rows VALUES (?, ?)", params![id, value])
+            .unwrap();
     }
     let classify = |sql: &str| -> String {
-        db.query_row(sql, [], |row| row.get(0)).expect("three valued SQL")
+        db.query_row(sql, [], |row| row.get(0))
+            .expect("three valued SQL")
     };
     assert_eq!(
         classify("SELECT CASE WHEN 1 = ANY (SELECT v FROM inner_rows) THEN 'true' WHEN (1 = ANY (SELECT v FROM inner_rows)) IS NULL THEN 'unknown' ELSE 'false' END"),
@@ -283,6 +283,16 @@ fn duckdb_independently_checks_scalar_cardinality_and_quantifier_truth() {
         "unknown"
     );
     db.execute("DELETE FROM inner_rows", []).unwrap();
-    assert_eq!(classify("SELECT CASE WHEN 1 = ANY (SELECT v FROM inner_rows) THEN 'true' ELSE 'false' END"), "false");
-    assert_eq!(classify("SELECT CASE WHEN 1 = ALL (SELECT v FROM inner_rows) THEN 'true' ELSE 'false' END"), "true");
+    assert_eq!(
+        classify(
+            "SELECT CASE WHEN 1 = ANY (SELECT v FROM inner_rows) THEN 'true' ELSE 'false' END"
+        ),
+        "false"
+    );
+    assert_eq!(
+        classify(
+            "SELECT CASE WHEN 1 = ALL (SELECT v FROM inner_rows) THEN 'true' ELSE 'false' END"
+        ),
+        "true"
+    );
 }
