@@ -370,19 +370,35 @@ fn native_duckdb_conditional_frames_have_complete_attested_engine_specific_bags(
     for (id, totals) in expected {
         let case = cases.iter().find(|case| case["id"] == id).unwrap();
         let observed = duckdb_oracle(case);
-        let wanted = (1..=7).zip(totals).map(|(id, total)| {
-            BTreeMap::from([
-                ("id".into(), LiteralValue::Number(id.to_string())),
-                ("total".into(), if total < 0 { LiteralValue::Null }
-                    else { LiteralValue::Number(total.to_string()) }),
-            ])
-        }).collect::<Vec<_>>();
-        assert_eq!(sorted_bag(&observed), sorted_bag(&wanted),
-            "{id}: exact native DuckDB outputs do not imply a portable session default");
+        let wanted = (1..=7)
+            .zip(totals)
+            .map(|(id, total)| {
+                BTreeMap::from([
+                    ("id".into(), LiteralValue::Number(id.to_string())),
+                    (
+                        "total".into(),
+                        if total < 0 {
+                            LiteralValue::Null
+                        } else {
+                            LiteralValue::Number(total.to_string())
+                        },
+                    ),
+                ])
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            sorted_bag(&observed),
+            sorted_bag(&wanted),
+            "{id}: exact native DuckDB outputs do not imply a portable session default"
+        );
         let bundle = analyze(case["sql"].as_str().unwrap());
         let target = bundle.layers().last().unwrap().id();
-        assert!(matches!(physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
-            PhysicalFiniteWindowProof::Residual { .. }),
-            "{id}: absence of session evidence cannot be promoted by a native oracle");
+        assert!(
+            matches!(
+                physical_finite_window_bag_plan(&bundle, target, &[source(case)]),
+                PhysicalFiniteWindowProof::Residual { .. }
+            ),
+            "{id}: absence of session evidence cannot be promoted by a native oracle"
+        );
     }
 }
