@@ -8,7 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
     physical_finite_quantified_comparison, physical_finite_scalar_subquery_plan, AnalysisBundle,
     ComparisonOperator, ConfiguredSqlInput, LiteralValue, PhysicalFiniteQuantifiedProof,
-    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryProof, PhysicalWriteRow,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier,
+    PhysicalScalarSubqueryProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -118,10 +119,12 @@ fn quantified(
     physical_finite_quantified_comparison(
         &b,
         &[state("outer_rows", outer), state("inner_rows", inner)],
-        "outer_rows",
-        "v",
-        "inner_rows",
-        "v",
+        PhysicalQuantifiedOperands {
+            outer_relation: "outer_rows",
+            outer_column: "v",
+            inner_relation: "inner_rows",
+            inner_column: "v",
+        },
         operator,
         quantifier,
     )
