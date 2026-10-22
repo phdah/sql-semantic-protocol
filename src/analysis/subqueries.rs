@@ -50,11 +50,29 @@ pub(super) fn analyze_subquery_semantics(
         && query.fetch.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
+                && matches!(
+                    &select.from[0].relation,
+                    TableFactor::Table {
+                        args: None,
+                        sample: None,
+                        version: None,
+                        json_path: None,
+                        with_ordinality: false,
+                        partitions,
+                        with_hints,
+                        index_hints,
+                        ..
+                    } if partitions.is_empty() && with_hints.is_empty() && index_hints.is_empty()
+                )
                 && select.from[0].joins.is_empty()
                 && select.having.is_none()
                 && select.qualify.is_none()
                 && select.top.is_none()
-                && matches!(&select.group_by, GroupByExpr::Expressions(expressions, _) if expressions.is_empty()))
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(expressions, modifiers)
+                    if expressions.is_empty() && modifiers.is_empty()))
         && output
             .columns()
             .iter()

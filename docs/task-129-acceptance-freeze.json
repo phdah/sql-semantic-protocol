@@ -1,0 +1,734 @@
+{
+  "version": 2,
+  "owner": "TASK-129",
+  "parent": "TASK-75",
+  "status": "verified_bounded_child_pending_merge",
+  "fixture_ids": [
+    "75-C129-P",
+    "75-C129-N"
+  ],
+  "scope": "One physical outer bag and one physical inner bag; correlated equality with duplicates and NULL or uncorrelated EXISTS/NOT EXISTS with empty/nonempty inner; only source-backed single-column output.",
+  "source_comparison": "Signed INTEGER equality; NULL never matches, including NULL to NULL; SELECT EXISTS does not multiply outer bag by inner duplicates.",
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled_with_authoritative_catalog",
+    "odcs_when_equivalent_schema_evidence"
+  ],
+  "required_oracles": "Independent DuckDB source/terminal full-bag execution; adapter equivalent source/schema data, not parser success alone.",
+  "conditional": [
+    {
+      "id": "75-C129-conditional-unsupported-correlated-filter",
+      "sql": "SELECT o.k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i WHERE i.k > o.k)",
+      "classification": "Residual",
+      "owner": "TASK-129",
+      "reason": "Only equality comparator has portable finite signed-integer proof; unsupported non-equi condition must not be silently evaluated as equality",
+      "reviewed_release_disposition": "reviewed_portable_integer_proof_only_native_vendor_uncertified"
+    },
+    {
+      "id": "75-C129-conditional-native-vendor-session",
+      "classification": "Residual",
+      "owner": "TASK-129",
+      "reason": "No thirteen native engine executions or vendor collations/session equality attestations",
+      "reviewed_release_disposition": "reviewed_portable_integer_proof_only_native_vendor_uncertified"
+    }
+  ],
+  "original_parent_acceptance_mapped": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "child_acceptance_mapped": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "cases": [
+    {
+      "id": "75-C129-P-correlated-exists",
+      "fixture": "75-C129-P",
+      "variant": "single_key_correlated_duplicate_inner",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i WHERE i.k = o.k)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1
+          },
+          {
+            "id": "i2",
+            "k": 1
+          },
+          {
+            "id": "in",
+            "k": null
+          }
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "complete_inner_partners": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        }
+      ],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1
+        ],
+        "lower": 1,
+        "upper": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    },
+    {
+      "id": "75-C129-N-correlated-not-exists",
+      "fixture": "75-C129-N",
+      "variant": "single_key_correlated_closed_world_absence",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT 1 FROM inner_rows i WHERE i.k = o.k)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1
+          },
+          {
+            "id": "i2",
+            "k": 1
+          },
+          {
+            "id": "in",
+            "k": null
+          }
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1"
+      ],
+      "complete_inner_partners": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "expected_terminal_bag": [
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          2
+        ],
+        "lower": 2,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    },
+    {
+      "id": "75-C129-P-uncorrelated-exists",
+      "fixture": "75-C129-P",
+      "variant": "uncorrelated_nonempty",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1
+          },
+          {
+            "id": "i2",
+            "k": 1
+          },
+          {
+            "id": "in",
+            "k": null
+          }
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [],
+      "complete_inner_partners": {
+        "o1": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "on": [
+          "i1",
+          "i2",
+          "in"
+        ]
+      },
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          2
+        ],
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    },
+    {
+      "id": "75-C129-N-uncorrelated-not-exists",
+      "fixture": "75-C129-N",
+      "variant": "uncorrelated_nonempty_absence",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT 1 FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1
+          },
+          {
+            "id": "i2",
+            "k": 1
+          },
+          {
+            "id": "in",
+            "k": null
+          }
+        ]
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "complete_inner_partners": {
+        "o1": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "o2": [
+          "i1",
+          "i2",
+          "in"
+        ],
+        "on": [
+          "i1",
+          "i2",
+          "in"
+        ]
+      },
+      "expected_terminal_bag": [],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [],
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": false,
+        "upper_inclusive": false,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    },
+    {
+      "id": "75-C129-P-empty-inner-not-exists",
+      "fixture": "75-C129-P",
+      "variant": "empty_inner_not_exists",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT 1 FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [],
+      "complete_inner_partners": {
+        "o1": [],
+        "o2": [],
+        "on": []
+      },
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [
+          1,
+          2
+        ],
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "contains_null": true
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    },
+    {
+      "id": "75-C129-N-empty-inner-exists",
+      "fixture": "75-C129-N",
+      "variant": "empty_inner_exists",
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT 1 FROM inner_rows i)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1
+          },
+          {
+            "id": "o2",
+            "k": 2
+          },
+          {
+            "id": "on",
+            "k": null
+          }
+        ],
+        "inner_rows": []
+      },
+      "source_instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "source_column_types": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL"
+        }
+      },
+      "selected_outer_ids": [],
+      "rejected_not_true_outer_ids": [
+        "o1",
+        "o2",
+        "on"
+      ],
+      "complete_inner_partners": {
+        "o1": [],
+        "o2": [],
+        "on": []
+      },
+      "expected_terminal_bag": [],
+      "terminal_value_domain": {
+        "datatype": "signed_integer",
+        "allowed": [],
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": false,
+        "upper_inclusive": false,
+        "contains_null": false
+      },
+      "positive_proof": "selected IDs are exactly the TRUE predicate outer rows from complete physical bags",
+      "not_true_proof": "rejected IDs are exactly FALSE or UNKNOWN predicate outer rows, every inner row checked",
+      "parser_status": {
+        "generic": "parser_equivalent",
+        "mysql": "parser_equivalent",
+        "postgresql": "parser_equivalent",
+        "hive": "parser_equivalent",
+        "sqlite": "parser_equivalent",
+        "snowflake": "parser_equivalent",
+        "redshift": "parser_equivalent",
+        "mssql": "parser_equivalent",
+        "clickhouse": "parser_equivalent",
+        "bigquery": "parser_equivalent",
+        "ansi": "parser_equivalent",
+        "duckdb": "parser_equivalent",
+        "databricks": "parser_equivalent"
+      },
+      "adapter_status": {
+        "direct_sql": "verified",
+        "dbt_compiled": "verified",
+        "odcs": "verified"
+      },
+      "duckdb_source_and_terminal_oracle": "verified",
+      "source_column_instances": {
+        "outer_identity": "outer_rows.id",
+        "outer_key": "outer_rows.k",
+        "inner_identity": "inner_rows.id",
+        "inner_key": "inner_rows.k"
+      }
+    }
+  ],
+  "verification": {
+    "parser_cells": 78,
+    "parser_equivalent": 78,
+    "parser_boundary": 0,
+    "adapter_cells": 18,
+    "complete_duckdb_source_selected_rejected_terminal_cases": 6,
+    "mandatory_cases": 6,
+    "mandatory_unverified": [],
+    "ci_oracle_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39791120871",
+    "native_vendor_engine_executions": 0,
+    "parent_signoff": false,
+    "release_approved": false,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "reviewed_native_vendor_boundary": "native vendor/session execution not established, remain uncertified"
+  }
+}

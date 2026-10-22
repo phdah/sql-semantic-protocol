@@ -1,4 +1,36 @@
 {
+  "task_129_exists_subquery_plan": {
+    "owner": "TASK-129",
+    "parent": "TASK-75",
+    "status": "verified_bounded_child_pending_merge",
+    "task": ".backlog/tasks/task-129 - prove-exists-and-not-exists-correlated-uncorrelated.md",
+    "freeze": "docs/task-129-acceptance-freeze.json",
+    "public_oracle": "tests/task_129_exists_bags.rs",
+    "fixture_ids": [
+      "75-C129-P",
+      "75-C129-N"
+    ],
+    "mandatory_cases": 6,
+    "required_parser_cells": 78,
+    "required_adapter_cells": 18,
+    "mandatory_verified": true,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_signed_off": false,
+    "release_approved": false,
+    "acceptance_audit": "docs/task-129-acceptance-audit.md",
+    "parser_cells_verified": 78,
+    "adapter_cells_verified": 18,
+    "duckdb_complete_oracle_cases_verified": 6,
+    "mandatory_unverified": [],
+    "final_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39791120871",
+    "non_duckdb_native_engine_claims": 0
+  },
   "task_128_advanced_window_frame_plan": {
     "owner": "TASK-128",
     "parent": "TASK-74",
