@@ -112,8 +112,7 @@ fn finite_complete_bags_prove_every_frozen_case_across_thirteen_dialects() {
         for dialect in dialects {
             let dialect = dialect.as_str().expect("dialect name");
             assert_eq!(
-                case["parser_status"][dialect],
-                "parser_equivalent",
+                case["parser_status"][dialect], "parser_equivalent",
                 "{} / {dialect}: no unchecked mandatory parser cells",
                 case["id"]
             );
