@@ -244,10 +244,14 @@ fn existing_ranked_orders_model_has_independent_full_native_source_and_rank_orac
     let manifest: Value = serde_json::from_str(
         &fs::read_to_string(root.join("tests/fixtures/dbt_core_project/target/manifest.json"))
             .unwrap(),
-    ).unwrap();
+    )
+    .unwrap();
     let ranked = &manifest["nodes"]["model.sql_semantic_protocol_e2e.ranked_orders"];
     let enriched = &manifest["nodes"]["model.sql_semantic_protocol_e2e.enriched_orders"];
-    let ranked_sql = ranked["compiled_code"].as_str().unwrap().to_ascii_lowercase();
+    let ranked_sql = ranked["compiled_code"]
+        .as_str()
+        .unwrap()
+        .to_ascii_lowercase();
     assert!(ranked_sql.contains("row_number() over"));
     assert!(ranked_sql.contains("sum(amount) over"));
     assert!(ranked_sql.contains("qualify rn <= 2"));
@@ -256,7 +260,58 @@ fn existing_ranked_orders_model_has_independent_full_native_source_and_rank_orac
     let db = Connection::open(std::env::var("DBT_E2E_DATABASE").unwrap()).unwrap();
     let rows = |sql: String| {
         let mut statement = db.prepare(&sql).unwrap();
-        statement.query_map([], |row| {
+        statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, i64>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, String>(5)?,
+                ))
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
+    };
+    let source = rows(format!(
+        "SELECT order_id,customer_id,amount,status,CAST(created_at AS VARCHAR),region
+         FROM {src} ORDER BY order_id"
+    ));
+    let expected = vec![
+        (
+            2,
+            10,
+            20,
+            "paid".to_string(),
+            "2026-01-02 10:00:00".to_string(),
+            "north".to_string(),
+        ),
+        (
+            3,
+            10,
+            60,
+            "pending".to_string(),
+            "2026-01-03 10:00:00".to_string(),
+            "north".to_string(),
+        ),
+        (
+            4,
+            20,
+            80,
+            "paid".to_string(),
+            "2026-01-01 11:00:00".to_string(),
+            "south".to_string(),
+        ),
+    ];
+    assert_eq!(source, expected, "all joined and filtered upstream rows");
+    let mut query = db.prepare(&format!(
+        "SELECT order_id,customer_id,amount,status,CAST(created_at AS VARCHAR),region,rn,rolling_amount
+         FROM {dst} ORDER BY order_id"
+    )).unwrap();
+    let terminal = query
+        .query_map([], |row| {
             Ok((
                 row.get::<_, i64>(0)?,
                 row.get::<_, i64>(1)?,
@@ -264,32 +319,20 @@ fn existing_ranked_orders_model_has_independent_full_native_source_and_rank_orac
                 row.get::<_, String>(3)?,
                 row.get::<_, String>(4)?,
                 row.get::<_, String>(5)?,
+                row.get::<_, i64>(6)?,
+                row.get::<_, i64>(7)?,
             ))
-        }).unwrap().collect::<Result<Vec<_>, _>>().unwrap()
-    };
-    let source = rows(format!(
-        "SELECT order_id,customer_id,amount,status,CAST(created_at AS VARCHAR),region
-         FROM {src} ORDER BY order_id"
-    ));
-    let expected = vec![
-        (2,10,20,"paid".to_string(),"2026-01-02 10:00:00".to_string(),"north".to_string()),
-        (3,10,60,"pending".to_string(),"2026-01-03 10:00:00".to_string(),"north".to_string()),
-        (4,20,80,"paid".to_string(),"2026-01-01 11:00:00".to_string(),"south".to_string()),
-    ];
-    assert_eq!(source, expected, "all joined and filtered upstream rows");
-    let mut query = db.prepare(&format!(
-        "SELECT order_id,customer_id,amount,status,CAST(created_at AS VARCHAR),region,rn,rolling_amount
-         FROM {dst} ORDER BY order_id"
-    )).unwrap();
-    let terminal = query.query_map([], |row| {
-        Ok((
-            row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?,
-            row.get::<_, String>(3)?, row.get::<_, String>(4)?, row.get::<_, String>(5)?,
-            row.get::<_, i64>(6)?, row.get::<_, i64>(7)?,
-        ))
-    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
-    let expected_terminal = expected.into_iter().zip([(1,20),(2,80),(1,80)])
-        .map(|(s,(rank,sum))| (s.0,s.1,s.2,s.3,s.4,s.5,rank,sum))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    let expected_terminal = expected
+        .into_iter()
+        .zip([(1, 20), (2, 80), (1, 80)])
+        .map(|(s, (rank, sum))| (s.0, s.1, s.2, s.3, s.4, s.5, rank, sum))
         .collect::<Vec<_>>();
-    assert_eq!(terminal, expected_terminal, "every original ranked_orders.sql row and window value");
+    assert_eq!(
+        terminal, expected_terminal,
+        "every original ranked_orders.sql row and window value"
+    );
 }
