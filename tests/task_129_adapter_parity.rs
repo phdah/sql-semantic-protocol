@@ -73,12 +73,22 @@ schema:
             .replace("FROM inner_rows i", "FROM warehouse.raw.inner_rows AS i");
         let input = SqlInput::inline(&sql);
         let direct = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &direct_catalog,
         )
         .expect("direct SQL");
         let from_odcs = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &external,
         )
         .expect("ODCS-derived physical schema");
@@ -88,10 +98,7 @@ schema:
             .map(|relation| {
                 let mut columns = Map::new();
                 for (column, ty) in [("id", "VARCHAR"), ("k", "INTEGER")] {
-                    columns.insert(
-                        column.to_string(),
-                        json!({"name":column,"data_type":ty}),
-                    );
+                    columns.insert(column.to_string(), json!({"name":column,"data_type":ty}));
                 }
                 (
                     format!("source.demo.{relation}"),
@@ -124,9 +131,8 @@ schema:
             "sources":sources
         });
         let parsed = parse_dbt_manifest(&manifest.to_string()).expect("valid compiled manifest");
-        let dbt =
-            analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
-                .expect("dbt authoritative sources");
+        let dbt = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
+            .expect("dbt authoritative sources");
 
         let states = ["outer_rows", "inner_rows"]
             .into_iter()
@@ -167,9 +173,12 @@ schema:
             let target = bundle
                 .layers()
                 .iter()
-                .find(|layer| layer.consumes().iter().any(|relation|
-                    relation == source_names[0] || relation == source_names[1]
-                ))
+                .find(|layer| {
+                    layer
+                        .consumes()
+                        .iter()
+                        .any(|relation| relation == source_names[0] || relation == source_names[1])
+                })
                 .unwrap_or_else(|| panic!("{id}/{adapter}: lost physical dependencies"));
             let proof = physical_finite_exists_bag_plan(&bundle, target.id(), &states);
             let PhysicalFiniteExistsProof::Exact(exact) = proof else {
