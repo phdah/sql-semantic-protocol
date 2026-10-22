@@ -372,7 +372,10 @@ pub enum SubqueryQuantifier {
 
 impl SubqueryQuantifier {
     pub fn as_str(self) -> &'static str {
-        match self { Self::Any => "any", Self::All => "all" }
+        match self {
+            Self::Any => "any",
+            Self::All => "all",
+        }
     }
 }
 
@@ -385,17 +388,35 @@ pub struct QuantifiedSubqueryPredicate {
     subquery: SubquerySemantics,
 }
 impl QuantifiedSubqueryPredicate {
-    pub(crate) fn new(operand: Expression, operator: ComparisonOperator, quantifier: SubqueryQuantifier, subquery: SubquerySemantics) -> Self {
-        Self { operand, operator, quantifier, subquery }
+    pub(crate) fn new(
+        operand: Expression,
+        operator: ComparisonOperator,
+        quantifier: SubqueryQuantifier,
+        subquery: SubquerySemantics,
+    ) -> Self {
+        Self {
+            operand,
+            operator,
+            quantifier,
+            subquery,
+        }
     }
     /// Canonical left operand, retaining literal or source reference.
-    pub fn operand(&self) -> &Expression { &self.operand }
+    pub fn operand(&self) -> &Expression {
+        &self.operand
+    }
     /// SQL comparison operator, not an independently supplied evaluation guess.
-    pub fn operator(&self) -> ComparisonOperator { self.operator }
+    pub fn operator(&self) -> ComparisonOperator {
+        self.operator
+    }
     /// Canonical ANY/SOME or ALL quantifier.
-    pub fn quantifier(&self) -> SubqueryQuantifier { self.quantifier }
+    pub fn quantifier(&self) -> SubqueryQuantifier {
+        self.quantifier
+    }
     /// Complete nested query semantics and identities.
-    pub fn subquery(&self) -> &SubquerySemantics { &self.subquery }
+    pub fn subquery(&self) -> &SubquerySemantics {
+        &self.subquery
+    }
 }
 
 /// A BETWEEN predicate.

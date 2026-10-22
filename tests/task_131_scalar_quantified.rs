@@ -300,7 +300,6 @@ fn duckdb_independently_checks_scalar_cardinality_and_quantifier_truth() {
     );
 }
 
-
 #[test]
 fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
     use serde_json::Value;
@@ -314,16 +313,28 @@ fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
         let sql = case["sql"].as_str().unwrap();
         let b = bundle(sql);
         let target = b.layers().last().expect("target");
-        let snapshot = state("inner_rows", &case["inner"].as_array().unwrap().iter().map(|row| {
-            (row["id"].as_str().unwrap(), row["v"].as_i64())
-        }).collect::<Vec<_>>());
+        let snapshot = state(
+            "inner_rows",
+            &case["inner"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| (row["id"].as_str().unwrap(), row["v"].as_i64()))
+                .collect::<Vec<_>>(),
+        );
         db.execute("DELETE FROM inner_rows", []).unwrap();
         for row in case["inner"].as_array().unwrap() {
-            db.execute("INSERT INTO inner_rows VALUES (?, ?)", params![row["id"].as_str().unwrap(), row["v"].as_i64()]).unwrap();
+            db.execute(
+                "INSERT INTO inner_rows VALUES (?, ?)",
+                params![row["id"].as_str().unwrap(), row["v"].as_i64()],
+            )
+            .unwrap();
         }
         let PhysicalQuantifiedScalarProof::Exact(actual) =
             physical_finite_quantified_subquery_plan(&b, target.id(), &[snapshot])
-        else { panic!("{} canonical quantified proof missing", case["id"]); };
+        else {
+            panic!("{} canonical quantified proof missing", case["id"]);
+        };
         let expected = match case["expect"]["value"].as_str().unwrap() {
             "true" => PhysicalQuantifiedTruth::True,
             "false" => PhysicalQuantifiedTruth::False,
@@ -331,7 +342,10 @@ fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
             v => panic!("unexpected truth {v}"),
         };
         assert_eq!(actual.truth, expected, "{} protocol truth", case["id"]);
-        assert_eq!(actual.source_row_ids.len(), case["inner"].as_array().unwrap().len());
+        assert_eq!(
+            actual.source_row_ids.len(),
+            case["inner"].as_array().unwrap().len()
+        );
         assert_eq!(actual.terminal.len(), 1);
         let wanted = match expected {
             PhysicalQuantifiedTruth::True => Some(true),
@@ -348,18 +362,28 @@ fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
 
 #[test]
 fn sql_bound_quantifiers_reject_unproved_nested_filters_and_bad_ids() {
-    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    use sql_semantic_protocol::{
+        physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+    };
     let sql = "SELECT 2 = ANY (SELECT v FROM inner_rows WHERE v > 1) AS x";
     let b = bundle(sql);
     let id = b.layers().last().unwrap().id().to_string();
     assert!(matches!(
-        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(2))])]),
+        physical_finite_quantified_subquery_plan(
+            &b,
+            &id,
+            &[state("inner_rows", &[("i1", Some(2))])]
+        ),
         PhysicalQuantifiedScalarProof::Residual { .. }
     ));
     let b = bundle("SELECT 2 = ANY (SELECT v FROM inner_rows) AS x");
     let id = b.layers().last().unwrap().id().to_string();
     assert!(matches!(
-        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(2)),("i1", Some(3))])]),
+        physical_finite_quantified_subquery_plan(
+            &b,
+            &id,
+            &[state("inner_rows", &[("i1", Some(2)), ("i1", Some(3))])]
+        ),
         PhysicalQuantifiedScalarProof::Impossible { .. }
     ));
 }

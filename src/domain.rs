@@ -588,7 +588,9 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
             "IN subquery cannot be reduced safely to a scalar domain",
         ),
         Predicate::QuantifiedSubquery(predicate) => unknown_for_expressions(
-            [predicate.operand()], sources, "quantified nested source cannot be reduced to a scalar domain",
+            [predicate.operand()],
+            sources,
+            "quantified nested source cannot be reduced to a scalar domain",
         ),
         Predicate::Between(predicate) => derive_between(predicate, sources),
         Predicate::BooleanExpression(expression) => unknown_for_expressions(

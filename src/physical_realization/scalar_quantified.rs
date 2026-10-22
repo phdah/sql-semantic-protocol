@@ -391,7 +391,6 @@ pub fn physical_finite_quantified_comparison(
     })
 }
 
-
 /// One fully source-attested uncorrelated quantified scalar projection.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalQuantifiedScalarExact {
@@ -525,14 +524,10 @@ pub fn physical_finite_quantified_subquery_plan(
     }
     let truth = match comparison.quantifier() {
         crate::protocol::SubqueryQuantifier::Any if has_true => PhysicalQuantifiedTruth::True,
-        crate::protocol::SubqueryQuantifier::Any if has_unknown => {
-            PhysicalQuantifiedTruth::Unknown
-        }
+        crate::protocol::SubqueryQuantifier::Any if has_unknown => PhysicalQuantifiedTruth::Unknown,
         crate::protocol::SubqueryQuantifier::Any => PhysicalQuantifiedTruth::False,
         crate::protocol::SubqueryQuantifier::All if has_false => PhysicalQuantifiedTruth::False,
-        crate::protocol::SubqueryQuantifier::All if has_unknown => {
-            PhysicalQuantifiedTruth::Unknown
-        }
+        crate::protocol::SubqueryQuantifier::All if has_unknown => PhysicalQuantifiedTruth::Unknown,
         crate::protocol::SubqueryQuantifier::All => PhysicalQuantifiedTruth::True,
     };
     // This SELECT has no FROM clause and therefore returns exactly one row;

@@ -245,13 +245,23 @@ pub(super) fn analyze_predicate_with_windows(
                 (comparison_operator(compare_op), right.as_ref())
             {
                 Predicate::QuantifiedSubquery(QuantifiedSubqueryPredicate::new(
-                    analyze_predicate_expression(left, named_windows, output_aliases, scope, diagnostics),
+                    analyze_predicate_expression(
+                        left,
+                        named_windows,
+                        output_aliases,
+                        scope,
+                        diagnostics,
+                    ),
                     operator,
                     quantifier,
                     analyze_subquery_semantics(subquery, scope),
                 ))
             } else {
-                Predicate::BooleanExpression(analyze_expression_with_windows(expression, named_windows, diagnostics))
+                Predicate::BooleanExpression(analyze_expression_with_windows(
+                    expression,
+                    named_windows,
+                    diagnostics,
+                ))
             }
         }
         Expr::Exists { subquery, negated } => Predicate::Exists(ExistsPredicate::new(
