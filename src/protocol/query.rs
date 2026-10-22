@@ -24,6 +24,32 @@ impl RowConditions {
     }
 }
 
+/// A source-backed, explicitly bounded derived COUNT(*) grouping that feeds QUALIFY.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowGroupedCountSource {
+    source: String,
+    group_column: String,
+    count_alias: String,
+}
+impl WindowGroupedCountSource {
+    pub(crate) fn new(source: String, group_column: String, count_alias: String) -> Self {
+        Self {
+            source,
+            group_column,
+            count_alias,
+        }
+    }
+    pub fn source(&self) -> &str {
+        &self.source
+    }
+    pub fn group_column(&self) -> &str {
+        &self.group_column
+    }
+    pub fn count_alias(&self) -> &str {
+        &self.count_alias
+    }
+}
+
 /// Partially analyzed query semantics.
 ///
 /// Supported CTE and derived-table semantics are resolved through local scopes so physical joins,
@@ -49,6 +75,8 @@ pub struct QueryStatement {
     filtered_join_goal_output_shape: bool,
     special_join_goal_output_shape: bool,
     ranked_goal_output_shape: bool,
+    ranked_composed_goal_shape: bool,
+    window_grouped_count_source: Option<Box<WindowGroupedCountSource>>,
     set_operation: Option<Box<SetOperation>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -83,6 +111,8 @@ impl QueryStatement {
             filtered_join_goal_output_shape: false,
             special_join_goal_output_shape: false,
             ranked_goal_output_shape: false,
+            ranked_composed_goal_shape: false,
+            window_grouped_count_source: None,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -232,6 +262,26 @@ impl QueryStatement {
             self.window_witness = Some(Box::new(witness));
         }
         self
+    }
+
+    pub(crate) fn with_ranked_composition(
+        mut self,
+        safe_shape: bool,
+        grouped_count: Option<WindowGroupedCountSource>,
+    ) -> Self {
+        self.ranked_composed_goal_shape = safe_shape;
+        self.window_grouped_count_source = grouped_count.map(Box::new);
+        self
+    }
+
+    /// Analyzed SQL shape excludes unproved limits, DISTINCT, filtering and extra producers.
+    pub fn ranked_composed_goal_shape(&self) -> bool {
+        self.ranked_composed_goal_shape
+    }
+
+    /// Canonical GROUP BY key and COUNT(*) alias for a certified derived producer.
+    pub fn window_grouped_count_source(&self) -> Option<&WindowGroupedCountSource> {
+        self.window_grouped_count_source.as_deref()
     }
 
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {

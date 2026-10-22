@@ -67,7 +67,14 @@
     "numeric_native_residual_sqlite_oracles": 2,
     "native_sqlite_oracle_test": "tests/native/test_task_189_sqlite_native.py",
     "acceptance_audit": "docs/task-189-acceptance-audit.md",
-    "independent_ac_signoff": [1, 2, 3, 4, 5, 6],
+    "independent_ac_signoff": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
     "reviewed_semantic_head_sha": "fac7855209b1c094dd110d4cb40955daa500bdf2",
     "reviewed_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39562505282",
     "reviewed_semantic_ci_jobs_passed": 9,
@@ -12553,5 +12560,49 @@
     "independent_signoff": "five_of_five_TASK_116_AC_verified",
     "verified_merged_main_ci_run": 39160526004,
     "verified_merged_main_sha": "3ff08f0ed80b238aacec114ac0c8c724f2eb954b"
+  },
+  "task_127_qualify_acceptance": {
+    "owner": "TASK-127",
+    "parent": "TASK-74",
+    "status": "verified_bounded_child",
+    "acceptance_freeze": "docs/task-127-acceptance-freeze.json",
+    "fixture_ids": [
+      "74-C127-P",
+      "74-C127-N"
+    ],
+    "original_parent_ac": [
+      1,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "required_dialect_parser_cells": 104,
+    "required_adapter_cells": 24,
+    "full_duckdb_oracle": "tests/task_127_qualify_bags.rs",
+    "canonical_implementation": "src/physical_realization/window_bags.rs",
+    "release_approved": false,
+    "acceptance_audit": "docs/task-127-acceptance-audit.md",
+    "canonical_composed_implementation": "src/physical_realization/window_composition.rs",
+    "verified_dialect_parser_cells": 104,
+    "verified_adapter_cells": 24,
+    "verified_mandatory_exact_cases": 7,
+    "conditional_residual_cases": 1,
+    "conditional_law_release_disposition": "reviewed_bounded_residual_pending_release",
+    "independent_join_group_duckdb_oracles": "tests/task_127_upstream_native_oracles.rs",
+    "composed_public_api_evidence": "tests/task_127_qualify_bags.rs",
+    "composed_adapter_parity": "tests/task_127_composed_adapter_parity.rs",
+    "direct_adapter_parity": "tests/task_127_adapter_parity.rs",
+    "frozen_matrix_regression": "tests/task_127_acceptance_gate.rs",
+    "all_original_parent_criteria_verified": false,
+    "task_127_child_acceptance_criteria_verified": true,
+    "implementation_ci_workflow_run": 39674727466,
+    "verified_implementation_sha": "294175da8b30280baf2cec8a52b54e5b0ba4ecd6",
+    "implementation_ci_jobs_passed": 9,
+    "implementation_ci_result": "success",
+    "child_acceptance_signoff": "five_of_five_TASK_127_AC_verified",
+    "parent_TASK_74_status": "open_awaiting_TASK_128_and_independent_parent_signoff"
   }
 }

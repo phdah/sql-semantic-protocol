@@ -29,6 +29,14 @@ pub struct PhysicalFiniteWindowExact {
     pub terminal_row_ids: Vec<String>,
     /// Source identities for which the SQL QUALIFY predicate is NOT TRUE.
     pub rejected_row_ids: Vec<String>,
+    /// All independently controlled physical source relations; never a derived producer.
+    pub physical_sources: Vec<String>,
+    /// Every physical row identity per source, including JOIN and QUALIFY rejections.
+    pub physical_source_row_ids: BTreeMap<String, Vec<String>>,
+    /// Upstream join Cartesian candidates rejected before QUALIFY.
+    pub rejected_upstream_row_ids: Vec<String>,
+    /// Complete physical contributors for every joined or grouped producer row.
+    pub producer_contributors: BTreeMap<String, Vec<String>>,
     /// Complete terminal row multiset in source identity order.
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Finite and inclusive terminal value domains, including SQL NULL.
@@ -429,52 +437,60 @@ fn window_kind(
     }
 }
 
-// A narrow aggregate QUALIFY law: a projected aggregate window compared with
-// a typed integer constant. SQL NULL (including empty SUM/AVG/MIN/MAX) is
-// NOT TRUE, never TRUE. Other Boolean/decimal comparisons stay Residual.
-fn aggregate_qualify_filter(
+// A conjunction of canonical window comparisons is evaluated against a single
+// complete physical bag. Every comparison is classified under SQL three-valued
+// truth: NULL is NOT TRUE. Unsupported Boolean shapes fail closed.
+pub(super) fn qualify_comparisons(
     query: &QueryStatement,
-) -> Result<Option<(String, ComparisonOperator, i128)>, &'static str> {
-    let Some(predicate) = query.predicates().qualify_predicate() else {
-        return Ok(None);
-    };
-    let Predicate::Comparison(comparison) = predicate else {
-        return Err("QUALIFY aggregate requires one canonical comparison");
-    };
-    let (window, operator, threshold) = match (comparison.left(), comparison.right()) {
-        (Expression::WindowFunction(window), Expression::Literal(value)) => {
-            (window, comparison.operator(), value)
+) -> Result<Vec<(&WindowFunctionExpression, ComparisonOperator, i128)>, &'static str> {
+    fn collect<'a>(
+        predicate: &'a Predicate,
+        comparisons: &mut Vec<(&'a WindowFunctionExpression, ComparisonOperator, i128)>,
+    ) -> Result<(), &'static str> {
+        match predicate {
+            Predicate::And(group) => {
+                for operand in group.operands() {
+                    collect(operand, comparisons)?;
+                }
+            }
+            Predicate::Comparison(comparison) => {
+                let (window, operator, threshold) = match (comparison.left(), comparison.right()) {
+                    (Expression::WindowFunction(window), Expression::Literal(value)) => {
+                        (window, comparison.operator(), value)
+                    }
+                    (Expression::Literal(value), Expression::WindowFunction(window)) => {
+                        (window, comparison.operator().reversed(), value)
+                    }
+                    _ => return Err("QUALIFY needs a canonical window and integer literal"),
+                };
+                if matches!(
+                    operator,
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+                ) {
+                    return Err(
+                        "NULL-safe QUALIFY needs explicit three-valued comparison evidence",
+                    );
+                }
+                if threshold.literal_type() != LiteralType::Integer {
+                    return Err("QUALIFY threshold requires an exact integer");
+                }
+                let LiteralValue::Number(number) = threshold.value() else {
+                    return Err("QUALIFY threshold is nonnumeric or NULL");
+                };
+                let threshold = number
+                    .parse::<i128>()
+                    .map_err(|_| "QUALIFY threshold exceeds signed width")?;
+                comparisons.push((window, operator, threshold));
+            }
+            _ => return Err("QUALIFY Boolean expression lacks a complete execution law"),
         }
-        (Expression::Literal(value), Expression::WindowFunction(window)) => {
-            (window, comparison.operator().reversed(), value)
-        }
-        _ => return Err("QUALIFY comparison must use a projected window and integer literal"),
-    };
-    if threshold.literal_type() != LiteralType::Integer {
-        return Err("QUALIFY aggregate threshold requires an exact integer");
+        Ok(())
     }
-    let LiteralValue::Number(number) = threshold.value() else {
-        return Err("QUALIFY aggregate threshold is not numeric");
-    };
-    let threshold = number
-        .parse::<i128>()
-        .map_err(|_| "QUALIFY aggregate threshold exceeds signed width")?;
-    if !matches!(
-        window.function().name().to_ascii_lowercase().as_str(),
-        "count" | "sum" | "avg" | "min" | "max"
-    ) || window.function().distinct()
-    {
-        return Err("QUALIFY aggregate function has no certified comparison law");
+    let mut comparisons = Vec::new();
+    if let Some(predicate) = query.predicates().qualify_predicate() {
+        collect(predicate, &mut comparisons)?;
     }
-    let output = query
-        .output()
-        .columns()
-        .iter()
-        .find(|column| {
-            matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == window)
-        })
-        .ok_or("QUALIFY COUNT must match a projected canonical window")?;
-    Ok(Some((output.name().to_string(), operator, threshold)))
+    Ok(comparisons)
 }
 
 fn frame_position(bound: &WindowFrameBound, index: i128, len: i128) -> Result<i128, &'static str> {
@@ -735,9 +751,6 @@ pub fn physical_finite_window_bag_plan(
         PhysicalWriteStatePlan::Residual { reason, .. } => return residual(reason),
         PhysicalWriteStatePlan::Feasible { .. } => {}
     }
-    let [snapshot] = snapshots else {
-        return residual("window evaluation requires one complete physical source");
-    };
     let mut walker = Walker::new(bundle);
     if let Err(gap) = walker.visit(target_layer_id) {
         return residual(gap.as_str());
@@ -747,6 +760,17 @@ pub fn physical_finite_window_bag_plan(
     };
     let Some(query) = query_for(bundle, layer) else {
         return residual("window target has no canonical query");
+    };
+    if query.ranked_composed_goal_shape() {
+        return super::window_composition::composed_window_plan(
+            bundle,
+            query,
+            snapshots,
+            walker.nodes,
+        );
+    }
+    let [snapshot] = snapshots else {
+        return residual("window evaluation requires one complete physical source");
     };
     let [source] = query.sources() else {
         return residual("window proof requires one direct physical source");
@@ -776,7 +800,7 @@ pub fn physical_finite_window_bag_plan(
     let mut keys: Option<RankKeys> = None;
     let mut operations = Vec::<WindowColumn>::new();
     for projected in query.output().columns() {
-        if !seen_names.insert(projected.name()) {
+        if !seen_names.insert(projected.name().to_string()) {
             return residual("duplicate window output alias");
         }
         match projected.expression() {
@@ -812,12 +836,53 @@ pub fn physical_finite_window_bag_plan(
             _ => return residual("computed projection lacks a certified row-local value law"),
         }
     }
+    let comparisons = match qualify_comparisons(query) {
+        Ok(comparisons) => comparisons,
+        Err(reason) => return residual(reason),
+    };
+    let mut qualify = Vec::new();
+    for (index, (window, operator, threshold)) in comparisons.into_iter().enumerate() {
+        let projected = query.output().columns().iter().find(|column| {
+            matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == window)
+        });
+        let output = if let Some(column) = projected {
+            column.name().to_string()
+        } else {
+            // Internal evaluation slots never leak into terminal projections.
+            let output = format!("__task_127_qualify_{index}");
+            if !seen_names.insert(output.clone()) {
+                return residual("QUALIFY internal slot collides with output alias");
+            }
+            let parsed = match window_keys(window, source, schema) {
+                Ok(parsed) => parsed,
+                Err(reason) => return residual(reason),
+            };
+            if keys.as_ref().is_some_and(|existing| existing != &parsed) {
+                return residual("QUALIFY window uses incompatible partition or order keys");
+            }
+            if parsed.sort.is_empty()
+                && !matches!(
+                    window.function().name().to_ascii_lowercase().as_str(),
+                    "count" | "sum" | "avg" | "min" | "max"
+                )
+            {
+                return residual("QUALIFY ranking requires deterministic ORDER BY");
+            }
+            keys = Some(parsed);
+            let kind = match window_kind(window, source, schema) {
+                Ok(kind) => kind,
+                Err(reason) => return residual(reason),
+            };
+            operations.push(WindowColumn {
+                output: output.clone(),
+                kind,
+            });
+            output
+        };
+        qualify.push((output, operator, threshold));
+    }
     let Some(keys) = keys else {
         return residual("window target has no supported window function");
-    };
-    let qualify = match aggregate_qualify_filter(query) {
-        Ok(qualify) => qualify,
-        Err(reason) => return residual(reason),
     };
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
@@ -857,14 +922,38 @@ pub fn physical_finite_window_bag_plan(
                 .find(|order| !order.is_eq())
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        if !keys.sort.is_empty() && partition.windows(2).any(|rows| rows[0].1 == rows[1].1) {
+        // Peer order is immaterial for RANK/DENSE_RANK, but matters for
+        // ROW_NUMBER, navigation, and ordered ROWS frame membership.
+        if !keys.sort.is_empty()
+            && partition.windows(2).any(|rows| rows[0].1 == rows[1].1)
+            && operations.iter().any(|operation| {
+                !matches!(
+                    &operation.kind,
+                    WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
+                )
+            })
+        {
             return residual("window ORDER BY peers lack deterministic physical row order");
         }
-        for (position, (source_index, _)) in partition.iter().enumerate() {
+        let mut dense_rank = 0_usize;
+        let mut peer_rank = 0_usize;
+        for (position, (source_index, order)) in partition.iter().enumerate() {
+            if position == 0 || partition[position - 1].1 != *order {
+                dense_rank += 1;
+                peer_rank = position + 1;
+            }
             for operation in &operations {
-                let value = match frame_value(&operation.kind, partition, position, snapshot) {
-                    Ok(value) => value,
-                    Err(reason) => return residual(reason),
+                let value = match &operation.kind {
+                    WindowKind::Ranking(RankFunction::Rank) => {
+                        LiteralValue::Number(peer_rank.to_string())
+                    }
+                    WindowKind::Ranking(RankFunction::DenseRank) => {
+                        LiteralValue::Number(dense_rank.to_string())
+                    }
+                    _ => match frame_value(&operation.kind, partition, position, snapshot) {
+                        Ok(value) => value,
+                        Err(reason) => return residual(reason),
+                    },
                 };
                 let Some(column_values) = evaluated.get_mut(&operation.output) else {
                     return residual("missing window output assignment");
@@ -878,26 +967,31 @@ pub fn physical_finite_window_bag_plan(
     let mut rejected_row_ids = Vec::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
         let row_id = format!("{}#{index}", source.name());
-        if let Some((column, operator, threshold)) = &qualify {
+        let mut survives = true;
+        for (column, operator, threshold) in &qualify {
             let Some(Some(value)) = evaluated.get(column).and_then(|values| values.get(index))
             else {
-                return residual("QUALIFY has no exact aggregate output");
+                return residual("QUALIFY lacks a complete window evaluation");
             };
-            // SQL comparisons with NULL are UNKNOWN, hence NOT TRUE in QUALIFY.
-            let survives = match value {
+            // SQL NULL is UNKNOWN for ordinary comparisons and is NOT TRUE.
+            let matches = match value {
                 LiteralValue::Null => false,
                 LiteralValue::Number(number) => {
                     let Ok(number) = number.parse::<i128>() else {
-                        return residual("QUALIFY aggregate requires an exact integer comparison");
+                        return residual("QUALIFY requires an exact integer comparison");
                     };
                     qualifies(number, *operator, *threshold)
                 }
-                _ => return residual("QUALIFY aggregate has no numeric comparison law"),
+                _ => return residual("QUALIFY has no numeric comparison law"),
             };
-            if !survives {
-                rejected_row_ids.push(row_id);
-                continue;
+            if !matches {
+                survives = false;
+                break;
             }
+        }
+        if !survives {
+            rejected_row_ids.push(row_id);
+            continue;
         }
         terminal_row_ids.push(row_id);
         let mut projected = BTreeMap::new();
@@ -939,6 +1033,15 @@ pub fn physical_finite_window_bag_plan(
             .collect(),
         terminal_row_ids,
         rejected_row_ids,
+        physical_sources: vec![source.name().to_string()],
+        physical_source_row_ids: BTreeMap::from([(
+            source.name().to_string(),
+            (0..snapshot.rows().len())
+                .map(|index| format!("{}#{index}", source.name()))
+                .collect(),
+        )]),
+        rejected_upstream_row_ids: Vec::new(),
+        producer_contributors: BTreeMap::new(),
         terminal,
         terminal_domains: domains,
     }))
