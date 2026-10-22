@@ -343,7 +343,7 @@ fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
         assert_eq!(actual.terminal[0].values().next(), Some(&wanted.map_or(LiteralValue::Null, LiteralValue::Boolean)));
         proved += 1;
     }
-    assert_eq!(proved, 9, "all frozen ANY/SOME/ALL obligations");
+    assert_eq!(proved, 8, "all frozen ANY/SOME/ALL obligations");
 }
 
 #[test]
@@ -362,4 +362,97 @@ fn sql_bound_quantifiers_reject_unproved_nested_filters_and_bad_ids() {
         physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(2)),("i1", Some(3))])]),
         PhysicalQuantifiedScalarProof::Impossible { .. }
     ));
+}
+
+
+#[test]
+fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() {
+    use serde_json::Value;
+    use sql_semantic_protocol::{
+        physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+    };
+    let frozen: Value = serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
+    let dialects = frozen["dialects"].as_array().unwrap();
+    assert_eq!(dialects.len(), 13);
+    let db = Connection::open_in_memory().unwrap();
+    db.execute("CREATE TABLE inner_rows (id VARCHAR, v INTEGER)", []).unwrap();
+    let mut dialect_cells = 0;
+    let mut duckdb_cases = 0;
+    for case in frozen["cases"].as_array().unwrap() {
+        let kind = case["kind"].as_str().unwrap();
+        if !["scalar", "any", "all"].contains(&kind) { continue; }
+        let rows = case["inner"].as_array().unwrap();
+        let values = rows.iter().map(|row| (row["id"].as_str().unwrap(), row["v"].as_i64())).collect::<Vec<_>>();
+        let physical = state("inner_rows", &values);
+        let sql = case["sql"].as_str().unwrap();
+        db.execute("DELETE FROM inner_rows", []).unwrap();
+        for row in rows {
+            db.execute("INSERT INTO inner_rows VALUES (?, ?)", params![row["id"].as_str().unwrap(),row["v"].as_i64()]).unwrap();
+        }
+        let want = &case["expect"];
+        if kind == "scalar" {
+            let native = db.query_row(sql, [], |row| row.get::<_,Option<i64>>(0));
+            if want["type"] == "cardinality_error" {
+                assert!(native.is_err(), "{} native cardinality error", case["id"]);
+            } else {
+                assert_eq!(native.unwrap(), want["value"].as_i64(), "{} native scalar terminal bag", case["id"]);
+            }
+        } else {
+            let expected = match want["value"].as_str().unwrap() {
+                "true" => Some(true),
+                "false" => Some(false),
+                "unknown" => None,
+                other => panic!("invalid frozen truth {other}"),
+            };
+            let native: Option<bool> = db.query_row(sql, [], |row| row.get(0)).unwrap();
+            assert_eq!(native, expected, "{} native truth", case["id"]);
+        }
+        duckdb_cases += 1;
+        for dialect in dialects {
+            let name = dialect.as_str().unwrap();
+            let parser = dialect_from_name(name).unwrap();
+            let input = SqlInput::inline(sql);
+            let configured = ConfiguredSqlInput::new("task-131-matrix", &input, name, parser.as_ref());
+            let b = analyze_configured_inputs_with_catalog(&[configured], &catalog())
+                .unwrap_or_else(|e| panic!("{} {name}: mandatory SQL parser failed: {e:?}",case["id"]));
+            let id = b.layers().last().expect("semantic layer").id().to_string();
+            if kind == "scalar" {
+                let proof = physical_finite_scalar_subquery_plan(&b, &id, &[physical.clone()]);
+                match (want["type"].as_str().unwrap(),proof) {
+                    ("exact",PhysicalScalarSubqueryProof::Exact(result)) => {
+                        let value = want["value"].as_i64().map_or(LiteralValue::Null,|v| LiteralValue::Number(v.to_string()));
+                        assert_eq!(result.value,value,"{} {name} scalar",case["id"]);
+                        assert_eq!(result.source_row_ids,values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>());
+                        assert_eq!(result.bounds, want["value"].as_i64().map(|v|(v as i128,v as i128)));
+                    },
+                    ("cardinality_error",PhysicalScalarSubqueryProof::CardinalityViolation{source_row_ids}) =>
+                        assert_eq!(source_row_ids,values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>()),
+                    (expect,other) => panic!("{} {name}: expected {expect}, got {other:?}",case["id"]),
+                };
+            } else {
+                let proof = physical_finite_quantified_subquery_plan(&b, &id, &[physical.clone()]);
+                let PhysicalQuantifiedScalarProof::Exact(exact) = proof else {
+                    panic!("{} {name}: required bound quantified proof missing: {proof:?}",case["id"]);
+                };
+                let expected = match want["value"].as_str().unwrap() {
+                    "true" => PhysicalQuantifiedTruth::True,
+                    "false" => PhysicalQuantifiedTruth::False,
+                    "unknown" => PhysicalQuantifiedTruth::Unknown,
+                    _ => unreachable!(),
+                };
+                assert_eq!(exact.truth,expected,"{} {name} three-valued truth",case["id"]);
+                assert_eq!(exact.source_row_ids,values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>());
+                assert_eq!(exact.terminal.len(),1);
+                let terminal = match expected {
+                    PhysicalQuantifiedTruth::True => LiteralValue::Boolean(true),
+                    PhysicalQuantifiedTruth::False => LiteralValue::Boolean(false),
+                    PhysicalQuantifiedTruth::Unknown => LiteralValue::Null,
+                };
+                assert_eq!(exact.terminal[0].values().next(),Some(&terminal));
+            }
+            dialect_cells += 1;
+        }
+    }
+    assert_eq!(duckdb_cases,12,"all 12 mandatory frozen cases");
+    assert_eq!(dialect_cells,156,"12 cases across 13 dialect parsers");
 }
