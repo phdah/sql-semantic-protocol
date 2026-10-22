@@ -4,7 +4,7 @@
 
 ## Frozen physical cases and evidence
 
-The task-owned [v4 matrix](task-128-acceptance-freeze.json) retains fixed fixture-family IDs `74-C128-P`/`74-C128-N`, seven independent physical rows with duplicate peer values and NULL, source identities, typed inclusive terminal sets and full expected multisets. No conditional case is allowed to substitute for a mandatory Exact case.
+The task-owned [v5 matrix](task-128-acceptance-freeze.json) retains fixed fixture-family IDs `74-C128-P`/`74-C128-N`, seven independent physical rows with duplicate peer values and NULL, source identities, typed inclusive terminal sets and full expected multisets. No conditional case is allowed to substitute for a mandatory Exact case.
 
 | Case | Classification | Executed evidence |
 | --- | --- | --- |
@@ -29,6 +29,8 @@ The task-owned [v4 matrix](task-128-acceptance-freeze.json) retains fixed fixtur
 - `tests/task_128_dbt_core_e2e.rs` is executed under `make dbt-e2e`: real seed/model, compiled `manifest.json`/`catalog.json`, independent native complete source and terminal bags, exact physical identities and typed domains for NTILE and GROUPS. It also checks the actual pre-existing `ranked_orders.sql` fixture's entire joined producer bag and terminal values (ROW_NUMBER, ROWS SUM and QUALIFY).
 - `tests/task_128_advanced_windows.rs` runs native DuckDB conditional full-bag oracles for implicit-NULL GROUPS, bounded numeric RANGE and composite GROUPS, using engine-specific expected bags stored in the versioned freeze while affirming the canonical result stays Residual. Other vendor engines and collation sessions are **not** certified or claimed as executable without independent native oracles. These are explicitly reviewed conditional residual boundaries, not omitted mandatory exact cases.
 - The existing `tests/dbt_core_e2e.rs` golden-snapshot gate remains unchanged in meaning: TASK-128 models are excluded from its legacy comparison and tested independently instead. The native dbt model inventory includes both new models.
+
+**Versioned corrective review (v5):** The PR #139 two-axis review found that v4's N2 peer values both landed in NTILE bucket 1, so its claimed row-identity ambiguity was not independently exercised. v5 changes only that conditional case's source values so peer ids 2 and 3 straddle buckets 1 and 2, and tests both legal DuckDB total-order refinements. A separate test confirms that equivalent peers wholly inside one bucket have an Exact physical assignment. Engine-specific N3/N4/N5 output bags are now frozen instead of duplicated in Rust, and every parsed conditional dialect cell is checked for a canonical Residual outcome. All five mandatory Exact cases, case IDs and child/parent release boundaries remain unchanged.
 
 ## Original parent TASK-74 AC #1 through #6 crosswalk
 
