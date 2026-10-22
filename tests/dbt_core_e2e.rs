@@ -907,8 +907,9 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     legacy_manifest_json["sources"]
         .as_object_mut()
         .unwrap()
-        .retain(|_, source| source["name"] != "task189_decimal_source"
-                && source["name"] != "task128_window_source");
+        .retain(|_, source| {
+            source["name"] != "task189_decimal_source" && source["name"] != "task128_window_source"
+        });
     let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
     let mut legacy_catalog_json: Value = serde_json::from_str(&catalog_text).unwrap();
     legacy_catalog_json["nodes"]
@@ -924,8 +925,9 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     legacy_catalog_json["sources"]
         .as_object_mut()
         .unwrap()
-        .retain(|id, _| !id.ends_with(".task189_decimal_source")
-                && !id.ends_with(".task128_window_source"));
+        .retain(|id, _| {
+            !id.ends_with(".task189_decimal_source") && !id.ends_with(".task128_window_source")
+        });
     let legacy_catalog = parse_dbt_catalog(&legacy_catalog_json.to_string()).unwrap();
     let legacy_bundle = analyze_dbt_artifacts(
         &legacy_manifest,
