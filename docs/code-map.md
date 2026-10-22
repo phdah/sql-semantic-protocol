@@ -1,5 +1,8 @@
 # Code map: find the smallest canonical owner
 
+TASK-131 scalar and quantified finite population laws: `src/physical_realization/scalar_quantified.rs` proves zero/one/multi-row scalar subquery cardinality and operator-local ANY/SOME/ALL SQL three-valued truth on schema-validated signed-integer physical bags. Runtime cardinality errors are distinct from impossible source assignments. `tests/task_131_scalar_quantified.rs` contains public API and DuckDB reference oracles. Parser-bound ANY/ALL, nested correlation, vendor LATERAL/APPLY, adapter parity and per-dialect execution remain unproved, and must not be advertised as complete query proofs.
+
+
 This map is a **navigation index**, not a second semantic specification. For a change, start with the narrowest owner below. Follow the interfaces to adjacent modules only when required, and run the focused test first. The canonical protocol is the Rust model in `src/protocol/`; its serialized contract is `schema/protocol.schema.json`. Do not duplicate a semantic rule in an adapter or emitter.
 
 Validated Arrow-like witness sidecar serialization: `src/emission/typed_physical.rs` owns deterministic physical value JSON; `schema/typed-physical-population.schema.json` documents its separate, non-protocol wire shape; `tests/physical_typed_serialization.rs` verifies exact bytes, bits, JSON NULL and failing proofs. Generated expression dependency ordering and portable function execution remain in `src/physical_realization/write_states/generated.rs`.
