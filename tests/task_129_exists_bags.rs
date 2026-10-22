@@ -29,8 +29,7 @@ fn catalog() -> RelationCatalog {
         )
         .expect("physical source schema")
     };
-    RelationCatalog::from_schemas(&[source("outer_rows"), source("inner_rows")])
-        .expect("catalog")
+    RelationCatalog::from_schemas(&[source("outer_rows"), source("inner_rows")]).expect("catalog")
 }
 
 fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
@@ -101,7 +100,10 @@ fn finite_complete_bags_prove_every_frozen_case_across_thirteen_dialects() {
             let PhysicalFiniteExistsProof::Exact(exact) = proof else {
                 panic!("{} / {dialect}: {proof:?}", case["id"]);
             };
-            assert_eq!(exact.sources, ["outer_rows".to_string(), "inner_rows".to_string()]);
+            assert_eq!(
+                exact.sources,
+                ["outer_rows".to_string(), "inner_rows".to_string()]
+            );
             assert!(exact.nodes.len() >= 3, "canonical source and target graph");
             assert_eq!(
                 exact.selected,
@@ -141,7 +143,10 @@ fn finite_complete_bags_prove_every_frozen_case_across_thirteen_dialects() {
                 .map(|row| row["k"].as_i64().map(i128::from))
                 .collect();
             assert_eq!(actual_bag, expected_bag, "{} / {dialect}", case["id"]);
-            let domain = exact.terminal_domains.get("k").expect("typed output domain");
+            let domain = exact
+                .terminal_domains
+                .get("k")
+                .expect("typed output domain");
             let expected = &case["terminal_value_domain"];
             let expected_values = expected["allowed"]
                 .as_array()
@@ -152,11 +157,16 @@ fn finite_complete_bags_prove_every_frozen_case_across_thirteen_dialects() {
             assert_eq!(domain.values(), expected_values);
             assert_eq!(
                 domain.null_allowed(),
-                expected["contains_null"].as_bool().expect("NULL disposition")
+                expected["contains_null"]
+                    .as_bool()
+                    .expect("NULL disposition")
             );
             assert_eq!(
                 domain.bounds(),
-                expected_values.first().zip(expected_values.last()).map(|(a, b)| (*a, *b))
+                expected_values
+                    .first()
+                    .zip(expected_values.last())
+                    .map(|(a, b)| (*a, *b))
             );
         }
     }
@@ -174,18 +184,23 @@ fn independent_duckdb_oracles_assert_entire_source_and_terminal_bags() {
         .expect("attested source types");
         for relation in ["outer_rows", "inner_rows"] {
             let sql = format!("INSERT INTO {relation}(id,k) VALUES (?, ?)");
-            for row in case["source_bags"][relation].as_array().expect("source bag") {
+            for row in case["source_bags"][relation]
+                .as_array()
+                .expect("source bag")
+            {
                 let id = row["id"].as_str().expect("source id");
                 let key = row["k"].as_i64();
-                db.execute(&sql, params![id, key]).expect("insert source row");
+                db.execute(&sql, params![id, key])
+                    .expect("insert source row");
             }
         }
         // Native query independently exposes IDs as well as projected values.
         // Expected rows are fixed by the acceptance freeze, not by the Rust evaluator.
-        let sql = case["sql"]
-            .as_str()
-            .expect("frozen SQL")
-            .replacen("SELECT o.k AS k", "SELECT o.id, o.k AS k", 1);
+        let sql = case["sql"].as_str().expect("frozen SQL").replacen(
+            "SELECT o.k AS k",
+            "SELECT o.id, o.k AS k",
+            1,
+        );
         let mut statement = db.prepare(&sql).expect("DuckDB parser and planner");
         let actual = statement
             .query_map([], |row| {
