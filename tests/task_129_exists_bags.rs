@@ -87,15 +87,36 @@ fn evaluate(
 #[test]
 fn finite_complete_bags_prove_every_frozen_case_across_thirteen_dialects() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     let cases = frozen["cases"].as_array().expect("case list");
     assert_eq!(cases.len(), 6);
     let dialects = frozen["dialect_identities"].as_array().expect("dialects");
     assert_eq!(dialects.len(), 13);
 
     for case in cases {
+        for adapter in ["direct_sql", "dbt_compiled", "odcs"] {
+            assert_eq!(
+                case["adapter_status"][adapter], "verified",
+                "{} / {adapter}: no unchecked mandatory adapter cells",
+                case["id"]
+            );
+        }
+        assert_eq!(case["duckdb_source_and_terminal_oracle"], "verified");
+        for column in ["outer_identity", "outer_key", "inner_identity", "inner_key"] {
+            assert!(
+                case["source_column_instances"][column].as_str().is_some(),
+                "{}: missing stable physical column instance {column}",
+                case["id"]
+            );
+        }
         for dialect in dialects {
             let dialect = dialect.as_str().expect("dialect name");
+            assert_eq!(
+                case["parser_status"][dialect],
+                "parser_equivalent",
+                "{} / {dialect}: no unchecked mandatory parser cells",
+                case["id"]
+            );
             let proof = evaluate(case, dialect, &snapshots(case));
             let PhysicalFiniteExistsProof::Exact(exact) = proof else {
                 panic!("{} / {dialect}: {proof:?}", case["id"]);
