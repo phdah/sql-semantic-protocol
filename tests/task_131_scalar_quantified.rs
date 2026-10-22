@@ -862,3 +862,70 @@ fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
     assert_eq!(parser_cells, 195);
     assert_eq!(adapter_cells, 45);
 }
+
+
+#[test]
+fn sql_bound_quantified_where_proves_complete_true_and_not_true_physical_bags() {
+    use sql_semantic_protocol::physical_finite_quantified_where_plan;
+    let db=Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE outer_rows (id VARCHAR, v INTEGER);
+         CREATE TABLE inner_rows (id VARCHAR, v INTEGER);
+         INSERT INTO outer_rows VALUES ('o1',1),('o2',2),('o3',NULL),('o4',1);
+         INSERT INTO inner_rows VALUES ('i1',NULL),('i2',1),('i3',1);"
+    ).unwrap();
+    let outer=state("outer_rows",&[("o1",Some(1)),("o2",Some(2)),("o3",None),("o4",Some(1))]);
+    let inner=state("inner_rows",&[("i1",None),("i2",Some(1)),("i3",Some(1))]);
+    for (op,expected_truth) in [
+        ("ANY",vec![PhysicalQuantifiedTruth::True,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::True]),
+        ("SOME",vec![PhysicalQuantifiedTruth::True,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::True]),
+        ("ALL",vec![PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::False,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown]),
+    ] {
+        let sql=format!("SELECT o.v FROM outer_rows o WHERE o.v = {op} (SELECT i.v FROM inner_rows i)");
+        let mut native=db.prepare(&sql).unwrap();
+        let native_bag=native.query_map([],|row|row.get::<_,Option<i64>>(0)).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let selected_sql=format!("SELECT id FROM outer_rows WHERE (v = {op} (SELECT v FROM inner_rows)) IS TRUE ORDER BY id");
+        let rejected_sql=format!("SELECT id FROM outer_rows WHERE NOT ((v = {op} (SELECT v FROM inner_rows)) IS TRUE) ORDER BY id");
+        let ids=|q:&str|db.prepare(q).unwrap().query_map([],|row|row.get::<_,String>(0)).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let native_selected=ids(&selected_sql);
+        let native_rejected=ids(&rejected_sql);
+        for name in [
+            "generic","mysql","postgres","hive","sqlite","snowflake",
+            "redshift","mssql","clickhouse","bigquery","ansi","duckdb","databricks"
+        ] {
+            let dialect=dialect_from_name(name).unwrap();
+            let sql_input=SqlInput::inline(&sql);
+            let configured=ConfiguredSqlInput::new("task-131-where",&sql_input,name,dialect.as_ref());
+            let b=analyze_configured_inputs_with_catalog(&[configured],&catalog()).unwrap();
+            let target=b.layers().last().unwrap();
+            let proof=physical_finite_quantified_where_plan(&b,target.id(),&[outer.clone(),inner.clone()]);
+            let PhysicalFiniteQuantifiedProof::Exact(exact)=proof else {
+                panic!("{name} {op}: public canonical WHERE quantification is not Exact: {proof:?}");
+            };
+            for (index,id) in ["o1","o2","o3","o4"].iter().enumerate() {
+                assert_eq!(exact.truth[*id],expected_truth[index],"{name}/{op}/{id}");
+            }
+            assert_eq!(exact.candidate_inner["o1"],["i1","i2","i3"]);
+            assert_eq!(exact.selected,native_selected,"{name}/{op} TRUE membership");
+            assert_eq!(exact.rejected,native_rejected,"{name}/{op} NOT TRUE includes UNKNOWN");
+            assert_eq!(exact.selected.len()+exact.rejected.len(),4);
+            let terminal=exact.terminal.iter().map(|row|{
+                match row["v"] {LiteralValue::Number(ref n)=>Some(n.parse::<i64>().unwrap()),LiteralValue::Null=>None,ref other=>panic!("unexpected {other:?}")}
+            }).collect::<Vec<_>>();
+            assert_eq!(terminal,native_bag,"{name}/{op} full terminal bag");
+            if op!="ALL" {
+                assert_eq!(exact.terminal_domain.bounds(),Some((1,1)));
+                assert!(!exact.terminal_domain.null_allowed);
+            } else {
+                assert!(exact.terminal.is_empty());
+                assert_eq!(exact.terminal_domain.bounds(),None);
+            }
+        }
+    }
+    let b=bundle("SELECT o.v FROM outer_rows o WHERE o.v = ANY (SELECT i.v FROM inner_rows i WHERE i.v>0)");
+    let id=b.layers().last().unwrap().id().to_string();
+    assert!(matches!(
+        physical_finite_quantified_where_plan(&b,&id,&[outer,inner]),
+        PhysicalFiniteQuantifiedProof::Residual{..}
+    ));
+}
