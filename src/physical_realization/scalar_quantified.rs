@@ -286,8 +286,12 @@ pub fn physical_finite_quantified_comparison(
         return residual("quantifier requires two distinct attested signed integer source columns");
     }
     let (Some(outer), Some(inner)) = (
-        snapshots.iter().find(|bag| bag.relation() == outer_relation),
-        snapshots.iter().find(|bag| bag.relation() == inner_relation),
+        snapshots
+            .iter()
+            .find(|bag| bag.relation() == outer_relation),
+        snapshots
+            .iter()
+            .find(|bag| bag.relation() == inner_relation),
     ) else {
         return residual("both complete source populations are required");
     };
