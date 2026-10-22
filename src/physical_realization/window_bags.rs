@@ -845,10 +845,10 @@ fn frame_value(
         .ok_or("window value column missing from complete source bag")
 }
 
-/// Evaluate portable navigation and COUNT/SUM/AVG/MIN/MAX deterministic
-/// ROWS frames against one validated physical source bag. Unattested peer
-/// ordering, implicit NULL order, RANGE/GROUPS and complex row shaping remain
-/// typed Residual; contradictory source schemas yield Impossible.
+/// Evaluate portable navigation, deterministic NTILE and COUNT/SUM/AVG/MIN/MAX
+/// over attested ROWS and peer-aware RANGE/GROUPS frames. Unproved peer row
+/// identities, numeric RANGE offsets, implicit NULL order and complex shaping
+/// remain typed Residual; contradictory schemas yield Impossible.
 pub fn physical_finite_window_bag_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
