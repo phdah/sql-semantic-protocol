@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "owner": "TASK-131",
+  "parent": "TASK-75",
+  "fixture_ids": [
+    "75-C131-P",
+    "75-C131-N"
+  ],
+  "status": "frozen_pending_implementation_and_independent_oracles",
+  "projection_schema": {
+    "relation": "inner_rows",
+    "columns": {
+      "id": "VARCHAR NOT NULL",
+      "v": "INTEGER NULL"
+    },
+    "integer_bounds": "inclusive",
+    "null_semantics": "sql"
+  },
+  "source_identity": {
+    "source_row_ids": "nonempty unique text IDs",
+    "bag": "entire physical input, duplicates retained"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "sql",
+    "dbt",
+    "odcs"
+  ],
+  "truth_law": {
+    "any_empty": "false",
+    "all_empty": "true",
+    "null_comparison": "unknown",
+    "any": "TRUE dominates UNKNOWN dominates FALSE",
+    "all": "FALSE dominates UNKNOWN dominates TRUE"
+  },
+  "scalar_cardinality": {
+    "zero_rows": "SQL NULL",
+    "one_row": "single value or SQL NULL",
+    "multiple_rows": "runtime cardinality error, not Impossible"
+  },
+  "original_parent_ac_mapping": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "seams": [
+    "public analyzer SQL-to-canonical predicate",
+    "complete physical source bag proof",
+    "independent DuckDB full-bag oracle",
+    "adapter/dialect conformance"
+  ],
+  "conditional_ownership": {
+    "nested": "TASK-131",
+    "lateral": "TASK-131",
+    "apply": "TASK-131",
+    "native_vendor_laws": "TASK-131",
+    "decimal_promotion": "TASK-131"
+  },
+  "parser_matrix_status": "pending per-dialect classification",
+  "adapter_matrix_status": "pending",
+  "duckdb_oracle_status": "pending",
+  "ci_status": "pending",
+  "mandatory_cases": 12,
+  "conditional_cases": 3,
+  "acceptance_criteria": {
+    "1": "pending",
+    "2": "pending",
+    "3": "pending",
+    "4": "pending",
+    "5": "pending"
+  },
+  "cases": [
+    {
+      "id": "75-C131-P1",
+      "kind": "scalar",
+      "sql": "SELECT (SELECT v FROM inner_rows WHERE 1=0) AS x",
+      "inner": [],
+      "expect": {
+        "type": "exact",
+        "value": null
+      }
+    },
+    {
+      "id": "75-C131-P2",
+      "kind": "scalar",
+      "sql": "SELECT (SELECT v FROM inner_rows) AS x",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        }
+      ],
+      "expect": {
+        "type": "exact",
+        "value": 2
+      }
+    },
+    {
+      "id": "75-C131-N1",
+      "kind": "scalar",
+      "sql": "SELECT (SELECT v FROM inner_rows) AS x",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        },
+        {
+          "id": "i2",
+          "v": 3
+        }
+      ],
+      "expect": {
+        "type": "cardinality_error",
+        "sqlstate": "21000"
+      }
+    },
+    {
+      "id": "75-C131-N2",
+      "kind": "scalar",
+      "sql": "SELECT (SELECT v FROM inner_rows) AS x",
+      "inner": [
+        {
+          "id": "i1",
+          "v": null
+        }
+      ],
+      "expect": {
+        "type": "exact",
+        "value": null
+      }
+    },
+    {
+      "id": "75-C131-P3",
+      "kind": "any",
+      "operator": "eq",
+      "outer": 1,
+      "sql": "SELECT 1 = ANY (SELECT v FROM inner_rows)",
+      "inner": [],
+      "expect": {
+        "type": "truth",
+        "value": "false"
+      }
+    },
+    {
+      "id": "75-C131-P4",
+      "kind": "all",
+      "operator": "eq",
+      "outer": 1,
+      "sql": "SELECT 1 = ALL (SELECT v FROM inner_rows)",
+      "inner": [],
+      "expect": {
+        "type": "truth",
+        "value": "true"
+      }
+    },
+    {
+      "id": "75-C131-P5",
+      "kind": "any",
+      "operator": "eq",
+      "outer": 1,
+      "sql": "SELECT 1 = ANY (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": null
+        },
+        {
+          "id": "i2",
+          "v": 1
+        },
+        {
+          "id": "i3",
+          "v": 1
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "true"
+      }
+    },
+    {
+      "id": "75-C131-N3",
+      "kind": "any",
+      "operator": "eq",
+      "outer": 2,
+      "sql": "SELECT 2 = SOME (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 1
+        },
+        {
+          "id": "i2",
+          "v": null
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "unknown"
+      }
+    },
+    {
+      "id": "75-C131-N4",
+      "kind": "all",
+      "operator": "lt",
+      "outer": 5,
+      "sql": "SELECT 5 < ALL (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 6
+        },
+        {
+          "id": "i2",
+          "v": null
+        },
+        {
+          "id": "i3",
+          "v": 4
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "false"
+      }
+    },
+    {
+      "id": "75-C131-N5",
+      "kind": "all",
+      "operator": "lt",
+      "outer": 5,
+      "sql": "SELECT 5 < ALL (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 6
+        },
+        {
+          "id": "i2",
+          "v": null
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "unknown"
+      }
+    },
+    {
+      "id": "75-C131-P6",
+      "kind": "any",
+      "operator": "gt",
+      "outer": null,
+      "sql": "SELECT NULL > ANY (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 4
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "unknown"
+      }
+    },
+    {
+      "id": "75-C131-P7",
+      "kind": "all",
+      "operator": "gte",
+      "outer": 5,
+      "sql": "SELECT 5 >= ALL (SELECT v FROM inner_rows)",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        },
+        {
+          "id": "i2",
+          "v": 5
+        }
+      ],
+      "expect": {
+        "type": "truth",
+        "value": "true"
+      }
+    },
+    {
+      "id": "75-C131-N6",
+      "kind": "nested",
+      "sql": "SELECT (SELECT v FROM inner_rows WHERE v = (SELECT k FROM control_rows)) AS x",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        }
+      ],
+      "expect": {
+        "type": "conditional",
+        "reason": "nested full-bag source binding and cardinality unproved",
+        "owner": "TASK-131"
+      }
+    },
+    {
+      "id": "75-C131-N7",
+      "kind": "lateral",
+      "sql": "SELECT o.id FROM outer_rows o CROSS JOIN LATERAL (SELECT v FROM inner_rows i WHERE i.v = o.v) s",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        }
+      ],
+      "expect": {
+        "type": "conditional",
+        "reason": "per-outer-row correlated lateral materialization unproved",
+        "owner": "TASK-131"
+      }
+    },
+    {
+      "id": "75-C131-N8",
+      "kind": "apply",
+      "sql": "SELECT o.id FROM outer_rows o CROSS APPLY (SELECT v FROM inner_rows i WHERE i.v = o.v) s",
+      "inner": [
+        {
+          "id": "i1",
+          "v": 2
+        }
+      ],
+      "expect": {
+        "type": "conditional",
+        "reason": "vendor-specific APPLY parser/runtime law unproved",
+        "owner": "TASK-131"
+      }
+    }
+  ]
+}
