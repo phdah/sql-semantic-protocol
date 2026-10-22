@@ -1,4 +1,29 @@
 {
+  "task_128_advanced_window_frame_plan": {
+    "owner": "TASK-128",
+    "parent": "TASK-74",
+    "status": "in_progress_not_signed_off",
+    "task": ".backlog/tasks/task-128 - certify-advanced-frames-vendor-laws-and-task-74-signoff.md",
+    "freeze": "docs/task-128-acceptance-freeze.json",
+    "public_oracle": "tests/task_128_advanced_windows.rs",
+    "implemented_exact_variants": [
+      "ntile_balanced_buckets",
+      "range_peer_cumulative",
+      "groups_preceding_peer_bags"
+    ],
+    "conditional_not_signed_off": [
+      "ntile_zero_argument",
+      "ntile_peer_instability",
+      "implicit_null_order",
+      "collation",
+      "bounded_range_offsets",
+      "native_vendor_session",
+      "parent_acceptance"
+    ],
+    "dialect_parser_cells": "pending_executable_classification",
+    "adapter_parity": "pending_executable_verification",
+    "parent_signoff": false
+  },
   "task_189_common_window_aggregate_plan": {
     "owner": "TASK-189",
     "parent": "TASK-74",
