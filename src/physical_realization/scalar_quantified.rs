@@ -48,10 +48,9 @@ pub enum PhysicalScalarSubqueryProof {
 /// Prove a scalar subquery projected as the sole column of a SELECT statement.
 ///
 /// Only uncorrelated, candidate-preserving single-relation signed-integer
-/// scalar SELECTs have exact physical cardinality. An empty source produces
-/// SQL NULL even when the nested SELECT includes an unproved WHERE condition.
-/// Nonempty nested filters, aggregation, joins, correlated scopes, and multiple
-/// projections conservatively return Residual.
+/// scalar SELECTs have exact physical cardinality. Nested filters, aggregation,
+/// joins, correlated scopes, and multiple projections remain Residual, even
+/// on empty bags, because SQL expression evaluation may raise runtime errors.
 pub fn physical_finite_scalar_subquery_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -99,6 +98,7 @@ pub fn physical_finite_scalar_subquery_plan(
         || !query.joins().is_empty()
         || !query.diagnostics().is_empty()
         || !nested.row_shape_preserves_candidates()
+        || nested.predicates().where_predicate().is_some()
         || !nested.joins().is_empty()
         || !nested.correlations().is_empty()
         || !nested.diagnostics().is_empty()
@@ -125,16 +125,12 @@ pub fn physical_finite_scalar_subquery_plan(
         .iter()
         .filter_map(|row| row_id(row).map(str::to_string))
         .collect::<Vec<_>>();
-    if !ids.is_empty() && nested.predicates().where_predicate().is_some() {
-        return residual("nonempty nested WHERE requires a complete filter proof");
-    }
     if ids.len() > 1 {
         return PhysicalScalarSubqueryProof::CardinalityViolation {
             source_row_ids: ids,
         };
     }
-    // An empty nested source cannot produce any row through a
-    // candidate-preserving SELECT, regardless of an additional filter.
+    // A candidate-preserving SELECT on an empty attested bag yields NULL.
     if ids.is_empty() {
         return PhysicalScalarSubqueryProof::Exact(PhysicalScalarSubqueryExact {
             source: source.name().to_string(),
