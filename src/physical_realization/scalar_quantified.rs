@@ -465,6 +465,12 @@ pub fn physical_finite_quantified_subquery_plan(
         },
         _ => return residual("quantified outer operand has no certified integer type"),
     };
+    if matches!(
+        comparison.operator(),
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
+        return residual("quantified null-safe comparison has no certified SQL law");
+    }
     let nested = comparison.subquery();
     let [source] = nested.sources() else {
         return residual("quantified nested source must be one physical relation");

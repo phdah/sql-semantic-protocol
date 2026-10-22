@@ -461,25 +461,48 @@ fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() 
             let name = dialect.as_str().unwrap();
             let parser = dialect_from_name(name).unwrap();
             let input = SqlInput::inline(sql);
-            let configured = ConfiguredSqlInput::new("task-131-matrix", &input, name, parser.as_ref());
+            let configured =
+                ConfiguredSqlInput::new("task-131-matrix", &input, name, parser.as_ref());
             let b = analyze_configured_inputs_with_catalog(&[configured], &catalog())
-                .unwrap_or_else(|e| panic!("{} {name}: mandatory SQL parser failed: {e:?}",case["id"]));
+                .unwrap_or_else(|e| {
+                    panic!("{} {name}: mandatory SQL parser failed: {e:?}", case["id"])
+                });
             let id = b.layers().last().expect("semantic layer").id().to_string();
             if kind == "scalar" {
-                let proof = physical_finite_scalar_subquery_plan(&b, &id, std::slice::from_ref(&physical));
-                match (want["type"].as_str().unwrap(),proof) {
-                    ("exact",PhysicalScalarSubqueryProof::Exact(result)) => {
-                        let value = want["value"].as_i64().map_or(LiteralValue::Null,|v| LiteralValue::Number(v.to_string()));
-                        assert_eq!(result.value,value,"{} {name} scalar",case["id"]);
-                        assert_eq!(result.source_row_ids,values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>());
-                        assert_eq!(result.bounds, want["value"].as_i64().map(|v|(v as i128,v as i128)));
-                    },
-                    ("cardinality_error",PhysicalScalarSubqueryProof::CardinalityViolation{source_row_ids}) =>
-                        assert_eq!(source_row_ids,values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>()),
-                    (expect,other) => panic!("{} {name}: expected {expect}, got {other:?}",case["id"]),
+                let proof =
+                    physical_finite_scalar_subquery_plan(&b, &id, std::slice::from_ref(&physical));
+                match (want["type"].as_str().unwrap(), proof) {
+                    ("exact", PhysicalScalarSubqueryProof::Exact(result)) => {
+                        let value = want["value"]
+                            .as_i64()
+                            .map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()));
+                        assert_eq!(result.value, value, "{} {name} scalar", case["id"]);
+                        assert_eq!(
+                            result.source_row_ids,
+                            values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>()
+                        );
+                        assert_eq!(
+                            result.bounds,
+                            want["value"].as_i64().map(|v| (v as i128, v as i128))
+                        );
+                    }
+                    (
+                        "cardinality_error",
+                        PhysicalScalarSubqueryProof::CardinalityViolation { source_row_ids },
+                    ) => assert_eq!(
+                        source_row_ids,
+                        values.iter().map(|v| v.0.to_string()).collect::<Vec<_>>()
+                    ),
+                    (expect, other) => {
+                        panic!("{} {name}: expected {expect}, got {other:?}", case["id"])
+                    }
                 };
             } else {
-                let proof = physical_finite_quantified_subquery_plan(&b, &id, std::slice::from_ref(&physical));
+                let proof = physical_finite_quantified_subquery_plan(
+                    &b,
+                    &id,
+                    std::slice::from_ref(&physical),
+                );
                 let PhysicalQuantifiedScalarProof::Exact(exact) = proof else {
                     panic!(
                         "{} {name}: required bound quantified proof missing: {proof:?}",

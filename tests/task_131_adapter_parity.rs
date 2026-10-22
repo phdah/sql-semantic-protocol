@@ -12,8 +12,8 @@ fn all_frozen_mandatory_scalar_and_quantified_cases_preserve_adapter_parity() {
         dialect_from_name, parse_dbt_manifest, parse_odcs_yaml,
         physical_finite_quantified_subquery_plan, physical_finite_scalar_subquery_plan,
         ConfiguredSqlInput, LiteralValue, PhysicalQuantifiedScalarProof,
-        PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState,
-        RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+        PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+        RelationSchema, SchemaColumn, SqlInput,
     };
 
     let frozen: Value =
@@ -57,19 +57,31 @@ schema:
     let mut certified = 0;
     for case in frozen["cases"].as_array().unwrap() {
         let kind = case["kind"].as_str().unwrap();
-        if !["scalar", "any", "all"].contains(&kind) { continue; }
+        if !["scalar", "any", "all"].contains(&kind) {
+            continue;
+        }
         let sql = case["sql"]
             .as_str()
             .unwrap()
             .replace("FROM inner_rows", "FROM warehouse.raw.inner_rows");
         let input = SqlInput::inline(&sql);
         let direct_bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("task-131", &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "task-131",
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &direct,
         )
         .unwrap();
         let odcs_bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("task-131", &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "task-131",
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &external,
         )
         .unwrap();
@@ -103,8 +115,8 @@ schema:
             }
         });
         let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
-        let compiled = analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref())
-            .unwrap();
+        let compiled =
+            analyze_dbt_manifest_with_schemas(&parsed, "postgresql", parser.as_ref()).unwrap();
         let bag = PhysicalWriteState::new(
             physical_name,
             case["inner"]
@@ -113,9 +125,18 @@ schema:
                 .iter()
                 .map(|row| {
                     PhysicalWriteRow::new(BTreeMap::from([
-                        ("id".to_string(),LiteralValue::Text(row["id"].as_str().unwrap().to_string())),
-                        ("v".to_string(), row["v"].as_i64().map_or(LiteralValue::Null,|v| LiteralValue::Number(v.to_string()))),
-                    ])).unwrap()
+                        (
+                            "id".to_string(),
+                            LiteralValue::Text(row["id"].as_str().unwrap().to_string()),
+                        ),
+                        (
+                            "v".to_string(),
+                            row["v"].as_i64().map_or(LiteralValue::Null, |v| {
+                                LiteralValue::Number(v.to_string())
+                            }),
+                        ),
+                    ]))
+                    .unwrap()
                 })
                 .collect(),
         )
@@ -125,7 +146,7 @@ schema:
             .map(|(adapter,bundle)| {
                 let target = bundle.layers().last().expect("one source-backed layer");
                 let actual = if kind == "scalar" {
-                    match physical_finite_scalar_subquery_plan(&bundle,target.id(),&[bag.clone()]) {
+                    match physical_finite_scalar_subquery_plan(&bundle,target.id(),std::slice::from_ref(&bag)) {
                         PhysicalScalarSubqueryProof::Exact(exact) =>
                             format!("{:?}",("exact",exact.source,exact.source_row_ids,exact.value,exact.bounds)),
                         PhysicalScalarSubqueryProof::CardinalityViolation{source_row_ids} =>
@@ -133,7 +154,7 @@ schema:
                         other => panic!("{} {adapter}: scalar adapter lost evidence: {other:?}",case["id"]),
                     }
                 } else {
-                    match physical_finite_quantified_subquery_plan(&bundle,target.id(),&[bag.clone()]) {
+                    match physical_finite_quantified_subquery_plan(&bundle,target.id(),std::slice::from_ref(&bag)) {
                         PhysicalQuantifiedScalarProof::Exact(exact) =>
                             format!("{:?}",("exact",exact.source,exact.source_row_ids,exact.truth,exact.terminal)),
                         other => panic!("{} {adapter}: quantified adapter lost evidence: {other:?}",case["id"]),
