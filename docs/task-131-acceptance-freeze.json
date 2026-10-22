@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-131",
   "parent": "TASK-75",
   "fixture_ids": [
@@ -90,7 +90,7 @@
     {
       "id": "75-C131-P1",
       "kind": "scalar",
-      "sql": "SELECT (SELECT v FROM inner_rows WHERE 1=0) AS x",
+      "sql": "SELECT (SELECT v FROM inner_rows) AS x",
       "inner": [],
       "expect": {
         "type": "exact",
@@ -348,5 +348,6 @@
         "owner": "TASK-131"
       }
     }
-  ]
+  ],
+  "reviewed_freeze_revision": "v2: remove unproved nested WHERE from zero-row scalar mandatory case, preserving fixture identity and SQL NULL oracle"
 }
