@@ -13,7 +13,7 @@ fn advanced_windows_agree_across_direct_compiled_dbt_and_odcs_on_complete_bags()
     use std::collections::BTreeMap;
 
     let freeze: Value =
-        serde_json::from_str(include_str!("../docs/task-189-acceptance-freeze.json")).unwrap();
+        serde_json::from_str(include_str!("../docs/task-128-acceptance-freeze.json")).unwrap();
     let source_name = "warehouse.raw.s";
     let parser = dialect_from_name("postgresql").unwrap();
     let sql_dialect = "postgresql";
@@ -180,7 +180,7 @@ schema:
             }
         }
         assert_eq!(results.len(), 3, "{id}");
-        assert_eq!(results[0], results[1], "{id}: compiled dbt decimal parity");
-        assert_eq!(results[0], results[2], "{id}: ODCS decimal parity");
+        assert_eq!(results[0], results[1], "{id}: compiled dbt advanced-window parity");
+        assert_eq!(results[0], results[2], "{id}: ODCS advanced-window parity");
     }
 }
