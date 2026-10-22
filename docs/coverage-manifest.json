@@ -1,4 +1,23 @@
 {
+  "task_129_exists_subquery_plan": {
+    "owner": "TASK-129",
+    "parent": "TASK-75",
+    "status": "in_progress_unsigned",
+    "task": ".backlog/tasks/task-129 - prove-exists-and-not-exists-correlated-uncorrelated.md",
+    "freeze": "docs/task-129-acceptance-freeze.json",
+    "public_oracle": "tests/task_129_exists_bags.rs",
+    "fixture_ids": [
+      "75-C129-P",
+      "75-C129-N"
+    ],
+    "mandatory_cases": 6,
+    "required_parser_cells": 78,
+    "required_adapter_cells": 18,
+    "mandatory_verified": false,
+    "child_acceptance_criteria_verified": [],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_128_advanced_window_frame_plan": {
     "owner": "TASK-128",
     "parent": "TASK-74",
