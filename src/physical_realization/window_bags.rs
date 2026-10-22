@@ -1021,14 +1021,10 @@ pub fn physical_finite_window_bag_plan(
                 !matches!(
                     &operation.kind,
                     WindowKind::Ranking(RankFunction::Rank | RankFunction::DenseRank)
-                        | WindowKind::Aggregate {
-                            frame: Some(WindowFrame { .. }),
-                            ..
-                        }
-                ) || matches!(
+                ) && !matches!(
                     &operation.kind,
                     WindowKind::Aggregate { frame: Some(frame), .. }
-                        if frame.units() == WindowFrameUnits::Rows
+                        if frame.units() != WindowFrameUnits::Rows
                 )
             })
         {
