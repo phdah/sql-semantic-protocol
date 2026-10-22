@@ -390,3 +390,162 @@ pub fn physical_finite_quantified_comparison(
         },
     })
 }
+
+
+/// One fully source-attested uncorrelated quantified scalar projection.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalQuantifiedScalarExact {
+    /// Canonical physical source, not the SQL alias.
+    pub source: String,
+    /// Complete ordered source-row identities, including equal values on distinct rows.
+    pub source_row_ids: Vec<String>,
+    /// SQL three-valued outcome, not coerced to a WHERE predicate.
+    pub truth: PhysicalQuantifiedTruth,
+    /// Exact one-row, one-column SQL terminal bag.
+    pub terminal: Vec<BTreeMap<String, LiteralValue>>,
+}
+
+/// SQL-bound scalar quantified-comparison proof strength.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalQuantifiedScalarProof {
+    /// Canonical SQL expression and the complete physical source jointly prove the result.
+    Exact(PhysicalQuantifiedScalarExact),
+    /// Complete source evidence violates authoritative schema or row identity.
+    Impossible { reason: String },
+    /// The SQL shape, type, scope, or source bag cannot be certified.
+    Residual { reason: String },
+}
+
+/// Certify an uncorrelated SELECT literal OP ANY/SOME/ALL (SELECT column FROM source).
+///
+/// The quantifier, comparison operator and nested physical source MUST be
+/// obtained from the canonical parser-independent protocol, not passed in by
+/// the caller. No parser-only or independently supplied operator claim is exact.
+pub fn physical_finite_quantified_subquery_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    snapshots: &[PhysicalWriteState],
+) -> PhysicalQuantifiedScalarProof {
+    let residual = |reason: &str| PhysicalQuantifiedScalarProof::Residual {
+        reason: reason.to_string(),
+    };
+    match physical_closed_world_schema_plan(bundle, snapshots) {
+        PhysicalWriteStatePlan::Impossible { reason, .. } => {
+            return PhysicalQuantifiedScalarProof::Impossible { reason };
+        }
+        PhysicalWriteStatePlan::Residual { reason, .. } => return residual(&reason),
+        PhysicalWriteStatePlan::Feasible { .. } => {}
+    }
+    let mut walker = Walker::new(bundle);
+    if let Err(gap) = walker.visit(target_layer_id) {
+        return residual(gap.as_str());
+    }
+    let Some(target) = walker.layers.get(target_layer_id).copied() else {
+        return residual("quantified target is not a canonical layer");
+    };
+    let Some(query) = query_for(bundle, target) else {
+        return residual("quantified target is not a canonical SELECT");
+    };
+    let [output] = query.output().columns() else {
+        return residual("scalar quantified output must contain one column");
+    };
+    let Expression::BooleanPredicate(predicate) = output.expression() else {
+        return residual("quantified scalar result lacks normalized boolean semantics");
+    };
+    let crate::protocol::Predicate::QuantifiedSubquery(comparison) = predicate.as_ref() else {
+        return residual("quantifier and comparison operator are not bound to canonical SQL");
+    };
+    let Expression::Literal(literal) = comparison.operand() else {
+        return residual("quantified scalar outer operand is not a typed literal");
+    };
+    let outer = match literal.value() {
+        LiteralValue::Null => None,
+        LiteralValue::Number(number) => match number.parse::<i128>() {
+            Ok(n) => Some(n),
+            Err(_) => return residual("quantified literal is not a bounded signed integer"),
+        },
+        _ => return residual("quantified outer operand has no certified integer type"),
+    };
+    let nested = comparison.subquery();
+    let [source] = nested.sources() else {
+        return residual("quantified nested source must be one physical relation");
+    };
+    let [projected] = nested.output().columns() else {
+        return residual("quantified nested query must return one scalar column");
+    };
+    let Some(column) = projected.plain_copy_source() else {
+        return residual("quantified nested projection must copy one source column");
+    };
+    if !query.sources().is_empty()
+        || query.predicates().where_predicate().is_some()
+        || query.aggregation().is_some()
+        || !query.joins().is_empty()
+        || !query.diagnostics().is_empty()
+        || !nested.row_shape_preserves_candidates()
+        || nested.predicates().where_predicate().is_some()
+        || !nested.joins().is_empty()
+        || !nested.correlations().is_empty()
+        || !nested.diagnostics().is_empty()
+        || column.relation() != source.name()
+        || snapshots.len() != 1
+    {
+        return residual("quantified source row shape, scope or correlation is not certified");
+    }
+    let [snapshot] = snapshots else {
+        return residual("quantified scalar requires one closed physical source bag");
+    };
+    if snapshot.relation() != source.name()
+        || !signed_integer_source(bundle, source.name(), column.column())
+    {
+        return residual("quantified inner column lacks signed integer schema attestation");
+    }
+    if let Err(reason) = checked_ids(snapshot) {
+        return PhysicalQuantifiedScalarProof::Impossible {
+            reason: reason.to_string(),
+        };
+    }
+    let mut source_row_ids = Vec::new();
+    let mut has_true = false;
+    let mut has_false = false;
+    let mut has_unknown = false;
+    for row in snapshot.rows() {
+        let Some(id) = row_id(row) else {
+            return residual("quantified source row has no identity");
+        };
+        source_row_ids.push(id.to_string());
+        let inner = match scalar(row, column.column()) {
+            Ok(value) => value,
+            Err(reason) => return residual(reason),
+        };
+        match compare(outer, inner, comparison.operator()) {
+            Some(true) => has_true = true,
+            Some(false) => has_false = true,
+            None => has_unknown = true,
+        }
+    }
+    let truth = match comparison.quantifier() {
+        crate::protocol::SubqueryQuantifier::Any if has_true => PhysicalQuantifiedTruth::True,
+        crate::protocol::SubqueryQuantifier::Any if has_unknown => {
+            PhysicalQuantifiedTruth::Unknown
+        }
+        crate::protocol::SubqueryQuantifier::Any => PhysicalQuantifiedTruth::False,
+        crate::protocol::SubqueryQuantifier::All if has_false => PhysicalQuantifiedTruth::False,
+        crate::protocol::SubqueryQuantifier::All if has_unknown => {
+            PhysicalQuantifiedTruth::Unknown
+        }
+        crate::protocol::SubqueryQuantifier::All => PhysicalQuantifiedTruth::True,
+    };
+    // This SELECT has no FROM clause and therefore returns exactly one row;
+    // a SQL UNKNOWN scalar projection is NULL, not an omitted row.
+    let value = match truth {
+        PhysicalQuantifiedTruth::True => LiteralValue::Boolean(true),
+        PhysicalQuantifiedTruth::False => LiteralValue::Boolean(false),
+        PhysicalQuantifiedTruth::Unknown => LiteralValue::Null,
+    };
+    PhysicalQuantifiedScalarProof::Exact(PhysicalQuantifiedScalarExact {
+        source: source.name().to_string(),
+        source_row_ids,
+        truth,
+        terminal: vec![BTreeMap::from([(output.name().to_string(), value)])],
+    })
+}

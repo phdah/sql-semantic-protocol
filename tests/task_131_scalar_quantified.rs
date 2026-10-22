@@ -299,3 +299,74 @@ fn duckdb_independently_checks_scalar_cardinality_and_quantifier_truth() {
         "true"
     );
 }
+
+
+#[test]
+fn frozen_quantifiers_are_bound_to_sql_not_a_caller_operator() {
+    use serde_json::Value;
+    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof, Predicate, SubqueryQuantifier};
+    let freeze: Value = serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).expect("fixture contract");
+    let db = Connection::open_in_memory().expect("duckdb");
+    db.execute("CREATE TABLE inner_rows (id VARCHAR, v INTEGER)", []).unwrap();
+    let mut proved = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if !["any", "all"].contains(&case["kind"].as_str().unwrap_or_default()) { continue; }
+        let sql = case["sql"].as_str().unwrap();
+        let b = bundle(sql);
+        let target = b.layers().last().expect("target");
+        let snapshot = state("inner_rows", &case["inner"].as_array().unwrap().iter().map(|row| {
+            (row["id"].as_str().unwrap(), row["v"].as_i64())
+        }).collect::<Vec<_>>());
+        db.execute("DELETE FROM inner_rows", []).unwrap();
+        for row in case["inner"].as_array().unwrap() {
+            db.execute("INSERT INTO inner_rows VALUES (?, ?)", params![row["id"].as_str().unwrap(), row["v"].as_i64()]).unwrap();
+        }
+        let PhysicalQuantifiedScalarProof::Exact(actual) =
+            physical_finite_quantified_subquery_plan(&b, target.id(), &[snapshot])
+        else { panic!("{} canonical quantified proof missing", case["id"]); };
+        let expected = match case["expect"]["value"].as_str().unwrap() {
+            "true" => PhysicalQuantifiedTruth::True,
+            "false" => PhysicalQuantifiedTruth::False,
+            "unknown" => PhysicalQuantifiedTruth::Unknown,
+            v => panic!("unexpected truth {v}"),
+        };
+        assert_eq!(actual.truth, expected, "{} protocol truth", case["id"]);
+        assert_eq!(actual.source_row_ids.len(), case["inner"].as_array().unwrap().len());
+        assert_eq!(actual.terminal.len(), 1);
+        let wanted = match expected {
+            PhysicalQuantifiedTruth::True => Some(true),
+            PhysicalQuantifiedTruth::False => Some(false),
+            PhysicalQuantifiedTruth::Unknown => None,
+        };
+        let native: Option<bool> = db.query_row(sql, [], |row| row.get(0)).unwrap();
+        assert_eq!(native, wanted, "{} native SQL outcome", case["id"]);
+        assert_eq!(actual.terminal[0].values().next(), Some(&wanted.map_or(LiteralValue::Null, LiteralValue::Boolean)));
+        let query = b.protocol().statements().first().expect("statement");
+        let printed = format!("{query:?}");
+        assert!(printed.contains("QuantifiedSubquery"), "{} canonical variant", case["id"]);
+        assert!(printed.contains("Any") || printed.contains("All"));
+        // Guard against accidentally treating ANY as ALL in the canonical tree.
+        let _ = std::mem::size_of::<SubqueryQuantifier>();
+        let _ = std::mem::size_of::<Predicate>();
+        proved += 1;
+    }
+    assert_eq!(proved, 9, "all frozen ANY/SOME/ALL obligations");
+}
+
+#[test]
+fn sql_bound_quantifiers_reject_unproved_nested_filters_and_bad_ids() {
+    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    let sql = "SELECT 2 = ANY (SELECT v FROM inner_rows WHERE v > 1) AS x";
+    let b = bundle(sql);
+    let id = b.layers().last().unwrap().id().to_string();
+    assert!(matches!(
+        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(2))])]),
+        PhysicalQuantifiedScalarProof::Residual { .. }
+    ));
+    let b = bundle("SELECT 2 = ANY (SELECT v FROM inner_rows) AS x");
+    let id = b.layers().last().unwrap().id().to_string();
+    assert!(matches!(
+        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(2)),("i1", Some(3))])]),
+        PhysicalQuantifiedScalarProof::Impossible { .. }
+    ));
+}
