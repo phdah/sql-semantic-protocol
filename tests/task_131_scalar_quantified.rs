@@ -550,12 +550,20 @@ fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() 
 
 #[test]
 fn source_free_outer_limit_and_unproved_outer_shape_do_not_claim_exactness() {
-    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    use sql_semantic_protocol::{
+        physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+    };
     for sql in [
         "SELECT (SELECT v FROM inner_rows) AS x LIMIT 0",
         "SELECT (SELECT v FROM inner_rows) AS x LIMIT 1",
     ] {
-        assert!(matches!(scalar_proof(sql, &[("i1", Some(2))]), PhysicalScalarSubqueryProof::Residual { .. }), "{sql}");
+        assert!(
+            matches!(
+                scalar_proof(sql, &[("i1", Some(2))]),
+                PhysicalScalarSubqueryProof::Residual { .. }
+            ),
+            "{sql}"
+        );
     }
     for sql in [
         "SELECT 1 = ANY (SELECT v FROM inner_rows) AS x LIMIT 0",
@@ -563,10 +571,19 @@ fn source_free_outer_limit_and_unproved_outer_shape_do_not_claim_exactness() {
     ] {
         let b = bundle(sql);
         let id = b.layers().last().unwrap().id().to_string();
-        assert!(matches!(physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1", Some(1))])]), PhysicalQuantifiedScalarProof::Residual { .. }), "{sql}");
+        assert!(
+            matches!(
+                physical_finite_quantified_subquery_plan(
+                    &b,
+                    &id,
+                    &[state("inner_rows", &[("i1", Some(1))])]
+                ),
+                PhysicalQuantifiedScalarProof::Residual { .. }
+            ),
+            "{sql}"
+        );
     }
 }
-
 
 #[test]
 fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions() {
@@ -574,36 +591,45 @@ fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions(
     use sqlparser::parser::Parser;
     use std::collections::BTreeMap;
 
-    let frozen: Value = serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
+    let frozen: Value =
+        serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
     let dialects = frozen["dialects"].as_array().unwrap();
     let mut results = BTreeMap::<String, BTreeMap<String, String>>::new();
     for case in frozen["cases"].as_array().unwrap() {
-        if case["expected_proof"] != "Residual" { continue; }
+        if case["expected_proof"] != "Residual" {
+            continue;
+        }
         let id = case["id"].as_str().unwrap().to_string();
-        assert_eq!(case["expect"]["owner"],"TASK-131");
+        assert_eq!(case["expect"]["owner"], "TASK-131");
         let mut statuses = BTreeMap::new();
         for name in dialects {
             let dialect = name.as_str().unwrap();
             let parser = dialect_from_name(dialect).unwrap();
-            let observed = if Parser::parse_sql(parser.as_ref(), case["sql"].as_str().unwrap()).is_ok() {
-                "parsed"
-            } else {
-                "parser_boundary"
-            };
+            let observed =
+                if Parser::parse_sql(parser.as_ref(), case["sql"].as_str().unwrap()).is_ok() {
+                    "parsed"
+                } else {
+                    "parser_boundary"
+                };
             statuses.insert(dialect.to_string(), observed.to_string());
         }
-        results.insert(id,statuses);
+        results.insert(id, statuses);
     }
     // The pinned conditional parser matrix must be reviewed and checked
     // against actual sqlparser paths, never inferred from vendor support.
     let expected = &frozen["conditional_parser_status_by_case"];
-    assert_eq!(serde_json::to_value(&results).unwrap(),*expected,"record and review all 39 conditional parser dispositions");
+    assert_eq!(
+        serde_json::to_value(&results).unwrap(),
+        *expected,
+        "record and review all 39 conditional parser dispositions"
+    );
 }
-
 
 #[test]
 fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proofs() {
-    use sql_semantic_protocol::{physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof};
+    use sql_semantic_protocol::{
+        physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+    };
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE inner_rows (id VARCHAR, v INTEGER);
@@ -611,30 +637,45 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
          CREATE TABLE control_rows (k INTEGER);
          INSERT INTO inner_rows VALUES ('i1',2),('i2',2);
          INSERT INTO outer_rows VALUES ('o1',2),('o2',3);
-         INSERT INTO control_rows VALUES (2);"
-    ).unwrap();
+         INSERT INTO control_rows VALUES (2);",
+    )
+    .unwrap();
     // A nested scalar filter is not an identity-preserving direct projection:
     // here its two matching source rows cause a runtime cardinality failure.
-    let nested_sql = "SELECT (SELECT v FROM inner_rows WHERE v = (SELECT k FROM control_rows)) AS x";
-    assert!(db.query_row(nested_sql, [], |r|r.get::<_,Option<i64>>(0)).is_err());
+    let nested_sql =
+        "SELECT (SELECT v FROM inner_rows WHERE v = (SELECT k FROM control_rows)) AS x";
+    assert!(db
+        .query_row(nested_sql, [], |r| r.get::<_, Option<i64>>(0))
+        .is_err());
     let b = bundle(nested_sql);
     let id = b.layers().last().unwrap().id().to_string();
     assert!(matches!(
-        physical_finite_scalar_subquery_plan(&b, &id, &[state("inner_rows", &[("i1",Some(2)),("i2",Some(2))])]),
+        physical_finite_scalar_subquery_plan(
+            &b,
+            &id,
+            &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
+        ),
         PhysicalScalarSubqueryProof::Residual { .. }
     ));
     // Correlated LATERAL is executable under native DuckDB, but a single
     // globally evaluated nested source would invent the per-outer-row bag.
     let lateral_sql = "SELECT o.id FROM outer_rows o CROSS JOIN LATERAL (SELECT v FROM inner_rows i WHERE i.v = o.v) s";
     let mut stmt = db.prepare(lateral_sql).unwrap();
-    let mut ids = stmt.query_map([], |row|row.get::<_,String>(0)).unwrap()
-        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    let mut ids = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
     ids.sort();
-    assert_eq!(ids, ["o1".to_string(),"o1".to_string()]);
+    assert_eq!(ids, ["o1".to_string(), "o1".to_string()]);
     let b = bundle(lateral_sql);
     let id = b.layers().last().unwrap().id().to_string();
     assert!(matches!(
-        physical_finite_quantified_subquery_plan(&b, &id, &[state("inner_rows", &[("i1",Some(2)),("i2",Some(2))])]),
+        physical_finite_quantified_subquery_plan(
+            &b,
+            &id,
+            &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
+        ),
         PhysicalQuantifiedScalarProof::Residual { .. }
     ));
 }

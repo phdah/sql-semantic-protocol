@@ -141,31 +141,69 @@ schema:
                 .collect(),
         )
         .unwrap();
-        let proofs = [("direct SQL",direct_bundle),("dbt compiled",compiled),("ODCS contract",odcs_bundle)]
-            .into_iter()
-            .map(|(adapter,bundle)| {
-                let target = bundle.layers().last().expect("one source-backed layer");
-                let actual = if kind == "scalar" {
-                    match physical_finite_scalar_subquery_plan(&bundle,target.id(),std::slice::from_ref(&bag)) {
-                        PhysicalScalarSubqueryProof::Exact(exact) =>
-                            format!("{:?}",("exact",exact.source,exact.source_row_ids,exact.value,exact.bounds)),
-                        PhysicalScalarSubqueryProof::CardinalityViolation{source_row_ids} =>
-                            format!("{:?}",("error",source_row_ids)),
-                        other => panic!("{} {adapter}: scalar adapter lost evidence: {other:?}",case["id"]),
+        let proofs = [
+            ("direct SQL", direct_bundle),
+            ("dbt compiled", compiled),
+            ("ODCS contract", odcs_bundle),
+        ]
+        .into_iter()
+        .map(|(adapter, bundle)| {
+            let target = bundle.layers().last().expect("one source-backed layer");
+            let actual = if kind == "scalar" {
+                match physical_finite_scalar_subquery_plan(
+                    &bundle,
+                    target.id(),
+                    std::slice::from_ref(&bag),
+                ) {
+                    PhysicalScalarSubqueryProof::Exact(exact) => format!(
+                        "{:?}",
+                        (
+                            "exact",
+                            exact.source,
+                            exact.source_row_ids,
+                            exact.value,
+                            exact.bounds
+                        )
+                    ),
+                    PhysicalScalarSubqueryProof::CardinalityViolation { source_row_ids } => {
+                        format!("{:?}", ("error", source_row_ids))
                     }
-                } else {
-                    match physical_finite_quantified_subquery_plan(&bundle,target.id(),std::slice::from_ref(&bag)) {
-                        PhysicalQuantifiedScalarProof::Exact(exact) =>
-                            format!("{:?}",("exact",exact.source,exact.source_row_ids,exact.truth,exact.terminal)),
-                        other => panic!("{} {adapter}: quantified adapter lost evidence: {other:?}",case["id"]),
-                    }
-                };
-                actual
-            })
-            .collect::<Vec<_>>();
-        assert_eq!(proofs[0],proofs[1],"{} compiled dbt parity",case["id"]);
-        assert_eq!(proofs[0],proofs[2],"{} ODCS parity",case["id"]);
+                    other => panic!(
+                        "{} {adapter}: scalar adapter lost evidence: {other:?}",
+                        case["id"]
+                    ),
+                }
+            } else {
+                match physical_finite_quantified_subquery_plan(
+                    &bundle,
+                    target.id(),
+                    std::slice::from_ref(&bag),
+                ) {
+                    PhysicalQuantifiedScalarProof::Exact(exact) => format!(
+                        "{:?}",
+                        (
+                            "exact",
+                            exact.source,
+                            exact.source_row_ids,
+                            exact.truth,
+                            exact.terminal
+                        )
+                    ),
+                    other => panic!(
+                        "{} {adapter}: quantified adapter lost evidence: {other:?}",
+                        case["id"]
+                    ),
+                }
+            };
+            actual
+        })
+        .collect::<Vec<_>>();
+        assert_eq!(proofs[0], proofs[1], "{} compiled dbt parity", case["id"]);
+        assert_eq!(proofs[0], proofs[2], "{} ODCS parity", case["id"]);
         certified += 3;
     }
-    assert_eq!(certified,36,"12 complete source cases across three adapters");
+    assert_eq!(
+        certified, 36,
+        "12 complete source cases across three adapters"
+    );
 }
