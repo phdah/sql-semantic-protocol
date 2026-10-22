@@ -4,7 +4,7 @@
 
 ## Frozen physical cases and evidence
 
-The task-owned [v3 matrix](task-128-acceptance-freeze.json) retains fixed fixture-family IDs `74-C128-P`/`74-C128-N`, seven independent physical rows with duplicate peer values and NULL, source identities, typed inclusive terminal sets and full expected multisets. No conditional case is allowed to substitute for a mandatory Exact case.
+The task-owned [v4 matrix](task-128-acceptance-freeze.json) retains fixed fixture-family IDs `74-C128-P`/`74-C128-N`, seven independent physical rows with duplicate peer values and NULL, source identities, typed inclusive terminal sets and full expected multisets. No conditional case is allowed to substitute for a mandatory Exact case.
 
 | Case | Classification | Executed evidence |
 | --- | --- | --- |
@@ -41,6 +41,6 @@ The task-owned [v3 matrix](task-128-acceptance-freeze.json) retains fixed fixtur
 
 ## Closure conditions
 
-The above is the independent case-by-case audit of child evidence. Mark TASK-128 Done **only after final-head** formatting, strict Clippy, default/no-default feature tests, docs, dependency checks and `make dbt-e2e` all pass, conditional vendor/session dispositions are explicitly owned, and no frozen mandatory case is unverified.
+All five mandatory Exact cases are independently supported by full source and terminal physical/output bags, five of the eleven frozen IDs include explicit TRUE/NOT TRUE or impossible contradictions as required by their classification, 143 dialect/parser and 33 adapter cells have executable public parity tests, and all remaining conditional runtime gaps are conservative typed Residuals with TASK-128 ownership. The nine-job [semantic-head CI #3498](https://github.com/phdah/sql-semantic-protocol/actions/runs/39751701868) succeeded. The above is the independent case-by-case audit of child evidence. Mark TASK-128 Done **only after final-head** formatting, strict Clippy, default/no-default feature tests, docs, dependency checks and `make dbt-e2e` all pass, conditional vendor/session dispositions are explicitly owned, and no frozen mandatory case is unverified.
 
 Do not mark TASK-74 Done until TASK-128 merges into main and a separate independent review verifies the parent original AC #1–#6 against all **five merged child** evidence sets. Do not approve release gate TASK-91 as a side effect.
