@@ -43,12 +43,12 @@ type: feature
 - [x] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-75 parent open.
 <!-- AC:END -->
 
-## Implementation evidence (pending independent signoff)
+## Implementation evidence
 
 - [TASK-129 frozen finite matrix](../../docs/task-129-acceptance-freeze.json) fixes six correlated/uncorrelated EXISTS and NOT EXISTS positive/NOT TRUE cases across two complete physical sources, including duplicate and NULL inner keys and empty inner bags. All 13 dialect parser paths and SQL/dbt/ODCS adapter classifications must be independently executed before marking any criterion complete.
 - [Complete finite physical evaluator](../../src/physical_realization/exists_bags.rs) reuses canonical normalized subquery witnesses and schema checks; its outputs include stable selected/rejected row identities, all inner candidates, full terminal bags, and exact nullable integer domains.
 - [Public DuckDB and dialect oracles](../../tests/task_129_exists_bags.rs), [SQL/dbt/ODCS parity](../../tests/task_129_adapter_parity.rs), and [draft PR #140](https://github.com/phdah/sql-semantic-protocol/pull/140) record implementation progress.
-- **Gate:** Keep the five child acceptance checkboxes open until the final semantic head has passed CI and every frozen mandatory cell has been independently reviewed. No TASK-75 parent signoff or release approval follows from this increment.
+- **Verification:** All five bounded child AC have been independently verified on the final semantic head, with the freeze, audit and all-green CI cited below. TASK-75 parent signoff and release approval remain separate.
 
 ## Final independent acceptance signoff (2026-10-22)
 
