@@ -1,10 +1,10 @@
 ---
 id: TASK-128
 title: Certify advanced frames vendor laws and TASK-74 signoff
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-22'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,11 @@ type: feature
 ## Next
 
 Then independently sign off all original TASK-74 AC against the entire merged child evidence.
+
+## Implementation progress (2026-10-22)
+
+- Draft [PR #139](https://github.com/phdah/sql-semantic-protocol/pull/139) holds the first bounded physical-law implementation. It implements source-attested deterministic `NTILE`, peer-inclusive unbounded/CURRENT `RANGE` and offset `GROUPS` with exact finite output domains and typed Residual boundaries.
+- [Frozen TASK-128 matrix v1](../../docs/task-128-acceptance-freeze.json) registers six physical SQL fixture cases with two initial P/N fixture IDs, seven source rows, exact terminal bags, typed NULL/inclusive domains, all 13 dialect names, adapter entrypoints and named residual owners. These are **initial slice evidence**, not a complete original AC freeze or a signoff.
+- [Public source-bag and DuckDB oracle tests](../../tests/task_128_advanced_windows.rs) pass on [CI run #3476](https://github.com/phdah/sql-semantic-protocol/actions/runs/39736141999), including Rust tests (default/no-default), strict lint, format, docs and dbt E2E. This is **not** an executed dbt model comparison for each TASK-128 fixture.
+- **Blocking before AC closure:** replace provisional parser `to_verify` cells with executed observed status; independently execute all representable direct/dbt/ODCS adapter paths and required dialect SQL cases; freeze the full parent/operator matrix including COLLATE, default NULL ordering and the `ranked_orders.sql` project fixture; add positive/rejected QUALIFY and Impossible counterexamples; audit every TASK-74 original AC and pending native/session classification. Re-run full CI on final review head. No checks may be marked Done while any required cell is unverified.
+- Keep TASK-74 **To Do**, PR draft, and release gate TASK-91 unchanged until independently verified after this child PR is merged.
