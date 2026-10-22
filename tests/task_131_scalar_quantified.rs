@@ -433,6 +433,15 @@ fn every_frozen_mandatory_case_checks_all_thirteen_parser_dialects_and_duckdb() 
             )
             .unwrap();
         }
+        let mut native_source = db.prepare("SELECT id,v FROM inner_rows ORDER BY id").unwrap();
+        let source_readback = native_source
+            .query_map([], |row| Ok((row.get::<_,String>(0)?, row.get::<_,Option<i64>>(1)?)))
+            .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let mut expected_source = values.iter().map(|(id,v)| ((*id).to_string(),*v)).collect::<Vec<_>>();
+        expected_source.sort();
+        assert_eq!(source_readback,expected_source,"{} independent complete physical source bag",case["id"]);
+        assert_eq!(case["source_row_ids"].as_array().unwrap().len(),values.len());
+        assert_eq!(case["terminal_oracle"]["type"],if kind=="scalar"&&case["expect"]["type"]=="cardinality_error" { serde_json::Value::Null } else { serde_json::Value::String(if kind=="scalar" {"SIGNED_INTEGER"} else {"BOOLEAN"}.to_string()) });
         let want = &case["expect"];
         if kind == "scalar" {
             let native = db.query_row(sql, [], |row| row.get::<_, Option<i64>>(0));
