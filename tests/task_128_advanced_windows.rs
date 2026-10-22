@@ -156,7 +156,7 @@ fn duckdb_oracle(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn exact_windows_match_frozen_independent_complete_bags_and_domains() {
     let freeze = frozen();
-    assert_eq!(freeze["version"], 4);
+    assert_eq!(freeze["version"], 5);
     assert_eq!(
         freeze["fixture_ids"],
         serde_json::json!(["74-C128-P", "74-C128-N"])
