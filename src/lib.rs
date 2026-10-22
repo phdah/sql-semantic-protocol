@@ -178,12 +178,12 @@ pub use physical_realization::{
     PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
     PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof, PhysicalJointSourcePlan,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalQuantifiedColumnDomain,
-    PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
-    PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof, PhysicalSetColumnDomain,
-    PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSourcePlan,
-    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow,
+    PhysicalRowTarget, PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof,
+    PhysicalSetColumnDomain, PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple,
+    PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
