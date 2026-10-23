@@ -61,7 +61,9 @@ fn states(case: &Value) -> Vec<PhysicalWriteState> {
                     PhysicalWriteRow::new(BTreeMap::from([
                         (
                             "id".to_string(),
-                            LiteralValue::Text(row["id"].as_str().expect("physical id").to_string()),
+                            LiteralValue::Text(
+                                row["id"].as_str().expect("physical id").to_string(),
+                            ),
                         ),
                         ("k".to_string(), integer("k")),
                         ("g".to_string(), integer("g")),
@@ -99,9 +101,9 @@ fn expected_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         .expect("full terminal bag")
         .iter()
         .map(|row| {
-            let value = row["k"].as_i64().map_or(LiteralValue::Null, |v| {
-                LiteralValue::Number(v.to_string())
-            });
+            let value = row["k"]
+                .as_i64()
+                .map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()));
             BTreeMap::from([("k".to_string(), value)])
         })
         .collect()
@@ -120,25 +122,41 @@ fn composite_source_equality_proves_both_exists_directions_across_dialects() {
         for dialect in frozen["dialects"].as_array().expect("dialects") {
             let dialect = dialect.as_str().expect("dialect");
             let PhysicalFiniteExistsProof::Exact(exact) = evaluate(case, dialect) else {
-                panic!("{} {dialect}: complete composite proof must be exact", case["id"]);
+                panic!(
+                    "{} {dialect}: complete composite proof must be exact",
+                    case["id"]
+                );
             };
             assert_eq!(exact.sources, ["outer_rows", "inner_rows"]);
             assert_eq!(exact.selected, ids(case, "selected_outer_ids"));
             assert_eq!(exact.rejected, ids(case, "rejected_not_true_outer_ids"));
             assert_eq!(exact.selected.len() + exact.rejected.len(), 3);
             for (outer_id, inner) in case["complete_matching_inner_ids"].as_object().unwrap() {
-                let expected = inner.as_array().unwrap().iter().map(|v| {
-                    v.as_str().unwrap().to_string()
-                }).collect::<Vec<_>>();
+                let expected = inner
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.as_str().unwrap().to_string())
+                    .collect::<Vec<_>>();
                 assert_eq!(exact.matching_inner.get(outer_id), Some(&expected));
             }
             assert_eq!(exact.terminal, expected_terminal(case));
             let domain = exact.terminal_domains.get("k").expect("typed terminal");
-            let allowed = case["terminal_domain"]["values"].as_array().unwrap().iter()
-                .map(|v| i128::from(v.as_i64().unwrap())).collect::<Vec<_>>();
+            let allowed = case["terminal_domain"]["values"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| i128::from(v.as_i64().unwrap()))
+                .collect::<Vec<_>>();
             assert_eq!(domain.values(), allowed);
-            assert_eq!(domain.bounds(), allowed.first().copied().zip(allowed.last().copied()));
-            assert_eq!(domain.null_allowed(), case["terminal_domain"]["null_allowed"]);
+            assert_eq!(
+                domain.bounds(),
+                allowed.first().copied().zip(allowed.last().copied())
+            );
+            assert_eq!(
+                domain.null_allowed(),
+                case["terminal_domain"]["null_allowed"]
+            );
             obligations += 1;
         }
     }
@@ -158,38 +176,80 @@ fn duckdb_checks_full_source_and_terminal_row_identity_bags() {
             db.execute(
                 &format!("CREATE TABLE {relation} (id VARCHAR, k INTEGER, g INTEGER)"),
                 [],
-            ).expect("create physical source");
+            )
+            .expect("create physical source");
             for row in case["source_bags"][relation].as_array().unwrap() {
                 db.execute(
                     &format!("INSERT INTO {relation} VALUES (?, ?, ?)"),
-                    params![row["id"].as_str().unwrap(), row["k"].as_i64(), row["g"].as_i64()],
-                ).expect("load complete physical source");
+                    params![
+                        row["id"].as_str().unwrap(),
+                        row["k"].as_i64(),
+                        row["g"].as_i64()
+                    ],
+                )
+                .expect("load complete physical source");
             }
-            let mut read = db.prepare(&format!("SELECT id,k,g FROM {relation} ORDER BY id")).unwrap();
-            let got = read.query_map([], |r| Ok((
-                r.get::<_, String>(0)?, r.get::<_, Option<i64>>(1)?, r.get::<_, Option<i64>>(2)?
-            ))).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
-            let mut expected = case["source_bags"][relation].as_array().unwrap().iter().map(|row| (
-                row["id"].as_str().unwrap().to_string(), row["k"].as_i64(), row["g"].as_i64()
-            )).collect::<Vec<_>>();
+            let mut read = db
+                .prepare(&format!("SELECT id,k,g FROM {relation} ORDER BY id"))
+                .unwrap();
+            let got = read
+                .query_map([], |r| {
+                    Ok((
+                        r.get::<_, String>(0)?,
+                        r.get::<_, Option<i64>>(1)?,
+                        r.get::<_, Option<i64>>(2)?,
+                    ))
+                })
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap();
+            let mut expected = case["source_bags"][relation]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| {
+                    (
+                        row["id"].as_str().unwrap().to_string(),
+                        row["k"].as_i64(),
+                        row["g"].as_i64(),
+                    )
+                })
+                .collect::<Vec<_>>();
             expected.sort();
             assert_eq!(got, expected, "{} complete {relation} source", case["id"]);
         }
-        let query = case["sql"].as_str().unwrap().replacen(
-            "SELECT o.k AS k", "SELECT o.id, o.k AS k", 1,
-        );
+        let query =
+            case["sql"]
+                .as_str()
+                .unwrap()
+                .replacen("SELECT o.k AS k", "SELECT o.id, o.k AS k", 1);
         let mut stmt = db.prepare(&query).expect("native correlated SQL");
-        let mut got = stmt.query_map([], |r| Ok((
-            r.get::<_, String>(0)?, r.get::<_, Option<i64>>(1)?
-        ))).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let mut got = stmt
+            .query_map([], |r| {
+                Ok((r.get::<_, String>(0)?, r.get::<_, Option<i64>>(1)?))
+            })
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
         got.sort();
-        let mut expected = ids(case, "selected_outer_ids").iter().map(|id| {
-            let row = case["source_bags"]["outer_rows"].as_array().unwrap().iter()
-                .find(|row| row["id"] == id.as_str()).unwrap();
-            (id.clone(), row["k"].as_i64())
-        }).collect::<Vec<_>>();
+        let mut expected = ids(case, "selected_outer_ids")
+            .iter()
+            .map(|id| {
+                let row = case["source_bags"]["outer_rows"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|row| row["id"] == id.as_str())
+                    .unwrap();
+                (id.clone(), row["k"].as_i64())
+            })
+            .collect::<Vec<_>>();
         expected.sort();
-        assert_eq!(got, expected, "{} complete DuckDB terminal identity bag", case["id"]);
+        assert_eq!(
+            got, expected,
+            "{} complete DuckDB terminal identity bag",
+            case["id"]
+        );
         checked += 1;
     }
     assert_eq!(checked, 2);
@@ -202,9 +262,13 @@ fn grouped_and_joined_shapes_fail_closed_until_owned_physical_proofs_exist() {
         if case["variant"] == "direct_composite" {
             continue;
         }
-        assert!(matches!(
-            evaluate(case, "generic"),
-            PhysicalFiniteExistsProof::Residual { .. }
-        ), "{} must not be labeled Exact by a direct-leaf proof", case["id"]);
+        assert!(
+            matches!(
+                evaluate(case, "generic"),
+                PhysicalFiniteExistsProof::Residual { .. }
+            ),
+            "{} must not be labeled Exact by a direct-leaf proof",
+            case["id"]
+        );
     }
 }
