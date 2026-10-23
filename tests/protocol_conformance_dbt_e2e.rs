@@ -179,7 +179,7 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     assert_eq!(proof_graph.sources().len(), 2);
     let mut physical = Vec::new();
     for name in proof_graph.sources() {
-        let unquoted = name.replace('"', "").replace('`', "");
+        let unquoted = name.replace(['"', '`'], "");
         if unquoted.ends_with(".orders") {
             let mut q = db.prepare(
                 "SELECT id,customer_id,amount,status,CAST(created_at AS VARCHAR),region FROM raw.orders ORDER BY id"
