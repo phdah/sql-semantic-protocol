@@ -47,9 +47,29 @@ The conditional outcomes have a reviewed, task-owned fail-closed disposition wit
 
 Mandatory/conditional cases and independently evidenced adapters must pass on the **actual final PR head**: `cargo fmt --check`, strict Clippy, full default/no-default Rust test suites, docs, dependency checks, schema/golden contract assertions and `make dbt-e2e`. Keep TASK-131 **In Progress** and PR **draft** if any final-head gate is missing or failed. Once independently green, mark the five child AC as verified, update this audit with the exact CI run and commit, mark TASK-131 Done and make the PR review-ready. TASK-75 and the major-release gate remain independently open.
 
-## v5 corrective verification (pending final-head CI)
+## v5 corrective verification
 
 - N6/N7 frozen source bags now contain two distinct physical row identities with equal values, matching independently executed DuckDB cardinality/fanout tests; the native tests load the exact frozen bags instead of hand-entered unrelated fixtures.
 - Direct SQL, compiled dbt and ODCS conditional boundary regressions now cover all nine N6/N7/N8 conditional adapter cells via public canonical diagnostics or typed scalar residual outcomes. These are classification checks, not native vendor execution.
 - A frozen-version consistency guard compares the task-specific freeze against the coverage manifest. The quantified predicate JSON test pins the complete canonical predicate and nested subquery property set.
 - The public quantified SELECT now has a complete deterministic JSON golden fixture at `tests/fixtures/task-131-quantified-protocol.json`, asserted against the public emitted protocol. The supplemental SQL-bound WHERE quantified proof retains its independent 13-dialect DuckDB source/terminal and TRUE/NOT TRUE membership regression; this does not enlarge the original 12 mandatory child fixture IDs or count as a native vendor execution claim.
+
+## Final acceptance and two-axis review (2026-10-23)
+
+**Pinned implementation:** `f7c050442c7fd1a3ce5dcf2b1bf6e373994aedc3`. [GitHub Actions CI #39916461940](https://github.com/phdah/sql-semantic-protocol/actions/runs/39916461940) completed **success** on that exact code head, covering formatter, strict Clippy (both configurations), default and no-default Rust tests, docs, dependency checks and dbt Core E2E. The acceptance-status-only follow-up commit must retain a successful CI run before PR review-readiness.
+
+**Original child AC #1:** v5 freeze contains 12 mandatory, 3 conditional cases with both original fixture families, source IDs, typed exact terminal outcomes and domains, 156 required and 39 conditional parser cells, 36 required and 9 conditional adapter cells. Explicitly reviewed v5 N6/N7 correction supplies duplicate physical rows demanded by native oracles. No mandatory cell became Residual.
+
+**Original child AC #2:** The public canonical `QuantifiedSubqueryPredicate` and SQL-bound physical scalar/quantifier planners preserve SQL NULL, vacuous ANY/ALL, NULL-dominance, physical row identity, inclusive integer bounds, terminal Boolean/NULL values and Exact/CardinalityViolation/Impossible/Residual distinctions. Noncertified nested, correlated and vendor-specific execution remains named, fail-closed conditional scope.
+
+**Original child AC #3:** DuckDB checks all 12 mandatory complete physical source bags and terminal outcomes independently; the N6/N7 native conditional oracles load the frozen source populations and prove cardinality failure and duplicate per-outer-row LATERAL fanout. The canonical LATERAL/APPLY test asserts actual typed diagnostics rather than invoking an unrelated quantified projection API.
+
+**Original child AC #4:** All 13 dialect parser paths are enumerated and checked. Direct SQL, compiled dbt and ODCS cover all 36 mandatory and nine conditional adapter cells. Parser acceptance is never presented as execution on any engine other than DuckDB; N8 APPLY lacks a native executable oracle and remains owned TASK-131 conditional residual.
+
+**Original child AC #5:** Complete emitted protocol JSON is pinned by `tests/fixtures/task-131-quantified-protocol.json`; schema, public API tests, all nine CI jobs, and exact-code-head evidence are accounted for above.
+
+**Standards review:** Changes respect canonical semantic ownership, error conservatism, the 13-dialect rule, protocol version provenance, no new dependencies/unsafe/lint ignores, deterministic emission and public-API tests. The intentional breaking exhaustive Rust enum and JSON grammar addition is classified `feat(protocol)!` and needs a `BREAKING CHANGE:` footer on squash. Refactoring beyond this bounded task remains separate work.
+
+**Specification review:** Each child AC maps to directly tested outcomes and every conditional is explicitly classified, not silently excluded. The supplemental source-attested quantified WHERE evaluation is separately tested across 13 parser configurations against independent DuckDB source/terminal TRUE and NOT TRUE membership, without quietly inflating the original 12-case mandatory freeze.
+
+**Disposition:** TASK-131 may be Done after this independent review and passing CI; TASK-75 is **not** signed off, TASK-132 may start only after the child PR merges, and the major-release gate remains open.

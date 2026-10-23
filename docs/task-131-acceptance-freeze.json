@@ -6,7 +6,7 @@
     "75-C131-P",
     "75-C131-N"
   ],
-  "status": "frozen_implementation_in_progress_final_head_ci_pending",
+  "status": "frozen_verified_bounded_child",
   "projection_schema": {
     "relation": "inner_rows",
     "columns": {
@@ -76,15 +76,15 @@
   "parser_matrix_status": "v4 frozen 195 cells: 156 mandatory parsed/canonical Exact or CardinalityViolation plus 39 conditional parsed/Residual",
   "adapter_matrix_status": "v4 frozen 45 cells: 36 mandatory direct SQL, compiled dbt, ODCS exact/error proofs; 9 conditional typed residual adapters",
   "duckdb_oracle_status": "12 mandatory native output oracles plus nested-cardinality and LATERAL duplicate-row native oracles; APPLY engine deliberately unverified",
-  "ci_status": "final head pending",
+  "ci_status": "verified f7c050442c7fd1a3ce5dcf2b1bf6e373994aedc3 CI run 39916461940 completed success; signoff metadata commit retains CI gate",
   "mandatory_cases": 12,
   "conditional_cases": 3,
   "acceptance_criteria": {
-    "1": "pending",
-    "2": "pending",
-    "3": "pending",
-    "4": "pending",
-    "5": "pending"
+    "1": "verified",
+    "2": "verified",
+    "3": "verified",
+    "4": "verified",
+    "5": "verified"
   },
   "cases": [
     {

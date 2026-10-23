@@ -2,7 +2,7 @@
   "task_131_scalar_quantified_plan": {
     "owner": "TASK-131",
     "parent": "TASK-75",
-    "status": "in_progress",
+    "status": "verified_bounded_child_pending_merge",
     "task": ".backlog/tasks/task-131 - model-scalar-subqueries-any-all-and-nested-correlation-boundaries.md",
     "freeze": "docs/task-131-acceptance-freeze.json",
     "fixture_ids": [
@@ -11,7 +11,13 @@
     ],
     "mandatory_cases": 12,
     "conditional_cases": 3,
-    "child_acceptance_criteria_verified": [],
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
     "parent_signed_off": false,
     "release_approved": false,
     "freeze_version": 5,
@@ -20,8 +26,8 @@
     "required_adapter_cells": 36,
     "public_oracle": "tests/task_131_scalar_quantified.rs",
     "adapter_oracle": "tests/task_131_adapter_parity.rs",
-    "mandatory_cases_verified_by_tests": "pending_final_head_ci",
-    "conditional_cases_reviewed": "v5 frozen source bags match DuckDB N6/N7; conditional adapter evidence pending final CI",
+    "mandatory_cases_verified_by_tests": "12 mandatory cases and full golden: CI #39916461940 on f7c050442c7fd1a3ce5dcf2b1bf6e373994aedc3",
+    "conditional_cases_reviewed": "N6/N7 independent native DuckDB bags and nine N6/N7/N8 SQL/dbt/ODCS typed diagnostics or residual outcomes verified",
     "conditional_adapter_cells": 9
   },
   "task_130_in_subquery_plan": {
