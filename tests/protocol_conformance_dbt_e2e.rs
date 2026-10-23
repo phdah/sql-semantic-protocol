@@ -171,6 +171,60 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         ).unwrap();
         assert_eq!(rejections, 0, "{name}: deliberately rejected rows leaked");
     }
+    // TASK-132: independent complete raw source, intermediary producer, and
+    // correlated final terminal snapshots for the actual compiled dbt model.
+    let task_132: Value = serde_json::from_str(include_str!("../docs/task-132-acceptance-freeze.json"))
+        .expect("versioned task 132 acceptance freeze");
+    let case = task_132["cases"].as_array().expect("task 132 cases").iter()
+        .find(|case| case["variant"] == "dbt_subquery_orders")
+        .expect("named subquery_orders.sql matrix cell");
+    assert_eq!(case["expected_selected_source_ids"][0], "orders:1");
+    assert_eq!(case["expected_rejected_not_true_source_ids"][0], "orders:2");
+    let mut raw_order_query = db.prepare(
+        "SELECT id,customer_id,amount,status,region FROM raw.orders ORDER BY id"
+    ).expect("physical raw orders");
+    let raw_orders = raw_order_query.query_map([], |row| Ok((
+        row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?,
+        row.get::<_, String>(3)?, row.get::<_, String>(4)?
+    ))).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+    assert_eq!(raw_orders, vec![
+        (1, 10, 42, "paid".to_string(), "north".to_string()),
+        (2, 20, 5, "pending".to_string(), "south".to_string()),
+    ]);
+    let mut raw_customer_query = db.prepare(
+        "SELECT id,score,active FROM raw.customers ORDER BY id"
+    ).expect("physical raw customers");
+    let raw_customers = raw_customer_query.query_map([], |row| Ok((
+        row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, bool>(2)?
+    ))).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+    assert_eq!(raw_customers, vec![(10, 7, true), (20, -1, false)]);
+
+    for (name, sql, expected) in [
+        ("stg_orders", "SELECT order_id FROM raw_analytics.stg_orders ORDER BY order_id", vec![1_i64]),
+        ("stg_customers", "SELECT customer_id FROM raw_analytics.stg_customers ORDER BY customer_id", vec![10_i64]),
+        ("enriched_orders", "SELECT order_id FROM raw_analytics.enriched_orders ORDER BY order_id", vec![1_i64]),
+    ] {
+        let mut stmt = db.prepare(sql).expect("materialized dbt intermediary");
+        let actual = stmt.query_map([], |row| row.get::<_, i64>(0)).unwrap()
+            .collect::<duckdb::Result<Vec<_>>>().unwrap();
+        assert_eq!(actual, expected, "{name}: complete physical producer identity");
+    }
+    let mut terminal_query = db.prepare(
+        "SELECT amount,region FROM raw_analytics.subquery_orders ORDER BY amount,region"
+    ).expect("compiled subquery terminal");
+    let actual = terminal_query.query_map([], |row| Ok((
+        row.get::<_, i64>(0)?, row.get::<_, String>(1)?
+    ))).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+    assert_eq!(actual, vec![(42, "north".to_string())]);
+    assert_eq!(case["expected_terminal_bag"][0]["amount"], 42);
+    assert_eq!(case["expected_terminal_bag"][0]["region"], "north");
+
+    let rejected: Vec<i64> = db.prepare(
+        "SELECT id FROM raw.orders WHERE status <> 'paid' OR amount < 20 ORDER BY id"
+    ).unwrap().query_map([], |row| row.get::<_, i64>(0)).unwrap()
+        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    assert_eq!(rejected, vec![2_i64], "negative raw source identity");
+
     // The positive joined/grouped example is an engine oracle, not an automatic
     // proof that every possible complete physical-source bag is constructible.
     let final_id = layer_id(&bundle, "aggregate_summary");
