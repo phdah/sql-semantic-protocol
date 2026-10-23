@@ -48,6 +48,7 @@
 //! - physical_finite_joined_exists_bag_plan proves complete three-source nested INNER JOIN EXISTS/NOT EXISTS bags and rejected outer identities.
 //! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
+//! - physical_finite_table_plan proves exact source-free VALUES and literal array fanout bag identities and domains.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
 //! - AnalysisBundle::attest_source_text_comparison attaches independently enforced source text laws without silently replacing adapter datatypes.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
@@ -165,7 +166,7 @@ pub use physical_realization::{
     physical_finite_producer_exists_plan, physical_finite_quantified_comparison,
     physical_finite_quantified_subquery_plan, physical_finite_quantified_where_plan,
     physical_finite_rank_bag_plan, physical_finite_scalar_subquery_plan,
-    physical_finite_set_bag_plan, physical_finite_set_tree_plan, physical_finite_window_bag_plan,
+    physical_finite_set_bag_plan, physical_finite_set_tree_plan, physical_finite_table_plan, physical_finite_window_bag_plan,
     physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
     physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
     physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
@@ -177,7 +178,7 @@ pub use physical_realization::{
     PhysicalFiniteChainProof, PhysicalFiniteExistsExact, PhysicalFiniteExistsProof,
     PhysicalFiniteInExact, PhysicalFiniteInProof, PhysicalFiniteQuantifiedExact,
     PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
-    PhysicalFiniteSetExact, PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact,
+    PhysicalFiniteSetExact, PhysicalFiniteSetProof, PhysicalFiniteTableExact, PhysicalFiniteTableProof, PhysicalFiniteSetTreeExact,
     PhysicalFiniteSetTreeProof, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
     PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
     PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact,
