@@ -172,6 +172,7 @@ fn no_opaque_element_source_or_unproven_order_is_exact() {
         "SELECT * FROM UNNEST([1, 2]) AS t(v) ORDER BY v",
         "SELECT * FROM UNNEST([1, 2]) AS t(v) WHERE v > 1",
         "SELECT * FROM UNNEST([]) AS t(v)",
+        "SELECT * FROM UNNEST([NULL]) AS t(v)",
     ] {
         assert!(
             !matches!(result(sql, "duckdb"), PhysicalFiniteTableProof::Exact(_)),
