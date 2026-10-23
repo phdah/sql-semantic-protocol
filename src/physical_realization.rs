@@ -475,6 +475,7 @@ mod composition;
 mod counts;
 mod distributions;
 mod exists_bags;
+mod exists_joined;
 mod filters;
 mod finite_chains;
 mod graph;
@@ -515,6 +516,9 @@ pub(crate) use distributions::{
 pub use exists_bags::{
     physical_finite_exists_bag_plan, PhysicalExistsColumnDomain, PhysicalFiniteExistsExact,
     PhysicalFiniteExistsProof,
+};
+pub use exists_joined::{
+    physical_finite_joined_exists_bag_plan, PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
 };
 pub use filters::physical_source_plan;
 pub use finite_chains::{
