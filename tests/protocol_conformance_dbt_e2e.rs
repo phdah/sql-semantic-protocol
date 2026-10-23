@@ -62,7 +62,7 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     let dialect = dialect_from_name("duckdb").unwrap();
     let manifest = parse_dbt_manifest(&manifest_text).unwrap();
     let catalog = parse_dbt_catalog(&catalog_text).unwrap();
-    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref())
+    let mut bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref())
         .expect("conformance direct dbt model graph is analyzable");
     assert_eq!(
         to_bundle_json(&bundle),
@@ -248,6 +248,19 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
             panic!("unexpected TASK-132 physical leaf: {name}");
         }
     }
+    let timestamp_type: String = db.query_row(
+        "SELECT typeof(created_at) FROM raw.orders LIMIT 1",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(timestamp_type, "TIMESTAMP");
+    let orders_name = physical.iter().find(|state| {
+        state.relation().replace(['"', '`'], "").ends_with(".orders")
+    }).unwrap().relation().to_string();
+    bundle.attest_source_timestamp_zone(
+        &orders_name, "created_at", TimestampZone::WithoutTimeZone,
+    ).expect("DuckDB introspected unzoned TIMESTAMP physical source");
+
     let final_id = layer_id(&bundle, "subquery_orders");
     let proof = physical_finite_producer_exists_plan(&bundle, final_id, &physical, true);
     let PhysicalProducerExistsProof::Exact(exact) = proof else {
