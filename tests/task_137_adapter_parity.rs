@@ -1,3 +1,4 @@
+use sqlparser::parser::Parser;
 //! TASK-137 source-free finite values preserve canonical semantics across
 //! direct SQL and compiled dbt manifests. ODCS owns physical relation schemas,
 //! not source-free SQL VALUES and literal-array rows.
