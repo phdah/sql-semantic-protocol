@@ -3,11 +3,11 @@
 //! not source-free SQL VALUES and literal-array rows.
 
 use serde_json::{json, Value};
-use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_manifest,
     physical_finite_table_plan, to_bundle_json, PhysicalFiniteTableProof, SqlInput,
 };
+use sqlparser::parser::Parser;
 
 fn all_cases() -> Value {
     serde_json::from_str(include_str!("../docs/task-137-acceptance-freeze.json")).unwrap()
@@ -107,7 +107,9 @@ fn protocol_wire_rows_keep_typed_ordinality_null_and_duplicates() {
         let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(
             wire["inputs"][0]["statements"][0]["finite_table"]["rows"],
-            expected
+            expected,
+            "parser AST: {:?}",
+            Parser::parse_sql(parser.as_ref(), sql).expect("parsed fixture")
         );
         let repeat: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(wire, repeat, "stable canonical emission");
