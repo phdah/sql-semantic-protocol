@@ -1,5 +1,8 @@
 # Code map: find the smallest canonical owner
 
+TASK-131 scalar / quantified SQL-bound proofs: `src/protocol/predicates.rs` defines the canonical `QuantifiedSubqueryPredicate`; `src/analysis/predicates.rs` parses ANY/SOME/ALL, `src/emission/predicates.rs` serializes the JSON wire shape, and `schema/protocol.schema.json` validates it. `src/physical_realization/scalar_quantified.rs` proves complete uncorrelated singleton scalar and source-free quantified terminal bags from attested finite physical sources. `tests/task_131_scalar_quantified.rs` exercises 12 frozen mandatory cases x 13 dialect paths with native complete-bag DuckDB oracles, including nested/LATERAL conditional boundaries; `tests/task_131_adapter_parity.rs` covers SQL, compiled dbt and ODCS source evidence. Full cross-engine native quantifier laws and correlated LATERAL/APPLY remain typed conditional residuals.
+
+
 This map is a **navigation index**, not a second semantic specification. For a change, start with the narrowest owner below. Follow the interfaces to adjacent modules only when required, and run the focused test first. The canonical protocol is the Rust model in `src/protocol/`; its serialized contract is `schema/protocol.schema.json`. Do not duplicate a semantic rule in an adapter or emitter.
 
 Validated Arrow-like witness sidecar serialization: `src/emission/typed_physical.rs` owns deterministic physical value JSON; `schema/typed-physical-population.schema.json` documents its separate, non-protocol wire shape; `tests/physical_typed_serialization.rs` verifies exact bytes, bits, JSON NULL and failing proofs. Generated expression dependency ordering and portable function execution remain in `src/physical_realization/write_states/generated.rs`.

@@ -641,7 +641,7 @@ Exact local rank witnesses currently require one direct input, plain partition/o
 
 Expression and predicate subqueries retain nested semantics rather than becoming parser-shaped or disappearing behind a generic unsupported value.
 
-A scalar subquery is an expression with `kind: "scalar_subquery"`. EXISTS and IN/NOT IN use predicate kinds `exists` and `in_subquery`. All three contain a `subquery` object with:
+A scalar subquery is an expression with `kind: "scalar_subquery"`. EXISTS and IN/NOT IN use predicate kinds `exists` and `in_subquery`. SQL ANY/SOME/ALL produces a parser-independent `quantified_subquery` predicate with `operand` (typed expression), `operator` (canonical comparison), `quantifier` (`any` or `all`; SOME maps to ANY), and `subquery` (nested query semantics). The physical SQL-bound helper may certify finite uncorrelated scalar quantifiers from a complete physical source bag, including three-valued NULL truth and exact one-row Boolean/NULL projection. The predicate alone does not certify physical Exactness, particularly for nested correlations or vendor session laws. All three contain a `subquery` object with:
 
 - `dependencies`: deterministic physical relations read by the nested query
 - `correlations`: physical outer-scope columns resolved from qualified correlated references

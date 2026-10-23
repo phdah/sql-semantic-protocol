@@ -24,6 +24,8 @@ pub enum Predicate {
     Exists(ExistsPredicate),
     /// SQL IN or NOT IN whose values come from a subquery.
     InSubquery(InSubqueryPredicate),
+    /// SQL ANY/SOME/ALL comparison backed by a canonical nested query.
+    QuantifiedSubquery(QuantifiedSubqueryPredicate),
     /// SQL BETWEEN or NOT BETWEEN.
     Between(BetweenPredicate),
     /// An expression interpreted in boolean predicate context.
@@ -356,6 +358,64 @@ impl InSubqueryPredicate {
     /// Return whether the SQL form is NOT IN.
     pub fn negated(&self) -> bool {
         self.negated
+    }
+}
+
+/// SQL quantified-comparison semantics. SOME is the SQL synonym of ANY.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SubqueryQuantifier {
+    /// At least one candidate comparison is TRUE.
+    Any,
+    /// Every candidate comparison is TRUE.
+    All,
+}
+
+impl SubqueryQuantifier {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Any => "any",
+            Self::All => "all",
+        }
+    }
+}
+
+/// Typed quantified predicate retaining parser-independent source semantics.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuantifiedSubqueryPredicate {
+    operand: Expression,
+    operator: ComparisonOperator,
+    quantifier: SubqueryQuantifier,
+    subquery: SubquerySemantics,
+}
+impl QuantifiedSubqueryPredicate {
+    pub(crate) fn new(
+        operand: Expression,
+        operator: ComparisonOperator,
+        quantifier: SubqueryQuantifier,
+        subquery: SubquerySemantics,
+    ) -> Self {
+        Self {
+            operand,
+            operator,
+            quantifier,
+            subquery,
+        }
+    }
+    /// Canonical left operand, retaining literal or source reference.
+    pub fn operand(&self) -> &Expression {
+        &self.operand
+    }
+    /// SQL comparison operator, not an independently supplied evaluation guess.
+    pub fn operator(&self) -> ComparisonOperator {
+        self.operator
+    }
+    /// Canonical ANY/SOME or ALL quantifier.
+    pub fn quantifier(&self) -> SubqueryQuantifier {
+        self.quantifier
+    }
+    /// Complete nested query semantics and identities.
+    pub fn subquery(&self) -> &SubquerySemantics {
+        &self.subquery
     }
 }
 

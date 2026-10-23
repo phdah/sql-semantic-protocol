@@ -1477,6 +1477,9 @@
           "$ref": "#/$defs/inSubqueryPredicate"
         },
         {
+          "$ref": "#/$defs/quantifiedSubqueryPredicate"
+        },
+        {
           "$ref": "#/$defs/betweenPredicate"
         },
         {
@@ -8251,6 +8254,46 @@
         },
         "right_physical_instance": {
           "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "quantifiedSubqueryPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operand",
+        "operator",
+        "quantifier",
+        "subquery"
+      ],
+      "properties": {
+        "kind": {
+          "const": "quantified_subquery"
+        },
+        "operand": {
+          "$ref": "#/$defs/expression"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "is_distinct_from",
+            "is_not_distinct_from"
+          ]
+        },
+        "quantifier": {
+          "enum": [
+            "any",
+            "all"
+          ]
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
         }
       }
     }

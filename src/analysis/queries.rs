@@ -485,7 +485,7 @@ pub(super) fn analyze_query(
                     if items.is_empty() && modifiers.is_empty())
                 && ((select.from.is_empty()
                         && select.selection.is_none()
-                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::Literal(_))))
+                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::Literal(_) | Expression::ScalarSubquery(_) | Expression::BooleanPredicate(_))))
                     || (output.columns().iter().any(|column| matches!(column.expression(), Expression::AggregateFunction(_)))
                         && output.columns().iter().all(|column| matches!(column.expression(), Expression::AggregateFunction(_) | Expression::Literal(_))))));
 

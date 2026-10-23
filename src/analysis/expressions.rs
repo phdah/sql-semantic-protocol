@@ -87,6 +87,8 @@ pub(super) fn is_boolean_value_expression(expression: &Expr) -> bool {
         | Expr::InList { .. }
         | Expr::Exists { .. }
         | Expr::InSubquery { .. }
+        | Expr::AnyOp { .. }
+        | Expr::AllOp { .. }
         | Expr::Between { .. } => true,
         Expr::Nested(inner) => is_boolean_value_expression(inner),
         _ => false,

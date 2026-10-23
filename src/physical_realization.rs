@@ -490,6 +490,7 @@ mod membership;
 mod operators;
 mod rank_bags;
 mod ranking;
+mod scalar_quantified;
 mod set_bags;
 mod set_trees;
 mod sets;
@@ -533,6 +534,14 @@ pub(crate) use operators::{
 pub use rank_bags::{
     physical_finite_rank_bag_plan, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
     PhysicalRankRow,
+};
+pub use scalar_quantified::{
+    physical_finite_quantified_comparison, physical_finite_quantified_subquery_plan,
+    physical_finite_quantified_where_plan, physical_finite_scalar_subquery_plan,
+    PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof, PhysicalQuantifiedColumnDomain,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
+    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
+    PhysicalScalarSubqueryProof,
 };
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,

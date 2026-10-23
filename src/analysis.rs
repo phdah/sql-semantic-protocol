@@ -48,14 +48,14 @@ use crate::protocol::{
     JoinExecution, JoinKind, LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType,
     LiteralValue, LogicalPredicate, MergeAction as ProtocolMergeAction, MergeAssignment,
     MergeClause as ProtocolMergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn,
-    Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    ResidualCondition, ResidualConditionReason, RowConditions, ScalarSubqueryExpression, SetBranch,
-    SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier, SetWitnessBoundary,
-    SignedIntegerCastExpression, SignedIntegerCastKind, SignedIntegerWidth, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteDefinitionMode,
-    WriteOperation, WriteValue,
+    Predicate, Predicates, Protocol, ProtocolStatement, QuantifiedSubqueryPredicate,
+    QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, RowConditions,
+    ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation, SetOperator,
+    SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SignedIntegerCastKind,
+    SignedIntegerWidth, SourceRelation, SubqueryQuantifier, SubquerySemantics, UnaryExpression,
+    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 use temporal_literals::normalize_temporal_identity_cast;

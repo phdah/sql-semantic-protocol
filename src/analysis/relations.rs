@@ -192,6 +192,9 @@ pub(super) fn uncarried_local_predicate_reason(
         Predicate::Exists(_) => {
             Some("EXISTS semantics depend on nested-row existence, not a scalar domain".to_string())
         }
+        Predicate::QuantifiedSubquery(_) => {
+            Some("quantified comparison depends on nested physical rows".to_string())
+        }
         Predicate::InSubquery(_) => Some(
             "IN-subquery semantics depend on nested rows, not only a scalar domain".to_string(),
         ),
@@ -257,6 +260,9 @@ pub(super) fn collect_local_predicate_source_columns(
             for expression in predicate.operand().expressions() {
                 collect_local_expression_source_column(expression, scope, columns);
             }
+        }
+        Predicate::QuantifiedSubquery(predicate) => {
+            collect_local_expression_source_column(predicate.operand(), scope, columns);
         }
         Predicate::Between(predicate) => {
             collect_local_expression_source_column(predicate.expression(), scope, columns);

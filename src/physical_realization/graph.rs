@@ -86,6 +86,7 @@ pub(super) fn total_scalar_predicate(predicate: &Predicate) -> bool {
         | Predicate::BooleanExpression(_)
         | Predicate::Exists(_)
         | Predicate::InSubquery(_)
+        | Predicate::QuantifiedSubquery(_)
         | Predicate::Unknown(_)
         | Predicate::Unsupported(_) => false,
     }
@@ -123,6 +124,7 @@ pub(super) fn row_local_predicate(predicate: &Predicate) -> bool {
         Predicate::BooleanExpression(expression) => row_local_expression(expression),
         Predicate::Exists(_)
         | Predicate::InSubquery(_)
+        | Predicate::QuantifiedSubquery(_)
         | Predicate::Unknown(_)
         | Predicate::Unsupported(_) => false,
     }
