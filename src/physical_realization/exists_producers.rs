@@ -224,38 +224,6 @@ fn predicate_truth(
             }
             Ok(if has_unknown { None } else { Some(false) })
         }
-        Predicate::Exists(exists) => {
-            let nested = exists.subquery();
-            if !nested.row_shape_preserves_candidates()
-                || nested.sources().len() != 1
-                || !nested.joins().is_empty()
-                || !nested.diagnostics().is_empty()
-            {
-                return Err("nested producer EXISTS lacks row-existence equivalence");
-            }
-            // Inner population resolution is supplied by eval_query, not a
-            // guessed independently constructed subquery sample.
-            let inner_relation = &nested.sources()[0];
-            let inner = scope.iter().filter(|source| {
-                source.relation.alias() == inner_relation.alias()
-                    && same_relation(source.relation.name(), inner_relation.name())
-            });
-            let mut matching = false;
-            for source in inner {
-                let mut refs = scope.iter().filter(|item| {
-                    !std::ptr::eq(*item, source)
-                }).map(|item| InputRow { relation: item.relation, row: item.row }).collect::<Vec<_>>();
-                refs.push(InputRow { relation: source.relation, row: source.row });
-                if nested.predicates().where_predicate().is_none_or(|predicate| {
-                    predicate_truth(predicate, &refs, binary_text_laws_attested)
-                        .ok() == Some(Some(true))
-                }) {
-                    matching = true;
-                    break;
-                }
-            }
-            Ok(Some(if exists.negated() { !matching } else { matching }))
-        }
         _ => Err("unsupported producer WHERE or JOIN predicate"),
     }
 }
