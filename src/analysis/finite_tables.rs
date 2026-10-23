@@ -201,6 +201,44 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             FiniteTableKind::Unnest,
             dialect_name,
         ),
+        // sqlparser 0.58 represents ordinary FROM UNNEST(...) as a
+        // Table with function arguments. Preserve the WITH ORDINALITY fact
+        // before ever considering this a material physical source.
+        TableFactor::Table {
+            name,
+            alias,
+            args: Some(args),
+            with_ordinality,
+            sample: None,
+            with_hints,
+            version: None,
+            partitions,
+            json_path: None,
+            index_hints,
+            ..
+        } if name.to_string().eq_ignore_ascii_case("unnest")
+            && with_hints.is_empty()
+            && partitions.is_empty()
+            && index_hints.is_empty()
+            && args.settings.is_none() =>
+        {
+            let arguments = args
+                .args
+                .iter()
+                .map(|arg| match arg {
+                    FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => Some(expr.clone()),
+                    _ => None,
+                })
+                .collect::<Option<Vec<_>>>()?;
+            unnest_table(
+                alias,
+                &arguments,
+                false,
+                *with_ordinality,
+                FiniteTableKind::Unnest,
+                dialect_name,
+            )
+        }
         TableFactor::Function {
             name,
             args,
