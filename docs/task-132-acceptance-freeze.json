@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-132",
   "parent": "TASK-75",
-  "status": "verified_seven_mandatory_pending_final_ci_review",
+  "status": "verified_seven_mandatory_child_criteria_signed_off",
   "fixture_ids": [
     "75-C132-P",
     "75-C132-N"
@@ -970,6 +970,15 @@
     "native_engine": "DuckDB only; thirteen parser dialects are not native runtime certification",
     "dbt_source_producer_oracle": "tests/protocol_conformance_dbt_e2e.rs",
     "dbt_direct_odcs_producer_parity": "tests/protocol_conformance_dbt_e2e.rs",
-    "duckdb_e2e_reference": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40017570982"
+    "duckdb_e2e_reference": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40017570982",
+    "final_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40019127394",
+    "all_nine_checks_success": true,
+    "task_132_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
   }
 }
