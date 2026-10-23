@@ -330,6 +330,60 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         PhysicalProducerExistsProof::Impossible { .. }
     ));
 
+    // Build an independent four-view SQL producer graph from dbt's *compiled*
+    // statements, using the very same attested physical leaves. No dbt
+    // intermediate snapshots or SQL reparsing are supplied to the proof engine.
+    let model_names = [
+        "stg_orders",
+        "stg_customers",
+        "enriched_orders",
+        "subquery_orders",
+    ];
+    let view_sql = model_names.iter().map(|name| {
+        let node = model(&json, name);
+        SqlInput::inline(format!(
+            "CREATE VIEW {} AS {}",
+            node["relation_name"].as_str().expect("dbt compiled producer identity"),
+            node["compiled_code"].as_str().expect("dbt compiled SQL"),
+        ))
+    }).collect::<Vec<_>>();
+    let direct_names = model_names.iter().map(|name| format!("direct-{name}"))
+        .collect::<Vec<_>>();
+    let direct_configured = direct_names.iter().zip(view_sql.iter())
+        .map(|(name, input)| ConfiguredSqlInput::new(
+            name, input, "duckdb", dialect.as_ref(),
+        )).collect::<Vec<_>>();
+    let direct_catalog = RelationCatalog::from_schemas(bundle.source_schemas())
+        .expect("authoritative direct physical/catalog source evidence");
+    let direct_bundle = analyze_configured_inputs_with_catalog(
+        &direct_configured, &direct_catalog,
+    ).expect("direct SQL producer graph");
+    let direct_target = direct_bundle.layers().last().expect("compiled SQL final view");
+    let direct_proof = physical_finite_producer_exists_plan(
+        &direct_bundle, direct_target.id(), &physical, true,
+    );
+    let PhysicalProducerExistsProof::Exact(direct_exact) = direct_proof else {
+        panic!("compiled direct SQL source-to-terminal proof: {direct_proof:?}");
+    };
+    assert_eq!(direct_exact.terminal, exact.terminal, "dbt/direct physical identity bag parity");
+    assert_eq!(direct_exact.terminal_domains, exact.terminal_domains, "typed output parity");
+
+    // The compiled dbt SELECT syntax is shared by the thirteen exposed
+    // sqlparser entrypoints; these assertions make each parser boundary
+    // executable, without asserting native non-DuckDB engine semantics.
+    for parser_name in [
+        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
+        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    ] {
+        let parser = dialect_from_name(parser_name).expect("published parser path");
+        for name in model_names {
+            let compiled = model(&json, name)["compiled_code"].as_str().unwrap();
+            analyze_sql(compiled, parser_name, parser.as_ref()).unwrap_or_else(|error| {
+                panic!("{name} compiled SQL / {parser_name} parser boundary: {error}")
+            });
+        }
+    }
+
     // TASK-132: independent complete raw source, intermediary producer, and
     // correlated final terminal snapshots for the actual compiled dbt model.
     let task_132: Value =
