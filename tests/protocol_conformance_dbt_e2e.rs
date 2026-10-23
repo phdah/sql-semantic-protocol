@@ -12,7 +12,7 @@ use sql_semantic_protocol::{
     parse_dbt_catalog, parse_dbt_manifest, physical_finite_producer_exists_plan,
     physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, to_bundle_json,
     AnalysisBundle, ConfiguredSqlInput, LiteralValue, PhysicalProducerExistsProof,
-    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, SqlInput, WitnessDirection,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, SqlInput, TimestampZone, WitnessDirection,
 };
 
 const PROJECT: &str = "protocol_conformance";
