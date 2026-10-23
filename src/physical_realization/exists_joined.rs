@@ -6,7 +6,9 @@
 
 use std::collections::BTreeMap;
 
-use super::exists_bags::{checked_ids, output_domain, row_id, scalar, signed_integer_source, PhysicalExistsColumnDomain};
+use super::exists_bags::{
+    checked_ids, output_domain, row_id, scalar, signed_integer_source, PhysicalExistsColumnDomain,
+};
 use super::write_states::{
     physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
 };
@@ -81,8 +83,13 @@ struct Sources<'a> {
 }
 
 impl Sources<'_> {
-    fn column_value(&self, column: &ColumnExpression) -> Result<(usize, Option<i128>), &'static str> {
-        let qualifier = column.relation().ok_or("unqualified nested column is ambiguous")?;
+    fn column_value(
+        &self,
+        column: &ColumnExpression,
+    ) -> Result<(usize, Option<i128>), &'static str> {
+        let qualifier = column
+            .relation()
+            .ok_or("unqualified nested column is ambiguous")?;
         let owners = (0..3)
             .filter(|index| self.aliases[*index] == qualifier || self.names[*index] == qualifier)
             .collect::<Vec<_>>();
@@ -102,8 +109,7 @@ impl Sources<'_> {
     ) -> Result<bool, &'static str> {
         let (left_role, left) = self.column_value(pair.0)?;
         let (right_role, right) = self.column_value(pair.1)?;
-        if !((left_role, right_role) == expected_roles
-            || (right_role, left_role) == expected_roles)
+        if !((left_role, right_role) == expected_roles || (right_role, left_role) == expected_roles)
         {
             return Err("comparison escapes its certified source/alias scope");
         }
@@ -185,7 +191,10 @@ pub fn physical_finite_joined_exists_bag_plan(
         || walker.sources.len() != 3
         || names.iter().any(|name| !walker.sources.contains(*name))
         || nested.dependencies().len() != 2
-        || nested.dependencies().iter().any(|name| name != names[1] && name != names[2])
+        || nested
+            .dependencies()
+            .iter()
+            .any(|name| name != names[1] && name != names[2])
         || join.left().relation() != names[1]
         || join.right().relation() != names[2]
     {
@@ -275,7 +284,10 @@ pub fn physical_finite_joined_exists_bag_plan(
             let Some(value) = outer_row.values().get(projected.column()) else {
                 return residual("outer projected value is missing");
             };
-            terminal.push(BTreeMap::from([(projection.name().to_string(), value.clone())]));
+            terminal.push(BTreeMap::from([(
+                projection.name().to_string(),
+                value.clone(),
+            )]));
             selected.push(outer_id.to_string());
         } else {
             rejected.push(outer_id.to_string());
