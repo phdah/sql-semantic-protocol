@@ -322,6 +322,11 @@ schema:
             &odcs,
         )
         .unwrap();
+        let declared_dependencies = if id == "75-C131-N6" {
+            vec!["source.demo.inner_rows", "source.demo.control_rows"]
+        } else {
+            vec!["source.demo.inner_rows", "source.demo.outer_rows"]
+        };
         let manifest = json!({
             "metadata": {
                 "dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -339,7 +344,7 @@ schema:
                     "language":"sql",
                     "raw_code":sql,
                     "compiled_code":sql,
-                    "depends_on":{"nodes":["source.demo.inner_rows","source.demo.outer_rows","source.demo.control_rows"]}
+                    "depends_on":{"nodes":declared_dependencies}
                 }
             },
             "sources": {
