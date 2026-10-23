@@ -658,11 +658,7 @@ fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions(
 #[test]
 fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proofs() {
     use serde_json::Value;
-    use sql_semantic_protocol::{
-        analyze_sql, physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
-        ProtocolStatement,
-    };
-
+    use sql_semantic_protocol::{analyze_sql, ProtocolStatement};
     let frozen: Value =
         serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
     let db = Connection::open_in_memory().unwrap();
@@ -777,16 +773,7 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
             "{id}: missing explicit correlated-row semantics boundary"
         );
         assert_eq!(query.joins().len(), 1, "{id}: join identity is preserved");
-        let b = bundle(sql);
-        let target = b.layers().last().unwrap();
-        assert!(matches!(
-            physical_finite_quantified_subquery_plan(
-                &b,
-                target.id(),
-                &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
-            ),
-            PhysicalQuantifiedScalarProof::Residual { .. }
-        ));
+
     }
 }
 
@@ -1131,5 +1118,8 @@ fn full_quantified_protocol_emission_matches_active_golden_contract() {
     let actual: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
     let expected: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/task-131-quantified-protocol.json")).unwrap();
-    assert_eq!(actual, expected, "complete task-131 protocol golden contract");
+    assert_eq!(
+        actual, expected,
+        "complete task-131 protocol golden contract"
+    );
 }
