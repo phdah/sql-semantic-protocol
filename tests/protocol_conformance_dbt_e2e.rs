@@ -12,9 +12,8 @@ use sql_semantic_protocol::{
     parse_dbt_catalog, parse_dbt_manifest, physical_finite_producer_exists_plan,
     physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, to_bundle_json,
     AnalysisBundle, ComparisonAssumption, ConfiguredSqlInput, LiteralValue,
-    PhysicalProducerExistsProof,
-    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, SqlInput, TimestampZone,
-    WitnessDirection,
+    PhysicalProducerExistsProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog, SqlInput,
+    TimestampZone, WitnessDirection,
 };
 
 const PROJECT: &str = "protocol_conformance";
@@ -381,8 +380,9 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(bundle.source_schemas())
         .expect("authoritative direct physical/catalog source evidence");
-    let mut direct_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &direct_catalog)
-        .expect("direct SQL producer graph");
+    let mut direct_bundle =
+        analyze_configured_inputs_with_catalog(&direct_configured, &direct_catalog)
+            .expect("direct SQL producer graph");
     direct_bundle.declare_comparison_assumptions(&[
         ComparisonAssumption::BinaryCollation,
         ComparisonAssumption::NoCharPadding,
@@ -506,8 +506,9 @@ schema:
         all_schemas.extend(contract.source_schemas().iter().cloned());
         let odcs_catalog = RelationCatalog::from_schemas(&all_schemas)
             .expect("equivalent source and dbt model schemas");
-        let mut odcs_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &odcs_catalog)
-            .expect("ODCS-backed compiled source/producers");
+        let mut odcs_bundle =
+            analyze_configured_inputs_with_catalog(&direct_configured, &odcs_catalog)
+                .expect("ODCS-backed compiled source/producers");
         odcs_bundle.declare_comparison_assumptions(&[
             ComparisonAssumption::BinaryCollation,
             ComparisonAssumption::NoCharPadding,
