@@ -46,6 +46,7 @@
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
 //! - physical_finite_exists_bag_plan proves full correlated and uncorrelated EXISTS/NOT EXISTS source bags and rejected outer identities.
 //! - physical_finite_joined_exists_bag_plan proves complete three-source nested INNER JOIN EXISTS/NOT EXISTS bags and rejected outer identities.
+//! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
 //! - AnalysisBundle::attest_source_text_comparison attaches independently enforced source text laws without silently replacing adapter datatypes.
