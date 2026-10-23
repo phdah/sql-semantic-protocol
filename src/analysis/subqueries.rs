@@ -48,7 +48,6 @@ pub(super) fn analyze_subquery_semantics(
     let row_shape_preserves_candidates = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
-        && query.offset.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
                 && matches!(
@@ -91,7 +90,6 @@ pub(super) fn analyze_subquery_semantics(
     let grouped_exists_equivalent = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
-        && query.offset.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
                 && matches!(&select.from[0].relation, TableFactor::Table {
@@ -120,7 +118,6 @@ pub(super) fn analyze_subquery_semantics(
     let joined_exists_equivalent = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
-        && query.offset.is_none()
         && relations.joins.len() == 1
         && relations.joins[0].kind() == JoinKind::Inner
         && relations.joins[0].execution().is_none()
