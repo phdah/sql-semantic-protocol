@@ -537,11 +537,11 @@ pub use rank_bags::{
 };
 pub use scalar_quantified::{
     physical_finite_quantified_comparison, physical_finite_quantified_subquery_plan,
-    physical_finite_quantified_where_plan,
-    physical_finite_scalar_subquery_plan, PhysicalFiniteQuantifiedExact,
-    PhysicalFiniteQuantifiedProof, PhysicalQuantifiedColumnDomain, PhysicalQuantifiedOperands,
-    PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof, PhysicalQuantifiedTruth,
-    PhysicalQuantifier, PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof,
+    physical_finite_quantified_where_plan, physical_finite_scalar_subquery_plan,
+    PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof, PhysicalQuantifiedColumnDomain,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
+    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
+    PhysicalScalarSubqueryProof,
 };
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,

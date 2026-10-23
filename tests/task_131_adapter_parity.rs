@@ -215,16 +215,19 @@ fn conditional_nested_lateral_and_apply_residuals_preserve_adapter_parity() {
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
         dialect_from_name, parse_dbt_manifest, parse_odcs_yaml,
-        physical_finite_scalar_subquery_plan, ConfiguredSqlInput,
-        PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState,
-        LiteralValue, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn,
-        SqlInput,
+        physical_finite_scalar_subquery_plan, ConfiguredSqlInput, LiteralValue,
+        PhysicalScalarSubqueryProof, PhysicalWriteRow, PhysicalWriteState, ProtocolStatement,
+        RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     };
     use std::collections::BTreeMap;
 
     let frozen: Value =
         serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
-    let physical = ["warehouse.raw.inner_rows", "warehouse.raw.outer_rows", "warehouse.raw.control_rows"];
+    let physical = [
+        "warehouse.raw.inner_rows",
+        "warehouse.raw.outer_rows",
+        "warehouse.raw.control_rows",
+    ];
     let named = RelationCatalog::new(&physical).unwrap();
     let contract = parse_odcs_yaml(
         r#"
@@ -300,12 +303,22 @@ schema:
             .replace("FROM control_rows", "FROM warehouse.raw.control_rows");
         let input = SqlInput::inline(&sql);
         let direct_bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("task131-conditional", &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "task131-conditional",
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &direct,
         )
         .unwrap();
         let odcs_bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("task131-conditional", &input, "postgresql", parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "task131-conditional",
+                &input,
+                "postgresql",
+                parser.as_ref(),
+            )],
             &odcs,
         )
         .unwrap();
@@ -370,11 +383,16 @@ schema:
                 .iter()
                 .map(|row| {
                     PhysicalWriteRow::new(BTreeMap::from([
-                        ("id".to_string(), LiteralValue::Text(row["id"].as_str().unwrap().to_string())),
-                        ("v".to_string(), row["v"].as_i64().map_or(
-                            LiteralValue::Null,
-                            |value| LiteralValue::Number(value.to_string()),
-                        )),
+                        (
+                            "id".to_string(),
+                            LiteralValue::Text(row["id"].as_str().unwrap().to_string()),
+                        ),
+                        (
+                            "v".to_string(),
+                            row["v"].as_i64().map_or(LiteralValue::Null, |value| {
+                                LiteralValue::Number(value.to_string())
+                            }),
+                        ),
                     ]))
                     .unwrap()
                 })
@@ -420,11 +438,17 @@ schema:
                 );
                 assert_eq!(query.joins().len(), 1, "{id}/{adapter}: retained join");
             }
-            assert_eq!(case["expected_adapter_cells"][adapter_key(adapter)], "Residual_conditional");
+            assert_eq!(
+                case["expected_adapter_cells"][adapter_key(adapter)],
+                "Residual_conditional"
+            );
             checked += 1;
         }
     }
-    assert_eq!(checked, 9, "every conditional cell across SQL, dbt and ODCS");
+    assert_eq!(
+        checked, 9,
+        "every conditional cell across SQL, dbt and ODCS"
+    );
 }
 
 #[cfg(feature = "odcs")]

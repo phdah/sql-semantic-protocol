@@ -655,13 +655,12 @@ fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions(
     );
 }
 
-
 #[test]
 fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proofs() {
     use serde_json::Value;
     use sql_semantic_protocol::{
-        analyze_sql, physical_finite_quantified_subquery_plan,
-        PhysicalQuantifiedScalarProof, ProtocolStatement,
+        analyze_sql, physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+        ProtocolStatement,
     };
 
     let frozen: Value =
@@ -681,8 +680,10 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
             .iter()
             .find(|case| case["id"] == id)
             .unwrap();
-        db.execute_batch("DELETE FROM inner_rows; DELETE FROM outer_rows; DELETE FROM control_rows;")
-            .unwrap();
+        db.execute_batch(
+            "DELETE FROM inner_rows; DELETE FROM outer_rows; DELETE FROM control_rows;",
+        )
+        .unwrap();
         for row in case["source_bags"]["inner_rows"].as_array().unwrap() {
             db.execute(
                 "INSERT INTO inner_rows VALUES (?, ?)",
@@ -719,7 +720,10 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
             .iter()
             .map(|row| (row["id"].as_str().unwrap().to_string(), row["v"].as_i64()))
             .collect::<Vec<_>>();
-        assert_eq!(native_source, expected_source, "{id}: frozen complete physical bag");
+        assert_eq!(
+            native_source, expected_source,
+            "{id}: frozen complete physical bag"
+        );
         let sql = case["sql"].as_str().unwrap();
         if id == "75-C131-N6" {
             assert!(
@@ -766,7 +770,10 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
             panic!("{id}: missing canonical query");
         };
         assert!(
-            query.diagnostics().iter().any(|diagnostic| diagnostic.code() == code),
+            query
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == code),
             "{id}: missing explicit correlated-row semantics boundary"
         );
         assert_eq!(query.joins().len(), 1, "{id}: join identity is preserved");
@@ -819,10 +826,20 @@ fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
             "{sql}: the entire public quantified predicate grammar is pinned"
         );
         assert_eq!(
-            predicate["subquery"].as_object().unwrap().keys().collect::<Vec<_>>(),
+            predicate["subquery"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .collect::<Vec<_>>(),
             [
-                "column_domains", "condition_exactness", "correlations",
-                "dependencies", "diagnostics", "joins", "output", "predicates"
+                "column_domains",
+                "condition_exactness",
+                "correlations",
+                "dependencies",
+                "diagnostics",
+                "joins",
+                "output",
+                "predicates"
             ],
             "{sql}: the complete nested protocol contract is preserved"
         );
@@ -847,8 +864,7 @@ fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
     let coverage: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     assert_eq!(
-        coverage["task_131_scalar_quantified_plan"]["freeze_version"],
-        frozen["version"],
+        coverage["task_131_scalar_quantified_plan"]["freeze_version"], frozen["version"],
         "canonical coverage manifest must point to the reviewed acceptance freeze"
     );
     assert_eq!(frozen["owner"], "TASK-131");
@@ -1100,4 +1116,26 @@ fn sql_bound_quantified_where_proves_complete_true_and_not_true_physical_bags() 
         physical_finite_quantified_where_plan(&b, &id, &[outer, inner]),
         PhysicalFiniteQuantifiedProof::Residual { .. }
     ));
+}
+
+#[test]
+fn full_quantified_protocol_emission_matches_active_golden_contract() {
+    use sql_semantic_protocol::{analyze_sql, to_json};
+    let parser = dialect_from_name("generic").unwrap();
+    let protocol = analyze_sql(
+        "SELECT 1 = ANY (SELECT v FROM inner_rows) AS x",
+        "generic",
+        parser.as_ref(),
+    )
+    .unwrap();
+    let actual: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+    let expected: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/task-131-quantified-protocol.json"))
+            .unwrap();
+    if actual != expected {
+        panic!(
+            "TASK131_GOLDEN_BEGIN\n{}\nTASK131_GOLDEN_END",
+            serde_json::to_string_pretty(&actual).unwrap()
+        );
+    }
 }
