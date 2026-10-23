@@ -12776,5 +12776,28 @@
     "implementation_ci_result": "success",
     "child_acceptance_signoff": "five_of_five_TASK_127_AC_verified",
     "parent_TASK_74_status": "open_awaiting_TASK_128_and_independent_parent_signoff"
+  },
+  "task_137_table_fanout_acceptance": {
+    "owner": "TASK-137",
+    "parent": "TASK-77",
+    "status": "implementation_in_progress",
+    "freeze": "docs/task-137-acceptance-freeze.json",
+    "fixture_ids": [
+      "77-C137-P",
+      "77-C137-N"
+    ],
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "dialect_parser_cells_required": 104,
+    "adapter_cells_required": 24,
+    "verified_dialect_parser_cells": 0,
+    "verified_adapter_cells": 0,
+    "source_and_terminal_oracles": "tests/task_137_finite_tables.rs",
+    "canonical_owner": "src/protocol/finite_table.rs",
+    "analyzer_owner": "src/analysis/finite_tables.rs",
+    "physical_proof_owner": "src/physical_realization/finite_tables.rs",
+    "child_acceptance_signoff": false,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
