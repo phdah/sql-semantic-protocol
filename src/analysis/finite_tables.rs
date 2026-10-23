@@ -89,9 +89,15 @@ fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
                 .collect::<Option<Vec<_>>>()?;
             (!literals.is_empty()).then_some(literals)
         }
-        Expr::Cast { expr, data_type, .. } => {
+        Expr::Cast {
+            expr, data_type, ..
+        } => {
             let parsed = crate::data_type::parse_data_type(&data_type.to_string(), "duckdb").ok()?;
-            let crate::data_type::DataType::Array { element: Some(element), .. } = parsed else {
+            let crate::data_type::DataType::Array {
+                element: Some(element),
+                ..
+            } = parsed
+            else {
                 return None;
             };
             let element = match element.as_ref() {
@@ -169,17 +175,40 @@ fn unnest_select(select: &Select) -> Option<FiniteTable> {
         return None;
     }
     match &from.relation {
-        TableFactor::UNNEST { alias, array_exprs, with_offset, with_ordinality, .. } => {
-            unnest_table(alias, array_exprs, *with_offset, *with_ordinality, FiniteTableKind::Unnest)
-        }
-        TableFactor::Function { name, args, alias, lateral, .. }
-            if !*lateral && name.to_string().eq_ignore_ascii_case("unnest") =>
-        {
-            let arguments = args.iter().map(|arg| match arg {
-                FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => Some(expr.clone()),
-                _ => None,
-            }).collect::<Option<Vec<_>>>()?;
-            unnest_table(alias, &arguments, false, false, FiniteTableKind::Unnest)
+        TableFactor::UNNEST {
+            alias,
+            array_exprs,
+            with_offset,
+            with_ordinality,
+            ..
+        } => unnest_table(
+            alias,
+            array_exprs,
+            *with_offset,
+            *with_ordinality,
+            FiniteTableKind::Unnest,
+        ),
+        TableFactor::Function {
+            name,
+            args,
+            alias,
+            lateral,
+            ..
+        } if !*lateral && name.to_string().eq_ignore_ascii_case("unnest") => {
+            let arguments = args
+                .iter()
+                .map(|arg| match arg {
+                    FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => Some(expr.clone()),
+                    _ => None,
+                })
+                .collect::<Option<Vec<_>>>()?;
+            unnest_table(
+                alias,
+                &arguments,
+                false,
+                false,
+                FiniteTableKind::Unnest,
+            )
         }
         _ => None,
     }
@@ -203,7 +232,10 @@ fn explode_select(select: &Select) -> Option<FiniteTable> {
     let [argument] = arguments.as_slice() else {
         return None;
     };
-    let rows = array_items(argument)?.into_iter().map(|value| vec![value]).collect();
+    let rows = array_items(argument)?
+        .into_iter()
+        .map(|value| vec![value])
+        .collect();
     FiniteTable::new(FiniteTableKind::Explode, vec![alias.value.clone()], rows)
 }
 
