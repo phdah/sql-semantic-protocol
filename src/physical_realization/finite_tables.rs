@@ -89,7 +89,12 @@ pub fn physical_finite_table_plan(
             .zip(values.iter().map(|literal| literal.value().clone()))
             .collect::<BTreeMap<_, _>>();
         terminal.push(row);
-        row_ids.push(format!("{}:{index}", table.kind().as_str()));
+        let position = if matches!(table.kind(), crate::protocol::FiniteTableKind::Values) {
+            index
+        } else {
+            index + 1
+        };
+        row_ids.push(format!("{}:{position}", table.kind().as_str()));
     }
     if let Some(wanted) = wanted {
         if !terminal.iter().any(|row| row == wanted) {
