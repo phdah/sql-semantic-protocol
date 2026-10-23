@@ -773,7 +773,6 @@ fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proof
             "{id}: missing explicit correlated-row semantics boundary"
         );
         assert_eq!(query.joins().len(), 1, "{id}: join identity is preserved");
-
     }
 }
 
