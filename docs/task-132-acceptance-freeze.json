@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-132",
   "parent": "TASK-75",
-  "status": "in_progress_mandatory_unverified",
+  "status": "verified_seven_mandatory_pending_final_ci_review",
   "fixture_ids": [
     "75-C132-P",
     "75-C132-N"
@@ -898,26 +898,26 @@
       "positive_proof": "Complete raw orders and customers bags materialize staged and joined producers; customer 10 matches the EXISTS subquery",
       "not_true_proof": "Customer 20 is excluded by the staged customer predicate and order 2 is excluded by staged order filters; complete raw bags required",
       "parser_status": {
-        "generic": "pending_compiled_sql_classification",
-        "mysql": "pending_compiled_sql_classification",
-        "postgresql": "pending_compiled_sql_classification",
-        "hive": "pending_compiled_sql_classification",
-        "sqlite": "pending_compiled_sql_classification",
-        "snowflake": "pending_compiled_sql_classification",
-        "redshift": "pending_compiled_sql_classification",
-        "mssql": "pending_compiled_sql_classification",
-        "clickhouse": "pending_compiled_sql_classification",
-        "bigquery": "pending_compiled_sql_classification",
-        "ansi": "pending_compiled_sql_classification",
-        "duckdb": "pending_compiled_sql_classification",
-        "databricks": "pending_compiled_sql_classification"
+        "generic": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "mysql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "postgresql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "hive": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "sqlite": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "snowflake": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "redshift": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "mssql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "clickhouse": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "bigquery": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "ansi": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "duckdb": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "databricks": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_exact_full_canonical_source_to_terminal_producer_chain",
+        "dbt_compiled": "verified_exact_full_canonical_source_to_terminal_producer_chain",
+        "odcs": "verified_exact_full_canonical_source_to_terminal_producer_chain"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     }
   ],
   "conformance_sql_fixture": "tests/fixtures/conformance/v1/dbt_core_project/models/subquery_orders.sql",
@@ -926,13 +926,13 @@
       "id": "75-C132-conditional-vendor",
       "owner": "TASK-132",
       "reason": "13 dialect parser support does not attest native vendor/session execution",
-      "disposition": "review_pending_no_exact_claim"
+      "disposition": "reviewed_parser_only_no_vendor_runtime_or_session_claim"
     },
     {
       "id": "75-C132-conditional-nested-producer",
       "owner": "TASK-132",
       "reason": "Derived/grouped or joined source identity must be proven end to end from complete physical input bags",
-      "disposition": "release_blocked_until_exact"
+      "disposition": "verified_exact_canonical_source_to_producer_and_terminal"
     }
   ],
   "original_parent_acceptance_mapped": [
@@ -951,23 +951,25 @@
     "75-C132-P-joined_composite",
     "75-C132-N-joined_composite",
     "75-C132-P-grouped_composite",
-    "75-C132-N-grouped_composite"
-  ],
-  "mandatory_unverified": [
+    "75-C132-N-grouped_composite",
     "75-C132-P-dbt-subquery-orders"
   ],
+  "mandatory_unverified": [],
   "freeze_revisions": [
     {
       "version": 2,
       "reason": "Explicitly include the named committed subquery_orders.sql dbt pipeline as a mandatory case, rather than only citing it in scope."
     }
   ],
-  "verified_parser_cells": 78,
-  "verified_adapter_cells": 18,
+  "verified_parser_cells": 91,
+  "verified_adapter_cells": 21,
   "verification_evidence": {
     "source_bags": "tests/task_132_composite_correlations.rs",
     "adapter_parity": "tests/task_132_adapter_parity.rs",
     "ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003",
-    "native_engine": "DuckDB only; no native non-DuckDB engine claims"
+    "native_engine": "DuckDB only; thirteen parser dialects are not native runtime certification",
+    "dbt_source_producer_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "dbt_direct_odcs_producer_parity": "tests/protocol_conformance_dbt_e2e.rs",
+    "duckdb_e2e_reference": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40017570982"
   }
 }
