@@ -1,31 +1,37 @@
-# TASK-132 acceptance audit
+# TASK-132 bounded acceptance signoff
 
-The active, versioned matrix is [task-132-acceptance-freeze.json](task-132-acceptance-freeze.json). Each original TASK-75 acceptance criterion remains independent and unresolved until the merged child evidence is reviewed. This document describes the release-facing **current state**, not a changelog.
+The versioned mandatory contract is [task-132-acceptance-freeze.json](task-132-acceptance-freeze.json); the public machine-readable inventory is [coverage-manifest.json](coverage-manifest.json). All seven mandatory fixture cases are accompanied by complete source and terminal bags, typed domains, positive and NOT TRUE source-row identities, and 13 explicit parser paths with three representable adapter paths per case.
 
-## Bounded mandatory cases
+## Complete verified mandatory matrix
 
-| Frozen case | SQL form | Canonical physical proof | Independent execution | Adapter parity | Disposition |
-| --- | --- | --- | --- | --- | --- |
-| 75-C132-P-direct_composite | EXISTS with two integer equality correlations | `physical_finite_exists_bag_plan` | Complete DuckDB source and terminal bags | Pending dbt/ODCS parity | Open |
-| 75-C132-N-direct_composite | NOT EXISTS and NULL/duplicate absence | `physical_finite_exists_bag_plan` | Complete DuckDB bags | Pending dbt/ODCS parity | Open |
-| 75-C132-P-grouped_composite | EXISTS through nonempty physical GROUP BY | `physical_finite_exists_bag_plan` with scoped `grouped_exists_equivalent` | Complete DuckDB bags | Pending dbt/ODCS parity | Open |
-| 75-C132-N-grouped_composite | NOT EXISTS after grouped inner | Same exact bag oracle, no HAVING | Complete DuckDB bags | Pending dbt/ODCS parity | Open |
-| 75-C132-P-joined_composite | EXISTS through a two-key inner JOIN | `physical_finite_joined_exists_bag_plan` | Complete three-source DuckDB bags and identity pairs | Pending dbt/ODCS parity | Open |
-| 75-C132-N-joined_composite | NOT EXISTS after joined inner | Same exact model with full Cartesian absence | Complete three-source DuckDB bags | Pending dbt/ODCS parity | Open |
-| 75-C132-P-dbt-subquery-orders | Committed multi-producer `subquery_orders.sql` | Independent source-to-producer DAG proof not yet established | Compiled dbt/DuckDB source, intermediate and final terminal snapshots | dbt execution present; ODCS proof parity pending | **Blocking** |
+| Mandatory case | Canonical physical evidence | Independent oracle and adapter parity | Classification |
+| --- | --- | --- | --- |
+| 75-C132-P-direct_composite | Complete composite-key EXISTS equality; matching inner source IDs | Public Rust integration across 13 dialects, DuckDB full input/output, SQL/dbt/ODCS parity | Exact |
+| 75-C132-N-direct_composite | Complete composite-key NOT EXISTS; NULL/duplicate/absence | Same three independent adapter paths and DuckDB oracle | Exact |
+| 75-C132-P-grouped_composite | Nonempty local GROUP BY preserves Boolean EXISTS emptiness; physical candidate multiplicity is not inferred | Full source/terminal DuckDB bags and 13 dialect + three adapter proofs | Exact |
+| 75-C132-N-grouped_composite | NOT EXISTS requires the complete grouped candidate absence | Same independent and adapter oracles | Exact |
+| 75-C132-P-joined_composite | One nested INNER JOIN, two correlated keys, every qualifying inner/joined physical pair | Complete three-source DuckDB row-identity bag and 13 dialect + three adapter proofs | Exact |
+| 75-C132-N-joined_composite | One nested INNER JOIN, SQL UNKNOWN and complete anti-membership absence | Same native full bag and adapter oracles | Exact |
+| 75-C132-P-dbt-subquery-orders | All raw source rows recursively generate stg_orders, stg_customers, enriched_orders and correlated subquery_orders through the canonical graph | Actual compiled dbt/DuckDB full source/intermediate/terminal snapshots; independent identical exact output from direct compiled CREATE VIEW SQL and ODCS source schema; compiled SELECT parsing for all 13 exposed dialects | Exact |
 
-**Source identity:** The joined oracle stores complete `[inner_row_id, joined_row_id]` pairs, never independently assembled per-key or guessed physical rows. The outer SELECT retains duplicates and enumerated numeric terminal values, NULL status and inclusive bounds. SQL UNKNOWN is NOT TRUE in `WHERE` and can never establish a qualifying join or correlated equality.
+The seven required cases account for **91 classified parser cells** and **21 canonical SQL/dbt/ODCS adapter proof cells**, all verified. Only DuckDB runtime SQL execution is certified; the other 12 named parser dialects are parser/canonical analysis compatibility, not assertions of native vendor runtime, collation, timezone or transaction behavior.
 
-**Fail-closed boundaries:** Non-INNER joins, unsupported predicate trees, absent/ambiguous source aliases, extra group shaping (HAVING), OFFSET, non-column/nonnumeric equality and duplicate physical IDs are not Exact. Native non-DuckDB engine/session attestations are conditional TASK-132 responsibility, not assumed from shared parser acceptance.
+## Independent physical obligations
 
-## Acceptance criteria closure
+The direct and grouped solver preserves each qualifying/rejected outer physical identity, the complete multiset of matched inner IDs (including duplicates), typed enumerated integer outputs, SQL NULL and inclusive bounds. The joined solver independently evaluates one joint three-source assignment, preserving every `[inner_id, joined_id]` pair and full outer SELECT multiplicity; it never multiplies a surviving outer row by the number of inner witnesses.
 
-1. **AC #1, frozen executable inventory:** seven named mandatory cases, 13 dialects each, three adapter paths each; physical instances and source/terminal bags captured. The matrix still has unverified adapter/status cells. **Open.**
-2. **AC #2, canonical physical completeness:** direct, grouped and joined bounded equality proof paths implemented and guarded. The composed multi-producer dbt case lacks an end-to-end canonical physical proof. **Open.**
-3. **AC #3, native executable oracle:** independent DuckDB direct/joined/grouped source/terminal snapshots cover six cases; compiled dbt oracle enumerates input, producer and terminal bags for the seventh. Identity, negative and failure behavior require final-head review. **Open pending verification.**
-4. **AC #4, 13 dialects, dbt/ODCS and vendor/session boundaries:** all 13 direct/grouped/joined native parser paths are exercised by public tests, but mandatory adapter-equivalent source proof and classification matrix is unfinished. Vendor behavior outside executable DuckDB remains uncertified. **Open.**
-5. **AC #5, final verification/signoff:** no signoff until the final head passes format, strict lint, full test matrix, no-default-features, docs, dbt e2e and snapshots; independent two-axis review and parent AC reconciliation must follow. **Open.**
+For the named producer case, `physical_finite_producer_exists_plan` starts only from schema-validated raw source bags; traverses canonical named producer edges in dependency order; evaluates WHERE, projection, CASE, INNER JOIN and nested correlated EXISTS; and returns per-layer full bags, original physical leaf ID provenance, rejected inputs, terminal rows and exact scalar domains. Source row 2 and customer 20 are rejected at their staging layers. The complete final physical terminal bag is `[(amount=42, region="north")]`; amount has precisely `[42,42]` inclusive and region precisely `{"north"}`, with no NULL. This is checked against a separate DuckDB dbt run, not used as the engine implementation.
 
-## Parent TASK-75
+Source timestamps lacking timezone metadata are Residual until a caller explicitly attests the physical zone. The dbt conformance test checks DuckDB `typeof(created_at) = TIMESTAMP` and attests its actual no-zone behavior; a contradictory or non-timestamp attestation is rejected. A caller must also attest binary text collation/no padding for executed text comparisons. Duplicate physical source identity or schema contradiction is Impossible; unsupported predicates, unknown datatypes, alias resolution, unsupported row shapes, HAVING/OFFSET or vendor rules stay Residual rather than guessed Exact.
 
-Parent original AC #1 through #6 require separate reconciliation of TASK-129, 130, 131 and this TASK-132 against all original families (EXISTS/IN/quantified/scalar, correlation, LATERAL/APPLY, NULL/duplicates, lineage and adapters). Green child CI is necessary but not sufficient. TASK-75 remains **To Do**, and TASK-91 remains a separate release gate.
+## Acceptance criteria review
+
+1. **AC #1, freeze and inventory:** Both mandatory IDs, every named variant, all seven SQL/physical/terminal bags, typed bounds, source aliases, 91 parser cells, 21 adapter cells, TRUE/NOT TRUE and conditional owner/disposition are recorded in the versioned task-owned freeze and coverage manifest.
+2. **AC #2, exact canonical realization:** Complete physical source truth and row multiplicity are independently proven for direct, grouped, joined and multi-producer SQL. No generator-specific SQL reparsing or invented intermediate snapshots.
+3. **AC #3, executable native oracle:** All six compositional fixture forms execute against independent DuckDB physical bags, including NULL/duplicate/rejected/negative cases. The seventh executes real dbt-compiled production and rejects altered/contradictory physical metadata.
+4. **AC #4, adapters/dialects/boundaries:** All 13 exposed dialect names are exercised for the shared parser forms and compiled dbt models; direct SQL, dbt artifact and equivalent ODCS schema evidence yield identical canonical physical truth. Native non-DuckDB runtime/session claims remain explicitly conditional and unapproved.
+5. **AC #5, final-head review:** Require a green final-head Rust format, strict Clippy, full/default and no-default tests, docs, dependencies and dbt E2E run; independent standards/spec inspection must match this freeze before marking the child Done.
+
+## Original TASK-75 mapping and release
+
+TASK-132 contributes evidence to all original TASK-75 criteria #1–#6, but does not close the parent independently. TASK-75 requires an independent reconciliation across the merged TASK-129, TASK-130, TASK-131 and TASK-132 child evidence after this PR lands. Conditional native-vendor/session behavior has explicit TASK-132 ownership and a parser-only/no-runtime-certification disposition. TASK-91 and protocol 3.0.0 release approval remain separate gates. No child success grants a release claim.
