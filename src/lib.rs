@@ -159,7 +159,8 @@ pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
-    physical_finite_chain_bag_plan, physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
+    physical_finite_chain_bag_plan, physical_finite_exists_bag_plan,
+    physical_finite_joined_exists_bag_plan, physical_finite_in_bag_plan,
     physical_finite_join_aggregate_plan, physical_finite_quantified_comparison,
     physical_finite_quantified_subquery_plan, physical_finite_quantified_where_plan,
     physical_finite_rank_bag_plan, physical_finite_scalar_subquery_plan,
@@ -173,6 +174,7 @@ pub use physical_realization::{
     PhysicalAggregateTruth, PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact,
     PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
     PhysicalFiniteChainProof, PhysicalFiniteExistsExact, PhysicalFiniteExistsProof,
+    PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
     PhysicalFiniteInExact, PhysicalFiniteInProof, PhysicalFiniteQuantifiedExact,
     PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
     PhysicalFiniteSetExact, PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact,
