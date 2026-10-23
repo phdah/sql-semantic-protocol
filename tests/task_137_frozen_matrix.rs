@@ -75,7 +75,8 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
         assert!(actual.nodes.iter().all(|node| node.inputs().is_empty()), "{id}: synthetic inputs");
         let expected = case["expected"].as_array().unwrap().iter().map(row).collect::<Vec<_>>();
         assert_eq!(sorted(&actual.terminal), sorted(&expected), "{id}: frozen bag");
-        let names = case["domains"].as_object().unwrap().keys().cloned().collect::<Vec<_>>();
+        let names = case["output_columns"].as_array().unwrap().iter()
+            .map(|name| name.as_str().unwrap().to_string()).collect::<Vec<_>>();
         let native = whole_duckdb_bag(case["oracle_sql"].as_str().unwrap(), &names);
         assert_eq!(sorted(&native), sorted(&expected), "{id}: independent DuckDB whole bag");
         let ids = case["positive"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect::<Vec<_>>();
@@ -158,5 +159,5 @@ fn all_frozen_variant_dialect_cells_are_parser_equivalent_or_explicit_boundaries
         }
     }
     assert_eq!(seen, 13 * 8, "all dialect cells explicitly examined");
-    assert!(parser_boundaries <= seen);
+    assert!(parser_boundaries < seen, "the shared VALUES syntax must be parsed");
 }
