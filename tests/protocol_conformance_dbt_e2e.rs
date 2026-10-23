@@ -1,6 +1,7 @@
 //! Executable TASK-99 integration gate against the byte-protocol conformance dbt corpus.
 //! Run through `make dbt-e2e`, which materializes all eleven models before this test.
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -8,8 +9,10 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_joint_row_count_plan, physical_row_count_plan,
-    physical_source_plan, to_bundle_json, AnalysisBundle, ConfiguredSqlInput, RelationCatalog,
+    parse_dbt_catalog, parse_dbt_manifest, physical_finite_producer_exists_plan,
+    physical_joint_row_count_plan, physical_row_count_plan,
+    physical_source_plan, to_bundle_json, AnalysisBundle, ConfiguredSqlInput, LiteralValue,
+    PhysicalProducerExistsProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
     SqlInput, WitnessDirection,
 };
 
@@ -171,6 +174,76 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         ).unwrap();
         assert_eq!(rejections, 0, "{name}: deliberately rejected rows leaked");
     }
+    // TASK-132: evaluate the canonical producer DAG from independent complete
+    // physical leaf bags, not from materialized dbt intermediate snapshots.
+    let proof_graph = physical_source_plan(&bundle, layer_id(&bundle, "subquery_orders"));
+    assert_eq!(proof_graph.sources().len(), 2);
+    let mut physical = Vec::new();
+    for name in proof_graph.sources() {
+        let unquoted = name.replace('"', "").replace('`', "");
+        if unquoted.ends_with(".orders") {
+            let mut q = db.prepare(
+                "SELECT id,customer_id,amount,status,CAST(created_at AS VARCHAR),region FROM raw.orders ORDER BY id"
+            ).unwrap();
+            let rows = q.query_map([], |r| {
+                Ok(PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Number(r.get::<_, i64>(0)?.to_string())),
+                    ("customer_id".to_string(), LiteralValue::Number(r.get::<_, i64>(1)?.to_string())),
+                    ("amount".to_string(), LiteralValue::Number(r.get::<_, i64>(2)?.to_string())),
+                    ("status".to_string(), LiteralValue::Text(r.get::<_, String>(3)?)),
+                    ("created_at".to_string(), LiteralValue::Text(r.get::<_, String>(4)?)),
+                    ("region".to_string(), LiteralValue::Text(r.get::<_, String>(5)?)),
+                ])).unwrap())
+            }).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+            physical.push(PhysicalWriteState::new(name, rows).unwrap());
+        } else if unquoted.ends_with(".customers") {
+            let mut q = db.prepare("SELECT id,score,active FROM raw.customers ORDER BY id").unwrap();
+            let rows = q.query_map([], |r| {
+                Ok(PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Number(r.get::<_, i64>(0)?.to_string())),
+                    ("score".to_string(), LiteralValue::Number(r.get::<_, i64>(1)?.to_string())),
+                    ("active".to_string(), LiteralValue::Boolean(r.get::<_, bool>(2)?)),
+                ])).unwrap())
+            }).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+            physical.push(PhysicalWriteState::new(name, rows).unwrap());
+        } else {
+            panic!("unexpected TASK-132 physical leaf: {name}");
+        }
+    }
+    let final_id = layer_id(&bundle, "subquery_orders");
+    let proof = physical_finite_producer_exists_plan(&bundle, final_id, &physical, true);
+    let PhysicalProducerExistsProof::Exact(exact) = proof else {
+        panic!("source-complete canonical producer proof is not Exact: {proof:?}");
+    };
+    for name in ["stg_orders", "stg_customers", "enriched_orders", "subquery_orders"] {
+        assert_eq!(exact.layer_bags[layer_id(&bundle, name)].len(), 1, "{name}: complete producer bag");
+    }
+    assert_eq!(exact.terminal.len(), 1);
+    assert_eq!(exact.terminal[0].values, BTreeMap::from([
+        ("amount".to_string(), LiteralValue::Number("42".to_string())),
+        ("region".to_string(), LiteralValue::Text("north".to_string())),
+    ]));
+    assert_eq!(exact.terminal[0].source_row_ids.len(), 2);
+    assert_eq!(exact.terminal_domains["amount"].integer_bounds, Some((42, 42)));
+    assert_eq!(exact.terminal_domains["region"].values, vec![LiteralValue::Text("north".to_string())]);
+    assert!(!exact.terminal_domains["amount"].null_allowed);
+    assert!(!exact.terminal_domains["region"].null_allowed);
+    assert_eq!(exact.rejected[layer_id(&bundle, "stg_orders")].len(), 1);
+    assert_eq!(exact.rejected[layer_id(&bundle, "stg_customers")].len(), 1);
+    assert!(matches!(
+        physical_finite_producer_exists_plan(&bundle, final_id, &physical, false),
+        PhysicalProducerExistsProof::Residual { .. }
+    ));
+    let mut duplicate = physical.clone();
+    let index = duplicate.iter().position(|state| state.relation().contains("orders")).unwrap();
+    let mut rows = duplicate[index].rows().to_vec();
+    rows.push(rows[0].clone());
+    duplicate[index] = PhysicalWriteState::new(duplicate[index].relation(), rows).unwrap();
+    assert!(matches!(
+        physical_finite_producer_exists_plan(&bundle, final_id, &duplicate, true),
+        PhysicalProducerExistsProof::Impossible { .. }
+    ));
+
     // TASK-132: independent complete raw source, intermediary producer, and
     // correlated final terminal snapshots for the actual compiled dbt model.
     let task_132: Value =
