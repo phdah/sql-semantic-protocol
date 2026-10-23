@@ -1,4 +1,20 @@
 {
+  "task_132_composed_subquery_acceptance": {
+    "owner": "TASK-132",
+    "parent": "TASK-75",
+    "status": "in_progress_unverified",
+    "freeze": "docs/task-132-acceptance-freeze.json",
+    "fixture_ids": [
+      "75-C132-P",
+      "75-C132-N"
+    ],
+    "mandatory_cases": 6,
+    "required_parser_cells": 78,
+    "required_adapter_cells": 18,
+    "mandatory_verified": false,
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_131_scalar_quantified_plan": {
     "owner": "TASK-131",
     "parent": "TASK-75",
