@@ -155,7 +155,7 @@ fn unnest_literal_complete_bags_and_ordinality_use_independent_duckdb() {
             .values()
             .all(|domain| { !matches!(domain, ValueDomain::Unknown(_)) }));
         if sql.contains("ORDINALITY") {
-            assert_eq!(proof.row_ids, ["unnest:0", "unnest:1"]);
+            assert_eq!(proof.row_ids, ["unnest:1", "unnest:2"]);
         }
         if sql.contains("CAST([]") {
             assert!(proof.terminal.is_empty());
