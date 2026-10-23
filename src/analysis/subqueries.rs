@@ -48,6 +48,7 @@ pub(super) fn analyze_subquery_semantics(
     let row_shape_preserves_candidates = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
+        && query.offset.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
                 && matches!(
@@ -90,6 +91,7 @@ pub(super) fn analyze_subquery_semantics(
     let grouped_exists_equivalent = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
+        && query.offset.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
                 && matches!(&select.from[0].relation, TableFactor::Table {
@@ -109,10 +111,8 @@ pub(super) fn analyze_subquery_semantics(
                         && expressions.iter().all(|expression|
                             matches!(expression, Expr::CompoundIdentifier(parts)
                                 if parts.len() == 2 && Some(parts[0].value.as_str()) == inner_qualifier))))
-        && output
-            .columns()
-            .iter()
-            .all(|column| nested_projection_preserves_candidate_rows(column.expression()));
+        && output.columns().iter().all(|column|
+            matches!(column.expression(), Expression::Column(_) | Expression::Literal(_)));
 
     // Keep joined EXISTS certification independent from row-preserving and
     // grouped claims. The physical planner must still prove *every* ON and
@@ -120,6 +120,7 @@ pub(super) fn analyze_subquery_semantics(
     let joined_exists_equivalent = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
+        && query.offset.is_none()
         && relations.joins.len() == 1
         && relations.joins[0].kind() == JoinKind::Inner
         && relations.joins[0].execution().is_none()
@@ -143,10 +144,8 @@ pub(super) fn analyze_subquery_semantics(
                 && select.connect_by.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(expressions, modifiers)
                     if expressions.is_empty() && modifiers.is_empty()))
-        && output
-            .columns()
-            .iter()
-            .all(|column| nested_projection_preserves_candidate_rows(column.expression()));
+        && output.columns().iter().all(|column|
+            matches!(column.expression(), Expression::Column(_) | Expression::Literal(_)));
 
     SubquerySemantics::new(
         relations.sources,
