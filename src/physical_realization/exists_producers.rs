@@ -115,7 +115,12 @@ fn lookup_column(
     let [source] = choices.as_slice() else {
         return Err("column has no unique physical producer and value");
     };
-    source.row.values.get(name).cloned().ok_or("source column missing")
+    source
+        .row
+        .values
+        .get(name)
+        .cloned()
+        .ok_or("source column missing")
 }
 
 fn scalar(
@@ -126,14 +131,12 @@ fn scalar(
     match expression {
         Expression::Literal(literal) => Ok(literal.value().clone()),
         Expression::Column(column) => lookup_column(column.relation(), column.name(), scope),
-        Expression::BooleanPredicate(predicate) => Ok(match predicate_truth(
-            predicate,
-            scope,
-            binary_text_laws_attested,
-        )? {
-            Some(value) => LiteralValue::Boolean(value),
-            None => LiteralValue::Null,
-        }),
+        Expression::BooleanPredicate(predicate) => Ok(
+            match predicate_truth(predicate, scope, binary_text_laws_attested)? {
+                Some(value) => LiteralValue::Boolean(value),
+                None => LiteralValue::Null,
+            },
+        ),
         Expression::Case(case) if case.operand().is_none() => {
             for branch in case.branches() {
                 if matches!(
@@ -162,11 +165,14 @@ fn comparison(
         return Ok(None);
     }
     let order = match (left, right) {
-        (LiteralValue::Number(left), LiteralValue::Number(right)) => {
-            left.parse::<i128>()
-                .map_err(|_| "non-integer producer comparison")?
-                .cmp(&right.parse::<i128>().map_err(|_| "non-integer producer comparison")?)
-        }
+        (LiteralValue::Number(left), LiteralValue::Number(right)) => left
+            .parse::<i128>()
+            .map_err(|_| "non-integer producer comparison")?
+            .cmp(
+                &right
+                    .parse::<i128>()
+                    .map_err(|_| "non-integer producer comparison")?,
+            ),
         (LiteralValue::Boolean(left), LiteralValue::Boolean(right)) => left.cmp(right),
         (LiteralValue::Text(left), LiteralValue::Text(right)) if binary_text_laws_attested => {
             left.cmp(right)
@@ -234,13 +240,20 @@ fn projection(
     ids: Vec<String>,
     binary_text_laws_attested: bool,
 ) -> Result<PhysicalProducerRow, &'static str> {
-    let values = output.columns().iter().map(|column| {
-        Ok((
-            column.name().to_string(),
-            scalar(column.expression(), scope, binary_text_laws_attested)?,
-        ))
-    }).collect::<Result<BTreeMap<_, _>, &'static str>>()?;
-    Ok(PhysicalProducerRow { values, source_row_ids: ids })
+    let values = output
+        .columns()
+        .iter()
+        .map(|column| {
+            Ok((
+                column.name().to_string(),
+                scalar(column.expression(), scope, binary_text_laws_attested)?,
+            ))
+        })
+        .collect::<Result<BTreeMap<_, _>, &'static str>>()?;
+    Ok(PhysicalProducerRow {
+        values,
+        source_row_ids: ids,
+    })
 }
 
 fn certified_query_shape(query: &QueryStatement) -> bool {
@@ -262,10 +275,7 @@ fn certified_query_shape(query: &QueryStatement) -> bool {
         }
 }
 
-fn complete_domain(
-    rows: &[PhysicalProducerRow],
-    column: &str,
-) -> Option<PhysicalProducerDomain> {
+fn complete_domain(rows: &[PhysicalProducerRow], column: &str) -> Option<PhysicalProducerDomain> {
     let mut values = Vec::new();
     let mut numeric = Vec::new();
     let mut null_allowed = false;
@@ -286,15 +296,22 @@ fn complete_domain(
     } else {
         None
     };
-    Some(PhysicalProducerDomain { values, integer_bounds, null_allowed })
+    Some(PhysicalProducerDomain {
+        values,
+        integer_bounds,
+        null_allowed,
+    })
 }
 
 fn input<'a>(
     produced: &'a BTreeMap<String, Vec<PhysicalProducerRow>>,
     name: &str,
 ) -> Result<&'a Vec<PhysicalProducerRow>, &'static str> {
-    let candidates = produced.iter().filter(|(key, _)| same_relation(key, name))
-        .map(|(_, rows)| rows).collect::<Vec<_>>();
+    let candidates = produced
+        .iter()
+        .filter(|(key, _)| same_relation(key, name))
+        .map(|(_, rows)| rows)
+        .collect::<Vec<_>>();
     let [rows] = candidates.as_slice() else {
         return Err("producer relation is missing or has ambiguous source identity");
     };
@@ -323,10 +340,16 @@ fn execute_query(
             None => vec![None],
         };
         for partner in partners {
-            let mut scope = vec![InputRow { relation: &sources[0], row: outer }];
+            let mut scope = vec![InputRow {
+                relation: &sources[0],
+                row: outer,
+            }];
             let mut ids = outer.source_row_ids.clone();
             if let Some(inner) = partner {
-                scope.push(InputRow { relation: &sources[1], row: inner });
+                scope.push(InputRow {
+                    relation: &sources[1],
+                    row: inner,
+                });
                 ids.extend(inner.source_row_ids.iter().cloned());
             }
             if let Some(join) = query.joins().first() {
@@ -351,8 +374,14 @@ fn execute_query(
                     let inner_rows = input(produced, nested_source.name())?;
                     let mut any = false;
                     for inner in inner_rows {
-                        let mut both = vec![InputRow { relation: &sources[0], row: outer }];
-                        both.push(InputRow { relation: nested_source, row: inner });
+                        let mut both = vec![InputRow {
+                            relation: &sources[0],
+                            row: outer,
+                        }];
+                        both.push(InputRow {
+                            relation: nested_source,
+                            row: inner,
+                        });
                         let matches = match nested.predicates().where_predicate() {
                             Some(predicate) => {
                                 predicate_truth(predicate, &both, binary_text_laws_attested)?
@@ -365,13 +394,24 @@ fn execute_query(
                             break;
                         }
                     }
-                    if exists.negated() { !any } else { any }
+                    if exists.negated() {
+                        !any
+                    } else {
+                        any
+                    }
                 }
-                Some(predicate) => predicate_truth(predicate, &scope, binary_text_laws_attested)? == Some(true),
+                Some(predicate) => {
+                    predicate_truth(predicate, &scope, binary_text_laws_attested)? == Some(true)
+                }
                 None => true,
             };
             if survives {
-                terminal.push(projection(query.output(), &scope, ids, binary_text_laws_attested)?);
+                terminal.push(projection(
+                    query.output(),
+                    &scope,
+                    ids,
+                    binary_text_laws_attested,
+                )?);
             } else {
                 rejected.push(ids);
             }
