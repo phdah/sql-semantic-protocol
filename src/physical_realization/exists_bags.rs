@@ -2,7 +2,7 @@
 //!
 //! Caller-supplied physical rows are closed-world evidence, not examples to
 //! extrapolate from. Only one direct outer relation, one direct inner relation,
-//! and a single attested integer equality correlation (or no correlation) are
+//! and a complete attested integer equality conjunction (or no correlation) are
 //! executable. Unknown nested filtering and row shaping remain residual.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -148,10 +148,31 @@ fn output_domain(
     })
 }
 
+// A composite WHERE correlation is a conjunction of source-column equalities.
+// Counting its leaves ensures that extra unproved conjuncts cannot be ignored
+// even when the normalized witness resolved some of the equalities.
+fn correlation_equality_count(predicate: &Predicate) -> Option<usize> {
+    match predicate {
+        Predicate::Comparison(cmp)
+            if cmp.operator() == ComparisonOperator::Eq
+                && matches!(
+                    (cmp.left(), cmp.right()),
+                    (Expression::Column(_), Expression::Column(_))
+                ) =>
+        {
+            Some(1)
+        }
+        Predicate::And(and) => and.operands().iter().try_fold(0usize, |count, item| {
+            count.checked_add(correlation_equality_count(item)?)
+        }),
+        _ => None,
+    }
+}
+
 /// Prove exact EXISTS/NOT EXISTS results from independently supplied complete
 /// physical bags and a parser-independent normalized SQL query.
 ///
-/// The only executable correlation is one integer source-column equality.
+/// Executable correlations are complete conjunctions of integer source-column equalities.
 /// SQL NULL equality is UNKNOWN (never a match). EXISTS is insensitive to
 /// inner duplicates, but their *individual* row identities are preserved in
 /// `matching_inner`. For NOT EXISTS, an empty matching vector proves exclusion
@@ -225,45 +246,38 @@ pub fn physical_finite_exists_bag_plan(
     if witness.kind() != kind {
         return residual("EXISTS predicate and witness disagree");
     }
-    let correlation = match witness.correlations() {
-        [] => {
-            if exists.subquery().predicates().where_predicate().is_some() {
-                return residual("uncorrelated nested filtering requires a complete predicate law");
-            }
-            None
+    let correlations = witness.correlations();
+    let correlation = if correlations.is_empty() {
+        if exists.subquery().predicates().where_predicate().is_some() {
+            return residual("uncorrelated nested filtering requires a complete predicate law");
         }
-        [pair] => {
-            // A single normalized equality is the complete inner WHERE.
-            // Additional filters, disjunctions, or unknown comparisons are
-            // not silently treated as TRUE or FALSE.
-            let Some(Predicate::Comparison(cmp)) = exists.subquery().predicates().where_predicate()
-            else {
-                return residual("inner filter is not one equality correlation");
-            };
-            if cmp.operator() != ComparisonOperator::Eq
-                || !matches!(
-                    (cmp.left(), cmp.right()),
-                    (Expression::Column(_), Expression::Column(_))
-                )
-                || pair.outer().relation() != Some(outer_name)
-                || pair.inner().relation() != Some(inner_name)
-            {
-                return residual("correlation is not an identified source equality");
-            }
-            Some((pair.outer().name(), pair.inner().name()))
+        Vec::new()
+    } else {
+        let Some(predicate) = exists.subquery().predicates().where_predicate() else {
+            return residual("inner filter is missing its correlation equalities");
+        };
+        if correlation_equality_count(predicate) != Some(correlations.len())
+            || correlations.iter().any(|pair| {
+                pair.outer().relation() != Some(outer_name)
+                    || pair.inner().relation() != Some(inner_name)
+            })
+        {
+            return residual("inner filter is not a complete conjunction of source equalities");
         }
-        _ => return residual("only one correlated equality is certified"),
+        correlations
+            .iter()
+            .map(|pair| (pair.outer().name(), pair.inner().name()))
+            .collect::<Vec<_>>()
     };
 
     if !signed_integer_source(bundle, outer_name, projected.column()) {
         return residual("projected source column lacks an attested signed integer type");
     }
-    if let Some((outer_column, inner_column)) = correlation {
-        if !signed_integer_source(bundle, outer_name, outer_column)
+    if correlation.iter().any(|(outer_column, inner_column)| {
+        !signed_integer_source(bundle, outer_name, outer_column)
             || !signed_integer_source(bundle, inner_name, inner_column)
-        {
-            return residual("correlated source equality lacks signed integer schema evidence");
-        }
+    }) {
+        return residual("correlated source equality lacks signed integer schema evidence");
     }
 
     let [Some(outer_bag), Some(inner_bag)] = [
@@ -298,25 +312,29 @@ pub fn physical_finite_exists_bag_plan(
         let Some(outer_id) = row_id(outer_row) else {
             return residual("outer row has no physical identity");
         };
-        let outer_value = match correlation {
-            Some((outer_column, _)) => match scalar(outer_row, outer_column) {
+        let mut outer_values = Vec::with_capacity(correlation.len());
+        for (outer_column, _) in &correlation {
+            let value = match scalar(outer_row, outer_column) {
                 Ok(value) => value,
                 Err(reason) => return residual(reason),
-            },
-            None => None,
-        };
+            };
+            outer_values.push(value);
+        }
         let mut partners = Vec::new();
         for inner_row in inner_bag.rows() {
-            let matches = match correlation {
-                None => true,
-                Some((_, inner_column)) => {
-                    let inner_value = match scalar(inner_row, inner_column) {
-                        Ok(value) => value,
-                        Err(reason) => return residual(reason),
-                    };
-                    matches!((outer_value, inner_value), (Some(a), Some(b)) if a == b)
-                }
-            };
+            // Evaluate all keys against the same two source rows. NULL never
+            // satisfies SQL equality, and one failed key rejects the partner.
+            let mut matches = true;
+            for ((_, inner_column), outer_value) in correlation.iter().zip(&outer_values) {
+                let inner_value = match scalar(inner_row, inner_column) {
+                    Ok(value) => value,
+                    Err(reason) => return residual(reason),
+                };
+                matches &= matches!(
+                    (*outer_value, inner_value),
+                    (Some(a), Some(b)) if a == b
+                );
+            }
             if matches {
                 let Some(inner_id) = row_id(inner_row) else {
                     return residual("inner row has no physical identity");
