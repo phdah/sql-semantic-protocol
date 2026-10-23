@@ -42,7 +42,7 @@ type: feature
 
 ## Implementation progress
 
-Frozen contract: [docs/task-132-acceptance-freeze.json](../../docs/task-132-acceptance-freeze.json). Mandatory joined/grouped, adapter, dialect and full-oracle cells remain unverified. Do not mark this task Done or begin TASK-75 parent signoff until all cells pass on the final PR head.
+The versioned [TASK-132 acceptance freeze](../../docs/task-132-acceptance-freeze.json) and [acceptance audit](../../docs/task-132-acceptance-audit.md) own seven mandatory cases and their open release disposition. Canonical complete-bag direct, grouped, and three-source INNER JOIN EXISTS/NOT EXISTS proofs are exercised by 13 dialect public API paths, independent DuckDB source/terminal oracles, and direct SQL/dbt/ODCS source-adapter comparison tests. The committed `subquery_orders.sql` has executable dbt producer/source/terminal snapshots but still lacks a canonical end-to-end multi-producer physical realizability proof. Mandatory matrix cell verification and independent final-head acceptance review remain open. No parent TASK-75 signoff or merge is authorized by this child evidence.
 
 ## Next
 
