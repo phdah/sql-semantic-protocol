@@ -41,8 +41,9 @@ fn ordinary_select_shape(select: &Select) -> bool {
 fn integer_literal(expr: &Expr) -> Option<LiteralExpression> {
     let literal = literal_expression(expr)?;
     match (literal.literal_type(), literal.value()) {
-        (LiteralType::Integer, LiteralValue::Number(number))
-            if number.parse::<i128>().is_ok() => Some(literal),
+        (LiteralType::Integer, LiteralValue::Number(number)) if number.parse::<i128>().is_ok() => {
+            Some(literal)
+        }
         (LiteralType::Null, LiteralValue::Null) => Some(literal),
         _ => None,
     }
@@ -62,21 +63,30 @@ fn function_arguments(function: &Function) -> Option<Vec<&Expr>> {
     if !list.clauses.is_empty() || list.duplicate_treatment.is_some() {
         return None;
     }
-    list.args.iter().map(|arg| match arg {
-        FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => Some(expr),
-        _ => None,
-    }).collect()
+    list.args
+        .iter()
+        .map(|arg| match arg {
+            FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => Some(expr),
+            _ => None,
+        })
+        .collect()
 }
 
 fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
     match expression {
         Expr::Array(array) => {
-            let literals = array.elem.iter().map(integer_literal).collect::<Option<Vec<_>>>()?;
+            let literals = array
+                .elem
+                .iter()
+                .map(integer_literal)
+                .collect::<Option<Vec<_>>>()?;
             (!literals.is_empty()).then_some(literals)
         }
         Expr::Function(function) if function.name.to_string().eq_ignore_ascii_case("array") => {
             let literals = function_arguments(function)?
-                .into_iter().map(integer_literal).collect::<Option<Vec<_>>>()?;
+                .into_iter()
+                .map(integer_literal)
+                .collect::<Option<Vec<_>>>()?;
             (!literals.is_empty()).then_some(literals)
         }
         Expr::Cast { expr, data_type, .. } => {
@@ -91,7 +101,8 @@ fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
             if !matches!(element, crate::data_type::DataType::SignedInteger { .. }) {
                 return None;
             }
-            if matches!(expr.as_ref(), Expr::Value(value) if value.to_string().eq_ignore_ascii_case("NULL")) {
+            if matches!(expr.as_ref(), Expr::Value(value) if value.to_string().eq_ignore_ascii_case("NULL"))
+            {
                 return Some(Vec::new());
             }
             match expr.as_ref() {
@@ -120,13 +131,21 @@ fn unnest_table(
     if alias.columns.len() != expected {
         return None;
     }
-    let columns = alias.columns.iter().map(|column| column.name.value.clone()).collect();
+    let columns = alias
+        .columns
+        .iter()
+        .map(|column| column.name.value.clone())
+        .collect();
     let mut rows = Vec::new();
     for (index, value) in literals.into_iter().enumerate() {
         let mut row = vec![value];
         if offset || ordinality {
             let index = i128::try_from(index).ok()?;
-            let position = if ordinality { index.checked_add(1)? } else { index };
+            let position = if ordinality {
+                index.checked_add(1)?
+            } else {
+                index
+            };
             row.push(LiteralExpression::new(
                 LiteralType::Integer,
                 LiteralValue::Number(position.to_string()),
@@ -138,10 +157,14 @@ fn unnest_table(
 }
 
 fn unnest_select(select: &Select) -> Option<FiniteTable> {
-    if !ordinary_select_shape(select) || !matches!(select.projection.as_slice(), [SelectItem::Wildcard(_)]) {
+    if !ordinary_select_shape(select)
+        || !matches!(select.projection.as_slice(), [SelectItem::Wildcard(_)])
+    {
         return None;
     }
-    let [from] = select.from.as_slice() else { return None };
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
     if !from.joins.is_empty() {
         return None;
     }
@@ -166,26 +189,39 @@ fn explode_select(select: &Select) -> Option<FiniteTable> {
     if !ordinary_select_shape(select) || !select.from.is_empty() {
         return None;
     }
-    let [SelectItem::ExprWithAlias { expr: Expr::Function(function), alias }] =
-        select.projection.as_slice() else { return None };
+    let [SelectItem::ExprWithAlias {
+        expr: Expr::Function(function),
+        alias,
+    }] = select.projection.as_slice()
+    else {
+        return None;
+    };
     if !function.name.to_string().eq_ignore_ascii_case("explode") {
         return None;
     }
     let arguments = function_arguments(function)?;
-    let [argument] = arguments.as_slice() else { return None };
+    let [argument] = arguments.as_slice() else {
+        return None;
+    };
     let rows = array_items(argument)?.into_iter().map(|value| vec![value]).collect();
     FiniteTable::new(FiniteTableKind::Explode, vec![alias.value.clone()], rows)
 }
 
 fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
-    let [first, ..] = values.rows.as_slice() else { return None };
+    let [first, ..] = values.rows.as_slice() else {
+        return None;
+    };
     if first.is_empty() {
         return None;
     }
-    let columns = (1..=first.len()).map(|index| format!("column{index}")).collect();
-    let rows = values.rows.iter().map(|row| {
-        row.iter().map(integer_literal).collect::<Option<Vec<_>>>()
-    }).collect::<Option<Vec<_>>>()?;
+    let columns = (1..=first.len())
+        .map(|index| format!("column{index}"))
+        .collect();
+    let rows = values
+        .rows
+        .iter()
+        .map(|row| row.iter().map(integer_literal).collect::<Option<Vec<_>>>())
+        .collect::<Option<Vec<_>>>()?;
     FiniteTable::new(FiniteTableKind::Values, columns, rows)
 }
 
@@ -204,30 +240,44 @@ pub(super) fn source_free_finite_query(
         SetExpr::Select(select) => unnest_select(select).or_else(|| explode_select(select)),
         _ => None,
     }?;
-    let output = Output::new(table.columns().iter().enumerate().map(|(index, name)| {
-        let values = table.rows().iter().filter_map(|row| row.get(index).cloned()).collect();
-        let domain = ValueDomain::set(SetMode::Include, values);
-        OutputColumn::new(
-            name.clone(),
-            Expression::Unknown(UnknownSemantic::new(
-                "finite table output is defined positionally by canonical literal rows".to_string(),
-            )),
-            domain,
+    let output = Output::new(
+        table
+            .columns()
+            .iter()
+            .enumerate()
+            .map(|(index, name)| {
+                let values = table
+                    .rows()
+                    .iter()
+                    .filter_map(|row| row.get(index).cloned())
+                    .collect();
+                let domain = ValueDomain::set(SetMode::Include, values);
+                OutputColumn::new(
+                    name.clone(),
+                    Expression::Unknown(UnknownSemantic::new(
+                        "finite table output is defined positionally by canonical literal rows"
+                            .to_string(),
+                    )),
+                    domain,
+                    Vec::new(),
+                )
+            })
+            .collect(),
+    );
+    Some(
+        QueryStatement::new(
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            RowConditions::new(
+                Predicates::new(None, None, None),
+                Vec::new(),
+                ConditionExactness::from_residuals(Vec::new()),
+            ),
+            output,
             Vec::new(),
         )
-    }).collect());
-    Some(QueryStatement::new(
-        Vec::new(),
-        Vec::new(),
-        Vec::new(),
-        RowConditions::new(
-            Predicates::new(None, None, None),
-            Vec::new(),
-            ConditionExactness::from_residuals(Vec::new()),
-        ),
-        output,
-        Vec::new(),
+        .with_finite_table(Some(table))
+        .with_produced_relation(produced_relation),
     )
-    .with_finite_table(Some(table))
-    .with_produced_relation(produced_relation))
 }
