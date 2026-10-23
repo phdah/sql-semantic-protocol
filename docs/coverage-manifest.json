@@ -2,7 +2,7 @@
   "task_132_composed_subquery_acceptance": {
     "owner": "TASK-132",
     "parent": "TASK-75",
-    "status": "seven_mandatory_verified_pending_final_ci",
+    "status": "verified_bounded_child_pending_merge",
     "freeze": "docs/task-132-acceptance-freeze.json",
     "fixture_ids": [
       "75-C132-P",
@@ -23,7 +23,16 @@
     "verified_six_case_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003",
     "adapter_oracle": "tests/protocol_conformance_dbt_e2e.rs",
     "dialect_oracle": "tests/task_132_composite_correlations.rs and tests/protocol_conformance_dbt_e2e.rs",
-    "conditional_native_runtime": "DuckDB verified; non-DuckDB native execution not claimed"
+    "conditional_native_runtime": "DuckDB verified; non-DuckDB native execution not claimed",
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "final_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40019127394",
+    "fully_verified_on_implementation_head": true
   },
   "task_131_scalar_quantified_plan": {
     "owner": "TASK-131",
