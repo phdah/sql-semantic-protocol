@@ -80,6 +80,38 @@ pub(super) fn analyze_subquery_semantics(
             .iter()
             .all(|column| nested_projection_preserves_candidate_rows(column.expression()));
 
+    // A nonempty GROUP BY over local source columns preserves EXISTS
+    // emptiness, although it does not preserve the physical candidate bag.
+    // Never reuse this certification for IN, scalar, or aggregate outputs.
+    let inner_qualifier = relations
+        .sources
+        .first()
+        .map(|source| source.alias().unwrap_or(source.name()));
+    let grouped_exists_equivalent = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table {
+                    args: None, sample: None, version: None, json_path: None,
+                    with_ordinality: false, partitions, with_hints, index_hints, ..
+                } if partitions.is_empty() && with_hints.is_empty() && index_hints.is_empty())
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.top.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(expressions, modifiers)
+                    if !expressions.is_empty() && modifiers.is_empty()
+                        && expressions.iter().all(|expression|
+                            matches!(expression, Expr::CompoundIdentifier(parts)
+                                if parts.len() == 2 && Some(parts[0].value.as_str()) == inner_qualifier)))
+        && output.columns().iter().all(|column|
+            nested_projection_preserves_candidate_rows(column.expression()));
+
     SubquerySemantics::new(
         relations.sources,
         relations.dependencies.into_iter().collect(),
@@ -90,6 +122,7 @@ pub(super) fn analyze_subquery_semantics(
         diagnostics,
     )
     .with_row_shape_preserves_candidates(row_shape_preserves_candidates)
+    .with_grouped_exists_equivalent(grouped_exists_equivalent)
 }
 
 /// Avoid calling an aggregate or window query candidate-preserving merely
