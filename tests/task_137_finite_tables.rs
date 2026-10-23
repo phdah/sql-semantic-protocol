@@ -5,13 +5,24 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteTableKind,
-    LiteralValue, PhysicalFiniteTableProof, SqlInput, ValueDomain,
+    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteTableKind, LiteralValue,
+    PhysicalFiniteTableProof, SqlInput, ValueDomain,
 };
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-    "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 fn frozen() -> Value {
@@ -48,7 +59,10 @@ fn db_bag(sql: &str, names: &[&str]) -> Vec<BTreeMap<String, LiteralValue>> {
 }
 
 fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut rows = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut rows = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     rows.sort();
     rows
 }
@@ -58,7 +72,10 @@ fn immutable_matrix_covers_required_variants_without_fabricated_evidence() {
     let matrix = frozen();
     assert_eq!(matrix["version"], 1);
     assert_eq!(matrix["owner"], "TASK-137");
-    assert_eq!(matrix["fixture_ids"], serde_json::json!(["77-C137-P","77-C137-N"]));
+    assert_eq!(
+        matrix["fixture_ids"],
+        serde_json::json!(["77-C137-P", "77-C137-N"])
+    );
     assert_eq!(matrix["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(matrix["cases"].as_array().unwrap().len(), 8);
     assert_eq!(matrix["validation"]["full_ci_signoff"], false);
@@ -99,11 +116,10 @@ fn values_exact_duplicates_nulls_impossible_absence_and_full_duckdb_bag() {
         &[SqlInput::inline("VALUES (1), (1), (NULL)")],
         "generic",
         parser.as_ref(),
-    ).unwrap();
+    )
+    .unwrap();
     let target = bundle.layers().last().unwrap().id();
-    let absent = BTreeMap::from([
-        ("column1".to_string(), LiteralValue::Number("9".to_string()))
-    ]);
+    let absent = BTreeMap::from([("column1".to_string(), LiteralValue::Number("9".to_string()))]);
     assert!(matches!(
         physical_finite_table_plan(&bundle, target, Some(&absent)),
         PhysicalFiniteTableProof::Impossible { .. }
@@ -113,7 +129,11 @@ fn values_exact_duplicates_nulls_impossible_absence_and_full_duckdb_bag() {
 #[test]
 fn unnest_literal_complete_bags_and_ordinality_use_independent_duckdb() {
     let fixtures = [
-        ("SELECT * FROM UNNEST([1, 2]) AS t(v)", "SELECT v FROM UNNEST([1,2]) AS t(v)", vec!["v"]),
+        (
+            "SELECT * FROM UNNEST([1, 2]) AS t(v)",
+            "SELECT v FROM UNNEST([1,2]) AS t(v)",
+            vec!["v"],
+        ),
         (
             "SELECT * FROM UNNEST([1, 2]) WITH ORDINALITY AS t(v, ord)",
             "SELECT v, ord FROM UNNEST([1,2]) WITH ORDINALITY AS t(v,ord)",
@@ -130,9 +150,10 @@ fn unnest_literal_complete_bags_and_ordinality_use_independent_duckdb() {
             panic!("attested literal UNNEST should prove exact output: {sql}");
         };
         assert_eq!(bag(&proof.terminal), bag(&db_bag(oracle, &names)));
-        assert!(proof.terminal_domains.values().all(|domain| {
-            !matches!(domain, ValueDomain::Unknown(_))
-        }));
+        assert!(proof
+            .terminal_domains
+            .values()
+            .all(|domain| { !matches!(domain, ValueDomain::Unknown(_)) }));
         if sql.contains("ORDINALITY") {
             assert_eq!(proof.row_ids, ["unnest:0", "unnest:1"]);
         }
@@ -177,12 +198,20 @@ fn source_free_parser_normalization_retains_operator_identity() {
         &[SqlInput::inline("SELECT * FROM UNNEST([1, 2]) AS t(v)")],
         "duckdb",
         parser.as_ref(),
-    ).unwrap();
-    let query = bundle.inputs()[0].statements().iter().find_map(|statement| match statement {
-        sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
-        _ => None,
-    }).unwrap();
-    assert_eq!(query.finite_table().unwrap().kind(), FiniteTableKind::Unnest);
+    )
+    .unwrap();
+    let query = bundle.inputs()[0]
+        .statements()
+        .iter()
+        .find_map(|statement| match statement {
+            sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(
+        query.finite_table().unwrap().kind(),
+        FiniteTableKind::Unnest
+    );
     assert!(query.dependencies().is_empty());
     assert_eq!(query.finite_table().unwrap().rows().len(), 2);
 }
