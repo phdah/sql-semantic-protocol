@@ -353,10 +353,14 @@ fn execute_query(
                     for inner in inner_rows {
                         let mut both = vec![InputRow { relation: &sources[0], row: outer }];
                         both.push(InputRow { relation: nested_source, row: inner });
-                        if nested.predicates().where_predicate().is_none_or(|predicate| {
-                            predicate_truth(predicate, &both, binary_text_laws_attested)
-                                .ok() == Some(Some(true))
-                        }) {
+                        let matches = match nested.predicates().where_predicate() {
+                            Some(predicate) => {
+                                predicate_truth(predicate, &both, binary_text_laws_attested)?
+                                    == Some(true)
+                            }
+                            None => true,
+                        };
+                        if matches {
                             any = true;
                             break;
                         }
