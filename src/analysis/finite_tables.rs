@@ -92,7 +92,8 @@ fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
         Expr::Cast {
             expr, data_type, ..
         } => {
-            let parsed = crate::data_type::parse_data_type(&data_type.to_string(), "duckdb").ok()?;
+            let parsed =
+                crate::data_type::parse_data_type(&data_type.to_string(), "duckdb").ok()?;
             let crate::data_type::DataType::Array {
                 element: Some(element),
                 ..
@@ -202,13 +203,7 @@ fn unnest_select(select: &Select) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            unnest_table(
-                alias,
-                &arguments,
-                false,
-                false,
-                FiniteTableKind::Unnest,
-            )
+            unnest_table(alias, &arguments, false, false, FiniteTableKind::Unnest)
         }
         _ => None,
     }
