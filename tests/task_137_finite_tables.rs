@@ -215,3 +215,23 @@ fn source_free_parser_normalization_retains_operator_identity() {
     assert!(query.dependencies().is_empty());
     assert_eq!(query.finite_table().unwrap().rows().len(), 2);
 }
+
+#[test]
+fn unsupported_candidate_shape_is_residual_not_an_impossible_sql_row() {
+    let parser = dialect_from_name("duckdb").unwrap();
+    let bundle = analyze_inputs(
+        &[SqlInput::inline("VALUES (1), (2)")], "duckdb", parser.as_ref(),
+    ).unwrap();
+    let layer = bundle.layers().last().unwrap().id();
+    for candidate in [
+        BTreeMap::new(),
+        BTreeMap::from([("other".into(), LiteralValue::Number("9".into()))]),
+        BTreeMap::from([("column1".into(), LiteralValue::Text("9".into()))]),
+        BTreeMap::from([("column1".into(), LiteralValue::Number("9.0".into()))]),
+    ] {
+        assert!(matches!(
+            physical_finite_table_plan(&bundle, layer, Some(&candidate)),
+            PhysicalFiniteTableProof::Residual { .. }
+        ), "invalid physical identity is not a negative SQL proof");
+    }
+}
