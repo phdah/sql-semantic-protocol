@@ -1,9 +1,9 @@
-use sqlparser::parser::Parser;
 //! TASK-137 source-free finite values preserve canonical semantics across
 //! direct SQL and compiled dbt manifests. ODCS owns physical relation schemas,
 //! not source-free SQL VALUES and literal-array rows.
 
 use serde_json::{json, Value};
+use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_manifest,
     physical_finite_table_plan, to_bundle_json, PhysicalFiniteTableProof, SqlInput,
