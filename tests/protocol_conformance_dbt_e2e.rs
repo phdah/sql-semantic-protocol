@@ -384,6 +384,82 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         }
     }
 
+    // Equivalent ODCS schema evidence must yield the *same* complete proof
+    // through the identical compiled-SQL graph; warehouse source identities
+    // are read from the canonical dependency graph rather than guessed.
+    #[cfg(feature = "odcs")]
+    {
+        use sql_semantic_protocol::parse_odcs_yaml;
+        let orders = physical.iter().find(|state| {
+            state.relation().replace(['"', '`'], "").ends_with(".orders")
+        }).unwrap().relation();
+        let customers = physical.iter().find(|state| {
+            state.relation().replace(['"', '`'], "").ends_with(".customers")
+        }).unwrap().relation();
+        let yaml = format!(
+            r#"apiVersion: v3.2.0
+kind: DataContract
+id: task132producer
+name: Source-complete correlated producer chain
+version: 1.0.0
+status: active
+schema:
+  - name: orders
+    physicalName: '{orders}'
+    properties:
+      - name: id
+        physicalType: INTEGER
+      - name: customer_id
+        physicalType: INTEGER
+      - name: amount
+        physicalType: INTEGER
+      - name: status
+        physicalType: VARCHAR
+      - name: created_at
+        physicalType: TIMESTAMP WITHOUT TIME ZONE
+      - name: region
+        physicalType: VARCHAR
+  - name: customers
+    physicalName: '{customers}'
+    properties:
+      - name: id
+        physicalType: INTEGER
+      - name: score
+        physicalType: INTEGER
+      - name: active
+        physicalType: BOOLEAN
+"#
+        );
+        let names = [orders, customers];
+        let named = RelationCatalog::new(&names).expect("source identity catalog");
+        let contract = parse_odcs_yaml(&yaml, "duckdb", &named)
+            .expect("external authoritative source schema contract");
+        let mut all_schemas = bundle.source_schemas().iter()
+            .filter(|schema| schema.relation() != orders && schema.relation() != customers)
+            .cloned().collect::<Vec<_>>();
+        assert_eq!(contract.source_schemas().len(), 2);
+        all_schemas.extend(contract.source_schemas().iter().cloned());
+        let odcs_catalog = RelationCatalog::from_schemas(&all_schemas)
+            .expect("equivalent source and dbt model schemas");
+        let odcs_bundle = analyze_configured_inputs_with_catalog(
+            &direct_configured, &odcs_catalog,
+        ).expect("ODCS-backed compiled source/producers");
+        let odcs_target = odcs_bundle.layers().last().unwrap();
+        let odcs_proof = physical_finite_producer_exists_plan(
+            &odcs_bundle, odcs_target.id(), &physical, true,
+        );
+        let PhysicalProducerExistsProof::Exact(odcs_exact) = odcs_proof else {
+            panic!("equivalent ODCS evidence lost producer physical proof: {odcs_proof:?}");
+        };
+        assert_eq!(odcs_exact.terminal, exact.terminal, "ODCS/dbt full terminal parity");
+        assert_eq!(odcs_exact.terminal_domains, exact.terminal_domains);
+        assert_eq!(
+            odcs_exact.layer_bags.values().map(Vec::len).collect::<Vec<_>>(),
+            direct_exact.layer_bags.values().map(Vec::len).collect::<Vec<_>>(),
+            "every producer preserves exact full bag cardinality"
+        );
+    }
+
     // TASK-132: independent complete raw source, intermediary producer, and
     // correlated final terminal snapshots for the actual compiled dbt model.
     let task_132: Value =
