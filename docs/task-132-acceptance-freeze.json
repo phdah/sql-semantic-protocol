@@ -138,26 +138,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-N-direct_composite",
@@ -262,26 +262,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-P-joined_composite",
@@ -399,26 +399,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-N-joined_composite",
@@ -539,26 +539,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-P-grouped_composite",
@@ -660,26 +660,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-N-grouped_composite",
@@ -784,26 +784,26 @@
       "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
       "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
       "parser_status": {
-        "generic": "pending_execution_classification",
-        "mysql": "pending_execution_classification",
-        "postgresql": "pending_execution_classification",
-        "hive": "pending_execution_classification",
-        "sqlite": "pending_execution_classification",
-        "snowflake": "pending_execution_classification",
-        "redshift": "pending_execution_classification",
-        "mssql": "pending_execution_classification",
-        "clickhouse": "pending_execution_classification",
-        "bigquery": "pending_execution_classification",
-        "ansi": "pending_execution_classification",
-        "duckdb": "pending_execution_classification",
-        "databricks": "pending_execution_classification"
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
       },
       "adapter_status": {
-        "direct_sql": "pending",
-        "dbt_compiled": "pending",
-        "odcs": "pending"
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
       },
-      "status": "unverified_mandatory"
+      "status": "verified_mandatory_test_evidence"
     },
     {
       "id": "75-C132-P-dbt-subquery-orders",
@@ -945,14 +945,15 @@
   ],
   "required_parser_cells": 91,
   "required_adapter_cells": 21,
-  "verified_cases": [],
-  "mandatory_unverified": [
+  "verified_cases": [
     "75-C132-P-direct_composite",
     "75-C132-N-direct_composite",
     "75-C132-P-joined_composite",
     "75-C132-N-joined_composite",
     "75-C132-P-grouped_composite",
-    "75-C132-N-grouped_composite",
+    "75-C132-N-grouped_composite"
+  ],
+  "mandatory_unverified": [
     "75-C132-P-dbt-subquery-orders"
   ],
   "freeze_revisions": [
@@ -960,5 +961,13 @@
       "version": 2,
       "reason": "Explicitly include the named committed subquery_orders.sql dbt pipeline as a mandatory case, rather than only citing it in scope."
     }
-  ]
+  ],
+  "verified_parser_cells": 78,
+  "verified_adapter_cells": 18,
+  "verification_evidence": {
+    "source_bags": "tests/task_132_composite_correlations.rs",
+    "adapter_parity": "tests/task_132_adapter_parity.rs",
+    "ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003",
+    "native_engine": "DuckDB only; no native non-DuckDB engine claims"
+  }
 }
