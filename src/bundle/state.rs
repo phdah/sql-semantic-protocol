@@ -217,7 +217,9 @@ impl AnalysisBundle {
         let existing = &self.source_schemas[index];
         let mut columns = existing.columns().to_vec();
         let Some(column_index) = columns.iter().position(|item| item.name() == column) else {
-            return Err(invalid("timestamp attestation names an unknown source column"));
+            return Err(invalid(
+                "timestamp attestation names an unknown source column",
+            ));
         };
         if columns[column_index]
             .timestamp_zone()
@@ -225,9 +227,7 @@ impl AnalysisBundle {
         {
             return Err(invalid("timestamp attestation contradicts the source zone"));
         }
-        columns[column_index] = columns[column_index]
-            .clone()
-            .with_timestamp_zone(zone)?;
+        columns[column_index] = columns[column_index].clone().with_timestamp_zone(zone)?;
         let mut schema = RelationSchema::new(relation, columns)?;
         if let Some(kind) = existing.source_kind() {
             schema = schema.with_source_kind(kind);
