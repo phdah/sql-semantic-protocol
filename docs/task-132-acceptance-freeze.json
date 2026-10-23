@@ -1,0 +1,984 @@
+{
+  "version": 2,
+  "owner": "TASK-132",
+  "parent": "TASK-75",
+  "status": "verified_seven_mandatory_child_criteria_signed_off",
+  "fixture_ids": [
+    "75-C132-P",
+    "75-C132-N"
+  ],
+  "preimplementation_freeze": true,
+  "scope": [
+    "composite_equalities",
+    "joined_inner",
+    "grouped_inner",
+    "subquery_orders.sql",
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_equivalent_schema"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "public_seams": [
+    "analyze_configured_inputs_with_catalog",
+    "physical_finite_exists_bag_plan",
+    "independent_duckdb_full_source_terminal_bags"
+  ],
+  "cases": [
+    {
+      "id": "75-C132-P-direct_composite",
+      "fixture_id": "75-C132-P",
+      "variant": "direct_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT i.k FROM inner_rows i WHERE i.k = o.k AND i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          1
+        ],
+        "null_allowed": false,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 1,
+        "upper": 1
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-N-direct_composite",
+      "fixture_id": "75-C132-N",
+      "variant": "direct_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT i.k FROM inner_rows i WHERE i.k = o.k AND i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          2
+        ],
+        "null_allowed": true,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 2,
+        "upper": 2
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-P-joined_composite",
+      "fixture_id": "75-C132-P",
+      "variant": "joined_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT i.k FROM inner_rows i JOIN dim_rows d ON i.k = d.k AND i.g = d.g WHERE i.k = o.k AND i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "dim_rows": [
+          {
+            "id": "d1",
+            "k": 1,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows",
+        "d": "dim_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "dim_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g",
+        "dim_rows.id",
+        "dim_rows.k",
+        "dim_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1@d1",
+          "i2@d1"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          1
+        ],
+        "null_allowed": false,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 1,
+        "upper": 1
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-N-joined_composite",
+      "fixture_id": "75-C132-N",
+      "variant": "joined_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT i.k FROM inner_rows i JOIN dim_rows d ON i.k = d.k AND i.g = d.g WHERE i.k = o.k AND i.g = o.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "dim_rows": [
+          {
+            "id": "d1",
+            "k": 1,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows",
+        "d": "dim_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "dim_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g",
+        "dim_rows.id",
+        "dim_rows.k",
+        "dim_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1@d1",
+          "i2@d1"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          2
+        ],
+        "null_allowed": true,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 2,
+        "upper": 2
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-P-grouped_composite",
+      "fixture_id": "75-C132-P",
+      "variant": "grouped_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE EXISTS (SELECT i.k FROM inner_rows i WHERE i.k = o.k AND i.g = o.g GROUP BY i.k, i.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o1"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 1
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          1
+        ],
+        "null_allowed": false,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 1,
+        "upper": 1
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-N-grouped_composite",
+      "fixture_id": "75-C132-N",
+      "variant": "grouped_composite",
+      "required": true,
+      "sql": "SELECT o.k AS k FROM outer_rows o WHERE NOT EXISTS (SELECT i.k FROM inner_rows i WHERE i.k = o.k AND i.g = o.g GROUP BY i.k, i.g)",
+      "source_bags": {
+        "outer_rows": [
+          {
+            "id": "o1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "o2",
+            "k": 2,
+            "g": 1
+          },
+          {
+            "id": "on",
+            "k": null,
+            "g": 1
+          }
+        ],
+        "inner_rows": [
+          {
+            "id": "i1",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "i2",
+            "k": 1,
+            "g": 1
+          },
+          {
+            "id": "in",
+            "k": null,
+            "g": 1
+          }
+        ]
+      },
+      "instances": {
+        "o": "outer_rows",
+        "i": "inner_rows"
+      },
+      "columns": {
+        "outer_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        },
+        "inner_rows": {
+          "id": "VARCHAR NOT NULL",
+          "k": "INTEGER NULL",
+          "g": "INTEGER NULL"
+        }
+      },
+      "source_column_instances": [
+        "outer_rows.id",
+        "outer_rows.k",
+        "outer_rows.g",
+        "inner_rows.id",
+        "inner_rows.k",
+        "inner_rows.g"
+      ],
+      "complete_matching_inner_ids": {
+        "o1": [
+          "i1",
+          "i2"
+        ],
+        "o2": [],
+        "on": []
+      },
+      "selected_outer_ids": [
+        "o2",
+        "on"
+      ],
+      "rejected_not_true_outer_ids": [
+        "o1"
+      ],
+      "expected_terminal_bag": [
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        }
+      ],
+      "terminal_domain": {
+        "type": "SIGNED_INTEGER",
+        "values": [
+          2
+        ],
+        "null_allowed": true,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "lower": 2,
+        "upper": 2
+      },
+      "positive_proof": "EXISTS/NOT EXISTS selected by complete TRUE/nonexistence membership over a single physical source assignment",
+      "not_true_proof": "Every candidate inner row and JOIN partner must be exhausted; NULL equality is UNKNOWN, not TRUE",
+      "parser_status": {
+        "generic": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mysql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "postgresql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "hive": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "sqlite": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "snowflake": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "redshift": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "mssql": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "clickhouse": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "bigquery": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "ansi": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "duckdb": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+        "databricks": "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_equivalent_canonical_full_source_bag",
+        "dbt_compiled": "verified_equivalent_canonical_full_source_bag",
+        "odcs": "verified_equivalent_canonical_full_source_bag"
+      },
+      "status": "verified_mandatory_test_evidence"
+    },
+    {
+      "id": "75-C132-P-dbt-subquery-orders",
+      "fixture_id": "75-C132-P",
+      "variant": "dbt_subquery_orders",
+      "required": true,
+      "sql": "tests/fixtures/conformance/v1/dbt_core_project/models/subquery_orders.sql",
+      "compiled_sql_required": true,
+      "dbt_upstream": [
+        "stg_orders",
+        "stg_customers",
+        "enriched_orders"
+      ],
+      "raw_seed_bags": {
+        "orders": [
+          {
+            "id": 1,
+            "customer_id": 10,
+            "amount": 42,
+            "status": "paid",
+            "region": "north"
+          },
+          {
+            "id": 2,
+            "customer_id": 20,
+            "amount": 5,
+            "status": "pending",
+            "region": "south"
+          }
+        ],
+        "customers": [
+          {
+            "id": 10,
+            "score": 7,
+            "active": true
+          },
+          {
+            "id": 20,
+            "score": -1,
+            "active": false
+          }
+        ]
+      },
+      "source_column_instances": [
+        "orders.id",
+        "orders.customer_id",
+        "orders.amount",
+        "orders.status",
+        "orders.region",
+        "customers.id",
+        "customers.score",
+        "customers.active"
+      ],
+      "physical_relation_identity": {
+        "raw_orders": "orders",
+        "raw_customers": "customers",
+        "outer_producer": "enriched_orders",
+        "inner_producer": "stg_customers"
+      },
+      "expected_selected_source_ids": [
+        "orders:1"
+      ],
+      "expected_rejected_not_true_source_ids": [
+        "orders:2"
+      ],
+      "expected_terminal_bag": [
+        {
+          "amount": 42,
+          "region": "north"
+        }
+      ],
+      "terminal_domain": {
+        "amount": {
+          "datatype": "SIGNED_INTEGER",
+          "allowed": [
+            42
+          ],
+          "lower": 42,
+          "upper": 42,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "null_allowed": false
+        },
+        "region": {
+          "datatype": "TEXT",
+          "allowed": [
+            "north"
+          ],
+          "null_allowed": false
+        }
+      },
+      "positive_proof": "Complete raw orders and customers bags materialize staged and joined producers; customer 10 matches the EXISTS subquery",
+      "not_true_proof": "Customer 20 is excluded by the staged customer predicate and order 2 is excluded by staged order filters; complete raw bags required",
+      "parser_status": {
+        "generic": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "mysql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "postgresql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "hive": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "sqlite": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "snowflake": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "redshift": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "mssql": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "clickhouse": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "bigquery": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "ansi": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "duckdb": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+        "databricks": "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_exact_full_canonical_source_to_terminal_producer_chain",
+        "dbt_compiled": "verified_exact_full_canonical_source_to_terminal_producer_chain",
+        "odcs": "verified_exact_full_canonical_source_to_terminal_producer_chain"
+      },
+      "status": "verified_mandatory_test_evidence"
+    }
+  ],
+  "conformance_sql_fixture": "tests/fixtures/conformance/v1/dbt_core_project/models/subquery_orders.sql",
+  "conditional": [
+    {
+      "id": "75-C132-conditional-vendor",
+      "owner": "TASK-132",
+      "reason": "13 dialect parser support does not attest native vendor/session execution",
+      "disposition": "reviewed_parser_only_no_vendor_runtime_or_session_claim"
+    },
+    {
+      "id": "75-C132-conditional-nested-producer",
+      "owner": "TASK-132",
+      "reason": "Derived/grouped or joined source identity must be proven end to end from complete physical input bags",
+      "disposition": "verified_exact_canonical_source_to_producer_and_terminal"
+    }
+  ],
+  "original_parent_acceptance_mapped": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "required_parser_cells": 91,
+  "required_adapter_cells": 21,
+  "verified_cases": [
+    "75-C132-P-direct_composite",
+    "75-C132-N-direct_composite",
+    "75-C132-P-joined_composite",
+    "75-C132-N-joined_composite",
+    "75-C132-P-grouped_composite",
+    "75-C132-N-grouped_composite",
+    "75-C132-P-dbt-subquery-orders"
+  ],
+  "mandatory_unverified": [],
+  "freeze_revisions": [
+    {
+      "version": 2,
+      "reason": "Explicitly include the named committed subquery_orders.sql dbt pipeline as a mandatory case, rather than only citing it in scope."
+    }
+  ],
+  "verified_parser_cells": 91,
+  "verified_adapter_cells": 21,
+  "verification_evidence": {
+    "source_bags": "tests/task_132_composite_correlations.rs",
+    "adapter_parity": "tests/task_132_adapter_parity.rs",
+    "ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003",
+    "native_engine": "DuckDB only; thirteen parser dialects are not native runtime certification",
+    "dbt_source_producer_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "dbt_direct_odcs_producer_parity": "tests/protocol_conformance_dbt_e2e.rs",
+    "duckdb_e2e_reference": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40017570982",
+    "final_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40019127394",
+    "all_nine_checks_success": true,
+    "task_132_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+}

@@ -26,6 +26,23 @@ comparison and native engine differences remain explicit Residual.
 
 TASK-129 finite EXISTS/NOT EXISTS: `src/subquery_witness.rs` owns parser-independent operator-local correlations and membership directions, while `src/physical_realization/exists_bags.rs` evaluates entire caller-attested direct source populations and retains both TRUE and NOT TRUE physical outer identities, complete per-row inner matches, terminal bag, and typed output domain. Unsupported shapes fail closed; adapter parity uses canonical facts only. Frozen evidence: `docs/task-129-acceptance-freeze.json`; public DuckDB, dialect, and adapter proofs: `tests/task_129_exists_bags.rs` and `tests/task_129_adapter_parity.rs`.
 
+TASK-132 grouped and joined correlated EXISTS: `src/analysis/subqueries.rs` owns
+parser-certified candidate-preserving and grouped/joined existence classifications;
+`src/protocol/values.rs` retains these canonical shape facts without conflating
+them with IN/scalar candidate multiplicity. `src/physical_realization/exists_bags.rs`
+owns exact conjunctive correlation proofs; `exists_joined.rs` owns full
+three-source INNER JOIN identity pairs. `exists_producers.rs` evaluates only
+closed-world attested physical leaf bags through canonical filter, scalar CASE,
+JOIN and correlated EXISTS producer layers and computes complete terminal
+integer/text domains and source provenance. `src/bundle/state.rs` attaches
+explicit timestamp-zone evidence without guessing adapter defaults. Frozen
+matrix: `docs/task-132-acceptance-freeze.json`; source/oracle tests:
+`tests/task_132_composite_correlations.rs`,
+`tests/task_132_adapter_parity.rs` and
+`tests/protocol_conformance_dbt_e2e.rs`. Unsupported SQL forms, ambiguous
+aliases, unverified source metadata and non-DuckDB native engine behavior
+remain explicitly uncertified rather than extrapolated.
+
 TASK-115 source-attested finite three-way joins: `src/physical_realization/finite_chains.rs` owns closed-world source-identity, normalized SQL TRUE/NOT TRUE, nullable composite equality, and downstream COUNT(*) bag evaluation. `src/physical_realization/write_states.rs` remains the canonical owner of physical datatype and PK/FK feasibility. `src/physical_realization/joins.rs` and `grouping.rs` retain the separate homogeneous sufficient count construction. The exact frozen eight-case SQL/DuckDB comparison is in `tests/task_115_finite_chain_bags.rs` and `tests/task_115_duckdb_matrix.rs`; `docs/task-115-acceptance-freeze.json` owns source/terminal values and pending adapter and session evidence. This evidence-driven evaluator does not imply that the solver automatically synthesizes those exact bags from cardinality goals.
 
 TASK-119 bounded set row-shaping: `src/analysis/sets.rs` normalizes typed

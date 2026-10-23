@@ -192,6 +192,52 @@ impl AnalysisBundle {
         Ok(())
     }
 
+    /// Attest physical time-zone awareness for an adapter-provided timestamp.
+    ///
+    /// No dialect or warehouse default is inferred. Conflicting or non-timestamp
+    /// evidence is rejected; all unrelated adapter schema metadata is retained.
+    pub fn attest_source_timestamp_zone(
+        &mut self,
+        relation: &str,
+        column: &str,
+        zone: crate::relation::TimestampZone,
+    ) -> Result<(), crate::relation::RelationMetadataError> {
+        use crate::relation::RelationMetadataError;
+        let invalid = |message: &str| RelationMetadataError::InvalidSchema {
+            relation: relation.to_string(),
+            message: message.to_string(),
+        };
+        let Some(index) = self
+            .source_schemas
+            .iter()
+            .position(|schema| schema.relation() == relation)
+        else {
+            return Err(invalid("timestamp attestation names an unknown relation"));
+        };
+        let existing = &self.source_schemas[index];
+        let mut columns = existing.columns().to_vec();
+        let Some(column_index) = columns.iter().position(|item| item.name() == column) else {
+            return Err(invalid(
+                "timestamp attestation names an unknown source column",
+            ));
+        };
+        if columns[column_index]
+            .timestamp_zone()
+            .is_some_and(|prior| prior != zone)
+        {
+            return Err(invalid("timestamp attestation contradicts the source zone"));
+        }
+        columns[column_index] = columns[column_index].clone().with_timestamp_zone(zone)?;
+        let mut schema = RelationSchema::new(relation, columns)?;
+        if let Some(kind) = existing.source_kind() {
+            schema = schema.with_source_kind(kind);
+        }
+        let mut updated = self.source_schemas.clone();
+        updated[index] = schema;
+        self.replace_source_schemas(updated);
+        Ok(())
+    }
+
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
     ///
     /// Identical facts coalesce evidence. Conflicting primary keys remain explicit diagnostics.

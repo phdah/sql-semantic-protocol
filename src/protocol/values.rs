@@ -93,6 +93,8 @@ pub struct SubquerySemantics {
     output: Output,
     row_conditions: RowConditions,
     row_shape_preserves_candidates: bool,
+    grouped_exists_equivalent: bool,
+    joined_exists_equivalent: bool,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -118,6 +120,8 @@ impl SubquerySemantics {
             output,
             row_conditions,
             row_shape_preserves_candidates: false,
+            grouped_exists_equivalent: false,
+            joined_exists_equivalent: false,
             diagnostics,
         }
     }
@@ -130,6 +134,29 @@ impl SubquerySemantics {
     /// Return whether the nested SELECT preserves candidate-row existence without row-shaping.
     pub fn row_shape_preserves_candidates(&self) -> bool {
         self.row_shape_preserves_candidates
+    }
+
+    pub(crate) fn with_grouped_exists_equivalent(mut self, proven: bool) -> Self {
+        self.grouped_exists_equivalent = proven;
+        self
+    }
+
+    /// Whether grouped nested SELECT has the same emptiness as its complete
+    /// filtered input: a nonempty group key, no HAVING, and no global aggregate.
+    /// This applies only to EXISTS/NOT EXISTS, not scalar or IN membership.
+    pub fn grouped_exists_equivalent(&self) -> bool {
+        self.grouped_exists_equivalent
+    }
+
+    pub(crate) fn with_joined_exists_equivalent(mut self, proven: bool) -> Self {
+        self.joined_exists_equivalent = proven;
+        self
+    }
+
+    /// Whether an unshaped nested SELECT contains exactly one normalized inner
+    /// join whose complete physical operands can be checked for EXISTS.
+    pub fn joined_exists_equivalent(&self) -> bool {
+        self.joined_exists_equivalent
     }
 
     /// Return nested source relations and their original SQL instance aliases.
