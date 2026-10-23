@@ -70,7 +70,7 @@ fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
 #[test]
 fn immutable_matrix_covers_required_variants_without_fabricated_evidence() {
     let matrix = frozen();
-    assert_eq!(matrix["version"], 1);
+    assert_eq!(matrix["version"], 2);
     assert_eq!(matrix["owner"], "TASK-137");
     assert_eq!(
         matrix["fixture_ids"],
