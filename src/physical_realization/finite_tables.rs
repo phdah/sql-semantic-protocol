@@ -72,7 +72,7 @@ pub fn physical_finite_table_plan(
         || !query.sources().is_empty()
         || !query.diagnostics().is_empty()
         || !query.condition_exactness().is_exact()
-        || query.write().is_some()
+        || query.write().is_some_and(|write| !write.kind().fully_defines_relation())
         || query.set_operation().is_some()
     {
         return PhysicalFiniteTableProof::Residual {
