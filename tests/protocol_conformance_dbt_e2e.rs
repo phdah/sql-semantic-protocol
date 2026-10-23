@@ -339,41 +339,67 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         "enriched_orders",
         "subquery_orders",
     ];
-    let view_sql = model_names.iter().map(|name| {
-        let node = model(&json, name);
-        SqlInput::inline(format!(
-            "CREATE VIEW {} AS {}",
-            node["relation_name"].as_str().expect("dbt compiled producer identity"),
-            node["compiled_code"].as_str().expect("dbt compiled SQL"),
-        ))
-    }).collect::<Vec<_>>();
-    let direct_names = model_names.iter().map(|name| format!("direct-{name}"))
+    let view_sql = model_names
+        .iter()
+        .map(|name| {
+            let node = model(&json, name);
+            SqlInput::inline(format!(
+                "CREATE VIEW {} AS {}",
+                node["relation_name"]
+                    .as_str()
+                    .expect("dbt compiled producer identity"),
+                node["compiled_code"].as_str().expect("dbt compiled SQL"),
+            ))
+        })
         .collect::<Vec<_>>();
-    let direct_configured = direct_names.iter().zip(view_sql.iter())
-        .map(|(name, input)| ConfiguredSqlInput::new(
-            name, input, "duckdb", dialect.as_ref(),
-        )).collect::<Vec<_>>();
+    let direct_names = model_names
+        .iter()
+        .map(|name| format!("direct-{name}"))
+        .collect::<Vec<_>>();
+    let direct_configured = direct_names
+        .iter()
+        .zip(view_sql.iter())
+        .map(|(name, input)| ConfiguredSqlInput::new(name, input, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(bundle.source_schemas())
         .expect("authoritative direct physical/catalog source evidence");
-    let direct_bundle = analyze_configured_inputs_with_catalog(
-        &direct_configured, &direct_catalog,
-    ).expect("direct SQL producer graph");
-    let direct_target = direct_bundle.layers().last().expect("compiled SQL final view");
-    let direct_proof = physical_finite_producer_exists_plan(
-        &direct_bundle, direct_target.id(), &physical, true,
-    );
+    let direct_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &direct_catalog)
+        .expect("direct SQL producer graph");
+    let direct_target = direct_bundle
+        .layers()
+        .last()
+        .expect("compiled SQL final view");
+    let direct_proof =
+        physical_finite_producer_exists_plan(&direct_bundle, direct_target.id(), &physical, true);
     let PhysicalProducerExistsProof::Exact(direct_exact) = direct_proof else {
         panic!("compiled direct SQL source-to-terminal proof: {direct_proof:?}");
     };
-    assert_eq!(direct_exact.terminal, exact.terminal, "dbt/direct physical identity bag parity");
-    assert_eq!(direct_exact.terminal_domains, exact.terminal_domains, "typed output parity");
+    assert_eq!(
+        direct_exact.terminal, exact.terminal,
+        "dbt/direct physical identity bag parity"
+    );
+    assert_eq!(
+        direct_exact.terminal_domains, exact.terminal_domains,
+        "typed output parity"
+    );
 
     // The compiled dbt SELECT syntax is shared by the thirteen exposed
     // sqlparser entrypoints; these assertions make each parser boundary
     // executable, without asserting native non-DuckDB engine semantics.
     for parser_name in [
-        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ] {
         let parser = dialect_from_name(parser_name).expect("published parser path");
         for name in model_names {
@@ -390,12 +416,26 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     #[cfg(feature = "odcs")]
     {
         use sql_semantic_protocol::parse_odcs_yaml;
-        let orders = physical.iter().find(|state| {
-            state.relation().replace(['"', '`'], "").ends_with(".orders")
-        }).unwrap().relation();
-        let customers = physical.iter().find(|state| {
-            state.relation().replace(['"', '`'], "").ends_with(".customers")
-        }).unwrap().relation();
+        let orders = physical
+            .iter()
+            .find(|state| {
+                state
+                    .relation()
+                    .replace(['"', '`'], "")
+                    .ends_with(".orders")
+            })
+            .unwrap()
+            .relation();
+        let customers = physical
+            .iter()
+            .find(|state| {
+                state
+                    .relation()
+                    .replace(['"', '`'], "")
+                    .ends_with(".customers")
+            })
+            .unwrap()
+            .relation();
         let yaml = format!(
             r#"apiVersion: v3.2.0
 kind: DataContract
@@ -434,28 +474,40 @@ schema:
         let named = RelationCatalog::new(&names).expect("source identity catalog");
         let contract = parse_odcs_yaml(&yaml, "duckdb", &named)
             .expect("external authoritative source schema contract");
-        let mut all_schemas = bundle.source_schemas().iter()
+        let mut all_schemas = bundle
+            .source_schemas()
+            .iter()
             .filter(|schema| schema.relation() != orders && schema.relation() != customers)
-            .cloned().collect::<Vec<_>>();
+            .cloned()
+            .collect::<Vec<_>>();
         assert_eq!(contract.source_schemas().len(), 2);
         all_schemas.extend(contract.source_schemas().iter().cloned());
         let odcs_catalog = RelationCatalog::from_schemas(&all_schemas)
             .expect("equivalent source and dbt model schemas");
-        let odcs_bundle = analyze_configured_inputs_with_catalog(
-            &direct_configured, &odcs_catalog,
-        ).expect("ODCS-backed compiled source/producers");
+        let odcs_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &odcs_catalog)
+            .expect("ODCS-backed compiled source/producers");
         let odcs_target = odcs_bundle.layers().last().unwrap();
-        let odcs_proof = physical_finite_producer_exists_plan(
-            &odcs_bundle, odcs_target.id(), &physical, true,
-        );
+        let odcs_proof =
+            physical_finite_producer_exists_plan(&odcs_bundle, odcs_target.id(), &physical, true);
         let PhysicalProducerExistsProof::Exact(odcs_exact) = odcs_proof else {
             panic!("equivalent ODCS evidence lost producer physical proof: {odcs_proof:?}");
         };
-        assert_eq!(odcs_exact.terminal, exact.terminal, "ODCS/dbt full terminal parity");
+        assert_eq!(
+            odcs_exact.terminal, exact.terminal,
+            "ODCS/dbt full terminal parity"
+        );
         assert_eq!(odcs_exact.terminal_domains, exact.terminal_domains);
         assert_eq!(
-            odcs_exact.layer_bags.values().map(Vec::len).collect::<Vec<_>>(),
-            direct_exact.layer_bags.values().map(Vec::len).collect::<Vec<_>>(),
+            odcs_exact
+                .layer_bags
+                .values()
+                .map(Vec::len)
+                .collect::<Vec<_>>(),
+            direct_exact
+                .layer_bags
+                .values()
+                .map(Vec::len)
+                .collect::<Vec<_>>(),
             "every producer preserves exact full bag cardinality"
         );
     }
