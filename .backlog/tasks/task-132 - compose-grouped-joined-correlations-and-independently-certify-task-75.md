@@ -1,10 +1,10 @@
 ---
 id: TASK-132
 title: Compose grouped/joined correlations and independently certify TASK-75
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-23'
 labels: []
 milestone: m-3
 dependencies:
@@ -39,6 +39,10 @@ type: feature
 - [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-132; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-75 parent open.
 <!-- AC:END -->
+
+## Implementation progress
+
+Frozen contract: [docs/task-132-acceptance-freeze.json](../../docs/task-132-acceptance-freeze.json). Mandatory joined/grouped, adapter, dialect and full-oracle cells remain unverified. Do not mark this task Done or begin TASK-75 parent signoff until all cells pass on the final PR head.
 
 ## Next
 
