@@ -317,16 +317,20 @@ fn queryless_create_table_remains_explicitly_unsupported() {
 }
 
 #[test]
-fn unsupported_query_body_is_diagnosed_without_dropping_query() {
+fn supported_values_query_preserves_complete_typed_rows() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("VALUES (1)", "generic", &dialect)
-        .expect("VALUES query should parse and preserve its query envelope");
+    let protocol = analyze_sql("VALUES (1), (2)", "generic", &dialect)
+        .expect("VALUES query should preserve its query envelope");
 
     match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => assert!(statement
-            .diagnostics()
-            .iter()
-            .any(|diagnostic| diagnostic.code() == "unsupported_query_body")),
+        Some(ProtocolStatement::Query(statement)) => {
+            assert!(statement.diagnostics().is_empty());
+            let table = statement.finite_table().expect("canonical VALUES rows");
+            assert_eq!(table.columns(), ["column1"]);
+            assert_eq!(table.rows().len(), 2);
+            assert_eq!(table.rows()[0][0].value(), &LiteralValue::Number("1".into()));
+            assert_eq!(table.rows()[1][0].value(), &LiteralValue::Number("2".into()));
+        }
         other => panic!("expected query statement, got {other:?}"),
     }
 }
