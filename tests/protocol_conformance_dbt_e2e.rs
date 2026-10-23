@@ -11,7 +11,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_finite_producer_exists_plan,
     physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, to_bundle_json,
-    AnalysisBundle, ConfiguredSqlInput, LiteralValue, PhysicalProducerExistsProof,
+    AnalysisBundle, ComparisonAssumption, ConfiguredSqlInput, LiteralValue,
+    PhysicalProducerExistsProof,
     PhysicalWriteRow, PhysicalWriteState, RelationCatalog, SqlInput, TimestampZone,
     WitnessDirection,
 };
@@ -284,8 +285,13 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         "a non-timestamp cannot carry timestamp-zone evidence"
     );
 
+    let unverified_text_laws = bundle.clone();
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
     let final_id = layer_id(&bundle, "subquery_orders");
-    let proof = physical_finite_producer_exists_plan(&bundle, final_id, &physical, true);
+    let proof = physical_finite_producer_exists_plan(&bundle, final_id, &physical);
     let PhysicalProducerExistsProof::Exact(exact) = proof else {
         panic!("source-complete canonical producer proof is not Exact: {proof:?}");
     };
@@ -326,7 +332,7 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     assert_eq!(exact.rejected[layer_id(&bundle, "stg_orders")].len(), 1);
     assert_eq!(exact.rejected[layer_id(&bundle, "stg_customers")].len(), 1);
     assert!(matches!(
-        physical_finite_producer_exists_plan(&bundle, final_id, &physical, false),
+        physical_finite_producer_exists_plan(&unverified_text_laws, final_id, &physical),
         PhysicalProducerExistsProof::Residual { .. }
     ));
     let mut duplicate = physical.clone();
@@ -338,7 +344,7 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     rows.push(rows[0].clone());
     duplicate[index] = PhysicalWriteState::new(duplicate[index].relation(), rows).unwrap();
     assert!(matches!(
-        physical_finite_producer_exists_plan(&bundle, final_id, &duplicate, true),
+        physical_finite_producer_exists_plan(&bundle, final_id, &duplicate),
         PhysicalProducerExistsProof::Impossible { .. }
     ));
 
@@ -375,14 +381,18 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(bundle.source_schemas())
         .expect("authoritative direct physical/catalog source evidence");
-    let direct_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &direct_catalog)
+    let mut direct_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &direct_catalog)
         .expect("direct SQL producer graph");
+    direct_bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
     let direct_target = direct_bundle
         .layers()
         .last()
         .expect("compiled SQL final view");
     let direct_proof =
-        physical_finite_producer_exists_plan(&direct_bundle, direct_target.id(), &physical, true);
+        physical_finite_producer_exists_plan(&direct_bundle, direct_target.id(), &physical);
     let PhysicalProducerExistsProof::Exact(direct_exact) = direct_proof else {
         panic!("compiled direct SQL source-to-terminal proof: {direct_proof:?}");
     };
@@ -496,11 +506,15 @@ schema:
         all_schemas.extend(contract.source_schemas().iter().cloned());
         let odcs_catalog = RelationCatalog::from_schemas(&all_schemas)
             .expect("equivalent source and dbt model schemas");
-        let odcs_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &odcs_catalog)
+        let mut odcs_bundle = analyze_configured_inputs_with_catalog(&direct_configured, &odcs_catalog)
             .expect("ODCS-backed compiled source/producers");
+        odcs_bundle.declare_comparison_assumptions(&[
+            ComparisonAssumption::BinaryCollation,
+            ComparisonAssumption::NoCharPadding,
+        ]);
         let odcs_target = odcs_bundle.layers().last().unwrap();
         let odcs_proof =
-            physical_finite_producer_exists_plan(&odcs_bundle, odcs_target.id(), &physical, true);
+            physical_finite_producer_exists_plan(&odcs_bundle, odcs_target.id(), &physical);
         let PhysicalProducerExistsProof::Exact(odcs_exact) = odcs_proof else {
             panic!("equivalent ODCS evidence lost producer physical proof: {odcs_proof:?}");
         };
