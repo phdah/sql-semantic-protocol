@@ -240,16 +240,13 @@ fn projection(
     ids: Vec<String>,
     binary_text_laws_attested: bool,
 ) -> Result<PhysicalProducerRow, &'static str> {
-    let values = output
-        .columns()
-        .iter()
-        .map(|column| {
-            Ok((
-                column.name().to_string(),
-                scalar(column.expression(), scope, binary_text_laws_attested)?,
-            ))
-        })
-        .collect::<Result<BTreeMap<_, _>, &'static str>>()?;
+    let mut values = BTreeMap::new();
+    for column in output.columns() {
+        let value = scalar(column.expression(), scope, binary_text_laws_attested)?;
+        if values.insert(column.name().to_string(), value).is_some() {
+            return Err("duplicate output label cannot be represented as a named value bag");
+        }
+    }
     Ok(PhysicalProducerRow {
         values,
         source_row_ids: ids,
