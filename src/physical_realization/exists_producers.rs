@@ -73,7 +73,11 @@ fn residual(reason: impl Into<String>) -> PhysicalProducerExistsProof {
 // match; two conflicting full names never become equal because of table suffix.
 fn canonical_components(name: &str) -> Vec<String> {
     name.split('.')
-        .map(|part| part.trim_matches('"').trim_matches('`').to_ascii_lowercase())
+        .map(|part| {
+            part.trim_matches('"')
+                .trim_matches('`')
+                .to_ascii_lowercase()
+        })
         .collect()
 }
 
