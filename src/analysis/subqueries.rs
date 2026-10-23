@@ -109,8 +109,12 @@ pub(super) fn analyze_subquery_semantics(
                         && expressions.iter().all(|expression|
                             matches!(expression, Expr::CompoundIdentifier(parts)
                                 if parts.len() == 2 && Some(parts[0].value.as_str()) == inner_qualifier))))
-        && output.columns().iter().all(|column|
-            matches!(column.expression(), Expression::Column(_) | Expression::Literal(_)));
+        && output.columns().iter().all(|column| {
+            matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        });
 
     // Keep joined EXISTS certification independent from row-preserving and
     // grouped claims. The physical planner must still prove *every* ON and
@@ -141,8 +145,12 @@ pub(super) fn analyze_subquery_semantics(
                 && select.connect_by.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(expressions, modifiers)
                     if expressions.is_empty() && modifiers.is_empty()))
-        && output.columns().iter().all(|column|
-            matches!(column.expression(), Expression::Column(_) | Expression::Literal(_)));
+        && output.columns().iter().all(|column| {
+            matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        });
 
     SubquerySemantics::new(
         relations.sources,
