@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-137",
   "parent": "TASK-77",
   "frozen_at": "2026-10-23",
@@ -76,7 +76,7 @@
     "opaque_generators": "Residual"
   },
   "validation": {
-    "status": "unverified",
+    "status": "pending_focused_matrix_and_final_head_CI",
     "mandatory_cells_signoff": false,
     "adapter_cells_signoff": false,
     "dialect_cells_signoff": false,
@@ -119,8 +119,18 @@
         "values:0",
         "values:1"
       ],
-      "rejected": [],
-      "proof": "Exact"
+      "rejected": [
+        "negative_membership"
+      ],
+      "proof": "Exact",
+      "oracle_sql": "SELECT column1 FROM (VALUES (1), (2)) AS t(column1)",
+      "negative_membership": {
+        "row": {
+          "column1": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-N-values-null-duplicate",
@@ -161,8 +171,18 @@
         "values:1",
         "values:2"
       ],
-      "rejected": [],
-      "proof": "Exact"
+      "rejected": [
+        "negative_membership"
+      ],
+      "proof": "Exact",
+      "oracle_sql": "SELECT column1 FROM (VALUES (1), (1), (NULL)) AS t(column1)",
+      "negative_membership": {
+        "row": {
+          "column1": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-P-unnest",
@@ -200,14 +220,24 @@
         "unnest:1",
         "unnest:2"
       ],
-      "rejected": [],
-      "proof": "Exact"
+      "rejected": [
+        "negative_membership"
+      ],
+      "proof": "Exact",
+      "oracle_sql": "SELECT v FROM UNNEST([1, 2]) AS t(v)",
+      "negative_membership": {
+        "row": {
+          "v": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-N-unnest-empty",
       "variant": "array_empty",
       "classification": "mandatory",
-      "sql": "SELECT * FROM UNNEST([]) AS t(v)",
+      "sql": "SELECT * FROM UNNEST(CAST([] AS INTEGER[])) AS t(v)",
       "source": [],
       "expected": [],
       "domains": {
@@ -218,9 +248,19 @@
         }
       },
       "positive": [],
-      "rejected": [],
+      "rejected": [
+        "negative_membership"
+      ],
       "proof": "Exact",
-      "boundary": "typed empty array must have authoritative element datatype"
+      "boundary": "typed empty array must have authoritative element datatype",
+      "oracle_sql": "SELECT v FROM UNNEST(CAST([] AS INTEGER[])) AS t(v)",
+      "negative_membership": {
+        "row": {
+          "v": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-P-ordinality",
@@ -245,7 +285,15 @@
             1,
             2
           ],
-          "nullable": false
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
         },
         "ord": {
           "type": "INTEGER",
@@ -253,15 +301,34 @@
             1,
             2
           ],
-          "nullable": false
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
         }
       },
       "positive": [
         "unnest:1",
         "unnest:2"
       ],
-      "rejected": [],
-      "proof": "Exact"
+      "rejected": [
+        "negative_membership"
+      ],
+      "proof": "Exact",
+      "oracle_sql": "SELECT v, ord FROM UNNEST([1, 2]) WITH ORDINALITY AS t(v, ord)",
+      "negative_membership": {
+        "row": {
+          "v": 9,
+          "ord": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-N-null-array",
@@ -274,13 +341,23 @@
         "v": {
           "type": "INTEGER NULL",
           "values": [],
-          "nullable": true
+          "nullable": false
         }
       },
       "positive": [],
-      "rejected": [],
+      "rejected": [
+        "negative_membership"
+      ],
       "proof": "Exact",
-      "boundary": "native engine treatment and explicit typed NULL necessary"
+      "boundary": "native engine treatment and explicit typed NULL necessary",
+      "oracle_sql": "SELECT v FROM UNNEST(CAST(NULL AS INTEGER[])) AS t(v)",
+      "negative_membership": {
+        "row": {
+          "v": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-P-explode",
@@ -303,16 +380,35 @@
             1,
             2
           ],
-          "nullable": false
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
         }
       },
       "positive": [
         "explode:1",
         "explode:2"
       ],
-      "rejected": [],
+      "rejected": [
+        "negative_membership"
+      ],
       "proof": "Exact",
-      "boundary": "parser and function placement vary across dialects"
+      "boundary": "parser and function placement vary across dialects",
+      "native_duckdb": "equivalent_UNNEST_only; EXPLODE native runtime not certified",
+      "oracle_sql": "SELECT v FROM UNNEST([1, 2]) AS t(v)",
+      "negative_membership": {
+        "row": {
+          "v": 9
+        },
+        "expected": "Impossible",
+        "truth": "NOT TRUE (complete source-free output absence)"
+      }
     },
     {
       "id": "77-C137-N-opaque",
@@ -332,5 +428,7 @@
       "proof": "Residual",
       "reason": "no independently attested nested element type or physical values"
     }
-  ]
+  ],
+  "immutable_baseline": "docs/task-137-acceptance-freeze-v1.json",
+  "revision": "Correct contradictory untyped-empty Exact claim, canonicalize one-based generator source IDs, record executable native source-free SQL bags and explicit negative membership obligations. Fixture IDs and named variants are unchanged."
 }
