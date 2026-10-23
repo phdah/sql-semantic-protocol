@@ -478,6 +478,7 @@ mod exists_bags;
 mod exists_joined;
 mod exists_producers;
 mod filters;
+mod finite_tables;
 mod finite_chains;
 mod graph;
 mod grouping;
@@ -526,6 +527,7 @@ pub use exists_producers::{
     PhysicalProducerExistsProof, PhysicalProducerRow,
 };
 pub use filters::physical_source_plan;
+pub use finite_tables::{physical_finite_table_plan, PhysicalFiniteTableExact, PhysicalFiniteTableProof};
 pub use finite_chains::{
     physical_finite_chain_bag_plan, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
     PhysicalFiniteChainProof,
