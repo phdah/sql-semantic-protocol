@@ -553,7 +553,6 @@ pub fn physical_finite_quantified_subquery_plan(
     })
 }
 
-
 /// Prove full WHERE ... OP ANY/SOME/ALL (...) membership over two complete source bags.
 ///
 /// This is the SQL-bound counterpart to `physical_finite_quantified_comparison`.
@@ -579,7 +578,8 @@ pub fn physical_finite_quantified_where_plan(
         return residual("quantified WHERE target is not a SELECT");
     };
     let Some(crate::protocol::Predicate::QuantifiedSubquery(comparison)) =
-        query.predicates().where_predicate() else {
+        query.predicates().where_predicate()
+    else {
         return residual("WHERE is not one canonical quantified comparison");
     };
     let [outer_source] = query.sources() else {
@@ -594,9 +594,9 @@ pub fn physical_finite_quantified_where_plan(
     let Some(output_source) = output.plain_copy_source() else {
         return residual("quantified WHERE output must be one plain physical column");
     };
-    let qualifier_ok = outer_operand
-        .relation()
-        .is_none_or(|relation| relation == outer_source.name() || outer_source.alias() == Some(relation));
+    let qualifier_ok = outer_operand.relation().is_none_or(|relation| {
+        relation == outer_source.name() || outer_source.alias() == Some(relation)
+    });
     if !query.filter_only_row_shape()
         || !query.joins().is_empty()
         || query.aggregation().is_some()

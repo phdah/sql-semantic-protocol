@@ -655,59 +655,132 @@ fn conditional_nested_lateral_and_apply_cases_have_explicit_parser_dispositions(
     );
 }
 
+
 #[test]
 fn conditional_duckdb_oracles_do_not_upgrade_uncertified_nested_or_lateral_proofs() {
+    use serde_json::Value;
     use sql_semantic_protocol::{
-        physical_finite_quantified_subquery_plan, PhysicalQuantifiedScalarProof,
+        analyze_sql, physical_finite_quantified_subquery_plan,
+        PhysicalQuantifiedScalarProof, ProtocolStatement,
     };
+
+    let frozen: Value =
+        serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE inner_rows (id VARCHAR, v INTEGER);
          CREATE TABLE outer_rows (id VARCHAR, v INTEGER);
-         CREATE TABLE control_rows (k INTEGER);
-         INSERT INTO inner_rows VALUES ('i1',2),('i2',2);
-         INSERT INTO outer_rows VALUES ('o1',2),('o2',3);
-         INSERT INTO control_rows VALUES (2);",
+         CREATE TABLE control_rows (k INTEGER);",
     )
     .unwrap();
-    // A nested scalar filter is not an identity-preserving direct projection:
-    // here its two matching source rows cause a runtime cardinality failure.
-    let nested_sql =
-        "SELECT (SELECT v FROM inner_rows WHERE v = (SELECT k FROM control_rows)) AS x";
-    assert!(db
-        .query_row(nested_sql, [], |r| r.get::<_, Option<i64>>(0))
-        .is_err());
-    let b = bundle(nested_sql);
-    let id = b.layers().last().unwrap().id().to_string();
-    assert!(matches!(
-        physical_finite_scalar_subquery_plan(
-            &b,
-            &id,
-            &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
-        ),
-        PhysicalScalarSubqueryProof::Residual { .. }
-    ));
-    // Correlated LATERAL is executable under native DuckDB, but a single
-    // globally evaluated nested source would invent the per-outer-row bag.
-    let lateral_sql = "SELECT o.id FROM outer_rows o CROSS JOIN LATERAL (SELECT v FROM inner_rows i WHERE i.v = o.v) s";
-    let mut stmt = db.prepare(lateral_sql).unwrap();
-    let mut ids = stmt
-        .query_map([], |row| row.get::<_, String>(0))
-        .unwrap()
-        .collect::<duckdb::Result<Vec<_>>>()
-        .unwrap();
-    ids.sort();
-    assert_eq!(ids, ["o1".to_string(), "o1".to_string()]);
-    let b = bundle(lateral_sql);
-    let id = b.layers().last().unwrap().id().to_string();
-    assert!(matches!(
-        physical_finite_quantified_subquery_plan(
-            &b,
-            &id,
-            &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
-        ),
-        PhysicalQuantifiedScalarProof::Residual { .. }
-    ));
+
+    for id in ["75-C131-N6", "75-C131-N7"] {
+        let case = frozen["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|case| case["id"] == id)
+            .unwrap();
+        db.execute_batch("DELETE FROM inner_rows; DELETE FROM outer_rows; DELETE FROM control_rows;")
+            .unwrap();
+        for row in case["source_bags"]["inner_rows"].as_array().unwrap() {
+            db.execute(
+                "INSERT INTO inner_rows VALUES (?, ?)",
+                params![row["id"].as_str().unwrap(), row["v"].as_i64()],
+            )
+            .unwrap();
+        }
+        for row in case["source_bags"]["outer_rows"].as_array().unwrap() {
+            db.execute(
+                "INSERT INTO outer_rows VALUES (?, ?)",
+                params![row["id"].as_str().unwrap(), row["v"].as_i64()],
+            )
+            .unwrap();
+        }
+        for row in case["source_bags"]["control_rows"].as_array().unwrap() {
+            db.execute(
+                "INSERT INTO control_rows VALUES (?)",
+                params![row["k"].as_i64()],
+            )
+            .unwrap();
+        }
+        let native_source = db
+            .prepare("SELECT id, v FROM inner_rows ORDER BY id")
+            .unwrap()
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, Option<i64>>(1)?))
+            })
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
+        let expected_source = case["source_bags"]["inner_rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| (row["id"].as_str().unwrap().to_string(), row["v"].as_i64()))
+            .collect::<Vec<_>>();
+        assert_eq!(native_source, expected_source, "{id}: frozen complete physical bag");
+        let sql = case["sql"].as_str().unwrap();
+        if id == "75-C131-N6" {
+            assert!(
+                db.query_row(sql, [], |row| row.get::<_, Option<i64>>(0))
+                    .is_err(),
+                "two equal-valued matching rows are a native cardinality error"
+            );
+            let b = bundle(sql);
+            let target = b.layers().last().unwrap();
+            assert!(matches!(
+                physical_finite_scalar_subquery_plan(
+                    &b,
+                    target.id(),
+                    &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
+                ),
+                PhysicalScalarSubqueryProof::Residual { .. }
+            ));
+        } else {
+            let mut native = db.prepare(sql).unwrap();
+            let mut rows = native
+                .query_map([], |row| row.get::<_, String>(0))
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap();
+            rows.sort();
+            assert_eq!(rows, ["o1", "o1"], "LATERAL duplicate-row fanout");
+        }
+    }
+
+    for (id, code) in [
+        ("75-C131-N7", "unsupported_lateral_row_scope"),
+        ("75-C131-N8", "unsupported_cross_apply"),
+    ] {
+        let case = frozen["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|case| case["id"] == id)
+            .unwrap();
+        let sql = case["sql"].as_str().unwrap();
+        let dialect = dialect_from_name("postgresql").unwrap();
+        let protocol = analyze_sql(sql, "postgresql", dialect.as_ref()).unwrap();
+        let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+            panic!("{id}: missing canonical query");
+        };
+        assert!(
+            query.diagnostics().iter().any(|diagnostic| diagnostic.code() == code),
+            "{id}: missing explicit correlated-row semantics boundary"
+        );
+        assert_eq!(query.joins().len(), 1, "{id}: join identity is preserved");
+        let b = bundle(sql);
+        let target = b.layers().last().unwrap();
+        assert!(matches!(
+            physical_finite_quantified_subquery_plan(
+                &b,
+                target.id(),
+                &[state("inner_rows", &[("i1", Some(2)), ("i2", Some(2))])]
+            ),
+            PhysicalQuantifiedScalarProof::Residual { .. }
+        ));
+    }
 }
 
 #[test]
@@ -741,6 +814,19 @@ fn canonical_quantifiers_round_trip_to_the_public_json_predicate_contract() {
         assert_eq!(predicate["quantifier"], quantifier, "{sql}");
         assert_eq!(predicate["operator"], operator, "{sql}");
         assert_eq!(
+            predicate.as_object().unwrap().keys().collect::<Vec<_>>(),
+            ["kind", "operand", "operator", "quantifier", "subquery"],
+            "{sql}: the entire public quantified predicate grammar is pinned"
+        );
+        assert_eq!(
+            predicate["subquery"].as_object().unwrap().keys().collect::<Vec<_>>(),
+            [
+                "column_domains", "condition_exactness", "correlations",
+                "dependencies", "diagnostics", "joins", "output", "predicates"
+            ],
+            "{sql}: the complete nested protocol contract is preserved"
+        );
+        assert_eq!(
             predicate["subquery"]["dependencies"][0], "inner_rows",
             "{sql}"
         );
@@ -757,7 +843,14 @@ fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
     use std::collections::BTreeSet;
     let frozen: Value =
         serde_json::from_str(include_str!("../docs/task-131-acceptance-freeze.json")).unwrap();
-    assert_eq!(frozen["version"], 4);
+    assert_eq!(frozen["version"], 5);
+    let coverage: Value =
+        serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
+    assert_eq!(
+        coverage["task_131_scalar_quantified_plan"]["freeze_version"],
+        frozen["version"],
+        "canonical coverage manifest must point to the reviewed acceptance freeze"
+    );
     assert_eq!(frozen["owner"], "TASK-131");
     assert_eq!(frozen["parent"], "TASK-75");
     assert_eq!(frozen["fixture_ids"], json!(["75-C131-P", "75-C131-N"]));
@@ -863,69 +956,148 @@ fn frozen_acceptance_matrix_is_complete_and_has_no_unreviewed_cells() {
     assert_eq!(adapter_cells, 45);
 }
 
-
 #[test]
 fn sql_bound_quantified_where_proves_complete_true_and_not_true_physical_bags() {
     use sql_semantic_protocol::physical_finite_quantified_where_plan;
-    let db=Connection::open_in_memory().unwrap();
+    let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE outer_rows (id VARCHAR, v INTEGER);
          CREATE TABLE inner_rows (id VARCHAR, v INTEGER);
          INSERT INTO outer_rows VALUES ('o1',1),('o2',2),('o3',NULL),('o4',1);
-         INSERT INTO inner_rows VALUES ('i1',NULL),('i2',1),('i3',1);"
-    ).unwrap();
-    let outer=state("outer_rows",&[("o1",Some(1)),("o2",Some(2)),("o3",None),("o4",Some(1))]);
-    let inner=state("inner_rows",&[("i1",None),("i2",Some(1)),("i3",Some(1))]);
-    for (op,expected_truth) in [
-        ("ANY",vec![PhysicalQuantifiedTruth::True,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::True]),
-        ("SOME",vec![PhysicalQuantifiedTruth::True,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::True]),
-        ("ALL",vec![PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::False,PhysicalQuantifiedTruth::Unknown,PhysicalQuantifiedTruth::Unknown]),
+         INSERT INTO inner_rows VALUES ('i1',NULL),('i2',1),('i3',1);",
+    )
+    .unwrap();
+    let outer = state(
+        "outer_rows",
+        &[
+            ("o1", Some(1)),
+            ("o2", Some(2)),
+            ("o3", None),
+            ("o4", Some(1)),
+        ],
+    );
+    let inner = state(
+        "inner_rows",
+        &[("i1", None), ("i2", Some(1)), ("i3", Some(1))],
+    );
+    for (op, expected_truth) in [
+        (
+            "ANY",
+            vec![
+                PhysicalQuantifiedTruth::True,
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::True,
+            ],
+        ),
+        (
+            "SOME",
+            vec![
+                PhysicalQuantifiedTruth::True,
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::True,
+            ],
+        ),
+        (
+            "ALL",
+            vec![
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::False,
+                PhysicalQuantifiedTruth::Unknown,
+                PhysicalQuantifiedTruth::Unknown,
+            ],
+        ),
     ] {
-        let sql=format!("SELECT o.v FROM outer_rows o WHERE o.v = {op} (SELECT i.v FROM inner_rows i)");
-        let mut native=db.prepare(&sql).unwrap();
-        let native_bag=native.query_map([],|row|row.get::<_,Option<i64>>(0)).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let sql =
+            format!("SELECT o.v FROM outer_rows o WHERE o.v = {op} (SELECT i.v FROM inner_rows i)");
+        let mut native = db.prepare(&sql).unwrap();
+        let native_bag = native
+            .query_map([], |row| row.get::<_, Option<i64>>(0))
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
         let selected_sql=format!("SELECT id FROM outer_rows WHERE (v = {op} (SELECT v FROM inner_rows)) IS TRUE ORDER BY id");
         let rejected_sql=format!("SELECT id FROM outer_rows WHERE NOT ((v = {op} (SELECT v FROM inner_rows)) IS TRUE) ORDER BY id");
-        let ids=|q:&str|db.prepare(q).unwrap().query_map([],|row|row.get::<_,String>(0)).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
-        let native_selected=ids(&selected_sql);
-        let native_rejected=ids(&rejected_sql);
+        let ids = |q: &str| {
+            db.prepare(q)
+                .unwrap()
+                .query_map([], |row| row.get::<_, String>(0))
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap()
+        };
+        let native_selected = ids(&selected_sql);
+        let native_rejected = ids(&rejected_sql);
         for name in [
-            "generic","mysql","postgres","hive","sqlite","snowflake",
-            "redshift","mssql","clickhouse","bigquery","ansi","duckdb","databricks"
+            "generic",
+            "mysql",
+            "postgres",
+            "hive",
+            "sqlite",
+            "snowflake",
+            "redshift",
+            "mssql",
+            "clickhouse",
+            "bigquery",
+            "ansi",
+            "duckdb",
+            "databricks",
         ] {
-            let dialect=dialect_from_name(name).unwrap();
-            let sql_input=SqlInput::inline(&sql);
-            let configured=ConfiguredSqlInput::new("task-131-where",&sql_input,name,dialect.as_ref());
-            let b=analyze_configured_inputs_with_catalog(&[configured],&catalog()).unwrap();
-            let target=b.layers().last().unwrap();
-            let proof=physical_finite_quantified_where_plan(&b,target.id(),&[outer.clone(),inner.clone()]);
-            let PhysicalFiniteQuantifiedProof::Exact(exact)=proof else {
-                panic!("{name} {op}: public canonical WHERE quantification is not Exact: {proof:?}");
+            let dialect = dialect_from_name(name).unwrap();
+            let sql_input = SqlInput::inline(&sql);
+            let configured =
+                ConfiguredSqlInput::new("task-131-where", &sql_input, name, dialect.as_ref());
+            let b = analyze_configured_inputs_with_catalog(&[configured], &catalog()).unwrap();
+            let target = b.layers().last().unwrap();
+            let proof = physical_finite_quantified_where_plan(
+                &b,
+                target.id(),
+                &[outer.clone(), inner.clone()],
+            );
+            let PhysicalFiniteQuantifiedProof::Exact(exact) = proof else {
+                panic!(
+                    "{name} {op}: public canonical WHERE quantification is not Exact: {proof:?}"
+                );
             };
-            for (index,id) in ["o1","o2","o3","o4"].iter().enumerate() {
-                assert_eq!(exact.truth[*id],expected_truth[index],"{name}/{op}/{id}");
+            for (index, id) in ["o1", "o2", "o3", "o4"].iter().enumerate() {
+                assert_eq!(exact.truth[*id], expected_truth[index], "{name}/{op}/{id}");
             }
-            assert_eq!(exact.candidate_inner["o1"],["i1","i2","i3"]);
-            assert_eq!(exact.selected,native_selected,"{name}/{op} TRUE membership");
-            assert_eq!(exact.rejected,native_rejected,"{name}/{op} NOT TRUE includes UNKNOWN");
-            assert_eq!(exact.selected.len()+exact.rejected.len(),4);
-            let terminal=exact.terminal.iter().map(|row|{
-                match row["v"] {LiteralValue::Number(ref n)=>Some(n.parse::<i64>().unwrap()),LiteralValue::Null=>None,ref other=>panic!("unexpected {other:?}")}
-            }).collect::<Vec<_>>();
-            assert_eq!(terminal,native_bag,"{name}/{op} full terminal bag");
-            if op!="ALL" {
-                assert_eq!(exact.terminal_domain.bounds(),Some((1,1)));
+            assert_eq!(exact.candidate_inner["o1"], ["i1", "i2", "i3"]);
+            assert_eq!(
+                exact.selected, native_selected,
+                "{name}/{op} TRUE membership"
+            );
+            assert_eq!(
+                exact.rejected, native_rejected,
+                "{name}/{op} NOT TRUE includes UNKNOWN"
+            );
+            assert_eq!(exact.selected.len() + exact.rejected.len(), 4);
+            let terminal = exact
+                .terminal
+                .iter()
+                .map(|row| match row["v"] {
+                    LiteralValue::Number(ref n) => Some(n.parse::<i64>().unwrap()),
+                    LiteralValue::Null => None,
+                    ref other => panic!("unexpected {other:?}"),
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(terminal, native_bag, "{name}/{op} full terminal bag");
+            if op != "ALL" {
+                assert_eq!(exact.terminal_domain.bounds(), Some((1, 1)));
                 assert!(!exact.terminal_domain.null_allowed);
             } else {
                 assert!(exact.terminal.is_empty());
-                assert_eq!(exact.terminal_domain.bounds(),None);
+                assert_eq!(exact.terminal_domain.bounds(), None);
             }
         }
     }
-    let b=bundle("SELECT o.v FROM outer_rows o WHERE o.v = ANY (SELECT i.v FROM inner_rows i WHERE i.v>0)");
-    let id=b.layers().last().unwrap().id().to_string();
+    let b = bundle(
+        "SELECT o.v FROM outer_rows o WHERE o.v = ANY (SELECT i.v FROM inner_rows i WHERE i.v>0)",
+    );
+    let id = b.layers().last().unwrap().id().to_string();
     assert!(matches!(
-        physical_finite_quantified_where_plan(&b,&id,&[outer,inner]),
-        PhysicalFiniteQuantifiedProof::Residual{..}
+        physical_finite_quantified_where_plan(&b, &id, &[outer, inner]),
+        PhysicalFiniteQuantifiedProof::Residual { .. }
     ));
 }

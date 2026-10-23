@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-131",
   "parent": "TASK-75",
   "fixture_ids": [
@@ -1180,6 +1180,10 @@
         {
           "id": "i1",
           "v": 2
+        },
+        {
+          "id": "i2",
+          "v": 2
         }
       ],
       "expect": {
@@ -1193,6 +1197,10 @@
         "inner_rows": [
           {
             "id": "i1",
+            "v": 2
+          },
+          {
+            "id": "i2",
             "v": 2
           }
         ],
@@ -1248,7 +1256,7 @@
       },
       "review_evidence": {
         "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
-        "engine": "DuckDB duplicate-row nested scalar raises cardinality error"
+        "engine": "DuckDB duplicate-valued inner rows force a scalar cardinality error; complete frozen source bags reproduce the native oracle"
       },
       "canonical_source_identities": [
         "inner_rows",
@@ -1262,7 +1270,11 @@
         "sql": "Residual_conditional",
         "dbt": "Residual_conditional",
         "odcs": "Residual_conditional"
-      }
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ]
     },
     {
       "id": "75-C131-N7",
@@ -1271,6 +1283,10 @@
       "inner": [
         {
           "id": "i1",
+          "v": 2
+        },
+        {
+          "id": "i2",
           "v": 2
         }
       ],
@@ -1285,6 +1301,10 @@
         "inner_rows": [
           {
             "id": "i1",
+            "v": 2
+          },
+          {
+            "id": "i2",
             "v": 2
           }
         ],
@@ -1343,7 +1363,7 @@
       },
       "review_evidence": {
         "parser": "all 13 sqlparser dialect paths observed in run 39843884857",
-        "engine": "DuckDB CROSS JOIN LATERAL returns two o1 rows with duplicate inner candidates"
+        "engine": "DuckDB duplicate-valued inner rows produce two separate o1 LATERAL rows; complete frozen source bags reproduce the native oracle"
       },
       "canonical_source_identities": [
         "outer_rows",
@@ -1358,7 +1378,11 @@
         "sql": "Residual_conditional",
         "dbt": "Residual_conditional",
         "odcs": "Residual_conditional"
-      }
+      },
+      "source_row_ids": [
+        "i1",
+        "i2"
+      ]
     },
     {
       "id": "75-C131-N8",
@@ -1454,7 +1478,7 @@
       }
     }
   ],
-  "reviewed_freeze_revision": "v4: retained v1 preimplementation fixed fixture IDs and 12/3 case inventory; expanded complete typed full-bag, parser and adapter disposition cells; v3 conditional parser outcomes independently observed in Actions run 39843884857",
+  "reviewed_freeze_revision": "v5 explicitly reviewed repair: N6/N7 complete source bags now include both equal-valued rows actually required by their independent DuckDB native oracles; no mandatory case weakened; 12 mandatory and 3 owned conditional cases retained",
   "required_parser_cells": 156,
   "required_adapter_cells": 36,
   "conditional_parser_cells": 39,

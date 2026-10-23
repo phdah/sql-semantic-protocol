@@ -14,14 +14,15 @@
     "child_acceptance_criteria_verified": [],
     "parent_signed_off": false,
     "release_approved": false,
-    "freeze_version": 3,
+    "freeze_version": 5,
     "required_parser_cells": 156,
     "conditional_parser_cells": 39,
     "required_adapter_cells": 36,
     "public_oracle": "tests/task_131_scalar_quantified.rs",
     "adapter_oracle": "tests/task_131_adapter_parity.rs",
     "mandatory_cases_verified_by_tests": "pending_final_head_ci",
-    "conditional_cases_reviewed": "parser_acceptance_and_native_duckdb_n6_n7_verified"
+    "conditional_cases_reviewed": "v5 frozen source bags match DuckDB N6/N7; conditional adapter evidence pending final CI",
+    "conditional_adapter_cells": 9
   },
   "task_130_in_subquery_plan": {
     "owner": "TASK-130",
