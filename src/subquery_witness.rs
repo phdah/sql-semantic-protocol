@@ -276,8 +276,10 @@ fn derive(
         return residual("repeated_physical_relation_requires_distinct_instance_evidence");
     }
     if !subquery.row_shape_preserves_candidates()
-        && !(matches!(kind, SubqueryMembershipKind::Exists | SubqueryMembershipKind::NotExists)
-            && subquery.grouped_exists_equivalent())
+        && !(matches!(
+            kind,
+            SubqueryMembershipKind::Exists | SubqueryMembershipKind::NotExists
+        ) && subquery.grouped_exists_equivalent())
     {
         return residual("subquery_row_shape_not_proven");
     }
