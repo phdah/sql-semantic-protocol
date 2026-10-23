@@ -222,6 +222,9 @@ pub(super) fn analyze_query(
     produced_relation: Option<String>,
     metadata: &AnalysisMetadata<'_>,
 ) -> QueryStatement {
+    if let Some(finite) = source_free_finite_query(query, produced_relation.clone()) {
+        return finite;
+    }
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let relation_analysis = analyze_query_relations(
