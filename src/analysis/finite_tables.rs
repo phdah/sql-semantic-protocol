@@ -80,14 +80,24 @@ fn array_items(expression: &Expr, dialect_name: &str) -> Option<Vec<LiteralExpre
                 .iter()
                 .map(integer_literal)
                 .collect::<Option<Vec<_>>>()?;
-            (!literals.is_empty()).then_some(literals)
+            // Untyped [] and [NULL] carry no reliable element datatype.
+            // Only an observed integer literal attests this narrow array law.
+            literals
+                .iter()
+                .any(|literal| literal.literal_type() == LiteralType::Integer)
+                .then_some(literals)
         }
         Expr::Function(function) if function.name.to_string().eq_ignore_ascii_case("array") => {
             let literals = function_arguments(function)?
                 .into_iter()
                 .map(integer_literal)
                 .collect::<Option<Vec<_>>>()?;
-            (!literals.is_empty()).then_some(literals)
+            // Untyped [] and [NULL] carry no reliable element datatype.
+            // Only an observed integer literal attests this narrow array law.
+            literals
+                .iter()
+                .any(|literal| literal.literal_type() == LiteralType::Integer)
+                .then_some(literals)
         }
         Expr::Cast {
             expr, data_type, ..
