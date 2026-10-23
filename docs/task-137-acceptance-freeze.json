@@ -80,7 +80,9 @@
     "mandatory_cells_signoff": false,
     "adapter_cells_signoff": false,
     "dialect_cells_signoff": false,
-    "full_ci_signoff": false
+    "full_ci_signoff": false,
+    "matrix_cells": 104,
+    "actual_dialect_certification": "pending"
   },
   "cases": [
     {
@@ -130,6 +132,14 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "column1"
+      ],
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -182,6 +192,14 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "column1"
+      ],
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -231,6 +249,15 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "v"
+      ],
+      "source_element_type": "INTEGER NULL or INTEGER with explicit literal evidence",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -260,6 +287,15 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "v"
+      ],
+      "source_element_type": "INTEGER NULL or INTEGER with explicit literal evidence",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -328,6 +364,16 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "v",
+        "ord"
+      ],
+      "source_element_type": "INTEGER NULL or INTEGER with explicit literal evidence",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -357,6 +403,15 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "v"
+      ],
+      "source_element_type": "INTEGER NULL or INTEGER with explicit literal evidence",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
       }
     },
     {
@@ -408,6 +463,15 @@
         },
         "expected": "Impossible",
         "truth": "NOT TRUE (complete source-free output absence)"
+      },
+      "output_columns": [
+        "v"
+      ],
+      "source_element_type": "INTEGER NULL or INTEGER with explicit literal evidence",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "not_certified",
+        "owner": "TASK-137"
       }
     },
     {
@@ -426,7 +490,16 @@
       "positive": [],
       "rejected": [],
       "proof": "Residual",
-      "reason": "no independently attested nested element type or physical values"
+      "reason": "no independently attested nested element type or physical values",
+      "output_columns": [
+        "v"
+      ],
+      "source_element_type": "unattested",
+      "parser_review": {
+        "shared_semantics": "must match when parser accepts source-free form",
+        "native_vendor_execution": "DuckDB fixture SQL only",
+        "owner": "TASK-137"
+      }
     }
   ],
   "immutable_baseline": "docs/task-137-acceptance-freeze-v1.json",
