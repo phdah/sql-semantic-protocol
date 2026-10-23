@@ -7,6 +7,7 @@ use duckdb::{params, Connection};
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_exists_bag_plan,
+    physical_finite_joined_exists_bag_plan, PhysicalJoinedExistsProof,
     ConfiguredSqlInput, LiteralValue, PhysicalFiniteExistsProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
@@ -274,4 +275,88 @@ fn joined_shapes_fail_closed_until_owned_physical_proofs_exist() {
             case["id"]
         );
     }
+}
+
+fn evaluate_joined(case: &Value, dialect: &str) -> PhysicalJoinedExistsProof {
+    let sql = SqlInput::inline(case["sql"].as_str().expect("frozen joined SQL"));
+    let parser = dialect_from_name(dialect).expect("published dialect");
+    let configured = ConfiguredSqlInput::new("task-132", &sql, dialect, parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog())
+        .expect("canonical joined SQL analysis");
+    let target = bundle.layers().last().expect("joined target");
+    physical_finite_joined_exists_bag_plan(&bundle, target.id(), &states(case))
+}
+
+#[test]
+fn joined_composite_exists_carries_full_source_triplets_and_closed_world_absence() {
+    let frozen = freeze();
+    let mut checked = 0;
+    for case in frozen["cases"].as_array().expect("cases") {
+        if case["variant"] != "joined_composite" {
+            continue;
+        }
+        for dialect in frozen["dialects"].as_array().expect("dialects") {
+            let dialect = dialect.as_str().expect("dialect");
+            let PhysicalJoinedExistsProof::Exact(exact) = evaluate_joined(case, dialect) else {
+                panic!("{} {dialect}: nested JOIN must certify complete source bags", case["id"]);
+            };
+            assert_eq!(exact.sources, ["outer_rows", "inner_rows", "dim_rows"]);
+            assert_eq!(exact.selected, ids(case, "selected_outer_ids"));
+            assert_eq!(exact.rejected, ids(case, "rejected_not_true_outer_ids"));
+            assert_eq!(exact.terminal, expected_terminal(case));
+            assert_eq!(exact.selected.len() + exact.rejected.len(), 3);
+            for (outer_id, partners) in case["complete_matching_inner_ids"].as_object().unwrap() {
+                let expected = partners.as_array().unwrap().iter().map(|value| {
+                    let named = value.as_str().unwrap();
+                    let (inner, joined) = named.split_once('@').expect("frozen pair");
+                    [inner.to_string(), joined.to_string()]
+                }).collect::<Vec<_>>();
+                assert_eq!(exact.matching_pairs.get(outer_id), Some(&expected));
+            }
+            let domain = exact.terminal_domains.get("k").expect("typed terminal");
+            let allowed = case["terminal_domain"]["values"]
+                .as_array().unwrap().iter()
+                .map(|value| i128::from(value.as_i64().unwrap())).collect::<Vec<_>>();
+            assert_eq!(domain.values(), allowed);
+            assert_eq!(domain.bounds(), allowed.first().copied().zip(allowed.last().copied()));
+            assert_eq!(domain.null_allowed(), case["terminal_domain"]["null_allowed"]);
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 26);
+}
+
+#[test]
+fn joined_correlation_rejects_unproven_join_forms_and_duplicate_physical_ids() {
+    let frozen = freeze();
+    let case = frozen["cases"].as_array().unwrap().iter()
+        .find(|case| case["variant"] == "joined_composite" && case["fixture_id"] == "75-C132-P")
+        .expect("positive nested join fixture");
+    let unsupported = [
+        case["sql"].as_str().unwrap().replace("i.k = d.k", "i.k > d.k"),
+        case["sql"].as_str().unwrap().replace("INNER", "LEFT"),
+        case["sql"].as_str().unwrap().replace("i.k = o.k AND i.g = o.g", "i.k = o.k OR i.g = o.g"),
+    ];
+    for sql in unsupported {
+        let mut variant = case.clone();
+        variant["sql"] = Value::String(sql);
+        assert!(matches!(
+            evaluate_joined(&variant, "generic"),
+            PhysicalJoinedExistsProof::Residual { .. }
+        ), "uncertified semantics must fail closed");
+    }
+    let mut invalid = states(case);
+    let inner = invalid.iter().position(|state| state.relation() == "inner_rows").unwrap();
+    let mut rows = invalid[inner].rows().to_vec();
+    rows.push(rows[0].clone());
+    invalid[inner] = PhysicalWriteState::new("inner_rows", rows).expect("contradictory bag");
+    let sql = SqlInput::inline(case["sql"].as_str().unwrap());
+    let parser = dialect_from_name("generic").unwrap();
+    let configured = ConfiguredSqlInput::new("task-132", &sql, "generic", parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[configured], &catalog()).unwrap();
+    let target = bundle.layers().last().unwrap();
+    assert!(matches!(
+        physical_finite_joined_exists_bag_plan(&bundle, target.id(), &invalid),
+        PhysicalJoinedExistsProof::Impossible { .. }
+    ));
 }
