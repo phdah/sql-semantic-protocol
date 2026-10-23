@@ -108,7 +108,7 @@ pub(super) fn analyze_subquery_semantics(
                     if !expressions.is_empty() && modifiers.is_empty()
                         && expressions.iter().all(|expression|
                             matches!(expression, Expr::CompoundIdentifier(parts)
-                                if parts.len() == 2 && Some(parts[0].value.as_str()) == inner_qualifier)))
+                                if parts.len() == 2 && Some(parts[0].value.as_str()) == inner_qualifier))))
         && output.columns().iter().all(|column|
             nested_projection_preserves_candidate_rows(column.expression()));
 
