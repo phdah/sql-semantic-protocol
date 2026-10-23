@@ -271,6 +271,18 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     bundle
         .attest_source_timestamp_zone(&orders_name, "created_at", TimestampZone::WithoutTimeZone)
         .expect("DuckDB introspected unzoned TIMESTAMP physical source");
+    assert!(
+        bundle
+            .attest_source_timestamp_zone(&orders_name, "created_at", TimestampZone::WithTimeZone)
+            .is_err(),
+        "conflicting physical zone attestations must never be accepted"
+    );
+    assert!(
+        bundle
+            .attest_source_timestamp_zone(&orders_name, "amount", TimestampZone::WithoutTimeZone)
+            .is_err(),
+        "a non-timestamp cannot carry timestamp-zone evidence"
+    );
 
     let final_id = layer_id(&bundle, "subquery_orders");
     let proof = physical_finite_producer_exists_plan(&bundle, final_id, &physical, true);
