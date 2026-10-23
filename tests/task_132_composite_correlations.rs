@@ -110,13 +110,13 @@ fn expected_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 }
 
 #[test]
-fn composite_source_equality_proves_both_exists_directions_across_dialects() {
+fn direct_and_grouped_composite_exists_proves_both_directions_across_dialects() {
     let frozen = freeze();
     assert_eq!(frozen["version"], 2);
     assert_eq!(frozen["dialects"].as_array().unwrap().len(), 13);
     let mut obligations = 0;
     for case in frozen["cases"].as_array().expect("cases") {
-        if case["variant"] != "direct_composite" {
+        if case["variant"] != "direct_composite" && case["variant"] != "grouped_composite" {
             continue;
         }
         for dialect in frozen["dialects"].as_array().expect("dialects") {
@@ -160,7 +160,7 @@ fn composite_source_equality_proves_both_exists_directions_across_dialects() {
             obligations += 1;
         }
     }
-    assert_eq!(obligations, 26);
+    assert_eq!(obligations, 52);
 }
 
 #[test]
@@ -259,10 +259,10 @@ fn duckdb_checks_full_source_and_terminal_row_identity_bags() {
 }
 
 #[test]
-fn grouped_and_joined_shapes_fail_closed_until_owned_physical_proofs_exist() {
+fn joined_shapes_fail_closed_until_owned_physical_proofs_exist() {
     let frozen = freeze();
     for case in frozen["cases"].as_array().unwrap() {
-        if case["variant"] == "direct_composite" || case["variant"] == "dbt_subquery_orders" {
+        if case["variant"] != "joined_composite" {
             continue;
         }
         assert!(
