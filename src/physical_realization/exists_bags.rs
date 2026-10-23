@@ -78,14 +78,14 @@ fn residual(reason: &str) -> PhysicalFiniteExistsProof {
     }
 }
 
-fn row_id(row: &PhysicalWriteRow) -> Option<&str> {
+pub(super) fn row_id(row: &PhysicalWriteRow) -> Option<&str> {
     match row.values().get("id")? {
         LiteralValue::Text(value) if !value.is_empty() => Some(value),
         _ => None,
     }
 }
 
-fn checked_ids(snapshot: &PhysicalWriteState) -> Result<(), &'static str> {
+pub(super) fn checked_ids(snapshot: &PhysicalWriteState) -> Result<(), &'static str> {
     let mut ids = BTreeSet::new();
     for row in snapshot.rows() {
         let Some(id) = row_id(row) else {
@@ -100,7 +100,7 @@ fn checked_ids(snapshot: &PhysicalWriteState) -> Result<(), &'static str> {
 
 // An empty result has no values to inspect. The projected datatype and
 // correlated comparison law must therefore come from authoritative schemas.
-fn signed_integer_source(bundle: &AnalysisBundle, relation: &str, column: &str) -> bool {
+pub(super) fn signed_integer_source(bundle: &AnalysisBundle, relation: &str, column: &str) -> bool {
     fn is_signed_integer(data_type: &DataType) -> bool {
         match data_type {
             DataType::SignedInteger { .. } => true,
@@ -116,7 +116,7 @@ fn signed_integer_source(bundle: &AnalysisBundle, relation: &str, column: &str) 
         .is_some_and(|item| is_signed_integer(item.data_type()))
 }
 
-fn scalar(row: &PhysicalWriteRow, column: &str) -> Result<Option<i128>, &'static str> {
+pub(super) fn scalar(row: &PhysicalWriteRow, column: &str) -> Result<Option<i128>, &'static str> {
     match row.values().get(column) {
         Some(LiteralValue::Null) => Ok(None),
         Some(LiteralValue::Number(number)) => number
@@ -127,7 +127,7 @@ fn scalar(row: &PhysicalWriteRow, column: &str) -> Result<Option<i128>, &'static
     }
 }
 
-fn output_domain(
+pub(super) fn output_domain(
     rows: &[BTreeMap<String, LiteralValue>],
     column: &str,
 ) -> Option<PhysicalExistsColumnDomain> {
