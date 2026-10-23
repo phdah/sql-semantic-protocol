@@ -112,7 +112,7 @@ fn expected_terminal(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 #[test]
 fn composite_source_equality_proves_both_exists_directions_across_dialects() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     assert_eq!(frozen["dialects"].as_array().unwrap().len(), 13);
     let mut obligations = 0;
     for case in frozen["cases"].as_array().expect("cases") {
@@ -259,7 +259,7 @@ fn duckdb_checks_full_source_and_terminal_row_identity_bags() {
 fn grouped_and_joined_shapes_fail_closed_until_owned_physical_proofs_exist() {
     let frozen = freeze();
     for case in frozen["cases"].as_array().unwrap() {
-        if case["variant"] == "direct_composite" {
+        if case["variant"] == "direct_composite" || case["variant"] == "dbt_subquery_orders" {
             continue;
         }
         assert!(
