@@ -476,6 +476,7 @@ mod counts;
 mod distributions;
 mod exists_bags;
 mod exists_joined;
+mod exists_producers;
 mod filters;
 mod finite_chains;
 mod graph;
@@ -519,6 +520,10 @@ pub use exists_bags::{
 };
 pub use exists_joined::{
     physical_finite_joined_exists_bag_plan, PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
+};
+pub use exists_producers::{
+    physical_finite_producer_exists_plan, PhysicalProducerDomain, PhysicalProducerExistsExact,
+    PhysicalProducerExistsProof, PhysicalProducerRow,
 };
 pub use filters::physical_source_plan;
 pub use finite_chains::{
