@@ -365,6 +365,7 @@ fn joined_correlation_rejects_unproven_join_forms_and_duplicate_physical_ids() {
             .as_str()
             .unwrap()
             .replace("i.k = o.k AND i.g = o.g", "i.k = o.k OR i.g = o.g"),
+        format!("{} OFFSET 1", case["sql"].as_str().unwrap()),
     ];
     for sql in unsupported {
         let mut variant = case.clone();
@@ -394,4 +395,25 @@ fn joined_correlation_rejects_unproven_join_forms_and_duplicate_physical_ids() {
         physical_finite_joined_exists_bag_plan(&bundle, target.id(), &invalid),
         PhysicalJoinedExistsProof::Impossible { .. }
     ));
+}
+
+#[test]
+fn grouped_exists_does_not_certify_having_or_offset() {
+    let frozen = freeze();
+    let case = frozen["cases"].as_array().unwrap().iter()
+        .find(|case| case["variant"] == "grouped_composite" && case["fixture_id"] == "75-C132-P")
+        .expect("grouped positive fixture");
+    for sql in [
+        case["sql"].as_str().unwrap().replace(
+            " GROUP BY i.k, i.g", " GROUP BY i.k, i.g HAVING COUNT(*) > 100"
+        ),
+        format!("{} OFFSET 1", case["sql"].as_str().unwrap()),
+    ] {
+        let mut variant = case.clone();
+        variant["sql"] = Value::String(sql);
+        assert!(matches!(
+            evaluate(&variant, "generic"),
+            PhysicalFiniteExistsProof::Residual { .. }
+        ), "row shaping cannot be mistaken for exact group existence");
+    }
 }
