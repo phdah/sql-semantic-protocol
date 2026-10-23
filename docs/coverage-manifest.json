@@ -2,7 +2,7 @@
   "task_132_composed_subquery_acceptance": {
     "owner": "TASK-132",
     "parent": "TASK-75",
-    "status": "in_progress_unverified",
+    "status": "seven_mandatory_verified_pending_final_ci",
     "freeze": "docs/task-132-acceptance-freeze.json",
     "fixture_ids": [
       "75-C132-P",
@@ -11,16 +11,19 @@
     "mandatory_cases": 7,
     "required_parser_cells": 91,
     "required_adapter_cells": 21,
-    "mandatory_verified": false,
+    "mandatory_verified": true,
     "parent_signed_off": false,
     "release_approved": false,
-    "verified_parser_cells": 78,
-    "verified_adapter_cells": 18,
-    "verified_cases": 6,
-    "pending_cases": 1,
+    "verified_parser_cells": 91,
+    "verified_adapter_cells": 21,
+    "verified_cases": 7,
+    "pending_cases": 0,
     "producer_source_oracle": "tests/protocol_conformance_dbt_e2e.rs",
-    "producer_oracle_status": "source-to-terminal exact DuckDB, direct/dbt/ODCS parity pending final CI",
-    "verified_six_case_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003"
+    "producer_oracle_status": "exact_dbtsql_directsql_odcs_source_to_terminal_and_domains",
+    "verified_six_case_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/39931338003",
+    "adapter_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "dialect_oracle": "tests/task_132_composite_correlations.rs and tests/protocol_conformance_dbt_e2e.rs",
+    "conditional_native_runtime": "DuckDB verified; non-DuckDB native execution not claimed"
   },
   "task_131_scalar_quantified_plan": {
     "owner": "TASK-131",
