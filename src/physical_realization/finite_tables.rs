@@ -97,6 +97,24 @@ pub fn physical_finite_table_plan(
         row_ids.push(format!("{}:{position}", table.kind().as_str()));
     }
     if let Some(wanted) = wanted {
+        // A malformed request is not evidence that a SQL row is impossible.
+        // All named outputs must be present and scalar values must have the
+        // same attested integral/NULL identity law as the canonical table.
+        if wanted.len() != table.columns().len()
+            || table.columns().iter().any(|column| !wanted.contains_key(column))
+            || wanted.values().any(|value| match value {
+                LiteralValue::Null => false,
+                LiteralValue::Number(number) => number
+                    .parse::<i128>()
+                    .map_or(true, |parsed| parsed.to_string() != *number),
+                _ => true,
+            })
+        {
+            return PhysicalFiniteTableProof::Residual {
+                reason: "requested output tuple lacks exact typed and complete column identity"
+                    .to_string(),
+            };
+        }
         if !terminal.iter().any(|row| row == wanted) {
             return PhysicalFiniteTableProof::Impossible {
                 reason: "requested output tuple is absent from the complete finite table"
