@@ -215,7 +215,14 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            unnest_table(alias, &arguments, false, false, FiniteTableKind::Unnest, dialect_name)
+            unnest_table(
+                alias,
+                &arguments,
+                false,
+                false,
+                FiniteTableKind::Unnest,
+                dialect_name,
+            )
         }
         _ => None,
     }
@@ -277,7 +284,9 @@ pub(super) fn source_free_finite_query(
     }
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
-        SetExpr::Select(select) => unnest_select(select, dialect_name).or_else(|| explode_select(select, dialect_name)),
+        SetExpr::Select(select) => {
+            unnest_select(select, dialect_name).or_else(|| explode_select(select, dialect_name))
+        }
         _ => None,
     }?;
     let output = Output::new(

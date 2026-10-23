@@ -4,9 +4,8 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name,
-    parse_dbt_manifest, physical_finite_table_plan, to_bundle_json,
-    PhysicalFiniteTableProof, SqlInput,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_manifest,
+    physical_finite_table_plan, to_bundle_json, PhysicalFiniteTableProof, SqlInput,
 };
 
 fn all_cases() -> Value {
@@ -44,7 +43,9 @@ fn frozen_source_free_tables_have_direct_and_compiled_dbt_parity() {
     let inventory = all_cases();
     let parser = dialect_from_name("duckdb").unwrap();
     for case in inventory["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory" { continue; }
+        if case["classification"] != "mandatory" {
+            continue;
+        }
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
         let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
@@ -56,21 +57,30 @@ fn frozen_source_free_tables_have_direct_and_compiled_dbt_parity() {
             let PhysicalFiniteTableProof::Exact(exact) = exact else {
                 panic!("{id}: missing source-free adapter proof: {exact:?}");
             };
-            (
-                exact.row_ids,
-                exact.terminal,
-                exact.terminal_domains,
-            )
+            (exact.row_ids, exact.terminal, exact.terminal_domains)
         };
-        assert_eq!(proof(&direct), proof(&dbt), "{id}: canonical dbt output and domains");
+        assert_eq!(
+            proof(&direct),
+            proof(&dbt),
+            "{id}: canonical dbt output and domains"
+        );
 
         let direct_json: Value = serde_json::from_str(&to_bundle_json(&direct)).unwrap();
         let dbt_json: Value = serde_json::from_str(&to_bundle_json(&dbt)).unwrap();
         let direct_table = &direct_json["inputs"][0]["statements"][0]["finite_table"];
         let compiled_table = &dbt_json["inputs"][0]["statements"][0]["finite_table"];
-        assert!(direct_table.is_object(), "{id}: JSON protocol must carry canonical table");
-        assert_eq!(direct_table, compiled_table, "{id}: compiled SQL must share protocol facts");
-        assert_eq!(direct_table["rows"].as_array().unwrap().len(), case["expected"].as_array().unwrap().len());
+        assert!(
+            direct_table.is_object(),
+            "{id}: JSON protocol must carry canonical table"
+        );
+        assert_eq!(
+            direct_table, compiled_table,
+            "{id}: compiled SQL must share protocol facts"
+        );
+        assert_eq!(
+            direct_table["rows"].as_array().unwrap().len(),
+            case["expected"].as_array().unwrap().len()
+        );
     }
 }
 
@@ -94,7 +104,10 @@ fn protocol_wire_rows_keep_typed_ordinality_null_and_duplicates() {
     ] {
         let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref()).unwrap();
         let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
-        assert_eq!(wire["inputs"][0]["statements"][0]["finite_table"]["rows"], expected);
+        assert_eq!(
+            wire["inputs"][0]["statements"][0]["finite_table"]["rows"],
+            expected
+        );
         let repeat: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(wire, repeat, "stable canonical emission");
     }

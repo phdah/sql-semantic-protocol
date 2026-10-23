@@ -101,7 +101,10 @@ pub fn physical_finite_table_plan(
         // All named outputs must be present and scalar values must have the
         // same attested integral/NULL identity law as the canonical table.
         if wanted.len() != table.columns().len()
-            || table.columns().iter().any(|column| !wanted.contains_key(column))
+            || table
+                .columns()
+                .iter()
+                .any(|column| !wanted.contains_key(column))
             || wanted.values().any(|value| match value {
                 LiteralValue::Null => false,
                 LiteralValue::Number(number) => number

@@ -328,8 +328,14 @@ fn supported_values_query_preserves_complete_typed_rows() {
             let table = statement.finite_table().expect("canonical VALUES rows");
             assert_eq!(table.columns(), ["column1"]);
             assert_eq!(table.rows().len(), 2);
-            assert_eq!(table.rows()[0][0].value(), &LiteralValue::Number("1".into()));
-            assert_eq!(table.rows()[1][0].value(), &LiteralValue::Number("2".into()));
+            assert_eq!(
+                table.rows()[0][0].value(),
+                &LiteralValue::Number("1".into())
+            );
+            assert_eq!(
+                table.rows()[1][0].value(),
+                &LiteralValue::Number("2".into())
+            );
         }
         other => panic!("expected query statement, got {other:?}"),
     }
