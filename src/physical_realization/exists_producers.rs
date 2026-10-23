@@ -250,7 +250,7 @@ fn certified_query_shape(query: &QueryStatement) -> bool {
         && query.predicates().having_predicate().is_none()
         && query.predicates().qualify_predicate().is_none()
         && query.diagnostics().is_empty()
-        && query.sources().len() >= 1
+        && !query.sources().is_empty()
         && query.sources().len() <= 2
         && if query.joins().is_empty() {
             query.filter_only_row_shape() || query.row_preserving_projection()
