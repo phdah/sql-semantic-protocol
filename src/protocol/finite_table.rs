@@ -52,15 +52,23 @@ impl FiniteTable {
             || unique.len() != columns.len()
             || columns.iter().any(|column| column.trim().is_empty())
             || rows.iter().any(|row| row.len() != columns.len())
-            || rows.iter().flatten().any(|literal| match (literal.literal_type(), literal.value()) {
-                (LiteralType::Null, LiteralValue::Null) => false,
-                (LiteralType::Integer, LiteralValue::Number(value)) => value.parse::<i128>().is_err(),
-                _ => true,
+            || rows.iter().flatten().any(|literal| {
+                match (literal.literal_type(), literal.value()) {
+                    (LiteralType::Null, LiteralValue::Null) => false,
+                    (LiteralType::Integer, LiteralValue::Number(value)) => {
+                        value.parse::<i128>().is_err()
+                    }
+                    _ => true,
+                }
             })
         {
             return None;
         }
-        Some(Self { kind, columns, rows })
+        Some(Self {
+            kind,
+            columns,
+            rows,
+        })
     }
 
     /// The canonical table-producing operator.
