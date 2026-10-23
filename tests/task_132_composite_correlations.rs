@@ -168,11 +168,14 @@ fn duckdb_checks_full_source_and_terminal_row_identity_bags() {
     let frozen = freeze();
     let mut checked = 0;
     for case in frozen["cases"].as_array().expect("cases") {
-        if case["variant"] != "direct_composite" {
+        if case["variant"] == "dbt_subquery_orders" {
             continue;
         }
         let db = Connection::open_in_memory().expect("DuckDB");
-        for relation in ["outer_rows", "inner_rows"] {
+        for relation in ["outer_rows", "inner_rows", "dim_rows"] {
+            if case["source_bags"][relation].is_null() {
+                continue;
+            }
             db.execute(
                 &format!("CREATE TABLE {relation} (id VARCHAR, k INTEGER, g INTEGER)"),
                 [],
@@ -252,7 +255,7 @@ fn duckdb_checks_full_source_and_terminal_row_identity_bags() {
         );
         checked += 1;
     }
-    assert_eq!(checked, 2);
+    assert_eq!(checked, 6);
 }
 
 #[test]
