@@ -1,1 +1,315 @@
-{"pending": true}
+{
+  "graph": {
+    "components": [
+      {
+        "diagnostics": [],
+        "final_outcomes": [
+          {
+            "kind": "anonymous",
+            "layer_id": "layer-0001"
+          }
+        ],
+        "id": "component-0001",
+        "layer_ids": [
+          "layer-0001"
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "edges": [
+      {
+        "consumer_layer_id": "layer-0001",
+        "producer_layer_ids": [],
+        "relation": "inner_rows",
+        "resolution": "external"
+      }
+    ],
+    "physical_nodes": [
+      {
+        "inputs": [],
+        "produced_relations": [
+          "inner_rows"
+        ],
+        "ref": {
+          "id": "inner_rows",
+          "kind": "source"
+        },
+        "write_kind": null
+      },
+      {
+        "inputs": [
+          {
+            "id": "inner_rows",
+            "kind": "source"
+          }
+        ],
+        "produced_relations": [],
+        "ref": {
+          "id": "layer-0001",
+          "kind": "layer"
+        },
+        "write_kind": null
+      }
+    ],
+    "physical_source_plans": [
+      {
+        "gap": "no_witness",
+        "layer_id": "layer-0001",
+        "node_refs": [
+          {
+            "id": "inner_rows",
+            "kind": "source"
+          },
+          {
+            "id": "layer-0001",
+            "kind": "layer"
+          }
+        ],
+        "physical_sources": [
+          "inner_rows"
+        ],
+        "qualifying": {
+          "reason": "no_witness",
+          "status": "residual"
+        },
+        "rejected": {
+          "reason": "no_witness",
+          "status": "residual"
+        },
+        "zero_output": {
+          "reason": "non_invertible_transformation",
+          "status": "residual"
+        }
+      }
+    ]
+  },
+  "inputs": [
+    {
+      "dialect": "generic",
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": null
+      },
+      "statements": [
+        {
+          "column_domains": [],
+          "condition_exactness": {
+            "comparison_assumptions": [],
+            "residual_conditions": [],
+            "status": "exact"
+          },
+          "dependencies": [
+            "inner_rows"
+          ],
+          "diagnostics": [],
+          "joins": [],
+          "kind": "query",
+          "output": {
+            "columns": [
+              {
+                "domain": {
+                  "kind": "set",
+                  "mode": "include",
+                  "values": [
+                    {
+                      "kind": "literal",
+                      "type": "boolean",
+                      "value": false
+                    },
+                    {
+                      "kind": "literal",
+                      "type": "boolean",
+                      "value": true
+                    }
+                  ]
+                },
+                "expression": {
+                  "kind": "boolean_predicate",
+                  "predicate": {
+                    "kind": "quantified_subquery",
+                    "operand": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 1
+                    },
+                    "operator": "eq",
+                    "quantifier": "any",
+                    "subquery": {
+                      "column_domains": [],
+                      "condition_exactness": {
+                        "comparison_assumptions": [],
+                        "residual_conditions": [],
+                        "status": "exact"
+                      },
+                      "correlations": [],
+                      "dependencies": [
+                        "inner_rows"
+                      ],
+                      "diagnostics": [],
+                      "joins": [],
+                      "output": {
+                        "columns": [
+                          {
+                            "domain": {
+                              "kind": "unbounded"
+                            },
+                            "expression": {
+                              "kind": "column",
+                              "name": "v",
+                              "relation": null
+                            },
+                            "lineage": [
+                              {
+                                "column": "v",
+                                "relation": "inner_rows"
+                              }
+                            ],
+                            "name": "v"
+                          }
+                        ]
+                      },
+                      "predicates": {
+                        "having": null,
+                        "qualify": null,
+                        "where": null
+                      }
+                    }
+                  }
+                },
+                "lineage": [
+                  {
+                    "column": "v",
+                    "relation": "inner_rows"
+                  }
+                ],
+                "name": "x"
+              }
+            ]
+          },
+          "predicates": {
+            "having": null,
+            "qualify": null,
+            "where": null
+          },
+          "sources": []
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "composed_semantics": {
+        "column_domains": [],
+        "condition_exactness": {
+          "comparison_assumptions": [],
+          "residual_conditions": [],
+          "status": "exact"
+        },
+        "dependencies": [
+          "inner_rows"
+        ],
+        "diagnostics": [],
+        "join_equalities": [],
+        "output": {
+          "columns": [
+            {
+              "domain": {
+                "kind": "set",
+                "mode": "include",
+                "values": [
+                  {
+                    "kind": "literal",
+                    "type": "boolean",
+                    "value": false
+                  },
+                  {
+                    "kind": "literal",
+                    "type": "boolean",
+                    "value": true
+                  }
+                ]
+              },
+              "expression": {
+                "kind": "boolean_predicate",
+                "predicate": {
+                  "kind": "quantified_subquery",
+                  "operand": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 1
+                  },
+                  "operator": "eq",
+                  "quantifier": "any",
+                  "subquery": {
+                    "column_domains": [],
+                    "condition_exactness": {
+                      "comparison_assumptions": [],
+                      "residual_conditions": [],
+                      "status": "exact"
+                    },
+                    "correlations": [],
+                    "dependencies": [
+                      "inner_rows"
+                    ],
+                    "diagnostics": [],
+                    "joins": [],
+                    "output": {
+                      "columns": [
+                        {
+                          "domain": {
+                            "kind": "unbounded"
+                          },
+                          "expression": {
+                            "kind": "column",
+                            "name": "v",
+                            "relation": null
+                          },
+                          "lineage": [
+                            {
+                              "column": "v",
+                              "relation": "inner_rows"
+                            }
+                          ],
+                          "name": "v"
+                        }
+                      ]
+                    },
+                    "predicates": {
+                      "having": null,
+                      "qualify": null,
+                      "where": null
+                    }
+                  }
+                }
+              },
+              "lineage": [
+                {
+                  "column": "v",
+                  "relation": "inner_rows"
+                }
+              ],
+              "name": "x"
+            }
+          ]
+        },
+        "status": "resolved"
+      },
+      "consumes": [
+        "inner_rows"
+      ],
+      "id": "layer-0001",
+      "produces": [
+        {
+          "kind": "anonymous",
+          "layer_id": "layer-0001"
+        }
+      ],
+      "statement": {
+        "input_id": "input-0001",
+        "statement_index": 0
+      }
+    }
+  ],
+  "protocol_version": "2.0.3"
+}

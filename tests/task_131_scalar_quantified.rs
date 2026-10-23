@@ -1131,10 +1131,5 @@ fn full_quantified_protocol_emission_matches_active_golden_contract() {
     let actual: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
     let expected: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/task-131-quantified-protocol.json")).unwrap();
-    if actual != expected {
-        panic!(
-            "TASK131_GOLDEN_BEGIN\n{}\nTASK131_GOLDEN_END",
-            serde_json::to_string_pretty(&actual).unwrap()
-        );
-    }
+    assert_eq!(actual, expected, "complete task-131 protocol golden contract");
 }
