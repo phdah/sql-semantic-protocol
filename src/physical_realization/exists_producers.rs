@@ -11,7 +11,8 @@ use super::write_states::{
 };
 use super::*;
 use crate::protocol::{
-    ComparisonOperator, Expression, JoinKind, LiteralValue, Output, Predicate, SourceRelation,
+    ComparisonAssumption, ComparisonOperator, Expression, JoinKind, LiteralValue, Output,
+    Predicate, SourceRelation,
 };
 
 /// Complete source identities contributing to one intermediate or terminal row.
@@ -424,14 +425,20 @@ fn execute_query(
 /// Execute and certify each normalized layer of a source-to-EXISTS producer DAG.
 ///
 /// Caller supplies only complete physical leaves. Text comparisons require
-/// explicit binary-collation and no-padding attestation; noncertified SQL
+/// canonical AnalysisBundle comparison declarations for binary collation and
+/// no padding; noncertified SQL
 /// shapes return Residual rather than inferring a terminal from snapshots.
 pub fn physical_finite_producer_exists_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
     snapshots: &[PhysicalWriteState],
-    binary_text_laws_attested: bool,
 ) -> PhysicalProducerExistsProof {
+    let binary_text_laws_attested = [
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]
+    .iter()
+    .all(|law| bundle.comparison_declarations().contains(law));
     match physical_closed_world_schema_plan(bundle, snapshots) {
         PhysicalWriteStatePlan::Impossible { reason, .. } => {
             return PhysicalProducerExistsProof::Impossible { reason };
