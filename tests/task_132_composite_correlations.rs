@@ -334,7 +334,7 @@ fn joined_correlation_rejects_unproven_join_forms_and_duplicate_physical_ids() {
         .expect("positive nested join fixture");
     let unsupported = [
         case["sql"].as_str().unwrap().replace("i.k = d.k", "i.k > d.k"),
-        case["sql"].as_str().unwrap().replace("INNER", "LEFT"),
+        case["sql"].as_str().unwrap().replace("JOIN dim_rows d", "LEFT JOIN dim_rows d"),
         case["sql"].as_str().unwrap().replace("i.k = o.k AND i.g = o.g", "i.k = o.k OR i.g = o.g"),
     ];
     for sql in unsupported {
