@@ -4,6 +4,26 @@ This document describes the single active SQL Semantic Protocol contract. Its ve
 
 Versioned contract files are immutable historical snapshots. Runtime code, release automation, and active-contract tests use the unversioned paths so a version bump updates content rather than requiring path renames.
 
+## Finite literal table constructors (TASK-137)
+
+Simple source-free `VALUES` and typed, directly literal integer-array `UNNEST`/
+`EXPLODE` queries may carry `finite_table` on the canonical query. The
+`kind`, `columns` and complete positional typed literal `rows` are the
+operator law; consumers must never reconstruct array membership from SQL
+text or per-column value domains. Duplicate rows retain distinct producer
+identity, and SQL output order is *not* certified unless an independent
+ordering operator proves it. UNNEST ordinality starts at one, while
+BigQuery-style WITH OFFSET starts at zero. Empty array proof requires a
+declared integer element type. Untyped empty arrays, opaque collections,
+source-column fanout, unproved casts, correlated LATERAL, sampled tables,
+and vendor-specific generator semantics remain residual.
+
+The independent physical API `physical_finite_table_plan` computes all
+terminal rows and exact domains from these canonical facts and can prove
+a requested row absent from the complete bag. This does not certify arbitrary
+table-function execution or TASK-77 parent acceptance; those gates are
+maintained by `docs/task-137-acceptance-freeze.json`.
+
 ## Inputs and deterministic identity
 
 `inputs` contains every analyzed input unit. An input has a unique `id`, source metadata, dialect, and its statements in source order.
