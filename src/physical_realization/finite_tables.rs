@@ -82,22 +82,29 @@ pub fn physical_finite_table_plan(
     let mut terminal = Vec::new();
     let mut row_ids = Vec::new();
     for (index, values) in table.rows().iter().enumerate() {
-        let row = table.columns().iter().cloned().zip(
-            values.iter().map(|literal| literal.value().clone())
-        ).collect::<BTreeMap<_, _>>();
+        let row = table
+            .columns()
+            .iter()
+            .cloned()
+            .zip(values.iter().map(|literal| literal.value().clone()))
+            .collect::<BTreeMap<_, _>>();
         terminal.push(row);
         row_ids.push(format!("{}:{index}", table.kind().as_str()));
     }
     if let Some(wanted) = wanted {
         if !terminal.iter().any(|row| row == wanted) {
             return PhysicalFiniteTableProof::Impossible {
-                reason: "requested output tuple is absent from the complete finite table".to_string(),
+                reason: "requested output tuple is absent from the complete finite table"
+                    .to_string(),
             };
         }
     }
-    let terminal_domains = query.output().columns().iter().map(|column| {
-        (column.name().to_string(), column.domain().clone())
-    }).collect();
+    let terminal_domains = query
+        .output()
+        .columns()
+        .iter()
+        .map(|column| (column.name().to_string(), column.domain().clone()))
+        .collect();
     PhysicalFiniteTableProof::Exact(Box::new(PhysicalFiniteTableExact {
         nodes: walker.nodes,
         row_ids,
