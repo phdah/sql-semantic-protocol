@@ -72,7 +72,7 @@ fn function_arguments(function: &Function) -> Option<Vec<&Expr>> {
         .collect()
 }
 
-fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
+fn array_items(expression: &Expr, dialect_name: &str) -> Option<Vec<LiteralExpression>> {
     match expression {
         Expr::Array(array) => {
             let literals = array
@@ -93,7 +93,7 @@ fn array_items(expression: &Expr) -> Option<Vec<LiteralExpression>> {
             expr, data_type, ..
         } => {
             let parsed =
-                crate::data_type::parse_data_type(&data_type.to_string(), "duckdb").ok()?;
+                crate::data_type::parse_data_type(&data_type.to_string(), dialect_name).ok()?;
             let crate::data_type::DataType::Array {
                 element: Some(element),
                 ..
@@ -127,12 +127,13 @@ fn unnest_table(
     offset: bool,
     ordinality: bool,
     kind: FiniteTableKind,
+    dialect_name: &str,
 ) -> Option<FiniteTable> {
     if offset && ordinality {
         return None;
     }
     let [array] = expressions else { return None };
-    let literals = array_items(array)?;
+    let literals = array_items(array, dialect_name)?;
     let alias = alias.as_ref()?;
     let expected = if offset || ordinality { 2 } else { 1 };
     if alias.columns.len() != expected {
@@ -163,9 +164,9 @@ fn unnest_table(
     FiniteTable::new(kind, columns, rows)
 }
 
-fn unnest_select(select: &Select) -> Option<FiniteTable> {
+fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     if !ordinary_select_shape(select)
-        || !matches!(select.projection.as_slice(), [SelectItem::Wildcard(_)])
+        || !matches!(select.projection.as_slice(), [item] if item.to_string() == "*")
     {
         return None;
     }
@@ -188,6 +189,7 @@ fn unnest_select(select: &Select) -> Option<FiniteTable> {
             *with_offset,
             *with_ordinality,
             FiniteTableKind::Unnest,
+            dialect_name,
         ),
         TableFactor::Function {
             name,
@@ -203,13 +205,13 @@ fn unnest_select(select: &Select) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            unnest_table(alias, &arguments, false, false, FiniteTableKind::Unnest)
+            unnest_table(alias, &arguments, false, false, FiniteTableKind::Unnest, dialect_name)
         }
         _ => None,
     }
 }
 
-fn explode_select(select: &Select) -> Option<FiniteTable> {
+fn explode_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     if !ordinary_select_shape(select) || !select.from.is_empty() {
         return None;
     }
@@ -227,7 +229,7 @@ fn explode_select(select: &Select) -> Option<FiniteTable> {
     let [argument] = arguments.as_slice() else {
         return None;
     };
-    let rows = array_items(argument)?
+    let rows = array_items(argument, dialect_name)?
         .into_iter()
         .map(|value| vec![value])
         .collect();
@@ -258,13 +260,14 @@ fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
 pub(super) fn source_free_finite_query(
     query: &SqlQuery,
     produced_relation: Option<String>,
+    dialect_name: &str,
 ) -> Option<QueryStatement> {
     if !ordinary_query_shape(query) {
         return None;
     }
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
-        SetExpr::Select(select) => unnest_select(select).or_else(|| explode_select(select)),
+        SetExpr::Select(select) => unnest_select(select, dialect_name).or_else(|| explode_select(select, dialect_name)),
         _ => None,
     }?;
     let output = Output::new(
