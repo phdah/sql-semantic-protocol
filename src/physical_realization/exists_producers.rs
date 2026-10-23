@@ -68,19 +68,19 @@ fn residual(reason: impl Into<String>) -> PhysicalProducerExistsProof {
     }
 }
 
-// SQL object spellings may be adapter-qualified or quoted. A bare suffix is
-// usable only after the caller proves it identifies exactly one relation.
-fn canonical_tail(name: &str) -> String {
-    name.rsplit('.')
-        .next()
-        .unwrap_or(name)
-        .trim_matches('"')
-        .trim_matches('`')
-        .to_ascii_lowercase()
+// Preserve every supplied catalog/schema component. A shorter SQL reference
+// may bind to a fully qualified source only if all its explicit components
+// match; two conflicting full names never become equal because of table suffix.
+fn canonical_components(name: &str) -> Vec<String> {
+    name.split('.')
+        .map(|part| part.trim_matches('"').trim_matches('`').to_ascii_lowercase())
+        .collect()
 }
 
 fn same_relation(left: &str, right: &str) -> bool {
-    left == right || canonical_tail(left) == canonical_tail(right)
+    let left = canonical_components(left);
+    let right = canonical_components(right);
+    left.ends_with(&right) || right.ends_with(&left)
 }
 
 fn row_identity(row: &PhysicalWriteRow) -> Option<String> {
