@@ -1,7 +1,7 @@
 ---
 id: TASK-137
 title: Prove VALUES and array table fanout with ordinality
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -33,6 +33,25 @@ type: feature
 - **Independent concrete oracle baseline:** VALUES (1),(2) => 2 rows; UNNEST([1,2])=>2; UNNEST([])=>0; ordinality [1,2].
 - **Fail-closed boundary and owner:** Typed nested element/NULL evidence required; opaque collection stays residual. TASK-137 owns every conditional variant and explicit review disposition.
 - **Mapped original TASK-77 AC:** #1, #2, #3, #5, #6.
+
+## Current implementation evidence
+
+PR [#144](https://github.com/phdah/sql-semantic-protocol/pull/144) implements
+canonical, source-free VALUES and literal-array UNNEST/EXPLODE row facts in
+`src/protocol/finite_table.rs` and `src/analysis/finite_tables.rs`.
+`src/physical_realization/finite_tables.rs` classifies complete terminal bags,
+typed domains and positive/absent identity membership. The corrected
+[v2 fixture matrix](../../docs/task-137-acceptance-freeze.json) preserves the
+[original frozen v1](../../docs/task-137-acceptance-freeze-v1.json).
+`tests/task_137_frozen_matrix.rs` covers the seven required source-free
+bags, full DuckDB oracles, absent candidates and 104 parser paths;
+`tests/task_137_adapter_parity.rs` checks compiled dbt parity.
+
+Acceptance remains open until final-head tests and independent review establish
+the mandatory parser/native and adapter boundaries. Typed source-column fanout
+and composed joins/aggregations belong to TASK-140. Unproved vendor
+EXPLODE table-generator semantics must not be certified from parser acceptance
+or equivalent UNNEST execution alone.
 
 ## Acceptance Criteria
 
