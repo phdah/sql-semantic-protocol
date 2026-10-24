@@ -363,6 +363,104 @@ fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
     FiniteTable::new(FiniteTableKind::Values, columns, column_types, rows)
 }
 
+// Closed, typed source-free VALUES snapshots carry positional column aliases
+// into deterministic star projections, without consulting an external table.
+fn named_values_source(factor: &TableFactor) -> Option<FiniteTable> {
+    let TableFactor::Derived {
+        lateral: false, subquery, alias: Some(alias), ..
+    } = factor else { return None };
+    if !ordinary_query_shape(subquery) { return None; }
+    let SetExpr::Values(values) = subquery.body.as_ref() else { return None };
+    let table = values_table(values)?;
+    if alias.columns.len() != table.columns().len() { return None; }
+    let columns = alias.columns.iter().map(|column| column.name.value.clone()).collect();
+    FiniteTable::new(
+        FiniteTableKind::Values, columns,
+        table.column_types().to_vec(), table.rows().to_vec(),
+    )
+}
+
+fn star_select(select: &Select) -> Option<FiniteTable> {
+    if !ordinary_select_shape(select) { return None; }
+    let [from] = select.from.as_slice() else { return None };
+    if !from.joins.is_empty() { return None; }
+    let table = named_values_source(&from.relation)?;
+    let [item] = select.projection.as_slice() else { return None };
+    let options = match item {
+        SelectItem::Wildcard(options) => options,
+        SelectItem::QualifiedWildcard(qualifier, options)
+            if matches!(&from.relation, TableFactor::Derived {alias: Some(alias), ..}
+                if qualifier.to_string() == alias.name.value) => options,
+        _ => return None,
+    };
+    if options.opt_ilike.is_some() { return None; }
+    let modifier_count = usize::from(options.opt_except.is_some())
+        + usize::from(options.opt_exclude.is_some())
+        + usize::from(options.opt_replace.is_some())
+        + usize::from(options.opt_rename.is_some());
+    if modifier_count != 1 { return None; }
+
+    let mut columns = table.columns().to_vec();
+    let mut types = table.column_types().to_vec();
+    let mut rows = table.rows().to_vec();
+    if let Some(except) = &options.opt_except {
+        let mut names = vec![except.first_element.value.as_str()];
+        names.extend(except.additional_elements.iter().map(|name| name.value.as_str()));
+        let mut positions = BTreeSet::new();
+        for name in names {
+            let pos = columns.iter().position(|col| col == name)?;
+            if !positions.insert(pos) { return None; }
+        }
+        if positions.len() == columns.len() { return None; }
+        for pos in positions.iter().rev().copied() {
+            columns.remove(pos); types.remove(pos);
+            for row in &mut rows { row.remove(pos); }
+        }
+    } else if let Some(exclude) = &options.opt_exclude {
+        let names = match exclude {
+            sqlparser::ast::ExcludeSelectItem::Single(name) => vec![name],
+            sqlparser::ast::ExcludeSelectItem::Multiple(names) => names.iter().collect(),
+        };
+        let mut positions = BTreeSet::new();
+        for name in names {
+            let pos = columns.iter().position(|col| col == &name.value)?;
+            if !positions.insert(pos) { return None; }
+        }
+        if positions.len() == columns.len() { return None; }
+        for pos in positions.iter().rev().copied() {
+            columns.remove(pos); types.remove(pos);
+            for row in &mut rows { row.remove(pos); }
+        }
+    } else if let Some(rename) = &options.opt_rename {
+        let pairs = match rename {
+            sqlparser::ast::RenameSelectItem::Single(pair) => vec![pair],
+            sqlparser::ast::RenameSelectItem::Multiple(pairs) => pairs.iter().collect(),
+        };
+        let mut old = BTreeSet::new();
+        let mut new = BTreeSet::new();
+        for pair in pairs {
+            let pos = columns.iter().position(|col| col == &pair.ident.value)?;
+            if !old.insert(pos) || !new.insert(pair.alias.value.clone()) { return None; }
+            columns[pos] = pair.alias.value.clone();
+        }
+        if columns.iter().collect::<BTreeSet<_>>().len() != columns.len() { return None; }
+    } else if let Some(replace) = &options.opt_replace {
+        let mut positions = BTreeSet::new();
+        for item in &replace.items {
+            let pos = columns.iter().position(|col| col == &item.column_name.value)?;
+            if !positions.insert(pos) { return None; }
+            let literal = integer_literal(&item.expr)?;
+            types[pos] = match literal.literal_type() {
+                LiteralType::Integer => FiniteColumnType::Integer,
+                LiteralType::Null => FiniteColumnType::Unknown,
+                _ => return None,
+            };
+            for row in &mut rows { row[pos] = literal.clone(); }
+        }
+    }
+    FiniteTable::new(FiniteTableKind::Star, columns, types, rows)
+}
+
 /// Classify the tightly bounded, source-free SQL constructors into canonical
 /// complete finite relations. The caller retains normal unknown diagnostics for
 /// all other parsed table and collection syntax.
@@ -377,7 +475,9 @@ pub(super) fn source_free_finite_query(
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
         SetExpr::Select(select) => {
-            unnest_select(select, dialect_name).or_else(|| explode_select(select, dialect_name))
+            star_select(select)
+                .or_else(|| unnest_select(select, dialect_name))
+                .or_else(|| explode_select(select, dialect_name))
         }
         _ => None,
     }?;
