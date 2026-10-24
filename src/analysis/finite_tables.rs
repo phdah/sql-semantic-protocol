@@ -367,54 +367,99 @@ fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
 // into deterministic star projections, without consulting an external table.
 fn named_values_source(factor: &TableFactor) -> Option<FiniteTable> {
     let TableFactor::Derived {
-        lateral: false, subquery, alias: Some(alias), ..
-    } = factor else { return None };
-    if !ordinary_query_shape(subquery) { return None; }
-    let SetExpr::Values(values) = subquery.body.as_ref() else { return None };
+        lateral: false,
+        subquery,
+        alias: Some(alias),
+        ..
+    } = factor
+    else {
+        return None;
+    };
+    if !ordinary_query_shape(subquery) {
+        return None;
+    }
+    let SetExpr::Values(values) = subquery.body.as_ref() else {
+        return None;
+    };
     let table = values_table(values)?;
-    if alias.columns.len() != table.columns().len() { return None; }
-    let columns = alias.columns.iter().map(|column| column.name.value.clone()).collect();
+    if alias.columns.len() != table.columns().len() {
+        return None;
+    }
+    let columns = alias
+        .columns
+        .iter()
+        .map(|column| column.name.value.clone())
+        .collect();
     FiniteTable::new(
-        FiniteTableKind::Values, columns,
-        table.column_types().to_vec(), table.rows().to_vec(),
+        FiniteTableKind::Values,
+        columns,
+        table.column_types().to_vec(),
+        table.rows().to_vec(),
     )
 }
 
 fn star_select(select: &Select) -> Option<FiniteTable> {
-    if !ordinary_select_shape(select) { return None; }
-    let [from] = select.from.as_slice() else { return None };
-    if !from.joins.is_empty() { return None; }
+    if !ordinary_select_shape(select) {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
     let table = named_values_source(&from.relation)?;
-    let [item] = select.projection.as_slice() else { return None };
+    let [item] = select.projection.as_slice() else {
+        return None;
+    };
     let options = match item {
         SelectItem::Wildcard(options) => options,
         SelectItem::QualifiedWildcard(qualifier, options)
             if matches!(&from.relation, TableFactor::Derived {alias: Some(alias), ..}
-                if qualifier.to_string() == alias.name.value) => options,
+                if qualifier.to_string() == alias.name.value) =>
+        {
+            options
+        }
         _ => return None,
     };
-    if options.opt_ilike.is_some() { return None; }
+    if options.opt_ilike.is_some() {
+        return None;
+    }
     let modifier_count = usize::from(options.opt_except.is_some())
         + usize::from(options.opt_exclude.is_some())
         + usize::from(options.opt_replace.is_some())
         + usize::from(options.opt_rename.is_some());
-    if modifier_count != 1 { return None; }
+    if modifier_count != 1 {
+        return None;
+    }
 
     let mut columns = table.columns().to_vec();
     let mut types = table.column_types().to_vec();
     let mut rows = table.rows().to_vec();
     if let Some(except) = &options.opt_except {
         let mut names = vec![except.first_element.value.as_str()];
-        names.extend(except.additional_elements.iter().map(|name| name.value.as_str()));
+        names.extend(
+            except
+                .additional_elements
+                .iter()
+                .map(|name| name.value.as_str()),
+        );
         let mut positions = BTreeSet::new();
         for name in names {
             let pos = columns.iter().position(|col| col == name)?;
-            if !positions.insert(pos) { return None; }
+            if !positions.insert(pos) {
+                return None;
+            }
         }
-        if positions.len() == columns.len() { return None; }
+        if positions.len() == columns.len() {
+            return None;
+        }
         for pos in positions.iter().rev().copied() {
-            columns.remove(pos); types.remove(pos);
-            for row in &mut rows { row.remove(pos); }
+            columns.remove(pos);
+            types.remove(pos);
+            for row in &mut rows {
+                row.remove(pos);
+            }
         }
     } else if let Some(exclude) = &options.opt_exclude {
         let names = match exclude {
@@ -424,12 +469,19 @@ fn star_select(select: &Select) -> Option<FiniteTable> {
         let mut positions = BTreeSet::new();
         for name in names {
             let pos = columns.iter().position(|col| col == &name.value)?;
-            if !positions.insert(pos) { return None; }
+            if !positions.insert(pos) {
+                return None;
+            }
         }
-        if positions.len() == columns.len() { return None; }
+        if positions.len() == columns.len() {
+            return None;
+        }
         for pos in positions.iter().rev().copied() {
-            columns.remove(pos); types.remove(pos);
-            for row in &mut rows { row.remove(pos); }
+            columns.remove(pos);
+            types.remove(pos);
+            for row in &mut rows {
+                row.remove(pos);
+            }
         }
     } else if let Some(rename) = &options.opt_rename {
         let pairs = match rename {
@@ -440,22 +492,32 @@ fn star_select(select: &Select) -> Option<FiniteTable> {
         let mut new = BTreeSet::new();
         for pair in pairs {
             let pos = columns.iter().position(|col| col == &pair.ident.value)?;
-            if !old.insert(pos) || !new.insert(pair.alias.value.clone()) { return None; }
+            if !old.insert(pos) || !new.insert(pair.alias.value.clone()) {
+                return None;
+            }
             columns[pos] = pair.alias.value.clone();
         }
-        if columns.iter().collect::<BTreeSet<_>>().len() != columns.len() { return None; }
+        if columns.iter().collect::<BTreeSet<_>>().len() != columns.len() {
+            return None;
+        }
     } else if let Some(replace) = &options.opt_replace {
         let mut positions = BTreeSet::new();
         for item in &replace.items {
-            let pos = columns.iter().position(|col| col == &item.column_name.value)?;
-            if !positions.insert(pos) { return None; }
+            let pos = columns
+                .iter()
+                .position(|col| col == &item.column_name.value)?;
+            if !positions.insert(pos) {
+                return None;
+            }
             let literal = integer_literal(&item.expr)?;
             types[pos] = match literal.literal_type() {
                 LiteralType::Integer => FiniteColumnType::Integer,
                 LiteralType::Null => FiniteColumnType::Unknown,
                 _ => return None,
             };
-            for row in &mut rows { row[pos] = literal.clone(); }
+            for row in &mut rows {
+                row[pos] = literal.clone();
+            }
         }
     }
     FiniteTable::new(FiniteTableKind::Star, columns, types, rows)
@@ -469,44 +531,74 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
     {
         return None;
     }
-    let [from] = select.from.as_slice() else { return None };
-    if !from.joins.is_empty() { return None; }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
     let TableFactor::Unpivot {
-        table, value, name, columns, null_inclusion, ..
-    } = &from.relation else { return None };
+        table,
+        value,
+        name,
+        columns,
+        null_inclusion,
+        ..
+    } = &from.relation
+    else {
+        return None;
+    };
     let source = named_values_source(table)?;
-    if columns.is_empty() { return None; }
+    if columns.is_empty() {
+        return None;
+    }
     let selected = columns
         .iter()
-        .map(|column| source.columns().iter().position(|item| item == &column.value))
+        .map(|column| {
+            source
+                .columns()
+                .iter()
+                .position(|item| item == &column.value)
+        })
         .collect::<Option<Vec<_>>>()?;
     if selected.iter().collect::<BTreeSet<_>>().len() != selected.len() {
         return None;
     }
-    if selected.iter().any(|index| source.column_types()[*index] != FiniteColumnType::Integer) {
+    if selected
+        .iter()
+        .any(|index| source.column_types()[*index] != FiniteColumnType::Integer)
+    {
         return None;
     }
     let preserved = (0..source.columns().len())
         .filter(|index| !selected.contains(index))
         .collect::<Vec<_>>();
-    let mut output_columns = preserved.iter()
+    let mut output_columns = preserved
+        .iter()
         .map(|index| source.columns()[*index].clone())
         .collect::<Vec<_>>();
     output_columns.push(value.value.clone());
     output_columns.push(name.value.clone());
-    let mut output_types = preserved.iter()
+    let mut output_types = preserved
+        .iter()
         .map(|index| source.column_types()[*index])
         .collect::<Vec<_>>();
     output_types.extend([FiniteColumnType::Integer, FiniteColumnType::Text]);
     let include_null = matches!(
-        null_inclusion, Some(sqlparser::ast::NullInclusion::IncludeNulls)
+        null_inclusion,
+        Some(sqlparser::ast::NullInclusion::IncludeNulls)
     );
     let mut rows = Vec::new();
     for source_row in source.rows() {
         for (index, column) in selected.iter().zip(columns) {
             let element = &source_row[*index];
-            if element.literal_type() == LiteralType::Null && !include_null { continue; }
-            let mut row = preserved.iter().map(|index| source_row[*index].clone()).collect::<Vec<_>>();
+            if element.literal_type() == LiteralType::Null && !include_null {
+                continue;
+            }
+            let mut row = preserved
+                .iter()
+                .map(|index| source_row[*index].clone())
+                .collect::<Vec<_>>();
             row.push(element.clone());
             row.push(LiteralExpression::new(
                 LiteralType::String,
@@ -526,36 +618,72 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
     {
         return None;
     }
-    let [from] = select.from.as_slice() else { return None };
-    if !from.joins.is_empty() { return None; }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
     let TableFactor::Pivot {
-        table, aggregate_functions, value_column, value_source,
-        default_on_null: None, ..
-    } = &from.relation else { return None };
+        table,
+        aggregate_functions,
+        value_column,
+        value_source,
+        default_on_null: None,
+        ..
+    } = &from.relation
+    else {
+        return None;
+    };
     let source = named_values_source(table)?;
-    let [key] = value_column.as_slice() else { return None };
-    let key_index = source.columns().iter().position(|name| name == &key.value)?;
-    if source.column_types()[key_index] != FiniteColumnType::Integer { return None; }
-    let [aggregate] = aggregate_functions.as_slice() else { return None };
-    if aggregate.alias.is_some() { return None; }
-    let Expr::Function(function) = &aggregate.expr else { return None };
-    if !function.name.to_string().eq_ignore_ascii_case("sum") { return None; }
+    let [key] = value_column.as_slice() else {
+        return None;
+    };
+    let key_index = source
+        .columns()
+        .iter()
+        .position(|name| name == &key.value)?;
+    if source.column_types()[key_index] != FiniteColumnType::Integer {
+        return None;
+    }
+    let [aggregate] = aggregate_functions.as_slice() else {
+        return None;
+    };
+    if aggregate.alias.is_some() {
+        return None;
+    }
+    let Expr::Function(function) = &aggregate.expr else {
+        return None;
+    };
+    if !function.name.to_string().eq_ignore_ascii_case("sum") {
+        return None;
+    }
     let [Expr::Identifier(value_name)] = function_arguments(function)?.as_slice() else {
         return None;
     };
-    let value_index = source.columns().iter().position(|name| name == &value_name.value)?;
+    let value_index = source
+        .columns()
+        .iter()
+        .position(|name| name == &value_name.value)?;
     if value_index == key_index || source.column_types()[value_index] != FiniteColumnType::Integer {
         return None;
     }
-    let sqlparser::ast::PivotValueSource::List(values) = value_source else { return None };
-    if values.is_empty() { return None; }
+    let sqlparser::ast::PivotValueSource::List(values) = value_source else {
+        return None;
+    };
+    if values.is_empty() {
+        return None;
+    }
     let mut keys = Vec::new();
     let mut named = BTreeSet::new();
     for value in values {
         let alias = value.alias.as_ref()?.value.clone();
         let key = integer_literal(&value.expr)?;
-        if key.literal_type() != LiteralType::Integer || !named.insert(alias.clone())
-            || keys.iter().any(|(_, previous): &(String, LiteralExpression)| previous == &key)
+        if key.literal_type() != LiteralType::Integer
+            || !named.insert(alias.clone())
+            || keys
+                .iter()
+                .any(|(_, previous): &(String, LiteralExpression)| previous == &key)
         {
             return None;
         }
@@ -564,17 +692,22 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
     let group_indices = (0..source.columns().len())
         .filter(|index| *index != key_index && *index != value_index)
         .collect::<Vec<_>>();
-    let mut output_columns = group_indices.iter()
+    let mut output_columns = group_indices
+        .iter()
         .map(|index| source.columns()[*index].clone())
         .collect::<Vec<_>>();
     output_columns.extend(keys.iter().map(|(name, _)| name.clone()));
-    let mut output_types = group_indices.iter()
+    let mut output_types = group_indices
+        .iter()
         .map(|index| source.column_types()[*index])
         .collect::<Vec<_>>();
     output_types.extend(vec![FiniteColumnType::Integer; keys.len()]);
     let mut groups: Vec<(Vec<LiteralExpression>, Vec<&Vec<LiteralExpression>>)> = Vec::new();
     for row in source.rows() {
-        let key = group_indices.iter().map(|index| row[*index].clone()).collect::<Vec<_>>();
+        let key = group_indices
+            .iter()
+            .map(|index| row[*index].clone())
+            .collect::<Vec<_>>();
         if let Some((_, members)) = groups.iter_mut().find(|(name, _)| *name == key) {
             members.push(row);
         } else {
@@ -591,7 +724,9 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
                 if row[key_index] != *key || row[value_index].literal_type() == LiteralType::Null {
                     continue;
                 }
-                let LiteralValue::Number(number) = row[value_index].value() else { return None };
+                let LiteralValue::Number(number) = row[value_index].value() else {
+                    return None;
+                };
                 let integer = number.parse::<i64>().ok()?;
                 sum = sum.checked_add(integer)?;
                 present = true;
@@ -620,13 +755,11 @@ pub(super) fn source_free_finite_query(
     }
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
-        SetExpr::Select(select) => {
-            star_select(select)
-                .or_else(|| pivot_select(select))
-                .or_else(|| unpivot_select(select))
-                .or_else(|| unnest_select(select, dialect_name))
-                .or_else(|| explode_select(select, dialect_name))
-        }
+        SetExpr::Select(select) => star_select(select)
+            .or_else(|| pivot_select(select))
+            .or_else(|| unpivot_select(select))
+            .or_else(|| unnest_select(select, dialect_name))
+            .or_else(|| explode_select(select, dialect_name)),
         _ => None,
     }?;
     let output = Output::new(
