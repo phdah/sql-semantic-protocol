@@ -125,15 +125,23 @@ fn every_frozen_adapter_cell_has_executable_or_explicitly_inapplicable_evidence(
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
         let source = case["source"].as_array().unwrap();
-        assert!(source.is_empty(), "{id}: source-free fixture cannot invent ODCS source schema");
+        assert!(
+            source.is_empty(),
+            "{id}: source-free fixture cannot invent ODCS source schema"
+        );
         let statuses = case["adapter_cells"].as_object().unwrap();
-        assert_eq!(statuses.len(), 3, "{id}: all three adapter evidence paths must be classified");
+        assert_eq!(
+            statuses.len(),
+            3,
+            "{id}: all three adapter evidence paths must be classified"
+        );
         for (adapter, status) in statuses {
             cells += 1;
-            match (adapter.as_str(), status.as_str()) {
+            match (adapter.as_str(), status.as_str().expect("frozen adapter status")) {
                 ("direct_sql", "exact") => {
-                    let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
-                        .unwrap();
+                    let direct =
+                        analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
+                            .unwrap();
                     let layer = direct.layers().last().unwrap().id();
                     assert!(
                         matches!(
@@ -144,8 +152,9 @@ fn every_frozen_adapter_cell_has_executable_or_explicitly_inapplicable_evidence(
                     );
                 }
                 ("direct_sql", "opaque_residual") => {
-                    let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
-                        .unwrap();
+                    let direct =
+                        analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
+                            .unwrap();
                     let layer = direct.layers().last().unwrap().id();
                     assert!(
                         matches!(
@@ -168,7 +177,10 @@ fn every_frozen_adapter_cell_has_executable_or_explicitly_inapplicable_evidence(
                 }
                 ("dbt_compiled_sql_catalog", "source_free_unbound_no_compiled_evidence") => {
                     assert_eq!(case["classification"], "conditional");
-                    assert!(sql.contains("opaque_array"), "{id}: no compiled source value");
+                    assert!(
+                        sql.contains("opaque_array"),
+                        "{id}: no compiled source value"
+                    );
                 }
                 ("odcs_equivalent_schema", "inapplicable_no_physical_source") => {
                     assert!(source.is_empty(), "{id}: ODCS cannot provide literal rows");

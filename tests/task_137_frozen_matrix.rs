@@ -156,7 +156,12 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
                     assert_eq!(present, numbers, "{id}/{name}: precise finite values");
                     if let Some(bound) = frozen["lower"].as_object() {
                         assert_eq!(
-                            &present.iter().map(|n| n.parse::<i128>().unwrap()).min().unwrap().to_string(),
+                            &present
+                                .iter()
+                                .map(|n| n.parse::<i128>().unwrap())
+                                .min()
+                                .unwrap()
+                                .to_string(),
                             &bound["value"].as_i64().unwrap().to_string(),
                             "{id}/{name}: inclusive min"
                         );
@@ -164,7 +169,12 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
                     }
                     if let Some(bound) = frozen["upper"].as_object() {
                         assert_eq!(
-                            &present.iter().map(|n| n.parse::<i128>().unwrap()).max().unwrap().to_string(),
+                            &present
+                                .iter()
+                                .map(|n| n.parse::<i128>().unwrap())
+                                .max()
+                                .unwrap()
+                                .to_string(),
                             &bound["value"].as_i64().unwrap().to_string(),
                             "{id}/{name}: inclusive max"
                         );
@@ -268,7 +278,10 @@ fn all_frozen_variant_dialect_cells_are_parser_equivalent_or_explicit_boundaries
                         sorted(expected_rows),
                         "{id}/{name}: full frozen physical bag"
                     );
-                    assert_eq!(exact.row_ids, reference.row_ids, "{id}/{name}: row identities");
+                    assert_eq!(
+                        exact.row_ids, reference.row_ids,
+                        "{id}/{name}: row identities"
+                    );
                     assert_eq!(
                         exact.terminal_domains, reference.terminal_domains,
                         "{id}/{name}: complete typed output domains"

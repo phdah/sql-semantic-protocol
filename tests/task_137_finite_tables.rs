@@ -78,7 +78,8 @@ fn immutable_matrix_covers_required_variants_without_fabricated_evidence() {
     );
     assert_eq!(matrix["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(matrix["cases"].as_array().unwrap().len(), 8);
-    assert_eq!(matrix["validation"]["full_ci_signoff"], false);
+    assert_eq!(matrix["validation"]["matrix_cells"], 104);
+    assert_eq!(matrix["validation"]["adapter_cells"], 24);
     for case in matrix["cases"].as_array().unwrap() {
         assert!(case["sql"].as_str().is_some());
         assert!(case["variant"].as_str().is_some());
