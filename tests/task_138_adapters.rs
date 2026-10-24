@@ -26,6 +26,9 @@ fn dbt(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
 #[derive(Debug, PartialEq)]
 struct FiniteSnapshot {
     row_ids: Vec<String>,
+    source_row_ids: Vec<String>,
+    source_rows: Vec<std::collections::BTreeMap<String, sql_semantic_protocol::LiteralValue>>,
+    contributors: Vec<Vec<String>>,
     terminal: Vec<std::collections::BTreeMap<String, sql_semantic_protocol::LiteralValue>>,
     terminal_domains: std::collections::BTreeMap<String, sql_semantic_protocol::ValueDomain>,
 }
@@ -39,6 +42,9 @@ fn result(bundle: &sql_semantic_protocol::AnalysisBundle) -> FiniteSnapshot {
     };
     FiniteSnapshot {
         row_ids: proof.row_ids,
+        source_row_ids: proof.source_row_ids,
+        source_rows: proof.source_rows,
+        contributors: proof.contributors,
         terminal: proof.terminal,
         terminal_domains: proof.terminal_domains,
     }
