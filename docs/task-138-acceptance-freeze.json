@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-138",
   "parent": "TASK-77",
   "created": "2026-10-24",
@@ -69,7 +69,6 @@
       "sql": "SELECT * EXCEPT (b) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
       "classification": "mandatory",
       "expected_outcome": "a,b projection elimination; duplicates retained; only id,a",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -138,10 +137,97 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10
+        },
+        {
+          "id": 1,
+          "a": null
+        },
+        {
+          "id": 2,
+          "a": 10
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id, a FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        }
+      }
     },
     {
       "id": "77-C138-N-missing",
@@ -149,7 +235,6 @@
       "sql": "SELECT * EXCEPT (missing) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
       "classification": "mandatory",
       "expected_outcome": "typed Residual, no fabricated original wildcard",
-      "oracle": "no_impossible_assertion_without_complete_schema",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -218,10 +303,43 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": null,
+      "output_columns": [
+        "*"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": null,
+      "oracle_sql": null,
+      "negative_membership": null,
+      "expected_proof": "Residual"
     },
     {
       "id": "77-C138-P-exclude",
@@ -229,7 +347,6 @@
       "sql": "SELECT * EXCLUDE b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
       "classification": "mandatory",
       "expected_outcome": "id,a exact with nullable domain",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -298,10 +415,97 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10
+        },
+        {
+          "id": 1,
+          "a": null
+        },
+        {
+          "id": 2,
+          "a": 10
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        }
+      }
     },
     {
       "id": "77-C138-P-rename",
@@ -309,7 +513,6 @@
       "sql": "SELECT * RENAME b AS c FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
       "classification": "mandatory",
       "expected_outcome": "id,a,c exact NULL including lineage",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -378,10 +581,118 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10,
+          "c": 20
+        },
+        {
+          "id": 1,
+          "a": null,
+          "c": 30
+        },
+        {
+          "id": 2,
+          "a": 10,
+          "c": null
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a",
+        "c"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a,b AS c FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10,
+        "c": 20
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        },
+        "c": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            20,
+            30
+          ],
+          "lower": {
+            "value": 20,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        }
+      }
     },
     {
       "id": "77-C138-P-replace",
@@ -389,7 +700,6 @@
       "sql": "SELECT * REPLACE (9 AS b) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
       "classification": "mandatory",
       "expected_outcome": "id,a,b with b singleton 9",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -458,10 +768,117 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10,
+          "b": 9
+        },
+        {
+          "id": 1,
+          "a": null,
+          "b": 9
+        },
+        {
+          "id": 2,
+          "a": 10,
+          "b": 9
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a,9 AS b FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10,
+        "b": 9
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        },
+        "b": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            9
+          ],
+          "lower": {
+            "value": 9,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 9,
+            "inclusive": true
+          }
+        }
+      }
     },
     {
       "id": "77-C138-P-pivot",
@@ -469,7 +886,6 @@
       "sql": "SELECT * FROM (VALUES (1, 1, 10), (1, 2, 20), (2, 1, 30)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (1 AS one, 2 AS two))",
       "classification": "mandatory",
       "expected_outcome": "id=1: one=10 two=20; id=2: one=30 two=NULL; explicit columns and groups",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -538,10 +954,112 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "k",
+        "v"
+      ],
+      "source_rows": [
+        [
+          1,
+          1,
+          10
+        ],
+        [
+          1,
+          2,
+          20
+        ],
+        [
+          2,
+          1,
+          30
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "one": 10,
+          "two": 20
+        },
+        {
+          "id": 2,
+          "one": 30,
+          "two": null
+        }
+      ],
+      "output_columns": [
+        "id",
+        "one",
+        "two"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "pivot:1",
+        "pivot:2"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,1,10),(1,2,20),(2,1,30)) AS t(id,k,v) PIVOT(SUM(v) FOR k IN (1 AS one,2 AS two))",
+      "negative_membership": {
+        "id": 99,
+        "one": 10,
+        "two": null
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "one": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            10,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "two": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            20
+          ],
+          "lower": {
+            "value": 20,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 20,
+            "inclusive": true
+          }
+        }
+      }
     },
     {
       "id": "77-C138-N-pivot",
@@ -549,7 +1067,6 @@
       "sql": "SELECT * FROM (VALUES (1, 1, 10)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (ANY))",
       "classification": "conditional",
       "expected_outcome": "typed Residual for dynamic shape",
-      "oracle": "non_native_parser_boundary",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -618,10 +1135,11 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": false,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_rows": [],
+      "expected_terminal_rows": null,
+      "expected_proof": "Residual or parser_boundary"
     },
     {
       "id": "77-C138-P-unpivot",
@@ -629,7 +1147,6 @@
       "sql": "SELECT * FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b) UNPIVOT EXCLUDE NULLS (v FOR n IN (a, b))",
       "classification": "mandatory",
       "expected_outcome": "complete id,v,n bag; explicit NULL elimination",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -698,10 +1215,120 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 20,
+          "n": "b"
+        },
+        {
+          "id": 1,
+          "v": 30,
+          "n": "b"
+        },
+        {
+          "id": 2,
+          "v": 10,
+          "n": "a"
+        }
+      ],
+      "output_columns": [
+        "id",
+        "v",
+        "n"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "unpivot:1",
+        "unpivot:2",
+        "unpivot:3",
+        "unpivot:4"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b) UNPIVOT EXCLUDE NULLS (v FOR n IN (a,b))",
+      "negative_membership": {
+        "id": 99,
+        "v": 10,
+        "n": "a"
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "v": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "text",
+          "nullable": false,
+          "values": [
+            "a",
+            "b"
+          ],
+          "lower": null,
+          "upper": null
+        }
+      }
     },
     {
       "id": "77-C138-N-unpivot",
@@ -709,7 +1336,6 @@
       "sql": "SELECT * FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b) UNPIVOT INCLUDE NULLS (v FOR n IN (a, b))",
       "classification": "mandatory",
       "expected_outcome": "include source NULL rows, stable fanout identities, string names",
-      "oracle": "full_source_and_terminal_pending",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -778,10 +1404,132 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": true,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 20,
+          "n": "b"
+        },
+        {
+          "id": 1,
+          "v": null,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 30,
+          "n": "b"
+        },
+        {
+          "id": 2,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 2,
+          "v": null,
+          "n": "b"
+        }
+      ],
+      "output_columns": [
+        "id",
+        "v",
+        "n"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "unpivot:1",
+        "unpivot:2",
+        "unpivot:3",
+        "unpivot:4",
+        "unpivot:5",
+        "unpivot:6"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b) UNPIVOT INCLUDE NULLS (v FOR n IN (a,b))",
+      "negative_membership": {
+        "id": 99,
+        "v": 10,
+        "n": "a"
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "v": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "text",
+          "nullable": false,
+          "values": [
+            "a",
+            "b"
+          ],
+          "lower": null,
+          "upper": null
+        }
+      }
     },
     {
       "id": "77-C138-N-opaque",
@@ -789,7 +1537,6 @@
       "sql": "SELECT * FROM opaque PIVOT (SUM(v) FOR k IN (1,2))",
       "classification": "conditional",
       "expected_outcome": "schema/source rows missing, no exact source bag; explicit Residual",
-      "oracle": "non_native_parser_boundary",
       "dialect_matrix": [
         {
           "dialect": "generic",
@@ -858,10 +1605,11 @@
           "classification": "unverified_or_inapplicable"
         }
       ],
-      "source_rows": "frozen SQL VALUES literal input, including duplicates and NULL per case",
-      "terminal_rows": "must be enumerated by an independent DuckDB source/terminal test; unverified until observed",
       "required_complete_physical_proof": false,
-      "reviewed_conditional_owner": "TASK-138"
+      "reviewed_conditional_owner": "TASK-138",
+      "source_rows": [],
+      "expected_terminal_rows": null,
+      "expected_proof": "Residual or parser_boundary"
     }
   ],
   "signoff": {
@@ -870,5 +1618,6 @@
     "mandatory_matrix_complete": false,
     "conditional_review_complete": false,
     "task_done": false
-  }
+  },
+  "validation_state": "immutable task-owned finite fixture expectations, dialect and adapter dispositions pending independent execution"
 }
