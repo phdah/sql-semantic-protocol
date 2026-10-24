@@ -3,8 +3,8 @@
 //! Both projected output domains and exact finite physical rows use this
 //! positional plan. No SQL AST escapes into the canonical protocol.
 
+use sqlparser::ast::{ExcludeSelectItem, Expr, RenameSelectItem, WildcardAdditionalOptions};
 use std::collections::BTreeSet;
-use sqlparser::ast::{Expr, ExcludeSelectItem, RenameSelectItem, WildcardAdditionalOptions};
 
 /// Validated position-based wildcard change independent of downstream consumers.
 pub(super) enum StarModification {
@@ -36,8 +36,13 @@ pub(super) fn plan_star_modification(
         return Err("mixed wildcard modifiers or ILIKE require unproved ordering/collation");
     }
     let resolve = |name: &str| -> Result<usize, &'static str> {
-        let mut matching = columns.iter().enumerate().filter(|(_,value)| value.as_str()==name);
-        let pos = matching.next().map(|(pos,_)|pos)
+        let mut matching = columns
+            .iter()
+            .enumerate()
+            .filter(|(_, value)| value.as_str() == name);
+        let pos = matching
+            .next()
+            .map(|(pos, _)| pos)
             .ok_or("wildcard modifier target not in the complete schema")?;
         if matching.next().is_some() {
             return Err("wildcard modifier target has ambiguous source columns");
@@ -89,7 +94,7 @@ pub(super) fn plan_star_modification(
                 return Err("repeated wildcard rename target");
             }
             final_names[position] = pair.alias.value.clone();
-            edits.push((position,pair.alias.value.clone()));
+            edits.push((position, pair.alias.value.clone()));
         }
         if final_names.iter().collect::<BTreeSet<_>>().len() != final_names.len() {
             return Err("wildcard rename creates ambiguous or duplicate output columns");
@@ -104,7 +109,7 @@ pub(super) fn plan_star_modification(
             if !positions.insert(position) {
                 return Err("repeated wildcard replacement target");
             }
-            edits.push((position,item.expr.clone()));
+            edits.push((position, item.expr.clone()));
         }
         return Ok(StarModification::Replace(edits));
     }
