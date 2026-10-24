@@ -1,8 +1,8 @@
 # TASK-137 finite literal table acceptance audit
 
-**Status: acceptance open.** PR #144 is a focused implementation and
-validation branch; this audit describes its current semantic proof contract,
-not certification of all five criteria or a TASK-77 release.
+**Status: all five TASK-137 child acceptance criteria signed off, pending PR merge.**
+The seven mandatory cases, 104 parser paths, 24 adapter dispositions and final
+code verification have passed. TASK-77 parent and protocol v3 release remain open.
 
 ## Acceptance inventory and versioned fixture corrections
 
@@ -35,17 +35,17 @@ row identities and an absent-row goal with Impossible classification.
   row generators. These cases have zero physical source columns, so equivalent
   ODCS evidence does not exist. Do not fabricate an ODCS parity cell.
 
-## Acceptance gates still required
+## Child acceptance signoff
 
-| AC | Required final check |
+| AC | Verified evidence |
 | --- | --- |
-| 1 | Independent reconciliation of every corrected frozen cell, parser and adapter classification, nullable and integer bounds |
-| 2 | Validate exact vs residual boundaries for typed empty/all-NULL arrays, one-based ordinality, finite duplicate/absence, and unsupported generator/session cases |
-| 3 | Passing final-head DuckDB oracles and public identity/domain/negative membership tests for both fixture IDs |
-| 4 | Final 13-dialect accepted/boundary matrix, compiled dbt parity, ODCS inapplicability disposition, and native vendor/session EXPLODE limitation reviewed |
-| 5 | Green final-head fmt, strict Clippy, Rust tests, docs, no-default, dbt E2E, schema/golden snapshots and two-axis standards/spec code review |
+| 1 | Versioned v1/v2/v3 frozen inventory, both fixture IDs, all exact case outcomes, 104 dialect paths, 24 adapter cells and reviewed conditional dispositions |
+| 2 | Canonical rows, typed domains, multiplicity, one-based identities, TRUE/NOT TRUE and Exact/Impossible/Residual paths; overflow and explicit offset aliases fail closed |
+| 3 | All seven mandatory complete native DuckDB bags, public physical identities, nullable/bounded domains and impossible negative tuples in `tests/task_137_frozen_matrix.rs` |
+| 4 | 69 Exact, 18 parser rejection, 4 lexical boundary, 13 opaque residual dialect cells; compiled dbt model parity, ODCS inapplicability and unexecuted vendor EXPLODE law reviewed |
+| 5 | All nine jobs passed on [the verified code-head CI run](https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405): fmt, strict Clippy, Rust tests, docs, no-default-feature lanes and real dbt E2E. Active schema/golden tests and independent standards/code review are included; final documentation-only head CI is also required before merge |
 
-**No TASK-77 parent criterion or protocol 3.0.0 release is signed off here.**
+**TASK-137 is Done only as child scope; TASK-77 parent AC and protocol 3.0.0 release remain open.**
 
 ## Observed matrix review (sqlparser 0.58)
 
@@ -83,9 +83,7 @@ refuse to silently drop a named OFFSET output. These protect the frozen
 outcome contract without adding unrelated composition obligations.
 TASK-140 owns source-column fanout and composed join/aggregate proofs.
 
-**Closure rule.** All five child AC remain gated on complete final-head CI,
-including full Rust and ignored dbt Core E2E execution. TASK-77 and v3
-release gates remain independent and open.
+**Closure evidence.** The complete [code-head CI run](https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405) is green. The final documentation commit must also pass CI before the PR is merged. TASK-77 and v3 release gates remain independent and open.
 
 ## Real dbt Core execution oracle
 

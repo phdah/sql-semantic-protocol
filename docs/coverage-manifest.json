@@ -12780,7 +12780,7 @@
   "task_137_table_fanout_acceptance": {
     "owner": "TASK-137",
     "parent": "TASK-77",
-    "status": "implementation_in_progress",
+    "status": "signed_off_pending_merge",
     "freeze": "docs/task-137-acceptance-freeze.json",
     "fixture_ids": [
       "77-C137-P",
@@ -12790,14 +12790,18 @@
     "conditional_cases": 1,
     "dialect_parser_cells_required": 104,
     "adapter_cells_required": 24,
-    "verified_dialect_parser_cells": 0,
-    "verified_adapter_cells": 0,
+    "verified_dialect_parser_cells": 104,
+    "verified_adapter_cells": 24,
     "source_and_terminal_oracles": "tests/task_137_finite_tables.rs",
     "canonical_owner": "src/protocol/finite_table.rs",
     "analyzer_owner": "src/analysis/finite_tables.rs",
     "physical_proof_owner": "src/physical_realization/finite_tables.rs",
-    "child_acceptance_signoff": false,
+    "child_acceptance_signoff": true,
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "verified_mandatory_cases": 7,
+    "verified_conditional_cases": 1,
+    "ci_code_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405",
+    "independent_acceptance_review": "docs/task-137-acceptance-audit.md"
   }
 }

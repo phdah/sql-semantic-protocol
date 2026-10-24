@@ -76,14 +76,21 @@
     "opaque_generators": "Residual"
   },
   "validation": {
-    "status": "classified_pending_final_head_CI",
-    "mandatory_cells_signoff": false,
-    "adapter_cells_signoff": false,
-    "dialect_cells_signoff": false,
-    "full_ci_signoff": false,
+    "status": "signed_off_pending_merge",
+    "mandatory_cells_signoff": true,
+    "adapter_cells_signoff": true,
+    "dialect_cells_signoff": true,
+    "full_ci_signoff": true,
     "matrix_cells": 104,
     "adapter_cells": 24,
-    "actual_dialect_certification": "69 exact canonical AST proofs; 18 parser rejections; 4 lexical AST boundaries; 13 opaque residuals (CI verification pending)"
+    "actual_dialect_certification": "69 exact canonical AST proofs; 18 parser rejections; 4 lexical AST boundaries; 13 opaque residuals (CI verification pending)",
+    "verified_mandatory_cases": 7,
+    "verified_conditional_cases": 1,
+    "verified_parser_cells": 104,
+    "verified_adapter_cells": 24,
+    "ci_code_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405",
+    "independent_review": "docs/task-137-acceptance-audit.md",
+    "native_vendor_sessions_certified": false
   },
   "cases": [
     {
