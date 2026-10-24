@@ -308,7 +308,7 @@ fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
     if first.is_empty() {
         return None;
     }
-    let columns = (1..=first.len())
+    let columns: Vec<String> = (1..=first.len())
         .map(|index| format!("column{index}"))
         .collect();
     let rows = values
