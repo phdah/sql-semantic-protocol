@@ -239,7 +239,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             FiniteTableKind::Unnest,
             dialect_name,
         ),
-        // sqlparser 0.58 represents ordinary FROM UNNEST(...) as a
+        // sqlparser 0.58 may represent a source-free FROM UNNEST/EXPLODE as a
         // Table with function arguments. Preserve the WITH ORDINALITY fact
         // before ever considering this a material physical source.
         TableFactor::Table {
@@ -254,7 +254,8 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             json_path: None,
             index_hints,
             ..
-        } if name.to_string().eq_ignore_ascii_case("unnest")
+        } if (name.to_string().eq_ignore_ascii_case("unnest")
+            || name.to_string().eq_ignore_ascii_case("explode"))
             && with_hints.is_empty()
             && partitions.is_empty()
             && index_hints.is_empty()
@@ -268,14 +269,12 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            unnest_table(
-                alias,
-                &arguments,
-                false,
-                *with_ordinality,
-                FiniteTableKind::Unnest,
-                dialect_name,
-            )
+            let kind = if name.to_string().eq_ignore_ascii_case("explode") {
+                FiniteTableKind::Explode
+            } else {
+                FiniteTableKind::Unnest
+            };
+            unnest_table(alias, &arguments, false, *with_ordinality, kind, dialect_name)
         }
         TableFactor::Function {
             name,
@@ -283,7 +282,8 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             alias,
             lateral,
             ..
-        } if !*lateral && name.to_string().eq_ignore_ascii_case("unnest") => {
+        } if !*lateral && (name.to_string().eq_ignore_ascii_case("unnest")
+            || name.to_string().eq_ignore_ascii_case("explode")) => {
             let arguments = args
                 .iter()
                 .map(|arg| match arg {
@@ -291,14 +291,12 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            unnest_table(
-                alias,
-                &arguments,
-                false,
-                false,
-                FiniteTableKind::Unnest,
-                dialect_name,
-            )
+            let kind = if name.to_string().eq_ignore_ascii_case("explode") {
+                FiniteTableKind::Explode
+            } else {
+                FiniteTableKind::Unnest
+            };
+            unnest_table(alias, &arguments, false, false, kind, dialect_name)
         }
         _ => None,
     }
