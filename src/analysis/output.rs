@@ -449,17 +449,23 @@ fn expand_wildcard_with_options(
     // Do not project through an unknown schema, even if an edit has a
     // superficially valid target: output arity would be fabricated.
     if columns.is_empty()
-        || columns.iter().any(|column| matches!(column.expression(), Expression::Unknown(_)))
+        || columns
+            .iter()
+            .any(|column| matches!(column.expression(), Expression::Unknown(_)))
     {
         return unresolved_wildcard_transform(
-            qualifier, "wildcard transformation requires fully resolved source columns",
+            qualifier,
+            "wildcard transformation requires fully resolved source columns",
             diagnostics,
         );
     }
-    let names = columns.iter().map(|column| column.name().to_string()).collect::<Vec<_>>();
+    let names = columns
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
     let plan = match plan_star_modification(options, &names) {
         Ok(plan) => plan,
-        Err(reason) => return unresolved_wildcard_transform(qualifier,reason,diagnostics),
+        Err(reason) => return unresolved_wildcard_transform(qualifier, reason, diagnostics),
     };
     match plan {
         StarModification::Identity => {}
@@ -470,28 +476,37 @@ fn expand_wildcard_with_options(
         }
         StarModification::Rename(pairs) => {
             for (index, name) in pairs {
-                let Some(prior) = columns.get(index) else { return unresolved_wildcard_transform(
-                    qualifier,"wildcard rename lost validated column identity",diagnostics
-                ); };
+                let Some(prior) = columns.get(index) else {
+                    return unresolved_wildcard_transform(
+                        qualifier,
+                        "wildcard rename lost validated column identity",
+                        diagnostics,
+                    );
+                };
                 let replacement = OutputColumn::new(
-                    name, prior.expression().clone(), prior.domain().clone(), prior.lineage().to_vec()
+                    name,
+                    prior.expression().clone(),
+                    prior.domain().clone(),
+                    prior.lineage().to_vec(),
                 );
                 columns[index] = replacement;
             }
         }
         StarModification::Replace(pairs) => {
             for (index, expression) in pairs {
-                let Some(prior) = columns.get(index) else { return unresolved_wildcard_transform(
-                    qualifier,"wildcard replacement lost validated column identity",diagnostics
-                ); };
+                let Some(prior) = columns.get(index) else {
+                    return unresolved_wildcard_transform(
+                        qualifier,
+                        "wildcard replacement lost validated column identity",
+                        diagnostics,
+                    );
+                };
                 let name = prior.name().to_string();
-                let normalized = analyze_expression_with_scope(
-                    &expression, scope, named_windows, diagnostics
-                );
+                let normalized =
+                    analyze_expression_with_scope(&expression, scope, named_windows, diagnostics);
                 let domain = derive_output_domain(&normalized);
-                let lineage = lineage_for_expression(
-                    &expression, scope, named_windows, diagnostics
-                );
+                let lineage =
+                    lineage_for_expression(&expression, scope, named_windows, diagnostics);
                 columns[index] = OutputColumn::new(name, normalized, domain, lineage);
             }
         }
