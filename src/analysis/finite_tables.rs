@@ -488,7 +488,10 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
     else {
         return None;
     };
-    if alias.as_ref().is_some_and(|alias| !alias.columns.is_empty()) {
+    if alias
+        .as_ref()
+        .is_some_and(|alias| !alias.columns.is_empty())
+    {
         return None;
     }
     let source = named_values_source(table)?;
@@ -582,7 +585,10 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
     else {
         return None;
     };
-    if alias.as_ref().is_some_and(|alias| !alias.columns.is_empty()) {
+    if alias
+        .as_ref()
+        .is_some_and(|alias| !alias.columns.is_empty())
+    {
         return None;
     }
     let source = named_values_source(table)?;
