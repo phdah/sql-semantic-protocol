@@ -77,7 +77,7 @@ impl FiniteTable {
             || unique.len() != columns.len()
             || columns.iter().any(|column| column.trim().is_empty())
             || rows.iter().any(|row| row.len() != columns.len())
-            || rows.iter().enumerate().any(|(_, row)| {
+            || rows.iter().any(|row| {
                 row.iter().enumerate().any(|(index, literal)| {
                     column_types[index] == FiniteColumnType::Unknown
                         && literal.literal_type() != LiteralType::Null
