@@ -44,7 +44,7 @@ fn case_dialect(variant: &str) -> &str {
 #[test]
 fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
     let frozen = frozen();
-    assert_eq!(frozen["version"], 3);
+    assert_eq!(frozen["version"], 4);
     let mut checked = 0;
     for case in frozen["cases"].as_array().expect("cases") {
         if case["classification"] != "mandatory" {
@@ -123,6 +123,21 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
             // parses, only the canonical protocol's finite proof is assessed;
             // native vendor/session execution is never inferred from parsing.
             let analysis = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref());
+            let observed = match &analysis {
+                Err(_) => "parser_boundary",
+                Ok(bundle) => {
+                    let layer = bundle.layers().last().expect("layer");
+                    match physical_finite_table_plan(bundle, layer.id(), None) {
+                        PhysicalFiniteTableProof::Exact(_) => "exact",
+                        PhysicalFiniteTableProof::Impossible { .. } => "impossible",
+                        PhysicalFiniteTableProof::Residual { .. } => "residual",
+                    }
+                }
+            };
+            let stored = case["dialect_matrix"].as_array().expect("13 frozen dialect cells")
+                .iter().find(|cell| cell["dialect"] == dialect).expect("named dialect");
+            assert_eq!(stored["classification"], observed, "{dialect}: {sql}");
+
             if let Ok(bundle) = analysis {
                 let layer = bundle.layers().last().expect("layer");
                 let proof = physical_finite_table_plan(&bundle, layer.id(), None);
@@ -142,31 +157,4 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
         }
     }
     assert_eq!(seen, 130);
-}
-
-#[test]
-fn task_138_dialect_discovery_report() {
-    let data=frozen();
-    let mut cells=Vec::new();
-    for case in data["cases"].as_array().unwrap() {
-        let id=case["id"].as_str().unwrap();
-        let sql=case["sql"].as_str().unwrap();
-        for dialect in data["dialects"].as_array().unwrap() {
-            let name=dialect.as_str().unwrap();
-            let parser=dialect_from_name(name).unwrap();
-            let status=match analyze_inputs(&[SqlInput::inline(sql)],name,parser.as_ref()) {
-                Err(_) => "parser_boundary",
-                Ok(bundle) => {
-                    let layer=bundle.layers().last().unwrap();
-                    match physical_finite_table_plan(&bundle,layer.id(),None) {
-                        PhysicalFiniteTableProof::Exact(_) => "exact",
-                        PhysicalFiniteTableProof::Impossible {..} => "impossible",
-                        PhysicalFiniteTableProof::Residual {..} => "residual",
-                    }
-                }
-            };
-            cells.push(serde_json::json!([id,name,status]));
-        }
-    }
-    panic!("TASK138_DIALECT_MATRIX={}",serde_json::to_string(&cells).unwrap());
 }
