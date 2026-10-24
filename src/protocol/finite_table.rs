@@ -16,6 +16,8 @@ pub enum FiniteTableKind {
     Unnest,
     /// EXPLODE of an attested, literal integer array.
     Explode,
+    /// Schema-attested, row-preserving finite wildcard projection.
+    Star,
 }
 
 impl FiniteTableKind {
@@ -25,6 +27,7 @@ impl FiniteTableKind {
             Self::Values => "values",
             Self::Unnest => "unnest",
             Self::Explode => "explode",
+            Self::Star => "star",
         }
     }
 }
