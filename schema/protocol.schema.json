@@ -8301,7 +8301,7 @@
       }
     },
     "finiteTable": {
-      "description": "Complete source-free finite VALUES/UNNEST/EXPLODE with typed integer or unknown output columns, including zero-row and all-NULL bags.",
+      "description": "Complete typed source-free finite constructor, wildcard projection, fixed-key PIVOT or UNPIVOT bag, including NULL and duplicate rows.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -8315,7 +8315,10 @@
           "enum": [
             "values",
             "unnest",
-            "explode"
+            "explode",
+            "star",
+            "pivot",
+            "unpivot"
           ]
         },
         "columns": {
@@ -8343,9 +8346,19 @@
           "items": {
             "enum": [
               "integer",
+              "text",
               "unknown"
             ]
           }
+       },
+        "source": {
+          "$ref": "#/$defs/finiteTable",
+          "description": "Complete literal physical source for transformed finite output"
+        },
+        "contributors": {
+          "type": "array",
+          "description": "Indices into source.rows, one nonempty array for every output row",
+          "items": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 0}}
         }
       }
     }

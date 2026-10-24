@@ -393,12 +393,127 @@ pub(super) fn analyze_output_item(
                 lineage_for_expression(expr, scope, named_windows, diagnostics),
             )]
         }
-        SelectItem::Wildcard(_) => expand_wildcard(None, scope, diagnostics),
-        SelectItem::QualifiedWildcard(prefix, _) => {
+        SelectItem::Wildcard(options) => {
+            expand_wildcard_with_options(None, options, scope, named_windows, diagnostics)
+        }
+        SelectItem::QualifiedWildcard(prefix, options) => {
             let qualifier = prefix.to_string();
-            expand_wildcard(Some(&qualifier), scope, diagnostics)
+            expand_wildcard_with_options(
+                Some(&qualifier),
+                options,
+                scope,
+                named_windows,
+                diagnostics,
+            )
         }
     }
+}
+
+fn unresolved_wildcard_transform(
+    qualifier: Option<&str>,
+    reason: &str,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<OutputColumn> {
+    diagnostics.push(warning(
+        "unresolved_wildcard_transform",
+        DiagnosticArea::Output,
+        reason,
+    ));
+    vec![OutputColumn::new(
+        qualifier.map_or_else(|| "*".to_string(), |name| format!("{name}.*")),
+        Expression::Unknown(UnknownSemantic::new(reason.to_string())),
+        ValueDomain::unknown(reason),
+        Vec::new(),
+    )]
+}
+
+/// Normalize a wildcard modifier only when its column targets and source schema
+/// are unambiguous. Any unproved option invalidates the entire expansion:
+/// silently returning the original star would fabricate a SQL output shape.
+fn expand_wildcard_with_options(
+    qualifier: Option<&str>,
+    options: &sqlparser::ast::WildcardAdditionalOptions,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<OutputColumn> {
+    use super::star_projection::{plan_star_modification, StarModification};
+
+    if options.opt_except.is_none()
+        && options.opt_exclude.is_none()
+        && options.opt_rename.is_none()
+        && options.opt_replace.is_none()
+        && options.opt_ilike.is_none()
+    {
+        return expand_wildcard(qualifier, scope, diagnostics);
+    }
+    let mut columns = expand_wildcard(qualifier, scope, diagnostics);
+    // Do not project through an unknown schema, even if an edit has a
+    // superficially valid target: output arity would be fabricated.
+    if columns.is_empty()
+        || columns
+            .iter()
+            .any(|column| matches!(column.expression(), Expression::Unknown(_)))
+    {
+        return unresolved_wildcard_transform(
+            qualifier,
+            "wildcard transformation requires fully resolved source columns",
+            diagnostics,
+        );
+    }
+    let names = columns
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
+    let plan = match plan_star_modification(options, &names) {
+        Ok(plan) => plan,
+        Err(reason) => return unresolved_wildcard_transform(qualifier, reason, diagnostics),
+    };
+    match plan {
+        StarModification::Identity => {}
+        StarModification::Exclude(positions) => {
+            for index in positions.into_iter().rev() {
+                columns.remove(index);
+            }
+        }
+        StarModification::Rename(pairs) => {
+            for (index, name) in pairs {
+                let Some(prior) = columns.get(index) else {
+                    return unresolved_wildcard_transform(
+                        qualifier,
+                        "wildcard rename lost validated column identity",
+                        diagnostics,
+                    );
+                };
+                let replacement = OutputColumn::new(
+                    name,
+                    prior.expression().clone(),
+                    prior.domain().clone(),
+                    prior.lineage().to_vec(),
+                );
+                columns[index] = replacement;
+            }
+        }
+        StarModification::Replace(pairs) => {
+            for (index, expression) in pairs {
+                let Some(prior) = columns.get(index) else {
+                    return unresolved_wildcard_transform(
+                        qualifier,
+                        "wildcard replacement lost validated column identity",
+                        diagnostics,
+                    );
+                };
+                let name = prior.name().to_string();
+                let normalized =
+                    analyze_expression_with_scope(&expression, scope, named_windows, diagnostics);
+                let domain = derive_output_domain(&normalized);
+                let lineage =
+                    lineage_for_expression(&expression, scope, named_windows, diagnostics);
+                columns[index] = OutputColumn::new(name, normalized, domain, lineage);
+            }
+        }
+    }
+    columns
 }
 
 pub(super) fn inherit_local_case_expression(

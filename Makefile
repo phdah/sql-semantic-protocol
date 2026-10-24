@@ -33,6 +33,7 @@ dbt-e2e:
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_189_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_128_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_137_dbt_core_e2e -- --ignored --nocapture
+	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_138_dbt_core_e2e -- --ignored --nocapture
 	rm -rf $(CONFORMANCE_PROJECT)/target $(CONFORMANCE_DATABASE)
 	DBT_E2E_DATABASE=$(CONFORMANCE_DATABASE) dbt seed --project-dir $(CONFORMANCE_PROJECT) --profiles-dir $(CONFORMANCE_PROJECT)
 	DBT_E2E_DATABASE=$(CONFORMANCE_DATABASE) dbt run --project-dir $(CONFORMANCE_PROJECT) --profiles-dir $(CONFORMANCE_PROJECT)

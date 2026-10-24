@@ -9,6 +9,24 @@ pub(super) fn statement_to_value(statement: &ProtocolStatement) -> Value {
     }
 }
 
+// Canonical finite transformations carry the complete original literal bag
+// and row contributors, not inferred transitive source facts.
+fn finite_table_to_value(table: &crate::protocol::FiniteTable) -> Value {
+    let mut value = json!({
+        "kind": table.kind().as_str(),
+        "columns": table.columns(),
+        "column_types": table.column_types().iter().map(|ty| ty.as_str()).collect::<Vec<_>>(),
+        "rows": table.rows().iter().map(|row| {
+            row.iter().map(literal_expression_to_value).collect::<Vec<_>>()
+        }).collect::<Vec<_>>()
+    });
+    if let Some(source) = table.source() {
+        value["source"] = finite_table_to_value(source);
+        value["contributors"] = json!(table.contributors());
+    }
+    value
+}
+
 pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
     let sources = statement
         .sources()
@@ -64,14 +82,7 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
     }
 
     if let Some(table) = statement.finite_table() {
-        value["finite_table"] = json!({
-            "kind": table.kind().as_str(),
-            "columns": table.columns(),
-            "column_types": table.column_types().iter().map(|ty| ty.as_str()).collect::<Vec<_>>(),
-            "rows": table.rows().iter().map(|row| {
-                row.iter().map(literal_expression_to_value).collect::<Vec<_>>()
-            }).collect::<Vec<_>>()
-        });
+        value["finite_table"] = finite_table_to_value(table);
     }
 
     if let Some(set_operation) = statement.set_operation() {

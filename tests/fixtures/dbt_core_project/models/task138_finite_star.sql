@@ -1,0 +1,1 @@
+SELECT * EXCLUDE b FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)

@@ -330,6 +330,7 @@ mod predicates;
 mod queries;
 mod relations;
 mod sets;
+mod star_projection;
 mod subqueries;
 mod temporal_literals;
 mod typing;

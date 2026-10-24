@@ -12803,5 +12803,45 @@
     "verified_conditional_cases": 1,
     "ci_code_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405",
     "independent_acceptance_review": "docs/task-137-acceptance-audit.md"
+  },
+  "task_138_finite_table_transform_plan": {
+    "owner": "TASK-138",
+    "parent": "TASK-77",
+    "status": "Done on TASK-138 code head; PR documentation-only CI pending",
+    "freeze": "docs/task-138-acceptance-freeze.json",
+    "audit": "docs/task-138-acceptance-audit.md",
+    "fixture_ids": [
+      "77-C138-P",
+      "77-C138-N"
+    ],
+    "mandatory_cases": 7,
+    "conditional_cases": 3,
+    "parser_cells": 130,
+    "parser_exact": 54,
+    "parser_rejections": 46,
+    "parser_residual": 30,
+    "adapter_cells": 30,
+    "physical_oracle": "tests/task_138_frozen_matrix.rs (independent native DuckDB source and terminal SQL for every mandatory variant)",
+    "native_oracle": "tests/task_138_pivot_unpivot.rs",
+    "dbt_core_oracle": "tests/task_138_dbt_core_e2e.rs",
+    "all_child_ac_verified": true,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "freeze_version": 6,
+    "reviewed_conditional_variants": [
+      "star_except_missing",
+      "pivot_dynamic",
+      "pivot_opaque"
+    ],
+    "ci_baseline": {
+      "commit": "b162256d125a9fc02af36a32cf0a232e4316d207",
+      "run_id": 40118051819,
+      "checks_passed": 9,
+      "checks_total": 9
+    },
+    "validation": "7 mandatory, 3 reviewed conditional, native source+terminal oracles; final docs PR CI pending",
+    "verified_code_head": "31bc0e5204296b56c1f1ba7dd08484b6cc7939e9",
+    "verified_ci_run_id": 40126856488,
+    "verified_checks": 9
   }
 }

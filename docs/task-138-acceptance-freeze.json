@@ -1,0 +1,1820 @@
+{
+  "version": 6,
+  "owner": "TASK-138",
+  "parent": "TASK-77",
+  "created": "2026-10-24",
+  "fixture_ids": [
+    "77-C138-P",
+    "77-C138-N"
+  ],
+  "scope": "Typed source-free VALUES producer, full SQL star EXCEPT/EXCLUDE/RENAME/REPLACE and fixed-schema PIVOT/UNPIVOT. No SQL engine/session assumptions inferred from parser equivalence.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "original_parent_ac_mapping": {
+    "1": [
+      "star_except",
+      "star_exclude",
+      "star_replace",
+      "star_rename",
+      "pivot_static",
+      "unpivot_exclude_null",
+      "unpivot_include_null"
+    ],
+    "2": [
+      "unpivot_include_null",
+      "unpivot_exclude_null",
+      "pivot_static"
+    ],
+    "3": [
+      "pivot_dynamic",
+      "pivot_opaque",
+      "star_except_missing"
+    ],
+    "5": [
+      "all mandatory full physical rows and negative proof"
+    ],
+    "6": [
+      "all dialect and adapter cells with named boundary"
+    ]
+  },
+  "proof_contract": {
+    "exact": "Full typed source + terminal bags with all duplicates, output-column identity, finite bounds and inclusivity, selected/rejected row IDs",
+    "impossible": "A requested complete terminal tuple not present in the certified complete source-backed bag",
+    "residual": "Unsupported parser/source/shape/type and session laws never claim exact",
+    "numeric": "Checked i64 integer and explicit NULL, with other arithmetic precision Residual",
+    "negative": "NOT TRUE includes FALSE and UNKNOWN; NULL are physical source facts, not implicit SQL matches",
+    "source_provenance": "Every finite transformed terminal row references its complete immutable VALUES source snapshot by positional source-row ids, including duplicate and NULL rows."
+  },
+  "cases": [
+    {
+      "id": "77-C138-P-except",
+      "variant": "star_except",
+      "sql": "SELECT * EXCEPT (b) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "classification": "mandatory",
+      "expected_outcome": "a,b projection elimination; duplicates retained; only id,a",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10
+        },
+        {
+          "id": 1,
+          "a": null
+        },
+        {
+          "id": 2,
+          "a": 10
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id, a FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-N-missing",
+      "variant": "star_except_missing",
+      "sql": "SELECT * EXCEPT (missing) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "classification": "conditional",
+      "expected_outcome": "typed Residual, no fabricated original wildcard",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "residual"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "residual"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "residual"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "residual"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": false,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": null,
+      "output_columns": [
+        "*"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": null,
+      "oracle_sql": null,
+      "negative_membership": null,
+      "expected_proof": "Residual",
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Missing excluded column is an invalid target against the fully known schema; pretending exact output or proving missing tuple impossible would be unsound. Residual is required, not a deferred mandatory feature.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-P-exclude",
+      "variant": "star_exclude",
+      "sql": "SELECT * EXCLUDE b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "classification": "mandatory",
+      "expected_outcome": "id,a exact with nullable domain",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "parser_boundary"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10
+        },
+        {
+          "id": 1,
+          "a": null
+        },
+        {
+          "id": 2,
+          "a": 10
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-P-rename",
+      "variant": "star_rename",
+      "sql": "SELECT * RENAME b AS c FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "classification": "mandatory",
+      "expected_outcome": "id,a,c exact NULL including lineage",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "parser_boundary"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10,
+          "c": 20
+        },
+        {
+          "id": 1,
+          "a": null,
+          "c": 30
+        },
+        {
+          "id": 2,
+          "a": 10,
+          "c": null
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a",
+        "c"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a,b AS c FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10,
+        "c": 20
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        },
+        "c": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            20,
+            30
+          ],
+          "lower": {
+            "value": 20,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-P-replace",
+      "variant": "star_replace",
+      "sql": "SELECT * REPLACE (9 AS b) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "classification": "mandatory",
+      "expected_outcome": "id,a,b with b singleton 9",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "parser_boundary"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "a": 10,
+          "b": 9
+        },
+        {
+          "id": 1,
+          "a": null,
+          "b": 9
+        },
+        {
+          "id": 2,
+          "a": 10,
+          "b": 9
+        }
+      ],
+      "output_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "star:1",
+        "star:2",
+        "star:3"
+      ],
+      "oracle_sql": "SELECT id,a,9 AS b FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b)",
+      "negative_membership": {
+        "id": 99,
+        "a": 10,
+        "b": 9
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "a": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 10,
+            "inclusive": true
+          }
+        },
+        "b": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            9
+          ],
+          "lower": {
+            "value": 9,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 9,
+            "inclusive": true
+          }
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-P-pivot",
+      "variant": "pivot_static",
+      "sql": "SELECT * FROM (VALUES (1, 1, 10), (1, 2, 20), (2, 1, 30)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (1 AS one, 2 AS two))",
+      "classification": "mandatory",
+      "expected_outcome": "id=1: one=10 two=20; id=2: one=30 two=NULL; explicit columns and groups",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "exact"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "k",
+        "v"
+      ],
+      "source_rows": [
+        [
+          1,
+          1,
+          10
+        ],
+        [
+          1,
+          2,
+          20
+        ],
+        [
+          2,
+          1,
+          30
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "one": 10,
+          "two": 20
+        },
+        {
+          "id": 2,
+          "one": 30,
+          "two": null
+        }
+      ],
+      "output_columns": [
+        "id",
+        "one",
+        "two"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "pivot:1",
+        "pivot:2"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,1,10),(1,2,20),(2,1,30)) AS t(id,k,v) PIVOT(SUM(v) FOR k IN (1 AS one,2 AS two))",
+      "negative_membership": {
+        "id": 99,
+        "one": 10,
+        "two": null
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "one": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            10,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "two": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            20
+          ],
+          "lower": {
+            "value": 20,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 20,
+            "inclusive": true
+          }
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0",
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, k, v FROM (VALUES (1, 1, 10), (1, 2, 20), (2, 1, 30)) AS t(id, k, v)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-N-pivot",
+      "variant": "pivot_dynamic",
+      "sql": "SELECT * FROM (VALUES (1, 1, 10)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (ANY))",
+      "classification": "conditional",
+      "expected_outcome": "typed Residual for dynamic shape",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "residual"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "hive",
+          "classification": "residual"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "residual"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "residual"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "residual"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "residual"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "residual"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "residual"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "residual"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": false,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_rows": [],
+      "expected_terminal_rows": null,
+      "expected_proof": "Residual or parser_boundary",
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Dynamic pivot key discovery depends on runtime distinct values and cannot have a frozen finite output schema; deliberately exclude from fixed-schema exact proof.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      },
+      "source_oracle_sql": null,
+      "independent_source_oracle": "unavailable_opaque_or_dynamic"
+    },
+    {
+      "id": "77-C138-P-unpivot",
+      "variant": "unpivot_exclude_null",
+      "sql": "SELECT * FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b) UNPIVOT EXCLUDE NULLS (v FOR n IN (a, b))",
+      "classification": "mandatory",
+      "expected_outcome": "complete id,v,n bag; explicit NULL elimination",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "exact"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 20,
+          "n": "b"
+        },
+        {
+          "id": 1,
+          "v": 30,
+          "n": "b"
+        },
+        {
+          "id": 2,
+          "v": 10,
+          "n": "a"
+        }
+      ],
+      "output_columns": [
+        "id",
+        "n",
+        "v"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "unpivot:1",
+        "unpivot:2",
+        "unpivot:3",
+        "unpivot:4"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b) UNPIVOT EXCLUDE NULLS (v FOR n IN (a,b))",
+      "negative_membership": {
+        "id": 99,
+        "v": 10,
+        "n": "a"
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "v": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "text",
+          "nullable": false,
+          "values": [
+            "a",
+            "b"
+          ],
+          "lower": null,
+          "upper": null
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-N-unpivot",
+      "variant": "unpivot_include_null",
+      "sql": "SELECT * FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b) UNPIVOT INCLUDE NULLS (v FOR n IN (a, b))",
+      "classification": "mandatory",
+      "expected_outcome": "include source NULL rows, stable fanout identities, string names",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "exact"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "exact"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "exact"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": true,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_columns": [
+        "id",
+        "a",
+        "b"
+      ],
+      "source_rows": [
+        [
+          1,
+          10,
+          20
+        ],
+        [
+          1,
+          null,
+          30
+        ],
+        [
+          2,
+          10,
+          null
+        ]
+      ],
+      "expected_terminal_rows": [
+        {
+          "id": 1,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 20,
+          "n": "b"
+        },
+        {
+          "id": 1,
+          "v": null,
+          "n": "a"
+        },
+        {
+          "id": 1,
+          "v": 30,
+          "n": "b"
+        },
+        {
+          "id": 2,
+          "v": 10,
+          "n": "a"
+        },
+        {
+          "id": 2,
+          "v": null,
+          "n": "b"
+        }
+      ],
+      "output_columns": [
+        "id",
+        "n",
+        "v"
+      ],
+      "source_row_ids": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "expected_terminal_row_ids": [
+        "unpivot:1",
+        "unpivot:2",
+        "unpivot:3",
+        "unpivot:4",
+        "unpivot:5",
+        "unpivot:6"
+      ],
+      "oracle_sql": "SELECT * FROM (VALUES (1,10,20),(1,NULL,30),(2,10,NULL)) AS t(id,a,b) UNPIVOT INCLUDE NULLS (v FOR n IN (a,b))",
+      "negative_membership": {
+        "id": 99,
+        "v": 10,
+        "n": "a"
+      },
+      "expected_proof": "Exact and Impossible for negative tuple",
+      "output_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "v": {
+          "type": "integer",
+          "nullable": true,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "lower": {
+            "value": 10,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 30,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "text",
+          "nullable": false,
+          "values": [
+            "a",
+            "b"
+          ],
+          "lower": null,
+          "upper": null
+        }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ],
+        [
+          "values:2"
+        ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
+    },
+    {
+      "id": "77-C138-N-opaque",
+      "variant": "pivot_opaque",
+      "sql": "SELECT * FROM opaque PIVOT (SUM(v) FOR k IN (1,2))",
+      "classification": "conditional",
+      "expected_outcome": "schema/source rows missing, no exact source bag; explicit Residual",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "residual"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "hive",
+          "classification": "residual"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "residual"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "residual"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "residual"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "residual"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "residual"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "residual"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "residual"
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "typed_residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "inapplicable_without_literal_rows"
+        }
+      ],
+      "required_complete_physical_proof": false,
+      "reviewed_conditional_owner": "TASK-138",
+      "source_rows": [],
+      "expected_terminal_rows": null,
+      "expected_proof": "Residual or parser_boundary",
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Opaque physical rows cannot be reconstructed from table schema, catalog or parser alone; preserve Residual until real complete source evidence exists.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      },
+      "source_oracle_sql": null,
+      "independent_source_oracle": "unavailable_opaque_or_dynamic"
+    }
+  ],
+  "signoff": {
+    "all_child_ac_verified": true,
+    "full_ci_verified": true,
+    "mandatory_matrix_complete": true,
+    "conditional_review_complete": true,
+    "task_done": true,
+    "validated_version": 6,
+    "parser_cells_verified": 130,
+    "adapter_cells_classified": 30,
+    "verified_code_head": "31bc0e5204296b56c1f1ba7dd08484b6cc7939e9",
+    "verified_ci_run_id": 40126856488,
+    "verified_ci_checks": 9,
+    "verified_ci_total": 9,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "final_documentation_ci": "pending final PR metadata head"
+  },
+  "validation_state": "TASK-138 child verified: 7/7 mandatory Exact/Impossible, 3/3 reviewed conditional, 130 dialect classifications, 30 adapter classifications, native source+terminal DuckDB bags; 9/9 code-head CI passed",
+  "revision_review": [
+    {
+      "version": 5,
+      "date": "2026-10-24",
+      "scope": "invalid EXCEPT missing column fixture reclassified as conditional after independent AC standards audit",
+      "rationale": "No mandatory Residual: this is a deliberately invalid column name, not a missing implementation, so exact physical output is semantically impossible to certify. Both fixed identifiers remain; SQL, fixture, dialect/adapter classifications and typed residual unchanged.",
+      "new_cases_added": [],
+      "mandatory_cases_removed": [],
+      "fixture_reclassified": "77-C138-N-missing",
+      "reviewer": "Matt code-review standards/spec pass"
+    },
+    {
+      "version": 6,
+      "date": "2026-10-24",
+      "scope": "Freeze explicit independent DuckDB complete source SQL per mandatory fixture, in addition to existing independent terminal oracle_sql",
+      "rationale": "AC#3 requires both independently executed source and terminal whole bags, rather than only frozen manually expected source rows; no fixture, expected terminal or outcome classification changed",
+      "new_cases_added": [],
+      "mandatory_cases_removed": []
+    }
+  ]
+}
