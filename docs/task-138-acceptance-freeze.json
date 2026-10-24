@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-138",
   "parent": "TASK-77",
   "created": "2026-10-24",
@@ -73,69 +73,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -250,69 +250,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -363,69 +363,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -540,69 +540,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -738,69 +738,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "parser_boundary"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -935,69 +935,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -1125,69 +1125,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": false,
@@ -1206,69 +1206,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -1409,69 +1409,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "exact"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "exact"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": true,
@@ -1630,69 +1630,69 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "mysql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "postgresql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "hive",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "sqlite",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "snowflake",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "redshift",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "mssql",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "clickhouse",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "bigquery",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "ansi",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "duckdb",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         },
         {
           "dialect": "databricks",
-          "classification": "unverified_parser_boundary_or_exact"
+          "classification": "residual"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "unverified_or_inapplicable"
+          "classification": "typed_residual"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "unverified_or_inapplicable"
+          "classification": "inapplicable_without_literal_rows"
         }
       ],
       "required_complete_physical_proof": false,
@@ -1709,7 +1709,9 @@
     "mandatory_matrix_complete": false,
     "conditional_review_complete": false,
     "task_done": false,
-    "validated_version": 3
+    "validated_version": 3,
+    "parser_cells_verified": 130,
+    "adapter_cells_classified": 30
   },
-  "validation_state": "immutable task-owned finite fixture expectations, dialect and adapter dispositions pending independent execution"
+  "validation_state": "frozen 130 observed parser paths and 30 classified adapter paths; full head CI pending"
 }
