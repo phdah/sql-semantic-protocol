@@ -56,3 +56,7 @@ SQLite explicitly treats square brackets as quoted identifiers. MSSQL also token
 ## Real dbt Core execution oracle
 
 A source-free DuckDB dbt view in `tests/fixtures/dbt_core_project/models/task137_literal_unnest.sql` covers `[1,2,1,NULL]` with stable one-based generator identities. `tests/task_137_dbt_core_e2e.rs` isolates the real dbt-generated manifest and warehouse-introspected catalog, checks the complete physical terminal bag against the materialized DuckDB relation, nullable domain, and impossible absent row. `make dbt-e2e` includes the ignored-by-default executed oracle. Completion requires that CI job to pass on the final head.
+
+## External semantic contract review
+
+The source-free list-law oracle follows DuckDB's documented `UNNEST` behavior, including the zero-output semantics for typed NULL/empty lists: https://duckdb.org/docs/1.4/sql/query_syntax/unnest. The bracketed-identifier AST boundary is grounded in https://www.sqlite.org/lang_keywords.html and https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-identifiers. Spark/Databricks document the one-row-per-array-element `EXPLODE` law, but generator placement changes by engine/runtime version: https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html and https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/explode. Parser-model normalization and the equivalent DuckDB oracle are not evidence of native vendor execution. TASK-137's conditional release disposition therefore does not certify unexecuted engines.

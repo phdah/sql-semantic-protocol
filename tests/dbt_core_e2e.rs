@@ -250,6 +250,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "named_window_orders",
         "task128_groups",
         "task128_ntile",
+        "task137_literal_unnest",
         "task189_decimal_windows",
         "ordered_limited_union",
         "ranked_orders",

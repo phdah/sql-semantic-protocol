@@ -14,7 +14,10 @@ use sql_semantic_protocol::{
 use sqlparser::dialect::dialect_from_str;
 
 fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut result = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut result = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     result.sort();
     result
 }
@@ -38,18 +41,31 @@ fn source_free_unnest_real_dbt_artifacts_match_full_native_warehouse_bag() {
 
     // The closed source-free model is the whole proof boundary. Other dbt
     // models and sources cannot be treated as nonexistent physical data.
-    manifest_json["nodes"].as_object_mut().unwrap().retain(|id, _| id == model_id);
+    manifest_json["nodes"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id == model_id);
     manifest_json["sources"].as_object_mut().unwrap().clear();
-    catalog_json["nodes"].as_object_mut().unwrap().retain(|id, _| id == model_id);
+    catalog_json["nodes"]
+        .as_object_mut()
+        .unwrap()
+        .retain(|id, _| id == model_id);
     catalog_json["sources"].as_object_mut().unwrap().clear();
 
     let manifest = parse_dbt_manifest(&manifest_json.to_string()).unwrap();
     let catalog = parse_dbt_catalog(&catalog_json.to_string()).unwrap();
     let dialect = dialect_from_str(manifest.adapter_type()).unwrap();
-    let bundle =
-        analyze_dbt_artifacts(&manifest, &catalog, manifest.adapter_type(), dialect.as_ref())
-            .unwrap();
-    let layer = bundle.layers().last().expect("real compiled dbt model output");
+    let bundle = analyze_dbt_artifacts(
+        &manifest,
+        &catalog,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .unwrap();
+    let layer = bundle
+        .layers()
+        .last()
+        .expect("real compiled dbt model output");
     let PhysicalFiniteTableProof::Exact(exact) =
         physical_finite_table_plan(&bundle, layer.id(), None)
     else {
@@ -72,7 +88,10 @@ fn source_free_unnest_real_dbt_artifacts_match_full_native_warehouse_bag() {
         .unwrap();
 
     assert_eq!(sorted(&exact.terminal), sorted(&native));
-    assert_eq!(exact.row_ids, ["unnest:1", "unnest:2", "unnest:3", "unnest:4"]);
+    assert_eq!(
+        exact.row_ids,
+        ["unnest:1", "unnest:2", "unnest:3", "unnest:4"]
+    );
     assert!(exact.nodes.iter().all(|node| node.inputs().is_empty()));
     assert_eq!(exact.terminal_domains["v"].admits_null(), Some(true));
     assert_eq!(exact.terminal.len(), 4);

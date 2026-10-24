@@ -280,9 +280,19 @@ fn multicolumn_values_and_nullable_duplicate_unnest_preserve_complete_native_bag
         } else {
             native
         };
-        assert_eq!(bag(&proof.terminal), bag(&expected), "{sql}: complete physical bag");
-        assert_eq!(proof.row_ids, ids, "{sql}: every duplicate producer identity");
-        assert_eq!(proof.terminal_domains[nullable_column].admits_null(), Some(true));
+        assert_eq!(
+            bag(&proof.terminal),
+            bag(&expected),
+            "{sql}: complete physical bag"
+        );
+        assert_eq!(
+            proof.row_ids, ids,
+            "{sql}: every duplicate producer identity"
+        );
+        assert_eq!(
+            proof.terminal_domains[nullable_column].admits_null(),
+            Some(true)
+        );
         if sql.starts_with("VALUES") {
             assert_eq!(proof.terminal_domains["column2"].admits_null(), Some(false));
         }
