@@ -23,11 +23,17 @@ fn dbt(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").expect("dialect");
     analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref()).expect("compiled dbt")
 }
-fn result(bundle: &sql_semantic_protocol::AnalysisBundle) ->
-    (Vec<String>, Vec<std::collections::BTreeMap<String,sql_semantic_protocol::LiteralValue>>,
-     std::collections::BTreeMap<String,sql_semantic_protocol::ValueDomain>) {
+fn result(
+    bundle: &sql_semantic_protocol::AnalysisBundle,
+) -> (
+    Vec<String>,
+    Vec<std::collections::BTreeMap<String, sql_semantic_protocol::LiteralValue>>,
+    std::collections::BTreeMap<String, sql_semantic_protocol::ValueDomain>,
+) {
     let layer = bundle.layers().last().expect("layer");
-    let PhysicalFiniteTableProof::Exact(proof) = physical_finite_table_plan(bundle, layer.id(), None) else {
+    let PhysicalFiniteTableProof::Exact(proof) =
+        physical_finite_table_plan(bundle, layer.id(), None)
+    else {
         panic!("source-free SQL must retain exact canonical proof");
     };
     (proof.row_ids, proof.terminal, proof.terminal_domains)
@@ -42,14 +48,21 @@ fn each_bounded_finite_relational_form_is_adapter_independent() {
     ];
     let parser = dialect_from_name("duckdb").expect("dialect");
     for sql in cases {
-        let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref()).expect("direct");
+        let direct =
+            analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref()).expect("direct");
         let compiled = dbt(sql);
-        assert_eq!(result(&direct), result(&compiled), "SQL/dbt canonical parity: {sql}");
-        let raw:Value=serde_json::from_str(&to_bundle_json(&direct)).expect("direct JSON");
-        let modeled:Value=serde_json::from_str(&to_bundle_json(&compiled)).expect("dbt JSON");
-        assert_eq!(raw["inputs"][0]["statements"][0]["finite_table"],
-                   modeled["inputs"][0]["statements"][0]["finite_table"],
-                   "canonical wire parity for model: {sql}");
+        assert_eq!(
+            result(&direct),
+            result(&compiled),
+            "SQL/dbt canonical parity: {sql}"
+        );
+        let raw: Value = serde_json::from_str(&to_bundle_json(&direct)).expect("direct JSON");
+        let modeled: Value = serde_json::from_str(&to_bundle_json(&compiled)).expect("dbt JSON");
+        assert_eq!(
+            raw["inputs"][0]["statements"][0]["finite_table"],
+            modeled["inputs"][0]["statements"][0]["finite_table"],
+            "canonical wire parity for model: {sql}"
+        );
     }
 }
 #[test]
@@ -57,10 +70,16 @@ fn no_odcs_schema_can_authorize_literal_value_rows() {
     let parser = dialect_from_name("duckdb").expect("dialect");
     let bundle = analyze_inputs(
         &[SqlInput::inline("SELECT * EXCLUDE b FROM events")],
-        "duckdb", parser.as_ref()).expect("parsed");
+        "duckdb",
+        parser.as_ref(),
+    )
+    .expect("parsed");
     let target = bundle.layers().last().expect("layer");
-    assert!(matches!(
-        physical_finite_table_plan(&bundle, target.id(), None),
-        PhysicalFiniteTableProof::Residual { .. }
-    ), "schema-only ODCS must not be mistaken for a complete literal physical bag");
+    assert!(
+        matches!(
+            physical_finite_table_plan(&bundle, target.id(), None),
+            PhysicalFiniteTableProof::Residual { .. }
+        ),
+        "schema-only ODCS must not be mistaken for a complete literal physical bag"
+    );
 }
