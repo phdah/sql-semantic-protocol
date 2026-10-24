@@ -143,3 +143,30 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
     }
     assert_eq!(seen, 130);
 }
+
+#[test]
+fn task_138_dialect_discovery_report() {
+    let data=frozen();
+    let mut cells=Vec::new();
+    for case in data["cases"].as_array().unwrap() {
+        let id=case["id"].as_str().unwrap();
+        let sql=case["sql"].as_str().unwrap();
+        for dialect in data["dialects"].as_array().unwrap() {
+            let name=dialect.as_str().unwrap();
+            let parser=dialect_from_name(name).unwrap();
+            let status=match analyze_inputs(&[SqlInput::inline(sql)],name,parser.as_ref()) {
+                Err(_) => "parser_boundary",
+                Ok(bundle) => {
+                    let layer=bundle.layers().last().unwrap();
+                    match physical_finite_table_plan(&bundle,layer.id(),None) {
+                        PhysicalFiniteTableProof::Exact(_) => "exact",
+                        PhysicalFiniteTableProof::Impossible {..} => "impossible",
+                        PhysicalFiniteTableProof::Residual {..} => "residual",
+                    }
+                }
+            };
+            cells.push(serde_json::json!([id,name,status]));
+        }
+    }
+    panic!("TASK138_DIALECT_MATRIX={}",serde_json::to_string(&cells).unwrap());
+}
