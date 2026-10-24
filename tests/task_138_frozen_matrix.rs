@@ -219,7 +219,9 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             ),
             "{sql}: absent tuple is impossible"
         );
-        let positive=expected.first().expect("all TASK-138 mandatory fixture bags are populated");
+        let positive = expected
+            .first()
+            .expect("all TASK-138 mandatory fixture bags are populated");
         assert!(
             matches!(
                 physical_finite_table_plan(&bundle, target.id(), Some(positive)),
