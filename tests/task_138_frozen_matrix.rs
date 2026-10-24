@@ -1,10 +1,10 @@
 //! Frozen TASK-138 exact-bag, typed-domain and negative-outcome regression.
-use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_finite_table_plan,
-    LiteralValue, PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
+    analyze_inputs, dialect_from_name, physical_finite_table_plan, LiteralValue,
+    PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
 };
+use std::collections::BTreeMap;
 fn frozen() -> Value {
     serde_json::from_str(include_str!("../docs/task-138-acceptance-freeze.json")).expect("frozen")
 }
@@ -17,17 +17,25 @@ fn literal(value: &Value) -> LiteralValue {
     }
 }
 fn row(value: &Value) -> BTreeMap<String, LiteralValue> {
-    value.as_object().expect("row").iter().map(|(key,value)| (key.clone(), literal(value))).collect()
+    value
+        .as_object()
+        .expect("row")
+        .iter()
+        .map(|(key, value)| (key.clone(), literal(value)))
+        .collect()
 }
 fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
     let mut result = rows.iter().map(|r| format!("{r:?}")).collect::<Vec<_>>();
-    result.sort(); result
+    result.sort();
+    result
 }
 fn case_dialect(variant: &str) -> &str {
     match variant {
         "star_except" | "star_except_missing" | "star_replace" => "bigquery",
         "star_rename" => "snowflake",
-        "star_exclude" | "pivot_static" | "unpivot_exclude_null" | "unpivot_include_null" => "duckdb",
+        "star_exclude" | "pivot_static" | "unpivot_exclude_null" | "unpivot_include_null" => {
+            "duckdb"
+        }
         "pivot_dynamic" => "snowflake",
         "pivot_opaque" => "duckdb",
         _ => panic!("unreviewed variant: {variant}"),
@@ -39,7 +47,9 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
     assert_eq!(frozen["version"], 2);
     let mut checked = 0;
     for case in frozen["cases"].as_array().expect("cases") {
-        if case["classification"] != "mandatory" { continue; }
+        if case["classification"] != "mandatory" {
+            continue;
+        }
         let sql = case["sql"].as_str().expect("SQL");
         let dialect = case_dialect(case["variant"].as_str().expect("variant"));
         let parser = dialect_from_name(dialect).expect("dialect");
@@ -77,26 +87,29 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
 }
 #[test]
 fn named_dialects_are_all_probed_without_inferred_native_execution() {
-    let data=frozen();
-    let dialects=data["dialects"].as_array().unwrap();
-    assert_eq!(dialects.len(),13);
-    let mut seen=0;
+    let data = frozen();
+    let dialects = data["dialects"].as_array().unwrap();
+    assert_eq!(dialects.len(), 13);
+    let mut seen = 0;
     for case in data["cases"].as_array().unwrap() {
-        let sql=case["sql"].as_str().unwrap();
+        let sql = case["sql"].as_str().unwrap();
         for name in dialects {
-            let dialect=name.as_str().unwrap();
-            let parser=dialect_from_name(dialect).expect("canonical parser name");
+            let dialect = name.as_str().unwrap();
+            let parser = dialect_from_name(dialect).expect("canonical parser name");
             // SQL parser rejection is a distinct conditional boundary. If it
             // parses, only the canonical protocol's finite proof is assessed;
             // native vendor/session execution is never inferred from parsing.
-            let analysis=analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref());
-            if let Ok(bundle)=analysis {
-                let layer=bundle.layers().last().expect("layer");
-                let proof=physical_finite_table_plan(&bundle,layer.id(),None);
-                assert!(matches!(proof,PhysicalFiniteTableProof::Exact(_) | PhysicalFiniteTableProof::Residual{..}));
+            let analysis = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref());
+            if let Ok(bundle) = analysis {
+                let layer = bundle.layers().last().expect("layer");
+                let proof = physical_finite_table_plan(&bundle, layer.id(), None);
+                assert!(matches!(
+                    proof,
+                    PhysicalFiniteTableProof::Exact(_) | PhysicalFiniteTableProof::Residual { .. }
+                ));
             }
-            seen+=1;
+            seen += 1;
         }
     }
-    assert_eq!(seen,130);
+    assert_eq!(seen, 130);
 }
