@@ -1,10 +1,10 @@
 ---
 id: TASK-138
 title: Implement star transforms and fixed-schema pivot unpivot
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-24'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,20 @@ type: feature
 - **Independent concrete oracle baseline:** Two-column row (a=1,b=2), EXCEPT(b) => one column a=1; fixed two-key pivot returns exactly declared columns.
 - **Fail-closed boundary and owner:** Dynamic pivot/schema discovery cannot fabricate columns. TASK-138 owns every conditional variant and explicit review disposition.
 - **Mapped original TASK-77 AC:** #1, #2, #3, #5, #6.
+
+## Current implementation
+
+The canonical output analysis supports schema-attested `SELECT * EXCEPT`,
+`EXCLUDE`, `RENAME`, and `REPLACE` projection transformations through
+`src/analysis/output.rs`. It returns explicit unknown output for unresolved
+targets, mixed modifiers, and collation-dependent ILIKE instead of fabricating
+the original wildcard projection. Public output-domain regression tests live
+in `tests/task_138_star_transforms.rs`.
+
+The task-owned frozen source/terminal physical oracle matrix, fixed-schema
+PIVOT/UNPIVOT output and physical witnesses, independent complete DuckDB bag
+oracles, and dialect/adapter certification remain unverified. No TASK-138
+acceptance criterion is signed off; TASK-77 remains open.
 
 ## Acceptance Criteria
 
