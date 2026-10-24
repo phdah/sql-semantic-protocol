@@ -631,7 +631,8 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
         .map(|index| source.column_types()[*index])
         .collect::<Vec<_>>();
     output_types.extend(vec![FiniteColumnType::Integer; keys.len()]);
-    let mut groups: Vec<(Vec<LiteralExpression>, Vec<(usize, &Vec<LiteralExpression>)>)> = Vec::new();
+    type GroupBag<'a> = (Vec<LiteralExpression>, Vec<(usize, &'a Vec<LiteralExpression>)>);
+    let mut groups: Vec<GroupBag<'_>> = Vec::new();
     for (source_index, row) in source.rows().iter().enumerate() {
         let key = group_indices
             .iter()
