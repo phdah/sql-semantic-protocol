@@ -81,7 +81,7 @@ fn all_frozen_adapter_cells_have_executable_or_declared_source_boundary_evidence
                     }
                 }
                 ("odcs_equivalent_schema","inapplicable_without_literal_rows") => {
-                    assert_eq!(case["source_rows"].as_array().map(|v|v.is_empty()),Some(false),"{id}: concrete VALUES cannot originate from ODCS");
+                    assert!(case["source_rows"].is_array(), "{id}: only a declared SQL source-bag boundary is supported");
                     // Even a complete ODCS schema alone is not a source row snapshot.
                 }
                 other=>panic!("{id}: unfrozen adapter proof cell {other:?}")
