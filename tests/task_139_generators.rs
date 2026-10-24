@@ -71,7 +71,7 @@ fn frozen_generator_matrix_has_finite_test_enforced_parser_and_adapter_cells() {
     let manifest: Value = serde_json::from_str(include_str!("../docs/coverage-manifest.json"))
         .expect("coverage manifest");
     assert_eq!(freeze["owner"], "TASK-139");
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(
         freeze["fixture_ids"],
         serde_json::json!(["77-C139-P", "77-C139-N"])
