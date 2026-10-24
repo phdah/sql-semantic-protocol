@@ -53,6 +53,40 @@ The all-cell diagnostic on PR head 4b752b7 observed exactly 104 dialect/variant 
 
 SQLite explicitly treats square brackets as quoted identifiers. MSSQL also tokenizes the bracketed array-looking expression as an identifier. Neither AST may be promoted to the shared array-literal Exact proof. Typed CAST(array AS INTEGER[]) variants are parser-rejected in nine dialects; none are silently skipped. The 24 adapter cells explicitly distinguish executable SQL/dbt parity from ODCS's lack of source-free literal-row evidence, and record the unbound opaque dbt case as non-evaluable rather than manufactured evidence. EXPLODE retains the source-free canonical operator proof but not native vendor execution certification.
 
+## Independent review: SQL semantics and implementation (2026-10-24)
+
+**Standards and engine axis.** The seven mandatory source-free bags have
+independent DuckDB complete-result oracles. Integer bounds are closed at their
+attested finite extrema; duplicates retain multiplicity; SQL NULL is a row
+value rather than proof of a missing row. Empty and NULL arrays return zero
+rows without losing explicit integer element-type evidence. UNNEST ordinal
+identities are one-based; a BigQuery OFFSET, when proved, is zero-based.
+BigQuery's explicit `WITH OFFSET AS name` syntax has a separate AST alias;
+this implementation does not invent a positional column for that unsupported
+naming form. The frozen 13-dialect matrix classifies 69 exact parser paths,
+18 parser rejections, four bracket-identifier lexical boundaries and
+13 opaque residuals. These parser proofs do not certify native SQL execution
+on those vendors. EXPLODE native placement/session differences remain an
+explicit TASK-137 conditional release boundary, not a hidden pass.
+References: DuckDB UNNEST, BigQuery standard SQL query syntax, Databricks
+EXPLODE and sqlparser 0.58 AST evidence, linked below.
+
+**Canonical implementation axis.** Analysis normalizes complete literal rows
+once, preserving positional identities; the physical API reads the canonical
+relation without reparsing SQL, requires a closed source-free layer, and
+classifies malformed requested tuples as Residual and well-formed absent
+tuples as Impossible. Direct SQL and compiled dbt carry the same typed
+wire/table facts, while the 24 adapter cells document the lack of ODCS
+source-free row evidence. Additional soundness regressions reject overflow
+from explicit narrow signed-integer array casts, preserve in-range casts and
+refuse to silently drop a named OFFSET output. These protect the frozen
+outcome contract without adding unrelated composition obligations.
+TASK-140 owns source-column fanout and composed join/aggregate proofs.
+
+**Closure rule.** All five child AC remain gated on complete final-head CI,
+including full Rust and ignored dbt Core E2E execution. TASK-77 and v3
+release gates remain independent and open.
+
 ## Real dbt Core execution oracle
 
 A source-free DuckDB dbt view in `tests/fixtures/dbt_core_project/models/task137_literal_unnest.sql` covers `[1,2,1,NULL]` with stable one-based generator identities. `tests/task_137_dbt_core_e2e.rs` isolates the real dbt-generated manifest and warehouse-introspected catalog, checks the complete physical terminal bag against the materialized DuckDB relation, nullable domain, and impossible absent row. `make dbt-e2e` includes the ignored-by-default executed oracle. Completion requires that CI job to pass on the final head.
