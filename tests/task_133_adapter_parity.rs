@@ -55,7 +55,12 @@ fn verify_physical(
     let layer = bundle
         .layers()
         .iter()
-        .find(|layer| layer.consumes().iter().any(|input| input == state.relation()))
+        .find(|layer| {
+            layer
+                .consumes()
+                .iter()
+                .any(|input| input == state.relation())
+        })
         .unwrap_or_else(|| panic!("{label}: no canonical source layer"));
     let proof = physical_finite_page_bag_plan(bundle, layer.id(), std::slice::from_ref(state));
     let PhysicalFinitePageProof::Exact(exact) = proof else {
@@ -110,8 +115,7 @@ fn parser_equivalent_direct_sql_has_the_same_complete_physical_bag() {
                     dialect,
                     parser.as_ref(),
                 )];
-                let bundle =
-                    analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+                let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
                 let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
                     panic!("{dialect}: direct SQL was not represented by a query");
                 };
@@ -132,7 +136,10 @@ fn parser_equivalent_direct_sql_has_the_same_complete_physical_bag() {
         }
     }
     assert_eq!(DIALECTS.len(), 13);
-    assert!(classified >= 8, "too few portable parser forms: {classified}");
+    assert!(
+        classified >= 8,
+        "too few portable parser forms: {classified}"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -176,8 +183,7 @@ schema:
         parser.as_ref(),
     )];
     let direct = analyze_configured_inputs_with_catalog(&configured, &schema).unwrap();
-    let external =
-        analyze_configured_inputs_with_catalog(&configured, &external_catalog).unwrap();
+    let external = analyze_configured_inputs_with_catalog(&configured, &external_catalog).unwrap();
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -213,8 +219,7 @@ schema:
         }
     });
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
-    let dbt =
-        analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref()).unwrap();
+    let dbt = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref()).unwrap();
     let state = source(relation);
     let expected = verify_physical("direct", &direct, &state);
     assert_eq!(expected, verify_physical("dbt_compiled", &dbt, &state));
