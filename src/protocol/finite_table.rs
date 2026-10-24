@@ -74,6 +74,9 @@ pub struct FiniteTable {
     columns: Vec<String>,
     column_types: Vec<FiniteColumnType>,
     rows: Vec<Vec<LiteralExpression>>,
+    // Complete input snapshot and positional contributors for finite transforms.
+    source: Option<Box<FiniteTable>>,
+    contributors: Vec<Vec<usize>>,
 }
 
 impl FiniteTable {
@@ -122,7 +125,38 @@ impl FiniteTable {
             columns,
             column_types,
             rows,
+            source: None,
+            contributors: Vec::new(),
         })
+    }
+
+    /// Attach a complete canonical input bag and the source row indices that
+    /// jointly produce each output row. Incomplete provenance cannot be exact.
+    pub(crate) fn with_source(
+        mut self,
+        source: FiniteTable,
+        contributors: Vec<Vec<usize>>,
+    ) -> Option<Self> {
+        if contributors.len() != self.rows.len()
+            || contributors.iter().any(|indices| {
+                indices.is_empty() || indices.iter().any(|index| *index >= source.rows.len())
+            })
+        {
+            return None;
+        }
+        self.source = Some(Box::new(source));
+        self.contributors = contributors;
+        Some(self)
+    }
+
+    /// Original complete finite physical input, if this is a transformation.
+    pub fn source(&self) -> Option<&FiniteTable> {
+        self.source.as_deref()
+    }
+
+    /// Source positional row indices for each terminal row.
+    pub fn contributors(&self) -> &[Vec<usize>] {
+        &self.contributors
     }
 
     /// The canonical table-producing operator.
