@@ -401,16 +401,27 @@ fn named_values_source(factor: &TableFactor) -> Option<FiniteTable> {
 fn star_select(select: &Select) -> Option<FiniteTable> {
     use super::star_projection::{plan_star_modification, StarModification};
 
-    if !ordinary_select_shape(select) { return None; }
-    let [from] = select.from.as_slice() else { return None };
-    if !from.joins.is_empty() { return None; }
+    if !ordinary_select_shape(select) {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
     let table = named_values_source(&from.relation)?;
-    let [item] = select.projection.as_slice() else { return None };
+    let [item] = select.projection.as_slice() else {
+        return None;
+    };
     let options = match item {
         SelectItem::Wildcard(options) => options,
         SelectItem::QualifiedWildcard(qualifier, options)
             if matches!(&from.relation, TableFactor::Derived { alias: Some(alias), .. }
-                if qualifier.to_string() == alias.name.value) => options,
+                if qualifier.to_string() == alias.name.value) =>
+        {
+            options
+        }
         _ => return None,
     };
     let mut columns = table.columns().to_vec();
@@ -422,7 +433,9 @@ fn star_select(select: &Select) -> Option<FiniteTable> {
             for position in positions.into_iter().rev() {
                 columns.remove(position);
                 types.remove(position);
-                for row in &mut rows { row.remove(position); }
+                for row in &mut rows {
+                    row.remove(position);
+                }
             }
         }
         StarModification::Rename(pairs) => {
@@ -439,13 +452,14 @@ fn star_select(select: &Select) -> Option<FiniteTable> {
                     _ => return None,
                 };
                 *types.get_mut(position)? = column_type;
-                for row in &mut rows { *row.get_mut(position)? = literal.clone(); }
+                for row in &mut rows {
+                    *row.get_mut(position)? = literal.clone();
+                }
             }
         }
     }
     let contributors = (0..table.rows().len()).map(|index| vec![index]).collect();
-    FiniteTable::new(FiniteTableKind::Star, columns, types, rows)?
-        .with_source(table, contributors)
+    FiniteTable::new(FiniteTableKind::Star, columns, types, rows)?.with_source(table, contributors)
 }
 
 // Fixed-schema UNPIVOT preserves each complete source row and column identity.
@@ -669,7 +683,12 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
             });
         }
         rows.push(out);
-        contributors.push(members.iter().map(|(source_index, _)| *source_index).collect());
+        contributors.push(
+            members
+                .iter()
+                .map(|(source_index, _)| *source_index)
+                .collect(),
+        );
     }
     FiniteTable::new(FiniteTableKind::Pivot, output_columns, output_types, rows)?
         .with_source(source, contributors)
