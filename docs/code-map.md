@@ -1,5 +1,8 @@
 # Code map: find the smallest canonical owner
 
+TASK-137 source-free literal tables: `src/analysis/finite_tables.rs` normalizes validated VALUES and UNNEST/EXPLODE literal forms into `src/protocol/finite_table.rs`; `src/physical_realization/finite_tables.rs` proves exact identity/multiplicity/domain and absent-row membership from those canonical rows, not SQL reparsing. `src/emission/statements.rs` and `schema/protocol.schema.json` retain the wire contract; `tests/task_137_finite_tables.rs` compares complete DuckDB output bags. Source-column arrays, opaque generators, joined fanout, unproved element types, and vendor/session semantics remain residual; `docs/task-137-acceptance-freeze.json` preserves the unfinished dialect, adapter and CI matrix.
+
+
 TASK-131 scalar / quantified SQL-bound proofs: `src/protocol/predicates.rs` defines the canonical `QuantifiedSubqueryPredicate`; `src/analysis/predicates.rs` parses ANY/SOME/ALL, `src/emission/predicates.rs` serializes the JSON wire shape, and `schema/protocol.schema.json` validates it. `src/physical_realization/scalar_quantified.rs` proves complete uncorrelated singleton scalar and source-free quantified terminal bags from attested finite physical sources. `tests/task_131_scalar_quantified.rs` exercises 12 frozen mandatory cases x 13 dialect paths with native complete-bag DuckDB oracles, including nested/LATERAL conditional boundaries; `tests/task_131_adapter_parity.rs` covers SQL, compiled dbt and ODCS source evidence. Full cross-engine native quantifier laws and correlated LATERAL/APPLY remain typed conditional residuals.
 
 

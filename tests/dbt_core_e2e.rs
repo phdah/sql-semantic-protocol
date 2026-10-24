@@ -250,6 +250,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "named_window_orders",
         "task128_groups",
         "task128_ntile",
+        "task137_literal_unnest",
         "task189_decimal_windows",
         "ordered_limited_union",
         "ranked_orders",
@@ -891,7 +892,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     ))
     .expect("expected final-outcome fixture should be valid JSON");
     // The legacy golden uses stable canonical layer IDs. Re-analyze the
-    // original dbt inventory without the separately validated TASK-128 and TASK-189
+    // original dbt inventory without the separately validated TASK-128, TASK-137 and TASK-189
     // models and seeds rather than weakening or rewriting existing expectations.
     let mut legacy_manifest_json = manifest_json.clone();
     legacy_manifest_json["nodes"]
@@ -902,6 +903,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task128_ntile")
                 && !id.ends_with(".task128_window_source")
                 && !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]
@@ -920,6 +922,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task128_ntile")
                 && !id.ends_with(".task128_window_source")
                 && !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_catalog_json["sources"]

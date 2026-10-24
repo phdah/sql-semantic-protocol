@@ -63,6 +63,17 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
         value["window_witness"] = window_witness_to_value(window_witness);
     }
 
+    if let Some(table) = statement.finite_table() {
+        value["finite_table"] = json!({
+            "kind": table.kind().as_str(),
+            "columns": table.columns(),
+            "column_types": table.column_types().iter().map(|ty| ty.as_str()).collect::<Vec<_>>(),
+            "rows": table.rows().iter().map(|row| {
+                row.iter().map(literal_expression_to_value).collect::<Vec<_>>()
+            }).collect::<Vec<_>>()
+        });
+    }
+
     if let Some(set_operation) = statement.set_operation() {
         value["set_operation"] = set_operation_to_value(set_operation);
     }

@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "owner": "TASK-137",
+  "parent": "TASK-77",
+  "frozen_at": "2026-10-23",
+  "fixture_ids": [
+    "77-C137-P",
+    "77-C137-N"
+  ],
+  "required_variants": [
+    "values_multirow",
+    "values_null_duplicate",
+    "array_unnest",
+    "array_empty",
+    "with_ordinality",
+    "null_array",
+    "explode",
+    "opaque_collection"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "original_parent_ac_mapping": {
+    "1": [
+      "values_multirow",
+      "array_unnest",
+      "explode",
+      "with_ordinality"
+    ],
+    "2": [
+      "array_empty",
+      "null_array",
+      "with_ordinality"
+    ],
+    "3": [
+      "values_multirow",
+      "array_unnest",
+      "opaque_collection"
+    ],
+    "5": [
+      "values_multirow",
+      "array_unnest",
+      "with_ordinality"
+    ],
+    "6": [
+      "all variants and dialect/adapter cells"
+    ]
+  },
+  "oracle": {
+    "engine": "DuckDB",
+    "mode": "independent complete source and terminal bags",
+    "native_vendor_certification": false
+  },
+  "conditional": {
+    "owner": "TASK-137",
+    "release_disposition": "pending independent parser/native/session review; cannot claim exactness without evidence",
+    "unknown_element_type": "Residual",
+    "unknown_parser_forms": "parser_boundary",
+    "opaque_generators": "Residual"
+  },
+  "validation": {
+    "status": "unverified",
+    "mandatory_cells_signoff": false,
+    "adapter_cells_signoff": false,
+    "dialect_cells_signoff": false,
+    "full_ci_signoff": false
+  },
+  "cases": [
+    {
+      "id": "77-C137-P-values",
+      "variant": "values_multirow",
+      "classification": "mandatory",
+      "sql": "VALUES (1), (2)",
+      "source": [],
+      "expected": [
+        {
+          "column1": 1
+        },
+        {
+          "column1": 2
+        }
+      ],
+      "domains": {
+        "column1": {
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "nullable": false
+        }
+      },
+      "positive": [
+        "values:0",
+        "values:1"
+      ],
+      "rejected": [],
+      "proof": "Exact"
+    },
+    {
+      "id": "77-C137-N-values-null-duplicate",
+      "variant": "values_null_duplicate",
+      "classification": "mandatory",
+      "sql": "VALUES (1), (1), (NULL)",
+      "source": [],
+      "expected": [
+        {
+          "column1": 1
+        },
+        {
+          "column1": 1
+        },
+        {
+          "column1": null
+        }
+      ],
+      "domains": {
+        "column1": {
+          "type": "INTEGER NULL",
+          "values": [
+            1
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          },
+          "nullable": true
+        }
+      },
+      "positive": [
+        "values:0",
+        "values:1",
+        "values:2"
+      ],
+      "rejected": [],
+      "proof": "Exact"
+    },
+    {
+      "id": "77-C137-P-unnest",
+      "variant": "array_unnest",
+      "classification": "mandatory",
+      "sql": "SELECT * FROM UNNEST([1, 2]) AS t(v)",
+      "source": [],
+      "expected": [
+        {
+          "v": 1
+        },
+        {
+          "v": 2
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "nullable": false
+        }
+      },
+      "positive": [
+        "unnest:1",
+        "unnest:2"
+      ],
+      "rejected": [],
+      "proof": "Exact"
+    },
+    {
+      "id": "77-C137-N-unnest-empty",
+      "variant": "array_empty",
+      "classification": "mandatory",
+      "sql": "SELECT * FROM UNNEST([]) AS t(v)",
+      "source": [],
+      "expected": [],
+      "domains": {
+        "v": {
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false
+        }
+      },
+      "positive": [],
+      "rejected": [],
+      "proof": "Exact",
+      "boundary": "typed empty array must have authoritative element datatype"
+    },
+    {
+      "id": "77-C137-P-ordinality",
+      "variant": "with_ordinality",
+      "classification": "mandatory",
+      "sql": "SELECT * FROM UNNEST([1, 2]) WITH ORDINALITY AS t(v, ord)",
+      "source": [],
+      "expected": [
+        {
+          "v": 1,
+          "ord": 1
+        },
+        {
+          "v": 2,
+          "ord": 2
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        },
+        "ord": {
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        }
+      },
+      "positive": [
+        "unnest:1",
+        "unnest:2"
+      ],
+      "rejected": [],
+      "proof": "Exact"
+    },
+    {
+      "id": "77-C137-N-null-array",
+      "variant": "null_array",
+      "classification": "mandatory",
+      "sql": "SELECT * FROM UNNEST(CAST(NULL AS INTEGER[])) AS t(v)",
+      "source": [],
+      "expected": [],
+      "domains": {
+        "v": {
+          "type": "INTEGER NULL",
+          "values": [],
+          "nullable": true
+        }
+      },
+      "positive": [],
+      "rejected": [],
+      "proof": "Exact",
+      "boundary": "native engine treatment and explicit typed NULL necessary"
+    },
+    {
+      "id": "77-C137-P-explode",
+      "variant": "explode",
+      "classification": "mandatory",
+      "sql": "SELECT explode(array(1, 2)) AS v",
+      "source": [],
+      "expected": [
+        {
+          "v": 1
+        },
+        {
+          "v": 2
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        }
+      },
+      "positive": [
+        "explode:1",
+        "explode:2"
+      ],
+      "rejected": [],
+      "proof": "Exact",
+      "boundary": "parser and function placement vary across dialects"
+    },
+    {
+      "id": "77-C137-N-opaque",
+      "variant": "opaque_collection",
+      "classification": "conditional",
+      "sql": "SELECT * FROM UNNEST(opaque_array) AS t(v)",
+      "source": [],
+      "expected": null,
+      "domains": {
+        "v": {
+          "type": "UNKNOWN",
+          "nullable": null
+        }
+      },
+      "positive": [],
+      "rejected": [],
+      "proof": "Residual",
+      "reason": "no independently attested nested element type or physical values"
+    }
+  ]
+}

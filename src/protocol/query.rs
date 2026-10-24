@@ -78,6 +78,7 @@ pub struct QueryStatement {
     ranked_composed_goal_shape: bool,
     window_grouped_count_source: Option<Box<WindowGroupedCountSource>>,
     set_operation: Option<Box<SetOperation>>,
+    finite_table: Option<Box<FiniteTable>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
     diagnostics: Vec<Diagnostic>,
@@ -114,6 +115,7 @@ impl QueryStatement {
             ranked_composed_goal_shape: false,
             window_grouped_count_source: None,
             set_operation: None,
+            finite_table: None,
             produced_relation: None,
             write: None,
             diagnostics,
@@ -282,6 +284,16 @@ impl QueryStatement {
     /// Canonical GROUP BY key and COUNT(*) alias for a certified derived producer.
     pub fn window_grouped_count_source(&self) -> Option<&WindowGroupedCountSource> {
         self.window_grouped_count_source.as_deref()
+    }
+
+    pub(crate) fn with_finite_table(mut self, table: Option<FiniteTable>) -> Self {
+        self.finite_table = table.map(Box::new);
+        self
+    }
+
+    /// Canonical complete source-free rows for a bounded VALUES or array constructor.
+    pub fn finite_table(&self) -> Option<&FiniteTable> {
+        self.finite_table.as_deref()
     }
 
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
