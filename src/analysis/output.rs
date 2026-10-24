@@ -409,7 +409,6 @@ pub(super) fn analyze_output_item(
     }
 }
 
-
 fn unresolved_wildcard_transform(
     qualifier: Option<&str>,
     reason: &str,
@@ -457,7 +456,9 @@ fn expand_wildcard_with_options(
 
     let mut columns = expand_wildcard(qualifier, scope, diagnostics);
     if columns.is_empty()
-        || columns.iter().any(|column| matches!(column.expression(), Expression::Unknown(_)))
+        || columns
+            .iter()
+            .any(|column| matches!(column.expression(), Expression::Unknown(_)))
     {
         return unresolved_wildcard_transform(
             qualifier,
@@ -468,7 +469,12 @@ fn expand_wildcard_with_options(
 
     let excluded = if let Some(except) = &options.opt_except {
         let mut names = vec![except.first_element.value.as_str()];
-        names.extend(except.additional_elements.iter().map(|name| name.value.as_str()));
+        names.extend(
+            except
+                .additional_elements
+                .iter()
+                .map(|name| name.value.as_str()),
+        );
         names
     } else if let Some(exclude) = &options.opt_exclude {
         match exclude {
@@ -484,7 +490,11 @@ fn expand_wildcard_with_options(
         let mut seen = BTreeSet::new();
         if excluded.iter().any(|name| {
             !seen.insert(*name)
-                || columns.iter().filter(|column| column.name() == *name).count() != 1
+                || columns
+                    .iter()
+                    .filter(|column| column.name() == *name)
+                    .count()
+                    != 1
         }) || excluded.len() == columns.len()
         {
             return unresolved_wildcard_transform(
@@ -507,10 +517,15 @@ fn expand_wildcard_with_options(
         if renames.iter().any(|pair| {
             !old_names.insert(pair.ident.value.as_str())
                 || !new_names.insert(pair.alias.value.as_str())
-                || columns.iter().filter(|column| column.name() == pair.ident.value).count() != 1
-        }) || columns.iter().any(|column| {
-            new_names.contains(column.name()) && !old_names.contains(column.name())
-        }) {
+                || columns
+                    .iter()
+                    .filter(|column| column.name() == pair.ident.value)
+                    .count()
+                    != 1
+        }) || columns
+            .iter()
+            .any(|column| new_names.contains(column.name()) && !old_names.contains(column.name()))
+        {
             return unresolved_wildcard_transform(
                 qualifier,
                 "wildcard rename requires unambiguous existing targets and distinct names",
@@ -518,7 +533,10 @@ fn expand_wildcard_with_options(
             );
         }
         for pair in renames {
-            if let Some(position) = columns.iter().position(|col| col.name() == pair.ident.value) {
+            if let Some(position) = columns
+                .iter()
+                .position(|col| col.name() == pair.ident.value)
+            {
                 let prior = &columns[position];
                 columns[position] = OutputColumn::new(
                     pair.alias.value.clone(),
@@ -535,7 +553,11 @@ fn expand_wildcard_with_options(
         let mut seen = BTreeSet::new();
         if replace.items.iter().any(|item| {
             !seen.insert(item.column_name.value.as_str())
-                || columns.iter().filter(|col| col.name() == item.column_name.value).count() != 1
+                || columns
+                    .iter()
+                    .filter(|col| col.name() == item.column_name.value)
+                    .count()
+                    != 1
         }) {
             return unresolved_wildcard_transform(
                 qualifier,
@@ -557,14 +579,9 @@ fn expand_wildcard_with_options(
             let normalized =
                 analyze_expression_with_scope(&item.expr, scope, named_windows, diagnostics);
             let domain = derive_output_domain(&normalized);
-            let lineage =
-                lineage_for_expression(&item.expr, scope, named_windows, diagnostics);
-            columns[position] = OutputColumn::new(
-                item.column_name.value.clone(),
-                normalized,
-                domain,
-                lineage,
-            );
+            let lineage = lineage_for_expression(&item.expr, scope, named_windows, diagnostics);
+            columns[position] =
+                OutputColumn::new(item.column_name.value.clone(), normalized, domain, lineage);
         }
     }
     columns
