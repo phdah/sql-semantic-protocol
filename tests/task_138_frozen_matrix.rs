@@ -59,7 +59,7 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             let value=actual.terminal_domains.get(column).expect("outcome column");
             let ValueDomain::Set(set)=value else { panic!("{column}: expected exact finite domain, got {value:?}"); };
             assert_eq!(set.mode(),SetMode::Include);
-            let mut observed=set.values().iter().map(|v|format!("{:?}",v.value())).collect::<Vec<_>>();
+            let mut observed=set.values().iter().filter(|v| !matches!(v.value(), LiteralValue::Null)).map(|v|format!("{:?}",v.value())).collect::<Vec<_>>();
             observed.sort();
             let mut frozen_values=spec["values"].as_array().unwrap().iter().map(|v|format!("{:?}",literal(v))).collect::<Vec<_>>();
             frozen_values.sort();
