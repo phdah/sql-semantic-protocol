@@ -23,21 +23,27 @@ fn dbt(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").expect("dialect");
     analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref()).expect("compiled dbt")
 }
-fn result(
-    bundle: &sql_semantic_protocol::AnalysisBundle,
-) -> (
-    Vec<String>,
-    Vec<std::collections::BTreeMap<String, sql_semantic_protocol::LiteralValue>>,
-    std::collections::BTreeMap<String, sql_semantic_protocol::ValueDomain>,
-) {
+#[derive(Debug, PartialEq)]
+struct FiniteSnapshot {
+    row_ids: Vec<String>,
+    terminal: Vec<std::collections::BTreeMap<String, sql_semantic_protocol::LiteralValue>>,
+    terminal_domains: std::collections::BTreeMap<String, sql_semantic_protocol::ValueDomain>,
+}
+
+fn result(bundle: &sql_semantic_protocol::AnalysisBundle) -> FiniteSnapshot {
     let layer = bundle.layers().last().expect("layer");
     let PhysicalFiniteTableProof::Exact(proof) =
         physical_finite_table_plan(bundle, layer.id(), None)
     else {
         panic!("source-free SQL must retain exact canonical proof");
     };
-    (proof.row_ids, proof.terminal, proof.terminal_domains)
+    FiniteSnapshot {
+        row_ids: proof.row_ids,
+        terminal: proof.terminal,
+        terminal_domains: proof.terminal_domains,
+    }
 }
+
 #[test]
 fn each_bounded_finite_relational_form_is_adapter_independent() {
     let cases = [
