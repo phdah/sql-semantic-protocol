@@ -437,151 +437,57 @@ fn expand_wildcard_with_options(
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<OutputColumn> {
-    let modifiers = usize::from(options.opt_except.is_some())
-        + usize::from(options.opt_exclude.is_some())
-        + usize::from(options.opt_replace.is_some())
-        + usize::from(options.opt_rename.is_some())
-        + usize::from(options.opt_ilike.is_some());
-    if modifiers == 0 {
-        return expand_wildcard(qualifier, scope, diagnostics);
-    }
-    // Mixed modifier ordering and ILIKE collation are not source-independent.
-    if modifiers != 1 || options.opt_ilike.is_some() {
-        return unresolved_wildcard_transform(
-            qualifier,
-            "mixed wildcard modifiers or ILIKE require unproved ordering or collation semantics",
-            diagnostics,
-        );
-    }
+    use super::star_projection::{plan_star_modification, StarModification};
 
     let mut columns = expand_wildcard(qualifier, scope, diagnostics);
+    // Do not project through an unknown schema, even if an edit has a
+    // superficially valid target: output arity would be fabricated.
     if columns.is_empty()
-        || columns
-            .iter()
-            .any(|column| matches!(column.expression(), Expression::Unknown(_)))
+        || columns.iter().any(|column| matches!(column.expression(), Expression::Unknown(_)))
     {
         return unresolved_wildcard_transform(
-            qualifier,
-            "wildcard transformation requires fully resolved source columns",
+            qualifier, "wildcard transformation requires fully resolved source columns",
             diagnostics,
         );
     }
-
-    let excluded = if let Some(except) = &options.opt_except {
-        let mut names = vec![except.first_element.value.as_str()];
-        names.extend(
-            except
-                .additional_elements
-                .iter()
-                .map(|name| name.value.as_str()),
-        );
-        names
-    } else if let Some(exclude) = &options.opt_exclude {
-        match exclude {
-            sqlparser::ast::ExcludeSelectItem::Single(name) => vec![name.value.as_str()],
-            sqlparser::ast::ExcludeSelectItem::Multiple(names) => {
-                names.iter().map(|name| name.value.as_str()).collect()
-            }
-        }
-    } else {
-        Vec::new()
+    let names = columns.iter().map(|column| column.name().to_string()).collect::<Vec<_>>();
+    let plan = match plan_star_modification(options, &names) {
+        Ok(plan) => plan,
+        Err(reason) => return unresolved_wildcard_transform(qualifier,reason,diagnostics),
     };
-    if !excluded.is_empty() {
-        let mut seen = BTreeSet::new();
-        if excluded.iter().any(|name| {
-            !seen.insert(*name)
-                || columns
-                    .iter()
-                    .filter(|column| column.name() == *name)
-                    .count()
-                    != 1
-        }) || excluded.len() == columns.len()
-        {
-            return unresolved_wildcard_transform(
-                qualifier,
-                "wildcard exclusion must identify distinct existing columns and retain an output",
-                diagnostics,
-            );
-        }
-        columns.retain(|column| !seen.contains(column.name()));
-        return columns;
-    }
-
-    if let Some(rename) = &options.opt_rename {
-        let renames = match rename {
-            sqlparser::ast::RenameSelectItem::Single(pair) => vec![pair],
-            sqlparser::ast::RenameSelectItem::Multiple(pairs) => pairs.iter().collect(),
-        };
-        let mut old_names = BTreeSet::new();
-        let mut new_names = BTreeSet::new();
-        if renames.iter().any(|pair| {
-            !old_names.insert(pair.ident.value.as_str())
-                || !new_names.insert(pair.alias.value.as_str())
-                || columns
-                    .iter()
-                    .filter(|column| column.name() == pair.ident.value)
-                    .count()
-                    != 1
-        }) || columns
-            .iter()
-            .any(|column| new_names.contains(column.name()) && !old_names.contains(column.name()))
-        {
-            return unresolved_wildcard_transform(
-                qualifier,
-                "wildcard rename requires unambiguous existing targets and distinct names",
-                diagnostics,
-            );
-        }
-        for pair in renames {
-            if let Some(position) = columns
-                .iter()
-                .position(|col| col.name() == pair.ident.value)
-            {
-                let prior = &columns[position];
-                columns[position] = OutputColumn::new(
-                    pair.alias.value.clone(),
-                    prior.expression().clone(),
-                    prior.domain().clone(),
-                    prior.lineage().to_vec(),
-                );
+    match plan {
+        StarModification::Identity => {}
+        StarModification::Exclude(positions) => {
+            for index in positions.into_iter().rev() {
+                columns.remove(index);
             }
         }
-        return columns;
-    }
-
-    if let Some(replace) = &options.opt_replace {
-        let mut seen = BTreeSet::new();
-        if replace.items.iter().any(|item| {
-            !seen.insert(item.column_name.value.as_str())
-                || columns
-                    .iter()
-                    .filter(|col| col.name() == item.column_name.value)
-                    .count()
-                    != 1
-        }) {
-            return unresolved_wildcard_transform(
-                qualifier,
-                "wildcard replacement requires distinct and unambiguous existing targets",
-                diagnostics,
-            );
-        }
-        for item in &replace.items {
-            let Some(position) = columns
-                .iter()
-                .position(|column| column.name() == item.column_name.value)
-            else {
-                return unresolved_wildcard_transform(
-                    qualifier,
-                    "wildcard replacement target no longer exists",
-                    diagnostics,
+        StarModification::Rename(pairs) => {
+            for (index, name) in pairs {
+                let Some(prior) = columns.get(index) else { return unresolved_wildcard_transform(
+                    qualifier,"wildcard rename lost validated column identity",diagnostics
+                ); };
+                let replacement = OutputColumn::new(
+                    name, prior.expression().clone(), prior.domain().clone(), prior.lineage().to_vec()
                 );
-            };
-            let normalized =
-                analyze_expression_with_scope(&item.expr, scope, named_windows, diagnostics);
-            let domain = derive_output_domain(&normalized);
-            let lineage = lineage_for_expression(&item.expr, scope, named_windows, diagnostics);
-            columns[position] =
-                OutputColumn::new(item.column_name.value.clone(), normalized, domain, lineage);
+                columns[index] = replacement;
+            }
+        }
+        StarModification::Replace(pairs) => {
+            for (index, expression) in pairs {
+                let Some(prior) = columns.get(index) else { return unresolved_wildcard_transform(
+                    qualifier,"wildcard replacement lost validated column identity",diagnostics
+                ); };
+                let name = prior.name().to_string();
+                let normalized = analyze_expression_with_scope(
+                    &expression, scope, named_windows, diagnostics
+                );
+                let domain = derive_output_domain(&normalized);
+                let lineage = lineage_for_expression(
+                    &expression, scope, named_windows, diagnostics
+                );
+                columns[index] = OutputColumn::new(name, normalized, domain, lineage);
+            }
         }
     }
     columns
