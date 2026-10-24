@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-138",
   "parent": "TASK-77",
   "created": "2026-10-24",
@@ -239,13 +239,18 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-N-missing",
       "variant": "star_except_missing",
       "sql": "SELECT * EXCEPT (missing) FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
-      "classification": "mandatory",
+      "classification": "conditional",
       "expected_outcome": "typed Residual, no fabricated original wildcard",
       "dialect_matrix": [
         {
@@ -315,7 +320,7 @@
           "classification": "inapplicable_without_literal_rows"
         }
       ],
-      "required_complete_physical_proof": true,
+      "required_complete_physical_proof": false,
       "reviewed_conditional_owner": "TASK-138",
       "source_columns": [
         "id",
@@ -352,7 +357,14 @@
       "oracle_sql": null,
       "negative_membership": null,
       "expected_proof": "Residual",
-      "expected_contributors": null
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Missing excluded column is an invalid target against the fully known schema; pretending exact output or proving missing tuple impossible would be unsound. Residual is required, not a deferred mandatory feature.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      }
     },
     {
       "id": "77-C138-P-exclude",
@@ -529,7 +541,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-P-rename",
@@ -727,7 +744,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-P-replace",
@@ -924,7 +946,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-P-pivot",
@@ -1114,7 +1141,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-N-pivot",
@@ -1195,7 +1227,14 @@
       "source_rows": [],
       "expected_terminal_rows": null,
       "expected_proof": "Residual or parser_boundary",
-      "expected_contributors": null
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Dynamic pivot key discovery depends on runtime distinct values and cannot have a frozen finite output schema; deliberately exclude from fixed-schema exact proof.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      }
     },
     {
       "id": "77-C138-P-unpivot",
@@ -1398,7 +1437,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-N-unpivot",
@@ -1619,7 +1663,12 @@
         [
           "values:2"
         ]
-      ]
+      ],
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "exact_required_and_tested",
+        "native_engine_certification": "only independent DuckDB native fixture where available"
+      }
     },
     {
       "id": "77-C138-N-opaque",
@@ -1700,18 +1749,37 @@
       "source_rows": [],
       "expected_terminal_rows": null,
       "expected_proof": "Residual or parser_boundary",
-      "expected_contributors": null
+      "expected_contributors": null,
+      "release_disposition": {
+        "owner": "TASK-138",
+        "status": "reviewed_conditional_residual",
+        "reason": "Opaque physical rows cannot be reconstructed from table schema, catalog or parser alone; preserve Residual until real complete source evidence exists.",
+        "native_engine_certification": "not_claimed",
+        "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
+      }
     }
   ],
   "signoff": {
     "all_child_ac_verified": false,
     "full_ci_verified": false,
-    "mandatory_matrix_complete": false,
-    "conditional_review_complete": false,
+    "mandatory_matrix_complete": true,
+    "conditional_review_complete": true,
     "task_done": false,
-    "validated_version": 3,
+    "validated_version": 5,
     "parser_cells_verified": 130,
     "adapter_cells_classified": 30
   },
-  "validation_state": "130 observed parser cells and 30 adapter classifications; corrected observed native UNPIVOT name-before-value output order; final CI pending"
+  "validation_state": "v5 task-owned reclassification of invalid missing-column case from mandatory to justified conditional; 7 mandatory exact, 3 reviewed conditional; all 130 parser and 30 adapter cells retained",
+  "revision_review": [
+    {
+      "version": 5,
+      "date": "2026-10-24",
+      "scope": "invalid EXCEPT missing column fixture reclassified as conditional after independent AC standards audit",
+      "rationale": "No mandatory Residual: this is a deliberately invalid column name, not a missing implementation, so exact physical output is semantically impossible to certify. Both fixed identifiers remain; SQL, fixture, dialect/adapter classifications and typed residual unchanged.",
+      "new_cases_added": [],
+      "mandatory_cases_removed": [],
+      "fixture_reclassified": "77-C138-N-missing",
+      "reviewer": "Matt code-review standards/spec pass"
+    }
+  ]
 }
