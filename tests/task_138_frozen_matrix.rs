@@ -44,7 +44,7 @@ fn case_dialect(variant: &str) -> &str {
 #[test]
 fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
     let frozen = frozen();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     let mut checked = 0;
     for case in frozen["cases"].as_array().expect("cases") {
         if case["classification"] != "mandatory" {
@@ -65,6 +65,29 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
         assert_eq!(sorted(&actual.terminal), sorted(&expected), "{sql}: complete bag");
         assert_eq!(actual.row_ids,
           case["expected_terminal_row_ids"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_owned()).collect::<Vec<_>>(),"{sql}: row identity");
+        assert_eq!(
+            actual.source_row_ids,
+            case["source_row_ids"].as_array().unwrap()
+                .iter().map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>(),
+            "{sql}: original source identities"
+        );
+        let actual_source=actual.source_rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+        let expected_source=case["source_rows"].as_array().unwrap().iter()
+            .map(|values| {
+                let cols=case["source_columns"].as_array().unwrap();
+                let values=values.as_array().unwrap();
+                cols.iter().zip(values).map(|(name,value)|
+                    (name.as_str().unwrap().to_string(),literal(value))
+                ).collect::<BTreeMap<_,_>>()
+            })
+            .map(|row|format!("{row:?}")).collect::<Vec<_>>();
+        assert_eq!(actual_source,expected_source,"{sql}: complete physical VALUES source");
+        let expected_contributors=case["expected_contributors"].as_array().unwrap()
+            .iter().map(|indices| indices.as_array().unwrap().iter()
+                .map(|id|id.as_str().unwrap().to_string()).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        assert_eq!(actual.contributors, expected_contributors,
+                   "{sql}: source identity witnesses for every output row");
         for (column, spec) in case["output_domains"].as_object().expect("typed domains") {
             let value=actual.terminal_domains.get(column).expect("outcome column");
             let ValueDomain::Set(set)=value else { panic!("{column}: expected exact finite domain, got {value:?}"); };
