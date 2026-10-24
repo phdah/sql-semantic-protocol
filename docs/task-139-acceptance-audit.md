@@ -2,7 +2,7 @@
 
 Owner: TASK-139, TASK-77 child 3/4.  
 Frozen fixture families: `77-C139-P`, `77-C139-N`.  
-Inventory: [task-139-acceptance-freeze.json](task-139-acceptance-freeze.json) v2.  
+Inventory: [task-139-acceptance-freeze.json](task-139-acceptance-freeze.json) v3.  
 Public proof seams: `analyze_inputs` / `analyze_dbt_manifest_with_schemas`,
 `physical_finite_table_plan` and typed JSON emission.
 This does not sign off TASK-77, TASK-91 or native vendor function execution.
@@ -25,7 +25,7 @@ Three mandatory executable cases are frozen and tested:
 | 77-C139-N-explode-duplicates-null | `SELECT EXPLODE([5,NULL,5]) AS v` | `[5,NULL,5]` | `explode:1..3`; nullable integer 5 inclusive |
 | 77-C139-P-explode-from | `SELECT * FROM EXPLODE([5,6]) AS t(v)` | `[5,6]` | `explode:1,explode:2`; integer [5,6] inclusive |
 
-Every complete bag is checked against independent DuckDB UNNEST execution.
+Every complete bag is checked against independent DuckDB UNNEST execution. The task-owned source oracle independently evaluates the literal array length and every element, including NULL slots, through DuckDB array functions; source-free relations still have zero *physical table* inputs.
 DuckDB UNNEST demonstrates the array-element bag and NULL laws; it does
 **not** certify native Spark EXPLODE, Snowflake FLATTEN, JSON_TABLE, or
 dialect-specific ordering/coercion. Complete physical input relation bags
