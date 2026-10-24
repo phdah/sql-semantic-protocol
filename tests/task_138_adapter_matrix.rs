@@ -42,7 +42,7 @@ fn expected_dialect(variant: &str) -> &str {
 fn all_frozen_adapter_cells_have_executable_or_declared_source_boundary_evidence() {
     let m: Value = serde_json::from_str(include_str!("../docs/task-138-acceptance-freeze.json"))
         .expect("freeze");
-    assert_eq!(m["version"], 4);
+    assert_eq!(m["version"], 5);
     let cases = m["cases"].as_array().expect("cases");
     assert_eq!(cases.len(), 10);
     let mut count = 0;
