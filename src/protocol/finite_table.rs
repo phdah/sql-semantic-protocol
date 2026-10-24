@@ -90,13 +90,19 @@ impl FiniteTable {
             || columns.iter().any(|column| column.trim().is_empty())
             || rows.iter().any(|row| row.len() != columns.len())
             || rows.iter().any(|row| {
-                row.iter().enumerate().any(|(index, literal)| {
-                    match column_types[index] {
+                row.iter()
+                    .enumerate()
+                    .any(|(index, literal)| match column_types[index] {
                         FiniteColumnType::Unknown => literal.literal_type() != LiteralType::Null,
-                        FiniteColumnType::Integer => !matches!(literal.literal_type(), LiteralType::Integer | LiteralType::Null),
-                        FiniteColumnType::Text => !matches!(literal.literal_type(), LiteralType::String | LiteralType::Null),
-                    }
-                })
+                        FiniteColumnType::Integer => !matches!(
+                            literal.literal_type(),
+                            LiteralType::Integer | LiteralType::Null
+                        ),
+                        FiniteColumnType::Text => !matches!(
+                            literal.literal_type(),
+                            LiteralType::String | LiteralType::Null
+                        ),
+                    })
             })
             || rows.iter().flatten().any(|literal| {
                 match (literal.literal_type(), literal.value()) {
