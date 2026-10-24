@@ -8350,6 +8350,15 @@
               "unknown"
             ]
           }
+       },
+        "source": {
+          "$ref": "#/$defs/finiteTable",
+          "description": "Complete literal physical source for transformed finite output"
+        },
+        "contributors": {
+          "type": "array",
+          "description": "Indices into source.rows, one nonempty array for every output row",
+          "items": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 0}}
         }
       }
     }
