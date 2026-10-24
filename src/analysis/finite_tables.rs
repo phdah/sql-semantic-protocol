@@ -171,7 +171,9 @@ fn unnest_table(
     kind: FiniteTableKind,
     dialect_name: &str,
 ) -> Option<FiniteTable> {
-    if (offset && ordinality) || (matches!(kind, FiniteTableKind::Explode) && (offset || ordinality)) {
+    if (offset && ordinality)
+        || (matches!(kind, FiniteTableKind::Explode) && (offset || ordinality))
+    {
         return None;
     }
     let [array] = expressions else { return None };
