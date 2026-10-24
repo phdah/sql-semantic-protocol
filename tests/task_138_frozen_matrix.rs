@@ -207,8 +207,12 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
                     }
                 }
             };
-            let stored = case["dialect_matrix"].as_array().expect("13 frozen dialect cells")
-                .iter().find(|cell| cell["dialect"] == dialect).expect("named dialect");
+            let stored = case["dialect_matrix"]
+                .as_array()
+                .expect("13 frozen dialect cells")
+                .iter()
+                .find(|cell| cell["dialect"] == dialect)
+                .expect("named dialect");
             assert_eq!(stored["classification"], observed, "{dialect}: {sql}");
 
             if let Ok(bundle) = analysis {
