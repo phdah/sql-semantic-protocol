@@ -59,29 +59,27 @@ fn compare_ordered_rows(
     lhs.iter()
         .zip(rhs)
         .zip(keys)
-        .map(|((left, right), key)| {
-            match (left, right) {
-                (None, None) => Ordering::Equal,
-                (None, Some(_)) => {
-                    if key.nulls_first == Some(true) {
-                        Ordering::Less
-                    } else {
-                        Ordering::Greater
-                    }
+        .map(|((left, right), key)| match (left, right) {
+            (None, None) => Ordering::Equal,
+            (None, Some(_)) => {
+                if key.nulls_first == Some(true) {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
                 }
-                (Some(_), None) => {
-                    if key.nulls_first == Some(true) {
-                        Ordering::Greater
-                    } else {
-                        Ordering::Less
-                    }
+            }
+            (Some(_), None) => {
+                if key.nulls_first == Some(true) {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
                 }
-                (Some(a), Some(b)) => {
-                    if key.descending {
-                        b.cmp(a)
-                    } else {
-                        a.cmp(b)
-                    }
+            }
+            (Some(a), Some(b)) => {
+                if key.descending {
+                    b.cmp(a)
+                } else {
+                    a.cmp(b)
                 }
             }
         })
