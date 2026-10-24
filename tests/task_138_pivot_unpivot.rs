@@ -115,10 +115,13 @@ fn unproved_source_and_dynamic_pivot_fail_closed() {
 #[test]
 fn fixed_operators_reject_unproved_overflow_and_alias_column_rebindings() {
     let overflow = "SELECT * FROM (VALUES (1, 1, 9223372036854775807), (1, 1, 1)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (1 AS one))";
-    assert!(matches!(
-        proof(overflow, "duckdb", None),
-        PhysicalFiniteTableProof::Residual { .. }
-    ), "checked integer SUM cannot certify overflow");
+    assert!(
+        matches!(
+            proof(overflow, "duckdb", None),
+            PhysicalFiniteTableProof::Residual { .. }
+        ),
+        "checked integer SUM cannot certify overflow"
+    );
 
     // An alias with a positional column list renames the operator outputs,
     // which this bounded physical model deliberately does not certify.
