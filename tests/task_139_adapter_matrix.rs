@@ -2,7 +2,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_manifest,
-    physical_finite_table_plan, PhysicalFiniteTableProof, SqlInput,
+    physical_finite_table_plan, to_bundle_json, PhysicalFiniteTableProof, SqlInput,
 };
 
 fn compiled_dbt(sql: &str, dialect: &str) -> Result<sql_semantic_protocol::AnalysisBundle, String> {
@@ -93,6 +93,15 @@ fn task_139_all_21_adapter_dispositions_are_reproducible() {
                                 assert_eq!(
                                     a.contributors, b.contributors,
                                     "{sql}: source witnesses"
+                                );
+                                let left: Value = serde_json::from_str(&to_bundle_json(direct))
+                                    .expect("direct protocol JSON");
+                                let right: Value = serde_json::from_str(&to_bundle_json(dbt))
+                                    .expect("dbt protocol JSON");
+                                assert_eq!(
+                                    left["inputs"][0]["statements"][0]["finite_table"],
+                                    right["inputs"][0]["statements"][0]["finite_table"],
+                                    "{sql}: canonical wire facts must be source-independent"
                                 );
                             }
                             (
