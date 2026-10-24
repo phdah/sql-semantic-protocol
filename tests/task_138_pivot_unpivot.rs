@@ -111,3 +111,29 @@ fn unproved_source_and_dynamic_pivot_fail_closed() {
         PhysicalFiniteTableProof::Residual { .. }
     ));
 }
+
+#[test]
+fn fixed_operators_reject_unproved_overflow_and_alias_column_rebindings() {
+    let overflow = "SELECT * FROM (VALUES (1, 1, 9223372036854775807), (1, 1, 1)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (1 AS one))";
+    assert!(matches!(
+        proof(overflow, "duckdb", None),
+        PhysicalFiniteTableProof::Residual { .. }
+    ), "checked integer SUM cannot certify overflow");
+
+    // An alias with a positional column list renames the operator outputs,
+    // which this bounded physical model deliberately does not certify.
+    for sql in [
+        "SELECT * FROM (VALUES (1, 1, 10)) AS t(id, k, v) PIVOT (SUM(v) FOR k IN (1 AS one)) AS p(id_alias, one_alias)",
+        "SELECT * FROM (VALUES (1, 10, 20)) AS t(id, a, b) UNPIVOT INCLUDE NULLS (v FOR n IN (a, b)) AS p(id_alias, n_alias, v_alias)",
+    ] {
+        let parser=dialect_from_name("duckdb").expect("DuckDB parser");
+        let analysis=analyze_inputs(&[SqlInput::inline(sql)],"duckdb",parser.as_ref());
+        if let Ok(bundle)=analysis {
+            let target=bundle.layers().last().expect("target");
+            assert!(matches!(
+                physical_finite_table_plan(&bundle,target.id(),None),
+                PhysicalFiniteTableProof::Residual { .. }
+            ), "output aliases must not inherit the original exact bag: {sql}");
+        }
+    }
+}
