@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "owner": "TASK-138",
   "parent": "TASK-77",
   "created": "2026-10-24",
@@ -244,7 +244,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-N-missing",
@@ -364,7 +366,9 @@
         "reason": "Missing excluded column is an invalid target against the fully known schema; pretending exact output or proving missing tuple impossible would be unsound. Residual is required, not a deferred mandatory feature.",
         "native_engine_certification": "not_claimed",
         "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-P-exclude",
@@ -546,7 +550,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-P-rename",
@@ -749,7 +755,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-P-replace",
@@ -951,7 +959,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-P-pivot",
@@ -1146,7 +1156,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, k, v FROM (VALUES (1, 1, 10), (1, 2, 20), (2, 1, 30)) AS t(id, k, v)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-N-pivot",
@@ -1234,7 +1246,9 @@
         "reason": "Dynamic pivot key discovery depends on runtime distinct values and cannot have a frozen finite output schema; deliberately exclude from fixed-schema exact proof.",
         "native_engine_certification": "not_claimed",
         "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
-      }
+      },
+      "source_oracle_sql": null,
+      "independent_source_oracle": "unavailable_opaque_or_dynamic"
     },
     {
       "id": "77-C138-P-unpivot",
@@ -1442,7 +1456,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-N-unpivot",
@@ -1668,7 +1684,9 @@
         "owner": "TASK-138",
         "status": "exact_required_and_tested",
         "native_engine_certification": "only independent DuckDB native fixture where available"
-      }
+      },
+      "source_oracle_sql": "SELECT id, a, b FROM (VALUES (1, 10, 20), (1, NULL, 30), (2, 10, NULL)) AS t(id, a, b)",
+      "independent_source_oracle": "complete_native_duckdb_bag"
     },
     {
       "id": "77-C138-N-opaque",
@@ -1756,7 +1774,9 @@
         "reason": "Opaque physical rows cannot be reconstructed from table schema, catalog or parser alone; preserve Residual until real complete source evidence exists.",
         "native_engine_certification": "not_claimed",
         "future_scope_owner": "TASK-77 parent beyond the fixed TASK-138 finite cases"
-      }
+      },
+      "source_oracle_sql": null,
+      "independent_source_oracle": "unavailable_opaque_or_dynamic"
     }
   ],
   "signoff": {
@@ -1765,11 +1785,11 @@
     "mandatory_matrix_complete": true,
     "conditional_review_complete": true,
     "task_done": false,
-    "validated_version": 5,
+    "validated_version": 6,
     "parser_cells_verified": 130,
     "adapter_cells_classified": 30
   },
-  "validation_state": "v5 task-owned reclassification of invalid missing-column case from mandatory to justified conditional; 7 mandatory exact, 3 reviewed conditional; all 130 parser and 30 adapter cells retained",
+  "validation_state": "v6: mandatory SQL oracle tests must execute complete DuckDB source and terminal bags; 7 mandatory, 3 conditional, 130 observed dialect and 30 adapter cells frozen",
   "revision_review": [
     {
       "version": 5,
@@ -1780,6 +1800,14 @@
       "mandatory_cases_removed": [],
       "fixture_reclassified": "77-C138-N-missing",
       "reviewer": "Matt code-review standards/spec pass"
+    },
+    {
+      "version": 6,
+      "date": "2026-10-24",
+      "scope": "Freeze explicit independent DuckDB complete source SQL per mandatory fixture, in addition to existing independent terminal oracle_sql",
+      "rationale": "AC#3 requires both independently executed source and terminal whole bags, rather than only frozen manually expected source rows; no fixture, expected terminal or outcome classification changed",
+      "new_cases_added": [],
+      "mandatory_cases_removed": []
     }
   ]
 }
