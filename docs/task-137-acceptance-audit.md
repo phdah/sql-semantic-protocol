@@ -6,8 +6,9 @@ not certification of all five criteria or a TASK-77 release.
 
 ## Acceptance inventory and versioned fixture corrections
 
-The original [immutable v1](task-137-acceptance-freeze-v1.json) remains
-available. [v2](task-137-acceptance-freeze.json) corrects three demonstrable
+The original [immutable v1](task-137-acceptance-freeze-v1.json) and
+[corrected v2](task-137-acceptance-freeze-v2.json) remain available.
+[Active v3](task-137-acceptance-freeze.json) adds empirically observed dialect and adapter cell dispositions. v2 corrects three demonstrable
 mistakes without changing fixture IDs: untyped `[]` cannot claim integer
 element evidence, empty-result NULL membership is false (though the nullable
 *element type* is separate), and generator identities are one-based positions.
@@ -45,3 +46,9 @@ row identities and an absent-row goal with Impossible classification.
 | 5 | Green final-head fmt, strict Clippy, Rust tests, docs, no-default, dbt E2E, schema/golden snapshots and two-axis standards/spec code review |
 
 **No TASK-77 parent criterion or protocol 3.0.0 release is signed off here.**
+
+## Observed matrix review (sqlparser 0.58)
+
+The all-cell diagnostic on PR head 4b752b7 observed exactly 104 dialect/variant cases: 69 exact canonical AST proofs, 18 parser syntax rejections, four parsed-but-incompatible bracketed-identifier ASTs (SQLite and MSSQL for UNNEST and WITH ORDINALITY), and 13 deliberately opaque residuals. The v3 freeze records every expected disposition explicitly. The permanent test now checks the parser independently, refuses analyzer errors as parser boundaries, and compares all exact bags, row IDs, domains and positive/negative membership to the frozen DuckDB-validated outcomes.
+
+SQLite explicitly treats square brackets as quoted identifiers. MSSQL also tokenizes the bracketed array-looking expression as an identifier. Neither AST may be promoted to the shared array-literal Exact proof. Typed CAST(array AS INTEGER[]) variants are parser-rejected in nine dialects; none are silently skipped. The 24 adapter cells explicitly distinguish executable SQL/dbt parity from ODCS's lack of source-free literal-row evidence, and record the unbound opaque dbt case as non-evaluable rather than manufactured evidence. EXPLODE retains the source-free canonical operator proof but not native vendor execution certification.

@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-137",
   "parent": "TASK-77",
-  "frozen_at": "2026-10-23",
+  "frozen_at": "2026-10-24",
   "fixture_ids": [
     "77-C137-P",
     "77-C137-N"
@@ -70,19 +70,20 @@
   },
   "conditional": {
     "owner": "TASK-137",
-    "release_disposition": "pending independent parser/native/session review; cannot claim exactness without evidence",
+    "release_disposition": "Reviewed TASK-137 boundaries: bracketed identifiers in sqlite/mssql are not array literals; cast ARRAY syntax parser rejection is explicit; opaque collection is residual; no claim of native EXPLODE execution or portability from equivalent DuckDB UNNEST. Native vendor/session verification belongs to the conditional release inventory.",
     "unknown_element_type": "Residual",
     "unknown_parser_forms": "parser_boundary",
     "opaque_generators": "Residual"
   },
   "validation": {
-    "status": "pending_focused_matrix_and_final_head_CI",
+    "status": "classified_pending_final_head_CI",
     "mandatory_cells_signoff": false,
     "adapter_cells_signoff": false,
     "dialect_cells_signoff": false,
     "full_ci_signoff": false,
     "matrix_cells": 104,
-    "actual_dialect_certification": "pending"
+    "adapter_cells": 24,
+    "actual_dialect_certification": "69 exact canonical AST proofs; 18 parser rejections; 4 lexical AST boundaries; 13 opaque residuals (CI verification pending)"
   },
   "cases": [
     {
@@ -140,6 +141,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -200,6 +221,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -258,6 +299,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "lexical_boundary",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "lexical_boundary",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -296,6 +357,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "parser_rejected",
+        "postgresql": "exact",
+        "hive": "parser_rejected",
+        "sqlite": "parser_rejected",
+        "snowflake": "parser_rejected",
+        "redshift": "exact",
+        "mssql": "parser_rejected",
+        "clickhouse": "parser_rejected",
+        "bigquery": "parser_rejected",
+        "ansi": "parser_rejected",
+        "duckdb": "exact",
+        "databricks": "parser_rejected"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -374,6 +455,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "lexical_boundary",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "lexical_boundary",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -412,6 +513,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "parser_rejected",
+        "postgresql": "exact",
+        "hive": "parser_rejected",
+        "sqlite": "parser_rejected",
+        "snowflake": "parser_rejected",
+        "redshift": "exact",
+        "mssql": "parser_rejected",
+        "clickhouse": "parser_rejected",
+        "bigquery": "parser_rejected",
+        "ansi": "parser_rejected",
+        "duckdb": "exact",
+        "databricks": "parser_rejected"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -472,6 +593,26 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "not_certified",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact",
+        "dbt_compiled_sql_catalog": "exact",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     },
     {
@@ -499,9 +640,29 @@
         "shared_semantics": "must match when parser accepts source-free form",
         "native_vendor_execution": "DuckDB fixture SQL only",
         "owner": "TASK-137"
+      },
+      "parser_cells": {
+        "generic": "opaque_residual",
+        "mysql": "opaque_residual",
+        "postgresql": "opaque_residual",
+        "hive": "opaque_residual",
+        "sqlite": "opaque_residual",
+        "snowflake": "opaque_residual",
+        "redshift": "opaque_residual",
+        "mssql": "opaque_residual",
+        "clickhouse": "opaque_residual",
+        "bigquery": "opaque_residual",
+        "ansi": "opaque_residual",
+        "duckdb": "opaque_residual",
+        "databricks": "opaque_residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "opaque_residual",
+        "dbt_compiled_sql_catalog": "source_free_unbound_no_compiled_evidence",
+        "odcs_equivalent_schema": "inapplicable_no_physical_source"
       }
     }
   ],
-  "immutable_baseline": "docs/task-137-acceptance-freeze-v1.json",
-  "revision": "Correct contradictory untyped-empty Exact claim, canonicalize one-based generator source IDs, record executable native source-free SQL bags and explicit negative membership obligations. Fixture IDs and named variants are unchanged."
+  "immutable_baseline": "docs/task-137-acceptance-freeze-v2.json",
+  "revision": "Freeze all 104 empirically classified sqlparser 0.58 dialect cells and 24 adapter evidence dispositions. Preserve v1/v2 originals and reject analysis errors as parser boundaries."
 }
