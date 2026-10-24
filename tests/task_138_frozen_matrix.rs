@@ -1,4 +1,5 @@
 //! Frozen TASK-138 exact-bag, typed-domain and negative-outcome regression.
+use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType, LiteralValue,
@@ -29,6 +30,33 @@ fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
     result.sort();
     result
 }
+fn native_whole_bag(
+    sql: &str,
+    columns: &[String],
+    text_column: Option<&str>,
+) -> Vec<BTreeMap<String, LiteralValue>> {
+    let db = Connection::open_in_memory().expect("independent DuckDB");
+    let mut statement = db.prepare(sql).unwrap_or_else(|err| panic!("native whole bag {sql}: {err}"));
+    statement
+        .query_map([], |record| {
+            let mut result = BTreeMap::new();
+            for (index, name) in columns.iter().enumerate() {
+                let value = if Some(name.as_str()) == text_column {
+                    record.get::<_, Option<String>>(index)?
+                        .map_or(LiteralValue::Null, LiteralValue::Text)
+                } else {
+                    record.get::<_, Option<i64>>(index)?
+                        .map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))
+                };
+                result.insert(name.clone(), value);
+            }
+            Ok(result)
+        })
+        .expect("native whole bag query")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("native whole bag rows")
+}
+
 fn case_dialect(variant: &str) -> &str {
     match variant {
         "star_except" | "star_except_missing" | "star_replace" => "bigquery",
@@ -44,7 +72,7 @@ fn case_dialect(variant: &str) -> &str {
 #[test]
 fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
     let frozen = frozen();
-    assert_eq!(frozen["version"], 5);
+    assert_eq!(frozen["version"], 6);
     let mut checked = 0;
     for case in frozen["cases"].as_array().expect("cases") {
         if case["classification"] != "mandatory" {
@@ -118,6 +146,14 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             actual_source, expected_source,
             "{sql}: complete physical VALUES source"
         );
+        let source_column_names = case["source_columns"].as_array().expect("source columns")
+            .iter().map(|name| name.as_str().unwrap().to_string()).collect::<Vec<_>>();
+        let native_source = native_whole_bag(
+            case["source_oracle_sql"].as_str().expect("frozen independent source SQL"),
+            &source_column_names,
+            None,
+        );
+        assert_eq!(sorted(&native_source),sorted(&actual.source_rows),"{sql}: native DuckDB complete physical source bag");
         let expected_contributors = case["expected_contributors"]
             .as_array()
             .unwrap()
@@ -211,6 +247,17 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
                 "{column}: NULL"
             );
         }
+        let names=case["output_columns"].as_array().expect("terminal columns")
+            .iter().map(|name|name.as_str().unwrap().to_string()).collect::<Vec<_>>();
+        let text_column=names.iter().find(|name|case["output_domains"][name.as_str()]["type"]=="text")
+            .map(String::as_str);
+        let native_terminal=native_whole_bag(
+            case["oracle_sql"].as_str().expect("frozen independent terminal SQL"),
+            &names,
+            text_column,
+        );
+        assert_eq!(sorted(&native_terminal),sorted(&expected),"{sql}: independent native DuckDB complete terminal bag");
+        assert_eq!(sorted(&native_terminal),sorted(&actual.terminal),"{sql}: canonical and native complete bags");
         let absent = row(&case["negative_membership"]);
         assert!(
             matches!(
