@@ -221,6 +221,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             alias,
             array_exprs,
             with_offset,
+            with_offset_alias: None,
             with_ordinality,
             ..
         } => unnest_table(
@@ -274,6 +275,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             args,
             alias,
             lateral,
+            with_ordinality,
             ..
         } if !*lateral && name.to_string().eq_ignore_ascii_case("unnest") => {
             let arguments = args
@@ -287,7 +289,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                 alias,
                 &arguments,
                 false,
-                false,
+                *with_ordinality,
                 FiniteTableKind::Unnest,
                 dialect_name,
             )
