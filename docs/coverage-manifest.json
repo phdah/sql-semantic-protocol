@@ -1,4 +1,29 @@
 {
+  "task_139_generator_acceptance": {
+    "owner": "TASK-139",
+    "parent": "TASK-77",
+    "status": "in_progress_unverified",
+    "task": ".backlog/tasks/task-139 - classify-json-table-generators-and-vendor-functions.md",
+    "freeze": "docs/task-139-acceptance-freeze.json",
+    "fixture_ids": [
+      "77-C139-P",
+      "77-C139-N"
+    ],
+    "cases": 7,
+    "mandatory": 3,
+    "conditional": 4,
+    "dialect_cells_required": 91,
+    "dialect_cells_certified": 0,
+    "adapter_cells_required": 21,
+    "adapter_cells_certified": 0,
+    "public_bag_test": "tests/task_139_generators.rs",
+    "analysis_owner": "src/analysis/finite_tables.rs",
+    "physical_owner": "src/physical_realization/finite_tables.rs",
+    "certified_native_generator_engines": [],
+    "ac_verified": [],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_132_composed_subquery_acceptance": {
     "owner": "TASK-132",
     "parent": "TASK-75",
