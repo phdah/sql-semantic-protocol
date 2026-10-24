@@ -36,16 +36,20 @@ fn native_whole_bag(
     text_column: Option<&str>,
 ) -> Vec<BTreeMap<String, LiteralValue>> {
     let db = Connection::open_in_memory().expect("independent DuckDB");
-    let mut statement = db.prepare(sql).unwrap_or_else(|err| panic!("native whole bag {sql}: {err}"));
+    let mut statement = db
+        .prepare(sql)
+        .unwrap_or_else(|err| panic!("native whole bag {sql}: {err}"));
     statement
         .query_map([], |record| {
             let mut result = BTreeMap::new();
             for (index, name) in columns.iter().enumerate() {
                 let value = if Some(name.as_str()) == text_column {
-                    record.get::<_, Option<String>>(index)?
+                    record
+                        .get::<_, Option<String>>(index)?
                         .map_or(LiteralValue::Null, LiteralValue::Text)
                 } else {
-                    record.get::<_, Option<i64>>(index)?
+                    record
+                        .get::<_, Option<i64>>(index)?
                         .map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))
                 };
                 result.insert(name.clone(), value);
@@ -146,14 +150,24 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             actual_source, expected_source,
             "{sql}: complete physical VALUES source"
         );
-        let source_column_names = case["source_columns"].as_array().expect("source columns")
-            .iter().map(|name| name.as_str().unwrap().to_string()).collect::<Vec<_>>();
+        let source_column_names = case["source_columns"]
+            .as_array()
+            .expect("source columns")
+            .iter()
+            .map(|name| name.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
         let native_source = native_whole_bag(
-            case["source_oracle_sql"].as_str().expect("frozen independent source SQL"),
+            case["source_oracle_sql"]
+                .as_str()
+                .expect("frozen independent source SQL"),
             &source_column_names,
             None,
         );
-        assert_eq!(sorted(&native_source),sorted(&actual.source_rows),"{sql}: native DuckDB complete physical source bag");
+        assert_eq!(
+            sorted(&native_source),
+            sorted(&actual.source_rows),
+            "{sql}: native DuckDB complete physical source bag"
+        );
         let expected_contributors = case["expected_contributors"]
             .as_array()
             .unwrap()
@@ -247,17 +261,33 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
                 "{column}: NULL"
             );
         }
-        let names=case["output_columns"].as_array().expect("terminal columns")
-            .iter().map(|name|name.as_str().unwrap().to_string()).collect::<Vec<_>>();
-        let text_column=names.iter().find(|name|case["output_domains"][name.as_str()]["type"]=="text")
+        let names = case["output_columns"]
+            .as_array()
+            .expect("terminal columns")
+            .iter()
+            .map(|name| name.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
+        let text_column = names
+            .iter()
+            .find(|name| case["output_domains"][name.as_str()]["type"] == "text")
             .map(String::as_str);
-        let native_terminal=native_whole_bag(
-            case["oracle_sql"].as_str().expect("frozen independent terminal SQL"),
+        let native_terminal = native_whole_bag(
+            case["oracle_sql"]
+                .as_str()
+                .expect("frozen independent terminal SQL"),
             &names,
             text_column,
         );
-        assert_eq!(sorted(&native_terminal),sorted(&expected),"{sql}: independent native DuckDB complete terminal bag");
-        assert_eq!(sorted(&native_terminal),sorted(&actual.terminal),"{sql}: canonical and native complete bags");
+        assert_eq!(
+            sorted(&native_terminal),
+            sorted(&expected),
+            "{sql}: independent native DuckDB complete terminal bag"
+        );
+        assert_eq!(
+            sorted(&native_terminal),
+            sorted(&actual.terminal),
+            "{sql}: canonical and native complete bags"
+        );
         let absent = row(&case["negative_membership"]);
         assert!(
             matches!(
