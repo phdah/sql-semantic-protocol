@@ -58,7 +58,7 @@ fn frozen_source_free_tables_have_direct_and_compiled_dbt_parity() {
             let PhysicalFiniteTableProof::Exact(exact) = exact else {
                 panic!("{id}: missing source-free adapter proof: {exact:?}");
             };
-            (exact.row_ids, exact.terminal, exact.terminal_domains)
+            (exact.row_ids, exact.terminal, exact.terminal_domains, exact.terminal_column_types)
         };
         assert_eq!(
             proof(&direct),
@@ -70,6 +70,7 @@ fn frozen_source_free_tables_have_direct_and_compiled_dbt_parity() {
         let dbt_json: Value = serde_json::from_str(&to_bundle_json(&dbt)).unwrap();
         let direct_table = &direct_json["inputs"][0]["statements"][0]["finite_table"];
         let compiled_table = &dbt_json["inputs"][0]["statements"][0]["finite_table"];
+        assert!(direct_table["column_types"].is_array(), "{id}: typed canonical column evidence");
         assert!(
             direct_table.is_object(),
             "{id}: JSON protocol must carry canonical table"

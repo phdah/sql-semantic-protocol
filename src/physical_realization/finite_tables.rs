@@ -3,7 +3,7 @@
 //! No parser access or independently guessed source rows are permitted.
 
 use super::*;
-use crate::protocol::{LiteralValue, ValueDomain};
+use crate::protocol::{FiniteColumnType, LiteralValue, ValueDomain};
 
 /// Exact output of a finite literal table. Producer identities are stable and
 /// duplicates remain separate even though SQL result ordering is unspecified.
@@ -17,6 +17,8 @@ pub struct PhysicalFiniteTableExact {
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Exact finite typed outcome domains, including NULL and bounds.
     pub terminal_domains: BTreeMap<String, ValueDomain>,
+    /// Attested column types, including zero-row results whose domains are Empty.
+    pub terminal_column_types: BTreeMap<String, FiniteColumnType>,
 }
 
 /// Sound classification of complete literal rows and optional row membership.
@@ -133,10 +135,12 @@ pub fn physical_finite_table_plan(
         .iter()
         .map(|column| (column.name().to_string(), column.domain().clone()))
         .collect();
+    let terminal_column_types = table.columns().iter().cloned().zip(table.column_types().iter().copied()).collect();
     PhysicalFiniteTableProof::Exact(Box::new(PhysicalFiniteTableExact {
         nodes: walker.nodes,
         row_ids,
         terminal,
         terminal_domains,
+        terminal_column_types,
     }))
 }

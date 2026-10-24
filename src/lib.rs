@@ -200,7 +200,7 @@ pub use protocol::{
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, Diagnostic, DiagnosticArea,
-    DiagnosticSeverity, ExistsPredicate, Expression, FiniteTable, FiniteTableKind,
+    DiagnosticSeverity, ExistsPredicate, Expression, FiniteColumnType, FiniteTable, FiniteTableKind,
     FunctionExpression, GroupBy, GroupingExpression, InPredicate, InSubqueryOperand,
     InSubqueryPredicate, InSubqueryTuple, IsNullPredicate, Join, JoinExecution, JoinKind,
     LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType, LiteralValue,

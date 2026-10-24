@@ -67,6 +67,7 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
         value["finite_table"] = json!({
             "kind": table.kind().as_str(),
             "columns": table.columns(),
+            "column_types": table.column_types().iter().map(|ty| ty.as_str()).collect::<Vec<_>>(),
             "rows": table.rows().iter().map(|row| {
                 row.iter().map(literal_expression_to_value).collect::<Vec<_>>()
             }).collect::<Vec<_>>()

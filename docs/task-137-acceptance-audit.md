@@ -60,3 +60,7 @@ A source-free DuckDB dbt view in `tests/fixtures/dbt_core_project/models/task137
 ## External semantic contract review
 
 The source-free list-law oracle follows DuckDB's documented `UNNEST` behavior, including the zero-output semantics for typed NULL/empty lists: https://duckdb.org/docs/1.4/sql/query_syntax/unnest. The bracketed-identifier AST boundary is grounded in https://www.sqlite.org/lang_keywords.html and https://learn.microsoft.com/en-us/sql/relational-databases/databases/database-identifiers. Spark/Databricks document the one-row-per-array-element `EXPLODE` law, but generator placement changes by engine/runtime version: https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html and https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/explode. Parser-model normalization and the equivalent DuckDB oracle are not evidence of native vendor execution. TASK-137's conditional release disposition therefore does not certify unexecuted engines.
+
+## Canonical type evidence for empty outputs
+
+Finite relations now emit a positional `column_types` array and expose the same evidence through `PhysicalFiniteTableExact::terminal_column_types`. Typed empty/NULL arrays still advertise their integer element type even with an Empty value domain. All-NULL untyped `VALUES` columns conservatively advertise `unknown`. Tests verify the invariant through direct SQL, compiled dbt, protocol JSON, and dialect parity. This field is part of the active schema/contract, not reconstructed from row values.

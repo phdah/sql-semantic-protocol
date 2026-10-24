@@ -903,6 +903,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task128_ntile")
                 && !id.ends_with(".task128_window_source")
                 && !id.ends_with(".task189_decimal_windows")
+                && !id.ends_with(".task137_literal_unnest")
+                && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]

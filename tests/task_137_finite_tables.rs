@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteTableKind, LiteralValue,
+    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType, FiniteTableKind, LiteralValue,
     PhysicalFiniteTableProof, SqlInput, ValueDomain,
 };
 
@@ -159,6 +159,8 @@ fn unnest_literal_complete_bags_and_ordinality_use_independent_duckdb() {
             assert_eq!(proof.row_ids, ["unnest:1", "unnest:2"]);
         }
         if sql.contains("CAST([]") {
+            assert_eq!(proof.terminal_column_types["v"], FiniteColumnType::Integer);
+            assert_eq!(proof.terminal_domains["v"], ValueDomain::Empty);
             assert!(proof.terminal.is_empty());
             assert!(proof.row_ids.is_empty());
         }

@@ -8301,12 +8301,13 @@
       }
     },
     "finiteTable": {
-      "description": "Complete source-free integer/NULL VALUES, UNNEST or EXPLODE operator rows. Row order supplies stable producer identity, not SQL result ordering. Other collection shapes must remain unsupported.",
+      "description": "Complete source-free finite VALUES/UNNEST/EXPLODE with typed integer or unknown output columns, including zero-row and all-NULL bags.",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "kind",
         "columns",
+        "column_types",
         "rows"
       ],
       "properties": {
@@ -8333,6 +8334,17 @@
             "items": {
               "$ref": "#/$defs/literalExpression"
             }
+          }
+        },
+        "column_types": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Positionally aligned canonical datatype evidence, retained even when rows is empty",
+          "items": {
+            "enum": [
+              "integer",
+              "unknown"
+            ]
           }
         }
       }

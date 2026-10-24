@@ -283,6 +283,10 @@ fn all_frozen_variant_dialect_cells_are_parser_equivalent_or_explicit_boundaries
                         "{id}/{name}: row identities"
                     );
                     assert_eq!(
+                        exact.terminal_column_types, reference.terminal_column_types,
+                        "{id}/{name}: declared type evidence survives empty outputs"
+                    );
+                    assert_eq!(
                         exact.terminal_domains, reference.terminal_domains,
                         "{id}/{name}: complete typed output domains"
                     );

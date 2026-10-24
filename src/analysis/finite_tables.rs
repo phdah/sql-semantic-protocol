@@ -4,7 +4,7 @@
 //! Unsupported expressions never become invented finite input rows.
 
 use super::*;
-use crate::protocol::{FiniteTable, FiniteTableKind};
+use crate::protocol::{FiniteColumnType, FiniteTable, FiniteTableKind};
 
 fn ordinary_query_shape(query: &SqlQuery) -> bool {
     query.with.is_none()
@@ -171,7 +171,7 @@ fn unnest_table(
         }
         rows.push(row);
     }
-    FiniteTable::new(kind, columns, rows)
+    FiniteTable::new(kind, columns, vec![FiniteColumnType::Integer; expected], rows)
 }
 
 fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
@@ -288,7 +288,12 @@ fn explode_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
         .into_iter()
         .map(|value| vec![value])
         .collect();
-    FiniteTable::new(FiniteTableKind::Explode, vec![alias.value.clone()], rows)
+    FiniteTable::new(
+        FiniteTableKind::Explode,
+        vec![alias.value.clone()],
+        vec![FiniteColumnType::Integer],
+        rows,
+    )
 }
 
 fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
@@ -306,7 +311,18 @@ fn values_table(values: &sqlparser::ast::Values) -> Option<FiniteTable> {
         .iter()
         .map(|row| row.iter().map(integer_literal).collect::<Option<Vec<_>>>())
         .collect::<Option<Vec<_>>>()?;
-    FiniteTable::new(FiniteTableKind::Values, columns, rows)
+    let column_types = (0..columns.len())
+        .map(|index| {
+            if rows.iter().any(|row: &Vec<LiteralExpression>| {
+                row[index].literal_type() == LiteralType::Integer
+            }) {
+                FiniteColumnType::Integer
+            } else {
+                FiniteColumnType::Unknown
+            }
+        })
+        .collect();
+    FiniteTable::new(FiniteTableKind::Values, columns, column_types, rows)
 }
 
 /// Classify the tightly bounded, source-free SQL constructors into canonical

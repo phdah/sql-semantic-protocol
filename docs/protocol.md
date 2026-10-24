@@ -8,13 +8,16 @@ Versioned contract files are immutable historical snapshots. Runtime code, relea
 
 Simple source-free `VALUES` and typed, directly literal integer-array `UNNEST`/
 `EXPLODE` queries may carry `finite_table` on the canonical query. The
-`kind`, `columns` and complete positional typed literal `rows` are the
+`kind`, `columns`, positionally aligned `column_types` (`integer` or `unknown`),
+and complete positional typed literal `rows` are the
 operator law; consumers must never reconstruct array membership from SQL
 text or per-column value domains. Duplicate rows retain distinct producer
 identity, and SQL output order is *not* certified unless an independent
 ordering operator proves it. UNNEST ordinality starts at one, while
 BigQuery-style WITH OFFSET starts at zero. Empty array proof requires a
-declared integer element type. Untyped empty arrays, opaque collections,
+declared integer element type. The declared type remains in `column_types`
+even when its output domain is Empty. All-NULL `VALUES` rows retain `unknown`
+type evidence rather than inventing an integer type. Untyped empty arrays, opaque collections,
 source-column fanout, unproved casts, correlated LATERAL, sampled tables,
 and vendor-specific generator semantics remain residual.
 

@@ -29,6 +29,28 @@ impl FiniteTableKind {
     }
 }
 
+/// An explicitly attested finite table output datatype.
+///
+/// Unknown means the row values are known (for example all NULL VALUES)
+/// but there is no authoritative scalar datatype evidence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FiniteColumnType {
+    /// An integer column, including a typed empty array's element column.
+    Integer,
+    /// No safe type evidence exists despite a completely known row bag.
+    Unknown,
+}
+
+impl FiniteColumnType {
+    /// Stable wire name of the canonical datatype evidence.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Integer => "integer",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
 /// A complete source-free relation with stable producer-row identities.
 ///
 /// Rows are positional and retain multiplicity, even for identical tuples.
@@ -38,6 +60,7 @@ impl FiniteTableKind {
 pub struct FiniteTable {
     kind: FiniteTableKind,
     columns: Vec<String>,
+    column_types: Vec<FiniteColumnType>,
     rows: Vec<Vec<LiteralExpression>>,
 }
 
@@ -45,13 +68,21 @@ impl FiniteTable {
     pub(crate) fn new(
         kind: FiniteTableKind,
         columns: Vec<String>,
+        column_types: Vec<FiniteColumnType>,
         rows: Vec<Vec<LiteralExpression>>,
     ) -> Option<Self> {
         let unique = columns.iter().collect::<BTreeSet<_>>();
         if columns.is_empty()
+            || column_types.len() != columns.len()
             || unique.len() != columns.len()
             || columns.iter().any(|column| column.trim().is_empty())
             || rows.iter().any(|row| row.len() != columns.len())
+            || rows.iter().enumerate().any(|(_, row)| {
+                row.iter().enumerate().any(|(index, literal)| {
+                    column_types[index] == FiniteColumnType::Unknown
+                        && literal.literal_type() != LiteralType::Null
+                })
+            })
             || rows.iter().flatten().any(|literal| {
                 match (literal.literal_type(), literal.value()) {
                     (LiteralType::Null, LiteralValue::Null) => false,
@@ -67,6 +98,7 @@ impl FiniteTable {
         Some(Self {
             kind,
             columns,
+            column_types,
             rows,
         })
     }
@@ -79,6 +111,11 @@ impl FiniteTable {
     /// Ordered, unambiguous output column identities.
     pub fn columns(&self) -> &[String] {
         &self.columns
+    }
+
+    /// Output datatype evidence retained even when the result bag is empty.
+    pub fn column_types(&self) -> &[FiniteColumnType] {
+        &self.column_types
     }
 
     /// Complete positional rows. Input order identifies producers, not SQL
