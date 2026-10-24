@@ -133,8 +133,15 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
         );
         let typed = case["expected_column_types"].as_array().unwrap();
         assert_eq!(typed.len(), names.len(), "{id}: typed column arity");
-        let actual_types = actual.terminal_column_types.values().map(|ty| ty.as_str()).collect::<Vec<_>>();
-        let mut expected_types = case["output_columns"].as_array().unwrap().iter()
+        let actual_types = actual
+            .terminal_column_types
+            .values()
+            .map(|ty| ty.as_str())
+            .collect::<Vec<_>>();
+        let mut expected_types = case["output_columns"]
+            .as_array()
+            .unwrap()
+            .iter()
             .zip(typed.iter())
             .map(|(name, ty)| (name.as_str().unwrap(), ty.as_str().unwrap()))
             .collect::<Vec<_>>();
