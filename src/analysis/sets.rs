@@ -385,6 +385,27 @@ pub(super) fn analyze_direct_row_shaping(
     let SetExpr::Select(select) = query.body.as_ref() else {
         return None;
     };
+    // A CTE, derived table, filter, join or aggregate has its own row-bag
+    // membership law. A direct page cannot be applied to its physical leaves.
+    if query.with.is_some()
+        || select.from.len() != 1
+        || !matches!(
+            &select.from[0].relation,
+            TableFactor::Table { sample: None, .. }
+        )
+        || !select.from[0].joins.is_empty()
+        || select.distinct.is_some()
+        || select.selection.is_some()
+        || select.having.is_some()
+        || select.qualify.is_some()
+        || select.prewhere.is_some()
+        || !select.lateral_views.is_empty()
+        || select.connect_by.is_some()
+        || !matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+    {
+        return None;
+    }
     analyze_row_shaping(query, output.columns(), select.top.as_ref())
 }
 

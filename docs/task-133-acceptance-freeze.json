@@ -1,19 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-133",
   "parent": "TASK-76",
   "fixture_ids": [
     "76-C133-P",
     "76-C133-N"
   ],
-  "contract": "A closed-world, single-source, plain projected SELECT; exact integer order keys and literal nonnegative row bounds. Any unsupported shape is explicitly non-exact.",
+  "contract": "A closed-world, single-source, plain projected SELECT; exact integer order keys and literal nonnegative row bounds. Any unsupported shape is explicitly non-exact. Nullable typed source evidence is required for conditional NULL-ordering residual fixtures; no implicit NOT NULL enforcement may be invented.",
   "source_schema": {
     "relation": "s",
     "columns": [
       {
         "name": "k",
         "type": "INTEGER",
-        "nullable": false
+        "nullable": true
       }
     ]
   },
@@ -193,6 +193,22 @@
       "reason": "missing total ORDER BY",
       "owner": "TASK-133",
       "disposition": "retain conditional"
+    },
+    {
+      "id": "76-C133-N-producer",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "WITH t AS (SELECT k FROM s WHERE k > 2) SELECT k FROM t ORDER BY k LIMIT 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "proof": "Residual",
+      "reason": "derived/CTE producer requires independently proved row-bag composition before outer ordering",
+      "owner": "TASK-135",
+      "disposition": "retain conditional for TASK-135"
     }
   ],
   "acceptance_map": {
@@ -234,7 +250,8 @@
       "13-dialect exact parser and adapter matrix",
       "complete independently executed real dbt Core and ODCS oracle",
       "full native and negative evidence verification",
-      "final green CI"
+      "final green CI",
+      "direct pagination and CTE/derived producer disjointness reviewed as separate TASK-135 obligation"
     ]
   }
 }

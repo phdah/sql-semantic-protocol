@@ -184,6 +184,22 @@ fn tied_sort_key_never_claims_exact_row_identity() {
 }
 
 #[test]
+fn pagination_cannot_skip_a_derived_or_filtered_producer_boundary() {
+    for sql in [
+        "WITH t AS (SELECT k FROM s WHERE k > 2) SELECT k FROM t ORDER BY k LIMIT 2",
+        "SELECT k FROM (SELECT k FROM s WHERE k > 2) AS t ORDER BY k LIMIT 2",
+        "SELECT k FROM s WHERE k >= 2 ORDER BY k LIMIT 2",
+        "SELECT DISTINCT k FROM s ORDER BY k LIMIT 2",
+    ] {
+        let proof = prove(sql, "duckdb", &[Some(1), Some(2), Some(3), Some(4)]);
+        assert!(
+            matches!(proof, PhysicalFinitePageProof::Residual { .. }),
+            "{sql} must preserve its producer boundary: {proof:?}"
+        );
+    }
+}
+
+#[test]
 fn implicit_null_sort_and_missing_order_fail_closed() {
     let nullable = prove(
         "SELECT k FROM s ORDER BY k LIMIT 1",
