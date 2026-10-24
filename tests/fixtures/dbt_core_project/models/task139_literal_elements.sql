@@ -1,0 +1,1 @@
+SELECT * FROM UNNEST([5, 6]) AS t(v)

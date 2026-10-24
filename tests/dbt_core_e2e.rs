@@ -254,6 +254,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "task138_finite_star",
         "task138_fixed_pivot",
         "task138_named_unpivot",
+        "task139_literal_elements",
+        "task139_nullable_duplicate_elements",
         "task189_decimal_windows",
         "ordered_limited_union",
         "ranked_orders",
@@ -910,6 +912,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task138_finite_star")
                 && !id.ends_with(".task138_fixed_pivot")
                 && !id.ends_with(".task138_named_unpivot")
+                && !id.ends_with(".task139_literal_elements")
+                && !id.ends_with(".task139_nullable_duplicate_elements")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]
@@ -932,6 +936,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task138_finite_star")
                 && !id.ends_with(".task138_fixed_pivot")
                 && !id.ends_with(".task138_named_unpivot")
+                && !id.ends_with(".task139_literal_elements")
+                && !id.ends_with(".task139_nullable_duplicate_elements")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_catalog_json["sources"]
