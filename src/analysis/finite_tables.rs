@@ -274,7 +274,14 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             } else {
                 FiniteTableKind::Unnest
             };
-            unnest_table(alias, &arguments, false, *with_ordinality, kind, dialect_name)
+            unnest_table(
+                alias,
+                &arguments,
+                false,
+                *with_ordinality,
+                kind,
+                dialect_name,
+            )
         }
         TableFactor::Function {
             name,
@@ -282,8 +289,10 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             alias,
             lateral,
             ..
-        } if !*lateral && (name.to_string().eq_ignore_ascii_case("unnest")
-            || name.to_string().eq_ignore_ascii_case("explode")) => {
+        } if !*lateral
+            && (name.to_string().eq_ignore_ascii_case("unnest")
+                || name.to_string().eq_ignore_ascii_case("explode")) =>
+        {
             let arguments = args
                 .iter()
                 .map(|arg| match arg {
