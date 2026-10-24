@@ -110,15 +110,20 @@ pub fn physical_finite_table_plan(
         // A malformed typed tuple does not prove impossibility. Text is exact
         // only for the explicitly typed UNPIVOT name column.
         if wanted.len() != table.columns().len()
-            || table.columns().iter().zip(table.column_types()).any(|(name, ty)| {
-                match wanted.get(name) {
+            || table
+                .columns()
+                .iter()
+                .zip(table.column_types())
+                .any(|(name, ty)| match wanted.get(name) {
                     Some(LiteralValue::Null) => false,
-                    Some(LiteralValue::Number(number)) if *ty == FiniteColumnType::Integer =>
-                        number.parse::<i128>().map_or(true, |parsed| parsed.to_string() != *number),
+                    Some(LiteralValue::Number(number)) if *ty == FiniteColumnType::Integer => {
+                        number
+                            .parse::<i128>()
+                            .map_or(true, |parsed| parsed.to_string() != *number)
+                    }
                     Some(LiteralValue::Text(_)) if *ty == FiniteColumnType::Text => false,
                     _ => true,
-                }
-            })
+                })
         {
             return PhysicalFiniteTableProof::Residual {
                 reason: "requested output tuple lacks exact typed and complete column identity"
@@ -133,25 +138,46 @@ pub fn physical_finite_table_plan(
         }
     }
     let (source_rows, source_row_ids, contributors) = if let Some(source) = table.source() {
-        let source_row_ids = source.rows().iter().enumerate().map(|(index, _)| {
-            let index = if matches!(source.kind(), crate::protocol::FiniteTableKind::Values) {
-                index
-            } else {
-                index + 1
-            };
-            format!("{}:{index}", source.kind().as_str())
-        }).collect::<Vec<_>>();
-        let source_rows = source.rows().iter().map(|row| {
-            source.columns().iter().cloned()
-                .zip(row.iter().map(|literal| literal.value().clone()))
-                .collect::<BTreeMap<_, _>>()
-        }).collect::<Vec<_>>();
-        let contributors = table.contributors().iter().map(|indices| {
-            indices.iter().map(|index| {
-                source_row_ids.get(*index).cloned()
-                    .expect("canonical with_source validates all contributor indices")
-            }).collect::<Vec<_>>()
-        }).collect::<Vec<_>>();
+        let source_row_ids = source
+            .rows()
+            .iter()
+            .enumerate()
+            .map(|(index, _)| {
+                let index = if matches!(source.kind(), crate::protocol::FiniteTableKind::Values) {
+                    index
+                } else {
+                    index + 1
+                };
+                format!("{}:{index}", source.kind().as_str())
+            })
+            .collect::<Vec<_>>();
+        let source_rows = source
+            .rows()
+            .iter()
+            .map(|row| {
+                source
+                    .columns()
+                    .iter()
+                    .cloned()
+                    .zip(row.iter().map(|literal| literal.value().clone()))
+                    .collect::<BTreeMap<_, _>>()
+            })
+            .collect::<Vec<_>>();
+        let contributors = table
+            .contributors()
+            .iter()
+            .map(|indices| {
+                indices
+                    .iter()
+                    .map(|index| {
+                        source_row_ids
+                            .get(*index)
+                            .cloned()
+                            .expect("canonical with_source validates all contributor indices")
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
         (source_rows, source_row_ids, contributors)
     } else {
         (Vec::new(), Vec::new(), Vec::new())
