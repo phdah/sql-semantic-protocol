@@ -132,7 +132,7 @@ fn real_odcs_schema_evidence_does_not_provide_a_generator_row_population() {
     assert!(metadata
         .source_schemas()
         .iter()
-        .all(|schema| schema.columns().len() > 0));
+        .all(|schema| !schema.columns().is_empty()));
 
     let parser = dialect_from_name("duckdb").unwrap();
     for sql in [
