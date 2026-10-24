@@ -12,11 +12,26 @@ use sql_semantic_protocol::{
 use std::collections::BTreeMap;
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-    "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
-fn source_free_proof(sql: &str, dialect_name: &str, wanted: Option<&BTreeMap<String, LiteralValue>>) -> Option<PhysicalFiniteTableProof> {
+fn source_free_proof(
+    sql: &str,
+    dialect_name: &str,
+    wanted: Option<&BTreeMap<String, LiteralValue>>,
+) -> Option<PhysicalFiniteTableProof> {
     let dialect = dialect_from_name(dialect_name).expect("project dialect");
     let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref()).ok()?;
     let layer = bundle.layers().last()?;
@@ -26,43 +41,62 @@ fn source_free_proof(sql: &str, dialect_name: &str, wanted: Option<&BTreeMap<Str
 fn expected_bag(sql: &str) -> Vec<BTreeMap<String, LiteralValue>> {
     let db = Connection::open_in_memory().expect("DuckDB");
     let mut statement = db.prepare(sql).expect("independent array oracle");
-    statement.query_map([], |row| {
-        let value = row.get::<_, Option<i64>>(0)?;
-        Ok(BTreeMap::from([(
-            "v".to_string(),
-            value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-        )]))
-    })
-    .expect("query")
-    .collect::<Result<Vec<_>, _>>()
-    .expect("complete oracle bag")
+    statement
+        .query_map([], |row| {
+            let value = row.get::<_, Option<i64>>(0)?;
+            Ok(BTreeMap::from([(
+                "v".to_string(),
+                value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+            )]))
+        })
+        .expect("query")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("complete oracle bag")
 }
 
 fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut rows = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut rows = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     rows.sort();
     rows
 }
 
 #[test]
 fn frozen_generator_matrix_does_not_claim_unverified_parser_or_adapter_cells() {
-    let freeze: Value = serde_json::from_str(include_str!("../docs/task-139-acceptance-freeze.json"))
-        .expect("versioned task-owned matrix");
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-139-acceptance-freeze.json"))
+            .expect("versioned task-owned matrix");
     let manifest: Value = serde_json::from_str(include_str!("../docs/coverage-manifest.json"))
         .expect("coverage manifest");
     assert_eq!(freeze["owner"], "TASK-139");
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["77-C139-P", "77-C139-N"]));
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["77-C139-P", "77-C139-N"])
+    );
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), DIALECTS.len());
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 7);
     assert_eq!(freeze["validation"]["task_done"], false);
-    assert_eq!(manifest["task_139_generator_acceptance"]["freeze"],
-        "docs/task-139-acceptance-freeze.json");
+    assert_eq!(
+        manifest["task_139_generator_acceptance"]["freeze"],
+        "docs/task-139-acceptance-freeze.json"
+    );
     for case in freeze["cases"].as_array().unwrap() {
-        assert_eq!(case["dialect_matrix"].as_array().unwrap().len(), DIALECTS.len());
+        assert_eq!(
+            case["dialect_matrix"].as_array().unwrap().len(),
+            DIALECTS.len()
+        );
         assert_eq!(case["adapter_matrix"].as_array().unwrap().len(), 3);
-        assert!(case["dialect_matrix"].as_array().unwrap().iter()
+        assert!(case["dialect_matrix"]
+            .as_array()
+            .unwrap()
+            .iter()
             .all(|cell| cell["certified"] == false));
-        assert!(case["adapter_matrix"].as_array().unwrap().iter()
+        assert!(case["adapter_matrix"]
+            .as_array()
+            .unwrap()
+            .iter()
             .all(|cell| cell["certified"] == false));
     }
 }
@@ -81,13 +115,17 @@ fn typed_explode_literal_bags_preserve_duplicates_null_and_closed_world_absence(
             vec!["explode:1", "explode:2", "explode:3"],
         ),
     ] {
-        let Some(PhysicalFiniteTableProof::Exact(result)) = source_free_proof(sql, "generic", None) else {
+        let Some(PhysicalFiniteTableProof::Exact(result)) = source_free_proof(sql, "generic", None)
+        else {
             panic!("typed source-free EXPLODE must have an exact complete bag: {sql}");
         };
         assert_eq!(result.row_ids, expected_ids);
         assert_eq!(sorted(&result.terminal), sorted(&expected_bag(reference)));
         assert_eq!(result.terminal_column_types["v"], FiniteColumnType::Integer);
-        assert!(!matches!(result.terminal_domains["v"], ValueDomain::Unknown(_)));
+        assert!(!matches!(
+            result.terminal_domains["v"],
+            ValueDomain::Unknown(_)
+        ));
 
         let missing = BTreeMap::from([("v".to_string(), LiteralValue::Number("7".to_string()))]);
         assert!(matches!(
@@ -113,7 +151,10 @@ fn accepted_from_explode_literal_forms_retain_generator_identity_and_complete_ba
             assert_eq!(table.terminal_column_types["v"], FiniteColumnType::Integer);
         }
     }
-    assert!(accepted > 0, "at least one exposed parser must recognize FROM EXPLODE");
+    assert!(
+        accepted > 0,
+        "at least one exposed parser must recognize FROM EXPLODE"
+    );
 }
 
 #[test]
@@ -138,13 +179,18 @@ fn from_explode_is_canonical_not_a_physical_relation() {
     let sql = "SELECT * FROM EXPLODE([5, 6]) AS t(v)";
     for dialect_name in DIALECTS {
         let parser = dialect_from_name(dialect_name).unwrap();
-        let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, parser.as_ref()) else {
+        let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, parser.as_ref())
+        else {
             continue;
         };
-        let Some(query) = bundle.inputs()[0].statements().iter().find_map(|s| match s {
-            sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
-            _ => None,
-        }) else {
+        let Some(query) = bundle.inputs()[0]
+            .statements()
+            .iter()
+            .find_map(|s| match s {
+                sql_semantic_protocol::ProtocolStatement::Query(query) => Some(query),
+                _ => None,
+            })
+        else {
             continue;
         };
         if let Some(table) = query.finite_table() {
