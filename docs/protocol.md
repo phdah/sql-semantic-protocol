@@ -6,9 +6,8 @@ Versioned contract files are immutable historical snapshots. Runtime code, relea
 
 ## Finite literal table constructors (TASK-137)
 
-Simple source-free `VALUES` and typed, directly literal integer-array `UNNEST`/
-`EXPLODE` queries may carry `finite_table` on the canonical query. The
-`kind`, `columns`, positionally aligned `column_types` (`integer` or `unknown`),
+Simple source-free `VALUES`, typed literal-array `UNNEST`/`EXPLODE`, deterministic schema-attested `SELECT * EXCEPT/EXCLUDE/RENAME/REPLACE` over finite VALUES, and fixed-key integer SUM PIVOT or named-column UNPIVOT may carry `finite_table` on the canonical query. The
+`kind`, `columns`, positionally aligned `column_types` (`integer`, `text` or `unknown`),
 and complete positional typed literal `rows` are the
 operator law; consumers must never reconstruct array membership from SQL
 text or per-column value domains. Duplicate rows retain distinct producer
