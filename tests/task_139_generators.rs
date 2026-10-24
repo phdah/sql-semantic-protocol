@@ -64,20 +64,22 @@ fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
 }
 
 #[test]
-fn frozen_generator_matrix_does_not_claim_unverified_parser_or_adapter_cells() {
+fn frozen_generator_matrix_has_finite_test_enforced_parser_and_adapter_cells() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-139-acceptance-freeze.json"))
             .expect("versioned task-owned matrix");
     let manifest: Value = serde_json::from_str(include_str!("../docs/coverage-manifest.json"))
         .expect("coverage manifest");
     assert_eq!(freeze["owner"], "TASK-139");
+    assert_eq!(freeze["version"], 2);
     assert_eq!(
         freeze["fixture_ids"],
         serde_json::json!(["77-C139-P", "77-C139-N"])
     );
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), DIALECTS.len());
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 7);
-    assert_eq!(freeze["validation"]["task_done"], false);
+    assert_eq!(freeze["validation"]["required_parser_cells"], 91);
+    assert_eq!(freeze["validation"]["required_adapter_cells"], 21);
     assert_eq!(
         manifest["task_139_generator_acceptance"]["freeze"],
         "docs/task-139-acceptance-freeze.json"
@@ -92,7 +94,7 @@ fn frozen_generator_matrix_does_not_claim_unverified_parser_or_adapter_cells() {
             .as_array()
             .unwrap()
             .iter()
-            .all(|cell| cell["certified"] == false));
+            .all(|cell| cell["certified"] == true));
         assert!(case["adapter_matrix"]
             .as_array()
             .unwrap()
@@ -202,32 +204,3 @@ fn from_explode_is_canonical_not_a_physical_relation() {
     }
 }
 
-#[test]
-fn task_139_parser_classification_probe() {
-    let matrix: Value = serde_json::from_str(include_str!("../docs/task-139-acceptance-freeze.json"))
-        .expect("matrix");
-    let mut observed = Vec::new();
-    for case in matrix["cases"].as_array().expect("cases") {
-        let mut cells = Vec::new();
-        for dialect in DIALECTS {
-            let parser = dialect_from_name(dialect).expect("dialect");
-            let status = match analyze_inputs(
-                &[SqlInput::inline(case["sql"].as_str().unwrap())],
-                dialect,
-                parser.as_ref(),
-            ) {
-                Err(_) => "parser_boundary",
-                Ok(bundle) => match bundle.layers().last() {
-                    None => "residual",
-                    Some(layer) => match physical_finite_table_plan(&bundle, layer.id(), None) {
-                        PhysicalFiniteTableProof::Exact(_) => "exact",
-                        PhysicalFiniteTableProof::Residual { .. } | PhysicalFiniteTableProof::Impossible { .. } => "residual",
-                    },
-                },
-            };
-            cells.push(format!("{dialect}:{status}"));
-        }
-        observed.push(format!("{} {}", case["id"].as_str().unwrap(), cells.join(",")));
-    }
-    panic!("TASK139_DISCOVERY\\n{}", observed.join("\\n"));
-}
