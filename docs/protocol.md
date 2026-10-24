@@ -4,6 +4,24 @@ This document describes the single active SQL Semantic Protocol contract. Its ve
 
 Versioned contract files are immutable historical snapshots. Runtime code, release automation, and active-contract tests use the unversioned paths so a version bump updates content rather than requiring path renames.
 
+## Deterministic direct pagination (TASK-133)
+
+A plain SELECT with named output-column ORDER BY and a literal nonnegative LIMIT/OFFSET,
+FETCH ONLY or TOP may carry canonical \`row_shaping\` containing positional sort keys,
+direction, optional explicit NULL position, offset and limit. The same representation
+is shared with ordered set operators; source-specific syntax is not carried into the
+domain model. No execution semantics are inferred for unsupported expressions,
+WITH TIES, OFFSET-only, percent pagination, sampling or ambiguous ordering.
+
+The public \`physical_finite_page_bag_plan\` requires a caller-attested complete
+physical source and source schema. It proves exact per-row identities, survivors,
+rejections, terminal bag and finite output domains only when the ordering is unique
+over the entire source, integer comparison semantics are certified, and NULL ordering
+is explicit wherever NULL occurs. Tied ORDER BY values are **Residual**, never broken
+by arbitrary insertion order. Contradictory enforced source schema is **Impossible**.
+This operator-local proof does not certify nested pagination, pagination after
+JOIN/GROUP/QUALIFY, vendor execution or TASK-76 parent acceptance.
+
 ## Finite literal tables and bounded transformations (TASK-137, TASK-138)
 
 Simple source-free `VALUES`, typed literal-array `UNNEST`/`EXPLODE`, deterministic schema-attested `SELECT * EXCEPT/EXCLUDE/RENAME/REPLACE` over finite VALUES, and fixed-key integer SUM PIVOT or named-column UNPIVOT may carry `finite_table` on the canonical query. The

@@ -88,6 +88,9 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
     if let Some(set_operation) = statement.set_operation() {
         value["set_operation"] = set_operation_to_value(set_operation);
     }
+    if let Some(row_shaping) = statement.row_shaping() {
+        value["row_shaping"] = row_shaping_to_value(row_shaping);
+    }
 
     if let Some(write) = statement.write() {
         value["write"] = write_operation_to_value(write);

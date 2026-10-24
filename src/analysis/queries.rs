@@ -303,7 +303,20 @@ pub(super) fn analyze_query(
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
+    let row_shaping = if set_operation.is_none() {
+        analyze_direct_row_shaping(query, &output)
+    } else {
+        None
+    };
     inspect_query_features(query, set_operation.as_ref(), &mut diagnostics);
+    if row_shaping.is_some() {
+        diagnostics.retain(|diagnostic| {
+            !matches!(
+                diagnostic.code(),
+                "unsupported_order_by" | "unsupported_limit" | "unsupported_fetch" | "unsupported_top"
+            )
+        });
+    }
     let missing_column_residuals = validate_schema_column_references(
         query,
         &predicates,
@@ -607,6 +620,7 @@ pub(super) fn analyze_query(
     )
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
+    .with_row_shaping(row_shaping)
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)

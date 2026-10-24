@@ -1,5 +1,15 @@
 # Code map: find the smallest canonical owner
 
+TASK-133 deterministic direct page bounds: `src/analysis/sets.rs` owns shared
+AST-to-`SetRowShaping` normalization for direct SELECT and ordered sets;
+`src/protocol/query.rs` stores parser-independent row shaping;
+`src/physical_realization/page_bags.rs` proves full source/terminal bags and
+fail-closed tied/null-order boundaries. `src/emission/aggregation_sets.rs`
+owns the shared JSON shape; `tests/task_133_page_bags.rs` holds independent
+DuckDB oracles. `docs/task-133-acceptance-freeze.json` tracks remaining
+TASK-133 and TASK-76 signoff obligations.
+
+
 TASK-139 source-free table generators: `src/analysis/finite_tables.rs` is the only supported AST-to-canonical boundary for typed literal `EXPLODE` (SELECT and FROM forms), alongside `UNNEST`. `src/protocol/finite_table.rs` owns the exact typed row bag, and `src/physical_realization/finite_tables.rs` proves complete positive and missing-row membership. Unattested JSON_TABLE, Snowflake FLATTEN, opaque table UDFs, dynamic shape and native engine-specific laws remain non-exact. The verified v3 acceptance inventory is `docs/task-139-acceptance-freeze.json`; exact and conditional public tests are in `tests/task_139_generators.rs`, `tests/task_139_frozen_matrix.rs` and `tests/task_139_adapter_matrix.rs`, plus `tests/task_139_dbt_core_e2e.rs`. TASK-139 child acceptance is verified; TASK-77 parent remains open.
 
 TASK-138 source-free finite wildcard projections, fixed-key SUM PIVOT and named-column UNPIVOT: `src/analysis/finite_tables.rs` validates complete literal VALUES inputs and SQL operator ASTs before forming canonical typed `FiniteTable` rows in `src/protocol/finite_table.rs`; `src/physical_realization/finite_tables.rs` proves complete physical inputs, per-row contributor identities, closed terminal bags and impossible membership. Opaque inputs, dynamic pivots and unproved arithmetic remain Residual. Public tests: `tests/task_138_finite_star_bags.rs` and `tests/task_138_pivot_unpivot.rs`.
