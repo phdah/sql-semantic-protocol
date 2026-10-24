@@ -213,9 +213,7 @@ fn unnest_table(
     )
 }
 
-fn literal_table_generator_kind(
-    name: &sqlparser::ast::ObjectName,
-) -> Option<FiniteTableKind> {
+fn literal_table_generator_kind(name: &sqlparser::ast::ObjectName) -> Option<FiniteTableKind> {
     if name.to_string().eq_ignore_ascii_case("unnest") {
         Some(FiniteTableKind::Unnest)
     } else if name.to_string().eq_ignore_ascii_case("explode") {
@@ -298,8 +296,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             alias,
             lateral,
             ..
-        } if !*lateral && literal_table_generator_kind(name).is_some() =>
-        {
+        } if !*lateral && literal_table_generator_kind(name).is_some() => {
             let arguments = args
                 .iter()
                 .map(|arg| match arg {
