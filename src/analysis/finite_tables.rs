@@ -658,7 +658,8 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
     if !function.name.to_string().eq_ignore_ascii_case("sum") {
         return None;
     }
-    let [Expr::Identifier(value_name)] = function_arguments(function)?.as_slice() else {
+    let arguments = function_arguments(function)?;
+    let [Expr::Identifier(value_name)] = arguments.as_slice() else {
         return None;
     };
     let value_index = source
