@@ -1,5 +1,7 @@
 # Code map: find the smallest canonical owner
 
+TASK-138 source-free finite wildcard projections, fixed-key SUM PIVOT and named-column UNPIVOT: `src/analysis/finite_tables.rs` validates complete literal VALUES inputs and SQL operator ASTs before forming canonical typed `FiniteTable` rows in `src/protocol/finite_table.rs`; `src/physical_realization/finite_tables.rs` proves closed terminal bags and impossible membership. Opaque inputs, dynamic pivots and unproved arithmetic remain Residual. Public tests: `tests/task_138_finite_star_bags.rs` and `tests/task_138_pivot_unpivot.rs`.
+
 TASK-137 source-free literal tables: `src/analysis/finite_tables.rs` normalizes validated VALUES and UNNEST/EXPLODE literal forms into `src/protocol/finite_table.rs`; `src/physical_realization/finite_tables.rs` proves exact identity/multiplicity/domain and absent-row membership from those canonical rows, not SQL reparsing. `src/emission/statements.rs` and `schema/protocol.schema.json` retain the wire contract; `tests/task_137_finite_tables.rs` compares complete DuckDB output bags. Source-column arrays, opaque generators, joined fanout, unproved element types, and vendor/session semantics remain residual; `docs/task-137-acceptance-freeze.json` preserves the unfinished dialect, adapter and CI matrix.
 
 
