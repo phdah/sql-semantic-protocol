@@ -1319,8 +1319,8 @@
       ],
       "output_columns": [
         "id",
-        "v",
-        "n"
+        "n",
+        "v"
       ],
       "source_row_ids": [
         "values:0",
@@ -1532,8 +1532,8 @@
       ],
       "output_columns": [
         "id",
-        "v",
-        "n"
+        "n",
+        "v"
       ],
       "source_row_ids": [
         "values:0",
@@ -1713,5 +1713,5 @@
     "parser_cells_verified": 130,
     "adapter_cells_classified": 30
   },
-  "validation_state": "frozen 130 observed parser paths and 30 classified adapter paths; full head CI pending"
+  "validation_state": "130 observed parser cells and 30 adapter classifications; corrected observed native UNPIVOT name-before-value output order; final CI pending"
 }
