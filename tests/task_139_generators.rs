@@ -176,7 +176,6 @@ fn unproved_vendor_tables_opaque_inputs_and_shapes_are_never_exact() {
         }
     }
 }
-
 #[test]
 fn from_explode_is_canonical_not_a_physical_relation() {
     let sql = "SELECT * FROM EXPLODE([5, 6]) AS t(v)";
