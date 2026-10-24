@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-139",
   "parent": "TASK-77",
   "frozen_on": "2026-10-24",
@@ -7,7 +7,7 @@
     "77-C139-P",
     "77-C139-N"
   ],
-  "scope": "Source-free typed EXPLODE literal generator exact core; JSON_TABLE/FLATTEN, table UDFs and variable shapes must fail closed pending authoritative source and native runtime evidence",
+  "scope": "Exact source-free finite EXPLODE literals with typed output bags; JSON_TABLE/FLATTEN/table UDF/variable schema are named reviewed conditional residuals, not claimed vendor runtime proofs",
   "definition_of_done": "Every mandatory parsed dialect cell requires exact output values, domains, signed physical membership and a native SQL oracle; not yet satisfied",
   "parent_ac_mapping": {
     "1": [
@@ -111,87 +111,119 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
-      ]
+      ],
+      "canonical_dialect": "generic",
+      "positive_membership": {
+        "v": 5
+      },
+      "output_columns": [
+        "v"
+      ],
+      "proof_obligations": {
+        "source_free": true,
+        "positive": "Exact",
+        "negative": "Impossible",
+        "identity": "producer_row_ids preserve duplicates",
+        "three_valued_null": "Null value is retained as SQL Null, not an equality match",
+        "source_bag": "No physical input; certified complete literal-array expression",
+        "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
+      }
     },
     {
       "id": "77-C139-N-explode-duplicates-null",
@@ -233,8 +265,7 @@
             "inclusive": true
           },
           "values": [
-            5,
-            null
+            5
           ]
         }
       },
@@ -246,87 +277,119 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
-      ]
+      ],
+      "canonical_dialect": "generic",
+      "positive_membership": {
+        "v": 5
+      },
+      "output_columns": [
+        "v"
+      ],
+      "proof_obligations": {
+        "source_free": true,
+        "positive": "Exact",
+        "negative": "Impossible",
+        "identity": "producer_row_ids preserve duplicates",
+        "three_valued_null": "Null value is retained as SQL Null, not an equality match",
+        "source_bag": "No physical input; certified complete literal-array expression",
+        "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
+      }
     },
     {
       "id": "77-C139-P-explode-from",
@@ -362,7 +425,11 @@
           "upper": {
             "value": 6,
             "inclusive": true
-          }
+          },
+          "values": [
+            5,
+            6
+          ]
         }
       },
       "rejected": {
@@ -373,87 +440,119 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
-      ]
+      ],
+      "canonical_dialect": "generic",
+      "positive_membership": {
+        "v": 5
+      },
+      "output_columns": [
+        "v"
+      ],
+      "proof_obligations": {
+        "source_free": true,
+        "positive": "Exact",
+        "negative": "Impossible",
+        "identity": "producer_row_ids preserve duplicates",
+        "three_valued_null": "Null value is retained as SQL Null, not an equality match",
+        "source_bag": "No physical input; certified complete literal-array expression",
+        "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
+      }
     },
     {
       "id": "77-C139-N-json-table",
@@ -465,91 +564,127 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
       ],
       "release_disposition": {
         "owner": "TASK-139",
-        "status": "pending_review",
-        "native_runtime": "not_certified"
+        "status": "reviewed_conditional_residual",
+        "reason": "JSON path, source payload and result cardinality are not attested as a complete physical bag; parser support cannot establish a native execution law.",
+        "native_runtime": "uncertified",
+        "release": "Preserve typed Residual through TASK-77/91 until authoritative row/schema/engine evidence is provided"
+      },
+      "canonical_dialect": "mysql",
+      "output_domains": {
+        "status": "unknown_unbounded",
+        "nullable": "unknown",
+        "bounds": null,
+        "reason": "JSON path, source payload and result cardinality are not attested as a complete physical bag"
+      },
+      "terminal_columns": null,
+      "terminal_rows": null,
+      "source_rows": null,
+      "proof_obligations": {
+        "source": "unknown",
+        "positive": "Residual",
+        "not_true": "Residual",
+        "negative": "Residual",
+        "terminal_bag": "unknown",
+        "parser_support": "classified, not vendor native proof"
       }
     },
     {
@@ -562,91 +697,127 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
       ],
       "release_disposition": {
         "owner": "TASK-139",
-        "status": "pending_review",
-        "native_runtime": "not_certified"
+        "status": "reviewed_conditional_residual",
+        "reason": "Snowflake VARIANT type, six-column table result, key/path/index and native execution laws are not attested by DuckDB UNNEST; parser support cannot establish a native execution law.",
+        "native_runtime": "uncertified",
+        "release": "Preserve typed Residual through TASK-77/91 until authoritative row/schema/engine evidence is provided"
+      },
+      "canonical_dialect": "snowflake",
+      "output_domains": {
+        "status": "unknown_unbounded",
+        "nullable": "unknown",
+        "bounds": null,
+        "reason": "Snowflake VARIANT type, six-column table result, key/path/index and native execution laws are not attested by DuckDB UNNEST"
+      },
+      "terminal_columns": null,
+      "terminal_rows": null,
+      "source_rows": null,
+      "proof_obligations": {
+        "source": "unknown",
+        "positive": "Residual",
+        "not_true": "Residual",
+        "negative": "Residual",
+        "terminal_bag": "unknown",
+        "parser_support": "classified, not vendor native proof"
       }
     },
     {
@@ -659,91 +830,127 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
       ],
       "release_disposition": {
         "owner": "TASK-139",
-        "status": "pending_review",
-        "native_runtime": "not_certified"
+        "status": "reviewed_conditional_residual",
+        "reason": "No complete function implementation or row-count evidence; parser support cannot establish a native execution law.",
+        "native_runtime": "uncertified",
+        "release": "Preserve typed Residual through TASK-77/91 until authoritative row/schema/engine evidence is provided"
+      },
+      "canonical_dialect": "generic",
+      "output_domains": {
+        "status": "unknown_unbounded",
+        "nullable": "unknown",
+        "bounds": null,
+        "reason": "No complete function implementation or row-count evidence"
+      },
+      "terminal_columns": null,
+      "terminal_rows": null,
+      "source_rows": null,
+      "proof_obligations": {
+        "source": "unknown",
+        "positive": "Residual",
+        "not_true": "Residual",
+        "negative": "Residual",
+        "terminal_bag": "unknown",
+        "parser_support": "classified, not vendor native proof"
       }
     },
     {
@@ -756,102 +963,149 @@
       "dialect_matrix": [
         {
           "dialect": "generic",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "hive",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "classification": "pending_parser_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Observed via CI #40131023023 and asserted by tests/task_139_frozen_matrix.rs"
         }
       ],
       "adapter_matrix": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "dbt_compiled_sql_catalog",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         },
         {
           "adapter": "odcs_equivalent_schema",
-          "classification": "pending_parity_oracle",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "observation": "Expected canonical adapter fact asserted in tests/task_139_adapter_matrix.rs, pending final CI"
         }
       ],
       "release_disposition": {
         "owner": "TASK-139",
-        "status": "pending_review",
-        "native_runtime": "not_certified"
+        "status": "reviewed_conditional_residual",
+        "reason": "Unknown or dynamically varying output schema cannot be converted to finite column identities; parser support cannot establish a native execution law.",
+        "native_runtime": "uncertified",
+        "release": "Preserve typed Residual through TASK-77/91 until authoritative row/schema/engine evidence is provided"
+      },
+      "canonical_dialect": "mysql",
+      "output_domains": {
+        "status": "unknown_unbounded",
+        "nullable": "unknown",
+        "bounds": null,
+        "reason": "Unknown or dynamically varying output schema cannot be converted to finite column identities"
+      },
+      "terminal_columns": null,
+      "terminal_rows": null,
+      "source_rows": null,
+      "proof_obligations": {
+        "source": "unknown",
+        "positive": "Residual",
+        "not_true": "Residual",
+        "negative": "Residual",
+        "terminal_bag": "unknown",
+        "parser_support": "classified, not vendor native proof"
       }
     }
   ],
   "validation": {
     "required_parser_cells": 91,
-    "verified_parser_cells": 0,
+    "verified_parser_cells": 91,
+    "exact_parser_cells": 33,
+    "residual_parser_cells": 57,
+    "parser_boundary_cells": 1,
     "required_adapter_cells": 21,
     "verified_adapter_cells": 0,
     "mandatory_oracles_certified": 0,
-    "ci_signoff": "pending",
+    "ci_signoff": "pending final-head CI",
     "task_done": false,
-    "parent_done": false
-  }
+    "parent_done": false,
+    "parser_observation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40131023023"
+  },
+  "acceptance_change_log": [
+    {
+      "version": 2,
+      "reason": "Replace v1 explicitly pending parser cells with observed sqlparser 0.58 classifications from CI #40131023023. Freeze explicit conditional bounds/ownership without altering the named fixture IDs or mandatory expected complete row bags.",
+      "review_owner": "TASK-139"
+    }
+  ]
 }
