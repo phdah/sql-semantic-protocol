@@ -1,0 +1,857 @@
+{
+  "version": 1,
+  "owner": "TASK-139",
+  "parent": "TASK-77",
+  "frozen_on": "2026-10-24",
+  "fixture_ids": [
+    "77-C139-P",
+    "77-C139-N"
+  ],
+  "scope": "Source-free typed EXPLODE literal generator exact core; JSON_TABLE/FLATTEN, table UDFs and variable shapes must fail closed pending authoritative source and native runtime evidence",
+  "definition_of_done": "Every mandatory parsed dialect cell requires exact output values, domains, signed physical membership and a native SQL oracle; not yet satisfied",
+  "parent_ac_mapping": {
+    "1": [
+      "explode_literal_select",
+      "explode_from_function",
+      "json_table_dynamic_json_path",
+      "snowflake_flatten",
+      "opaque_generator_table_udf",
+      "variable_shape_generator"
+    ],
+    "2": [
+      "explode_literal_null_duplicate",
+      "json_table_dynamic_json_path",
+      "snowflake_flatten"
+    ],
+    "3": [
+      "json_table_dynamic_json_path",
+      "snowflake_flatten",
+      "opaque_generator_table_udf",
+      "variable_shape_generator"
+    ],
+    "5": [
+      "all mandatory positive and NOT TRUE membership proofs"
+    ],
+    "6": [
+      "13 dialect parser classifications, SQL/dbt/ODCS parity, native/conditional owner"
+    ]
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "proof_strength": {
+    "exact": "Complete source-free typed row bag with stable per-row identities",
+    "impossible": "Typed missing candidate in a certified complete terminal bag",
+    "residual": "No source-complete typed generator evidence; no guessed JSON paths or vendor runtime"
+  },
+  "cases": [
+    {
+      "id": "77-C139-P-explode-select",
+      "variant": "explode_literal_select",
+      "classification": "mandatory",
+      "sql": "SELECT EXPLODE([5, 6]) AS v",
+      "oracle_sql": "SELECT v FROM UNNEST([5,6]) AS t(v)",
+      "source_columns": [],
+      "source_rows": [],
+      "terminal_columns": [
+        "v"
+      ],
+      "terminal_rows": [
+        {
+          "v": 5
+        },
+        {
+          "v": 6
+        }
+      ],
+      "producer_row_ids": [
+        "explode:1",
+        "explode:2"
+      ],
+      "output_domains": {
+        "v": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 5,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 6,
+            "inclusive": true
+          },
+          "values": [
+            5,
+            6
+          ]
+        }
+      },
+      "rejected": {
+        "v": 7
+      },
+      "membership_positive": "Exact",
+      "membership_not_true": "Impossible",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C139-N-explode-duplicates-null",
+      "variant": "explode_literal_null_duplicate",
+      "classification": "mandatory",
+      "sql": "SELECT EXPLODE([5, NULL, 5]) AS v",
+      "oracle_sql": "SELECT v FROM UNNEST([5,NULL,5]) AS t(v)",
+      "source_columns": [],
+      "source_rows": [],
+      "terminal_columns": [
+        "v"
+      ],
+      "terminal_rows": [
+        {
+          "v": 5
+        },
+        {
+          "v": null
+        },
+        {
+          "v": 5
+        }
+      ],
+      "producer_row_ids": [
+        "explode:1",
+        "explode:2",
+        "explode:3"
+      ],
+      "output_domains": {
+        "v": {
+          "type": "integer",
+          "nullable": true,
+          "lower": {
+            "value": 5,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 5,
+            "inclusive": true
+          },
+          "values": [
+            5,
+            null
+          ]
+        }
+      },
+      "rejected": {
+        "v": 7
+      },
+      "membership_positive": "Exact",
+      "membership_not_true": "Impossible",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C139-P-explode-from",
+      "variant": "explode_from_function",
+      "classification": "mandatory",
+      "sql": "SELECT * FROM EXPLODE([5,6]) AS t(v)",
+      "oracle_sql": "SELECT v FROM UNNEST([5,6]) AS t(v)",
+      "source_columns": [],
+      "source_rows": [],
+      "terminal_columns": [
+        "v"
+      ],
+      "terminal_rows": [
+        {
+          "v": 5
+        },
+        {
+          "v": 6
+        }
+      ],
+      "producer_row_ids": [
+        "explode:1",
+        "explode:2"
+      ],
+      "output_domains": {
+        "v": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 5,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 6,
+            "inclusive": true
+          }
+        }
+      },
+      "rejected": {
+        "v": 7
+      },
+      "membership_positive": "Exact_if_parser_accepts_exact_source_free_shape",
+      "membership_not_true": "Impossible_if_parser_accepts_exact_source_free_shape",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C139-N-json-table",
+      "variant": "json_table_dynamic_json_path",
+      "classification": "conditional",
+      "sql": "SELECT * FROM JSON_TABLE(payload, '$[*]' COLUMNS(v INTEGER PATH '$')) AS jt",
+      "expected_proof": "Residual",
+      "boundary": "JSON path, source payload and result cardinality are not attested as a complete physical bag",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ],
+      "release_disposition": {
+        "owner": "TASK-139",
+        "status": "pending_review",
+        "native_runtime": "not_certified"
+      }
+    },
+    {
+      "id": "77-C139-N-flatten",
+      "variant": "snowflake_flatten",
+      "classification": "conditional",
+      "sql": "SELECT VALUE FROM TABLE(FLATTEN(INPUT => PARSE_JSON('[5,6]')))",
+      "expected_proof": "Residual",
+      "boundary": "Snowflake VARIANT type, six-column table result, key/path/index and native execution laws are not attested by DuckDB UNNEST",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ],
+      "release_disposition": {
+        "owner": "TASK-139",
+        "status": "pending_review",
+        "native_runtime": "not_certified"
+      }
+    },
+    {
+      "id": "77-C139-N-table-udf",
+      "variant": "opaque_generator_table_udf",
+      "classification": "conditional",
+      "sql": "SELECT * FROM custom_table_generator()",
+      "expected_proof": "Residual",
+      "boundary": "No complete function implementation or row-count evidence",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ],
+      "release_disposition": {
+        "owner": "TASK-139",
+        "status": "pending_review",
+        "native_runtime": "not_certified"
+      }
+    },
+    {
+      "id": "77-C139-N-variable-shape",
+      "variant": "variable_shape_generator",
+      "classification": "conditional",
+      "sql": "SELECT * FROM JSON_TABLE(payload, '$[*]' COLUMNS(v FOR ORDINALITY)) AS jt",
+      "expected_proof": "Residual",
+      "boundary": "Unknown or dynamically varying output schema cannot be converted to finite column identities",
+      "dialect_matrix": [
+        {
+          "dialect": "generic",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_parser_oracle",
+          "certified": false
+        }
+      ],
+      "adapter_matrix": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "dbt_compiled_sql_catalog",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "pending_parity_oracle",
+          "certified": false
+        }
+      ],
+      "release_disposition": {
+        "owner": "TASK-139",
+        "status": "pending_review",
+        "native_runtime": "not_certified"
+      }
+    }
+  ],
+  "validation": {
+    "required_parser_cells": 91,
+    "verified_parser_cells": 0,
+    "required_adapter_cells": 21,
+    "verified_adapter_cells": 0,
+    "mandatory_oracles_certified": 0,
+    "ci_signoff": "pending",
+    "task_done": false,
+    "parent_done": false
+  }
+}
