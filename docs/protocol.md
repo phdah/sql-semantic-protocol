@@ -4,7 +4,7 @@ This document describes the single active SQL Semantic Protocol contract. Its ve
 
 Versioned contract files are immutable historical snapshots. Runtime code, release automation, and active-contract tests use the unversioned paths so a version bump updates content rather than requiring path renames.
 
-## Finite literal table constructors (TASK-137)
+## Finite literal tables and bounded transformations (TASK-137, TASK-138)
 
 Simple source-free `VALUES`, typed literal-array `UNNEST`/`EXPLODE`, deterministic schema-attested `SELECT * EXCEPT/EXCLUDE/RENAME/REPLACE` over finite VALUES, and fixed-key integer SUM PIVOT or named-column UNPIVOT may carry `finite_table` on the canonical query. The
 `kind`, `columns`, positionally aligned `column_types` (`integer`, `text` or `unknown`),
@@ -20,11 +20,13 @@ type evidence rather than inventing an integer type. Untyped empty arrays, opaqu
 source-column fanout, unproved casts, correlated LATERAL, sampled tables,
 and vendor-specific generator semantics remain residual.
 
+For `star`, `pivot` and `unpivot` operators, the nested `source` object is the complete original typed VALUES bag. `contributors` is a positional list of nonempty arrays of indices into `source.rows` for each output row. These references preserve duplicates, original row identities and fanout; the consumer never needs SQL to recover provenance. Unsupported and dynamic-schema variants remain explicit Residual rather than guessed relations.
+
 The independent physical API `physical_finite_table_plan` computes all
-terminal rows and exact domains from these canonical facts and can prove
+source and terminal rows, their identities and exact domains from these canonical facts and can prove
 a requested row absent from the complete bag. This does not certify arbitrary
 table-function execution or TASK-77 parent acceptance; those gates are
-maintained by `docs/task-137-acceptance-freeze.json`.
+maintained by `docs/task-137-acceptance-freeze.json` and `docs/task-138-acceptance-freeze.json`.
 
 ## Inputs and deterministic identity
 
