@@ -60,7 +60,7 @@ fn compare_ordered_rows(
         .zip(rhs)
         .zip(keys)
         .map(|((left, right), key)| {
-            let order = match (left, right) {
+            match (left, right) {
                 (None, None) => Ordering::Equal,
                 (None, Some(_)) => {
                     if key.nulls_first == Some(true) {
@@ -83,8 +83,7 @@ fn compare_ordered_rows(
                         a.cmp(b)
                     }
                 }
-            };
-            order
+            }
         })
         .find(|order| *order != Ordering::Equal)
         .unwrap_or(Ordering::Equal)
@@ -159,7 +158,10 @@ pub fn physical_finite_page_bag_plan(
         if expr
             .relation()
             .is_some_and(|relation| relation != source.name() && Some(relation) != source.alias())
-            || !schema.columns().iter().any(|schema_column| schema_column.name() == expr.name())
+            || !schema
+                .columns()
+                .iter()
+                .any(|schema_column| schema_column.name() == expr.name())
         {
             return residual("page projection does not resolve to one physical source column");
         }
@@ -202,17 +204,17 @@ pub fn physical_finite_page_bag_plan(
         rows.push((index, keys));
     }
     rows.sort_by(|left, right| compare_ordered_rows(&left.1, &right.1, &shaping.keys));
-    if rows.windows(2).any(|pair| {
-        compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal
-    }) {
+    if rows
+        .windows(2)
+        .any(|pair| compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal)
+    {
         return residual("non-unique ORDER BY keys do not establish exact physical survivors");
     }
 
     let mut selected = vec![None; snapshot.rows().len()];
     let mut terminal = Vec::new();
     for (position, (source_index, _)) in rows.iter().enumerate() {
-        let survives = position >= shaping.offset
-            && position - shaping.offset < shaping.limit;
+        let survives = position >= shaping.offset && position - shaping.offset < shaping.limit;
         selected[*source_index] = Some(PhysicalPageRow {
             source_row_id: format!("{}#{}", source.name(), source_index),
             order_position: position,

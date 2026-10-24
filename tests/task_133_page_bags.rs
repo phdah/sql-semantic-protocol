@@ -31,7 +31,12 @@ fn source(keys: &[Option<i64>]) -> PhysicalWriteState {
 fn prove(sql: &str, dialect: &str, keys: &[Option<i64>]) -> PhysicalFinitePageProof {
     let parser = dialect_from_name(dialect).unwrap();
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("page", &input, dialect, parser.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "page",
+        &input,
+        dialect,
+        parser.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
     let layer_id = bundle.layers().last().unwrap().id();
     physical_finite_page_bag_plan(&bundle, layer_id, &[source(keys)])
@@ -46,7 +51,9 @@ fn duckdb_rows(sql: &str, keys: &[Option<i64>]) -> Vec<Option<i64>> {
             .unwrap();
     }
     // Native source-bag count is checked independently of the interpreter.
-    let count: i64 = db.query_row("SELECT count(*) FROM s", [], |row| row.get(0)).unwrap();
+    let count: i64 = db
+        .query_row("SELECT count(*) FROM s", [], |row| row.get(0))
+        .unwrap();
     assert_eq!(usize::try_from(count).unwrap(), keys.len());
     db.prepare(sql)
         .unwrap()
@@ -165,8 +172,15 @@ fn zero_limit_and_empty_source_are_exact_empty_bags() {
 
 #[test]
 fn tied_sort_key_never_claims_exact_row_identity() {
-    let proof = prove("SELECT k FROM s ORDER BY k LIMIT 1", "duckdb", &[Some(2), Some(2), Some(3)]);
-    assert!(matches!(proof, PhysicalFinitePageProof::Residual { .. }), "{proof:?}");
+    let proof = prove(
+        "SELECT k FROM s ORDER BY k LIMIT 1",
+        "duckdb",
+        &[Some(2), Some(2), Some(3)],
+    );
+    assert!(
+        matches!(proof, PhysicalFinitePageProof::Residual { .. }),
+        "{proof:?}"
+    );
 }
 
 #[test]
@@ -180,11 +194,7 @@ fn implicit_null_sort_and_missing_order_fail_closed() {
         matches!(nullable, PhysicalFinitePageProof::Residual { .. }),
         "{nullable:?}"
     );
-    let underordered = prove(
-        "SELECT k FROM s LIMIT 1",
-        "duckdb",
-        &[Some(1), Some(2)],
-    );
+    let underordered = prove("SELECT k FROM s LIMIT 1", "duckdb", &[Some(1), Some(2)]);
     assert!(
         matches!(underordered, PhysicalFinitePageProof::Residual { .. }),
         "{underordered:?}"
