@@ -15,6 +15,12 @@ pub struct PhysicalFiniteTableExact {
     pub row_ids: Vec<String>,
     /// Complete terminal SQL output bag with duplicates.
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
+    /// Complete physical input bag to this finite transformation, if any.
+    pub source_rows: Vec<BTreeMap<String, LiteralValue>>,
+    /// All original source-row identities; duplicates remain distinct.
+    pub source_row_ids: Vec<String>,
+    /// Explicit source-row witnesses for every terminal row, including fanout.
+    pub contributors: Vec<Vec<String>>,
     /// Exact finite typed outcome domains, including NULL and bounds.
     pub terminal_domains: BTreeMap<String, ValueDomain>,
     /// Attested column types, including zero-row results whose domains are Empty.
@@ -101,20 +107,17 @@ pub fn physical_finite_table_plan(
         row_ids.push(format!("{}:{position}", table.kind().as_str()));
     }
     if let Some(wanted) = wanted {
-        // A malformed request is not evidence that a SQL row is impossible.
-        // All named outputs must be present and scalar values must have the
-        // same attested integral/NULL identity law as the canonical table.
+        // A malformed typed tuple does not prove impossibility. Text is exact
+        // only for the explicitly typed UNPIVOT name column.
         if wanted.len() != table.columns().len()
-            || table
-                .columns()
-                .iter()
-                .any(|column| !wanted.contains_key(column))
-            || wanted.values().any(|value| match value {
-                LiteralValue::Null => false,
-                LiteralValue::Number(number) => number
-                    .parse::<i128>()
-                    .map_or(true, |parsed| parsed.to_string() != *number),
-                _ => true,
+            || table.columns().iter().zip(table.column_types()).any(|(name, ty)| {
+                match wanted.get(name) {
+                    Some(LiteralValue::Null) => false,
+                    Some(LiteralValue::Number(number)) if *ty == FiniteColumnType::Integer =>
+                        number.parse::<i128>().map_or(true, |parsed| parsed.to_string() != *number),
+                    Some(LiteralValue::Text(_)) if *ty == FiniteColumnType::Text => false,
+                    _ => true,
+                }
             })
         {
             return PhysicalFiniteTableProof::Residual {
@@ -129,6 +132,30 @@ pub fn physical_finite_table_plan(
             };
         }
     }
+    let (source_rows, source_row_ids, contributors) = if let Some(source) = table.source() {
+        let source_row_ids = source.rows().iter().enumerate().map(|(index, _)| {
+            let index = if matches!(source.kind(), crate::protocol::FiniteTableKind::Values) {
+                index
+            } else {
+                index + 1
+            };
+            format!("{}:{index}", source.kind().as_str())
+        }).collect::<Vec<_>>();
+        let source_rows = source.rows().iter().map(|row| {
+            source.columns().iter().cloned()
+                .zip(row.iter().map(|literal| literal.value().clone()))
+                .collect::<BTreeMap<_, _>>()
+        }).collect::<Vec<_>>();
+        let contributors = table.contributors().iter().map(|indices| {
+            indices.iter().map(|index| {
+                source_row_ids.get(*index).cloned()
+                    .expect("canonical with_source validates all contributor indices")
+            }).collect::<Vec<_>>()
+        }).collect::<Vec<_>>();
+        (source_rows, source_row_ids, contributors)
+    } else {
+        (Vec::new(), Vec::new(), Vec::new())
+    };
     let terminal_domains = query
         .output()
         .columns()
@@ -145,6 +172,9 @@ pub fn physical_finite_table_plan(
         nodes: walker.nodes,
         row_ids,
         terminal,
+        source_rows,
+        source_row_ids,
+        contributors,
         terminal_domains,
         terminal_column_types,
     }))
