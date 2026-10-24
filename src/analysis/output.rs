@@ -439,8 +439,10 @@ fn expand_wildcard_with_options(
 ) -> Vec<OutputColumn> {
     use super::star_projection::{plan_star_modification, StarModification};
 
-    if options.opt_except.is_none() && options.opt_exclude.is_none()
-        && options.opt_rename.is_none() && options.opt_replace.is_none()
+    if options.opt_except.is_none()
+        && options.opt_exclude.is_none()
+        && options.opt_rename.is_none()
+        && options.opt_replace.is_none()
         && options.opt_ilike.is_none()
     {
         return expand_wildcard(qualifier, scope, diagnostics);
