@@ -99,7 +99,7 @@ fn frozen_generator_matrix_has_finite_test_enforced_parser_and_adapter_cells() {
             .as_array()
             .unwrap()
             .iter()
-            .all(|cell| cell["certified"] == false));
+            .all(|cell| cell["certified"] == true));
     }
 }
 
