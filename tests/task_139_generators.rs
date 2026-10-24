@@ -177,6 +177,25 @@ fn unproved_vendor_tables_opaque_inputs_and_shapes_are_never_exact() {
     }
 }
 #[test]
+fn generator_null_membership_is_not_a_guessed_sql_equality_proof() {
+    let sql = "SELECT EXPLODE([5, NULL, 5]) AS v";
+    let null = BTreeMap::from([("v".to_string(), LiteralValue::Null)]);
+    let invalid = BTreeMap::from([("v".to_string(), LiteralValue::Text("5".to_string()))]);
+    assert!(matches!(
+        source_free_proof(sql, "generic", Some(&null)),
+        Some(PhysicalFiniteTableProof::Exact(_))
+    ));
+    assert!(matches!(
+        source_free_proof("SELECT EXPLODE([5, 6]) AS v", "generic", Some(&null)),
+        Some(PhysicalFiniteTableProof::Impossible { .. })
+    ));
+    assert!(matches!(
+        source_free_proof(sql, "generic", Some(&invalid)),
+        Some(PhysicalFiniteTableProof::Residual { .. })
+    ));
+}
+
+#[test]
 fn from_explode_is_canonical_not_a_physical_relation() {
     let sql = "SELECT * FROM EXPLODE([5, 6]) AS t(v)";
     for dialect_name in DIALECTS {
