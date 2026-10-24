@@ -219,6 +219,14 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             ),
             "{sql}: absent tuple is impossible"
         );
+        let positive=expected.first().expect("all TASK-138 mandatory fixture bags are populated");
+        assert!(
+            matches!(
+                physical_finite_table_plan(&bundle, target.id(), Some(positive)),
+                PhysicalFiniteTableProof::Exact(_)
+            ),
+            "{sql}: certified present tuple must be accepted as exact"
+        );
         checked += 1;
     }
     assert_eq!(checked, 7, "all seven mandatory exact variants checked");
