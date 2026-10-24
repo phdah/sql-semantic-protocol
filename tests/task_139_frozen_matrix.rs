@@ -261,10 +261,7 @@ fn complete_literal_array_inputs_are_independently_executed_as_duckdb_source_ora
                     .collect::<Result<Vec<_>, _>>()
             })
             .expect("one authoritative literal-array row");
-        let expected = expected
-            .iter()
-            .map(|v| v.as_i64())
-            .collect::<Vec<_>>();
+        let expected = expected.iter().map(|v| v.as_i64()).collect::<Vec<_>>();
         assert_eq!(observed, expected, "{sql}: all array slots including NULL");
     }
 }
