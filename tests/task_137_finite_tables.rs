@@ -243,3 +243,49 @@ fn unsupported_candidate_shape_is_residual_not_an_impossible_sql_row() {
         );
     }
 }
+
+#[test]
+fn multicolumn_values_and_nullable_duplicate_unnest_preserve_complete_native_bags() {
+    let cases = [
+        (
+            "VALUES (1, 10), (1, 10), (NULL, 20)",
+            "SELECT a, b FROM (VALUES (1, 10), (1, 10), (NULL, 20)) AS t(a, b)",
+            vec!["a", "b"],
+            vec!["values:0", "values:1", "values:2"],
+            "column1",
+        ),
+        (
+            "SELECT * FROM UNNEST([1, NULL, 1]) AS t(v)",
+            "SELECT v FROM UNNEST([1, NULL, 1]) AS t(v)",
+            vec!["v"],
+            vec!["unnest:1", "unnest:2", "unnest:3"],
+            "v",
+        ),
+    ];
+    for (sql, oracle, native_names, ids, nullable_column) in cases {
+        let PhysicalFiniteTableProof::Exact(proof) = result(sql, "duckdb") else {
+            panic!("source-free complete typed bag: {sql}");
+        };
+        let native = db_bag(oracle, &native_names);
+        let expected = if sql.starts_with("VALUES") {
+            native
+                .into_iter()
+                .map(|r| {
+                    BTreeMap::from([
+                        ("column1".into(), r["a"].clone()),
+                        ("column2".into(), r["b"].clone()),
+                    ])
+                })
+                .collect::<Vec<_>>()
+        } else {
+            native
+        };
+        assert_eq!(bag(&proof.terminal), bag(&expected), "{sql}: complete physical bag");
+        assert_eq!(proof.row_ids, ids, "{sql}: every duplicate producer identity");
+        assert_eq!(proof.terminal_domains[nullable_column].admits_null(), Some(true));
+        if sql.starts_with("VALUES") {
+            assert_eq!(proof.terminal_domains["column2"].admits_null(), Some(false));
+        }
+        assert!(proof.nodes.iter().all(|node| node.inputs().is_empty()));
+    }
+}

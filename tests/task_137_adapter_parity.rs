@@ -137,7 +137,10 @@ fn every_frozen_adapter_cell_has_executable_or_explicitly_inapplicable_evidence(
         );
         for (adapter, status) in statuses {
             cells += 1;
-            match (adapter.as_str(), status.as_str().expect("frozen adapter status")) {
+            match (
+                adapter.as_str(),
+                status.as_str().expect("frozen adapter status"),
+            ) {
                 ("direct_sql", "exact") => {
                     let direct =
                         analyze_inputs(&[SqlInput::inline(sql)], "duckdb", parser.as_ref())
