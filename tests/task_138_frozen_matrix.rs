@@ -103,10 +103,17 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
             if let Ok(bundle) = analysis {
                 let layer = bundle.layers().last().expect("layer");
                 let proof = physical_finite_table_plan(&bundle, layer.id(), None);
-                assert!(matches!(
-                    proof,
-                    PhysicalFiniteTableProof::Exact(_) | PhysicalFiniteTableProof::Residual { .. }
-                ));
+                if case["classification"] == "mandatory" && case["expected_proof"] == "Exact and Impossible for negative tuple" {
+                    assert!(
+                        matches!(proof, PhysicalFiniteTableProof::Exact(_)),
+                        "{dialect}: parsed mandatory {sql} but no exact source/terminal proof: {proof:?}"
+                    );
+                } else {
+                    assert!(
+                        matches!(proof, PhysicalFiniteTableProof::Residual { .. }),
+                        "{dialect}: invalid or conditional variant must fail closed: {proof:?}"
+                    );
+                }
             }
             seen += 1;
         }
