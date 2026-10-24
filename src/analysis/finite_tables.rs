@@ -115,19 +115,44 @@ fn array_items(expression: &Expr, dialect_name: &str) -> Option<Vec<LiteralExpre
                 crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
                 value => value,
             };
-            if !matches!(element, crate::data_type::DataType::SignedInteger { .. }) {
+            let crate::data_type::DataType::SignedInteger { bits: Some(bits) } = element else {
                 return None;
-            }
+            };
             if matches!(expr.as_ref(), Expr::Value(value) if value.to_string().eq_ignore_ascii_case("NULL"))
             {
                 return Some(Vec::new());
             }
             match expr.as_ref() {
-                Expr::Array(array) => array.elem.iter().map(integer_literal).collect(),
+                Expr::Array(array) => {
+                    let literals = array.elem.iter().map(integer_literal).collect::<Option<Vec<_>>>()?;
+                    literals.iter().all(|literal| fits_signed_width(literal, *bits)).then_some(literals)
+                }
                 _ => None,
             }
         }
         _ => None,
+    }
+}
+
+// An explicit cast only preserves finite literal identities if every value
+// fits its declared integer width. Otherwise engine casts may fail or coerce.
+fn fits_signed_width(literal: &LiteralExpression, bits: u16) -> bool {
+    match literal.value() {
+        LiteralValue::Null => true,
+        LiteralValue::Number(value) => {
+            let Ok(number) = value.parse::<i128>() else {
+                return false;
+            };
+            match bits {
+                1..=127 => {
+                    let half = 1_i128 << (bits - 1);
+                    (-half..half).contains(&number)
+                }
+                128.. => true,
+                _ => false,
+            }
+        }
+        _ => false,
     }
 }
 
