@@ -243,3 +243,28 @@ fn all_conditional_vendor_boundaries_have_reviewed_owner_and_no_fake_exactness()
     }
     assert_eq!(reviewed, 4);
 }
+
+#[test]
+fn complete_literal_array_inputs_are_independently_executed_as_duckdb_source_oracles() {
+    for case in freeze()["cases"].as_array().unwrap() {
+        if case["classification"] != "mandatory" {
+            continue;
+        }
+        let sql = case["source_oracle_sql"].as_str().expect("source SQL");
+        let expected = case["source_oracle_expected"].as_array().unwrap();
+        let db = Connection::open_in_memory().expect("DuckDB source");
+        let mut statement = db.prepare(sql).expect("source literal SQL");
+        let observed = statement
+            .query_row([], |row| {
+                (0..expected.len())
+                    .map(|i| row.get::<_, Option<i64>>(i))
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .expect("one authoritative literal-array row");
+        let expected = expected
+            .iter()
+            .map(|v| v.as_i64())
+            .collect::<Vec<_>>();
+        assert_eq!(observed, expected, "{sql}: all array slots including NULL");
+    }
+}
