@@ -399,124 +399,47 @@ fn named_values_source(factor: &TableFactor) -> Option<FiniteTable> {
 }
 
 fn star_select(select: &Select) -> Option<FiniteTable> {
-    if !ordinary_select_shape(select) {
-        return None;
-    }
-    let [from] = select.from.as_slice() else {
-        return None;
-    };
-    if !from.joins.is_empty() {
-        return None;
-    }
+    use super::star_projection::{plan_star_modification, StarModification};
+
+    if !ordinary_select_shape(select) { return None; }
+    let [from] = select.from.as_slice() else { return None };
+    if !from.joins.is_empty() { return None; }
     let table = named_values_source(&from.relation)?;
-    let [item] = select.projection.as_slice() else {
-        return None;
-    };
+    let [item] = select.projection.as_slice() else { return None };
     let options = match item {
         SelectItem::Wildcard(options) => options,
         SelectItem::QualifiedWildcard(qualifier, options)
-            if matches!(&from.relation, TableFactor::Derived {alias: Some(alias), ..}
-                if qualifier.to_string() == alias.name.value) =>
-        {
-            options
-        }
+            if matches!(&from.relation, TableFactor::Derived { alias: Some(alias), .. }
+                if qualifier.to_string() == alias.name.value) => options,
         _ => return None,
     };
-    if options.opt_ilike.is_some() {
-        return None;
-    }
-    let modifier_count = usize::from(options.opt_except.is_some())
-        + usize::from(options.opt_exclude.is_some())
-        + usize::from(options.opt_replace.is_some())
-        + usize::from(options.opt_rename.is_some());
-    if modifier_count != 1 {
-        return None;
-    }
-
     let mut columns = table.columns().to_vec();
     let mut types = table.column_types().to_vec();
     let mut rows = table.rows().to_vec();
-    if let Some(except) = &options.opt_except {
-        let mut names = vec![except.first_element.value.as_str()];
-        names.extend(
-            except
-                .additional_elements
-                .iter()
-                .map(|name| name.value.as_str()),
-        );
-        let mut positions = BTreeSet::new();
-        for name in names {
-            let pos = columns.iter().position(|col| col == name)?;
-            if !positions.insert(pos) {
-                return None;
+    match plan_star_modification(options, &columns).ok()? {
+        StarModification::Identity => return None,
+        StarModification::Exclude(positions) => {
+            for position in positions.into_iter().rev() {
+                columns.remove(position);
+                types.remove(position);
+                for row in &mut rows { row.remove(position); }
             }
         }
-        if positions.len() == columns.len() {
-            return None;
-        }
-        for pos in positions.iter().rev().copied() {
-            columns.remove(pos);
-            types.remove(pos);
-            for row in &mut rows {
-                row.remove(pos);
+        StarModification::Rename(pairs) => {
+            for (position, name) in pairs {
+                *columns.get_mut(position)? = name;
             }
         }
-    } else if let Some(exclude) = &options.opt_exclude {
-        let names = match exclude {
-            sqlparser::ast::ExcludeSelectItem::Single(name) => vec![name],
-            sqlparser::ast::ExcludeSelectItem::Multiple(names) => names.iter().collect(),
-        };
-        let mut positions = BTreeSet::new();
-        for name in names {
-            let pos = columns.iter().position(|col| col == &name.value)?;
-            if !positions.insert(pos) {
-                return None;
-            }
-        }
-        if positions.len() == columns.len() {
-            return None;
-        }
-        for pos in positions.iter().rev().copied() {
-            columns.remove(pos);
-            types.remove(pos);
-            for row in &mut rows {
-                row.remove(pos);
-            }
-        }
-    } else if let Some(rename) = &options.opt_rename {
-        let pairs = match rename {
-            sqlparser::ast::RenameSelectItem::Single(pair) => vec![pair],
-            sqlparser::ast::RenameSelectItem::Multiple(pairs) => pairs.iter().collect(),
-        };
-        let mut old = BTreeSet::new();
-        let mut new = BTreeSet::new();
-        for pair in pairs {
-            let pos = columns.iter().position(|col| col == &pair.ident.value)?;
-            if !old.insert(pos) || !new.insert(pair.alias.value.clone()) {
-                return None;
-            }
-            columns[pos] = pair.alias.value.clone();
-        }
-        if columns.iter().collect::<BTreeSet<_>>().len() != columns.len() {
-            return None;
-        }
-    } else if let Some(replace) = &options.opt_replace {
-        let mut positions = BTreeSet::new();
-        for item in &replace.items {
-            let pos = columns
-                .iter()
-                .position(|col| col == &item.column_name.value)?;
-            if !positions.insert(pos) {
-                return None;
-            }
-            let literal = integer_literal(&item.expr)?;
-            types[pos] = match literal.literal_type() {
-                LiteralType::Integer => FiniteColumnType::Integer,
-                LiteralType::Null => FiniteColumnType::Unknown,
-                _ => return None,
-            };
-            for row in &mut rows {
-                row[pos] = literal.clone();
+        StarModification::Replace(pairs) => {
+            for (position, expression) in pairs {
+                let literal = integer_literal(&expression)?;
+                let column_type = match literal.literal_type() {
+                    LiteralType::Integer => FiniteColumnType::Integer,
+                    LiteralType::Null => FiniteColumnType::Unknown,
+                    _ => return None,
+                };
+                *types.get_mut(position)? = column_type;
+                for row in &mut rows { *row.get_mut(position)? = literal.clone(); }
             }
         }
     }
