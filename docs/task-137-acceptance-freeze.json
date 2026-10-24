@@ -161,7 +161,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-N-values-null-duplicate",
@@ -241,7 +244,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-P-unnest",
@@ -319,7 +325,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-N-unnest-empty",
@@ -377,7 +386,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-P-ordinality",
@@ -475,7 +487,11 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer",
+        "integer"
+      ]
     },
     {
       "id": "77-C137-N-null-array",
@@ -533,7 +549,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-P-explode",
@@ -613,7 +632,10 @@
         "direct_sql": "exact",
         "dbt_compiled_sql_catalog": "exact",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "integer"
+      ]
     },
     {
       "id": "77-C137-N-opaque",
@@ -660,7 +682,10 @@
         "direct_sql": "opaque_residual",
         "dbt_compiled_sql_catalog": "source_free_unbound_no_compiled_evidence",
         "odcs_equivalent_schema": "inapplicable_no_physical_source"
-      }
+      },
+      "expected_column_types": [
+        "unknown"
+      ]
     }
   ],
   "immutable_baseline": "docs/task-137-acceptance-freeze-v2.json",

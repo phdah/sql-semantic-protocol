@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType, FiniteTableKind, LiteralValue,
-    PhysicalFiniteTableProof, SqlInput, ValueDomain,
+    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType,
+    FiniteTableKind, LiteralValue, PhysicalFiniteTableProof, SqlInput, ValueDomain,
 };
 
 const DIALECTS: [&str; 13] = [
@@ -300,4 +300,19 @@ fn multicolumn_values_and_nullable_duplicate_unnest_preserve_complete_native_bag
         }
         assert!(proof.nodes.iter().all(|node| node.inputs().is_empty()));
     }
+}
+
+#[test]
+fn all_null_values_rows_have_exact_bag_but_unknown_scalar_datatype() {
+    let sql = "VALUES (NULL), (NULL)";
+    let PhysicalFiniteTableProof::Exact(exact) = result(sql, "duckdb") else {
+        panic!("typed SQL NULL remains exact closed finite row bag");
+    };
+    assert_eq!(exact.row_ids, ["values:0", "values:1"]);
+    assert_eq!(exact.terminal.len(), 2);
+    assert_eq!(exact.terminal_domains["column1"].admits_null(), Some(true));
+    assert_eq!(
+        exact.terminal_column_types["column1"],
+        FiniteColumnType::Unknown
+    );
 }

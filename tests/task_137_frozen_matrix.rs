@@ -131,6 +131,19 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
             names.len(),
             "{id}: exact domain arity"
         );
+        let typed = case["expected_column_types"].as_array().unwrap();
+        assert_eq!(typed.len(), names.len(), "{id}: typed column arity");
+        let actual_types = actual.terminal_column_types.values().map(|ty| ty.as_str()).collect::<Vec<_>>();
+        let mut expected_types = case["output_columns"].as_array().unwrap().iter()
+            .zip(typed.iter())
+            .map(|(name, ty)| (name.as_str().unwrap(), ty.as_str().unwrap()))
+            .collect::<Vec<_>>();
+        expected_types.sort_by_key(|(name, _)| *name);
+        assert_eq!(
+            actual_types,
+            expected_types.iter().map(|(_, ty)| *ty).collect::<Vec<_>>(),
+            "{id}: frozen type evidence"
+        );
         for name in names {
             let frozen = &case["domains"][&name];
             let domain = &actual.terminal_domains[&name];

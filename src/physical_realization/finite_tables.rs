@@ -135,7 +135,12 @@ pub fn physical_finite_table_plan(
         .iter()
         .map(|column| (column.name().to_string(), column.domain().clone()))
         .collect();
-    let terminal_column_types = table.columns().iter().cloned().zip(table.column_types().iter().copied()).collect();
+    let terminal_column_types = table
+        .columns()
+        .iter()
+        .cloned()
+        .zip(table.column_types().iter().copied())
+        .collect();
     PhysicalFiniteTableProof::Exact(Box::new(PhysicalFiniteTableExact {
         nodes: walker.nodes,
         row_ids,

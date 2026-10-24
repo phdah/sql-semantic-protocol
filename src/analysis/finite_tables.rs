@@ -171,7 +171,12 @@ fn unnest_table(
         }
         rows.push(row);
     }
-    FiniteTable::new(kind, columns, vec![FiniteColumnType::Integer; expected], rows)
+    FiniteTable::new(
+        kind,
+        columns,
+        vec![FiniteColumnType::Integer; expected],
+        rows,
+    )
 }
 
 fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
