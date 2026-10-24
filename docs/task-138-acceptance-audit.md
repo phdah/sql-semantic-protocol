@@ -31,9 +31,9 @@ not certified by parser acceptance or DuckDB executions.
 
 | AC | Required evidence | Current evidence |
 | --- | --- | --- |
-| #1 | Frozen complete finite matrix | Versioned `docs/task-138-acceptance-freeze.json` v5, 7 mandatory exact and 3 reviewed conditional fixture variants; fixed expected complete source/terminal bags, NULL and typed bounds, identities and explicit negative membership. |
+| #1 | Frozen complete finite matrix | Versioned `docs/task-138-acceptance-freeze.json` v6, 7 mandatory exact and 3 reviewed conditional fixture variants; fixed expected complete source/terminal bags, NULL and typed bounds, identities and explicit negative membership. |
 | #2 | Canonical semantics and physical feasibility | Shared planner, source-free AST normalization, typed canonical `FiniteTable` with source references, and source/terminal Exact/Impossible/Residual in public physical API. |
-| #3 | Independent SQL and terminal oracle | `tests/task_138_finite_star_bags.rs`, `tests/task_138_pivot_unpivot.rs`, `tests/task_138_frozen_matrix.rs` and whole DuckDB bag comparisons. |
+| #3 | Independent SQL and terminal oracle | `tests/task_138_finite_star_bags.rs`, `tests/task_138_pivot_unpivot.rs`, `tests/task_138_frozen_matrix.rs` executes independent DuckDB source and terminal whole-bag oracles for every mandatory case, including NULL, duplicate, typed domains and both positive and impossible membership proofs. |
 | #4 | Dialect and adapter evidence | 13-dialect parser matrix in `tests/task_138_frozen_matrix.rs`, SQL/dbt compiled adapter parity in `tests/task_138_adapters.rs`, and actual dbt Core model/canonical/warehouse E2E in `tests/task_138_dbt_core_e2e.rs`. ODCS cannot attest literal row contents, so source-free finite bag proof is inapplicable from ODCS alone. |
 | #5 | Final-head CI and independent signoff | Initial implementation commit `b162256d` passed 9/9 checks in GitHub Actions run 40118051819, including real dbt Core E2E and schema/golden. Independent standards/spec review identified and addressed the mandatory-residual scope conflict and unmodeled PIVOT alias outputs. Full final-head CI after those changes is the remaining closure gate. |
 
@@ -41,7 +41,7 @@ not certified by parser acceptance or DuckDB executions.
 
 The TASK-138 finite matrix is now reviewed: 7/7 mandatory cases require full Exact and independent Impossible proofs, with fixed source and terminal bags and exact types/domains. Three deliberate conditional cells (`star_except_missing`, `pivot_dynamic`, `pivot_opaque`) require Residual for invalid targets, unbounded dynamic schemas, or unknown physical source rows, respectively; each has TASK-138 ownership and an explicit release disposition. None represents an unimplemented mandatory finite case. The prior frozen negative fixture was reclassified in v5 after independent standards review to comply with the repository prohibition on mandatory Residual. Both fixture IDs remain covered and no exact requirement was removed. All 130 observed dialect classifications (54 exact, 46 parser boundaries, 30 residual) and 30 adapter dispositions are asserted by public tests. The temporary discovery probe was removed. Native DuckDB does not attest other dialect engines or session semantics.
 
-The task remains **In Progress** until the last documentation and test additions pass the final CI run and signoff fields are updated.
+The task remains **In Progress** until v6's independent complete native source/terminal oracle and the final-head CI pass and the signoff fields are updated.
 An independently green source-backed DuckDB/finite proof does not imply native
 vendor runtime certification.
 
