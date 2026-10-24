@@ -342,3 +342,17 @@ fn typed_literal_array_casts_require_in_range_values_for_exactness() {
         );
     }
 }
+
+#[test]
+fn explicit_offset_alias_is_never_misidentified_as_a_positional_column() {
+    use sqlparser::parser::Parser;
+
+    let sql = "SELECT * FROM UNNEST([1, 2]) AS v WITH OFFSET AS idx";
+    let parser = dialect_from_name("bigquery").unwrap();
+    let statements = Parser::parse_sql(parser.as_ref(), sql).expect("BigQuery offset syntax");
+    assert_eq!(statements.len(), 1);
+    assert!(
+        !matches!(result(sql, "bigquery"), PhysicalFiniteTableProof::Exact(_)),
+        "named BigQuery offset must not be silently substituted or dropped"
+    );
+}
