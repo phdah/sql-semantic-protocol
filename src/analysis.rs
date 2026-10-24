@@ -322,6 +322,7 @@ mod exactness;
 mod expressions;
 mod features;
 mod finite_tables;
+mod star_projection;
 mod functions;
 mod joins;
 mod lineage;
