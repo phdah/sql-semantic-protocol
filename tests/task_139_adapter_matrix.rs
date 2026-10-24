@@ -29,8 +29,7 @@ fn compiled_dbt(sql: &str, dialect: &str) -> Result<sql_semantic_protocol::Analy
     });
     let parsed = parse_dbt_manifest(&manifest.to_string()).map_err(|e| e.to_string())?;
     let parser = dialect_from_name(dialect).ok_or("missing parser")?;
-    analyze_dbt_manifest_with_schemas(&parsed, dialect, parser.as_ref())
-        .map_err(|e| e.to_string())
+    analyze_dbt_manifest_with_schemas(&parsed, dialect, parser.as_ref()).map_err(|e| e.to_string())
 }
 
 fn evidence(bundle: &sql_semantic_protocol::AnalysisBundle) -> PhysicalFiniteTableProof {
@@ -54,7 +53,8 @@ fn task_139_all_21_adapter_dispositions_are_reproducible() {
                 None => "residual",
                 Some(layer) => match physical_finite_table_plan(bundle, layer.id(), None) {
                     PhysicalFiniteTableProof::Exact(_) => "exact",
-                    PhysicalFiniteTableProof::Residual { .. } | PhysicalFiniteTableProof::Impossible { .. } => "residual",
+                    PhysicalFiniteTableProof::Residual { .. }
+                    | PhysicalFiniteTableProof::Impossible { .. } => "residual",
                 },
             },
         };
@@ -65,7 +65,8 @@ fn task_139_all_21_adapter_dispositions_are_reproducible() {
                 None => "residual",
                 Some(layer) => match physical_finite_table_plan(bundle, layer.id(), None) {
                     PhysicalFiniteTableProof::Exact(_) => "exact",
-                    PhysicalFiniteTableProof::Residual { .. } | PhysicalFiniteTableProof::Impossible { .. } => "residual",
+                    PhysicalFiniteTableProof::Residual { .. }
+                    | PhysicalFiniteTableProof::Impossible { .. } => "residual",
                 },
             },
         };
@@ -78,14 +79,26 @@ fn task_139_all_21_adapter_dispositions_are_reproducible() {
                     assert_eq!(cell["classification"], dbt_status, "{sql}");
                     if let (Ok(direct), Ok(dbt)) = (&direct, &dbt) {
                         match (evidence(direct), evidence(dbt)) {
-                            (PhysicalFiniteTableProof::Exact(a), PhysicalFiniteTableProof::Exact(b)) => {
+                            (
+                                PhysicalFiniteTableProof::Exact(a),
+                                PhysicalFiniteTableProof::Exact(b),
+                            ) => {
                                 assert_eq!(a.terminal, b.terminal, "{sql}: exact bag");
-                                assert_eq!(a.terminal_domains, b.terminal_domains, "{sql}: domains");
+                                assert_eq!(
+                                    a.terminal_domains, b.terminal_domains,
+                                    "{sql}: domains"
+                                );
                                 assert_eq!(a.row_ids, b.row_ids, "{sql}: stable identities");
                                 assert_eq!(a.source_rows, b.source_rows, "{sql}: physical source");
-                                assert_eq!(a.contributors, b.contributors, "{sql}: source witnesses");
+                                assert_eq!(
+                                    a.contributors, b.contributors,
+                                    "{sql}: source witnesses"
+                                );
                             }
-                            (PhysicalFiniteTableProof::Residual { .. }, PhysicalFiniteTableProof::Residual { .. }) => {}
+                            (
+                                PhysicalFiniteTableProof::Residual { .. },
+                                PhysicalFiniteTableProof::Residual { .. },
+                            ) => {}
                             (a, b) => panic!("{sql}: SQL/dbt disagree {a:?} / {b:?}"),
                         }
                     }
@@ -113,10 +126,13 @@ fn real_odcs_schema_evidence_does_not_provide_a_generator_row_population() {
     let contract = include_str!("fixtures/odcs/commerce.odcs.yaml");
     let catalog = RelationCatalog::new(&["analytics.customers", "analytics.orders"])
         .expect("ODCS relation names");
-    let metadata = parse_odcs_yaml(contract, "postgresql", &catalog)
-        .expect("real ODCS schema contract");
+    let metadata =
+        parse_odcs_yaml(contract, "postgresql", &catalog).expect("real ODCS schema contract");
     assert!(!metadata.source_schemas().is_empty());
-    assert!(metadata.source_schemas().iter().all(|schema| schema.columns().len() > 0));
+    assert!(metadata
+        .source_schemas()
+        .iter()
+        .all(|schema| schema.columns().len() > 0));
 
     let parser = dialect_from_name("duckdb").unwrap();
     for sql in [
