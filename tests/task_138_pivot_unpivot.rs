@@ -46,10 +46,10 @@ fn unpivot_oracle(sql: &str) -> Vec<BTreeMap<String, LiteralValue>> {
     stmt.query_map([], |row| {
         Ok(BTreeMap::from([
             ("id".to_string(), scalar(row.get::<_, Option<i64>>(0)?)),
-            ("v".to_string(), scalar(row.get::<_, Option<i64>>(1)?)),
+            ("v".to_string(), scalar(row.get::<_, Option<i64>>(2)?)),
             (
                 "n".to_string(),
-                LiteralValue::Text(row.get::<_, String>(2)?),
+                LiteralValue::Text(row.get::<_, String>(1)?),
             ),
         ]))
     })
