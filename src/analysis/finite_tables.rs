@@ -516,13 +516,13 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
         .iter()
         .map(|index| source.columns()[*index].clone())
         .collect::<Vec<_>>();
-    output_columns.push(value.value.clone());
     output_columns.push(name.value.clone());
+    output_columns.push(value.value.clone());
     let mut output_types = preserved
         .iter()
         .map(|index| source.column_types()[*index])
         .collect::<Vec<_>>();
-    output_types.extend([FiniteColumnType::Integer, FiniteColumnType::Text]);
+    output_types.extend([FiniteColumnType::Text, FiniteColumnType::Integer]);
     let include_null = matches!(
         null_inclusion,
         Some(sqlparser::ast::NullInclusion::IncludeNulls)
@@ -539,11 +539,11 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
                 .iter()
                 .map(|index| source_row[*index].clone())
                 .collect::<Vec<_>>();
-            row.push(element.clone());
             row.push(LiteralExpression::new(
                 LiteralType::String,
                 LiteralValue::Text(column.value.clone()),
             ));
+            row.push(element.clone());
             rows.push(row);
             contributors.push(vec![source_index]);
         }
