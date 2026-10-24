@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-139",
   "parent": "TASK-77",
   "frozen_on": "2026-10-24",
@@ -223,7 +223,17 @@
         "three_valued_null": "Null value is retained as SQL Null, not an equality match",
         "source_bag": "No physical input; certified complete literal-array expression",
         "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
-      }
+      },
+      "logical_literal_array": [
+        5,
+        6
+      ],
+      "source_oracle_sql": "SELECT array_length([5,6]) AS element_count, list_extract([5,6], 1) AS element_1, list_extract([5,6], 2) AS element_2",
+      "source_oracle_expected": [
+        2,
+        5,
+        6
+      ]
     },
     {
       "id": "77-C139-N-explode-duplicates-null",
@@ -389,7 +399,19 @@
         "three_valued_null": "Null value is retained as SQL Null, not an equality match",
         "source_bag": "No physical input; certified complete literal-array expression",
         "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
-      }
+      },
+      "logical_literal_array": [
+        5,
+        null,
+        5
+      ],
+      "source_oracle_sql": "SELECT array_length([5,NULL,5]) AS element_count, list_extract([5,NULL,5], 1) AS element_1, list_extract([5,NULL,5], 2) AS element_2, list_extract([5,NULL,5], 3) AS element_3",
+      "source_oracle_expected": [
+        3,
+        5,
+        null,
+        5
+      ]
     },
     {
       "id": "77-C139-P-explode-from",
@@ -552,7 +574,17 @@
         "three_valued_null": "Null value is retained as SQL Null, not an equality match",
         "source_bag": "No physical input; certified complete literal-array expression",
         "native_oracle": "DuckDB UNNEST is independent array-value oracle, not native vendor execution"
-      }
+      },
+      "logical_literal_array": [
+        5,
+        6
+      ],
+      "source_oracle_sql": "SELECT array_length([5,6]) AS element_count, list_extract([5,6], 1) AS element_1, list_extract([5,6], 2) AS element_2",
+      "source_oracle_expected": [
+        2,
+        5,
+        6
+      ]
     },
     {
       "id": "77-C139-N-json-table",
@@ -1106,6 +1138,11 @@
       "version": 2,
       "reason": "Replace v1 explicitly pending parser cells with observed sqlparser 0.58 classifications from CI #40131023023. Freeze explicit conditional bounds/ownership without altering the named fixture IDs or mandatory expected complete row bags.",
       "review_owner": "TASK-139"
+    },
+    {
+      "version": 3,
+      "review_owner": "TASK-139",
+      "reason": "Strengthen independent DuckDB logical literal-array input oracle for all three mandatory source-free generator cases, retaining frozen exact source/terminal bag requirements."
     }
   ]
 }
