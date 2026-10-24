@@ -1,4 +1,13 @@
 {
+  "task_133_pagination_acceptance": {
+    "owner": "TASK-133",
+    "parent": "TASK-76",
+    "status": "in_progress",
+    "freeze": "docs/task-133-acceptance-freeze.json",
+    "fixture_ids": ["76-C133-P", "76-C133-N"],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_139_generator_acceptance": {
     "owner": "TASK-139",
     "parent": "TASK-77",

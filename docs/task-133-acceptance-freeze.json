@@ -1,0 +1,240 @@
+{
+  "version": 1,
+  "owner": "TASK-133",
+  "parent": "TASK-76",
+  "fixture_ids": [
+    "76-C133-P",
+    "76-C133-N"
+  ],
+  "contract": "A closed-world, single-source, plain projected SELECT; exact integer order keys and literal nonnegative row bounds. Any unsupported shape is explicitly non-exact.",
+  "source_schema": {
+    "relation": "s",
+    "columns": [
+      {
+        "name": "k",
+        "type": "INTEGER",
+        "nullable": false
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "76-C133-P-limit-offset",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        2,
+        3
+      ],
+      "selected_source_ids": [
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "oracle": "duckdb"
+    },
+    {
+      "id": "76-C133-P-fetch",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 2 ROWS ONLY",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "rejected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "oracle": "duckdb"
+    },
+    {
+      "id": "76-C133-P-top",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT TOP 2 k FROM s ORDER BY k",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "rejected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "parser_dialect": "mssql",
+      "native_execution": "not_certified",
+      "oracle": "equivalent DuckDB LIMIT 2"
+    },
+    {
+      "id": "76-C133-N-zero",
+      "group": "76-C133-N",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 0",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "nullable": false
+        }
+      },
+      "oracle": "duckdb"
+    },
+    {
+      "id": "76-C133-N-empty",
+      "group": "76-C133-N",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "source_bag": [],
+      "terminal_bag": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [],
+      "oracle": "duckdb"
+    },
+    {
+      "id": "76-C133-N-ties",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "source_bag": [
+        2,
+        2,
+        3
+      ],
+      "proof": "Residual",
+      "reason": "tied ORDER BY key does not determine physical survivor identity",
+      "owner": "TASK-133",
+      "disposition": "non-exact until attested tie break"
+    },
+    {
+      "id": "76-C133-N-nulls",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "source_bag": [
+        null,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "NULL ordering without explicit NULLS FIRST/LAST depends on dialect/session",
+      "owner": "TASK-133",
+      "disposition": "retain conditional"
+    },
+    {
+      "id": "76-C133-N-underordered",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s LIMIT 1",
+      "source_bag": [
+        1,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "missing total ORDER BY",
+      "owner": "TASK-133",
+      "disposition": "retain conditional"
+    }
+  ],
+  "acceptance_map": {
+    "1": [
+      "limit-offset",
+      "fetch",
+      "top"
+    ],
+    "2": [
+      "limit-offset",
+      "zero",
+      "empty",
+      "ties",
+      "nulls"
+    ],
+    "3": [
+      "limit-offset",
+      "zero",
+      "empty"
+    ],
+    "4": [
+      "13 parser dialect paths",
+      "sql/dbt/ODCS parity where evidence exists",
+      "native non-DuckDB engine uncertified"
+    ],
+    "5": [
+      "rust format",
+      "strict Clippy",
+      "full tests",
+      "documentation",
+      "no-default-features",
+      "dbt E2E",
+      "JSON schema snapshots"
+    ]
+  },
+  "signoff": {
+    "complete": false,
+    "missing": [
+      "13-dialect exact parser and adapter matrix",
+      "complete independently executed real dbt Core and ODCS oracle",
+      "full native and negative evidence verification",
+      "final green CI"
+    ]
+  }
+}

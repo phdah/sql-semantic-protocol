@@ -1,10 +1,10 @@
 ---
 id: TASK-133
 title: Prove deterministic ORDER BY LIMIT OFFSET and TOP
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-24'
 labels: []
 milestone: m-3
 dependencies:
@@ -46,3 +46,7 @@ type: feature
 ## Next
 
 Next: [TASK-134](task-134%20-%20prove-ties-distinct-and-qualify-pagination-boundaries.md), only after this child is Done and merged.
+
+## Implementation status (2026-10-24)
+
+The finite TASK-133 source/terminal and fail-closed inventory is registered in [the task-owned freeze](../../docs/task-133-acceptance-freeze.json). This task remains In Progress until every required dialect/adapter/native oracle and final CI gate is independently verified. TASK-76 remains open.
