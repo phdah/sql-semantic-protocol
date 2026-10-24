@@ -201,3 +201,33 @@ fn from_explode_is_canonical_not_a_physical_relation() {
         }
     }
 }
+
+#[test]
+fn task_139_parser_classification_probe() {
+    let matrix: Value = serde_json::from_str(include_str!("../docs/task-139-acceptance-freeze.json"))
+        .expect("matrix");
+    let mut observed = Vec::new();
+    for case in matrix["cases"].as_array().expect("cases") {
+        let mut cells = Vec::new();
+        for dialect in DIALECTS {
+            let parser = dialect_from_name(dialect).expect("dialect");
+            let status = match analyze_inputs(
+                &[SqlInput::inline(case["sql"].as_str().unwrap())],
+                dialect,
+                parser.as_ref(),
+            ) {
+                Err(_) => "parser_boundary",
+                Ok(bundle) => match bundle.layers().last() {
+                    None => "residual",
+                    Some(layer) => match physical_finite_table_plan(&bundle, layer.id(), None) {
+                        PhysicalFiniteTableProof::Exact(_) => "exact",
+                        PhysicalFiniteTableProof::Residual { .. } | PhysicalFiniteTableProof::Impossible { .. } => "residual",
+                    },
+                },
+            };
+            cells.push(format!("{dialect}:{status}"));
+        }
+        observed.push(format!("{} {}", case["id"].as_str().unwrap(), cells.join(",")));
+    }
+    panic!("TASK139_DISCOVERY\\n{}", observed.join("\\n"));
+}
