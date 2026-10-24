@@ -1,10 +1,10 @@
 ---
 id: TASK-139
 title: Classify JSON table generators and vendor functions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-24'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,23 @@ type: feature
 - **Independent concrete oracle baseline:** For declared array [5,6], documented deterministic flatten yields 2 elements; missing shape => residual.
 - **Fail-closed boundary and owner:** No unknown function cardinality or JSON schema guesses. TASK-139 owns every conditional variant and explicit review disposition.
 - **Mapped original TASK-77 AC:** #1, #2, #3, #5, #6.
+
+## Implementation increment (2026-10-24)
+
+The [v1 generator acceptance inventory](../../docs/task-139-acceptance-freeze.json) and
+[public finite-generator tests](../../tests/task_139_generators.rs) are on branch
+`feat/task-139-json-generator-boundaries`. Literal integer-array
+`FROM EXPLODE(...)` now shares canonical typed finite-array normalization
+with `SELECT EXPLODE(...)`; it preserves multiplicity, NULL, producer identities,
+finite output domains and exact positive/negative membership. DuckDB `UNNEST`
+is the independent literal-array bag oracle, **not** native Spark or Snowflake
+execution evidence.
+
+**This increment is not TASK-139 signoff.** All 91 parser and 21 adapter
+matrix cells are intentionally marked pending, as are native JSON_TABLE,
+FLATTEN and generator/table-UDF shape and cardinality proofs. No complete
+DBT/ODCS parity or final-head CI has been certified. Original acceptance
+criteria #1..#5 remain open until these gaps are resolved. TASK-77 remains open.
 
 ## Acceptance Criteria
 
