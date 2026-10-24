@@ -2,7 +2,7 @@
   "task_139_generator_acceptance": {
     "owner": "TASK-139",
     "parent": "TASK-77",
-    "status": "acceptance_matrix_frozen_pending_final_ci",
+    "status": "verified_bounded_child_pending_merge",
     "task": ".backlog/tasks/task-139 - classify-json-table-generators-and-vendor-functions.md",
     "freeze": "docs/task-139-acceptance-freeze.json",
     "fixture_ids": [
@@ -18,7 +18,9 @@
     "dialect_parser_boundary_cells": 1,
     "mandatory_exact_cases": 3,
     "reviewed_conditional_cases": 4,
-    "verified_final_ci": null,
+    "verified_final_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40132251800",
+    "child_acceptance_signoff": true,
+    "child_acceptance_criteria_verified": [1, 2, 3, 4, 5],
     "cases": 7,
     "mandatory": 3,
     "conditional": 4,

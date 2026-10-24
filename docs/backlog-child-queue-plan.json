@@ -643,7 +643,11 @@
           "fixture_ids": [
             "77-C139-P",
             "77-C139-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_pending_merge",
+          "signoff_audit": "docs/task-139-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/146",
+          "dependency_gate": "TASK-140 remains blocked until TASK-139 Done and PR #146 merged on main"
         },
         {
           "title": "Compose table fanout with joins/dbt and certify TASK-77",

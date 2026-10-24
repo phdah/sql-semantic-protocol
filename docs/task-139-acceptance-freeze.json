@@ -1126,12 +1126,14 @@
     "residual_parser_cells": 57,
     "parser_boundary_cells": 1,
     "required_adapter_cells": 21,
-    "verified_adapter_cells": 0,
-    "mandatory_oracles_certified": 0,
-    "ci_signoff": "pending final-head CI",
-    "task_done": false,
+    "verified_adapter_cells": 21,
+    "mandatory_oracles_certified": 3,
+    "ci_signoff": "all 9/9 verified on final implementation head",
+    "task_done": true,
     "parent_done": false,
-    "parser_observation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40131023023"
+    "parser_observation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40131023023",
+    "final_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40132251800",
+    "acceptance_audit": "docs/task-139-acceptance-audit.md"
   },
   "acceptance_change_log": [
     {

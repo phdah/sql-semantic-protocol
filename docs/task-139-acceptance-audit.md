@@ -90,5 +90,30 @@ parser, adapter and native E2E test results must be examined before signoff.
 TASK-140 owns cross-operator fanout composition; TASK-139 does not imply
 TASK-77 parent closure.
 
-**Signoff status:** PENDING final-head CI and full review. Do not check TASK-139
-acceptance criteria or mark Done solely from the discovery probe.
+**Child signoff:** All five original TASK-139 criteria verified on code head
+[e7f83ae](https://github.com/phdah/sql-semantic-protocol/commit/e7f83ae79ac9185592093eaf9d4aa3f8065a79cd)
+with [CI run 40132251800](https://github.com/phdah/sql-semantic-protocol/actions/runs/40132251800):
+9/9 successful jobs (fmt, strict Clippy, Rust default/no-default tests,
+docs, dependency boundary, real dbt E2E and active schema/golden coverage).
+The independently executed complete DuckDB array input and terminal-output
+bags, row identities, NULL/duplicate domains, exact/absent proofs, 91
+dialect classifications, 21 adapter dispositions and four reviewed
+conditional vendor boundaries satisfy the versioned freeze without
+weakening a mandatory cell. No vendor-native runtime proof is claimed.
+
+**Two-axis final review:**
+- Standards: AST remains at the analysis boundary; canonical model and
+  physical proof are the single source of row identities and typed domains;
+  no new dependency, public wire change, `unsafe`, lint exemption or
+  consumer-specific SQL reconstruction. Final CI enforces formatting,
+  Clippy, docs and deterministic regression snapshots.
+- Specification: 3/3 mandatory cases have independently asserted full
+  literal-array and terminal bags, typed value-domain bounds, positive
+  Exact and missing/invalid row Impossible/Residual; 4/4 conditional
+  variants have their own explicit parser/adapter/runtime restrictions
+  and reviewed TASK-139 ownership. All 91/91 dialect cells, 21/21
+  adapter cells, and original AC #1..#5 have executable evidence.
+
+**TASK-139 Done; PR #146 is pending merge.** TASK-77 and release TASK-91
+remain independently open. A subsequent documentation-only commit must
+also pass branch CI before the PR is merged.
