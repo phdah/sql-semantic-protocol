@@ -162,6 +162,7 @@ fn unproved_vendor_tables_opaque_inputs_and_shapes_are_never_exact() {
     for sql in [
         "SELECT * FROM EXPLODE(opaque_array) AS t(v)",
         "SELECT * FROM FLATTEN([5,6]) AS t(v)",
+        "SELECT * FROM EXPLODE([5,6]) WITH ORDINALITY AS t(v, ord)",
         "SELECT * FROM custom_table_generator([5,6]) AS t(v)",
         "SELECT * FROM EXPLODE([5,6]) AS t(v) WHERE v > 5",
     ] {
