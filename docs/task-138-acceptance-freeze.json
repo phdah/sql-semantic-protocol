@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-138",
   "parent": "TASK-77",
   "created": "2026-10-24",
@@ -60,7 +60,8 @@
     "impossible": "A requested complete terminal tuple not present in the certified complete source-backed bag",
     "residual": "Unsupported parser/source/shape/type and session laws never claim exact",
     "numeric": "Checked i64 integer and explicit NULL, with other arithmetic precision Residual",
-    "negative": "NOT TRUE includes FALSE and UNKNOWN; NULL are physical source facts, not implicit SQL matches"
+    "negative": "NOT TRUE includes FALSE and UNKNOWN; NULL are physical source facts, not implicit SQL matches",
+    "source_provenance": "Every finite transformed terminal row references its complete immutable VALUES source snapshot by positional source-row ids, including duplicate and NULL rows."
   },
   "cases": [
     {
@@ -227,7 +228,18 @@
             "inclusive": true
           }
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-N-missing",
@@ -339,7 +351,8 @@
       "expected_terminal_row_ids": null,
       "oracle_sql": null,
       "negative_membership": null,
-      "expected_proof": "Residual"
+      "expected_proof": "Residual",
+      "expected_contributors": null
     },
     {
       "id": "77-C138-P-exclude",
@@ -505,7 +518,18 @@
             "inclusive": true
           }
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-P-rename",
@@ -692,7 +716,18 @@
             "inclusive": true
           }
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-P-replace",
@@ -878,7 +913,18 @@
             "inclusive": true
           }
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-P-pivot",
@@ -1059,7 +1105,16 @@
             "inclusive": true
           }
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0",
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-N-pivot",
@@ -1139,7 +1194,8 @@
       "reviewed_conditional_owner": "TASK-138",
       "source_rows": [],
       "expected_terminal_rows": null,
-      "expected_proof": "Residual or parser_boundary"
+      "expected_proof": "Residual or parser_boundary",
+      "expected_contributors": null
     },
     {
       "id": "77-C138-P-unpivot",
@@ -1328,7 +1384,21 @@
           "lower": null,
           "upper": null
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-N-unpivot",
@@ -1529,7 +1599,27 @@
           "lower": null,
           "upper": null
         }
-      }
+      },
+      "expected_contributors": [
+        [
+          "values:0"
+        ],
+        [
+          "values:0"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:1"
+        ],
+        [
+          "values:2"
+        ],
+        [
+          "values:2"
+        ]
+      ]
     },
     {
       "id": "77-C138-N-opaque",
@@ -1609,7 +1699,8 @@
       "reviewed_conditional_owner": "TASK-138",
       "source_rows": [],
       "expected_terminal_rows": null,
-      "expected_proof": "Residual or parser_boundary"
+      "expected_proof": "Residual or parser_boundary",
+      "expected_contributors": null
     }
   ],
   "signoff": {
@@ -1617,7 +1708,8 @@
     "full_ci_verified": false,
     "mandatory_matrix_complete": false,
     "conditional_review_complete": false,
-    "task_done": false
+    "task_done": false,
+    "validated_version": 3
   },
   "validation_state": "immutable task-owned finite fixture expectations, dialect and adapter dispositions pending independent execution"
 }
