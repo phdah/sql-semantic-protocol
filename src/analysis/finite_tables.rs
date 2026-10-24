@@ -213,6 +213,18 @@ fn unnest_table(
     )
 }
 
+fn literal_table_generator_kind(
+    name: &sqlparser::ast::ObjectName,
+) -> Option<FiniteTableKind> {
+    if name.to_string().eq_ignore_ascii_case("unnest") {
+        Some(FiniteTableKind::Unnest)
+    } else if name.to_string().eq_ignore_ascii_case("explode") {
+        Some(FiniteTableKind::Explode)
+    } else {
+        None
+    }
+}
+
 fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     if !ordinary_select_shape(select)
         || !matches!(select.projection.as_slice(), [item] if item.to_string() == "*")
@@ -256,8 +268,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             json_path: None,
             index_hints,
             ..
-        } if (name.to_string().eq_ignore_ascii_case("unnest")
-            || name.to_string().eq_ignore_ascii_case("explode"))
+        } if literal_table_generator_kind(name).is_some()
             && with_hints.is_empty()
             && partitions.is_empty()
             && index_hints.is_empty()
@@ -271,11 +282,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            let kind = if name.to_string().eq_ignore_ascii_case("explode") {
-                FiniteTableKind::Explode
-            } else {
-                FiniteTableKind::Unnest
-            };
+            let kind = literal_table_generator_kind(name)?;
             unnest_table(
                 alias,
                 &arguments,
@@ -291,9 +298,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             alias,
             lateral,
             ..
-        } if !*lateral
-            && (name.to_string().eq_ignore_ascii_case("unnest")
-                || name.to_string().eq_ignore_ascii_case("explode")) =>
+        } if !*lateral && literal_table_generator_kind(name).is_some() =>
         {
             let arguments = args
                 .iter()
@@ -302,11 +307,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                     _ => None,
                 })
                 .collect::<Option<Vec<_>>>()?;
-            let kind = if name.to_string().eq_ignore_ascii_case("explode") {
-                FiniteTableKind::Explode
-            } else {
-                FiniteTableKind::Unnest
-            };
+            let kind = literal_table_generator_kind(name)?;
             unnest_table(alias, &arguments, false, false, kind, dialect_name)
         }
         _ => None,
