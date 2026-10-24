@@ -1,8 +1,8 @@
 //! Frozen TASK-138 exact-bag, typed-domain and negative-outcome regression.
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_finite_table_plan, LiteralValue,
-    FiniteColumnType, PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
+    analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType, LiteralValue,
+    PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 fn frozen() -> Value {
@@ -57,7 +57,10 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
             .unwrap_or_else(|e| panic!("{sql}: {e:?}"));
         let target = bundle.layers().last().expect("target");
         let proof = physical_finite_table_plan(&bundle, target.id(), None);
-        assert_eq!(case["expected_proof"], "Exact and Impossible for negative tuple", "{sql}: mandatory case must be exact");
+        assert_eq!(
+            case["expected_proof"], "Exact and Impossible for negative tuple",
+            "{sql}: mandatory case must be exact"
+        );
         let PhysicalFiniteTableProof::Exact(actual) = proof else {
             panic!("{sql}: no exact physical proof: {proof:?}");
         };
@@ -138,28 +141,53 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
                 panic!("{column}: expected exact finite domain, got {value:?}");
             };
             assert_eq!(set.mode(), SetMode::Include);
-            let claimed_type=match spec["type"].as_str().expect("frozen scalar type") {
+            let claimed_type = match spec["type"].as_str().expect("frozen scalar type") {
                 "integer" => FiniteColumnType::Integer,
                 "text" => FiniteColumnType::Text,
                 other => panic!("{column}: unreviewed typed domain {other}"),
             };
-            assert_eq!(actual.terminal_column_types.get(column),Some(&claimed_type),"{column}: attested output type");
+            assert_eq!(
+                actual.terminal_column_types.get(column),
+                Some(&claimed_type),
+                "{column}: attested output type"
+            );
             if claimed_type == FiniteColumnType::Integer {
-                let numeric=set.values().iter().filter_map(|v|match v.value() {
-                    LiteralValue::Number(n) => Some(n.parse::<i128>().expect("integer")),
-                    LiteralValue::Null => None,
-                    value => panic!("{column}: unexpected noninteger {value:?}"),
-                }).collect::<Vec<_>>();
-                let lower=spec["lower"]["value"].as_i64().map(i128::from);
-                let upper=spec["upper"]["value"].as_i64().map(i128::from);
-                assert_eq!(numeric.iter().copied().min(),lower,"{column}: lower domain bound");
-                assert_eq!(numeric.iter().copied().max(),upper,"{column}: upper domain bound");
+                let numeric = set
+                    .values()
+                    .iter()
+                    .filter_map(|v| match v.value() {
+                        LiteralValue::Number(n) => Some(n.parse::<i128>().expect("integer")),
+                        LiteralValue::Null => None,
+                        value => panic!("{column}: unexpected noninteger {value:?}"),
+                    })
+                    .collect::<Vec<_>>();
+                let lower = spec["lower"]["value"].as_i64().map(i128::from);
+                let upper = spec["upper"]["value"].as_i64().map(i128::from);
+                assert_eq!(
+                    numeric.iter().copied().min(),
+                    lower,
+                    "{column}: lower domain bound"
+                );
+                assert_eq!(
+                    numeric.iter().copied().max(),
+                    upper,
+                    "{column}: upper domain bound"
+                );
                 if lower.is_some() {
-                    assert_eq!(spec["lower"]["inclusive"],true,"{column}: lower bound inclusive");
-                    assert_eq!(spec["upper"]["inclusive"],true,"{column}: upper bound inclusive");
+                    assert_eq!(
+                        spec["lower"]["inclusive"], true,
+                        "{column}: lower bound inclusive"
+                    );
+                    assert_eq!(
+                        spec["upper"]["inclusive"], true,
+                        "{column}: upper bound inclusive"
+                    );
                 }
             } else {
-                assert!(spec["lower"].is_null() && spec["upper"].is_null(),"{column}: unproven text ordering must have no numeric bound");
+                assert!(
+                    spec["lower"].is_null() && spec["upper"].is_null(),
+                    "{column}: unproven text ordering must have no numeric bound"
+                );
             }
 
             let mut observed = set
@@ -254,22 +282,49 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
 
 #[test]
 fn every_conditional_has_an_explicit_reviewed_fail_closed_release_disposition() {
-    let inventory=frozen();
-    let mut seen=0;
+    let inventory = frozen();
+    let mut seen = 0;
     for case in inventory["cases"].as_array().unwrap() {
-        if case["classification"]!="conditional" {continue}
-        let id=case["id"].as_str().expect("fixture id");
-        assert_eq!(case["release_disposition"]["owner"],"TASK-138","{id}: owner");
-        assert_eq!(case["release_disposition"]["status"],"reviewed_conditional_residual","{id}: reviewer disposition");
-        assert_eq!(case["required_complete_physical_proof"],false,"{id}: no invalid mandatory Residual");
-        assert!(case["release_disposition"]["reason"].as_str().unwrap().len()>35);
-        let dialect=case_dialect(case["variant"].as_str().unwrap());
-        let sql=case["sql"].as_str().unwrap();
-        let parser=dialect_from_name(dialect).unwrap();
-        let bundle=analyze_inputs(&[SqlInput::inline(sql)],dialect,parser.as_ref()).expect("conditional SQL parses");
-        let layer=bundle.layers().last().expect("layer");
-        assert!(matches!(physical_finite_table_plan(&bundle,layer.id(),None),PhysicalFiniteTableProof::Residual{..}),"{id}: no invented exact row bag");
-        seen+=1;
+        if case["classification"] != "conditional" {
+            continue;
+        }
+        let id = case["id"].as_str().expect("fixture id");
+        assert_eq!(
+            case["release_disposition"]["owner"], "TASK-138",
+            "{id}: owner"
+        );
+        assert_eq!(
+            case["release_disposition"]["status"], "reviewed_conditional_residual",
+            "{id}: reviewer disposition"
+        );
+        assert_eq!(
+            case["required_complete_physical_proof"], false,
+            "{id}: no invalid mandatory Residual"
+        );
+        assert!(
+            case["release_disposition"]["reason"]
+                .as_str()
+                .unwrap()
+                .len()
+                > 35
+        );
+        let dialect = case_dialect(case["variant"].as_str().unwrap());
+        let sql = case["sql"].as_str().unwrap();
+        let parser = dialect_from_name(dialect).unwrap();
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref())
+            .expect("conditional SQL parses");
+        let layer = bundle.layers().last().expect("layer");
+        assert!(
+            matches!(
+                physical_finite_table_plan(&bundle, layer.id(), None),
+                PhysicalFiniteTableProof::Residual { .. }
+            ),
+            "{id}: no invented exact row bag"
+        );
+        seen += 1;
     }
-    assert_eq!(seen,3,"all three reviewable residual families explicitly classified");
+    assert_eq!(
+        seen, 3,
+        "all three reviewable residual families explicitly classified"
+    );
 }
