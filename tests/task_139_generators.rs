@@ -221,4 +221,3 @@ fn from_explode_is_canonical_not_a_physical_relation() {
         }
     }
 }
-
