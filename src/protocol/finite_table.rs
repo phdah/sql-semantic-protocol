@@ -18,6 +18,10 @@ pub enum FiniteTableKind {
     Explode,
     /// Schema-attested, row-preserving finite wildcard projection.
     Star,
+    /// Fixed-key integer SUM pivot of a complete finite source bag.
+    Pivot,
+    /// Fixed-column unpivot of a complete finite source bag.
+    Unpivot,
 }
 
 impl FiniteTableKind {
@@ -28,6 +32,8 @@ impl FiniteTableKind {
             Self::Unnest => "unnest",
             Self::Explode => "explode",
             Self::Star => "star",
+            Self::Pivot => "pivot",
+            Self::Unpivot => "unpivot",
         }
     }
 }
@@ -40,6 +46,8 @@ impl FiniteTableKind {
 pub enum FiniteColumnType {
     /// An integer column, including a typed empty array's element column.
     Integer,
+    /// Text values with exact literal identities.
+    Text,
     /// No safe type evidence exists despite a completely known row bag.
     Unknown,
 }
@@ -49,6 +57,7 @@ impl FiniteColumnType {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Integer => "integer",
+            Self::Text => "text",
             Self::Unknown => "unknown",
         }
     }
@@ -82,8 +91,11 @@ impl FiniteTable {
             || rows.iter().any(|row| row.len() != columns.len())
             || rows.iter().any(|row| {
                 row.iter().enumerate().any(|(index, literal)| {
-                    column_types[index] == FiniteColumnType::Unknown
-                        && literal.literal_type() != LiteralType::Null
+                    match column_types[index] {
+                        FiniteColumnType::Unknown => literal.literal_type() != LiteralType::Null,
+                        FiniteColumnType::Integer => !matches!(literal.literal_type(), LiteralType::Integer | LiteralType::Null),
+                        FiniteColumnType::Text => !matches!(literal.literal_type(), LiteralType::String | LiteralType::Null),
+                    }
                 })
             })
             || rows.iter().flatten().any(|literal| {
@@ -92,6 +104,7 @@ impl FiniteTable {
                     (LiteralType::Integer, LiteralValue::Number(value)) => {
                         value.parse::<i128>().is_err()
                     }
+                    (LiteralType::String, LiteralValue::Text(_)) => false,
                     _ => true,
                 }
             })
