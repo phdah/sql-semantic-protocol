@@ -316,3 +316,29 @@ fn all_null_values_rows_have_exact_bag_but_unknown_scalar_datatype() {
         FiniteColumnType::Unknown
     );
 }
+
+#[test]
+fn typed_literal_array_casts_require_in_range_values_for_exactness() {
+    let valid = "SELECT * FROM UNNEST(CAST([127, NULL] AS TINYINT[])) AS t(v)";
+    let PhysicalFiniteTableProof::Exact(exact) = result(valid, "duckdb") else {
+        panic!("in-range typed literal array should have a complete proof");
+    };
+    assert_eq!(
+        bag(&exact.terminal),
+        bag(&db_bag(valid, &["v"])),
+        "exact typed array values must match native DuckDB"
+    );
+    assert_eq!(exact.row_ids, ["unnest:1", "unnest:2"]);
+    assert_eq!(exact.terminal_column_types["v"], FiniteColumnType::Integer);
+
+    for sql in [
+        "SELECT * FROM UNNEST(CAST([128] AS TINYINT[])) AS t(v)",
+        "SELECT * FROM UNNEST(CAST([32768] AS SMALLINT[])) AS t(v)",
+        "SELECT * FROM UNNEST(CAST([2147483648] AS INTEGER[])) AS t(v)",
+    ] {
+        assert!(
+            !matches!(result(sql, "duckdb"), PhysicalFiniteTableProof::Exact(_)),
+            "integer cast overflow must not produce invented exact rows: {sql}"
+        );
+    }
+}
