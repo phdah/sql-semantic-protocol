@@ -1780,16 +1780,23 @@
     }
   ],
   "signoff": {
-    "all_child_ac_verified": false,
-    "full_ci_verified": false,
+    "all_child_ac_verified": true,
+    "full_ci_verified": true,
     "mandatory_matrix_complete": true,
     "conditional_review_complete": true,
-    "task_done": false,
+    "task_done": true,
     "validated_version": 6,
     "parser_cells_verified": 130,
-    "adapter_cells_classified": 30
+    "adapter_cells_classified": 30,
+    "verified_code_head": "31bc0e5204296b56c1f1ba7dd08484b6cc7939e9",
+    "verified_ci_run_id": 40126856488,
+    "verified_ci_checks": 9,
+    "verified_ci_total": 9,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "final_documentation_ci": "pending final PR metadata head"
   },
-  "validation_state": "v6: mandatory SQL oracle tests must execute complete DuckDB source and terminal bags; 7 mandatory, 3 conditional, 130 observed dialect and 30 adapter cells frozen",
+  "validation_state": "TASK-138 child verified: 7/7 mandatory Exact/Impossible, 3/3 reviewed conditional, 130 dialect classifications, 30 adapter classifications, native source+terminal DuckDB bags; 9/9 code-head CI passed",
   "revision_review": [
     {
       "version": 5,
