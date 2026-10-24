@@ -520,7 +520,9 @@ fn star_select(select: &Select) -> Option<FiniteTable> {
             }
         }
     }
-    FiniteTable::new(FiniteTableKind::Star, columns, types, rows)
+    let contributors = (0..table.rows().len()).map(|index| vec![index]).collect();
+    FiniteTable::new(FiniteTableKind::Star, columns, types, rows)?
+        .with_source(table, contributors)
 }
 
 // Fixed-schema UNPIVOT preserves each complete source row and column identity.
@@ -589,7 +591,8 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
         Some(sqlparser::ast::NullInclusion::IncludeNulls)
     );
     let mut rows = Vec::new();
-    for source_row in source.rows() {
+    let mut contributors = Vec::new();
+    for (source_index, source_row) in source.rows().iter().enumerate() {
         for (index, column) in selected.iter().zip(columns) {
             let element = &source_row[*index];
             if element.literal_type() == LiteralType::Null && !include_null {
@@ -605,9 +608,11 @@ fn unpivot_select(select: &Select) -> Option<FiniteTable> {
                 LiteralValue::Text(column.value.clone()),
             ));
             rows.push(row);
+            contributors.push(vec![source_index]);
         }
     }
-    FiniteTable::new(FiniteTableKind::Unpivot, output_columns, output_types, rows)
+    FiniteTable::new(FiniteTableKind::Unpivot, output_columns, output_types, rows)?
+        .with_source(source, contributors)
 }
 
 // Certify only a single integer SUM over one fixed integer pivot key.
@@ -703,25 +708,26 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
         .map(|index| source.column_types()[*index])
         .collect::<Vec<_>>();
     output_types.extend(vec![FiniteColumnType::Integer; keys.len()]);
-    let mut groups: Vec<(Vec<LiteralExpression>, Vec<&Vec<LiteralExpression>>)> = Vec::new();
-    for row in source.rows() {
+    let mut groups: Vec<(Vec<LiteralExpression>, Vec<(usize, &Vec<LiteralExpression>)>)> = Vec::new();
+    for (source_index, row) in source.rows().iter().enumerate() {
         let key = group_indices
             .iter()
             .map(|index| row[*index].clone())
             .collect::<Vec<_>>();
         if let Some((_, members)) = groups.iter_mut().find(|(name, _)| *name == key) {
-            members.push(row);
+            members.push((source_index, row));
         } else {
-            groups.push((key, vec![row]));
+            groups.push((key, vec![(source_index, row)]));
         }
     }
     let mut rows = Vec::new();
+    let mut contributors = Vec::new();
     for (group, members) in groups {
         let mut out = group;
         for (_, key) in &keys {
             let mut sum = 0_i64;
             let mut present = false;
-            for row in &members {
+            for (_, row) in &members {
                 if row[key_index] != *key || row[value_index].literal_type() == LiteralType::Null {
                     continue;
                 }
@@ -739,8 +745,10 @@ fn pivot_select(select: &Select) -> Option<FiniteTable> {
             });
         }
         rows.push(out);
+        contributors.push(members.iter().map(|(source_index, _)| *source_index).collect());
     }
-    FiniteTable::new(FiniteTableKind::Pivot, output_columns, output_types, rows)
+    FiniteTable::new(FiniteTableKind::Pivot, output_columns, output_types, rows)?
+        .with_source(source, contributors)
 }
 
 /// Classify the tightly bounded, source-free SQL constructors into canonical
