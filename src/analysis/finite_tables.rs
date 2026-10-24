@@ -124,8 +124,15 @@ fn array_items(expression: &Expr, dialect_name: &str) -> Option<Vec<LiteralExpre
             }
             match expr.as_ref() {
                 Expr::Array(array) => {
-                    let literals = array.elem.iter().map(integer_literal).collect::<Option<Vec<_>>>()?;
-                    literals.iter().all(|literal| fits_signed_width(literal, *bits)).then_some(literals)
+                    let literals = array
+                        .elem
+                        .iter()
+                        .map(integer_literal)
+                        .collect::<Option<Vec<_>>>()?;
+                    literals
+                        .iter()
+                        .all(|literal| fits_signed_width(literal, *bits))
+                        .then_some(literals)
                 }
                 _ => None,
             }
@@ -275,7 +282,6 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             args,
             alias,
             lateral,
-            with_ordinality,
             ..
         } if !*lateral && name.to_string().eq_ignore_ascii_case("unnest") => {
             let arguments = args
@@ -289,7 +295,7 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
                 alias,
                 &arguments,
                 false,
-                *with_ordinality,
+                false,
                 FiniteTableKind::Unnest,
                 dialect_name,
             )
