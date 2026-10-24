@@ -53,60 +53,133 @@ fn frozen_mandatory_complete_bags_null_domains_and_absence_agree() {
         let sql = case["sql"].as_str().expect("SQL");
         let dialect = case_dialect(case["variant"].as_str().expect("variant"));
         let parser = dialect_from_name(dialect).expect("dialect");
-        let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()).unwrap_or_else(|e| panic!("{sql}: {e:?}"));
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref())
+            .unwrap_or_else(|e| panic!("{sql}: {e:?}"));
         let target = bundle.layers().last().expect("target");
-        let proof = physical_finite_table_plan(&bundle,target.id(),None);
+        let proof = physical_finite_table_plan(&bundle, target.id(), None);
         if case["expected_proof"] == "Residual" {
-            assert!(matches!(proof,PhysicalFiniteTableProof::Residual{..}), "invalid column must not claim complete rows");
-            checked+=1; continue;
+            assert!(
+                matches!(proof, PhysicalFiniteTableProof::Residual { .. }),
+                "invalid column must not claim complete rows"
+            );
+            checked += 1;
+            continue;
         }
-        let PhysicalFiniteTableProof::Exact(actual) = proof else { panic!("{sql}: no exact physical proof: {proof:?}"); };
-        let expected=case["expected_terminal_rows"].as_array().expect("typed fixture").iter().map(row).collect::<Vec<_>>();
-        assert_eq!(sorted(&actual.terminal), sorted(&expected), "{sql}: complete bag");
-        assert_eq!(actual.row_ids,
-          case["expected_terminal_row_ids"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_owned()).collect::<Vec<_>>(),"{sql}: row identity");
+        let PhysicalFiniteTableProof::Exact(actual) = proof else {
+            panic!("{sql}: no exact physical proof: {proof:?}");
+        };
+        let expected = case["expected_terminal_rows"]
+            .as_array()
+            .expect("typed fixture")
+            .iter()
+            .map(row)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            sorted(&actual.terminal),
+            sorted(&expected),
+            "{sql}: complete bag"
+        );
+        assert_eq!(
+            actual.row_ids,
+            case["expected_terminal_row_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap().to_owned())
+                .collect::<Vec<_>>(),
+            "{sql}: row identity"
+        );
         assert_eq!(
             actual.source_row_ids,
-            case["source_row_ids"].as_array().unwrap()
-                .iter().map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>(),
+            case["source_row_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|id| id.as_str().unwrap().to_string())
+                .collect::<Vec<_>>(),
             "{sql}: original source identities"
         );
-        let actual_source=actual.source_rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
-        let expected_source=case["source_rows"].as_array().unwrap().iter()
-            .map(|values| {
-                let cols=case["source_columns"].as_array().unwrap();
-                let values=values.as_array().unwrap();
-                cols.iter().zip(values).map(|(name,value)|
-                    (name.as_str().unwrap().to_string(),literal(value))
-                ).collect::<BTreeMap<_,_>>()
-            })
-            .map(|row|format!("{row:?}")).collect::<Vec<_>>();
-        assert_eq!(actual_source,expected_source,"{sql}: complete physical VALUES source");
-        let expected_contributors=case["expected_contributors"].as_array().unwrap()
-            .iter().map(|indices| indices.as_array().unwrap().iter()
-                .map(|id|id.as_str().unwrap().to_string()).collect::<Vec<_>>())
+        let actual_source = actual
+            .source_rows
+            .iter()
+            .map(|row| format!("{row:?}"))
             .collect::<Vec<_>>();
-        assert_eq!(actual.contributors, expected_contributors,
-                   "{sql}: source identity witnesses for every output row");
+        let expected_source = case["source_rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|values| {
+                let cols = case["source_columns"].as_array().unwrap();
+                let values = values.as_array().unwrap();
+                cols.iter()
+                    .zip(values)
+                    .map(|(name, value)| (name.as_str().unwrap().to_string(), literal(value)))
+                    .collect::<BTreeMap<_, _>>()
+            })
+            .map(|row| format!("{row:?}"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            actual_source, expected_source,
+            "{sql}: complete physical VALUES source"
+        );
+        let expected_contributors = case["expected_contributors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|indices| {
+                indices
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|id| id.as_str().unwrap().to_string())
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            actual.contributors, expected_contributors,
+            "{sql}: source identity witnesses for every output row"
+        );
         for (column, spec) in case["output_domains"].as_object().expect("typed domains") {
-            let value=actual.terminal_domains.get(column).expect("outcome column");
-            let ValueDomain::Set(set)=value else { panic!("{column}: expected exact finite domain, got {value:?}"); };
-            assert_eq!(set.mode(),SetMode::Include);
-            let mut observed=set.values().iter().filter(|v| !matches!(v.value(), LiteralValue::Null)).map(|v|format!("{:?}",v.value())).collect::<Vec<_>>();
+            let value = actual.terminal_domains.get(column).expect("outcome column");
+            let ValueDomain::Set(set) = value else {
+                panic!("{column}: expected exact finite domain, got {value:?}");
+            };
+            assert_eq!(set.mode(), SetMode::Include);
+            let mut observed = set
+                .values()
+                .iter()
+                .filter(|v| !matches!(v.value(), LiteralValue::Null))
+                .map(|v| format!("{:?}", v.value()))
+                .collect::<Vec<_>>();
             observed.sort();
-            let mut frozen_values=spec["values"].as_array().unwrap().iter().map(|v|format!("{:?}",literal(v))).collect::<Vec<_>>();
+            let mut frozen_values = spec["values"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| format!("{:?}", literal(v)))
+                .collect::<Vec<_>>();
             frozen_values.sort();
-            assert_eq!(observed,frozen_values,"{column}: complete finite domain");
-            assert_eq!(value.admits_null(), spec["nullable"].as_bool(),"{column}: NULL");
+            assert_eq!(observed, frozen_values, "{column}: complete finite domain");
+            assert_eq!(
+                value.admits_null(),
+                spec["nullable"].as_bool(),
+                "{column}: NULL"
+            );
         }
-        let absent=row(&case["negative_membership"]);
-        assert!(matches!(
-            physical_finite_table_plan(&bundle,target.id(),Some(&absent)),
-            PhysicalFiniteTableProof::Impossible {..}
-        ),"{sql}: absent tuple is impossible");
-        checked+=1;
+        let absent = row(&case["negative_membership"]);
+        assert!(
+            matches!(
+                physical_finite_table_plan(&bundle, target.id(), Some(&absent)),
+                PhysicalFiniteTableProof::Impossible { .. }
+            ),
+            "{sql}: absent tuple is impossible"
+        );
+        checked += 1;
     }
-    assert_eq!(checked,8,"all mandatory cells, including fail-closed case");
+    assert_eq!(
+        checked, 8,
+        "all mandatory cells, including fail-closed case"
+    );
 }
 #[test]
 fn named_dialects_are_all_probed_without_inferred_native_execution() {
@@ -141,7 +214,9 @@ fn named_dialects_are_all_probed_without_inferred_native_execution() {
             if let Ok(bundle) = analysis {
                 let layer = bundle.layers().last().expect("layer");
                 let proof = physical_finite_table_plan(&bundle, layer.id(), None);
-                if case["classification"] == "mandatory" && case["expected_proof"] == "Exact and Impossible for negative tuple" {
+                if case["classification"] == "mandatory"
+                    && case["expected_proof"] == "Exact and Impossible for negative tuple"
+                {
                     assert!(
                         matches!(proof, PhysicalFiniteTableProof::Exact(_)),
                         "{dialect}: parsed mandatory {sql} but no exact source/terminal proof: {proof:?}"
