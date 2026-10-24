@@ -4,7 +4,8 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_dbt_artifacts, analyze_inputs, dialect_from_name, parse_dbt_catalog,
-    parse_dbt_manifest, physical_finite_table_plan, LiteralValue, PhysicalFiniteTableProof, SqlInput,
+    parse_dbt_manifest, physical_finite_table_plan, LiteralValue, PhysicalFiniteTableProof,
+    SqlInput,
 };
 use std::collections::BTreeMap;
 use std::fs;
@@ -44,7 +45,9 @@ fn compiled_models_match_native_duckdb_and_canonical_generator_value_domains() {
         let node = &manifest["nodes"][&model_id];
         assert_eq!(node["resource_type"], "model", "{model}: real dbt model");
         let sql = node["compiled_code"].as_str().expect("compiled SQL");
-        let relation = node["relation_name"].as_str().expect("materialized relation");
+        let relation = node["relation_name"]
+            .as_str()
+            .expect("materialized relation");
         assert!(!sql.contains("{{"));
 
         let mut selected_manifest = manifest.clone();
@@ -52,7 +55,10 @@ fn compiled_models_match_native_duckdb_and_canonical_generator_value_domains() {
             .as_object_mut()
             .unwrap()
             .retain(|name, _| name == &model_id);
-        selected_manifest["sources"].as_object_mut().unwrap().clear();
+        selected_manifest["sources"]
+            .as_object_mut()
+            .unwrap()
+            .clear();
         let mut selected_catalog = catalog.clone();
         selected_catalog["nodes"]
             .as_object_mut()
@@ -63,8 +69,12 @@ fn compiled_models_match_native_duckdb_and_canonical_generator_value_domains() {
         let catalog = parse_dbt_catalog(&selected_catalog.to_string()).expect("dbt catalog");
         let dialect = dialect_from_name(manifest.adapter_type()).expect("adapter dialect");
         let bundle = analyze_dbt_artifacts(
-            &manifest, &catalog, manifest.adapter_type(), dialect.as_ref()
-        ).expect("dbt canonical adapter");
+            &manifest,
+            &catalog,
+            manifest.adapter_type(),
+            dialect.as_ref(),
+        )
+        .expect("dbt canonical adapter");
         let target = bundle.layers().last().expect("dbt layer");
         let PhysicalFiniteTableProof::Exact(dbt) =
             physical_finite_table_plan(&bundle, target.id(), None)
@@ -75,24 +85,29 @@ fn compiled_models_match_native_duckdb_and_canonical_generator_value_domains() {
         assert!(dbt.source_rows.is_empty(), "source-free constructor");
         assert!(dbt.source_row_ids.is_empty(), "no invented physical rows");
 
-        let mut stmt = conn.prepare(&format!("SELECT v FROM {relation}")).expect("native model");
+        let mut stmt = conn
+            .prepare(&format!("SELECT v FROM {relation}"))
+            .expect("native model");
         let warehouse = stmt
             .query_map([], |r| {
                 let n = r.get::<_, Option<i64>>(0)?;
-                Ok(BTreeMap::from([("v".into(), n.map_or(
-                    LiteralValue::Null,
-                    |v| LiteralValue::Number(v.to_string()),
-                ))]))
+                Ok(BTreeMap::from([(
+                    "v".into(),
+                    n.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())),
+                )]))
             })
             .expect("native terminal rows")
             .collect::<Result<Vec<_>, _>>()
             .expect("native full output bag");
-        assert_eq!(bag(&dbt.terminal), bag(&warehouse), "{model}: whole warehouse bag");
+        assert_eq!(
+            bag(&dbt.terminal),
+            bag(&warehouse),
+            "{model}: whole warehouse bag"
+        );
 
         let generic = dialect_from_name("generic").unwrap();
-        let original = analyze_inputs(
-            &[SqlInput::inline(generator)], "generic", generic.as_ref()
-        ).expect("parser-independent EXPLODE normalization");
+        let original = analyze_inputs(&[SqlInput::inline(generator)], "generic", generic.as_ref())
+            .expect("parser-independent EXPLODE normalization");
         let target = original.layers().last().expect("generator");
         let PhysicalFiniteTableProof::Exact(explode) =
             physical_finite_table_plan(&original, target.id(), None)
