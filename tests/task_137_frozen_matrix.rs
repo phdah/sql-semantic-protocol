@@ -202,52 +202,35 @@ fn every_frozen_mandatory_cell_proves_complete_duckdb_terminal_and_negative_bags
 
 #[test]
 fn all_frozen_variant_dialect_cells_are_parser_equivalent_or_explicit_boundaries() {
+    use sqlparser::parser::Parser;
     let freeze = fixture();
     let dialects = freeze["dialects"].as_array().unwrap();
-    assert_eq!(dialects.len(), 13);
-    let mut seen = 0;
-    let mut parser_boundaries = 0;
+    let mut observations = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
+        let sql = case["sql"].as_str().unwrap();
         for dialect in dialects {
             let name = dialect.as_str().unwrap();
-            seen += 1;
-            let bundle = match analyze(case["sql"].as_str().unwrap(), name) {
-                Ok(bundle) => bundle,
-                Err(_) => {
-                    parser_boundaries += 1;
-                    continue;
-                }
+            let parser = dialect_from_name(name).unwrap();
+            let parsed = Parser::parse_sql(parser.as_ref(), sql);
+            let status = match parsed {
+                Err(error) => format!("parser_rejected {error}"),
+                Ok(ast) => match analyze(sql, name) {
+                    Err(error) => format!("analyzer_error {error}, AST {ast:?}"),
+                    Ok(bundle) => {
+                        let layer = bundle.layers().last().unwrap().id();
+                        match physical_finite_table_plan(&bundle, layer, None) {
+                            PhysicalFiniteTableProof::Exact(proof) => {
+                                format!("exact len={} columns={:?}", proof.terminal.len(), proof.terminal_domains.keys().collect::<Vec<_>>())
+                            }
+                            PhysicalFiniteTableProof::Impossible { reason } => format!("impossible {reason}, AST {ast:?}"),
+                            PhysicalFiniteTableProof::Residual { reason } => format!("residual {reason}, AST {ast:?}"),
+                        }
+                    }
+                },
             };
-            let layer = bundle.layers().last().unwrap().id();
-            let proof = physical_finite_table_plan(&bundle, layer, None);
-            if case["classification"] == "conditional" {
-                assert!(
-                    matches!(proof, PhysicalFiniteTableProof::Residual { .. }),
-                    "{id}/{name}: opaque collection"
-                );
-                continue;
-            }
-            // Where an exposed parser accepts the identical concrete AST law,
-            // it must not silently lose the canonical finite relation.
-            let PhysicalFiniteTableProof::Exact(proof) = proof else {
-                panic!("{id}/{name}: accepted parser form lacks canonical exactness");
-            };
-            assert_eq!(
-                proof.terminal.len(),
-                case["expected"].as_array().unwrap().len(),
-                "{id}/{name}"
-            );
-            assert_eq!(
-                proof.terminal_domains.len(),
-                case["domains"].as_object().unwrap().len(),
-                "{id}/{name}"
-            );
+            observations.push(format!("{id}/{name}: {status}"));
         }
     }
-    assert_eq!(seen, 13 * 8, "all dialect cells explicitly examined");
-    assert!(
-        parser_boundaries < seen,
-        "the shared VALUES syntax must be parsed"
-    );
+    panic!("TEMPORARY 104-CELL DIAGNOSTIC\\n{}", observations.join("\\n"));
 }
