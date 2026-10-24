@@ -12803,5 +12803,29 @@
     "verified_conditional_cases": 1,
     "ci_code_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40089927405",
     "independent_acceptance_review": "docs/task-137-acceptance-audit.md"
+  },
+  "task_138_finite_table_transform_plan": {
+    "owner": "TASK-138",
+    "parent": "TASK-77",
+    "status": "implementation_pending_final_ci_signoff",
+    "freeze": "docs/task-138-acceptance-freeze.json",
+    "audit": "docs/task-138-acceptance-audit.md",
+    "fixture_ids": [
+      "77-C138-P",
+      "77-C138-N"
+    ],
+    "mandatory_cases": 8,
+    "conditional_cases": 2,
+    "parser_cells": 130,
+    "parser_exact": 54,
+    "parser_rejections": 46,
+    "parser_residual": 30,
+    "adapter_cells": 30,
+    "physical_oracle": "tests/task_138_frozen_matrix.rs",
+    "native_oracle": "tests/task_138_pivot_unpivot.rs",
+    "dbt_core_oracle": "tests/task_138_dbt_core_e2e.rs",
+    "all_child_ac_verified": false,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
