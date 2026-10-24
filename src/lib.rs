@@ -41,6 +41,7 @@
 //! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
 //! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
 //! - physical_finite_join_aggregate_plan proves complete two-source INNER JOIN/WHERE/GROUP/HAVING bags and exact typed terminal domains.
+//! - physical_finite_page_bag_plan proves complete direct ORDER BY/LIMIT/OFFSET/FETCH/TOP terminal bags and rejected source identities.
 //! - physical_finite_rank_bag_plan proves complete peer-aware ROW_NUMBER/RANK/DENSE_RANK physical bags and exact finite terminal value domains.
 //! - physical_finite_window_bag_plan proves complete navigation and common deterministic ROWS/whole-partition aggregate physical bags, with exact finite terminal NULL/value domains.
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
@@ -165,7 +166,8 @@ pub use physical_realization::{
     physical_finite_join_aggregate_plan, physical_finite_joined_exists_bag_plan,
     physical_finite_producer_exists_plan, physical_finite_quantified_comparison,
     physical_finite_quantified_subquery_plan, physical_finite_quantified_where_plan,
-    physical_finite_rank_bag_plan, physical_finite_scalar_subquery_plan,
+    physical_finite_page_bag_plan, physical_finite_rank_bag_plan,
+    physical_finite_scalar_subquery_plan,
     physical_finite_set_bag_plan, physical_finite_set_tree_plan, physical_finite_table_plan,
     physical_finite_window_bag_plan, physical_joint_distribution_plan,
     physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
@@ -178,7 +180,8 @@ pub use physical_realization::{
     PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
     PhysicalFiniteExistsExact, PhysicalFiniteExistsProof, PhysicalFiniteInExact,
     PhysicalFiniteInProof, PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof,
-    PhysicalFiniteRankExact, PhysicalFiniteRankProof, PhysicalFiniteSetExact,
+    PhysicalFinitePageExact, PhysicalFinitePageProof, PhysicalFiniteRankExact,
+    PhysicalFiniteRankProof, PhysicalFiniteSetExact,
     PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalFiniteTableExact, PhysicalFiniteTableProof, PhysicalFiniteWindowExact,
     PhysicalFiniteWindowProof, PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
@@ -187,7 +190,8 @@ pub use physical_realization::{
     PhysicalProducerDomain, PhysicalProducerExistsExact, PhysicalProducerExistsProof,
     PhysicalProducerRow, PhysicalProofGap, PhysicalQuantifiedColumnDomain,
     PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
-    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
+    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalPageRow, PhysicalRankRow,
+    PhysicalRowTarget,
     PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof, PhysicalSetColumnDomain,
     PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSourcePlan,
     PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
