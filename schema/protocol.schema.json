@@ -13,7 +13,7 @@
   ],
   "properties": {
     "protocol_version": {
-      "const": "2.0.3"
+      "const": "3.0.0"
     },
     "inputs": {
       "type": "array",
