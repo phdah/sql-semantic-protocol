@@ -313,7 +313,10 @@ pub(super) fn analyze_query(
         diagnostics.retain(|diagnostic| {
             !matches!(
                 diagnostic.code(),
-                "unsupported_order_by" | "unsupported_limit" | "unsupported_fetch" | "unsupported_top"
+                "unsupported_order_by"
+                    | "unsupported_limit"
+                    | "unsupported_fetch"
+                    | "unsupported_top"
             )
         });
     }
