@@ -94,7 +94,7 @@ schema:
             let target = bundle.layers().iter().find(|layer|
                 layer.consumes().iter().any(|dependency| dependency == RELATION)
             ).unwrap_or_else(|| panic!("{id}/{adapter}: missing source-bearing model"));
-            let proof = physical_finite_page_bag_plan(&bundle, target.id(), &[source.clone()]);
+            let proof = physical_finite_page_bag_plan(&bundle, target.id(), std::slice::from_ref(&source));
             let PhysicalFinitePageProof::Exact(exact) = proof else {
                 panic!("{id}/{adapter}: missing exact physical bag: {proof:?}");
             };
