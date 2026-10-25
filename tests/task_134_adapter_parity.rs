@@ -45,11 +45,7 @@ schema:
 
     let parser = dialect_from_name("postgresql").unwrap();
     let mut checked = 0;
-    for case in inventory["cases"]
-        .as_array()
-        .unwrap()
-        .iter()
-    {
+    for case in inventory["cases"].as_array().unwrap().iter() {
         let id = case["id"].as_str().unwrap();
         let mandatory = case["classification"] == "mandatory";
         let sql = case["sql"]
@@ -131,8 +127,10 @@ schema:
                 physical_finite_page_bag_plan(&bundle, target.id(), std::slice::from_ref(&source));
             if !mandatory {
                 assert_eq!(case["adapter_cells"][adapter], "typed residual required");
-                assert!(matches!(proof, PhysicalFinitePageProof::Residual { .. }),
-                    "{id}/{adapter}: conditional must not claim exactness: {proof:?}");
+                assert!(
+                    matches!(proof, PhysicalFinitePageProof::Residual { .. }),
+                    "{id}/{adapter}: conditional must not claim exactness: {proof:?}"
+                );
                 proofs.push("residual".to_string());
                 checked += 1;
                 continue;
@@ -180,5 +178,8 @@ schema:
         assert_eq!(proofs[0], proofs[1], "{id}: SQL/dbt canonical parity");
         assert_eq!(proofs[0], proofs[2], "{id}: SQL/ODCS canonical parity");
     }
-    assert_eq!(checked, 27, "all nine frozen variants on all three evidence adapters");
+    assert_eq!(
+        checked, 27,
+        "all nine frozen variants on all three evidence adapters"
+    );
 }
