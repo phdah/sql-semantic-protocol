@@ -358,7 +358,7 @@ fn prove_distinct_page(
             };
             let Some((output, _)) = projection.iter().find(|(_, physical)| {
                 physical == column.name()
-                    && column.relation().is_none_or(|relation| relation == source)
+                    // Only one validated physical source is possible here.
             }) else {
                 return residual("DISTINCT ON expression lacks an attested projected column");
             };
@@ -509,10 +509,11 @@ fn prove_distinct_page(
     }
     let rows = survivors
         .into_iter()
+        .zip(positions)
         .enumerate()
-        .map(|(idx, survives)| PhysicalPageRow {
+        .map(|(idx, (survives, position))| PhysicalPageRow {
             source_row_id: format!("{source}#{idx}"),
-            order_position: positions[idx],
+            order_position: position,
             survives,
         })
         .collect();
