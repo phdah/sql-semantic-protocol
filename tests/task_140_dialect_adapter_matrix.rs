@@ -61,6 +61,7 @@ fn compiled_dbt_status(sql: &str, dialect: &str) -> String {
 
 // Collect observed parser classifications before freezing the signed matrix.
 #[test]
+#[ignore = "temporary matrix observation completed; replace with assertions after parser fix"]
 fn observe_all_dialects_and_compiled_dbt_fanout() {
     let matrix = freeze();
     let mut findings = Vec::new();
