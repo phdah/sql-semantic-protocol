@@ -91,23 +91,45 @@ schema:
             }
         });
         let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
-        let dbt = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref()).unwrap();
+        let dbt =
+            analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref()).unwrap();
         let source = PhysicalWriteState::new(
             RELATION,
-            case["source_bag"].as_array().unwrap().iter().map(|value| {
-                PhysicalWriteRow::new(BTreeMap::from([(
-                    "k".to_string(),
-                    value.as_i64().map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-                )])).unwrap()
-            }).collect(),
-        ).unwrap();
+            case["source_bag"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|value| {
+                    PhysicalWriteRow::new(BTreeMap::from([(
+                        "k".to_string(),
+                        value
+                            .as_i64()
+                            .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    )]))
+                    .unwrap()
+                })
+                .collect(),
+        )
+        .unwrap();
         let mut proofs = Vec::new();
-        for (adapter, bundle) in [("direct_sql", direct), ("dbt_compiled", dbt), ("odcs", odcs)] {
+        for (adapter, bundle) in [
+            ("direct_sql", direct),
+            ("dbt_compiled", dbt),
+            ("odcs", odcs),
+        ] {
             assert_eq!(case["adapter_cells"][adapter], "exact required");
-            let target = bundle.layers().iter().find(|layer|
-                layer.consumes().iter().any(|dependency| dependency == RELATION)
-            ).unwrap_or_else(|| panic!("{id}/{adapter}: missing source-bearing model"));
-            let proof = physical_finite_page_bag_plan(&bundle, target.id(), std::slice::from_ref(&source));
+            let target = bundle
+                .layers()
+                .iter()
+                .find(|layer| {
+                    layer
+                        .consumes()
+                        .iter()
+                        .any(|dependency| dependency == RELATION)
+                })
+                .unwrap_or_else(|| panic!("{id}/{adapter}: missing source-bearing model"));
+            let proof =
+                physical_finite_page_bag_plan(&bundle, target.id(), std::slice::from_ref(&source));
             let PhysicalFinitePageProof::Exact(exact) = proof else {
                 panic!("{id}/{adapter}: missing exact physical bag: {proof:?}");
             };
