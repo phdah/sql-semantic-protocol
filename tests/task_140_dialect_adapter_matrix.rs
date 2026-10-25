@@ -59,26 +59,47 @@ fn compiled_dbt_status(sql: &str, dialect: &str) -> String {
     }
 }
 
-// Collect observed parser classifications before freezing the signed matrix.
+// Each disposition is backed by an independent runtime parse and canonical
+// proof, not by a dialect-name production whitelist.
 #[test]
-#[ignore = "temporary matrix observation completed; replace with assertions after parser fix"]
-fn observe_all_dialects_and_compiled_dbt_fanout() {
+fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
     let matrix = freeze();
-    let mut findings = Vec::new();
-    for case in matrix["variants"].as_array().unwrap() {
-        let sql = case["sql"].as_str().unwrap();
-        let id = case["id"].as_str().unwrap();
-        for dialect in matrix["dialects"].as_array().unwrap() {
-            let dialect = dialect.as_str().unwrap();
-            findings.push(json!({
-                "id": id, "dialect": dialect,
-                "direct": proof_status(sql, dialect),
-                "dbt": compiled_dbt_status(sql, dialect)
-            }));
+    assert_eq!(matrix["owner"], "TASK-140");
+    let mut checked = 0;
+    for case in matrix["variants"].as_array().expect("finite variant matrix") {
+        let sql = case["sql"].as_str().expect("SQL");
+        for cell in case["parser_cells"].as_array().expect("13 dialect cells") {
+            let dialect = cell["dialect"].as_str().expect("project dialect");
+            assert_eq!(cell["classification"], proof_status(sql, dialect), "{dialect}: {sql}");
+            checked += 1;
+        }
+        let duckdb = "duckdb";
+        let adapter_cells = case["adapter_cells"].as_array().expect("adapter matrix");
+        assert_eq!(adapter_cells.len(), 3);
+        assert_eq!(adapter_cells[0]["classification"], proof_status(sql, duckdb));
+        assert_eq!(adapter_cells[1]["classification"], compiled_dbt_status(sql, duckdb));
+        assert_eq!(adapter_cells[2]["classification"], "inapplicable_without_literal_rows");
+        assert_eq!(adapter_cells[2]["certified"], true);
+        if case["kind"] == "conditional" {
+            assert_eq!(case["owner"], "TASK-140");
+            assert_ne!(proof_status(sql, duckdb), "exact", "{sql}: conditional cannot be exact");
         }
     }
-    panic!(
-        "TASK140_OBSERVED={}",
-        serde_json::to_string(&findings).unwrap()
-    );
+    assert_eq!(checked, matrix["verification"]["parser_cells_to_verify"].as_u64().unwrap() as usize);
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn real_odcs_schema_does_not_invent_finite_array_or_values_rows() {
+    use sql_semantic_protocol::{parse_odcs_yaml, RelationCatalog};
+    let catalog = RelationCatalog::new(&["analytics.customers", "analytics.orders"])
+        .expect("valid relation catalog");
+    let metadata = parse_odcs_yaml(
+        include_str!("fixtures/odcs/commerce.odcs.yaml"),
+        "postgresql",
+        &catalog,
+    ).expect("real ODCS contract");
+    assert!(!metadata.source_schemas().is_empty());
+    let sql = "SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v";
+    assert_eq!(proof_status(sql, "duckdb"), "residual");
 }
