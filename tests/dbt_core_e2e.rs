@@ -919,6 +919,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task138_named_unpivot")
                 && !id.ends_with(".task139_literal_elements")
                 && !id.ends_with(".task139_nullable_duplicate_elements")
+                && !id.ends_with(".task140_grouped_fanout")
+                && !id.ends_with(".task140_joined_fanout")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]
@@ -947,6 +949,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task138_named_unpivot")
                 && !id.ends_with(".task139_literal_elements")
                 && !id.ends_with(".task139_nullable_duplicate_elements")
+                && !id.ends_with(".task140_grouped_fanout")
+                && !id.ends_with(".task140_joined_fanout")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_catalog_json["sources"]
