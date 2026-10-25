@@ -196,6 +196,18 @@ pub fn physical_finite_page_bag_plan(
         sort_names.push(source_name);
     }
 
+    if distinct.is_some() {
+        for (_, source_name) in &projection {
+            let Some(declared) = schema.columns().iter().find(|column| column.name() == source_name)
+            else {
+                return residual("DISTINCT output column lacks an authoritative type");
+            };
+            if !super::aggregate_bags::signed_integer(declared.data_type()) {
+                return residual("DISTINCT equality needs attested typed comparison semantics");
+            }
+        }
+    }
+
     let mut rows = Vec::<(usize, Vec<Option<i128>>)>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
         let mut keys = Vec::new();
@@ -380,6 +392,14 @@ fn prove_distinct_page(
             let Some(value) = row.values().get(source_name) else {
                 return residual("DISTINCT projection refers to absent physical column");
             };
+            // Equality over physical typed integers is numeric, not textual.
+            // Noncanonical source tokens must not be treated as different SQL values.
+            match value {
+                LiteralValue::Number(value) if value.parse::<i128>().ok()
+                    .is_some_and(|integer| integer.to_string() == *value) => {}
+                LiteralValue::Null => {}
+                _ => return residual("DISTINCT requires canonical signed integer source values"),
+            }
             output.insert(output_name.clone(), value.clone());
         }
         let Some(identity) = on_columns
@@ -407,6 +427,23 @@ fn prove_distinct_page(
                 contributors: vec![index],
                 ordering,
             });
+        }
+    }
+
+    // A non-WITH-TIES page cannot choose arbitrarily between different DISTINCT
+    // tuples sharing the same sort key at either the OFFSET or LIMIT boundary.
+    // Tied groups entirely inside or outside the page are still provable.
+    if let Some(shape) = shaping {
+        if !shape.with_ties && shape.limit > 0 {
+            let limit_end = shape.offset.saturating_add(shape.limit);
+            for (index, pair) in groups.windows(2).enumerate() {
+                if compare_ordered_rows(&pair[0].ordering, &pair[1].ordering, &shape.keys)
+                    == Ordering::Equal
+                    && (index + 1 == shape.offset || index + 1 == limit_end)
+                {
+                    return residual("DISTINCT page cuts an unresolved ORDER BY peer group");
+                }
+            }
         }
     }
 
