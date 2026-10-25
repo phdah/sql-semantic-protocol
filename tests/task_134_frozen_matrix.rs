@@ -305,7 +305,10 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
             match parsed {
                 Err(error) => {
                     assert!(!error.to_string().is_empty());
-                    observed.entry(id.to_string()).or_default().insert(dialect.to_string(), "parser_boundary".to_string());
+                    observed
+                        .entry(id.to_string())
+                        .or_default()
+                        .insert(dialect.to_string(), "parser_boundary".to_string());
                 }
                 Ok(_) => {
                     let input = SqlInput::inline(sql);
@@ -332,7 +335,10 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
                             }
                         }
                     };
-                    observed.entry(id.to_string()).or_default().insert(dialect.to_string(), classification.to_string());
+                    observed
+                        .entry(id.to_string())
+                        .or_default()
+                        .insert(dialect.to_string(), classification.to_string());
                     if case["classification"] == "mandatory" {
                         assert_eq!(classification, "exact", "{id}/{dialect}");
                     } else {
@@ -347,12 +353,20 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
         }
     }
     assert_eq!(checked, 117, "nine frozen variants in all 13 dialects");
-    let frozen = inventory["cases"].as_array().unwrap().iter().map(|case| {
-        let id = case["id"].as_str().unwrap().to_string();
-        let cells = case["dialect_cells"].as_object().unwrap().iter().map(|(key, status)| {
-            (key.clone(), status.as_str().unwrap().to_string())
-        }).collect::<BTreeMap<_, _>>();
-        (id, cells)
-    }).collect::<BTreeMap<_, _>>();
+    let frozen = inventory["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|case| {
+            let id = case["id"].as_str().unwrap().to_string();
+            let cells = case["dialect_cells"]
+                .as_object()
+                .unwrap()
+                .iter()
+                .map(|(key, status)| (key.clone(), status.as_str().unwrap().to_string()))
+                .collect::<BTreeMap<_, _>>();
+            (id, cells)
+        })
+        .collect::<BTreeMap<_, _>>();
     assert_eq!(observed, frozen, "frozen 117-cell parser dispositions must match executed canonical proof; observed matrix printed on mismatch");
 }
