@@ -318,9 +318,89 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     literal_array_source(&from.relation, dialect_name)
 }
 
-// Prove only explicit single-key, source-free COUNT(*) grouping. These groups
-// preserve the whole typed input multiset; JOIN, HAVING and opaque generators
-// must remain outside this exact law until they have independent proofs.
+// Preserve the original alias/column identity, not only a scalar column name.
+fn finite_column_reference(expression: &Expr) -> Option<(Option<&str>, &str)> {
+    match expression {
+        Expr::Identifier(column) => Some((None, column.value.as_str())),
+        Expr::CompoundIdentifier(parts) if parts.len() == 2 => {
+            Some((Some(parts[0].value.as_str()), parts[1].value.as_str()))
+        }
+        _ => None,
+    }
+}
+
+// One INNER equijoin of exactly two complete, independently attested literal
+// source bags. Equality is over typed integer keys; SQL NULL is never TRUE.
+// The canonical Joined node holds both bags and all selected physical pairs.
+fn finite_join_source(
+    from: &TableWithJoins,
+    dialect_name: &str,
+) -> Option<(FiniteTable, String)> {
+    let [join] = from.joins.as_slice() else {
+        return None;
+    };
+    let left = literal_array_source(&from.relation, dialect_name)
+        .or_else(|| named_values_source(&from.relation))?;
+    let right = literal_array_source(&join.relation, dialect_name)
+        .or_else(|| named_values_source(&join.relation))?;
+    let left_alias = match &from.relation {
+        TableFactor::UNNEST { alias: Some(alias), .. }
+        | TableFactor::Table { alias: Some(alias), .. }
+        | TableFactor::Function { alias: Some(alias), .. }
+        | TableFactor::Derived { alias: Some(alias), .. } => &alias.name.value,
+        _ => return None,
+    };
+    let right_alias = match &join.relation {
+        TableFactor::UNNEST { alias: Some(alias), .. }
+        | TableFactor::Table { alias: Some(alias), .. }
+        | TableFactor::Function { alias: Some(alias), .. }
+        | TableFactor::Derived { alias: Some(alias), .. } => &alias.name.value,
+        _ => return None,
+    };
+    if left_alias == right_alias || left.columns().len() != 1 || right.columns().len() != 1 {
+        return None;
+    }
+    let JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+        left: on_left,
+        op: SqlBinaryOperator::Eq,
+        right: on_right,
+    })) = &join.join_operator else {
+        return None;
+    };
+    let (Some((Some(first_alias), first_column)), Some((Some(second_alias), second_column))) =
+        (finite_column_reference(on_left), finite_column_reference(on_right))
+    else {
+        return None;
+    };
+    let forward = first_alias == left_alias && first_column == left.columns()[0]
+        && second_alias == right_alias && second_column == right.columns()[0];
+    let reverse = first_alias == right_alias && first_column == right.columns()[0]
+        && second_alias == left_alias && second_column == left.columns()[0];
+    if !forward && !reverse {
+        return None;
+    }
+    let mut pairs = Vec::new();
+    let mut rows = Vec::new();
+    for (left_index, left_row) in left.rows().iter().enumerate() {
+        for (right_index, right_row) in right.rows().iter().enumerate() {
+            let key = &left_row[0];
+            if key.literal_type() != LiteralType::Null && key == &right_row[0] {
+                pairs.push([left_index, right_index]);
+                rows.push(vec![key.clone()]);
+            }
+        }
+    }
+    let joined = FiniteTable::new(
+        FiniteTableKind::Joined,
+        left.columns().to_vec(),
+        left.column_types().to_vec(),
+        rows,
+    )?.with_join(left, right, pairs)?;
+    Some((joined, left_alias.clone()))
+}
+
+// Explicit single-key COUNT(*) GROUP BY, with zero or one fully attested
+// two-source INNER JOIN upstream. Grouped rows retain complete producer bags.
 fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     if !ordinary_select_without_group_shape(select) {
         return None;
@@ -328,20 +408,22 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     let GroupByExpr::Expressions(keys, modifiers) = &select.group_by else {
         return None;
     };
-    let [Expr::Identifier(group_key)] = keys.as_slice() else {
+    let [group_expression] = keys.as_slice() else {
         return None;
     };
     if !modifiers.is_empty() {
         return None;
     }
-    let [SelectItem::UnnamedExpr(Expr::Identifier(projected_key)), SelectItem::ExprWithAlias {
+    let [SelectItem::UnnamedExpr(projected_expression), SelectItem::ExprWithAlias {
         expr: Expr::Function(aggregate),
         alias,
     }] = select.projection.as_slice()
     else {
         return None;
     };
-    if projected_key.value != group_key.value
+    let (group_alias, group_key) = finite_column_reference(group_expression)?;
+    let (projected_alias, projected_key) = finite_column_reference(projected_expression)?;
+    if (group_alias, group_key) != (projected_alias, projected_key)
         || !aggregate.name.to_string().eq_ignore_ascii_case("count")
         || aggregate.over.is_some()
         || aggregate.filter.is_some()
@@ -365,15 +447,23 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     let [from] = select.from.as_slice() else {
         return None;
     };
-    if !from.joins.is_empty() {
-        return None;
+    let (source, required_alias) = if from.joins.is_empty() {
+        let source = literal_array_source(&from.relation, dialect_name)
+            .or_else(|| named_values_source(&from.relation))?;
+        (source, None)
+    } else {
+        let (joined, alias) = finite_join_source(from, dialect_name)?;
+        (joined, Some(alias))
+    };
+    if let Some(required_alias) = required_alias.as_deref() {
+        if group_alias != Some(required_alias) {
+            return None;
+        }
     }
-    let source = literal_array_source(&from.relation, dialect_name)
-        .or_else(|| named_values_source(&from.relation))?;
     let position = source
         .columns()
         .iter()
-        .position(|name| name == &group_key.value)?;
+        .position(|name| name == group_key)?;
     if position != 0 || source.columns().len() != 1 {
         return None;
     }
@@ -401,7 +491,7 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     }
     FiniteTable::new(
         FiniteTableKind::Grouped,
-        vec![group_key.value.clone(), alias.value.clone()],
+        vec![group_key.to_string(), alias.value.clone()],
         vec![source.column_types()[position], FiniteColumnType::Integer],
         rows,
     )?
