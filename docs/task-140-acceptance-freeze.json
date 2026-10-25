@@ -6,7 +6,7 @@
     "77-C140-P",
     "77-C140-N"
   ],
-  "status": "all_frozen_parser_and_adapter_obligations_observed_pending_final_ci",
+  "status": "verified_bounded_child_pending_merge",
   "definition_of_done": "No mandatory cell may be signed off without complete exact domain, physical bag, adapter and native SQL oracle",
   "variants": [
     {
@@ -1645,9 +1645,9 @@
     "mandatory_cases_to_verify": 7,
     "parser_cells_to_verify": 117,
     "adapter_cells_to_verify": 27,
-    "dbt_e2e": false,
-    "ci_signoff": false,
-    "task_done": false,
+    "dbt_e2e": true,
+    "ci_signoff": true,
+    "task_done": true,
     "observed_dialect_matrix": true,
     "parser_cells_observed": 117,
     "parser_cells_currently_certified": 117,
@@ -1660,7 +1660,20 @@
     "dialect_adapter_test": "tests/task_140_dialect_adapter_matrix.rs",
     "frozen_case_count": 9,
     "adapter_cells_currently_certified": 27,
-    "dialect_adapter_matrix_independently_observed": true
+    "dialect_adapter_matrix_independently_observed": true,
+    "final_code_head": "b8a0a01461f22e16a13e3ea8de8d463df61a98fd",
+    "final_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40242206911",
+    "final_required_jobs_passed": 9,
+    "frozen_cases_independently_reviewed": 9,
+    "acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_signed_off": false,
+    "release_approved": false
   },
   "notes": [
     "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
@@ -1669,6 +1682,7 @@
     "All current dialect statuses were directly observed in GitHub CI run 40239974202; mandatory JOIN residuals are intentionally uncertified until implementation is fixed and rerun.",
     "The join positive and nullable cases list all physical TRUE and NOT TRUE identity pairs (9 and 16 Cartesian opportunities) with explicit NULL UNKNOWN rejections and inclusive typed terminal domain bounds.",
     "CI focused run 40241037204 observed exact direct/compiled dbt join and nullable/reversed variants for the 11 compatible parser dialect identities; SQLite/MSSQL native UNNEST syntax is a separately owned, noncertified conditional parser/engine law.",
-    "The physical proof independently classifies every matched and nonselected join pair as SQL TRUE, FALSE or UNKNOWN, and confirms NOT TRUE is exactly FALSE union UNKNOWN."
+    "The physical proof independently classifies every matched and nonselected join pair as SQL TRUE, FALSE or UNKNOWN, and confirms NOT TRUE is exactly FALSE union UNKNOWN.",
+    "The bounded TASK-140 nine-case, 117-dialect and 27-adapter matrices, positive/Impossible, nullable SQL TRUE/FALSE/UNKNOWN, complete DuckDB and actual dbt Core oracles were independently reconciled against final implementation CI. Parent TASK-77 retains independent original acceptance signoff after child merge."
   ]
 }

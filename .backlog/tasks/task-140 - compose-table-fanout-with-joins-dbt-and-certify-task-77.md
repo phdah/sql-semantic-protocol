@@ -1,7 +1,7 @@
 ---
 id: TASK-140
 title: Compose table fanout with joins/dbt and certify TASK-77
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-25'
@@ -33,19 +33,27 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
-- [ ] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
-- [ ] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
-- [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-140; no claim of native engine execution without an executable oracle.
-- [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-77 parent open.
+- [x] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
+- [x] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
+- [x] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
+- [x] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-140; no claim of native engine execution without an executable oracle.
+- [x] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-77 parent open.
 <!-- AC:END -->
 
 ## Next
 
 Then independently sign off all original TASK-77 AC against the entire merged child evidence.
 
-## Implementation Notes
+## Verified implementation evidence
 
-<!-- SECTION:NOTES:BEGIN -->
-The finite source-free VALUES/UNNEST/EXPLODE `GROUP BY` with `COUNT(*)` has an explicit canonical `grouped` bag and source contributors, checked by a complete DuckDB oracle in `tests/task_140_finite_group_bags.rs`. `docs/task-140-acceptance-freeze.json` records mandatory grouped and joined obligations with typed source and terminal bags. The JOIN fanout case, independent dialect and adapter matrices, executed compiled dbt model, strict final-head CI and parent signoff are **not yet verified**, so all five acceptance criteria remain open.
-<!-- SECTION:NOTES:END -->
+The versioned [TASK-140 nine-case acceptance matrix](../../docs/task-140-acceptance-freeze.json) certifies 7 mandatory exact and 2 reviewed conditional variants, 117 dialect cells (72 Exact, 36 typed Residual and 9 parser boundaries) and 27 adapter cells. Its complete leaf source bags, selected/SQL FALSE/SQL UNKNOWN physical pairs, duplicate row identities, inclusive typed output domains, NULL and empty-array laws, terminal COUNT(*) bag and requested Impossible membership agree with independent native DuckDB execution. SQLite/MSSQL accepted parser forms without equivalent attested native array execution remain explicit, TASK-140-owned conditional runtime boundaries rather than fabricated portable engine facts.
+
+The actual compiled dbt Core models are executed in DuckDB and compared to direct SQL and canonical physical proofs. Equivalent ODCS schema evidence cannot supply literal/array row values; the adapter cannot fabricate an exact population.
+
+All five bounded child criteria were independently reviewed against [the TASK-140 acceptance audit](../../docs/task-140-acceptance-audit.md) and validated on implementation code head `b8a0a01461f22e16a13e3ea8de8d463df61a98fd`. The final implementation [CI run](https://github.com/phdah/sql-semantic-protocol/actions/runs/40242206911) passed all 9 required jobs, including formatting, strict Clippy, default and no-default full tests, documentation and actual dbt Core E2E.
+
+**TASK-140 is Done pending PR #149 merge.** This does not sign off TASK-77's original six AC, which need an independent parent review after all four child PRs are merged. The TASK-91 release gate remains independent.
+
+## Handoff
+
+Merge [PR #149](https://github.com/phdah/sql-semantic-protocol/pull/149) only after its metadata-only final-head CI succeeds. Then independently reconcile the merged TASK-137..140 evidence against TASK-77 AC #1..#6 and keep the parent open until all gates are verified.
