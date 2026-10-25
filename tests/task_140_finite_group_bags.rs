@@ -46,6 +46,21 @@ fn duckdb_bag(sql: &str) -> Vec<BTreeMap<String, LiteralValue>> {
     .expect("complete native bag")
 }
 
+fn native_source_bag(sql: &str) -> Vec<BTreeMap<String, LiteralValue>> {
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    let mut stmt = db.prepare(sql).expect("literal physical source SQL");
+    stmt.query_map([], |r| {
+        let v = r.get::<_, Option<i64>>(0)?;
+        Ok(BTreeMap::from([(
+            "v".to_string(),
+            v.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+        )]))
+    })
+    .expect("native complete physical rows")
+    .collect::<Result<Vec<_>, _>>()
+    .expect("all source rows")
+}
+
 fn sorted(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
     let mut keys = rows
         .iter()
@@ -159,6 +174,25 @@ fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() 
     );
     assert_eq!(proof.physical_inputs["left"].len(), 3);
     assert_eq!(proof.physical_inputs["right"].len(), 3);
+    assert_eq!(
+        sorted(&proof.physical_inputs["left"]),
+        sorted(&native_source_bag("SELECT v FROM UNNEST([1,1,2]) AS t(v)"))
+    );
+    assert_eq!(
+        sorted(&proof.physical_inputs["right"]),
+        sorted(&native_source_bag("SELECT v FROM (VALUES (1),(1),(2)) AS t(v)"))
+    );
+    assert_eq!(
+        proof.joined_selected,
+        [
+            ["left/unnest:1".into(), "right/values:0".into()],
+            ["left/unnest:1".into(), "right/values:1".into()],
+            ["left/unnest:2".into(), "right/values:0".into()],
+            ["left/unnest:2".into(), "right/values:1".into()],
+            ["left/unnest:3".into(), "right/values:2".into()]
+        ],
+        "every physical matched pair has deterministic provenance"
+    );
     assert_eq!(proof.joined_selected.len(), 5);
     assert_eq!(proof.joined_not_true.len(), 4);
     assert_eq!(proof.terminal_column_types["v"], FiniteColumnType::Integer);
