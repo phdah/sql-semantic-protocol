@@ -1,3 +1,5 @@
+TASK-134 direct page deduplication: `src/protocol/aggregation.rs` owns parser-independent DISTINCT and DISTINCT ON keys; `src/analysis/sets.rs` normalizes bounded direct ORDER/FETCH/TOP with ties; `src/physical_realization/page_bags.rs` proves complete physical DISTINCT bags, exact per-value contributors and full cutoff peer-group membership. DISTINCT ON without a deterministic selected output fails closed unless every candidate projects the same tuple. `src/emission/aggregation_sets.rs`, `schema/protocol.schema.json` and `docs/protocol.md` own the optional wire-level WITH TIES flag. Mandatory, negative, dialect and adapter oracles are in `tests/task_134_{with_ties,frozen_matrix,adapter_parity,dbt_core_e2e}.rs`; `docs/task-134-acceptance-freeze.json` is the owned acceptance inventory. Parent TASK-76 remains separate.
+
 # Code map: find the smallest canonical owner
 
 TASK-133 deterministic direct page bounds: `src/analysis/sets.rs` owns shared
