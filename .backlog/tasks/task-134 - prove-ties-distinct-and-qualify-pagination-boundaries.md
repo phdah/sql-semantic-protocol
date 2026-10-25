@@ -1,10 +1,10 @@
 ---
 id: TASK-134
 title: Prove ties DISTINCT and QUALIFY pagination boundaries
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-25'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,12 @@ type: feature
 ## Next
 
 Next: [TASK-135](task-135%20-%20compose-nested-page-boundaries-through-cte-and-sets.md), only after this child is Done and merged.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Task-owned acceptance matrix: `docs/task-134-acceptance-freeze.json` (v1; executable verification pending).
+- Canonical direct WITH TIES cutoff-peer selection and independent DuckDB RANK equivalence added.
+- DISTINCT/DISTINCT ON exact physical deduplication, full parser/adapter matrix, dbt Core execution, strict CI and independent review are not yet signed off. No AC is marked Done.
+- TASK-76 parent remains open. Do not merge until all mandatory cases and original ACs are verified.
+<!-- SECTION:NOTES:END -->
