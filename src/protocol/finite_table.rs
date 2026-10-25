@@ -184,19 +184,25 @@ impl FiniteTable {
         {
             return None;
         }
-        let expected = left.rows.iter().enumerate().flat_map(|(l, a)| {
-            right.rows.iter().enumerate().filter_map(move |(r, b)| {
-                (a[0].literal_type() != LiteralType::Null
-                    && b[0].literal_type() != LiteralType::Null
-                    && a[0] == b[0])
-                    .then_some([l, r])
+        let expected = left
+            .rows
+            .iter()
+            .enumerate()
+            .flat_map(|(l, a)| {
+                right.rows.iter().enumerate().filter_map(move |(r, b)| {
+                    (a[0].literal_type() != LiteralType::Null
+                        && b[0].literal_type() != LiteralType::Null
+                        && a[0] == b[0])
+                        .then_some([l, r])
+                })
             })
-        }).collect::<Vec<_>>();
+            .collect::<Vec<_>>();
         if expected != pairs
             || pairs.len() != self.rows.len()
-            || pairs.iter().zip(&self.rows).any(|([l, _], row)| {
-                left.rows.get(*l) != Some(row)
-            })
+            || pairs
+                .iter()
+                .zip(&self.rows)
+                .any(|([l, _], row)| left.rows.get(*l) != Some(row))
         {
             return None;
         }
@@ -207,7 +213,9 @@ impl FiniteTable {
 
     /// Exact independent physical inputs to this joined bag.
     pub fn joined_sources(&self) -> Option<(&FiniteTable, &FiniteTable)> {
-        self.joined_sources.as_ref().map(|(left, right)| (left.as_ref(), right.as_ref()))
+        self.joined_sources
+            .as_ref()
+            .map(|(left, right)| (left.as_ref(), right.as_ref()))
     }
 
     /// Physical row pairs selected by the exact join, in output-bag order.
