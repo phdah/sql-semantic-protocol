@@ -67,7 +67,10 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
     assert_eq!(matrix["owner"], "TASK-140");
     let mut checked = 0;
     let mut mismatches = Vec::new();
-    for case in matrix["variants"].as_array().expect("finite variant matrix") {
+    for case in matrix["variants"]
+        .as_array()
+        .expect("finite variant matrix")
+    {
         let sql = case["sql"].as_str().expect("SQL");
         for cell in case["parser_cells"].as_array().expect("13 dialect cells") {
             let dialect = cell["dialect"].as_str().expect("project dialect");
@@ -91,15 +94,30 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
         if adapter_cells[1]["classification"] != observed_dbt {
             mismatches.push(format!("{} / dbt: {observed_dbt}", case["id"]));
         }
-        assert_eq!(adapter_cells[2]["classification"], "inapplicable_without_literal_rows");
+        assert_eq!(
+            adapter_cells[2]["classification"],
+            "inapplicable_without_literal_rows"
+        );
         assert_eq!(adapter_cells[2]["certified"], true);
         if case["kind"] == "conditional" {
             assert_eq!(case["owner"], "TASK-140");
-            assert_ne!(proof_status(sql, duckdb), "exact", "{sql}: conditional cannot be exact");
+            assert_ne!(
+                proof_status(sql, duckdb),
+                "exact",
+                "{sql}: conditional cannot be exact"
+            );
         }
     }
-    assert_eq!(checked, matrix["verification"]["parser_cells_to_verify"].as_u64().unwrap() as usize);
-    assert!(mismatches.is_empty(), "frozen cells differ from observed parser/adapter behavior: {mismatches:?}");
+    assert_eq!(
+        checked,
+        matrix["verification"]["parser_cells_to_verify"]
+            .as_u64()
+            .unwrap() as usize
+    );
+    assert!(
+        mismatches.is_empty(),
+        "frozen cells differ from observed parser/adapter behavior: {mismatches:?}"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -112,7 +130,8 @@ fn real_odcs_schema_does_not_invent_finite_array_or_values_rows() {
         include_str!("fixtures/odcs/commerce.odcs.yaml"),
         "postgresql",
         &catalog,
-    ).expect("real ODCS contract");
+    )
+    .expect("real ODCS contract");
     assert!(!metadata.source_schemas().is_empty());
     let sql = "SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v";
     assert_eq!(proof_status(sql, "duckdb"), "residual");
