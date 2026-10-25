@@ -215,3 +215,18 @@ fn non_equality_join_and_unproven_multiple_sources_fail_closed() {
         ), "{sql}: only attested exact join can be exact");
     }
 }
+
+
+#[test]
+fn diagnostic_join_ast_for_task140() {
+    use sqlparser::ast::{SetExpr, Statement};
+    use sqlparser::dialect::DuckDbDialect;
+    use sqlparser::parser::Parser;
+    let sql = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v";
+    let ast = Parser::parse_sql(&DuckDbDialect {}, sql).expect("AST");
+    let Statement::Query(query) = &ast[0] else { panic!("not SELECT"); };
+    let SetExpr::Select(select) = query.body.as_ref() else { panic!("not select"); };
+    let from = &select.from[0];
+    panic!("TASK140_AST left={:?}, join={:?}, projection={:?}, group={:?}",
+        from.relation, from.joins, select.projection, select.group_by);
+}
