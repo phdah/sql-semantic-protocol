@@ -23,6 +23,16 @@ are certified, and NULL ordering is explicit wherever NULL occurs. Direct WITH T
 selects the entire boundary peer group without inventing a tie breaker; a tied
 row's reported order position is its peer group's lower rank. Unresolved ties
 under ordinary pages are **Residual**. Contradictory enforced source schema is **Impossible**.
+For a direct one-source `SELECT DISTINCT`, the complete physical bag is
+deduplicated by SQL not-distinct tuple equality, including NULL, before the
+final page bound. A source row may contribute to the selected tuple even when
+its identical peers do not create additional terminal multiplicity.
+`terminal_contributors` preserves each terminal row's attested physical
+provenance. `DISTINCT ON` keys are read from the canonical aggregation;
+non-key projected differences require a deterministic, attested leading-key
+ORDER BY or return Residual. Exactness here certifies the *output bag*, not
+unspecified order or the identity of an arbitrary SQL peer winner.
+
 This operator-local proof does not certify nested pagination, pagination after
 JOIN/GROUP/QUALIFY, vendor execution or TASK-76 parent acceptance.
 
