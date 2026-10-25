@@ -337,3 +337,13 @@ fn frozen_mandatory_cases_reconcile_typed_null_domains_inclusive_bounds_and_full
         "all frozen mandatory typed-domain specifications"
     );
 }
+
+#[test]
+fn bogus_source_alias_must_not_be_certified_as_an_exact_grouped_bag() {
+    let sql = "SELECT wrong.v, COUNT(*) AS n FROM UNNEST([1,2]) AS t(v) GROUP BY wrong.v";
+    let (bundle, target) = analyzed(sql, "duckdb");
+    assert!(matches!(
+        physical_finite_table_plan(&bundle, &target, None),
+        PhysicalFiniteTableProof::Residual { .. }
+    ));
+}
