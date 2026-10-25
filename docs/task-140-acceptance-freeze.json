@@ -68,85 +68,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -166,85 +180,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -307,85 +335,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -453,85 +495,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -548,85 +604,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -704,85 +774,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -798,85 +882,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": false,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
+          "classification": "residual",
           "certified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -893,85 +991,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "residual",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     },
@@ -999,85 +1111,99 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "postgresql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "sqlite",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "snowflake",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "redshift",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "bigquery",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "ansi",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         },
         {
           "dialect": "duckdb",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "pending",
-          "certified": false
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "pending",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
-          "classification": "pending",
-          "certified": false
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
         }
       ]
     }
@@ -1110,11 +1236,18 @@
     "dbt_e2e": false,
     "ci_signoff": false,
     "task_done": false,
-    "observed_dialect_matrix": false
+    "observed_dialect_matrix": true,
+    "parser_cells_observed": 117,
+    "parser_cells_currently_certified": 74,
+    "join_mandatory_residual_cells": 43,
+    "exact_parser_cells": 39,
+    "residual_parser_cells": 69,
+    "parser_boundary_cells": 9
   },
   "notes": [
     "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
     "Source-free UNNEST and VALUES group cases are the initial implementation slice; mandatory JOIN fanout remains a blocking implementation gap until proved from the same complete source bag.",
-    "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests."
+    "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests.",
+    "All current dialect statuses were directly observed in GitHub CI run 40239974202; mandatory JOIN residuals are intentionally uncertified until implementation is fixed and rerun."
   ]
 }
