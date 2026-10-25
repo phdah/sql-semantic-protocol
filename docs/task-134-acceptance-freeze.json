@@ -2,7 +2,7 @@
   "task": "TASK-134",
   "parent": "TASK-76",
   "version": 1,
-  "status": "frozen_before_semantic_implementation",
+  "status": "verified_bounded_child_pending_merge",
   "fixture_ids": [
     "76-C134-P",
     "76-C134-N"
@@ -128,7 +128,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -225,7 +225,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -317,7 +317,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -400,7 +400,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -483,7 +483,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -580,7 +580,7 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending",
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -627,7 +627,7 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending",
+      "validation": "verified_typed_residual_owner_reviewed",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -690,7 +690,7 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending",
+      "validation": "verified_typed_residual_owner_reviewed",
       "complete_physical_source": {
         "relation": "s",
         "columns": [
@@ -792,7 +792,7 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending",
+      "validation": "verified_typed_residual_owner_reviewed",
       "source_relation": "s",
       "column_instances": [
         "s.k"
@@ -825,11 +825,23 @@
     }
   ],
   "signoff": {
-    "all_mandatory_exact": false,
-    "all_dialect_cells_verified": false,
-    "all_adapter_cells_verified": false,
-    "all_ci_green": false,
-    "reviewed": false
+    "all_mandatory_exact": true,
+    "all_dialect_cells_verified": true,
+    "all_adapter_cells_verified": true,
+    "all_ci_green": true,
+    "reviewed": true,
+    "mandatory_exact_cases": 6,
+    "reviewed_conditional_cases": 3,
+    "parser_exact_cells": 78,
+    "parser_residual_cells": 39,
+    "adapter_cells": 27,
+    "dbt_core_execution": "passed",
+    "verified_code_head": "64bb50288fcc58704f403718a65ca89f62b8255a",
+    "verified_ci_run_id": 40228675764,
+    "verified_checks": 9,
+    "final_pr_head_gate": "verify final metadata-only head CI before merge",
+    "parent_task_signed_off": false,
+    "release_approved": false
   },
   "parser_evidence": {
     "source": "CI run 40227228471, executed task_134_frozen_matrix.rs across 13 sqlparser dialects",
