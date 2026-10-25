@@ -118,11 +118,13 @@ fn distinct_on_tied_nonkey_projection_is_residual() {
     );
 }
 
-
 #[test]
 fn distinct_page_must_not_split_a_nonunique_output_sort_peer_group() {
     let (uncertain, _, _) = prove("SELECT DISTINCT k, v FROM s ORDER BY k LIMIT 1");
-    assert!(matches!(uncertain, PhysicalFinitePageProof::Residual { .. }), "{uncertain:?}");
+    assert!(
+        matches!(uncertain, PhysicalFinitePageProof::Residual { .. }),
+        "{uncertain:?}"
+    );
 
     let (certain, _, _) = prove("SELECT DISTINCT k, v FROM s ORDER BY k LIMIT 2");
     let PhysicalFinitePageProof::Exact(exact) = certain else {
@@ -130,7 +132,8 @@ fn distinct_page_must_not_split_a_nonunique_output_sort_peer_group() {
     };
     assert_eq!(exact.terminal.len(), 2);
     assert_eq!(exact.rows.iter().filter(|row| row.survives).count(), 2);
-    assert!(exact.terminal.iter().all(|row|
-        matches!(row.get("k"), Some(LiteralValue::Number(k)) if k == "1")
-    ));
+    assert!(exact
+        .terminal
+        .iter()
+        .all(|row| matches!(row.get("k"), Some(LiteralValue::Number(k)) if k == "1")));
 }
