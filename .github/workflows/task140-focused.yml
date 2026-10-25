@@ -1,0 +1,21 @@
+name: Task 140 focused debug
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/task_140_*.rs'
+      - 'docs/task-140-acceptance-freeze.json'
+      - '.github/workflows/task140-focused.yml'
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable Rust
+        run: rustup toolchain install stable --profile minimal
+      - name: Task 140 public integration
+        run: cargo test --test task_140_finite_group_bags -- --nocapture
+      - name: Task 140 parser and dbt matrix
+        run: cargo test --test task_140_dialect_adapter_matrix -- --nocapture
