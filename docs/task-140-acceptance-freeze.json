@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "owner": "TASK-140",
+  "parent": "TASK-77",
+  "fixture_ids": [
+    "77-C140-P",
+    "77-C140-N"
+  ],
+  "status": "implementation_in_progress",
+  "definition_of_done": "No mandatory cell may be signed off without complete exact domain, physical bag, adapter and native SQL oracle",
+  "variants": [
+    {
+      "id": "77-C140-P-GROUP",
+      "family": "unnest_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "unnest:1",
+          "v": 1
+        },
+        {
+          "id": "unnest:2",
+          "v": 1
+        },
+        {
+          "id": "unnest:3",
+          "v": 2
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 2,
+          "contributors": [
+            "unnest:1",
+            "unnest:2"
+          ]
+        },
+        {
+          "v": 2,
+          "n": 1,
+          "contributors": [
+            "unnest:3"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "value 3 is absent from entire closed input group bag"
+    },
+    {
+      "id": "77-C140-N-ABSENCE",
+      "family": "unnest_group_absent",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": "77-C140-P-GROUP",
+      "terminal": "77-C140-P-GROUP",
+      "wanted": {
+        "v": 3,
+        "n": 1
+      },
+      "positive": "IMPOSSIBLE",
+      "not_true": "physical source bag contains no v=3"
+    },
+    {
+      "id": "77-C140-P-VALUES",
+      "family": "values_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM (VALUES (1),(1),(NULL)) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "values:0",
+          "v": 1
+        },
+        {
+          "id": "values:1",
+          "v": 1
+        },
+        {
+          "id": "values:2",
+          "v": null
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 2,
+          "contributors": [
+            "values:0",
+            "values:1"
+          ]
+        },
+        {
+          "v": null,
+          "n": 1,
+          "contributors": [
+            "values:2"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            null
+          ],
+          "nullable": true
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "NULL forms a single group"
+    },
+    {
+      "id": "77-C140-P-JOIN",
+      "family": "unnest_join_group",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "unnest:1",
+          "v": 1
+        },
+        {
+          "id": "unnest:2",
+          "v": 1
+        },
+        {
+          "id": "unnest:3",
+          "v": 2
+        },
+        {
+          "id": "values:0",
+          "v": 1
+        },
+        {
+          "id": "values:1",
+          "v": 1
+        },
+        {
+          "id": "values:2",
+          "v": 2
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 4
+        },
+        {
+          "v": 2,
+          "n": 1
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            4
+          ],
+          "nullable": false
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "NULL equality must reject nonmatches"
+    },
+    {
+      "id": "77-C140-C-OPAQUE",
+      "family": "opaque_source",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v",
+      "kind": "conditional",
+      "terminal": null,
+      "positive": "RESIDUAL",
+      "not_true": "No typed closed-world array evidence",
+      "owner": "TASK-140",
+      "release_disposition": "pending review of missing source evidence"
+    }
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_sources": [
+    "direct_sql",
+    "compiled_dbt",
+    "odcs"
+  ],
+  "verification": {
+    "semantic_exact_cases_verified": 0,
+    "mandatory_cases_to_verify": 4,
+    "parser_cells_to_verify": 65,
+    "adapter_cells_to_verify": 15,
+    "dbt_e2e": false,
+    "ci_signoff": false,
+    "task_done": false
+  },
+  "notes": [
+    "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
+    "Source-free UNNEST and VALUES group cases are the initial implementation slice; mandatory JOIN fanout remains a blocking implementation gap until proved from the same complete source bag.",
+    "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests."
+  ]
+}
