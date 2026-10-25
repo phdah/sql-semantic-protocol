@@ -392,7 +392,11 @@ pub(super) fn analyze_direct_row_shaping(
         || select.from.len() != 1
         || !matches!(
             &select.from[0].relation,
-            TableFactor::Table { args: None, sample: None, .. }
+            TableFactor::Table {
+                args: None,
+                sample: None,
+                ..
+            }
         )
         || !select.from[0].joins.is_empty()
         || select.selection.is_some()
