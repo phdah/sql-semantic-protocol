@@ -158,12 +158,15 @@ fn ordinary_fetch_must_not_pick_an_arbitrary_tied_identity() {
     assert!(matches!(proof, PhysicalFinitePageProof::Residual { .. }));
 }
 
-
 fn observed_bag(proof: &PhysicalFinitePageProof) -> Vec<String> {
     let PhysicalFinitePageProof::Exact(exact) = proof else {
         panic!("expected exact distinct bag, got {proof:?}");
     };
-    let mut bag = exact.terminal.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut bag = exact
+        .terminal
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     bag.sort();
     bag
 }
@@ -175,16 +178,28 @@ fn duckdb_distinct(sql: &str, values: &[Option<i64>]) -> Vec<String> {
         db.execute_batch(&format!(
             "INSERT INTO s VALUES ({})",
             value.map_or("NULL".to_string(), |v| v.to_string())
-        )).unwrap();
+        ))
+        .unwrap();
     }
-    let native = db.prepare(sql).unwrap().query_map([], |row| row.get::<_, Option<i64>>(0))
-        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
-    let mut bag = native.into_iter().map(|value| {
-        format!("{:?}", BTreeMap::from([(
-            "k".to_string(),
-            value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-        )]))
-    }).collect::<Vec<_>>();
+    let native = db
+        .prepare(sql)
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    let mut bag = native
+        .into_iter()
+        .map(|value| {
+            format!(
+                "{:?}",
+                BTreeMap::from([(
+                    "k".to_string(),
+                    value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                )])
+            )
+        })
+        .collect::<Vec<_>>();
     bag.sort();
     bag
 }
@@ -195,7 +210,9 @@ fn distinct_eliminates_duplicate_values_but_retains_both_source_contributors() {
     let values = [Some(1), Some(1), Some(2), Some(3)];
     let (proof, _) = prove(sql, &values);
     assert_eq!(observed_bag(&proof), duckdb_distinct(sql, &values));
-    let PhysicalFinitePageProof::Exact(exact) = proof else { unreachable!() };
+    let PhysicalFinitePageProof::Exact(exact) = proof else {
+        unreachable!()
+    };
     assert_eq!(exact.terminal.len(), 3);
     assert_eq!(exact.rows.iter().filter(|row| row.survives).count(), 4);
     assert_eq!(exact.terminal_contributors[0], vec!["s#0", "s#1"]);
@@ -210,7 +227,9 @@ fn distinct_on_identical_projection_proves_complete_bag_without_chosen_identity(
     let values = [Some(1), Some(1), Some(2)];
     let (proof, _) = prove(sql, &values);
     assert_eq!(observed_bag(&proof), duckdb_distinct(sql, &values));
-    let PhysicalFinitePageProof::Exact(exact) = proof else { unreachable!() };
+    let PhysicalFinitePageProof::Exact(exact) = proof else {
+        unreachable!()
+    };
     assert_eq!(exact.terminal.len(), 2);
     assert_eq!(exact.terminal_contributors[0], vec!["s#0", "s#1"]);
     assert_eq!(exact.terminal_contributors[1], vec!["s#2"]);
