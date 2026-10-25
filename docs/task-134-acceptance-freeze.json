@@ -590,7 +590,45 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "complete_physical_source": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          },
+          {
+            "name": "v",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ],
+        "rows": [
+          {
+            "id": "s#0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "s#1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "s#2",
+            "k": 2,
+            "v": 30
+          }
+        ],
+        "expected_truth": "unproved winner for key 1; DISTINCT ON output (1,10) or (1,20) remains conditional",
+        "terminal_domain": {
+          "kind": "unknown",
+          "reason": "non-key value depends on unresolved peer selection"
+        },
+        "verified_regression": "tests/task_134_distinct_on.rs::distinct_on_tied_nonkey_projection_is_residual"
+      }
     },
     {
       "id": "76-C134-N-qualify",
