@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-140",
   "parent": "TASK-77",
   "fixture_ids": [
@@ -745,7 +745,27 @@
           ]
         ],
         "truth": "INNER '=' selects SQL TRUE only; FALSE and UNKNOWN are NOT TRUE",
-        "complete_cartesian_count": 9
+        "complete_cartesian_count": 9,
+        "unknown": [],
+        "false": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ]
+        ],
+        "three_valued_law": "Every candidate pair is exactly one of TRUE, FALSE, UNKNOWN; NOT TRUE is FALSE ∪ UNKNOWN"
       },
       "expected_leaf_ids": {
         "left": [
@@ -1160,7 +1180,56 @@
           ]
         ],
         "truth": "INNER '=' selects SQL TRUE only; FALSE and UNKNOWN are NOT TRUE",
-        "complete_cartesian_count": 16
+        "complete_cartesian_count": 16,
+        "unknown": [
+          [
+            "left/unnest:1",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:3"
+          ]
+        ],
+        "false": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ]
+        ],
+        "three_valued_law": "Every candidate pair is exactly one of TRUE, FALSE, UNKNOWN; NOT TRUE is FALSE ∪ UNKNOWN"
       },
       "expected_leaf_ids": {
         "left": [
@@ -1599,6 +1668,7 @@
     "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests.",
     "All current dialect statuses were directly observed in GitHub CI run 40239974202; mandatory JOIN residuals are intentionally uncertified until implementation is fixed and rerun.",
     "The join positive and nullable cases list all physical TRUE and NOT TRUE identity pairs (9 and 16 Cartesian opportunities) with explicit NULL UNKNOWN rejections and inclusive typed terminal domain bounds.",
-    "CI focused run 40241037204 observed exact direct/compiled dbt join and nullable/reversed variants for the 11 compatible parser dialect identities; SQLite/MSSQL native UNNEST syntax is a separately owned, noncertified conditional parser/engine law."
+    "CI focused run 40241037204 observed exact direct/compiled dbt join and nullable/reversed variants for the 11 compatible parser dialect identities; SQLite/MSSQL native UNNEST syntax is a separately owned, noncertified conditional parser/engine law.",
+    "The physical proof independently classifies every matched and nonselected join pair as SQL TRUE, FALSE or UNKNOWN, and confirms NOT TRUE is exactly FALSE union UNKNOWN."
   ]
 }
