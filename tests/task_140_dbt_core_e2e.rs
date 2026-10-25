@@ -86,6 +86,8 @@ fn compiled_dbt_fanout_and_join_preserve_full_physical_and_terminal_bags() {
         if joined {
             assert_eq!(proof.joined_selected.len(), 5);
             assert_eq!(proof.joined_not_true.len(), 4);
+            assert_eq!(proof.joined_false.len(), 4);
+            assert!(proof.joined_unknown.is_empty());
             assert_eq!(proof.physical_inputs["left"].len(), 3);
             assert_eq!(proof.physical_inputs["right"].len(), 3);
         } else {
@@ -131,6 +133,8 @@ fn compiled_dbt_fanout_and_join_preserve_full_physical_and_terminal_bags() {
         assert_eq!(proof.contributors, other.contributors);
         assert_eq!(proof.joined_selected, other.joined_selected);
         assert_eq!(proof.joined_not_true, other.joined_not_true);
+        assert_eq!(proof.joined_false, other.joined_false);
+        assert_eq!(proof.joined_unknown, other.joined_unknown);
         assert_eq!(proof.terminal_domains, other.terminal_domains);
     }
 }
