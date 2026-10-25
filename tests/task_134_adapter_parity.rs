@@ -3,11 +3,10 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    dialect_from_name, parse_dbt_manifest, parse_odcs_yaml,
-    physical_finite_page_bag_plan, ConfiguredSqlInput, LiteralValue,
-    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
+    parse_dbt_manifest, parse_odcs_yaml, physical_finite_page_bag_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -34,22 +33,36 @@ schema:
 "#,
         "postgresql",
         &known,
-    ).unwrap();
+    )
+    .unwrap();
     let external = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
     let direct_schema = RelationCatalog::from_schemas(&[RelationSchema::new(
         RELATION,
         vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-    ).unwrap()]).unwrap();
+    )
+    .unwrap()])
+    .unwrap();
 
     let parser = dialect_from_name("postgresql").unwrap();
     let mut checked = 0;
-    for case in inventory["cases"].as_array().unwrap().iter()
+    for case in inventory["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
         .filter(|case| case["classification"] == "mandatory")
     {
         let id = case["id"].as_str().unwrap();
-        let sql = case["sql"].as_str().unwrap().replace("FROM s", "FROM warehouse.raw.s");
+        let sql = case["sql"]
+            .as_str()
+            .unwrap()
+            .replace("FROM s", "FROM warehouse.raw.s");
         let inline = SqlInput::inline(&sql);
-        let configured = [ConfiguredSqlInput::new(id, &inline, "postgresql", parser.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            id,
+            &inline,
+            "postgresql",
+            parser.as_ref(),
+        )];
         let direct = analyze_configured_inputs_with_catalog(&configured, &direct_schema).unwrap();
         let odcs = analyze_configured_inputs_with_catalog(&configured, &external).unwrap();
 
@@ -99,18 +112,46 @@ schema:
                 panic!("{id}/{adapter}: missing exact physical bag: {proof:?}");
             };
             assert_eq!(exact.source, RELATION);
-            let mut terminal = exact.terminal.iter().map(|row| format!("{:?}", row.get("k"))).collect::<Vec<_>>();
+            let mut terminal = exact
+                .terminal
+                .iter()
+                .map(|row| format!("{:?}", row.get("k")))
+                .collect::<Vec<_>>();
             terminal.sort();
-            let mut expected = case["terminal_bag"].as_array().unwrap().iter().map(|v| {
-                format!("{:?}", Some(v.as_i64().map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))))
-            }).collect::<Vec<_>>();
+            let mut expected = case["terminal_bag"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| {
+                    format!(
+                        "{:?}",
+                        Some(
+                            v.as_i64()
+                                .map_or(LiteralValue::Null, |n| LiteralValue::Number(
+                                    n.to_string()
+                                ))
+                        )
+                    )
+                })
+                .collect::<Vec<_>>();
             expected.sort();
             assert_eq!(terminal, expected, "{id}/{adapter}: full terminal bag");
-            proofs.push(format!("{:?}", (exact.rows, exact.terminal, exact.terminal_domains, exact.terminal_contributors)));
+            proofs.push(format!(
+                "{:?}",
+                (
+                    exact.rows,
+                    exact.terminal,
+                    exact.terminal_domains,
+                    exact.terminal_contributors
+                )
+            ));
             checked += 1;
         }
         assert_eq!(proofs[0], proofs[1], "{id}: SQL/dbt canonical parity");
         assert_eq!(proofs[0], proofs[2], "{id}: SQL/ODCS canonical parity");
     }
-    assert_eq!(checked, 18, "six mandatory cases and three evidence adapters");
+    assert_eq!(
+        checked, 18,
+        "six mandatory cases and three evidence adapters"
+    );
 }
