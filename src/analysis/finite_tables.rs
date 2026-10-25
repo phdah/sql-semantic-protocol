@@ -18,7 +18,7 @@ fn ordinary_query_shape(query: &SqlQuery) -> bool {
         && query.pipe_operators.is_empty()
 }
 
-fn ordinary_select_shape(select: &Select) -> bool {
+fn ordinary_select_without_group_shape(select: &Select) -> bool {
     select.distinct.is_none()
         && select.top.is_none()
         && select.selection.is_none()
@@ -34,6 +34,10 @@ fn ordinary_select_shape(select: &Select) -> bool {
         && select.distribute_by.is_empty()
         && select.sort_by.is_empty()
         && select.value_table_mode.is_none()
+}
+
+fn ordinary_select_shape(select: &Select) -> bool {
+    ordinary_select_without_group_shape(select)
         && matches!(&select.group_by, GroupByExpr::Expressions(keys, modifiers)
             if keys.is_empty() && modifiers.is_empty())
 }
@@ -223,19 +227,10 @@ fn literal_table_generator_kind(name: &sqlparser::ast::ObjectName) -> Option<Fin
     }
 }
 
-fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
-    if !ordinary_select_shape(select)
-        || !matches!(select.projection.as_slice(), [item] if item.to_string() == "*")
-    {
-        return None;
-    }
-    let [from] = select.from.as_slice() else {
-        return None;
-    };
-    if !from.joins.is_empty() {
-        return None;
-    }
-    match &from.relation {
+// One authoritative AST boundary for a fully literal array generator, shared
+// between source-free SELECT * and a grouped SELECT using its complete bag.
+fn literal_array_source(factor: &TableFactor, dialect_name: &str) -> Option<FiniteTable> {
+    match factor {
         TableFactor::UNNEST {
             alias,
             array_exprs,
@@ -251,9 +246,6 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             FiniteTableKind::Unnest,
             dialect_name,
         ),
-        // sqlparser 0.58 may represent a source-free FROM UNNEST/EXPLODE as a
-        // Table with function arguments. Preserve the WITH ORDINALITY fact
-        // before ever considering this a material physical source.
         TableFactor::Table {
             name,
             alias,
@@ -309,6 +301,113 @@ fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
         }
         _ => None,
     }
+}
+
+fn unnest_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
+    if !ordinary_select_shape(select)
+        || !matches!(select.projection.as_slice(), [item] if item.to_string() == "*")
+    {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
+    literal_array_source(&from.relation, dialect_name)
+}
+
+// Prove only explicit single-key, source-free COUNT(*) grouping. These groups
+// preserve the whole typed input multiset; JOIN, HAVING and opaque generators
+// must remain outside this exact law until they have independent proofs.
+fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
+    if !ordinary_select_without_group_shape(select) {
+        return None;
+    }
+    let GroupByExpr::Expressions(keys, modifiers) = &select.group_by else {
+        return None;
+    };
+    let [Expr::Identifier(group_key)] = keys.as_slice() else {
+        return None;
+    };
+    if !modifiers.is_empty() {
+        return None;
+    }
+    let [
+        SelectItem::UnnamedExpr(Expr::Identifier(projected_key)),
+        SelectItem::ExprWithAlias {
+            expr: Expr::Function(aggregate),
+            alias,
+        },
+    ] = select.projection.as_slice() else {
+        return None;
+    };
+    if projected_key.value != group_key.value
+        || !aggregate.name.to_string().eq_ignore_ascii_case("count")
+        || aggregate.over.is_some()
+        || aggregate.filter.is_some()
+        || aggregate.null_treatment.is_some()
+        || !aggregate.within_group.is_empty()
+    {
+        return None;
+    }
+    let FunctionArguments::List(arguments) = &aggregate.args else {
+        return None;
+    };
+    if !arguments.clauses.is_empty()
+        || arguments.duplicate_treatment.is_some()
+        || !matches!(
+            arguments.args.as_slice(),
+            [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)]
+        )
+    {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
+    let source = literal_array_source(&from.relation, dialect_name)
+        .or_else(|| named_values_source(&from.relation))?;
+    let position = source
+        .columns()
+        .iter()
+        .position(|name| name == &group_key.value)?;
+    if position != 0 || source.columns().len() != 1 {
+        return None;
+    }
+    let mut groups: Vec<(LiteralExpression, Vec<usize>)> = Vec::new();
+    for (index, row) in source.rows().iter().enumerate() {
+        let value = row.get(position)?.clone();
+        if let Some((_, contributors)) = groups.iter_mut().find(|(key, _)| *key == value) {
+            contributors.push(index);
+        } else {
+            groups.push((value, vec![index]));
+        }
+    }
+    let mut rows = Vec::new();
+    let mut contributors = Vec::new();
+    for (value, indices) in groups {
+        let count = i128::try_from(indices.len()).ok()?;
+        rows.push(vec![
+            value,
+            LiteralExpression::new(
+                LiteralType::Integer,
+                LiteralValue::Number(count.to_string()),
+            ),
+        ]);
+        contributors.push(indices);
+    }
+    FiniteTable::new(
+        FiniteTableKind::Grouped,
+        vec![group_key.value.clone(), alias.value.clone()],
+        vec![source.column_types()[position], FiniteColumnType::Integer],
+        rows,
+    )?
+    .with_source(source, contributors)
 }
 
 fn explode_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
@@ -731,7 +830,8 @@ pub(super) fn source_free_finite_query(
     }
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
-        SetExpr::Select(select) => star_select(select)
+        SetExpr::Select(select) => grouped_select(select, dialect_name)
+            .or_else(|| star_select(select))
             .or_else(|| pivot_select(select))
             .or_else(|| unpivot_select(select))
             .or_else(|| unnest_select(select, dialect_name))
