@@ -332,10 +332,7 @@ fn finite_column_reference(expression: &Expr) -> Option<(Option<&str>, &str)> {
 // One INNER equijoin of exactly two complete, independently attested literal
 // source bags. Equality is over typed integer keys; SQL NULL is never TRUE.
 // The canonical Joined node holds both bags and all selected physical pairs.
-fn finite_join_source(
-    from: &TableWithJoins,
-    dialect_name: &str,
-) -> Option<(FiniteTable, String)> {
+fn finite_join_source(from: &TableWithJoins, dialect_name: &str) -> Option<(FiniteTable, String)> {
     let [join] = from.joins.as_slice() else {
         return None;
     };
@@ -344,17 +341,33 @@ fn finite_join_source(
     let right = literal_array_source(&join.relation, dialect_name)
         .or_else(|| named_values_source(&join.relation))?;
     let left_alias = match &from.relation {
-        TableFactor::UNNEST { alias: Some(alias), .. }
-        | TableFactor::Table { alias: Some(alias), .. }
-        | TableFactor::Function { alias: Some(alias), .. }
-        | TableFactor::Derived { alias: Some(alias), .. } => &alias.name.value,
+        TableFactor::UNNEST {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Table {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Function {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Derived {
+            alias: Some(alias), ..
+        } => &alias.name.value,
         _ => return None,
     };
     let right_alias = match &join.relation {
-        TableFactor::UNNEST { alias: Some(alias), .. }
-        | TableFactor::Table { alias: Some(alias), .. }
-        | TableFactor::Function { alias: Some(alias), .. }
-        | TableFactor::Derived { alias: Some(alias), .. } => &alias.name.value,
+        TableFactor::UNNEST {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Table {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Function {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Derived {
+            alias: Some(alias), ..
+        } => &alias.name.value,
         _ => return None,
     };
     if left_alias == right_alias || left.columns().len() != 1 || right.columns().len() != 1 {
@@ -364,18 +377,24 @@ fn finite_join_source(
         left: on_left,
         op: SqlBinaryOperator::Eq,
         right: on_right,
-    })) = &join.join_operator else {
-        return None;
-    };
-    let (Some((Some(first_alias), first_column)), Some((Some(second_alias), second_column))) =
-        (finite_column_reference(on_left), finite_column_reference(on_right))
+    })) = &join.join_operator
     else {
         return None;
     };
-    let forward = first_alias == left_alias && first_column == left.columns()[0]
-        && second_alias == right_alias && second_column == right.columns()[0];
-    let reverse = first_alias == right_alias && first_column == right.columns()[0]
-        && second_alias == left_alias && second_column == left.columns()[0];
+    let (Some((Some(first_alias), first_column)), Some((Some(second_alias), second_column))) = (
+        finite_column_reference(on_left),
+        finite_column_reference(on_right),
+    ) else {
+        return None;
+    };
+    let forward = first_alias == left_alias
+        && first_column == left.columns()[0]
+        && second_alias == right_alias
+        && second_column == right.columns()[0];
+    let reverse = first_alias == right_alias
+        && first_column == right.columns()[0]
+        && second_alias == left_alias
+        && second_column == left.columns()[0];
     if !forward && !reverse {
         return None;
     }
@@ -395,7 +414,8 @@ fn finite_join_source(
         left.columns().to_vec(),
         left.column_types().to_vec(),
         rows,
-    )?.with_join(left, right, pairs)?;
+    )?
+    .with_join(left, right, pairs)?;
     Some((joined, left_alias.clone()))
 }
 
@@ -460,10 +480,7 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
             return None;
         }
     }
-    let position = source
-        .columns()
-        .iter()
-        .position(|name| name == group_key)?;
+    let position = source.columns().iter().position(|name| name == group_key)?;
     if position != 0 || source.columns().len() != 1 {
         return None;
     }
