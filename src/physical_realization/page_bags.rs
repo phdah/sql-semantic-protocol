@@ -13,7 +13,7 @@ use std::cmp::Ordering;
 pub struct PhysicalPageRow {
     /// Stable physical identity. SQL duplicate values do not merge source rows.
     pub source_row_id: String,
-    /// Zero-based rank in the fully ordered source, independent of insertion order.
+    /// Zero-based beginning of the ORDER BY peer group (peers share the same rank).
     pub order_position: usize,
     /// Whether this row survives the complete OFFSET/LIMIT selection.
     pub survives: bool,
@@ -92,7 +92,7 @@ fn compare_ordered_rows(
 /// ordering and page boundaries are read from the canonical query statement.
 ///
 /// This deliberately refuses WHERE/JOIN/GROUP/QUALIFY, producer composition,
-/// nonintegral sort keys, ties and unproved implicit NULL ordering.
+/// nonintegral sort keys, ambiguous page-boundary ties and implicit NULL ordering.
 pub fn physical_finite_page_bag_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -202,20 +202,43 @@ pub fn physical_finite_page_bag_plan(
         rows.push((index, keys));
     }
     rows.sort_by(|left, right| compare_ordered_rows(&left.1, &right.1, &shaping.keys));
-    if rows
-        .windows(2)
-        .any(|pair| compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal)
+    if !shaping.with_ties
+        && rows
+            .windows(2)
+            .any(|pair| compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal)
     {
         return residual("non-unique ORDER BY keys do not establish exact physical survivors");
     }
+    if shaping.with_ties && shaping.offset != 0 {
+        return residual("WITH TIES after an OFFSET has no certified physical selection law");
+    }
+    // All members of the cutoff peer group survive. Stable physical order is
+    // used only for deterministic bag presentation, not to pick a SQL winner.
+    let cutoff_keys = if shaping.with_ties && shaping.limit > 0 {
+        rows.get(shaping.limit.saturating_sub(1))
+            .map(|(_, keys)| keys.as_slice())
+    } else {
+        None
+    };
 
     let mut selected = vec![None; snapshot.rows().len()];
     let mut terminal = Vec::new();
-    for (position, (source_index, _)) in rows.iter().enumerate() {
-        let survives = position >= shaping.offset && position - shaping.offset < shaping.limit;
+    let mut peer_start = 0;
+    for (position, (source_index, keys)) in rows.iter().enumerate() {
+        if position > 0
+            && compare_ordered_rows(&rows[position - 1].1, keys, &shaping.keys) != Ordering::Equal
+        {
+            peer_start = position;
+        }
+        let inside_limit = position >= shaping.offset
+            && position - shaping.offset < shaping.limit;
+        let boundary_peer = cutoff_keys.is_some_and(|cutoff| {
+            compare_ordered_rows(keys, cutoff, &shaping.keys) == Ordering::Equal
+        });
+        let survives = inside_limit || (shaping.with_ties && boundary_peer);
         selected[*source_index] = Some(PhysicalPageRow {
             source_row_id: format!("{}#{}", source.name(), source_index),
-            order_position: position,
+            order_position: peer_start,
             survives,
         });
         if !survives {
