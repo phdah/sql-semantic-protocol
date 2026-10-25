@@ -199,6 +199,8 @@ fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() 
     );
     assert_eq!(proof.joined_selected.len(), 5);
     assert_eq!(proof.joined_not_true.len(), 4);
+    assert_eq!(proof.joined_false.len(), 4);
+    assert!(proof.joined_unknown.is_empty(), "no nullable join keys");
     assert_eq!(proof.terminal_column_types["v"], FiniteColumnType::Integer);
     assert_eq!(proof.terminal_column_types["n"], FiniteColumnType::Integer);
     let (bundle, target) = analyzed(sql, "duckdb");
@@ -224,6 +226,12 @@ fn finite_join_null_keys_are_not_true_and_reversed_equality_is_equivalent() {
         assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
         assert_eq!(proof.joined_selected.len(), 5);
         assert_eq!(proof.joined_not_true.len(), 11);
+        assert_eq!(proof.joined_false.len(), 4);
+        assert_eq!(proof.joined_unknown.len(), 7);
+        assert_eq!(proof.joined_not_true.len(), proof.joined_false.len() + proof.joined_unknown.len());
+        assert!(proof.joined_unknown.iter().all(|pair| {
+            pair[0] == "left/unnest:4" || pair[1] == "right/values:3"
+        }));
         assert!(proof
             .joined_not_true
             .iter()
@@ -325,6 +333,8 @@ fn frozen_mandatory_cases_reconcile_typed_null_domains_inclusive_bounds_and_full
             };
             assert_eq!(proof.joined_selected, parse_pairs(&partition["selected"]));
             assert_eq!(proof.joined_not_true, parse_pairs(&partition["not_true"]));
+            assert_eq!(proof.joined_false, parse_pairs(&partition["false"]));
+            assert_eq!(proof.joined_unknown, parse_pairs(&partition["unknown"]));
             assert_eq!(
                 proof.joined_selected.len() + proof.joined_not_true.len(),
                 partition["complete_cartesian_count"].as_u64().unwrap() as usize
