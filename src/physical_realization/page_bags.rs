@@ -5,7 +5,7 @@
 
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteStatePlan};
 use super::*;
-use crate::protocol::{Expression, LiteralValue, ValueDomain};
+use crate::protocol::{Aggregation, Expression, LiteralValue, SetRowShaping, ValueDomain};
 use std::cmp::Ordering;
 
 /// One complete physical source row and its proven page membership.
@@ -32,6 +32,8 @@ pub struct PhysicalFinitePageExact {
     pub terminal: Vec<BTreeMap<String, LiteralValue>>,
     /// Exact per-column terminal value domains, including empty and NULL.
     pub terminal_domains: BTreeMap<String, ValueDomain>,
+    /// Source identities contributing to each terminal row (not a one-to-one map for DISTINCT).
+    pub terminal_contributors: Vec<Vec<String>>,
 }
 
 /// Complete evidence classification for direct single-source pagination.
@@ -118,22 +120,32 @@ pub fn physical_finite_page_bag_plan(
     let Some(query) = query_for(bundle, layer) else {
         return residual("page target has no canonical query");
     };
-    let Some(shaping) = query.row_shaping() else {
+    let shaping = query.row_shaping();
+    let distinct = query.aggregation().filter(|aggregation| {
+        aggregation.distinct() && aggregation.group_by().is_none()
+    });
+    if shaping.is_none() && distinct.is_none() {
         return residual("query has no normalized deterministic row-selection bounds");
-    };
+    }
     let [source] = query.sources() else {
         return residual("pagination requires a direct single source");
     };
     if snapshot.relation() != source.name()
         || !walker.sources.contains(source.name())
         || !query.joins().is_empty()
-        || query.aggregation().is_some()
+        || (query.aggregation().is_some() && distinct.is_none())
         || query.set_operation().is_some()
         || query.predicates().where_predicate().is_some()
         || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
         || !query.subquery_witnesses().is_empty()
-        || !query.diagnostics().is_empty()
+        || query.diagnostics().iter().any(|diagnostic| {
+            // Unbounded DISTINCT ON with identical output per group has an exact
+            // unordered *bag* even without an attested SQL sort direction.
+            distinct.is_none()
+                || shaping.is_some()
+                || diagnostic.code() != "unsupported_order_by"
+        })
     {
         return residual("query has unproved source identity or additional row shaping");
     }
@@ -165,11 +177,13 @@ pub fn physical_finite_page_bag_plan(
         }
         projection.push((column.name().to_string(), expr.name().to_string()));
     }
-    if projection.is_empty() || shaping.keys.is_empty() {
+    if projection.is_empty()
+        || (shaping.is_some_and(|shape| shape.keys.is_empty()))
+    {
         return residual("page has no certified output or order keys");
     }
     let mut sort_names = Vec::new();
-    for key in &shaping.keys {
+    for key in shaping.into_iter().flat_map(|shape| &shape.keys) {
         let Some((_, source_name)) = projection.get(key.index) else {
             return residual("ORDER BY refers to an absent projected column");
         };
@@ -189,7 +203,7 @@ pub fn physical_finite_page_bag_plan(
     let mut rows = Vec::<(usize, Vec<Option<i128>>)>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
         let mut keys = Vec::new();
-        for (key, source_name) in shaping.keys.iter().zip(&sort_names) {
+        for (key, source_name) in shaping.into_iter().flat_map(|shape| &shape.keys).zip(&sort_names) {
             let value = match super::rank_bags::key_value(row, source_name) {
                 Ok(value) => value,
                 Err(reason) => return residual(reason),
@@ -201,7 +215,23 @@ pub fn physical_finite_page_bag_plan(
         }
         rows.push((index, keys));
     }
-    rows.sort_by(|left, right| compare_ordered_rows(&left.1, &right.1, &shaping.keys));
+    if let Some(shaping) = shaping {
+        rows.sort_by(|left, right| compare_ordered_rows(&left.1, &right.1, &shaping.keys));
+    }
+    if let Some(aggregation) = distinct {
+        return prove_distinct_page(
+            walker.nodes,
+            source.name(),
+            snapshot,
+            &projection,
+            rows,
+            shaping,
+            aggregation,
+        );
+    }
+    let Some(shaping) = shaping else {
+        return residual("plain pagination requires a complete normalized row-shaping law");
+    };
     if !shaping.with_ties
         && rows.windows(2).any(|pair| {
             compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal
@@ -223,6 +253,7 @@ pub fn physical_finite_page_bag_plan(
 
     let mut selected = vec![None; snapshot.rows().len()];
     let mut terminal = Vec::new();
+    let mut terminal_contributors = Vec::new();
     let mut peer_start = 0;
     let mut previous_keys: Option<&[Option<i128>]> = None;
     for (position, (source_index, keys)) in rows.iter().enumerate() {
@@ -256,6 +287,7 @@ pub fn physical_finite_page_bag_plan(
             output.insert(output_name.clone(), value.clone());
         }
         terminal.push(output);
+        terminal_contributors.push(vec![format!("{}#{}", source.name(), source_index)]);
     }
     let Some(rows) = selected.into_iter().collect::<Option<Vec<_>>>() else {
         return residual("incomplete page identity coverage");
@@ -275,6 +307,166 @@ pub fn physical_finite_page_bag_plan(
         rows,
         terminal,
         terminal_domains,
+        terminal_contributors,
+    }))
+}
+
+
+#[derive(Debug)]
+struct DistinctGroup {
+    identity: Vec<LiteralValue>,
+    output: BTreeMap<String, LiteralValue>,
+    contributors: Vec<usize>,
+    ordering: Vec<Option<i128>>,
+}
+
+/// Evaluate SQL duplicate elimination over a complete physical bag, retaining
+/// all contributors instead of inventing a representative row for DISTINCT.
+fn prove_distinct_page(
+    nodes: Vec<PhysicalPlanNode>,
+    source: &str,
+    snapshot: &PhysicalWriteState,
+    projection: &[(String, String)],
+    ordered_rows: Vec<(usize, Vec<Option<i128>>)>,
+    shaping: Option<&SetRowShaping>,
+    aggregation: &Aggregation,
+) -> PhysicalFinitePageProof {
+    let on_columns = if aggregation.distinct_on().is_empty() {
+        projection.iter().map(|(output, _)| output.clone()).collect::<Vec<_>>()
+    } else {
+        let mut columns = Vec::new();
+        for expression in aggregation.distinct_on() {
+            let Expression::Column(column) = expression else {
+                return residual("DISTINCT ON needs direct projected source-column keys");
+            };
+            let Some((output, _)) = projection.iter().find(|(_, physical)| {
+                physical == column.name()
+                    && column.relation().is_none_or(|relation| relation == source)
+            }) else {
+                return residual("DISTINCT ON expression lacks an attested projected column");
+            };
+            if columns.contains(output) {
+                return residual("duplicate DISTINCT ON grouping key");
+            }
+            columns.push(output.clone());
+        }
+        columns
+    };
+    if on_columns.is_empty() {
+        return residual("DISTINCT has no certified grouping keys");
+    }
+    if !aggregation.distinct_on().is_empty() {
+        if let Some(shape) = shaping {
+            let leading = shape.keys.iter().take(on_columns.len())
+                .filter_map(|key| projection.get(key.index).map(|(name, _)| name.as_str()))
+                .collect::<Vec<_>>();
+            if leading != on_columns.iter().map(String::as_str).collect::<Vec<_>>() {
+                return residual("DISTINCT ON keys must lead the ORDER BY sequence");
+            }
+        }
+    }
+    let mut groups: Vec<DistinctGroup> = Vec::new();
+    for (index, ordering) in ordered_rows {
+        let Some(row) = snapshot.rows().get(index) else {
+            return residual("missing DISTINCT physical source row");
+        };
+        let mut output = BTreeMap::new();
+        for (output_name, source_name) in projection {
+            let Some(value) = row.values().get(source_name) else {
+                return residual("DISTINCT projection refers to absent physical column");
+            };
+            output.insert(output_name.clone(), value.clone());
+        }
+        let Some(identity) = on_columns.iter()
+            .map(|column| output.get(column).cloned())
+            .collect::<Option<Vec<_>>>() else {
+            return residual("DISTINCT ON grouping key missing from output");
+        };
+        if let Some(group) = groups.iter_mut().find(|group| group.identity == identity) {
+            if group.output != output {
+                if shaping.is_none_or(|shape| {
+                    compare_ordered_rows(&group.ordering, &ordering, &shape.keys) == Ordering::Equal
+                }) {
+                    return residual("DISTINCT ON has an ambiguous projected winner");
+                }
+                // Fully ordered DISTINCT ON chooses the first member only.
+                continue;
+            }
+            group.contributors.push(index);
+        } else {
+            groups.push(DistinctGroup {
+                identity,
+                output,
+                contributors: vec![index],
+                ordering,
+            });
+        }
+    }
+
+    // A SQL output bag is unordered. For bounded SELECTs the ORDER BY determines
+    // group order and the cutoff; for unbounded DISTINCT all groups contribute.
+    let cutoff = shaping.and_then(|shape| {
+        (shape.with_ties && shape.limit > 0)
+            .then(|| groups.get(shape.limit.saturating_sub(1)).map(|group| &group.ordering))
+            .flatten()
+    });
+    let mut survivors = vec![false; snapshot.rows().len()];
+    let mut positions = vec![0; snapshot.rows().len()];
+    let mut terminal = Vec::new();
+    let mut terminal_contributors = Vec::new();
+    let mut peer_start = 0;
+    let mut previous: Option<&[Option<i128>]> = None;
+    for (position, group) in groups.iter().enumerate() {
+        if shaping.is_some_and(|shape| {
+            previous.is_some_and(|prev| {
+                compare_ordered_rows(prev, &group.ordering, &shape.keys) != Ordering::Equal
+            })
+        }) {
+            peer_start = position;
+        }
+        previous = Some(&group.ordering);
+        let retained = shaping.is_none_or(|shape| {
+            let page = position >= shape.offset && position - shape.offset < shape.limit;
+            let peers = cutoff.is_some_and(|values| {
+                compare_ordered_rows(values, &group.ordering, &shape.keys) == Ordering::Equal
+            });
+            page || peers
+        });
+        for index in &group.contributors {
+            let Some(survives) = survivors.get_mut(*index) else {
+                return residual("DISTINCT contributor source identity missing");
+            };
+            *survives = retained;
+            let Some(rank) = positions.get_mut(*index) else {
+                return residual("DISTINCT source position missing");
+            };
+            *rank = peer_start;
+        }
+        if retained {
+            terminal.push(group.output.clone());
+            terminal_contributors.push(
+                group.contributors.iter().map(|idx| format!("{source}#{idx}")).collect()
+            );
+        }
+    }
+    let rows = survivors.into_iter().enumerate().map(|(idx, survives)| {
+        PhysicalPageRow {
+            source_row_id: format!("{source}#{idx}"),
+            order_position: positions[idx],
+            survives,
+        }
+    }).collect();
+    let mut terminal_domains = BTreeMap::new();
+    for (name, _) in projection {
+        terminal_domains.insert(name.clone(),
+            super::rank_bags::exact_domain(
+                terminal.iter().filter_map(|row| row.get(name).cloned())
+            )
+        );
+    }
+    PhysicalFinitePageProof::Exact(Box::new(PhysicalFinitePageExact {
+        nodes, source: source.to_string(), rows, terminal, terminal_domains,
+        terminal_contributors,
     }))
 }
 
