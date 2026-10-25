@@ -16,6 +16,9 @@ models:
 
 seeds:
   sql_semantic_protocol_e2e:
+    task133_source:
+      +column_types:
+        k: INTEGER
     task128_window_source:
       +column_types:
         id: INTEGER

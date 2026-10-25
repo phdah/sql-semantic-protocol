@@ -1229,6 +1229,10 @@
         "set_operation": {
           "$ref": "#/$defs/setOperation"
         },
+        "row_shaping": {
+          "description": "Canonical direct SELECT ordering and nonnegative page bounds; a physical proof must still certify ties, NULL sorting, and complete source rows.",
+          "$ref": "#/$defs/setOperation/properties/row_shaping"
+        },
         "diagnostics": {
           "type": "array",
           "items": {

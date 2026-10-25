@@ -250,6 +250,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "named_window_orders",
         "task128_groups",
         "task128_ntile",
+        "task133_pagination",
         "task137_literal_unnest",
         "task138_finite_star",
         "task138_fixed_pivot",
@@ -897,7 +898,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     ))
     .expect("expected final-outcome fixture should be valid JSON");
     // The legacy golden uses stable canonical layer IDs. Re-analyze the
-    // original dbt inventory without the separately validated TASK-128, TASK-137, TASK-138 and TASK-189
+    // original dbt inventory without the separately validated TASK-128, TASK-133, TASK-137, TASK-138 and TASK-189
     // models and seeds rather than weakening or rewriting existing expectations.
     let mut legacy_manifest_json = manifest_json.clone();
     legacy_manifest_json["nodes"]
@@ -907,6 +908,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             !id.ends_with(".task128_groups")
                 && !id.ends_with(".task128_ntile")
                 && !id.ends_with(".task128_window_source")
+                && !id.ends_with(".task133_pagination")
+                && !id.ends_with(".task133_source")
                 && !id.ends_with(".task189_decimal_windows")
                 && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task138_finite_star")
@@ -920,7 +923,9 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .as_object_mut()
         .unwrap()
         .retain(|_, source| {
-            source["name"] != "task189_decimal_source" && source["name"] != "task128_window_source"
+            source["name"] != "task189_decimal_source"
+                && source["name"] != "task128_window_source"
+                && source["name"] != "task133_source"
         });
     let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
     let mut legacy_catalog_json: Value = serde_json::from_str(&catalog_text).unwrap();
@@ -931,6 +936,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             !id.ends_with(".task128_groups")
                 && !id.ends_with(".task128_ntile")
                 && !id.ends_with(".task128_window_source")
+                && !id.ends_with(".task133_pagination")
+                && !id.ends_with(".task133_source")
                 && !id.ends_with(".task189_decimal_windows")
                 && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task138_finite_star")
@@ -944,7 +951,11 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .as_object_mut()
         .unwrap()
         .retain(|id, _| {
-            !id.ends_with(".task189_decimal_source") && !id.ends_with(".task128_window_source")
+            !id.ends_with(".task189_decimal_source")
+                && !id.ends_with(".task128_window_source")
+                && !id.ends_with(".task133_source")
+                && !id.ends_with(".task133_pagination")
+                && !id.ends_with(".task133_source")
         });
     let legacy_catalog = parse_dbt_catalog(&legacy_catalog_json.to_string()).unwrap();
     let legacy_bundle = analyze_dbt_artifacts(

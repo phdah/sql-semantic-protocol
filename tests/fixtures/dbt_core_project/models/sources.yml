@@ -34,6 +34,10 @@ sources:
             data_type: TIMESTAMP
           - name: region
             data_type: VARCHAR
+      - name: task133_source
+        columns:
+          - name: k
+            data_type: INTEGER
       - name: task128_window_source
         columns:
           - name: id

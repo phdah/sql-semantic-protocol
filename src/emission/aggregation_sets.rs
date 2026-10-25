@@ -44,6 +44,19 @@ pub(super) fn grouping_sets_to_value(
     })
 }
 
+/// Emit canonical ordering from the shared typed row-shaping contract.
+pub(super) fn row_shaping_to_value(shape: &crate::protocol::SetRowShaping) -> Value {
+    json!({
+        "keys": shape.keys.iter().map(|key| json!({
+            "position": key.index,
+            "descending": key.descending,
+            "nulls_first": key.nulls_first,
+        })).collect::<Vec<_>>(),
+        "offset": shape.offset,
+        "limit": shape.limit,
+    })
+}
+
 pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
     let (qualifying, non_qualifying) = operation.witness_directions();
     let mut value = json!({
@@ -68,15 +81,7 @@ pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
         }
     });
     if let Some(shape) = operation.row_shaping() {
-        value["row_shaping"] = json!({
-            "keys": shape.keys.iter().map(|key| json!({
-                "position": key.index,
-                "descending": key.descending,
-                "nulls_first": key.nulls_first,
-            })).collect::<Vec<_>>(),
-            "offset": shape.offset,
-            "limit": shape.limit,
-        });
+        value["row_shaping"] = row_shaping_to_value(shape);
     }
     value
 }

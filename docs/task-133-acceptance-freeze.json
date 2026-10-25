@@ -1,0 +1,1213 @@
+{
+  "version": 3,
+  "owner": "TASK-133",
+  "parent": "TASK-76",
+  "fixture_ids": [
+    "76-C133-P",
+    "76-C133-N"
+  ],
+  "contract": "A closed-world, single-source, plain projected SELECT; exact integer order keys and literal nonnegative row bounds. Any unsupported shape is explicitly non-exact. Nullable typed source evidence is required for conditional NULL-ordering residual fixtures; no implicit NOT NULL enforcement may be invented.",
+  "source_schema": {
+    "relation": "s",
+    "columns": [
+      {
+        "name": "k",
+        "type": "INTEGER",
+        "nullable": true
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "76-C133-P-limit-offset",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        2,
+        3
+      ],
+      "selected_source_ids": [
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "oracle": "duckdb",
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "positive_membership": {
+        "k": 2
+      },
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-P-fetch",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 2 ROWS ONLY",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "rejected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "oracle": "duckdb",
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k FETCH FIRST 2 ROWS ONLY",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive_membership": {
+        "k": 1
+      },
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-P-top",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT TOP 2 k FROM s ORDER BY k",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "rejected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "parser_dialect": "mssql",
+      "native_execution": "not_certified",
+      "oracle": "equivalent DuckDB LIMIT 2",
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_semantic_equivalent_limit",
+      "native_vendor_execution": {
+        "duckdb": "not_applicable_or_equivalence",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive_membership": {
+        "k": 1
+      },
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-N-zero",
+      "group": "76-C133-N",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 0",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "oracle": "duckdb",
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 0",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "positive_membership": null,
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-N-empty",
+      "group": "76-C133-N",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "source_bag": [],
+      "terminal_bag": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [],
+      "oracle": "duckdb",
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "positive_membership": null,
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-N-ties",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "source_bag": [
+        2,
+        2,
+        3
+      ],
+      "proof": "Residual",
+      "reason": "tied ORDER BY key does not determine physical survivor identity",
+      "owner": "TASK-133",
+      "disposition": "non-exact until attested tie break",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "conditional_nonexact_no_native_claim",
+      "native_vendor_execution": {
+        "duckdb": "not_applicable_or_equivalence",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed_residual_required",
+        "dbt_compiled": "typed_residual_required",
+        "odcs": "typed_residual_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "conditional row membership uncertified"
+        }
+      }
+    },
+    {
+      "id": "76-C133-N-nulls",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "source_bag": [
+        null,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "NULL ordering without explicit NULLS FIRST/LAST depends on dialect/session",
+      "owner": "TASK-133",
+      "disposition": "retain conditional",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "conditional_nonexact_no_native_claim",
+      "native_vendor_execution": {
+        "duckdb": "not_applicable_or_equivalence",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed_residual_required",
+        "dbt_compiled": "typed_residual_required",
+        "odcs": "typed_residual_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "conditional row membership uncertified"
+        }
+      }
+    },
+    {
+      "id": "76-C133-N-underordered",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "SELECT k FROM s LIMIT 1",
+      "source_bag": [
+        1,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "missing total ORDER BY",
+      "owner": "TASK-133",
+      "disposition": "retain conditional",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "conditional_nonexact_no_native_claim",
+      "native_vendor_execution": {
+        "duckdb": "not_applicable_or_equivalence",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed_residual_required",
+        "dbt_compiled": "typed_residual_required",
+        "odcs": "typed_residual_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "conditional row membership uncertified"
+        }
+      }
+    },
+    {
+      "id": "76-C133-N-producer",
+      "group": "76-C133-N",
+      "status": "conditional",
+      "sql": "WITH t AS (SELECT k FROM s WHERE k > 2) SELECT k FROM t ORDER BY k LIMIT 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "proof": "Residual",
+      "reason": "derived/CTE producer requires independently proved row-bag composition before outer ordering",
+      "owner": "TASK-135",
+      "disposition": "retain conditional for TASK-135",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "conditional_nonexact_no_native_claim",
+      "native_vendor_execution": {
+        "duckdb": "not_applicable_or_equivalence",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed_residual_required",
+        "dbt_compiled": "typed_residual_required",
+        "odcs": "typed_residual_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "conditional row membership uncertified"
+        }
+      }
+    },
+    {
+      "id": "76-C133-P-desc",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k DESC LIMIT 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        4,
+        3
+      ],
+      "selected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k DESC LIMIT 2",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            3,
+            4
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 4,
+            "inclusive": true
+          }
+        }
+      },
+      "positive_membership": {
+        "k": 4
+      },
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-P-alias",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k AS v FROM s ORDER BY v LIMIT 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "rejected_source_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "output_column": "v",
+      "oracle_sql": "SELECT k AS v FROM s ORDER BY v LIMIT 2",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "v": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive_membership": {
+        "v": 1
+      },
+      "negative_membership": {
+        "v": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-P-explicit-nulls",
+      "group": "76-C133-P",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k NULLS LAST LIMIT 2 OFFSET 1",
+      "source_bag": [
+        null,
+        1,
+        2
+      ],
+      "terminal_bag": [
+        2,
+        null
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#1"
+      ],
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k NULLS LAST LIMIT 2 OFFSET 1",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            null,
+            2
+          ],
+          "nullable": true,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive_membership": {
+        "k": 2
+      },
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    },
+    {
+      "id": "76-C133-N-offset-past",
+      "group": "76-C133-N",
+      "status": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 99",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "output_column": "k",
+      "oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 99",
+      "version": 3,
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "native_oracle": "duckdb_sql_complete_source_and_terminal",
+      "native_vendor_execution": {
+        "duckdb": "verified_by_task133_frozen_test",
+        "non_duckdb": "unexecuted_vendor_session_boundary",
+        "owner": "TASK-133",
+        "release_disposition": "conditional_not_native_certification"
+      },
+      "sql_truth_evidence": {
+        "positive": "selected source identities from complete ordered physical bag",
+        "not_true": "all source identities outside deterministic offset/limit interval or complete absent terminal value",
+        "duplicate": "every physical row keeps stable identity; ties are Residual"
+      },
+      "parser_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "canonical_exact_required",
+        "dbt_compiled": "canonical_exact_required",
+        "odcs": "canonical_exact_required"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "positive_membership": null,
+      "negative_membership": {
+        "k": 999999
+      },
+      "proof": "Exact"
+    }
+  ],
+  "acceptance_map": {
+    "1": [
+      "76-C133-P-limit-offset",
+      "76-C133-P-fetch",
+      "76-C133-P-top",
+      "76-C133-P-desc",
+      "76-C133-P-alias"
+    ],
+    "2": [
+      "76-C133-P-explicit-nulls",
+      "76-C133-N-zero",
+      "76-C133-N-empty",
+      "76-C133-N-offset-past",
+      "76-C133-N-ties",
+      "76-C133-N-nulls"
+    ],
+    "3": [
+      "tests/task_133_frozen_matrix.rs",
+      "tests/task_133_page_bags.rs",
+      "tests/task_133_dbt_core_e2e.rs"
+    ],
+    "4": [
+      "13 explicitly expected canonical parser cells per frozen case",
+      "3 explicitly expected equivalent schema adapter cells per frozen case",
+      "non-DuckDB native/vendor session laws uncertified"
+    ],
+    "5": [
+      "9/9 final-head CI checks",
+      "independent frozen source/terminal oracle and versioned audit",
+      "active schema and golden regression"
+    ]
+  },
+  "signoff": {
+    "complete": true,
+    "mandatory_verified": true,
+    "conditional_reviewed": true,
+    "final_semantic_head_ci_verified": true,
+    "final_head_metadata_ci_pending": true,
+    "open_issues": [],
+    "native_vendor_runtime_certified": [
+      "duckdb"
+    ],
+    "native_vendor_runtime_not_certified": [
+      "mssql",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "databricks",
+      "generic"
+    ],
+    "parent_signed_off": false
+  },
+  "preimplementation_freeze_review": "v1 and v2 preregistered the same 76-C133-P/N families. v3 completes mandatory source/output/membership and 13-dialect x 3-adapter cells; new oracle cases are explicit acceptance-hardening rather than silently expanding the parent",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs"
+  ],
+  "public_seams": [
+    "analyze_configured_inputs_with_catalog",
+    "physical_finite_page_bag_plan",
+    "physical_finite_page_membership_plan",
+    "to_bundle_json",
+    "independent_duckdb_full_source_and_terminal_bags",
+    "real_dbt_core_manifest_catalog_warehouse"
+  ],
+  "completeness": {
+    "mandatory_cases": 9,
+    "conditional_cases": 4,
+    "parser_cells": 169,
+    "adapter_cells": 39,
+    "mandatory_parser_cells": 117,
+    "mandatory_adapter_cells": 27
+  },
+  "source_observation": {
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40211219425",
+    "result": "all 13 original frozen SQL variants accepted by all 13 sqlparser dialect paths; 5 exact, 4 residual per dialect",
+    "native_vendor_approval": false
+  },
+  "independent_audit": "docs/task-133-acceptance-audit.md",
+  "semantic_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40212402845",
+  "pr": "https://github.com/phdah/sql-semantic-protocol/pull/147"
+}

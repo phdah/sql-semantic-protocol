@@ -368,12 +368,54 @@ pub(super) fn analyze_set_operand(expression: &SetExpr) -> SetOperand {
 
 /// Only attach row-shaping evidence that is independent of dialect defaults.
 /// An absent plan for a shaped query intentionally leaves set-level exactness false.
+/// Normalize bounded set-operator ordering from the final positional output.
 pub(super) fn analyze_set_row_shaping(
     query: &SqlQuery,
     branches: &[SetBranch],
 ) -> Option<crate::protocol::SetRowShaping> {
+    analyze_row_shaping(query, branches.first()?.output().columns(), None)
+}
+
+/// Normalize a plain SELECT's ordering and literal limit without embedding SQL ASTs in the
+/// protocol. This is only syntax evidence; physical exactness requires a complete source bag.
+pub(super) fn analyze_direct_row_shaping(
+    query: &SqlQuery,
+    output: &Output,
+) -> Option<crate::protocol::SetRowShaping> {
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    // A CTE, derived table, filter, join or aggregate has its own row-bag
+    // membership law. A direct page cannot be applied to its physical leaves.
+    if query.with.is_some()
+        || select.from.len() != 1
+        || !matches!(
+            &select.from[0].relation,
+            TableFactor::Table { sample: None, .. }
+        )
+        || !select.from[0].joins.is_empty()
+        || select.distinct.is_some()
+        || select.selection.is_some()
+        || select.having.is_some()
+        || select.qualify.is_some()
+        || select.prewhere.is_some()
+        || !select.lateral_views.is_empty()
+        || select.connect_by.is_some()
+        || !matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+    {
+        return None;
+    }
+    analyze_row_shaping(query, output.columns(), select.top.as_ref())
+}
+
+fn analyze_row_shaping(
+    query: &SqlQuery,
+    columns: &[OutputColumn],
+    top: Option<&sqlparser::ast::Top>,
+) -> Option<crate::protocol::SetRowShaping> {
     use crate::protocol::{SetRowShaping, SetSortKey};
-    use sqlparser::ast::{LimitClause, OrderByKind};
+    use sqlparser::ast::{LimitClause, OrderByKind, TopQuantity};
 
     fn nonnegative_literal(expression: &Expr) -> Option<usize> {
         match expression {
@@ -385,7 +427,6 @@ pub(super) fn analyze_set_row_shaping(
         }
     }
 
-    let columns = branches.first()?.output().columns();
     let order = query.order_by.as_ref()?;
     if order.interpolate.is_some() {
         return None;
@@ -417,34 +458,44 @@ pub(super) fn analyze_set_row_shaping(
         });
     }
 
-    let (limit, offset) = match (&query.limit_clause, &query.fetch) {
-        (
-            Some(LimitClause::LimitOffset {
-                limit: Some(limit),
-                offset,
-                limit_by,
-            }),
-            None,
-        ) if limit_by.is_empty() => (
-            nonnegative_literal(limit)?,
-            match offset {
-                Some(offset) => nonnegative_literal(&offset.value)?,
-                None => 0,
-            },
-        ),
-        (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => {
-            (nonnegative_literal(limit)?, nonnegative_literal(offset)?)
+    let (limit, offset) = if let Some(top) = top {
+        if top.with_ties || top.percent || query.limit_clause.is_some() || query.fetch.is_some() {
+            return None;
         }
-        (None, Some(fetch)) if !fetch.with_ties && !fetch.percent => (
-            match &fetch.quantity {
-                Some(quantity) => nonnegative_literal(quantity)?,
-                None => 1,
-            },
-            0,
-        ),
-        _ => return None,
+        let limit = match top.quantity.as_ref()? {
+            TopQuantity::Constant(value) => usize::try_from(*value).ok()?,
+            TopQuantity::Expr(expression) => nonnegative_literal(expression)?,
+        };
+        (limit, 0)
+    } else {
+        match (&query.limit_clause, &query.fetch) {
+            (
+                Some(LimitClause::LimitOffset {
+                    limit: Some(limit),
+                    offset,
+                    limit_by,
+                }),
+                None,
+            ) if limit_by.is_empty() => (
+                nonnegative_literal(limit)?,
+                match offset {
+                    Some(offset) => nonnegative_literal(&offset.value)?,
+                    None => 0,
+                },
+            ),
+            (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => {
+                (nonnegative_literal(limit)?, nonnegative_literal(offset)?)
+            }
+            (None, Some(fetch)) if !fetch.with_ties && !fetch.percent => (
+                match &fetch.quantity {
+                    Some(quantity) => nonnegative_literal(quantity)?,
+                    None => 1,
+                },
+                0,
+            ),
+            _ => return None,
+        }
     };
-
     Some(SetRowShaping {
         keys,
         offset,

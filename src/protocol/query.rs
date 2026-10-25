@@ -78,6 +78,7 @@ pub struct QueryStatement {
     ranked_composed_goal_shape: bool,
     window_grouped_count_source: Option<Box<WindowGroupedCountSource>>,
     set_operation: Option<Box<SetOperation>>,
+    row_shaping: Option<Box<SetRowShaping>>,
     finite_table: Option<Box<FiniteTable>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -115,6 +116,7 @@ impl QueryStatement {
             ranked_composed_goal_shape: false,
             window_grouped_count_source: None,
             set_operation: None,
+            row_shaping: None,
             finite_table: None,
             produced_relation: None,
             write: None,
@@ -299,6 +301,16 @@ impl QueryStatement {
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
         self.set_operation = set_operation.map(Box::new);
         self
+    }
+
+    pub(crate) fn with_row_shaping(mut self, row_shaping: Option<SetRowShaping>) -> Self {
+        self.row_shaping = row_shaping.map(Box::new);
+        self
+    }
+
+    /// Typed direct SELECT ordering and literal page bounds; exactness requires physical evidence.
+    pub fn row_shaping(&self) -> Option<&SetRowShaping> {
+        self.row_shaping.as_deref()
     }
 
     pub(crate) fn with_produced_relation(mut self, produced_relation: Option<String>) -> Self {
