@@ -224,12 +224,14 @@ pub fn physical_finite_page_bag_plan(
     let mut selected = vec![None; snapshot.rows().len()];
     let mut terminal = Vec::new();
     let mut peer_start = 0;
+    let mut previous_keys: Option<&[Option<i128>]> = None;
     for (position, (source_index, keys)) in rows.iter().enumerate() {
-        if position > 0
-            && compare_ordered_rows(&rows[position - 1].1, keys, &shaping.keys) != Ordering::Equal
-        {
+        if previous_keys.is_some_and(|previous| {
+            compare_ordered_rows(previous, keys, &shaping.keys) != Ordering::Equal
+        }) {
             peer_start = position;
         }
+        previous_keys = Some(keys);
         let inside_limit = position >= shaping.offset && position - shaping.offset < shaping.limit;
         let boundary_peer = cutoff_keys.is_some_and(|cutoff| {
             compare_ordered_rows(keys, cutoff, &shaping.keys) == Ordering::Equal
