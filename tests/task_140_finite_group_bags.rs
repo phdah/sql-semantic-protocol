@@ -6,7 +6,7 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_finite_table_plan, FiniteColumnType, LiteralValue,
-    PhysicalFiniteTableProof, SqlInput,
+    PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
 };
 
 fn analyzed(sql: &str, dialect_name: &str) -> (sql_semantic_protocol::AnalysisBundle, String) {
@@ -252,4 +252,63 @@ fn non_equality_join_and_unproven_multiple_sources_fail_closed() {
             PhysicalFiniteTableProof::Residual { .. }
         ), "{sql}: only attested exact join can be exact");
     }
+}
+
+#[test]
+fn frozen_mandatory_cases_reconcile_typed_null_domains_inclusive_bounds_and_full_pairs() {
+    let matrix: Value = serde_json::from_str(include_str!("../docs/task-140-acceptance-freeze.json"))
+        .expect("frozen complete case matrix");
+    let mut checked = 0;
+    for case in matrix["variants"].as_array().expect("all cases") {
+        let Some(domains) = case["domains"].as_object() else {
+            continue;
+        };
+        let sql = case["sql"].as_str().expect("literal SQL");
+        let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
+            panic!("mandatory typed case {} must be exact", case["id"]);
+        };
+        for (name, expected) in domains {
+            assert_eq!(proof.terminal_column_types[name], FiniteColumnType::Integer);
+            let expected_values = expected["values"].as_array().expect("complete finite values");
+            if expected_values.is_empty() {
+                assert_eq!(proof.terminal_domains[name], ValueDomain::Empty);
+                continue;
+            }
+            let ValueDomain::Set(domain) = &proof.terminal_domains[name] else {
+                panic!("{sql}: {name}: finite outcome must be a typed Include domain");
+            };
+            assert_eq!(domain.mode(), SetMode::Include);
+            assert_eq!(proof.terminal_domains[name].admits_null(), expected["nullable"].as_bool());
+            let mut actual = domain.values().iter()
+                .map(|literal| match literal.value() {
+                    LiteralValue::Number(n) => serde_json::json!(n.parse::<i128>().expect("integer")),
+                    LiteralValue::Null => Value::Null,
+                    other => panic!("unsupported typed domain {other:?}"),
+                })
+                .collect::<Vec<_>>();
+            actual.sort_by_key(|value| value.to_string());
+            let mut specified = expected_values.to_vec();
+            specified.sort_by_key(|value| value.to_string());
+            assert_eq!(actual, specified, "{sql}: {name}: exact output set");
+            let mut numeric = actual.iter().filter_map(Value::as_i64).collect::<Vec<_>>();
+            numeric.sort_unstable();
+            assert_eq!(numeric.first().copied(), expected["lower"]["value"].as_i64());
+            assert_eq!(numeric.last().copied(), expected["upper"]["value"].as_i64());
+            assert_eq!(expected["lower"]["inclusive"], true);
+            assert_eq!(expected["upper"]["inclusive"], true);
+        }
+        if let Some(partition) = case["complete_pair_partition"].as_object() {
+            let parse_pairs = |rows: &Value| rows.as_array().unwrap().iter().map(|pair| {
+                [pair[0].as_str().unwrap().to_string(), pair[1].as_str().unwrap().to_string()]
+            }).collect::<Vec<_>>();
+            assert_eq!(proof.joined_selected, parse_pairs(&partition["selected"]));
+            assert_eq!(proof.joined_not_true, parse_pairs(&partition["not_true"]));
+            assert_eq!(
+                proof.joined_selected.len() + proof.joined_not_true.len(),
+                partition["complete_cartesian_count"].as_u64().unwrap() as usize
+            );
+        }
+        checked += 1;
+    }
+    assert_eq!(checked, 5, "all frozen mandatory typed-domain specifications");
 }
