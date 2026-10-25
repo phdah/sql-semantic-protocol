@@ -1,12 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-140",
   "parent": "TASK-77",
   "fixture_ids": [
     "77-C140-P",
     "77-C140-N"
   ],
-  "status": "implementation_in_progress",
+  "status": "verification_matrix_under_observation",
   "definition_of_done": "No mandatory cell may be signed off without complete exact domain, physical bag, adapter and native SQL oracle",
   "variants": [
     {
@@ -64,7 +64,91 @@
         }
       },
       "positive": "EXACT",
-      "not_true": "value 3 is absent from entire closed input group bag"
+      "not_true": "value 3 is absent from entire closed input group bag",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
     },
     {
       "id": "77-C140-N-ABSENCE",
@@ -78,7 +162,91 @@
         "n": 1
       },
       "positive": "IMPOSSIBLE",
-      "not_true": "physical source bag contains no v=3"
+      "not_true": "physical source bag contains no v=3",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
     },
     {
       "id": "77-C140-P-VALUES",
@@ -135,7 +303,91 @@
         }
       },
       "positive": "EXACT",
-      "not_true": "NULL forms a single group"
+      "not_true": "NULL forms a single group",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
     },
     {
       "id": "77-C140-P-JOIN",
@@ -197,7 +449,91 @@
         }
       },
       "positive": "EXACT",
-      "not_true": "NULL equality must reject nonmatches"
+      "not_true": "NULL equality must reject nonmatches",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
     },
     {
       "id": "77-C140-C-OPAQUE",
@@ -208,7 +544,542 @@
       "positive": "RESIDUAL",
       "not_true": "No typed closed-world array evidence",
       "owner": "TASK-140",
-      "release_disposition": "pending review of missing source evidence"
+      "release_disposition": "pending review of missing source evidence",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C140-P-JOIN-NULL",
+      "family": "unnest_join_nullable",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON t.v = u.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "left/unnest:1",
+          "v": 1
+        },
+        {
+          "id": "left/unnest:2",
+          "v": 1
+        },
+        {
+          "id": "left/unnest:3",
+          "v": 2
+        },
+        {
+          "id": "left/unnest:4",
+          "v": null
+        },
+        {
+          "id": "right/values:0",
+          "v": 1
+        },
+        {
+          "id": "right/values:1",
+          "v": 1
+        },
+        {
+          "id": "right/values:2",
+          "v": 2
+        },
+        {
+          "id": "right/values:3",
+          "v": null
+        }
+      ],
+      "selected_pairs": 5,
+      "rejected_pairs": 11,
+      "terminal": [
+        {
+          "v": 1,
+          "n": 4
+        },
+        {
+          "v": 2,
+          "n": 1
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            4
+          ],
+          "nullable": false
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "All 11 non-equality and SQL NULL/UNKNOWN physical pairs rejected",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C140-P-JOIN-REVERSE",
+      "family": "unnest_join_reverse",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON u.v = t.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": "77-C140-P-JOIN-NULL",
+      "terminal": "77-C140-P-JOIN-NULL",
+      "positive": "EXACT",
+      "not_true": "reversed ON equality preserves full TRUE/NOT TRUE source partitions",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C140-C-NON-EQUI",
+      "family": "conditional_non_equality",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v > u.v GROUP BY t.v",
+      "kind": "conditional",
+      "terminal": null,
+      "positive": "RESIDUAL",
+      "not_true": "unsupported finite non-equijoin cannot claim exact proof",
+      "owner": "TASK-140",
+      "release_disposition": "reviewed conditional residual pending future bounded non-equi matrix",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
+    },
+    {
+      "id": "77-C140-P-EMPTY",
+      "family": "typed_empty_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST(CAST([] AS INTEGER[])) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [],
+      "terminal": [],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [],
+          "nullable": false
+        },
+        "n": {
+          "type": "integer",
+          "values": [],
+          "nullable": false
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "empty typed source implies every terminal group is impossible",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending",
+          "certified": false
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "pending",
+          "certified": false
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending",
+          "certified": false
+        }
+      ]
     }
   ],
   "dialects": [
@@ -233,12 +1104,13 @@
   ],
   "verification": {
     "semantic_exact_cases_verified": 0,
-    "mandatory_cases_to_verify": 4,
-    "parser_cells_to_verify": 65,
-    "adapter_cells_to_verify": 15,
+    "mandatory_cases_to_verify": 7,
+    "parser_cells_to_verify": 117,
+    "adapter_cells_to_verify": 27,
     "dbt_e2e": false,
     "ci_signoff": false,
-    "task_done": false
+    "task_done": false,
+    "observed_dialect_matrix": false
   },
   "notes": [
     "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
