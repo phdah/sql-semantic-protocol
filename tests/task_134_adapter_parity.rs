@@ -11,7 +11,7 @@ use sql_semantic_protocol::{
 use std::collections::BTreeMap;
 
 #[test]
-fn frozen_six_mandatory_sql_dbt_odcs_cases_have_identical_closed_world_bags() {
+fn all_frozen_sql_dbt_odcs_cases_have_exact_or_named_residual_bags() {
     const RELATION: &str = "warehouse.raw.s";
     let inventory: Value =
         serde_json::from_str(include_str!("../docs/task-134-acceptance-freeze.json")).unwrap();
@@ -49,9 +49,9 @@ schema:
         .as_array()
         .unwrap()
         .iter()
-        .filter(|case| case["classification"] == "mandatory")
     {
         let id = case["id"].as_str().unwrap();
+        let mandatory = case["classification"] == "mandatory";
         let sql = case["sql"]
             .as_str()
             .unwrap()
@@ -117,7 +117,6 @@ schema:
             ("dbt_compiled", dbt),
             ("odcs", odcs),
         ] {
-            assert_eq!(case["adapter_cells"][adapter], "exact required");
             let target = bundle
                 .layers()
                 .iter()
@@ -130,6 +129,15 @@ schema:
                 .unwrap_or_else(|| panic!("{id}/{adapter}: missing source-bearing model"));
             let proof =
                 physical_finite_page_bag_plan(&bundle, target.id(), std::slice::from_ref(&source));
+            if !mandatory {
+                assert_eq!(case["adapter_cells"][adapter], "typed residual required");
+                assert!(matches!(proof, PhysicalFinitePageProof::Residual { .. }),
+                    "{id}/{adapter}: conditional must not claim exactness: {proof:?}");
+                proofs.push("residual".to_string());
+                checked += 1;
+                continue;
+            }
+            assert_eq!(case["adapter_cells"][adapter], "exact required");
             let PhysicalFinitePageProof::Exact(exact) = proof else {
                 panic!("{id}/{adapter}: missing exact physical bag: {proof:?}");
             };
@@ -172,8 +180,5 @@ schema:
         assert_eq!(proofs[0], proofs[1], "{id}: SQL/dbt canonical parity");
         assert_eq!(proofs[0], proofs[2], "{id}: SQL/ODCS canonical parity");
     }
-    assert_eq!(
-        checked, 18,
-        "six mandatory cases and three evidence adapters"
-    );
+    assert_eq!(checked, 27, "all nine frozen variants on all three evidence adapters");
 }
