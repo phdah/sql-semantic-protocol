@@ -13,7 +13,8 @@ is shared with ordered set operators; source-specific syntax is not carried into
 domain model. No execution semantics are inferred for unsupported expressions,
 WITH TIES, OFFSET-only, percent pagination, sampling or ambiguous ordering.
 
-The public `physical_finite_page_bag_plan` requires a caller-attested complete
+The public `physical_finite_page_bag_plan` and
+`physical_finite_page_membership_plan` require a caller-attested complete
 physical source and source schema. It proves exact per-row identities, survivors,
 rejections, terminal bag and finite output domains only when the ordering is unique
 over the entire source, integer comparison semantics are certified, and NULL ordering

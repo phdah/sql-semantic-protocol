@@ -3,6 +3,7 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
+    physical_finite_page_membership_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
 };
@@ -214,5 +215,65 @@ fn implicit_null_sort_and_missing_order_fail_closed() {
     assert!(
         matches!(underordered, PhysicalFinitePageProof::Residual { .. }),
         "{underordered:?}"
+    );
+}
+
+#[test]
+fn requested_terminal_membership_is_exact_or_impossible_from_one_closed_source_bag() {
+    let sql = "SELECT k FROM s ORDER BY k LIMIT 2 OFFSET 1";
+    let parser = dialect_from_name("duckdb").unwrap();
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new(
+        "page",
+        &input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
+    let layer = bundle.layers().last().unwrap().id();
+    let state = source(&[Some(1), Some(2), Some(3), Some(4)]);
+    for value in [2, 3] {
+        let wanted = BTreeMap::from([(
+            "k".to_string(),
+            LiteralValue::Number(value.to_string()),
+        )]);
+        assert!(
+            matches!(
+                physical_finite_page_membership_plan(
+                    &bundle,
+                    layer,
+                    std::slice::from_ref(&state),
+                    &wanted,
+                ),
+                PhysicalFinitePageProof::Exact(_)
+            ),
+            "present terminal value {value} must have a source witness"
+        );
+    }
+    for value in [1, 4, 99] {
+        let wanted = BTreeMap::from([(
+            "k".to_string(),
+            LiteralValue::Number(value.to_string()),
+        )]);
+        assert!(
+            matches!(
+                physical_finite_page_membership_plan(
+                    &bundle,
+                    layer,
+                    std::slice::from_ref(&state),
+                    &wanted,
+                ),
+                PhysicalFinitePageProof::Impossible { .. }
+            ),
+            "rejected or absent terminal value {value} is impossible"
+        );
+    }
+    let impossible_source = source(&[Some(i64::from(i32::MAX) + 1)]);
+    assert!(
+        matches!(
+            physical_finite_page_bag_plan(&bundle, layer, &[impossible_source]),
+            PhysicalFinitePageProof::Impossible { .. }
+        ),
+        "overflowing physical INTEGER must be impossible rather than silently truncated"
     );
 }

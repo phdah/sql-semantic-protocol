@@ -546,7 +546,8 @@ pub(crate) use operators::{
     physical_materialized_set_witness, physical_operator_count_witness,
 };
 pub use page_bags::{
-    physical_finite_page_bag_plan, PhysicalFinitePageExact, PhysicalFinitePageProof,
+    physical_finite_page_bag_plan, physical_finite_page_membership_plan,
+    PhysicalFinitePageExact, PhysicalFinitePageProof,
     PhysicalPageRow,
 };
 pub use rank_bags::{

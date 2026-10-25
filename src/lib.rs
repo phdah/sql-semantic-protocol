@@ -41,7 +41,7 @@
 //! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
 //! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
 //! - physical_finite_join_aggregate_plan proves complete two-source INNER JOIN/WHERE/GROUP/HAVING bags and exact typed terminal domains.
-//! - physical_finite_page_bag_plan proves complete direct ORDER BY/LIMIT/OFFSET/FETCH/TOP terminal bags and rejected source identities.
+//! - physical_finite_page_bag_plan and physical_finite_page_membership_plan prove complete direct pagination bags, rejected source identities and requested row membership.
 //! - physical_finite_rank_bag_plan proves complete peer-aware ROW_NUMBER/RANK/DENSE_RANK physical bags and exact finite terminal value domains.
 //! - physical_finite_window_bag_plan proves complete navigation and common deterministic ROWS/whole-partition aggregate physical bags, with exact finite terminal NULL/value domains.
 //! - physical_finite_chain_bag_plan validates source-attested, heterogeneous three-way join bags against normalized SQL and exact terminal groups.
@@ -164,7 +164,8 @@ pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
     physical_finite_chain_bag_plan, physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
     physical_finite_join_aggregate_plan, physical_finite_joined_exists_bag_plan,
-    physical_finite_page_bag_plan, physical_finite_producer_exists_plan,
+    physical_finite_page_bag_plan, physical_finite_page_membership_plan,
+    physical_finite_producer_exists_plan,
     physical_finite_quantified_comparison, physical_finite_quantified_subquery_plan,
     physical_finite_quantified_where_plan, physical_finite_rank_bag_plan,
     physical_finite_scalar_subquery_plan, physical_finite_set_bag_plan,

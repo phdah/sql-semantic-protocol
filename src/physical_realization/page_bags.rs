@@ -253,3 +253,28 @@ pub fn physical_finite_page_bag_plan(
         terminal_domains,
     }))
 }
+
+/// Check membership of one requested terminal row against the entire proved page.
+///
+/// An absent terminal value tuple is Impossible even when that tuple exists in
+/// the physical source before ORDER BY and OFFSET/LIMIT. This requested-row
+/// impossibility is distinct from an impossible physical source snapshot.
+pub fn physical_finite_page_membership_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    snapshots: &[PhysicalWriteState],
+    requested: &BTreeMap<String, LiteralValue>,
+) -> PhysicalFinitePageProof {
+    match physical_finite_page_bag_plan(bundle, target_layer_id, snapshots) {
+        PhysicalFinitePageProof::Exact(exact) => {
+            if exact.terminal.contains(requested) {
+                PhysicalFinitePageProof::Exact(exact)
+            } else {
+                PhysicalFinitePageProof::Impossible {
+                    reason: "requested row absent from certified complete page bag".to_string(),
+                }
+            }
+        }
+        other => other,
+    }
+}
