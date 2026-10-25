@@ -347,3 +347,29 @@ fn bogus_source_alias_must_not_be_certified_as_an_exact_grouped_bag() {
         PhysicalFiniteTableProof::Residual { .. }
     ));
 }
+
+#[test]
+fn typed_empty_fanout_has_an_exact_empty_group_bag_and_impossible_membership() {
+    let sql = "SELECT v, COUNT(*) AS n FROM UNNEST(CAST([] AS INTEGER[])) AS t(v) GROUP BY v";
+    let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
+        panic!("explicit integer-array type must certify the empty grouped bag");
+    };
+    assert!(proof.terminal.is_empty());
+    assert!(proof.source_rows.is_empty());
+    assert!(proof.source_row_ids.is_empty());
+    assert_eq!(proof.terminal_domains["v"], ValueDomain::Empty);
+    assert_eq!(proof.terminal_domains["n"], ValueDomain::Empty);
+    assert_eq!(proof.terminal_column_types["v"], FiniteColumnType::Integer);
+    assert_eq!(proof.terminal_column_types["n"], FiniteColumnType::Integer);
+    assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
+
+    let (bundle, target) = analyzed(sql, "duckdb");
+    let wanted = BTreeMap::from([
+        ("v".to_string(), LiteralValue::Number("1".to_string())),
+        ("n".to_string(), LiteralValue::Number("1".to_string())),
+    ]);
+    assert!(matches!(
+        physical_finite_table_plan(&bundle, &target, Some(&wanted)),
+        PhysicalFiniteTableProof::Impossible { .. }
+    ));
+}
