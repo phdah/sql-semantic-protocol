@@ -399,5 +399,8 @@ fn schema_and_golden_shape_include_direct_row_selection_contract() {
         "offset": 1,
         "limit": 2
     });
-    assert_eq!(document["inputs"][0]["statements"][0]["row_shaping"], expected);
+    assert_eq!(
+        document["inputs"][0]["statements"][0]["row_shaping"],
+        expected
+    );
 }
