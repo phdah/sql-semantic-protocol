@@ -91,7 +91,8 @@ fn check_domain(case: &Value, observed: &ValueDomain) {
     assert_eq!(
         str_bag(inclusion.values().iter().map(|v| v.value().clone())),
         str_bag(case["terminal_bag"].as_array().unwrap().iter().map(scalar))
-            .into_iter().collect::<std::collections::BTreeSet<_>>(),
+            .into_iter().collect::<std::collections::BTreeSet<_>>()
+            .into_iter().collect::<Vec<_>>(),
     );
     let finite = case["terminal_bag"].as_array().unwrap().iter()
         .filter_map(Value::as_i64).collect::<Vec<_>>();
