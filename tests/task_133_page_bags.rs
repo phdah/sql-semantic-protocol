@@ -3,9 +3,9 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
-    physical_finite_page_membership_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    physical_finite_page_membership_plan, ConfiguredSqlInput, LiteralValue,
+    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 
@@ -233,10 +233,7 @@ fn requested_terminal_membership_is_exact_or_impossible_from_one_closed_source_b
     let layer = bundle.layers().last().unwrap().id();
     let state = source(&[Some(1), Some(2), Some(3), Some(4)]);
     for value in [2, 3] {
-        let wanted = BTreeMap::from([(
-            "k".to_string(),
-            LiteralValue::Number(value.to_string()),
-        )]);
+        let wanted = BTreeMap::from([("k".to_string(), LiteralValue::Number(value.to_string()))]);
         assert!(
             matches!(
                 physical_finite_page_membership_plan(
@@ -251,10 +248,7 @@ fn requested_terminal_membership_is_exact_or_impossible_from_one_closed_source_b
         );
     }
     for value in [1, 4, 99] {
-        let wanted = BTreeMap::from([(
-            "k".to_string(),
-            LiteralValue::Number(value.to_string()),
-        )]);
+        let wanted = BTreeMap::from([("k".to_string(), LiteralValue::Number(value.to_string()))]);
         assert!(
             matches!(
                 physical_finite_page_membership_plan(

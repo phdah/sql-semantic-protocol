@@ -3,9 +3,9 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_dbt_artifacts, parse_dbt_catalog, parse_dbt_manifest,
-    physical_finite_page_bag_plan, LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow,
-    PhysicalWriteState, SetMode, ValueDomain,
+    analyze_dbt_artifacts, parse_dbt_catalog, parse_dbt_manifest, physical_finite_page_bag_plan,
+    LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, SetMode,
+    ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 use std::collections::BTreeMap;

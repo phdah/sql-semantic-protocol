@@ -5,8 +5,8 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
     physical_finite_page_membership_plan, to_bundle_json, ConfiguredSqlInput, LiteralValue,
-    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
+    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema,
+    SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 use sqlparser::parser::Parser;
 use std::collections::BTreeMap;
@@ -16,9 +16,9 @@ fn freeze() -> Value {
 }
 
 fn scalar(value: &Value) -> LiteralValue {
-    value.as_i64().map_or(LiteralValue::Null, |n| {
-        LiteralValue::Number(n.to_string())
-    })
+    value
+        .as_i64()
+        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
 }
 
 fn source(case: &Value) -> PhysicalWriteState {
@@ -26,28 +26,21 @@ fn source(case: &Value) -> PhysicalWriteState {
         .as_array()
         .unwrap()
         .iter()
-        .map(|n| {
-            PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), scalar(n))])).unwrap()
-        })
+        .map(|n| PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), scalar(n))])).unwrap())
         .collect();
     PhysicalWriteState::new("s", rows).unwrap()
 }
 
 fn catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "s",
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-        )
-        .unwrap(),
-    ])
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        "s",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
     .unwrap()
 }
 
-fn analyze(
-    case: &Value,
-    dialect: &str,
-) -> sql_semantic_protocol::AnalysisBundle {
+fn analyze(case: &Value, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
     let parser = dialect_from_name(dialect).unwrap();
     let sql = SqlInput::inline(case["sql"].as_str().unwrap());
     let configured = [ConfiguredSqlInput::new(
@@ -79,7 +72,10 @@ fn strings(items: &Value) -> Vec<String> {
 }
 
 fn sorted(values: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut bag = values.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut bag = values
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     bag.sort();
     bag
 }
@@ -98,7 +94,11 @@ fn observed_ids(
 
 fn exact_domain_matches(case: &Value, domain: &ValueDomain) {
     let frozen = &case["typed_output_domain"][case["output_column"].as_str().unwrap()];
-    assert_eq!(domain.admits_null(), frozen["nullable"].as_bool(), "NULL law");
+    assert_eq!(
+        domain.admits_null(),
+        frozen["nullable"].as_bool(),
+        "NULL law"
+    );
     let expected = frozen["values"]
         .as_array()
         .unwrap()
@@ -136,7 +136,11 @@ fn exact_domain_matches(case: &Value, domain: &ValueDomain) {
         ("upper", nonnull.iter().max().copied()),
     ] {
         if let Some(value) = expect {
-            assert_eq!(frozen[endpoint]["value"].as_i64(), Some(value), "{endpoint}");
+            assert_eq!(
+                frozen[endpoint]["value"].as_i64(),
+                Some(value),
+                "{endpoint}"
+            );
             assert_eq!(frozen[endpoint]["inclusive"], true, "{endpoint}");
         } else {
             assert!(frozen[endpoint].is_null(), "{endpoint}");
@@ -169,7 +173,10 @@ fn native_source_terminal(case: &Value) {
     let mut expected_sorted = expected_source;
     physical_sorted.sort();
     expected_sorted.sort();
-    assert_eq!(physical_sorted, expected_sorted, "complete DuckDB source bag");
+    assert_eq!(
+        physical_sorted, expected_sorted,
+        "complete DuckDB source bag"
+    );
     let oracle_sql = case["oracle_sql"].as_str().unwrap();
     let terminal = db
         .prepare(oracle_sql)
@@ -184,7 +191,10 @@ fn native_source_terminal(case: &Value) {
         .iter()
         .map(Value::as_i64)
         .collect::<Vec<_>>();
-    assert_eq!(terminal, expected_terminal, "independent ordered DuckDB full terminal");
+    assert_eq!(
+        terminal, expected_terminal,
+        "independent ordered DuckDB full terminal"
+    );
 }
 
 #[test]
@@ -201,21 +211,32 @@ fn mandatory_cases_have_independent_complete_duckdb_and_membership_oracles() {
         }
         mandatory += 1;
         native_source_terminal(case);
-        let bundle = analyze(case, if id.ends_with("-top") { "mssql" } else { "duckdb" });
+        let bundle = analyze(
+            case,
+            if id.ends_with("-top") {
+                "mssql"
+            } else {
+                "duckdb"
+            },
+        );
         let target = bundle.layers().last().unwrap().id();
         let state = source(case);
-        let proof = physical_finite_page_bag_plan(
-            &bundle,
-            target,
-            std::slice::from_ref(&state),
-        );
+        let proof = physical_finite_page_bag_plan(&bundle, target, std::slice::from_ref(&state));
         let PhysicalFinitePageProof::Exact(actual) = proof else {
             panic!("{id}: expected total ordering proof: {proof:?}");
         };
         assert_eq!(actual.source, case["source_relation"].as_str().unwrap());
-        assert_eq!(actual.rows.len(), state.rows().len(), "{id}: every input identity");
         assert_eq!(
-            actual.rows.iter().map(|r| r.source_row_id.clone()).collect::<Vec<_>>(),
+            actual.rows.len(),
+            state.rows().len(),
+            "{id}: every input identity"
+        );
+        assert_eq!(
+            actual
+                .rows
+                .iter()
+                .map(|r| r.source_row_id.clone())
+                .collect::<Vec<_>>(),
             strings(&case["source_row_ids"]),
             "{id}: stable source identities"
         );
@@ -230,8 +251,16 @@ fn mandatory_cases_have_independent_complete_duckdb_and_membership_oracles() {
             "{id}: NOT TRUE rejected identities"
         );
         let expected = expected_terminal(case);
-        assert_eq!(sorted(&actual.terminal), sorted(&expected), "{id}: entire bag");
-        assert_eq!(actual.terminal.len(), expected.len(), "{id}: multiplicities");
+        assert_eq!(
+            sorted(&actual.terminal),
+            sorted(&expected),
+            "{id}: entire bag"
+        );
+        assert_eq!(
+            actual.terminal.len(),
+            expected.len(),
+            "{id}: multiplicities"
+        );
         assert_eq!(actual.terminal_domains.len(), 1, "{id}: typed arity");
         exact_domain_matches(
             case,
@@ -277,11 +306,17 @@ fn mandatory_cases_have_independent_complete_duckdb_and_membership_oracles() {
             "{id}: active protocol identity"
         );
         let shape = &emitted["inputs"][0]["statements"][0]["row_shaping"];
-        assert_eq!(shape["keys"][0]["position"], 0, "{id}: canonical sort position");
+        assert_eq!(
+            shape["keys"][0]["position"], 0,
+            "{id}: canonical sort position"
+        );
         assert!(shape["limit"].is_u64() && shape["offset"].is_u64(), "{id}");
     }
     assert_eq!(mandatory, 9, "all exact named variants frozen and executed");
-    assert_eq!(conditional, 4, "all explicitly bounded Residual laws frozen");
+    assert_eq!(
+        conditional, 4,
+        "all explicitly bounded Residual laws frozen"
+    );
 }
 
 #[test]
@@ -305,11 +340,8 @@ fn every_frozen_parser_cell_matches_canonical_physical_classification() {
             );
             let bundle = analyze(case, name);
             let target = bundle.layers().last().unwrap().id();
-            let proof = physical_finite_page_bag_plan(
-                &bundle,
-                target,
-                std::slice::from_ref(&state),
-            );
+            let proof =
+                physical_finite_page_bag_plan(&bundle, target, std::slice::from_ref(&state));
             match classifier {
                 "exact" => {
                     mandatory_cells += 1;
@@ -353,7 +385,8 @@ fn every_frozen_parser_cell_matches_canonical_physical_classification() {
 
 #[test]
 fn schema_and_golden_shape_include_direct_row_selection_contract() {
-    let schema: Value = serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
     assert!(
         schema["$defs"]["queryStatement"]["properties"]["row_shaping"].is_object(),
         "optional canonical direct page shape must be part of active protocol"
