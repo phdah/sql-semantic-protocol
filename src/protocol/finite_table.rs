@@ -24,6 +24,8 @@ pub enum FiniteTableKind {
     Unpivot,
     /// SQL GROUP BY COUNT(*) over one complete typed literal input bag.
     Grouped,
+    /// Complete two-source integer equijoin, retaining both input bags and pair identities.
+    Joined,
 }
 
 impl FiniteTableKind {
@@ -37,6 +39,7 @@ impl FiniteTableKind {
             Self::Pivot => "pivot",
             Self::Unpivot => "unpivot",
             Self::Grouped => "grouped",
+            Self::Joined => "joined",
         }
     }
 }
@@ -80,6 +83,10 @@ pub struct FiniteTable {
     // Complete input snapshot and positional contributors for finite transforms.
     source: Option<Box<FiniteTable>>,
     contributors: Vec<Vec<usize>>,
+    // A joined relation owns two independent complete physical input bags.
+    joined_sources: Option<(Box<FiniteTable>, Box<FiniteTable>)>,
+    // Ordered, selected original row pairs (left index, right index).
+    joined_pairs: Vec<[usize; 2]>,
 }
 
 impl FiniteTable {
@@ -130,6 +137,8 @@ impl FiniteTable {
             rows,
             source: None,
             contributors: Vec::new(),
+            joined_sources: None,
+            joined_pairs: Vec::new(),
         })
     }
 
@@ -150,6 +159,60 @@ impl FiniteTable {
         self.source = Some(Box::new(source));
         self.contributors = contributors;
         Some(self)
+    }
+
+    /// Attach the complete physical left/right bags to an exact equijoin.
+    ///
+    /// The selected list must contain every and only non-NULL equal integer
+    /// pair in left-major source order. It is impossible to construct a
+    /// partial or guessed closed-world join using this constructor.
+    pub(crate) fn with_join(
+        mut self,
+        left: FiniteTable,
+        right: FiniteTable,
+        pairs: Vec<[usize; 2]>,
+    ) -> Option<Self> {
+        if self.kind != FiniteTableKind::Joined
+            || self.source.is_some()
+            || self.joined_sources.is_some()
+            || left.columns.len() != 1
+            || right.columns.len() != 1
+            || left.column_types != [FiniteColumnType::Integer]
+            || right.column_types != [FiniteColumnType::Integer]
+            || self.columns.len() != 1
+            || self.column_types != [FiniteColumnType::Integer]
+        {
+            return None;
+        }
+        let expected = left.rows.iter().enumerate().flat_map(|(l, a)| {
+            right.rows.iter().enumerate().filter_map(move |(r, b)| {
+                (a[0].literal_type() != LiteralType::Null
+                    && b[0].literal_type() != LiteralType::Null
+                    && a[0] == b[0])
+                    .then_some([l, r])
+            })
+        }).collect::<Vec<_>>();
+        if expected != pairs
+            || pairs.len() != self.rows.len()
+            || pairs.iter().zip(&self.rows).any(|([l, _], row)| {
+                left.rows.get(*l) != Some(row)
+            })
+        {
+            return None;
+        }
+        self.joined_sources = Some((Box::new(left), Box::new(right)));
+        self.joined_pairs = pairs;
+        Some(self)
+    }
+
+    /// Exact independent physical inputs to this joined bag.
+    pub fn joined_sources(&self) -> Option<(&FiniteTable, &FiniteTable)> {
+        self.joined_sources.as_ref().map(|(left, right)| (left.as_ref(), right.as_ref()))
+    }
+
+    /// Physical row pairs selected by the exact join, in output-bag order.
+    pub fn joined_pairs(&self) -> &[[usize; 2]] {
+        &self.joined_pairs
     }
 
     /// Original complete finite physical input, if this is a transformation.
