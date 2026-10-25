@@ -77,5 +77,8 @@ fn observe_all_dialects_and_compiled_dbt_fanout() {
             }));
         }
     }
-    panic!("TASK140_OBSERVED={}", serde_json::to_string(&findings).unwrap());
+    panic!(
+        "TASK140_OBSERVED={}",
+        serde_json::to_string(&findings).unwrap()
+    );
 }
