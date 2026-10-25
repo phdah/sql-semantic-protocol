@@ -1,10 +1,10 @@
 ---
 id: TASK-140
 title: Compose table fanout with joins/dbt and certify TASK-77
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-25'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,9 @@ type: feature
 ## Next
 
 Then independently sign off all original TASK-77 AC against the entire merged child evidence.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+The finite source-free VALUES/UNNEST/EXPLODE `GROUP BY` with `COUNT(*)` has an explicit canonical `grouped` bag and source contributors, checked by a complete DuckDB oracle in `tests/task_140_finite_group_bags.rs`. `docs/task-140-acceptance-freeze.json` records mandatory grouped and joined obligations with typed source and terminal bags. The JOIN fanout case, independent dialect and adapter matrices, executed compiled dbt model, strict final-head CI and parent signoff are **not yet verified**, so all five acceptance criteria remain open.
+<!-- SECTION:NOTES:END -->
