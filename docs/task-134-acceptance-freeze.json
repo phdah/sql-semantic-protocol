@@ -1,0 +1,639 @@
+{
+  "task": "TASK-134",
+  "parent": "TASK-76",
+  "version": 1,
+  "status": "frozen_before_semantic_implementation",
+  "fixture_ids": [
+    "76-C134-P",
+    "76-C134-N"
+  ],
+  "scope": [
+    "WITH TIES",
+    "DISTINCT",
+    "DISTINCT ON",
+    "explicit and implicit SQL NULL ordering",
+    "QUALIFY plus pagination fail-closed boundary"
+  ],
+  "source_truth": "complete physical source rows, no fabricated row ordering for peers",
+  "mandatory_count": 6,
+  "conditional_count": 3,
+  "mapped_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "parser_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_sources": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs"
+  ],
+  "cases": [
+    {
+      "id": "76-C134-P-with-ties",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k DESC FETCH FIRST 2 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        3,
+        2,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Ties at cutoff all survive, multiplicity three",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-P-distinct",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT DISTINCT k FROM s ORDER BY k LIMIT 3",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        1,
+        2,
+        3
+      ],
+      "terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "rejected_source_ids": [],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Duplicate contributors coalesce into one terminal tuple; no chosen physical representative",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-P-distinct-on",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT DISTINCT ON (k) k FROM s ORDER BY k",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Identical projections coalesce; differing non-key projections require tie-safe total ordering",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-P-explicit-nulls",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k NULLS FIRST FETCH FIRST 1 ROW WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        null,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        null
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "selected_source_ids": [
+        "s#0"
+      ],
+      "rejected_source_ids": [
+        "s#1",
+        "s#2"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": true,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Explicit NULL ordering includes NULL group",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-N-with-ties-zero",
+      "group": "76-C134-N",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 0 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Zero cutoff is an exact empty bag",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-N-absent",
+      "group": "76-C134-N",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k DESC FETCH FIRST 2 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        3,
+        2,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Requested k=1 is impossible in complete terminal bag",
+      "dialect_cells": {
+        "generic": "parser/canonical test required; parse failures recorded as boundary",
+        "mysql": "parser/canonical test required; parse failures recorded as boundary",
+        "postgresql": "parser/canonical test required; parse failures recorded as boundary",
+        "hive": "parser/canonical test required; parse failures recorded as boundary",
+        "sqlite": "parser/canonical test required; parse failures recorded as boundary",
+        "snowflake": "parser/canonical test required; parse failures recorded as boundary",
+        "redshift": "parser/canonical test required; parse failures recorded as boundary",
+        "mssql": "parser/canonical test required; parse failures recorded as boundary",
+        "clickhouse": "parser/canonical test required; parse failures recorded as boundary",
+        "bigquery": "parser/canonical test required; parse failures recorded as boundary",
+        "ansi": "parser/canonical test required; parse failures recorded as boundary",
+        "duckdb": "parser/canonical test required; parse failures recorded as boundary",
+        "databricks": "parser/canonical test required; parse failures recorded as boundary"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-N-implicit-null",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 1 ROW WITH TIES",
+      "source_bag": [
+        null,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "NULL order not explicit; session-dependent",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "parser/diagnostic boundary to verify",
+        "mysql": "parser/diagnostic boundary to verify",
+        "postgresql": "parser/diagnostic boundary to verify",
+        "hive": "parser/diagnostic boundary to verify",
+        "sqlite": "parser/diagnostic boundary to verify",
+        "snowflake": "parser/diagnostic boundary to verify",
+        "redshift": "parser/diagnostic boundary to verify",
+        "mssql": "parser/diagnostic boundary to verify",
+        "clickhouse": "parser/diagnostic boundary to verify",
+        "bigquery": "parser/diagnostic boundary to verify",
+        "ansi": "parser/diagnostic boundary to verify",
+        "duckdb": "parser/diagnostic boundary to verify",
+        "databricks": "parser/diagnostic boundary to verify"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-N-distinct-on-tie",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT DISTINCT ON (k) k, v FROM s ORDER BY k",
+      "source_bag": [
+        1,
+        1
+      ],
+      "proof": "Residual",
+      "reason": "DISTINCT ON order fails to choose a deterministic member for non-key output",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "parser/diagnostic boundary to verify",
+        "mysql": "parser/diagnostic boundary to verify",
+        "postgresql": "parser/diagnostic boundary to verify",
+        "hive": "parser/diagnostic boundary to verify",
+        "sqlite": "parser/diagnostic boundary to verify",
+        "snowflake": "parser/diagnostic boundary to verify",
+        "redshift": "parser/diagnostic boundary to verify",
+        "mssql": "parser/diagnostic boundary to verify",
+        "clickhouse": "parser/diagnostic boundary to verify",
+        "bigquery": "parser/diagnostic boundary to verify",
+        "ansi": "parser/diagnostic boundary to verify",
+        "duckdb": "parser/diagnostic boundary to verify",
+        "databricks": "parser/diagnostic boundary to verify"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "pending"
+    },
+    {
+      "id": "76-C134-N-qualify",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT k FROM s QUALIFY ROW_NUMBER() OVER (ORDER BY k) <= 2 ORDER BY k LIMIT 1",
+      "source_bag": [
+        1,
+        2,
+        3
+      ],
+      "proof": "Residual",
+      "reason": "QUALIFY producer not independently proven by page executor",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "parser/diagnostic boundary to verify",
+        "mysql": "parser/diagnostic boundary to verify",
+        "postgresql": "parser/diagnostic boundary to verify",
+        "hive": "parser/diagnostic boundary to verify",
+        "sqlite": "parser/diagnostic boundary to verify",
+        "snowflake": "parser/diagnostic boundary to verify",
+        "redshift": "parser/diagnostic boundary to verify",
+        "mssql": "parser/diagnostic boundary to verify",
+        "clickhouse": "parser/diagnostic boundary to verify",
+        "bigquery": "parser/diagnostic boundary to verify",
+        "ansi": "parser/diagnostic boundary to verify",
+        "duckdb": "parser/diagnostic boundary to verify",
+        "databricks": "parser/diagnostic boundary to verify"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "pending"
+    }
+  ],
+  "signoff": {
+    "all_mandatory_exact": false,
+    "all_dialect_cells_verified": false,
+    "all_adapter_cells_verified": false,
+    "all_ci_green": false,
+    "reviewed": false
+  }
+}
