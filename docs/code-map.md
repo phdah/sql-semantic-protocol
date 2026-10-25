@@ -1,5 +1,7 @@
 # Code map: find the smallest canonical owner
 
+TASK-140 finite source-free GROUP BY COUNT(*) over literal VALUES/UNNEST/EXPLODE: `src/analysis/finite_tables.rs` normalizes the whole input bag into canonical `FiniteTableKind::Grouped` with contributor indices; `src/physical_realization/finite_tables.rs` proves exact grouped terminal values, typed domains and requested-row impossibility without SQL reparsing. `tests/task_140_finite_group_bags.rs` owns the independent DuckDB oracle. Joined and source-backed fanout plus dbt and dialect/ODCS parity remain outstanding under `docs/task-140-acceptance-freeze.json`; TASK-77 parent is not certified.
+
 TASK-133 deterministic direct page bounds: `src/analysis/sets.rs` owns shared
 AST-to-`SetRowShaping` normalization for direct SELECT and ordered sets;
 `src/protocol/query.rs` stores parser-independent row shaping;
