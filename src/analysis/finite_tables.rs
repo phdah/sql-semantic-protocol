@@ -411,7 +411,7 @@ fn finite_join_source(from: &TableWithJoins, dialect_name: &str) -> Option<(Fini
         rows,
     )?
     .with_join(left, right, pairs)?;
-    Some((joined, left_alias.clone()))
+    Some((joined, left_alias.to_string()))
 }
 
 // Explicit single-key COUNT(*) GROUP BY, with zero or one fully attested
