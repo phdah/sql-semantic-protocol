@@ -46,7 +46,7 @@ pub(super) fn grouping_sets_to_value(
 
 /// Emit canonical ordering from the shared typed row-shaping contract.
 pub(super) fn row_shaping_to_value(shape: &crate::protocol::SetRowShaping) -> Value {
-    json!({
+    let mut value = json!({
         "keys": shape.keys.iter().map(|key| json!({
             "position": key.index,
             "descending": key.descending,
@@ -54,7 +54,11 @@ pub(super) fn row_shaping_to_value(shape: &crate::protocol::SetRowShaping) -> Va
         })).collect::<Vec<_>>(),
         "offset": shape.offset,
         "limit": shape.limit,
-    })
+    });
+    if shape.with_ties {
+        value["with_ties"] = json!(true);
+    }
+    value
 }
 
 pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
