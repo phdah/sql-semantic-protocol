@@ -2,10 +2,10 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_finite_page_bag_plan, physical_finite_page_membership_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
+    physical_finite_page_membership_plan, ConfiguredSqlInput, LiteralValue,
+    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema,
+    SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 
@@ -13,28 +13,45 @@ fn freeze() -> Value {
     serde_json::from_str(include_str!("../docs/task-134-acceptance-freeze.json")).unwrap()
 }
 fn scalar(value: &Value) -> LiteralValue {
-    value.as_i64().map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
+    value
+        .as_i64()
+        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
 }
 fn catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(&[RelationSchema::new(
         "s",
         vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-    ).unwrap()]).unwrap()
+    )
+    .unwrap()])
+    .unwrap()
 }
 fn analyze(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
     let parser = dialect_from_name(dialect).unwrap();
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("task134", &input, dialect, parser.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "task134",
+        &input,
+        dialect,
+        parser.as_ref(),
+    )];
     analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap()
 }
 fn source(case: &Value) -> PhysicalWriteState {
-    let rows = case["source_bag"].as_array().unwrap().iter().map(|value| {
-        PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), scalar(value))])).unwrap()
-    }).collect();
+    let rows = case["source_bag"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| {
+            PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), scalar(value))])).unwrap()
+        })
+        .collect();
     PhysicalWriteState::new("s", rows).unwrap()
 }
 fn str_bag(values: impl IntoIterator<Item = LiteralValue>) -> Vec<String> {
-    let mut bag = values.into_iter().map(|v| format!("{v:?}")).collect::<Vec<_>>();
+    let mut bag = values
+        .into_iter()
+        .map(|v| format!("{v:?}"))
+        .collect::<Vec<_>>();
     bag.sort();
     bag
 }
@@ -45,15 +62,22 @@ fn oracle(case: &Value) {
         db.execute_batch(&format!(
             "INSERT INTO s VALUES ({})",
             value.as_i64().map_or("NULL".to_string(), |v| v.to_string())
-        )).unwrap();
+        ))
+        .unwrap();
     }
-    let native_source = db.prepare("SELECT k FROM s").unwrap()
-        .query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-        .collect::<Result<Vec<_>, _>>().unwrap();
+    let native_source = db
+        .prepare("SELECT k FROM s")
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(
-        str_bag(native_source.into_iter().map(|v| {
-            v.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
-        })),
+        str_bag(
+            native_source
+                .into_iter()
+                .map(|v| { v.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())) })
+        ),
         str_bag(case["source_bag"].as_array().unwrap().iter().map(scalar))
     );
     let sql = case["sql"].as_str().unwrap();
@@ -66,15 +90,22 @@ fn oracle(case: &Value) {
             "SELECT k FROM s WHERE FALSE",
         _ => sql,
     };
-    let native = db.prepare(oracle_sql).unwrap()
-        .query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-        .collect::<Result<Vec<_>, _>>().unwrap();
+    let native = db
+        .prepare(oracle_sql)
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(
-        str_bag(native.into_iter().map(|v| {
-            v.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
-        })),
+        str_bag(
+            native
+                .into_iter()
+                .map(|v| { v.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())) })
+        ),
         str_bag(case["terminal_bag"].as_array().unwrap().iter().map(scalar)),
-        "independent whole-terminal DuckDB bag for {}", case["id"]
+        "independent whole-terminal DuckDB bag for {}",
+        case["id"]
     );
 }
 fn check_domain(case: &Value, observed: &ValueDomain) {
@@ -91,11 +122,17 @@ fn check_domain(case: &Value, observed: &ValueDomain) {
     assert_eq!(
         str_bag(inclusion.values().iter().map(|v| v.value().clone())),
         str_bag(case["terminal_bag"].as_array().unwrap().iter().map(scalar))
-            .into_iter().collect::<std::collections::BTreeSet<_>>()
-            .into_iter().collect::<Vec<_>>(),
+            .into_iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>(),
     );
-    let finite = case["terminal_bag"].as_array().unwrap().iter()
-        .filter_map(Value::as_i64).collect::<Vec<_>>();
+    let finite = case["terminal_bag"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(Value::as_i64)
+        .collect::<Vec<_>>();
     if let Some(minimum) = finite.iter().min() {
         assert_eq!(expected["lower"]["value"].as_i64(), Some(*minimum));
         assert_eq!(expected["lower"]["inclusive"], true);
@@ -114,7 +151,13 @@ fn all_six_mandatory_cases_certify_full_bags_domains_and_rejections() {
     let freeze = freeze();
     assert_eq!(freeze["version"], 1);
     let cases = freeze["cases"].as_array().unwrap();
-    assert_eq!(cases.iter().filter(|c| c["classification"] == "mandatory").count(), 6);
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|c| c["classification"] == "mandatory")
+            .count(),
+        6
+    );
     for case in cases.iter().filter(|c| c["classification"] == "mandatory") {
         oracle(case);
         let sql = case["sql"].as_str().unwrap();
@@ -125,27 +168,54 @@ fn all_six_mandatory_cases_certify_full_bags_domains_and_rejections() {
         let PhysicalFinitePageProof::Exact(exact) = &proof else {
             panic!("{} must have full exact proof: {proof:?}", case["id"]);
         };
-        let actual = exact.terminal.iter().map(|row| row.get("k").unwrap().clone());
+        let actual = exact
+            .terminal
+            .iter()
+            .map(|row| row.get("k").unwrap().clone());
         assert_eq!(
             str_bag(actual),
             str_bag(case["terminal_bag"].as_array().unwrap().iter().map(scalar)),
             "{} terminal multiplicity",
             case["id"]
         );
-        let mut selected = exact.rows.iter().filter(|r| r.survives)
-            .map(|r| r.source_row_id.clone()).collect::<Vec<_>>();
-        let mut expected_selected = case["selected_source_ids"].as_array().unwrap()
-            .iter().map(|x| x.as_str().unwrap().to_string()).collect::<Vec<_>>();
+        let mut selected = exact
+            .rows
+            .iter()
+            .filter(|r| r.survives)
+            .map(|r| r.source_row_id.clone())
+            .collect::<Vec<_>>();
+        let mut expected_selected = case["selected_source_ids"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
         selected.sort();
         expected_selected.sort();
-        assert_eq!(selected, expected_selected, "{} positive source identity", case["id"]);
-        let mut rejected = exact.rows.iter().filter(|r| !r.survives)
-            .map(|r| r.source_row_id.clone()).collect::<Vec<_>>();
-        let mut expected_rejected = case["rejected_source_ids"].as_array().unwrap()
-            .iter().map(|x| x.as_str().unwrap().to_string()).collect::<Vec<_>>();
+        assert_eq!(
+            selected, expected_selected,
+            "{} positive source identity",
+            case["id"]
+        );
+        let mut rejected = exact
+            .rows
+            .iter()
+            .filter(|r| !r.survives)
+            .map(|r| r.source_row_id.clone())
+            .collect::<Vec<_>>();
+        let mut expected_rejected = case["rejected_source_ids"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap().to_string())
+            .collect::<Vec<_>>();
         rejected.sort();
         expected_rejected.sort();
-        assert_eq!(rejected, expected_rejected, "{} NOT TRUE physical row identity", case["id"]);
+        assert_eq!(
+            rejected, expected_rejected,
+            "{} NOT TRUE physical row identity",
+            case["id"]
+        );
         check_domain(case, &exact.terminal_domains["k"]);
         let missing = BTreeMap::from([("k".to_string(), LiteralValue::Number("999999".into()))]);
         assert!(matches!(
@@ -158,7 +228,9 @@ fn all_six_mandatory_cases_certify_full_bags_domains_and_rejections() {
 fn all_conditional_cases_have_frozen_owner_and_nonexact_evidence() {
     let freeze = freeze();
     let cases = freeze["cases"].as_array().unwrap();
-    let conditional = cases.iter().filter(|c| c["classification"] == "conditional")
+    let conditional = cases
+        .iter()
+        .filter(|c| c["classification"] == "conditional")
         .collect::<Vec<_>>();
     assert_eq!(conditional.len(), 3);
     for case in conditional {
@@ -170,27 +242,56 @@ fn all_conditional_cases_have_frozen_owner_and_nonexact_evidence() {
 #[test]
 fn every_shared_distinct_parser_path_has_an_exact_canonical_bag() {
     const DIALECTS: [&str; 13] = [
-        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ];
-    let case = freeze()["cases"].as_array().unwrap().iter()
-        .find(|c| c["id"] == "76-C134-P-distinct").unwrap().clone();
+    let case = freeze()["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "76-C134-P-distinct")
+        .unwrap()
+        .clone();
     let sql = case["sql"].as_str().unwrap();
     for name in DIALECTS {
         let bundle = analyze(sql, name);
         let target = bundle.layers().last().unwrap().id();
         let proof = physical_finite_page_bag_plan(&bundle, target, &[source(&case)]);
-        assert!(matches!(proof, PhysicalFinitePageProof::Exact(_)), "{name}: {proof:?}");
+        assert!(
+            matches!(proof, PhysicalFinitePageProof::Exact(_)),
+            "{name}: {proof:?}"
+        );
     }
 }
-
 
 #[test]
 fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
     use sqlparser::parser::Parser;
     const DIALECTS: [&str; 13] = [
-        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ];
     let inventory = freeze();
     let mut checked = 0;
@@ -207,7 +308,12 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
                 }
                 Ok(_) => {
                     let input = SqlInput::inline(sql);
-                    let configured = [ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())];
+                    let configured = [ConfiguredSqlInput::new(
+                        id,
+                        &input,
+                        dialect,
+                        parser.as_ref(),
+                    )];
                     let analysis = analyze_configured_inputs_with_catalog(&configured, &catalog());
                     let classification = match analysis {
                         Err(reason) => {
@@ -216,9 +322,8 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
                         }
                         Ok(bundle) => {
                             let target = bundle.layers().last().unwrap().id();
-                            let proof = physical_finite_page_bag_plan(
-                                &bundle, target, &[source(case)]
-                            );
+                            let proof =
+                                physical_finite_page_bag_plan(&bundle, target, &[source(case)]);
                             match proof {
                                 PhysicalFinitePageProof::Exact(_) => "exact",
                                 PhysicalFinitePageProof::Impossible { .. } => "impossible",
@@ -230,7 +335,10 @@ fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
                     if case["classification"] == "mandatory" {
                         assert_eq!(classification, "exact", "{id}/{dialect}");
                     } else {
-                        assert_ne!(classification, "exact", "{id}/{dialect}: conditional boundary");
+                        assert_ne!(
+                            classification, "exact",
+                            "{id}/{dialect}: conditional boundary"
+                        );
                     }
                 }
             }
