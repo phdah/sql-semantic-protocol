@@ -136,7 +136,10 @@ fn parser_equivalent_direct_sql_has_the_same_complete_physical_bag() {
         }
     }
     assert_eq!(DIALECTS.len(), 13);
-    assert_eq!(classified, 13, "all shared LIMIT forms must be parser-equivalent");
+    assert_eq!(
+        classified, 13,
+        "all shared LIMIT forms must be parser-equivalent"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -178,9 +181,16 @@ schema:
     let mut conditional = 0;
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
-        let dialect = if id.ends_with("-top") { "mssql" } else { "postgresql" };
+        let dialect = if id.ends_with("-top") {
+            "mssql"
+        } else {
+            "postgresql"
+        };
         let parser = dialect_from_name(dialect).unwrap();
-        let sql = case["sql"].as_str().unwrap().replace("FROM s", "FROM warehouse.raw.s");
+        let sql = case["sql"]
+            .as_str()
+            .unwrap()
+            .replace("FROM s", "FROM warehouse.raw.s");
         assert!(Parser::parse_sql(parser.as_ref(), &sql).is_ok(), "{id}");
         let sql_input = SqlInput::inline(&sql);
         let configured = [ConfiguredSqlInput::new(
@@ -228,8 +238,7 @@ schema:
             }
         });
         let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
-        let dbt =
-            analyze_dbt_manifest_with_schemas(&manifest, dialect, parser.as_ref()).unwrap();
+        let dbt = analyze_dbt_manifest_with_schemas(&manifest, dialect, parser.as_ref()).unwrap();
 
         let state = PhysicalWriteState::new(
             relation,
@@ -240,9 +249,9 @@ schema:
                 .map(|value| {
                     PhysicalWriteRow::new(BTreeMap::from([(
                         "k".to_string(),
-                        value.as_i64().map_or(LiteralValue::Null, |n| {
-                            LiteralValue::Number(n.to_string())
-                        }),
+                        value
+                            .as_i64()
+                            .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
                     )]))
                     .unwrap()
                 })
@@ -261,11 +270,8 @@ schema:
                 .iter()
                 .find(|layer| layer.consumes().iter().any(|s| s == relation))
                 .unwrap_or_else(|| panic!("{id}/{adapter}: no canonical physical source"));
-            let proof = physical_finite_page_bag_plan(
-                &bundle,
-                layer.id(),
-                std::slice::from_ref(&state),
-            );
+            let proof =
+                physical_finite_page_bag_plan(&bundle, layer.id(), std::slice::from_ref(&state));
             match case["adapter_cells"][adapter].as_str().unwrap() {
                 "canonical_exact_required" => {
                     let PhysicalFinitePageProof::Exact(exact) = proof else {
@@ -288,7 +294,10 @@ schema:
                         .iter()
                         .map(Value::as_i64)
                         .collect::<Vec<_>>();
-                    assert_eq!(rows, wanted, "{id}/{adapter}: complete terminal order and NULL");
+                    assert_eq!(
+                        rows, wanted,
+                        "{id}/{adapter}: complete terminal order and NULL"
+                    );
                     outcomes.push(format!(
                         "{:?}",
                         (exact.rows, exact.terminal, exact.terminal_domains)
@@ -315,5 +324,8 @@ schema:
     }
     assert_eq!(mandatory, 27, "9 mandatory cases x 3 adapter paths");
     assert_eq!(conditional, 12, "4 conditional cases x 3 adapter paths");
-    assert_eq!(certified_cells, 39, "every registered TASK-133 adapter cell");
+    assert_eq!(
+        certified_cells, 39,
+        "every registered TASK-133 adapter cell"
+    );
 }
