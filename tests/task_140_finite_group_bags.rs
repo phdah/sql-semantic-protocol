@@ -142,8 +142,9 @@ fn opaque_fanout_cannot_claim_exact_closed_world_membership() {
 #[test]
 fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() {
     let sql = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v";
-    let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
-        panic!("two-source closed INNER equality bag must be exact");
+    let p = source_free(sql);
+    let PhysicalFiniteTableProof::Exact(proof) = p else {
+        panic!("two-source closed INNER equality bag must be exact: {p:?}");
     };
     assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
     assert_eq!(proof.source_row_ids.len(), 5, "five matched JOIN producers");
@@ -178,8 +179,9 @@ fn finite_join_null_keys_are_not_true_and_reversed_equality_is_equivalent() {
     let first = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON t.v = u.v GROUP BY t.v";
     let reverse = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON u.v = t.v GROUP BY t.v";
     for sql in [first, reverse] {
-        let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
-            panic!("nullable equality must use SQL TRUE/NOT TRUE");
+        let p = source_free(sql);
+        let PhysicalFiniteTableProof::Exact(proof) = p else {
+            panic!("nullable equality must use SQL TRUE/NOT TRUE: {p:?}");
         };
         assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
         assert_eq!(proof.joined_selected.len(), 5);
