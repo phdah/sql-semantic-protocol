@@ -139,7 +139,6 @@ fn opaque_fanout_cannot_claim_exact_closed_world_membership() {
     ));
 }
 
-
 #[test]
 fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() {
     let sql = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v";
@@ -149,8 +148,14 @@ fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() 
     assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
     assert_eq!(proof.source_row_ids.len(), 5, "five matched JOIN producers");
     assert_eq!(proof.contributors.iter().map(Vec::len).sum::<usize>(), 5);
-    assert_eq!(proof.physical_input_ids["left"], ["left/unnest:1", "left/unnest:2", "left/unnest:3"]);
-    assert_eq!(proof.physical_input_ids["right"], ["right/values:0", "right/values:1", "right/values:2"]);
+    assert_eq!(
+        proof.physical_input_ids["left"],
+        ["left/unnest:1", "left/unnest:2", "left/unnest:3"]
+    );
+    assert_eq!(
+        proof.physical_input_ids["right"],
+        ["right/values:0", "right/values:1", "right/values:2"]
+    );
     assert_eq!(proof.physical_inputs["left"].len(), 3);
     assert_eq!(proof.physical_inputs["right"].len(), 3);
     assert_eq!(proof.joined_selected.len(), 5);
@@ -179,9 +184,18 @@ fn finite_join_null_keys_are_not_true_and_reversed_equality_is_equivalent() {
         assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
         assert_eq!(proof.joined_selected.len(), 5);
         assert_eq!(proof.joined_not_true.len(), 11);
-        assert!(proof.joined_not_true.iter().any(|ids| ids[0] == "left/unnest:4"));
-        assert!(proof.joined_not_true.iter().any(|ids| ids[1] == "right/values:3"));
-        assert!(proof.terminal.iter().all(|row| row["v"] != LiteralValue::Null));
+        assert!(proof
+            .joined_not_true
+            .iter()
+            .any(|ids| ids[0] == "left/unnest:4"));
+        assert!(proof
+            .joined_not_true
+            .iter()
+            .any(|ids| ids[1] == "right/values:3"));
+        assert!(proof
+            .terminal
+            .iter()
+            .all(|row| row["v"] != LiteralValue::Null));
     }
 }
 
