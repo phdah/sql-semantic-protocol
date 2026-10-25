@@ -12924,5 +12924,22 @@
     "verified_code_head": "31bc0e5204296b56c1f1ba7dd08484b6cc7939e9",
     "verified_ci_run_id": 40126856488,
     "verified_checks": 9
+  },
+  "task_134_pagination_acceptance": {
+    "owner": "TASK-134",
+    "parent": "TASK-76",
+    "status": "in_progress_unverified",
+    "freeze": "docs/task-134-acceptance-freeze.json",
+    "fixture_ids": [
+      "76-C134-P",
+      "76-C134-N"
+    ],
+    "mandatory_cases": 6,
+    "conditional_cases": 3,
+    "mandatory_exact_verified": 0,
+    "all_parser_cells_verified": false,
+    "all_adapter_cells_verified": false,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
