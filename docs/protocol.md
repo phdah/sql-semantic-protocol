@@ -39,7 +39,7 @@ type evidence rather than inventing an integer type. Untyped empty arrays, opaqu
 source-column fanout, unproved casts, correlated LATERAL, sampled tables,
 and vendor-specific generator semantics remain residual.
 
-For `star`, `pivot` and `unpivot` operators, the nested `source` object is the complete original typed VALUES bag. `contributors` is a positional list of nonempty arrays of indices into `source.rows` for each output row. These references preserve duplicates, original row identities and fanout; the consumer never needs SQL to recover provenance. Unsupported and dynamic-schema variants remain explicit Residual rather than guessed relations.
+For `star`, `pivot`, `unpivot` and `grouped` operators, the nested `source` object is the complete original typed input bag. `grouped` currently proves only `GROUP BY` over a single finite VALUES/UNNEST/EXPLODE integer column with explicit `COUNT(*) AS name`; SQL NULL forms one group and duplicates contribute independently. JOIN and HAVING over generated sources are not certified by this bounded law. `contributors` is a positional list of nonempty arrays of indices into `source.rows` for each output row. These references preserve duplicates, original row identities and fanout; the consumer never needs SQL to recover provenance. Unsupported and dynamic-schema variants remain explicit Residual rather than guessed relations.
 
 The independent physical API `physical_finite_table_plan` computes all
 source and terminal rows, their identities and exact domains from these canonical facts and can prove
