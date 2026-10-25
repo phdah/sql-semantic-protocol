@@ -1,4 +1,23 @@
 {
+  "task_140_fanout_acceptance": {
+    "owner": "TASK-140",
+    "parent": "TASK-77",
+    "status": "implementation_in_progress",
+    "task": ".backlog/tasks/task-140 - compose-table-fanout-with-joins-dbt-and-certify-task-77.md",
+    "freeze": "docs/task-140-acceptance-freeze.json",
+    "fixture_ids": [
+      "77-C140-P",
+      "77-C140-N"
+    ],
+    "supported_exact_slice": "source_free_literal_single_column_group_count",
+    "native_oracle": "tests/task_140_finite_group_bags.rs",
+    "mandatory_join_variants_verified": false,
+    "all_dialects_verified": false,
+    "dbt_adapter_verified": false,
+    "odcs_adapter_verified": false,
+    "ci_verified": false,
+    "parent_signed_off": false
+  },
   "task_133_pagination_acceptance": {
     "owner": "TASK-133",
     "parent": "TASK-76",
