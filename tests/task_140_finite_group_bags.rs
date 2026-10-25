@@ -138,3 +138,64 @@ fn opaque_fanout_cannot_claim_exact_closed_world_membership() {
         PhysicalFiniteTableProof::Residual { .. }
     ));
 }
+
+
+#[test]
+fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() {
+    let sql = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v";
+    let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
+        panic!("two-source closed INNER equality bag must be exact");
+    };
+    assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
+    assert_eq!(proof.source_row_ids.len(), 5, "five matched JOIN producers");
+    assert_eq!(proof.contributors.iter().map(Vec::len).sum::<usize>(), 5);
+    assert_eq!(proof.physical_input_ids["left"], ["left/unnest:1", "left/unnest:2", "left/unnest:3"]);
+    assert_eq!(proof.physical_input_ids["right"], ["right/values:0", "right/values:1", "right/values:2"]);
+    assert_eq!(proof.physical_inputs["left"].len(), 3);
+    assert_eq!(proof.physical_inputs["right"].len(), 3);
+    assert_eq!(proof.joined_selected.len(), 5);
+    assert_eq!(proof.joined_not_true.len(), 4);
+    assert_eq!(proof.terminal_column_types["v"], FiniteColumnType::Integer);
+    assert_eq!(proof.terminal_column_types["n"], FiniteColumnType::Integer);
+    let (bundle, target) = analyzed(sql, "duckdb");
+    let wanted = BTreeMap::from([
+        ("v".to_string(), LiteralValue::Number("3".to_string())),
+        ("n".to_string(), LiteralValue::Number("1".to_string())),
+    ]);
+    assert!(matches!(
+        physical_finite_table_plan(&bundle, &target, Some(&wanted)),
+        PhysicalFiniteTableProof::Impossible { .. }
+    ));
+}
+
+#[test]
+fn finite_join_null_keys_are_not_true_and_reversed_equality_is_equivalent() {
+    let first = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON t.v = u.v GROUP BY t.v";
+    let reverse = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON u.v = t.v GROUP BY t.v";
+    for sql in [first, reverse] {
+        let PhysicalFiniteTableProof::Exact(proof) = source_free(sql) else {
+            panic!("nullable equality must use SQL TRUE/NOT TRUE");
+        };
+        assert_eq!(sorted(&proof.terminal), sorted(&duckdb_bag(sql)));
+        assert_eq!(proof.joined_selected.len(), 5);
+        assert_eq!(proof.joined_not_true.len(), 11);
+        assert!(proof.joined_not_true.iter().any(|ids| ids[0] == "left/unnest:4"));
+        assert!(proof.joined_not_true.iter().any(|ids| ids[1] == "right/values:3"));
+        assert!(proof.terminal.iter().all(|row| row["v"] != LiteralValue::Null));
+    }
+}
+
+#[test]
+fn non_equality_join_and_unproven_multiple_sources_fail_closed() {
+    for sql in [
+        "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v > u.v GROUP BY t.v",
+        "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v AND t.v > 0 GROUP BY t.v",
+        "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY u.v",
+    ] {
+        let (bundle, target) = analyzed(sql, "duckdb");
+        assert!(matches!(
+            physical_finite_table_plan(&bundle, &target, None),
+            PhysicalFiniteTableProof::Residual { .. }
+        ), "{sql}: only attested exact join can be exact");
+    }
+}
