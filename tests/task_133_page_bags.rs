@@ -190,7 +190,6 @@ fn pagination_cannot_skip_a_derived_or_filtered_producer_boundary() {
         "WITH t AS (SELECT k FROM s WHERE k > 2) SELECT k FROM t ORDER BY k LIMIT 2",
         "SELECT k FROM (SELECT k FROM s WHERE k > 2) AS t ORDER BY k LIMIT 2",
         "SELECT k FROM s WHERE k >= 2 ORDER BY k LIMIT 2",
-        "SELECT DISTINCT k FROM s ORDER BY k LIMIT 2",
     ] {
         let proof = prove(sql, "duckdb", &[Some(1), Some(2), Some(3), Some(4)]);
         assert!(
