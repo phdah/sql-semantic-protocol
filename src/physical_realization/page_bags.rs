@@ -203,9 +203,9 @@ pub fn physical_finite_page_bag_plan(
     }
     rows.sort_by(|left, right| compare_ordered_rows(&left.1, &right.1, &shaping.keys));
     if !shaping.with_ties
-        && rows
-            .windows(2)
-            .any(|pair| compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal)
+        && rows.windows(2).any(|pair| {
+            compare_ordered_rows(&pair[0].1, &pair[1].1, &shaping.keys) == Ordering::Equal
+        })
     {
         return residual("non-unique ORDER BY keys do not establish exact physical survivors");
     }
@@ -230,8 +230,7 @@ pub fn physical_finite_page_bag_plan(
         {
             peer_start = position;
         }
-        let inside_limit = position >= shaping.offset
-            && position - shaping.offset < shaping.limit;
+        let inside_limit = position >= shaping.offset && position - shaping.offset < shaping.limit;
         let boundary_peer = cutoff_keys.is_some_and(|cutoff| {
             compare_ordered_rows(keys, cutoff, &shaping.keys) == Ordering::Equal
         });
