@@ -8305,7 +8305,7 @@
       }
     },
     "finiteTable": {
-      "description": "Complete typed source-free finite constructor, wildcard projection, fixed-key PIVOT or UNPIVOT bag, including NULL and duplicate rows.",
+      "description": "Complete typed source-free finite constructor, wildcard projection, PIVOT/UNPIVOT or COUNT(*) grouping bag, including NULL and duplicate rows.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -8322,7 +8322,8 @@
             "explode",
             "star",
             "pivot",
-            "unpivot"
+            "unpivot",
+            "grouped"
           ]
         },
         "columns": {
