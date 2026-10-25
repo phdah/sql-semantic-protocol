@@ -24,6 +24,13 @@ fn finite_table_to_value(table: &crate::protocol::FiniteTable) -> Value {
         value["source"] = finite_table_to_value(source);
         value["contributors"] = json!(table.contributors());
     }
+    if let Some((left, right)) = table.joined_sources() {
+        value["joined_sources"] = json!([
+            finite_table_to_value(left),
+            finite_table_to_value(right)
+        ]);
+        value["join_pairs"] = json!(table.joined_pairs());
+    }
     value
 }
 
