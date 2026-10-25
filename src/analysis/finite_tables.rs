@@ -334,13 +334,11 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     if !modifiers.is_empty() {
         return None;
     }
-    let [
-        SelectItem::UnnamedExpr(Expr::Identifier(projected_key)),
-        SelectItem::ExprWithAlias {
-            expr: Expr::Function(aggregate),
-            alias,
-        },
-    ] = select.projection.as_slice() else {
+    let [SelectItem::UnnamedExpr(Expr::Identifier(projected_key)), SelectItem::ExprWithAlias {
+        expr: Expr::Function(aggregate),
+        alias,
+    }] = select.projection.as_slice()
+    else {
         return None;
     };
     if projected_key.value != group_key.value
