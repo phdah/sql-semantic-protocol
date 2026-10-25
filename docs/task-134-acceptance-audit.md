@@ -36,6 +36,16 @@ Canonical AST conversion stays in analysis, typed DISTINCT grouping is reused fr
 
 The conservative integer equality guard avoids assuming vendor text collation or decimal coercion. Stable physical identities and negative membership are retained for all complete source rows. `AGENTS.md`, `CONTRIBUTING.md` and Fowler smell review identify no need for a consumer-specific contract or a new dependency.
 
+## Independent standards and specification review
+
+Reviewed the PR against `AGENTS.md`, `CONTRIBUTING.md`, the fixed TASK-134 acceptance freeze, and the original TASK-76 mapping using Matt Pocock's two-axis review method.
+
+**Standards:** no unresolved documented-standard violations on the reviewed code head. Parsing and normalization remain in analysis, the typed grouping keys remain canonical, physical proof does not reparse SQL, and each unsupported evidence boundary returns an explicit Residual. Existing adapter semantics are reused, no dependency was added, and the current active schema reflects the optional wire change. The Fowler heuristic review considered duplication, divergent change, feature envy and speculative generality; tests use repeated fixture setup but no additional abstraction is justified for this bounded scope.
+
+**Specification:** all five TASK-134 acceptance criteria are covered by the executable frozen matrix, independent whole-source/whole-terminal DuckDB oracles, physical positive and NOT TRUE membership, 13-dialect parser classification and adapter paths. The separate deterministic non-key DISTINCT ON regression and ambiguous winner fail-closed proof close the remaining edge case. No mandatory cell was demoted to Residual; conditional cells retain named ownership and explicit native engine/session limitations. TASK-76's parent-only obligations remain open.
+
 ## Final CI and disposition
 
-**Pending final-head verification.** Do not mark TASK-134 Done until mandatory and conditional SQL, dbt, ODCS, schema/golden, docs, formatting and strict lint jobs all pass on the final PR head. Do not merge or mark TASK-76 complete based on this child audit.
+**All five bounded TASK-134 acceptance criteria verified on code head.** GitHub Actions [run 40228675764](https://github.com/phdah/sql-semantic-protocol/actions/runs/40228675764), commit `64bb50288fcc58704f403718a65ca89f62b8255a`, passed all **9/9** required jobs: formatting, strict lint, Rust tests, no-default-feature lint/test/docs/dependencies, Rust docs and real dbt Core E2E including active schema and golden checks. The test run also covers all six frozen mandatory complete physical/DuckDB cases, all 39 reviewed conditional parser cells, all 117 parser dispositions and 27 adapter cells.
+
+The final signoff metadata is committed after the green code head; **the final metadata-only PR head must also pass CI before merge**. TASK-76 remains open, TASK-91 release approval is independent, and no native vendor runtime law is certified from parser or DuckDB equivalence.
