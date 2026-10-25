@@ -128,7 +128,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-P-distinct",
@@ -213,7 +225,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-P-distinct-on",
@@ -293,7 +317,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-P-explicit-nulls",
@@ -364,7 +400,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-N-with-ties-zero",
@@ -435,7 +483,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-N-absent",
@@ -520,7 +580,19 @@
         "dbt_compiled": "exact required",
         "odcs": "exact required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
     },
     {
       "id": "76-C134-N-implicit-null",
@@ -555,7 +627,35 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "NULL order not explicit; session-dependent",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
     },
     {
       "id": "76-C134-N-distinct-on-tie",
@@ -628,7 +728,35 @@
           "reason": "non-key value depends on unresolved peer selection"
         },
         "verified_regression": "tests/task_134_distinct_on.rs::distinct_on_tied_nonkey_projection_is_residual"
-      }
+      },
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "DISTINCT ON order fails to choose a deterministic member for non-key output",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
     },
     {
       "id": "76-C134-N-qualify",
@@ -664,7 +792,36 @@
         "dbt_compiled": "typed residual required",
         "odcs": "typed residual required"
       },
-      "validation": "pending"
+      "validation": "pending",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "QUALIFY producer not independently proven by page executor",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
     }
   ],
   "signoff": {
@@ -681,5 +838,12 @@
     "all_cases_parser_accepted": true,
     "non_duckdb_native_execution": "not certified",
     "owner": "TASK-134"
+  },
+  "physical_truth_semantics": {
+    "ordinary_page": "row survives iff it is in the deterministically selected physical page",
+    "distinct": "terminal tuple multiplicity is one; all matching physical inputs contribute provenance, without a fabricated representative row",
+    "distinct_on": "when complete candidate tuples project identical outputs, terminal bag is exact but physical representative identity is not asserted; ambiguous non-key output remains Residual",
+    "source_evidence": "caller-attested closed physical bag, authoritative signed integer column type, stable source identifiers, and full terminal set domains",
+    "oracles": "native DuckDB whole source and terminal bags for every mandatory case; conditional boundaries never described as native vendor execution"
   }
 }
