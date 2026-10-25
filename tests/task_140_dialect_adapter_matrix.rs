@@ -66,18 +66,31 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
     let matrix = freeze();
     assert_eq!(matrix["owner"], "TASK-140");
     let mut checked = 0;
+    let mut mismatches = Vec::new();
     for case in matrix["variants"].as_array().expect("finite variant matrix") {
         let sql = case["sql"].as_str().expect("SQL");
         for cell in case["parser_cells"].as_array().expect("13 dialect cells") {
             let dialect = cell["dialect"].as_str().expect("project dialect");
-            assert_eq!(cell["classification"], proof_status(sql, dialect), "{dialect}: {sql}");
+            let observed = proof_status(sql, dialect);
+            if cell["classification"] != observed {
+                mismatches.push(format!(
+                    "{} / {}: frozen={} observed={observed}",
+                    case["id"], dialect, cell["classification"]
+                ));
+            }
             checked += 1;
         }
         let duckdb = "duckdb";
         let adapter_cells = case["adapter_cells"].as_array().expect("adapter matrix");
         assert_eq!(adapter_cells.len(), 3);
-        assert_eq!(adapter_cells[0]["classification"], proof_status(sql, duckdb));
-        assert_eq!(adapter_cells[1]["classification"], compiled_dbt_status(sql, duckdb));
+        let observed_direct = proof_status(sql, duckdb);
+        let observed_dbt = compiled_dbt_status(sql, duckdb);
+        if adapter_cells[0]["classification"] != observed_direct {
+            mismatches.push(format!("{} / direct: {observed_direct}", case["id"]));
+        }
+        if adapter_cells[1]["classification"] != observed_dbt {
+            mismatches.push(format!("{} / dbt: {observed_dbt}", case["id"]));
+        }
         assert_eq!(adapter_cells[2]["classification"], "inapplicable_without_literal_rows");
         assert_eq!(adapter_cells[2]["certified"], true);
         if case["kind"] == "conditional" {
@@ -86,6 +99,7 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
         }
     }
     assert_eq!(checked, matrix["verification"]["parser_cells_to_verify"].as_u64().unwrap() as usize);
+    assert!(mismatches.is_empty(), "frozen cells differ from observed parser/adapter behavior: {mismatches:?}");
 }
 
 #[cfg(feature = "odcs")]
