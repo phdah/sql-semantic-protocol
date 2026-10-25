@@ -121,9 +121,9 @@ pub fn physical_finite_page_bag_plan(
         return residual("page target has no canonical query");
     };
     let shaping = query.row_shaping();
-    let distinct = query.aggregation().filter(|aggregation| {
-        aggregation.distinct() && aggregation.group_by().is_none()
-    });
+    let distinct = query
+        .aggregation()
+        .filter(|aggregation| aggregation.distinct() && aggregation.group_by().is_none());
     if shaping.is_none() && distinct.is_none() {
         return residual("query has no normalized deterministic row-selection bounds");
     }
@@ -142,9 +142,7 @@ pub fn physical_finite_page_bag_plan(
         || query.diagnostics().iter().any(|diagnostic| {
             // Unbounded DISTINCT ON with identical output per group has an exact
             // unordered *bag* even without an attested SQL sort direction.
-            distinct.is_none()
-                || shaping.is_some()
-                || diagnostic.code() != "unsupported_order_by"
+            distinct.is_none() || shaping.is_some() || diagnostic.code() != "unsupported_order_by"
         })
     {
         return residual("query has unproved source identity or additional row shaping");
@@ -177,9 +175,7 @@ pub fn physical_finite_page_bag_plan(
         }
         projection.push((column.name().to_string(), expr.name().to_string()));
     }
-    if projection.is_empty()
-        || (shaping.is_some_and(|shape| shape.keys.is_empty()))
-    {
+    if projection.is_empty() || (shaping.is_some_and(|shape| shape.keys.is_empty())) {
         return residual("page has no certified output or order keys");
     }
     let mut sort_names = Vec::new();
@@ -203,7 +199,11 @@ pub fn physical_finite_page_bag_plan(
     let mut rows = Vec::<(usize, Vec<Option<i128>>)>::new();
     for (index, row) in snapshot.rows().iter().enumerate() {
         let mut keys = Vec::new();
-        for (key, source_name) in shaping.into_iter().flat_map(|shape| &shape.keys).zip(&sort_names) {
+        for (key, source_name) in shaping
+            .into_iter()
+            .flat_map(|shape| &shape.keys)
+            .zip(&sort_names)
+        {
             let value = match super::rank_bags::key_value(row, source_name) {
                 Ok(value) => value,
                 Err(reason) => return residual(reason),
@@ -311,7 +311,6 @@ pub fn physical_finite_page_bag_plan(
     }))
 }
 
-
 #[derive(Debug)]
 struct DistinctGroup {
     identity: Vec<LiteralValue>,
@@ -332,7 +331,10 @@ fn prove_distinct_page(
     aggregation: &Aggregation,
 ) -> PhysicalFinitePageProof {
     let on_columns = if aggregation.distinct_on().is_empty() {
-        projection.iter().map(|(output, _)| output.clone()).collect::<Vec<_>>()
+        projection
+            .iter()
+            .map(|(output, _)| output.clone())
+            .collect::<Vec<_>>()
     } else {
         let mut columns = Vec::new();
         for expression in aggregation.distinct_on() {
@@ -357,7 +359,10 @@ fn prove_distinct_page(
     }
     if !aggregation.distinct_on().is_empty() {
         if let Some(shape) = shaping {
-            let leading = shape.keys.iter().take(on_columns.len())
+            let leading = shape
+                .keys
+                .iter()
+                .take(on_columns.len())
                 .filter_map(|key| projection.get(key.index).map(|(name, _)| name.as_str()))
                 .collect::<Vec<_>>();
             if leading != on_columns.iter().map(String::as_str).collect::<Vec<_>>() {
@@ -377,9 +382,11 @@ fn prove_distinct_page(
             };
             output.insert(output_name.clone(), value.clone());
         }
-        let Some(identity) = on_columns.iter()
+        let Some(identity) = on_columns
+            .iter()
             .map(|column| output.get(column).cloned())
-            .collect::<Option<Vec<_>>>() else {
+            .collect::<Option<Vec<_>>>()
+        else {
             return residual("DISTINCT ON grouping key missing from output");
         };
         if let Some(group) = groups.iter_mut().find(|group| group.identity == identity) {
@@ -407,7 +414,11 @@ fn prove_distinct_page(
     // group order and the cutoff; for unbounded DISTINCT all groups contribute.
     let cutoff = shaping.and_then(|shape| {
         (shape.with_ties && shape.limit > 0)
-            .then(|| groups.get(shape.limit.saturating_sub(1)).map(|group| &group.ordering))
+            .then(|| {
+                groups
+                    .get(shape.limit.saturating_sub(1))
+                    .map(|group| &group.ordering)
+            })
             .flatten()
     });
     let mut survivors = vec![false; snapshot.rows().len()];
@@ -445,27 +456,38 @@ fn prove_distinct_page(
         if retained {
             terminal.push(group.output.clone());
             terminal_contributors.push(
-                group.contributors.iter().map(|idx| format!("{source}#{idx}")).collect()
+                group
+                    .contributors
+                    .iter()
+                    .map(|idx| format!("{source}#{idx}"))
+                    .collect(),
             );
         }
     }
-    let rows = survivors.into_iter().enumerate().map(|(idx, survives)| {
-        PhysicalPageRow {
+    let rows = survivors
+        .into_iter()
+        .enumerate()
+        .map(|(idx, survives)| PhysicalPageRow {
             source_row_id: format!("{source}#{idx}"),
             order_position: positions[idx],
             survives,
-        }
-    }).collect();
+        })
+        .collect();
     let mut terminal_domains = BTreeMap::new();
     for (name, _) in projection {
-        terminal_domains.insert(name.clone(),
+        terminal_domains.insert(
+            name.clone(),
             super::rank_bags::exact_domain(
-                terminal.iter().filter_map(|row| row.get(name).cloned())
-            )
+                terminal.iter().filter_map(|row| row.get(name).cloned()),
+            ),
         );
     }
     PhysicalFinitePageProof::Exact(Box::new(PhysicalFinitePageExact {
-        nodes, source: source.to_string(), rows, terminal, terminal_domains,
+        nodes,
+        source: source.to_string(),
+        rows,
+        terminal,
+        terminal_domains,
         terminal_contributors,
     }))
 }
