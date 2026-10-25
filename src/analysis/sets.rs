@@ -395,7 +395,6 @@ pub(super) fn analyze_direct_row_shaping(
             TableFactor::Table { sample: None, .. }
         )
         || !select.from[0].joins.is_empty()
-        || select.distinct.is_some()
         || select.selection.is_some()
         || select.having.is_some()
         || select.qualify.is_some()
