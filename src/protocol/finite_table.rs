@@ -22,6 +22,8 @@ pub enum FiniteTableKind {
     Pivot,
     /// Fixed-column unpivot of a complete finite source bag.
     Unpivot,
+    /// SQL GROUP BY COUNT(*) over one complete typed literal input bag.
+    Grouped,
 }
 
 impl FiniteTableKind {
@@ -34,6 +36,7 @@ impl FiniteTableKind {
             Self::Star => "star",
             Self::Pivot => "pivot",
             Self::Unpivot => "unpivot",
+            Self::Grouped => "grouped",
         }
     }
 }
