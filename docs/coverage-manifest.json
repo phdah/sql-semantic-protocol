@@ -12928,7 +12928,7 @@
   "task_134_pagination_acceptance": {
     "owner": "TASK-134",
     "parent": "TASK-76",
-    "status": "in_progress_unverified",
+    "status": "verified_bounded_child_pending_merge",
     "freeze": "docs/task-134-acceptance-freeze.json",
     "fixture_ids": [
       "76-C134-P",
@@ -12936,10 +12936,34 @@
     ],
     "mandatory_cases": 6,
     "conditional_cases": 3,
-    "mandatory_exact_verified": 0,
-    "all_parser_cells_verified": false,
-    "all_adapter_cells_verified": false,
+    "mandatory_exact_verified": 6,
+    "all_parser_cells_verified": true,
+    "all_adapter_cells_verified": true,
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "conditional_residual_reviewed": 3,
+    "parser_cells_certified": 117,
+    "parser_exact_cells": 78,
+    "parser_residual_cells": 39,
+    "adapter_cells_certified": 27,
+    "dbt_core_e2e_verified": true,
+    "exact_complete_physical_bag_oracle": "tests/task_134_frozen_matrix.rs",
+    "reviewed_conditionals": [
+      "implicit_null_order",
+      "ambiguous_distinct_on_winner",
+      "unproved_qualify_producer"
+    ],
+    "audit": "docs/task-134-acceptance-audit.md",
+    "verified_code_head": "64bb50288fcc58704f403718a65ca89f62b8255a",
+    "verified_ci_run_id": 40228675764,
+    "verified_checks": 9,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "merge_gate": "final PR head CI must also pass after signoff metadata commit"
   }
 }
