@@ -329,6 +329,24 @@ fn finite_column_reference(expression: &Expr) -> Option<(Option<&str>, &str)> {
     }
 }
 
+fn finite_source_alias(factor: &TableFactor) -> Option<&str> {
+    match factor {
+        TableFactor::UNNEST {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Table {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Function {
+            alias: Some(alias), ..
+        }
+        | TableFactor::Derived {
+            alias: Some(alias), ..
+        } => Some(alias.name.value.as_str()),
+        _ => None,
+    }
+}
+
 // One INNER equijoin of exactly two complete, independently attested literal
 // source bags. Equality is over typed integer keys; SQL NULL is never TRUE.
 // The canonical Joined node holds both bags and all selected physical pairs.
@@ -340,36 +358,8 @@ fn finite_join_source(from: &TableWithJoins, dialect_name: &str) -> Option<(Fini
         .or_else(|| named_values_source(&from.relation))?;
     let right = literal_array_source(&join.relation, dialect_name)
         .or_else(|| named_values_source(&join.relation))?;
-    let left_alias = match &from.relation {
-        TableFactor::UNNEST {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Table {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Function {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Derived {
-            alias: Some(alias), ..
-        } => &alias.name.value,
-        _ => return None,
-    };
-    let right_alias = match &join.relation {
-        TableFactor::UNNEST {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Table {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Function {
-            alias: Some(alias), ..
-        }
-        | TableFactor::Derived {
-            alias: Some(alias), ..
-        } => &alias.name.value,
-        _ => return None,
-    };
+    let left_alias = finite_source_alias(&from.relation)?;
+    let right_alias = finite_source_alias(&join.relation)?;
     if left_alias == right_alias || left.columns().len() != 1 || right.columns().len() != 1 {
         return None;
     }
@@ -475,15 +465,16 @@ fn grouped_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
     let (source, required_alias) = if from.joins.is_empty() {
         let source = literal_array_source(&from.relation, dialect_name)
             .or_else(|| named_values_source(&from.relation))?;
-        (source, None)
+        (source, finite_source_alias(&from.relation)?.to_string())
     } else {
-        let (joined, alias) = finite_join_source(from, dialect_name)?;
-        (joined, Some(alias))
+        finite_join_source(from, dialect_name)?
     };
-    if let Some(required_alias) = required_alias.as_deref() {
-        if group_alias != Some(required_alias) {
-            return None;
-        }
+    if group_alias.is_some() && group_alias != Some(required_alias.as_str()) {
+        return None;
+    }
+    // The only exposed joined key belongs to the left source.
+    if !from.joins.is_empty() && group_alias != Some(required_alias.as_str()) {
+        return None;
     }
     let position = source.columns().iter().position(|name| name == group_key)?;
     if position != 0 || source.columns().len() != 1 {
