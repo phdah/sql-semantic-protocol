@@ -485,9 +485,11 @@ fn analyze_row_shaping(
                 },
                 false,
             ),
-            (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => {
-                (nonnegative_literal(limit)?, nonnegative_literal(offset)?, false)
-            }
+            (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => (
+                nonnegative_literal(limit)?,
+                nonnegative_literal(offset)?,
+                false,
+            ),
             (None, Some(fetch)) if !fetch.percent => (
                 match &fetch.quantity {
                     Some(quantity) => nonnegative_literal(quantity)?,
