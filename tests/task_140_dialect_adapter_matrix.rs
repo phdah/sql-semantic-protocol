@@ -74,6 +74,18 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
         let sql = case["sql"].as_str().expect("SQL");
         for cell in case["parser_cells"].as_array().expect("13 dialect cells") {
             let dialect = cell["dialect"].as_str().expect("project dialect");
+            assert_eq!(cell["certified"], true, "{dialect}: uncertified parser cell");
+            if case["kind"] == "mandatory" && cell["classification"] == "residual" {
+                assert_eq!(
+                    cell["release_disposition"]["owner"], "TASK-140",
+                    "{dialect}: mandatory parser-accepted residual needs explicit owner"
+                );
+                assert_eq!(
+                    cell["release_disposition"]["status"],
+                    "reviewed_conditional_parser_engine_boundary",
+                    "{dialect}: uncertified native/vendor runtime must not be called exact"
+                );
+            }
             let observed = proof_status(sql, dialect);
             if cell["classification"] != observed {
                 mismatches.push(format!(
@@ -86,6 +98,10 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
         let duckdb = "duckdb";
         let adapter_cells = case["adapter_cells"].as_array().expect("adapter matrix");
         assert_eq!(adapter_cells.len(), 3);
+        assert!(
+            adapter_cells.iter().all(|cell| cell["certified"] == true),
+            "every adapter cell must have reviewed source evidence"
+        );
         let observed_direct = proof_status(sql, duckdb);
         let observed_dbt = compiled_dbt_status(sql, duckdb);
         if adapter_cells[0]["classification"] != observed_direct {
