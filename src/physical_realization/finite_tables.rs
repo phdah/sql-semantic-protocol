@@ -33,6 +33,10 @@ pub struct PhysicalFiniteTableExact {
     pub joined_selected: Vec<[String; 2]>,
     /// Exhaustive NOT TRUE pairs, including NULL-key UNKNOWN.
     pub joined_not_true: Vec<[String; 2]>,
+    /// Explicit FALSE comparisons between two non-NULL unequal keys.
+    pub joined_false: Vec<[String; 2]>,
+    /// Explicit UNKNOWN comparisons with at least one SQL NULL key.
+    pub joined_unknown: Vec<[String; 2]>,
 }
 
 /// Sound classification of complete literal rows and optional row membership.
@@ -197,6 +201,8 @@ pub fn physical_finite_table_plan(
     let mut physical_input_ids = BTreeMap::new();
     let mut joined_selected = Vec::new();
     let mut joined_not_true = Vec::new();
+    let mut joined_false = Vec::new();
+    let mut joined_unknown = Vec::new();
     let join = table
         .source()
         .filter(|source| matches!(source.kind(), crate::protocol::FiniteTableKind::Joined))
@@ -248,6 +254,21 @@ pub fn physical_finite_table_plan(
                 if join.joined_pairs().contains(&[li, ri]) {
                     joined_selected.push(pair);
                 } else {
+                    let nullable = left
+                        .rows()
+                        .get(li)
+                        .and_then(|row| row.first())
+                        .is_some_and(|value| value.value() == &LiteralValue::Null)
+                        || right
+                            .rows()
+                            .get(ri)
+                            .and_then(|row| row.first())
+                            .is_some_and(|value| value.value() == &LiteralValue::Null);
+                    if nullable {
+                        joined_unknown.push(pair.clone());
+                    } else {
+                        joined_false.push(pair.clone());
+                    }
                     joined_not_true.push(pair);
                 }
             }
@@ -278,5 +299,7 @@ pub fn physical_finite_table_plan(
         physical_input_ids,
         joined_selected,
         joined_not_true,
+        joined_false,
+        joined_unknown,
     }))
 }
