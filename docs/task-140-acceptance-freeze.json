@@ -1,12 +1,12 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-140",
   "parent": "TASK-77",
   "fixture_ids": [
     "77-C140-P",
     "77-C140-N"
   ],
-  "status": "verification_matrix_under_observation",
+  "status": "all_frozen_parser_and_adapter_obligations_observed_pending_final_ci",
   "definition_of_done": "No mandatory cell may be signed off without complete exact domain, physical bag, adapter and native SQL oracle",
   "variants": [
     {
@@ -109,8 +109,14 @@
         {
           "dialect": "sqlite",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "snowflake",
@@ -127,8 +133,14 @@
         {
           "dialect": "mssql",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "clickhouse",
@@ -226,8 +238,14 @@
         {
           "dialect": "sqlite",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "snowflake",
@@ -244,8 +262,14 @@
         {
           "dialect": "mssql",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "clickhouse",
@@ -567,93 +591,105 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "snowflake",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "clickhouse",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
@@ -942,93 +978,105 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "snowflake",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "clickhouse",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
@@ -1141,93 +1189,105 @@
       "parser_cells": [
         {
           "dialect": "generic",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mysql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "postgresql",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "hive",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "sqlite",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "snowflake",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "redshift",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "mssql",
           "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
         },
         {
           "dialect": "clickhouse",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "bigquery",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "ansi",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "duckdb",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         },
         {
           "dialect": "databricks",
-          "classification": "residual",
-          "certified": false,
-          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "compiled_dbt",
-          "classification": "residual",
-          "certified": false
+          "classification": "exact",
+          "certified": true
         },
         {
           "adapter": "odcs",
@@ -1512,7 +1572,7 @@
     "odcs"
   ],
   "verification": {
-    "semantic_exact_cases_verified": 0,
+    "semantic_exact_cases_verified": 7,
     "mandatory_cases_to_verify": 7,
     "parser_cells_to_verify": 117,
     "adapter_cells_to_verify": 27,
@@ -1521,21 +1581,24 @@
     "task_done": false,
     "observed_dialect_matrix": true,
     "parser_cells_observed": 117,
-    "parser_cells_currently_certified": 74,
-    "join_mandatory_residual_cells": 43,
-    "exact_parser_cells": 39,
-    "residual_parser_cells": 69,
+    "parser_cells_currently_certified": 117,
+    "join_mandatory_residual_cells": 0,
+    "exact_parser_cells": 72,
+    "residual_parser_cells": 36,
     "parser_boundary_cells": 9,
     "native_oracle_test": "tests/task_140_finite_group_bags.rs",
     "real_dbt_core_test": "tests/task_140_dbt_core_e2e.rs",
     "dialect_adapter_test": "tests/task_140_dialect_adapter_matrix.rs",
-    "frozen_case_count": 9
+    "frozen_case_count": 9,
+    "adapter_cells_currently_certified": 27,
+    "dialect_adapter_matrix_independently_observed": true
   },
   "notes": [
     "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
     "Source-free UNNEST and VALUES group cases are the initial implementation slice; mandatory JOIN fanout remains a blocking implementation gap until proved from the same complete source bag.",
     "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests.",
     "All current dialect statuses were directly observed in GitHub CI run 40239974202; mandatory JOIN residuals are intentionally uncertified until implementation is fixed and rerun.",
-    "The join positive and nullable cases list all physical TRUE and NOT TRUE identity pairs (9 and 16 Cartesian opportunities) with explicit NULL UNKNOWN rejections and inclusive typed terminal domain bounds."
+    "The join positive and nullable cases list all physical TRUE and NOT TRUE identity pairs (9 and 16 Cartesian opportunities) with explicit NULL UNKNOWN rejections and inclusive typed terminal domain bounds.",
+    "CI focused run 40241037204 observed exact direct/compiled dbt join and nullable/reversed variants for the 11 compatible parser dialect identities; SQLite/MSSQL native UNNEST syntax is a separately owned, noncertified conditional parser/engine law."
   ]
 }
