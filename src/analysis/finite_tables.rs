@@ -373,11 +373,16 @@ fn finite_join_source(from: &TableWithJoins, dialect_name: &str) -> Option<(Fini
     if left_alias == right_alias || left.columns().len() != 1 || right.columns().len() != 1 {
         return None;
     }
-    let JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+    let (JoinOperator::Join(JoinConstraint::On(Expr::BinaryOp {
         left: on_left,
         op: SqlBinaryOperator::Eq,
         right: on_right,
-    })) = &join.join_operator
+    }))
+    | JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+        left: on_left,
+        op: SqlBinaryOperator::Eq,
+        right: on_right,
+    }))) = &join.join_operator
     else {
         return None;
     };
