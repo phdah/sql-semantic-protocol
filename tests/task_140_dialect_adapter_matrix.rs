@@ -74,7 +74,10 @@ fn frozen_dialect_and_compiled_dbt_classifications_are_reproduced() {
         let sql = case["sql"].as_str().expect("SQL");
         for cell in case["parser_cells"].as_array().expect("13 dialect cells") {
             let dialect = cell["dialect"].as_str().expect("project dialect");
-            assert_eq!(cell["certified"], true, "{dialect}: uncertified parser cell");
+            assert_eq!(
+                cell["certified"], true,
+                "{dialect}: uncertified parser cell"
+            );
             if case["kind"] == "mandatory" && cell["classification"] == "residual" {
                 assert_eq!(
                     cell["release_disposition"]["owner"], "TASK-140",
