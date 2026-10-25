@@ -358,7 +358,7 @@ fn prove_distinct_page(
             };
             let Some((output, _)) = projection.iter().find(|(_, physical)| {
                 physical == column.name()
-                    // Only one validated physical source is possible here.
+                // Only one validated physical source is possible here.
             }) else {
                 return residual("DISTINCT ON expression lacks an attested projected column");
             };
