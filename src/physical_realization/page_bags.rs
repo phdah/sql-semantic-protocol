@@ -198,7 +198,10 @@ pub fn physical_finite_page_bag_plan(
 
     if distinct.is_some() {
         for (_, source_name) in &projection {
-            let Some(declared) = schema.columns().iter().find(|column| column.name() == source_name)
+            let Some(declared) = schema
+                .columns()
+                .iter()
+                .find(|column| column.name() == source_name)
             else {
                 return residual("DISTINCT output column lacks an authoritative type");
             };
@@ -395,8 +398,11 @@ fn prove_distinct_page(
             // Equality over physical typed integers is numeric, not textual.
             // Noncanonical source tokens must not be treated as different SQL values.
             match value {
-                LiteralValue::Number(value) if value.parse::<i128>().ok()
-                    .is_some_and(|integer| integer.to_string() == *value) => {}
+                LiteralValue::Number(value)
+                    if value
+                        .parse::<i128>()
+                        .ok()
+                        .is_some_and(|integer| integer.to_string() == *value) => {}
                 LiteralValue::Null => {}
                 _ => return residual("DISTINCT requires canonical signed integer source values"),
             }
