@@ -183,3 +183,59 @@ fn every_shared_distinct_parser_path_has_an_exact_canonical_bag() {
         assert!(matches!(proof, PhysicalFinitePageProof::Exact(_)), "{name}: {proof:?}");
     }
 }
+
+
+#[test]
+fn every_frozen_parser_path_records_canonical_exact_or_explicit_boundary() {
+    use sqlparser::parser::Parser;
+    const DIALECTS: [&str; 13] = [
+        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
+        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    ];
+    let inventory = freeze();
+    let mut checked = 0;
+    for case in inventory["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let sql = case["sql"].as_str().unwrap();
+        for dialect in DIALECTS {
+            let parser = dialect_from_name(dialect).unwrap();
+            let parsed = Parser::parse_sql(parser.as_ref(), sql);
+            match parsed {
+                Err(error) => {
+                    assert!(!error.to_string().is_empty());
+                    println!("TASK134_PARSER {id} {dialect} parser_boundary");
+                }
+                Ok(_) => {
+                    let input = SqlInput::inline(sql);
+                    let configured = [ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())];
+                    let analysis = analyze_configured_inputs_with_catalog(&configured, &catalog());
+                    let classification = match analysis {
+                        Err(reason) => {
+                            println!("TASK134_PARSER {id} {dialect} analysis_boundary: {reason}");
+                            "analysis_boundary"
+                        }
+                        Ok(bundle) => {
+                            let target = bundle.layers().last().unwrap().id();
+                            let proof = physical_finite_page_bag_plan(
+                                &bundle, target, &[source(case)]
+                            );
+                            match proof {
+                                PhysicalFinitePageProof::Exact(_) => "exact",
+                                PhysicalFinitePageProof::Impossible { .. } => "impossible",
+                                PhysicalFinitePageProof::Residual { .. } => "residual",
+                            }
+                        }
+                    };
+                    println!("TASK134_PARSER {id} {dialect} {classification}");
+                    if case["classification"] == "mandatory" {
+                        assert_eq!(classification, "exact", "{id}/{dialect}");
+                    } else {
+                        assert_ne!(classification, "exact", "{id}/{dialect}: conditional boundary");
+                    }
+                }
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 117, "nine frozen variants in all 13 dialects");
+}
