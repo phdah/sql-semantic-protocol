@@ -185,11 +185,11 @@ fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() 
     assert_eq!(
         proof.joined_selected,
         [
-            ["left/unnest:1".into(), "right/values:0".into()],
-            ["left/unnest:1".into(), "right/values:1".into()],
-            ["left/unnest:2".into(), "right/values:0".into()],
-            ["left/unnest:2".into(), "right/values:1".into()],
-            ["left/unnest:3".into(), "right/values:2".into()]
+            ["left/unnest:1".to_string(), "right/values:0".to_string()],
+            ["left/unnest:1".to_string(), "right/values:1".to_string()],
+            ["left/unnest:2".to_string(), "right/values:0".to_string()],
+            ["left/unnest:2".to_string(), "right/values:1".to_string()],
+            ["left/unnest:3".to_string(), "right/values:2".to_string()]
         ],
         "every physical matched pair has deterministic provenance"
     );
