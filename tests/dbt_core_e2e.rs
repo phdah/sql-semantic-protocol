@@ -251,6 +251,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "task128_groups",
         "task128_ntile",
         "task133_pagination",
+        "task134_distinct",
         "task137_literal_unnest",
         "task138_finite_star",
         "task138_fixed_pivot",
