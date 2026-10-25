@@ -53,7 +53,9 @@ fn native_source_bag(sql: &str) -> Vec<BTreeMap<String, LiteralValue>> {
         let v = r.get::<_, Option<i64>>(0)?;
         Ok(BTreeMap::from([(
             "v".to_string(),
-            v.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+            v.map_or(LiteralValue::Null, |value| {
+                LiteralValue::Number(value.to_string())
+            }),
         )]))
     })
     .expect("native complete physical rows")
@@ -180,7 +182,9 @@ fn joined_finite_fanout_proves_complete_bags_pairs_and_typed_terminal_domains() 
     );
     assert_eq!(
         sorted(&proof.physical_inputs["right"]),
-        sorted(&native_source_bag("SELECT v FROM (VALUES (1),(1),(2)) AS t(v)"))
+        sorted(&native_source_bag(
+            "SELECT v FROM (VALUES (1),(1),(2)) AS t(v)"
+        ))
     );
     assert_eq!(
         proof.joined_selected,
@@ -250,7 +254,6 @@ fn non_equality_join_and_unproven_multiple_sources_fail_closed() {
     }
 }
 
-
 #[test]
 fn diagnostic_join_ast_for_task140() {
     use sqlparser::ast::{SetExpr, Statement};
@@ -258,9 +261,15 @@ fn diagnostic_join_ast_for_task140() {
     use sqlparser::parser::Parser;
     let sql = "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v";
     let ast = Parser::parse_sql(&DuckDbDialect {}, sql).expect("AST");
-    let Statement::Query(query) = &ast[0] else { panic!("not SELECT"); };
-    let SetExpr::Select(select) = query.body.as_ref() else { panic!("not select"); };
+    let Statement::Query(query) = &ast[0] else {
+        panic!("not SELECT");
+    };
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        panic!("not select");
+    };
     let from = &select.from[0];
-    panic!("TASK140_AST left={:?}, join={:?}, projection={:?}, group={:?}",
-        from.relation, from.joins, select.projection, select.group_by);
+    panic!(
+        "TASK140_AST left={:?}, join={:?}, projection={:?}, group={:?}",
+        from.relation, from.joins, select.projection, select.group_by
+    );
 }
