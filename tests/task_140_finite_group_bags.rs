@@ -91,8 +91,14 @@ fn frozen_inventory_names_both_directions_and_join_and_adapter_obligations() {
         .any(|x| x["family"] == "unnest_join_group"));
     assert_eq!(matrix["verification"]["task_done"], true);
     assert_eq!(matrix["verification"]["semantic_exact_cases_verified"], 7);
-    assert_eq!(matrix["verification"]["parser_cells_currently_certified"], 117);
-    assert_eq!(matrix["verification"]["adapter_cells_currently_certified"], 27);
+    assert_eq!(
+        matrix["verification"]["parser_cells_currently_certified"],
+        117
+    );
+    assert_eq!(
+        matrix["verification"]["adapter_cells_currently_certified"],
+        27
+    );
 }
 
 #[test]
