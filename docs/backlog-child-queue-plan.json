@@ -530,7 +530,13 @@
           "fixture_ids": [
             "76-C133-P",
             "76-C133-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child",
+          "freeze": "docs/task-133-acceptance-freeze.json",
+          "signoff_audit": "docs/task-133-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/147",
+          "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40212402845",
+          "dependency_gate": "TASK-134 remains blocked until PR #147 is merged into main; TASK-76 parent original criteria remain unsigned"
         },
         {
           "title": "Prove ties DISTINCT and QUALIFY pagination boundaries",

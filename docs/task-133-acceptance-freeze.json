@@ -1140,13 +1140,28 @@
     ]
   },
   "signoff": {
-    "complete": false,
-    "mandatory_verified": false,
-    "conditional_reviewed": false,
-    "final_ci_verified": false,
-    "open_issues": [
-      "full v3 matrix assertions and real dbt Core final-head CI pending",
-      "independent two-axis review pending"
+    "complete": true,
+    "mandatory_verified": true,
+    "conditional_reviewed": true,
+    "final_semantic_head_ci_verified": true,
+    "final_head_metadata_ci_pending": true,
+    "open_issues": [],
+    "native_vendor_runtime_certified": [
+      "duckdb"
+    ],
+    "native_vendor_runtime_not_certified": [
+      "mssql",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "databricks",
+      "generic"
     ],
     "parent_signed_off": false
   },
@@ -1191,5 +1206,8 @@
     "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40211219425",
     "result": "all 13 original frozen SQL variants accepted by all 13 sqlparser dialect paths; 5 exact, 4 residual per dialect",
     "native_vendor_approval": false
-  }
+  },
+  "independent_audit": "docs/task-133-acceptance-audit.md",
+  "semantic_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40212402845",
+  "pr": "https://github.com/phdah/sql-semantic-protocol/pull/147"
 }

@@ -2,7 +2,7 @@
   "task_133_pagination_acceptance": {
     "owner": "TASK-133",
     "parent": "TASK-76",
-    "status": "in_progress",
+    "status": "verified_bounded_child_pending_merge",
     "freeze": "docs/task-133-acceptance-freeze.json",
     "fixture_ids": [
       "76-C133-P",
@@ -19,8 +19,23 @@
     "adapter_cells": 39,
     "public_native_oracle": "tests/task_133_frozen_matrix.rs",
     "dbt_oracle": "tests/task_133_dbt_core_e2e.rs",
-    "verified": false,
-    "child_acceptance_criteria_verified": []
+    "verified": true,
+    "child_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mandatory_exact_verified": 9,
+    "conditional_residual_reviewed": 4,
+    "parser_cells_certified": 169,
+    "adapter_cells_certified": 39,
+    "direct_native_duckdb_exact_cases": 8,
+    "top_native_oracle": "duckdb_semantic_equivalent_only_mssql_native_unexecuted",
+    "real_dbt_oracle": "tests/task_133_dbt_core_e2e.rs",
+    "ci_verified": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40212402845",
+    "final_metadata_ci_pending": true
   },
   "task_139_generator_acceptance": {
     "owner": "TASK-139",
