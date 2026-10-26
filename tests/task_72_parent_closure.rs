@@ -12,7 +12,7 @@ fn inventory(raw: &str) -> Value {
     serde_json::from_str(raw).expect("versioned acceptance inventory")
 }
 
-fn cases(inventory: &Value, name: &str) -> &[Value] {
+fn cases<'a>(inventory: &'a Value, name: &str) -> &'a [Value] {
     inventory[name].as_array().expect("owned case inventory")
 }
 
@@ -42,7 +42,10 @@ fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
         .collect();
     assert_eq!(ac_ids, BTreeSet::from([1, 2, 3, 4, 5, 6]));
     for criterion in ac {
-        assert!(!criterion["mandatory"].as_array().expect("mandatory families").is_empty());
+        assert!(!criterion["mandatory"]
+            .as_array()
+            .expect("mandatory families")
+            .is_empty());
         assert!(nonempty_string(&criterion["source"]));
     }
 
@@ -55,7 +58,9 @@ fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
         .iter()
         .chain(cases(&child_120, "conditional_cases"))
     {
-        let id = case["upstream_evidence"].as_str().expect("upstream child fixture");
+        let id = case["upstream_evidence"]
+            .as_str()
+            .expect("upstream child fixture");
         assert!(evidence_ids.contains(id), "unknown upstream fixture: {id}");
     }
 
@@ -67,7 +72,10 @@ fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
     for task in [117, 118, 119, 120] {
         for polarity in ["P", "N"] {
             let id = format!("72-C{task}-{polarity}");
-            assert!(fixtures.contains(id.as_str()), "missing child fixture: {id}");
+            assert!(
+                fixtures.contains(id.as_str()),
+                "missing child fixture: {id}"
+            );
         }
     }
 }
@@ -86,7 +94,10 @@ fn task_72_parent_mandatory_bags_keep_complete_exact_oracles() {
     let mut operator_variants = BTreeSet::new();
     for case in mandatory {
         assert_eq!(case["classification"], "mandatory_exact");
-        assert!(case["source_bags"].is_object(), "missing complete physical bag");
+        assert!(
+            case["source_bags"].is_object(),
+            "missing complete physical bag"
+        );
         assert!(case["canonical_source_instances"].is_object());
         assert!(case["expected_terminal_tuple_histogram"].is_array());
         assert!(case["typed_terminal_domains"].is_array());
@@ -95,7 +106,12 @@ fn task_72_parent_mandatory_bags_keep_complete_exact_oracles() {
         assert!(nonempty_string(&case["oracle"]));
 
         let dialects = case["dialect_cells"].as_array().expect("dialect cells");
-        assert_eq!(dialects.len(), 13, "incomplete parser matrix: {}", case["id"]);
+        assert_eq!(
+            dialects.len(),
+            13,
+            "incomplete parser matrix: {}",
+            case["id"]
+        );
         let names: BTreeSet<_> = dialects
             .iter()
             .map(|cell| cell["name"].as_str().expect("dialect name"))
@@ -105,9 +121,15 @@ fn task_72_parent_mandatory_bags_keep_complete_exact_oracles() {
         let adapters = case["adapter_cells"].as_object().expect("source adapters");
         assert_eq!(adapters.len(), 3);
         for adapter in ["sql", "dbt", "odcs"] {
-            assert_eq!(adapters.get(adapter).and_then(Value::as_str), Some("mandatory"));
+            assert_eq!(
+                adapters.get(adapter).and_then(Value::as_str),
+                Some("mandatory")
+            );
         }
-        for ac in case["mapped_original_ac"].as_array().expect("original AC mapping") {
+        for ac in case["mapped_original_ac"]
+            .as_array()
+            .expect("original AC mapping")
+        {
             covered.insert(ac.as_u64().expect("mapped AC"));
         }
         if case["variant"] == "six_operator_nullable_bag" {
@@ -162,11 +184,19 @@ fn task_72_parent_conditionals_cannot_be_promoted_without_vendor_evidence() {
         assert!(nonempty_string(&boundary["release_disposition"]));
     }
     for case in conditional {
-        assert!(case["classification"].as_str().is_some_and(|c| c.starts_with("conditional")));
+        assert!(case["classification"]
+            .as_str()
+            .is_some_and(|c| c.starts_with("conditional")));
         assert_eq!(case["owner"], "TASK-120");
         assert!(nonempty_string(&case["boundary"]));
         assert!(nonempty_string(&case["release_disposition"]));
-        assert_eq!(case["dialect_cells"].as_array().expect("dialect cells").len(), 13);
+        assert_eq!(
+            case["dialect_cells"]
+                .as_array()
+                .expect("dialect cells")
+                .len(),
+            13
+        );
         assert!(case["expected_terminal_tuple_histogram"].is_null());
     }
 }
