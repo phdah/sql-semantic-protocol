@@ -1233,6 +1233,29 @@
           "description": "Canonical direct SELECT ordering and nonnegative page bounds; a physical proof must still certify ties, NULL sorting, and complete source rows.",
           "$ref": "#/$defs/setOperation/properties/row_shaping"
         },
+        "nested_page": {
+          "description": "A two-stage ordered CTE page program; inner and outer limits remain separate, and physical source columns are explicitly mapped.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "projected_columns", "inner", "outer"],
+          "properties": {
+            "source": { "type": "string" },
+            "projected_columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["output", "source"],
+                "properties": {
+                  "output": { "type": "string" },
+                  "source": { "type": "string" }
+                }
+              }
+            },
+            "inner": { "$ref": "#/$defs/setOperation/properties/row_shaping" },
+            "outer": { "$ref": "#/$defs/setOperation/properties/row_shaping" }
+          }
+        },
         "diagnostics": {
           "type": "array",
           "items": {
