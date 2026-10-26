@@ -1,6 +1,6 @@
 {
   "task": "TASK-72",
-  "version": 1,
+  "version": 2,
   "purpose": "Parent closure inventory; references the child's immutable source/terminal oracles without copying semantic facts",
   "source_of_truth": {
     "TASK-117": "docs/task-117-acceptance-freeze.json",
@@ -41,7 +41,8 @@
         "by-name",
         "corresponding",
         "coercion",
-        "branch-limit"
+        "branch-limit",
+        "joined-grouped-branch"
       ],
       "source": "TASK-118/119/120"
     },
@@ -89,7 +90,8 @@
         "corresponding",
         "coercion",
         "order-tie",
-        "branch-limit"
+        "branch-limit",
+        "joined-grouped-branch"
       ],
       "source": "TASK-117/118/119/120"
     }
@@ -145,7 +147,30 @@
   "non_promotions": [
     "13 sqlparser paths do not certify 13 native database engines",
     "unknown/Residual terminal bag is not an empty bag",
-    "TASK-91 release authorization is independent"
+    "TASK-91 release authorization is independent",
+    "nontrivial joined/grouped branch physical semantics remain conditional under TASK-85/TASK-89, not exact under TASK-72"
   ],
-  "status": "parent_review_pending_fresh_pr_ci"
+  "status": "parent_review_pending_fresh_pr_ci",
+  "parent_only_conditional": [
+    {
+      "id": "72-PARENT-C-joined-grouped-branch",
+      "variant": "joined-grouped-branch",
+      "sql": "SELECT a.k, COUNT(*) AS v FROM a INNER JOIN b ON a.k = b.k GROUP BY a.k UNION ALL SELECT k, v FROM c",
+      "classification": "conditional_residual",
+      "mapped_original_ac": [
+        2,
+        6
+      ],
+      "source_bags": null,
+      "terminal_bag": null,
+      "positive_proof": "Residual: no whole-source joined/grouped producer physical bag attested at the TASK-72 set-only seam",
+      "not_true_proof": "Residual: no complete rejected terminal partition attested at this seam",
+      "typed_terminal_domain": "unknown",
+      "parser_status": "conditional: representative SQL only, not native engine conformance",
+      "adapters": "conditional: no independent compiled dbt/ODCS physical oracle for joined/grouped branch at this seam",
+      "owner": "TASK-85",
+      "reason": "nontrivial joined/grouped producers require one closed physical assignment through the producer and all set branches",
+      "release_disposition": "TASK-85/TASK-89 must provide an integrated exact physical source/terminal oracle, or TASK-91 must explicitly approve a bounded release deferral; no exactness or native vendor claim is made here"
+    }
+  ]
 }
