@@ -1,4 +1,19 @@
 {
+  "task_136_sampling_acceptance": {
+    "owner": "TASK-136",
+    "parent": "TASK-76",
+    "task": ".backlog/tasks/task-136 - classify-sampling-and-certify-task-76-dialect-oracle-matrix.md",
+    "freeze": "docs/task-136-acceptance-freeze.json",
+    "fixture_ids": ["76-C136-P", "76-C136-N"],
+    "status": "in_progress_unverified",
+    "mandatory_cases": 5,
+    "conditional_cases": 5,
+    "dialect_cells_required": 130,
+    "adapter_cells_required": 30,
+    "child_ac_verified": [],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_140_fanout_acceptance": {
     "owner": "TASK-140",
     "parent": "TASK-77",
