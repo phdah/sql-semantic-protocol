@@ -36,7 +36,8 @@
     "73-C124-N-3-4",
     "73-C124-N-3-5",
     "73-C124-N-3-6",
-    "73-C124-N-3-7"
+    "73-C124-N-3-7",
+    "73-C73-C-grouping-function"
   ],
   "original_acceptance_criteria": [
     {
@@ -76,7 +77,8 @@
         "73-C124-N-3-4",
         "73-C124-N-3-5",
         "73-C124-N-3-6",
-        "73-C124-N-3-7"
+        "73-C124-N-3-7",
+        "73-C73-C-grouping-function"
       ],
       "numeric_conditional_ids": [],
       "source": "TASK-121/123/124"
@@ -129,7 +131,8 @@
         "73-C124-N-3-4",
         "73-C124-N-3-5",
         "73-C124-N-3-6",
-        "73-C124-N-3-7"
+        "73-C124-N-3-7",
+        "73-C73-C-grouping-function"
       ],
       "numeric_conditional_ids": [
         "73-C121-C-decimal-average",
@@ -141,12 +144,12 @@
   ],
   "portable_gate": {
     "mandatory_complete_bag_cases": 12,
-    "conditional_grouping_cases": 4,
+    "conditional_grouping_cases": 5,
     "parser_dialects": 13,
     "mandatory_parser_cells": 156,
     "mandatory_adapter_cells": 36,
-    "conditional_parser_cells": 52,
-    "conditional_adapter_cells": 12,
+    "conditional_parser_cells": 65,
+    "conditional_adapter_cells": 15,
     "engine": "duckdb",
     "native_vendor_engines_certified": false,
     "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
@@ -229,5 +232,124 @@
     "No unverified mandatory portable case may be classified as Residual",
     "Release TASK-91 is independent of TASK-73 finite parent signoff"
   ],
-  "status": "parent_original_ac1_to_ac6_verified_metadata_head_ci_required"
+  "status": "parent_original_ac1_to_ac6_verified_metadata_head_ci_required",
+  "grouping_function_boundary": {
+    "id": "73-C73-C-grouping-function",
+    "owner": "TASK-73",
+    "variant": "GROUPING(k) with GROUPING SETS, including a real NULL key and a subtotal NULL",
+    "source_case_ids": [
+      "73-C124-P-1-2",
+      "73-C124-P-1-5"
+    ],
+    "sql": "SELECT k, GROUPING(k) AS grouping_flag, COUNT(*) AS row_count FROM s GROUP BY GROUPING SETS ((k), ())",
+    "expected_duckdb_terminal_bag": [
+      {
+        "k": 1,
+        "grouping_flag": 0,
+        "row_count": 2
+      },
+      {
+        "k": 2,
+        "grouping_flag": 0,
+        "row_count": 1
+      },
+      {
+        "k": null,
+        "grouping_flag": 0,
+        "row_count": 1
+      },
+      {
+        "k": null,
+        "grouping_flag": 1,
+        "row_count": 4
+      }
+    ],
+    "expected_parser_dialect_cells": {
+      "generic": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "mysql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "postgresql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "hive": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "sqlite": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "snowflake": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "redshift": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "mssql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "clickhouse": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "bigquery": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "ansi": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "duckdb": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "databricks": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      }
+    },
+    "expected_adapter_cells": {
+      "direct_sql": "typed_Residual_or_explicit_unsupported_if_parsed",
+      "dbt_compiled": "typed_Residual_or_explicit_unsupported_if_parsed",
+      "odcs_schema": "typed_Residual_or_explicit_unsupported_if_parsed"
+    },
+    "reason": "GROUPING bit semantics require grouping-set identity: ordinary NULL keys and subtotal-created NULL keys must not be conflated with an Exact result",
+    "release_disposition": "reviewed_duckdb_oracle_non_exact_canonical_native_vendor_law_uncertified"
+  }
 }

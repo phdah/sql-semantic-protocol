@@ -58,12 +58,12 @@
       6
     ],
     "mandatory_cases": 12,
-    "conditional_grouping_cases": 4,
+    "conditional_grouping_cases": 5,
     "numeric_conditional_boundaries": 3,
     "mandatory_parser_cells": 156,
     "mandatory_adapter_cells": 36,
-    "reviewed_conditional_parser_cells": 52,
-    "reviewed_conditional_adapter_cells": 12,
+    "reviewed_conditional_parser_cells": 65,
+    "reviewed_conditional_adapter_cells": 15,
     "required_dialects": 13,
     "required_adapters": [
       "direct_sql",
@@ -78,7 +78,8 @@
     "release_approved": false,
     "remaining_gate": "final metadata-head CI required before merging PR #153; TASK-91 separate release authorization",
     "reviewed_implementation_sha": "64599c7b10de1361f0a51011d489db1d19023365",
-    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315"
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315",
+    "grouping_function_case_id": "73-C73-C-grouping-function"
   },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",

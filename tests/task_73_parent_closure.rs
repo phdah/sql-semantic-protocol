@@ -40,11 +40,18 @@ const REQUIRED_CASES: &[&str] = &[
     "73-C124-N-3-2",
     "73-C124-P-3-3",
 ];
+const CHILD_CONDITIONAL_GROUPINGS: &[&str] = &[
+    "73-C124-N-3-4",
+    "73-C124-N-3-5",
+    "73-C124-N-3-6",
+    "73-C124-N-3-7",
+];
 const CONDITIONAL_GROUPINGS: &[&str] = &[
     "73-C124-N-3-4",
     "73-C124-N-3-5",
     "73-C124-N-3-6",
     "73-C124-N-3-7",
+    "73-C73-C-grouping-function",
 ];
 const CONDITIONAL_NUMERIC: &[&str] = &[
     "73-C121-C-decimal-average",
@@ -164,6 +171,9 @@ fn parent_evidence_has_exact_complete_source_terminal_bags_and_adapters() {
     assert_eq!(gate["mandatory_complete_bag_cases"], 12);
     assert_eq!(gate["mandatory_parser_cells"], 156);
     assert_eq!(gate["mandatory_adapter_cells"], 36);
+    assert_eq!(gate["conditional_grouping_cases"], 5);
+    assert_eq!(gate["conditional_parser_cells"], 65);
+    assert_eq!(gate["conditional_adapter_cells"], 15);
     assert_eq!(gate["engine"], "duckdb");
     assert_eq!(gate["native_vendor_engines_certified"], false);
     let dialects: BTreeSet<&str> = [
@@ -266,12 +276,12 @@ fn conditional_aggregate_laws_are_reviewed_without_exactness_promotion() {
     let parent = freeze(include_str!("../docs/task-73-acceptance-freeze.json"));
     let child_121 = freeze(include_str!("../docs/task-121-acceptance-freeze.json"));
     let child_124 = freeze(include_str!("../docs/task-124-acceptance-freeze.json"));
-    assert_eq!(parent["portable_gate"]["conditional_grouping_cases"], 4);
-    assert_eq!(parent["portable_gate"]["conditional_parser_cells"], 52);
-    assert_eq!(parent["portable_gate"]["conditional_adapter_cells"], 12);
+    assert_eq!(parent["portable_gate"]["conditional_grouping_cases"], 5);
+    assert_eq!(parent["portable_gate"]["conditional_parser_cells"], 65);
+    assert_eq!(parent["portable_gate"]["conditional_adapter_cells"], 15);
     let groupings = rows(&parent, "grouping_boundaries");
-    assert_eq!(groupings.len(), CONDITIONAL_GROUPINGS.len());
-    for (boundary, expected_id) in groupings.iter().zip(CONDITIONAL_GROUPINGS) {
+    assert_eq!(groupings.len(), CHILD_CONDITIONAL_GROUPINGS.len());
+    for (boundary, expected_id) in groupings.iter().zip(CHILD_CONDITIONAL_GROUPINGS) {
         assert_eq!(boundary["case_id"], *expected_id);
         assert_eq!(boundary["owner"], "TASK-124");
         assert!(text(&boundary["reason"]));
@@ -316,6 +326,14 @@ fn conditional_aggregate_laws_are_reviewed_without_exactness_promotion() {
             .expect("numeric boundary remains frozen");
         assert_eq!(original["owner"], "TASK-121");
         assert!(text(&original["reason"]));
+        assert!(matches!(
+            original["release_disposition"].as_str(),
+            Some("not_certified_no_exactness_claim" | "fail_closed_residual")
+        ));
+        assert_eq!(
+            boundary["release_disposition"],
+            "reviewed_residual_no_exactness_claim"
+        );
     }
 }
 
@@ -341,4 +359,218 @@ fn materialized_aggregate_dbt_oracle_is_not_replaced_with_a_sql_simulation() {
         model.contains("ref("),
         "dbt fixture must preserve its upstream model dependency"
     );
+}
+
+#[test]
+fn parent_coverage_manifest_agrees_with_frozen_original_acceptance() {
+    let parent = freeze(include_str!("../docs/task-73-acceptance-freeze.json"));
+    let manifest = freeze(include_str!("../docs/coverage-manifest.json"));
+    let row = &manifest["task_73_parent_acceptance"];
+    assert_eq!(row["owner"], "TASK-73");
+    assert_eq!(row["freeze"], "docs/task-73-acceptance-freeze.json");
+    assert_eq!(row["original_ac"], json!([1, 2, 3, 4, 5, 6]));
+    assert_eq!(
+        row["mandatory_cases"],
+        parent["portable_gate"]["mandatory_complete_bag_cases"]
+    );
+    assert_eq!(
+        row["conditional_grouping_cases"],
+        parent["portable_gate"]["conditional_grouping_cases"]
+    );
+    assert_eq!(row["numeric_conditional_boundaries"], 3);
+    assert_eq!(
+        row["mandatory_parser_cells"],
+        parent["portable_gate"]["mandatory_parser_cells"]
+    );
+    assert_eq!(
+        row["mandatory_adapter_cells"],
+        parent["portable_gate"]["mandatory_adapter_cells"]
+    );
+    assert_eq!(
+        row["reviewed_conditional_parser_cells"],
+        parent["portable_gate"]["conditional_parser_cells"]
+    );
+    assert_eq!(
+        row["reviewed_conditional_adapter_cells"],
+        parent["portable_gate"]["conditional_adapter_cells"]
+    );
+    assert_eq!(
+        row["grouping_function_case_id"],
+        parent["grouping_function_boundary"]["id"]
+    );
+    assert_eq!(row["release_approved"], false);
+}
+
+#[test]
+fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::{
+        analyze_configured_inputs_with_catalog, dialect_from_name,
+        physical_finite_aggregate_bag_plan, ConfiguredSqlInput, LiteralValue,
+        PhysicalFiniteAggregateProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+        RelationSchema, SchemaColumn, SqlInput,
+    };
+    use sqlparser::parser::Parser;
+
+    let parent = freeze(include_str!("../docs/task-73-acceptance-freeze.json"));
+    let child = freeze(include_str!("../docs/task-124-acceptance-freeze.json"));
+    let boundary = &parent["grouping_function_boundary"];
+    assert_eq!(boundary["id"], "73-C73-C-grouping-function");
+    assert_eq!(boundary["owner"], "TASK-73");
+    assert!(text(&boundary["reason"]));
+    assert!(text(&boundary["release_disposition"]));
+
+    let mut source_rows = Vec::new();
+    for id in rows(boundary, "source_case_ids") {
+        let source = rows(&child, "cases")
+            .iter()
+            .find(|case| case["id"] == *id)
+            .expect("source fixture remains frozen");
+        source_rows.extend(rows(source, "source_bag").iter().cloned());
+    }
+
+    let db = Connection::open_in_memory().expect("independent DuckDB oracle");
+    db.execute_batch("CREATE TABLE s(id VARCHAR, k INTEGER, x INTEGER)")
+        .expect("typed source schema");
+    for row in &source_rows {
+        let number = |key: &str| {
+            row[key]
+                .as_i64()
+                .map_or_else(|| "NULL".to_string(), |n| n.to_string())
+        };
+        db.execute_batch(&format!(
+            "INSERT INTO s VALUES ('{}', {}, {})",
+            row["id"].as_str().expect("source row identity"),
+            number("k"),
+            number("x"),
+        ))
+        .expect("populate complete source bag");
+    }
+
+    let sql = boundary["sql"].as_str().expect("GROUPING syntax");
+    let mut query = db.prepare(sql).expect("DuckDB supports GROUPING");
+    let actual = query
+        .query_map([], |row| {
+            Ok(json!({
+                "k": row.get::<_, Option<i64>>(0)?,
+                "grouping_flag": row.get::<_, i64>(1)?,
+                "row_count": row.get::<_, i64>(2)?,
+            }))
+        })
+        .expect("execute terminal bag")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("DuckDB terminal output");
+    let canonical = |bag: &[Value]| {
+        let mut rows = bag.iter().map(Value::to_string).collect::<Vec<_>>();
+        rows.sort();
+        rows
+    };
+    assert_eq!(
+        canonical(&actual),
+        canonical(rows(boundary, "expected_duckdb_terminal_bag")),
+        "GROUPING must distinguish an ordinary NULL key from a subtotal NULL"
+    );
+
+    let expected_dialects: BTreeSet<&str> = parent["portable_gate"]["required_dialects"]
+        .as_array()
+        .expect("required dialects")
+        .iter()
+        .map(|v| v.as_str().expect("dialect"))
+        .collect();
+    let parser_cells = boundary["expected_parser_dialect_cells"]
+        .as_object()
+        .expect("parser classifications");
+    let actual_dialects: BTreeSet<&str> = parser_cells.keys().map(String::as_str).collect();
+    assert_eq!(actual_dialects, expected_dialects);
+    let expected_adapters: BTreeSet<&str> = parent["portable_gate"]["required_adapters"]
+        .as_array()
+        .expect("required adapters")
+        .iter()
+        .map(|v| v.as_str().expect("adapter"))
+        .collect();
+    let adapter_cells = boundary["expected_adapter_cells"]
+        .as_object()
+        .expect("adapter classifications");
+    let actual_adapters: BTreeSet<&str> = adapter_cells.keys().map(String::as_str).collect();
+    assert_eq!(actual_adapters, expected_adapters);
+    for status in adapter_cells.values() {
+        assert_eq!(
+            status,
+            "typed_Residual_or_explicit_unsupported_if_parsed"
+        );
+    }
+
+    let schema = RelationSchema::new(
+        "s",
+        [("id", "VARCHAR"), ("k", "INTEGER"), ("x", "INTEGER")]
+            .into_iter()
+            .map(|(column, datatype)| {
+                SchemaColumn::from_sql_type(column, datatype, "postgresql")
+                    .expect("source type")
+            })
+            .collect(),
+    )
+    .expect("typed source");
+    let catalog = RelationCatalog::from_schemas(&[schema]).expect("source catalog");
+    let source = PhysicalWriteState::new(
+        "s",
+        source_rows
+            .iter()
+            .map(|row| {
+                PhysicalWriteRow::new(
+                    row.as_object()
+                        .expect("source row")
+                        .iter()
+                        .map(|(key, value)| {
+                            let scalar = if value.is_null() {
+                                LiteralValue::Null
+                            } else if let Some(n) = value.as_i64() {
+                                LiteralValue::Number(n.to_string())
+                            } else {
+                                LiteralValue::Text(
+                                    value.as_str().expect("row identity").to_string(),
+                                )
+                            };
+                            (key.clone(), scalar)
+                        })
+                        .collect(),
+                )
+                .expect("typed source row")
+            })
+            .collect(),
+    )
+    .expect("complete source");
+
+    for dialect in expected_dialects {
+        let expected = &parser_cells[dialect];
+        assert_eq!(expected["owner"], "TASK-73");
+        assert_eq!(expected["engine"], "not_certified");
+        assert_eq!(expected["parser"], "may_parse_or_reject");
+        assert_eq!(
+            expected["canonical"],
+            "Residual_or_explicit_unsupported_if_parsed"
+        );
+        let parser = dialect_from_name(dialect).expect("project dialect");
+        if Parser::parse_sql(parser.as_ref(), sql).is_err() {
+            continue;
+        }
+        let input = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            boundary["id"].as_str().expect("boundary ID"),
+            &input,
+            dialect,
+            parser.as_ref(),
+        )];
+        match analyze_configured_inputs_with_catalog(&configured, &catalog) {
+            Err(error) => assert!(!error.to_string().trim().is_empty()),
+            Ok(bundle) => {
+                let target = bundle.layers().last().expect("analyzed target").id();
+                let proof = physical_finite_aggregate_bag_plan(&bundle, target, &[source.clone()]);
+                assert!(
+                    matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
+                    "{dialect}: unproven GROUPING semantics promoted to Exact: {proof:?}"
+                );
+            }
+        }
+    }
 }
