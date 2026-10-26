@@ -97,22 +97,26 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
         value["row_shaping"] = row_shaping_to_value(row_shaping);
     }
     if !statement.sampling().is_empty() {
-        value["sampling"] = json!(statement.sampling().iter().map(|sample| json!({
-            "source": sample.source(),
-            "source_instance": sample.source_instance(),
-            "syntax": sample.syntax().as_str(),
-            "method": sample.method().map(|method| method.as_str()),
-            "quantity": sample.quantity().map(|quantity| json!({
-                "value": quantity.value().map(literal_value_to_value),
-                "unit": quantity.unit().map(|unit| unit.as_str())
-            })),
-            "seed": sample.seed().map(|seed| json!({
-                "syntax": seed.syntax().as_str(),
-                "value": seed.value().map(literal_value_to_value)
-            })),
-            "options_unproven": sample.has_bucket_or_offset(),
-            "membership": "residual"
-        })).collect::<Vec<_>>());
+        value["sampling"] = json!(statement
+            .sampling()
+            .iter()
+            .map(|sample| json!({
+                "source": sample.source(),
+                "source_instance": sample.source_instance(),
+                "syntax": sample.syntax().as_str(),
+                "method": sample.method().map(|method| method.as_str()),
+                "quantity": sample.quantity().map(|quantity| json!({
+                    "value": quantity.value().map(literal_value_to_value),
+                    "unit": quantity.unit().map(|unit| unit.as_str())
+                })),
+                "seed": sample.seed().map(|seed| json!({
+                    "syntax": seed.syntax().as_str(),
+                    "value": seed.value().map(literal_value_to_value)
+                })),
+                "options_unproven": sample.has_bucket_or_offset(),
+                "membership": "residual"
+            }))
+            .collect::<Vec<_>>());
     }
     if let Some(page) = statement.nested_page() {
         value["nested_page"] = json!({
