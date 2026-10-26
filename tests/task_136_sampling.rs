@@ -252,3 +252,21 @@ fn sample_seed_is_preserved_without_claiming_native_rng_membership() {
         PhysicalFinitePageProof::Residual { .. }
     ));
 }
+
+#[test]
+fn active_schema_and_canonical_json_snapshot_agree_on_sampling_residual() {
+    let schema: serde_json::Value = serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    let sampling = &schema["$defs"]["queryStatement"]["properties"]["sampling"];
+    assert_eq!(sampling["items"]["properties"]["membership"]["const"],"residual");
+    assert_eq!(sampling["items"]["properties"]["source_instance"]["minimum"],0);
+    let protocol = analyze("SELECT k FROM s TABLESAMPLE BERNOULLI (50) REPEATABLE (7)", "postgresql");
+    let wire: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+    assert_eq!(wire["inputs"][0]["statements"][0]["sampling"][0],
+        serde_json::json!({
+            "source":"s","source_instance":0,"syntax":"tablesample",
+            "method":"bernoulli","quantity":{"value":50,"unit":null},
+            "seed":{"syntax":"repeatable","value":7},
+            "options_unproven":false,"membership":"residual"
+        })
+    );
+}
