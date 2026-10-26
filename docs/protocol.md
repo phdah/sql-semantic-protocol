@@ -55,7 +55,8 @@ Its `membership.branches[].row_shaping` retains the local page, while
 separately from SQL FALSE/UNKNOWN predicate rejections.
 `physical_finite_set_tree_membership_plan` proves absent terminal tuples
 Impossible only after constructing the complete original and terminal bags.
-Uncertified branch peer identity, unsupported coercions, or stochastic
+Uncertified branch peer identity, branch WHERE+LIMIT without a proven
+WHERE-before-page execution law, unsupported coercions, or stochastic
 source ordering stay Residual. DuckDB oracle evidence does not certify
 native vendor runtimes.
 TASK-76 parent acceptance remains independent.
