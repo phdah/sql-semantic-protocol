@@ -411,7 +411,11 @@ fn parent_coverage_manifest_agrees_with_frozen_original_acceptance() {
         .expect("original AC #2");
     assert_eq!(
         ac2["verification_status"],
-        "blocked_missing_upstream_projection_and_multijoin_exactness"
+        "pending_parent_cross_task_oracle_ci"
+    );
+    assert_eq!(
+        ac2["upstream_composition_case_ids"],
+        json!(["71-C115-P-GROUP", "71-C115-N-GROUP"])
     );
 }
 
@@ -585,6 +589,58 @@ fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
                     "{dialect}: unproven GROUPING semantics promoted to Exact: {proof:?}"
                 );
             }
+        }
+    }
+}
+
+#[test]
+fn parent_multijoin_projection_acceptance_pins_independent_existing_oracles() {
+    let parent = freeze(include_str!("../docs/task-73-acceptance-freeze.json"));
+    let child = freeze(include_str!("../docs/task-115-acceptance-freeze.json"));
+    let evidence = &parent["upstream_composition"];
+    assert_eq!(evidence["owner"], "TASK-115");
+    assert_eq!(evidence["source_of_truth"], "docs/task-115-acceptance-freeze.json");
+    assert_eq!(evidence["mandatory_case_ids"], json!(["71-C115-P-GROUP", "71-C115-N-GROUP"]));
+    assert_eq!(evidence["mandatory_dialect_cells"], 26);
+    assert_eq!(evidence["mandatory_adapter_cells"], 6);
+    assert_eq!(evidence["native_engine"], "duckdb");
+    assert_eq!(evidence["native_vendor_engines_certified"], false);
+    assert_eq!(evidence["parent_oracle"], "tests/task_73_composed_parent.rs");
+    assert_eq!(evidence["existing_canonical_oracle"], "tests/task_115_finite_chain_bags.rs");
+    assert_eq!(evidence["existing_duckdb_oracle"], "tests/task_115_duckdb_matrix.rs");
+    assert_eq!(evidence["existing_adapter_oracle"], "tests/task_115_finite_adapter_parity.rs");
+    assert_eq!(parent["portable_gate"]["mandatory_upstream_composition_cases"], 2);
+    assert_eq!(
+        parent["portable_gate"]["mandatory_upstream_composition_dialect_cells"],
+        26
+    );
+    assert_eq!(
+        parent["portable_gate"]["mandatory_upstream_composition_adapter_cells"],
+        6
+    );
+    for id in ["71-C115-P-GROUP", "71-C115-N-GROUP"] {
+        let case = rows(&child, "cases")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("independently frozen, required three-source case");
+        assert_eq!(case["variant"], "downstream_group_count");
+        assert_eq!(case["acceptance_status"], "verified_exact_canonical_and_independent_duckdb_bags");
+        assert_eq!(case["dialect_matrix"].as_array().expect("dialect law").len(), 13);
+        assert_eq!(case["adapter_matrix"].as_array().expect("adapter law").len(), 3);
+        assert!(case["expected_terminal_bag"].is_array());
+        assert!(case["selected_physical_triplets"].is_array());
+        assert!(case["rejected_not_true_triplets"].is_array());
+        assert!(case["terminal_domains"]["k"].is_object());
+        assert!(case["terminal_domains"]["n"].is_object());
+        assert_eq!(case["physical_source_bags"].as_object().expect("source bag").len(), 3);
+        for cell in case["dialect_matrix"].as_array().expect("frozen parser matrix") {
+            assert_eq!(cell["canonical_status"], "verified_portable_canonical_source_bag");
+        }
+        for cell in case["adapter_matrix"].as_array().expect("frozen adapter matrix") {
+            assert_eq!(
+                cell["canonical_population_status"],
+                "verified_with_explicit_physical_attestation"
+            );
         }
     }
 }

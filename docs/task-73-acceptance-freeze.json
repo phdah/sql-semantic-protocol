@@ -66,7 +66,11 @@
       "conditional_case_ids": [],
       "numeric_conditional_ids": [],
       "source": "TASK-122/123/124",
-      "verification_status": "blocked_missing_upstream_projection_and_multijoin_exactness"
+      "verification_status": "pending_parent_cross_task_oracle_ci",
+      "upstream_composition_case_ids": [
+        "71-C115-P-GROUP",
+        "71-C115-N-GROUP"
+      ]
     },
     {
       "id": 3,
@@ -180,7 +184,10 @@
       "direct_sql",
       "dbt_compiled",
       "odcs_schema"
-    ]
+    ],
+    "mandatory_upstream_composition_cases": 2,
+    "mandatory_upstream_composition_dialect_cells": 26,
+    "mandatory_upstream_composition_adapter_cells": 6
   },
   "grouping_boundaries": [
     {
@@ -357,5 +364,23 @@
     },
     "reason": "GROUPING bit semantics require grouping-set identity: ordinary NULL keys and subtotal-created NULL keys must not be conflated with an Exact result",
     "release_disposition": "reviewed_duckdb_oracle_non_exact_canonical_native_vendor_law_uncertified"
+  },
+  "upstream_composition": {
+    "owner": "TASK-115",
+    "source_of_truth": "docs/task-115-acceptance-freeze.json",
+    "mandatory_case_ids": [
+      "71-C115-P-GROUP",
+      "71-C115-N-GROUP"
+    ],
+    "required_operator_path": "physical three-source WHERE -> two INNER JOINs -> intermediate projected stage -> GROUP BY/HAVING",
+    "mandatory_dialect_cells": 26,
+    "mandatory_adapter_cells": 6,
+    "native_engine": "duckdb",
+    "native_vendor_engines_certified": false,
+    "parent_oracle": "tests/task_73_composed_parent.rs",
+    "existing_canonical_oracle": "tests/task_115_finite_chain_bags.rs",
+    "existing_duckdb_oracle": "tests/task_115_duckdb_matrix.rs",
+    "existing_adapter_oracle": "tests/task_115_finite_adapter_parity.rs",
+    "cell_disposition": "portable_exact_with_independently_frozen_complete_source_terminal_bags"
   }
 }
