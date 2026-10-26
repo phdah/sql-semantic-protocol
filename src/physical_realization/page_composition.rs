@@ -37,7 +37,9 @@ pub enum PhysicalComposedPageProof {
 }
 
 fn residual(reason: impl Into<String>) -> PhysicalComposedPageProof {
-    PhysicalComposedPageProof::Residual { reason: reason.into() }
+    PhysicalComposedPageProof::Residual {
+        reason: reason.into(),
+    }
 }
 
 fn stage(
@@ -52,12 +54,20 @@ fn stage(
     }
     let mut keyed = Vec::with_capacity(indexes.len());
     for &index in indexes {
-        let row = snapshot.rows().get(index).ok_or("missing original source row")?;
+        let row = snapshot
+            .rows()
+            .get(index)
+            .ok_or("missing original source row")?;
         let mut values = Vec::with_capacity(shape.keys.len());
         for key in &shape.keys {
-            let (_, source_column) = page.projected_columns().get(key.index)
+            let (_, source_column) = page
+                .projected_columns()
+                .get(key.index)
                 .ok_or("ORDER BY references an unprojected CTE column")?;
-            let declared = schema.columns().iter().find(|c| c.name() == source_column)
+            let declared = schema
+                .columns()
+                .iter()
+                .find(|c| c.name() == source_column)
                 .ok_or("page ORDER BY lacks a physical column declaration")?;
             if !super::aggregate_bags::signed_integer(declared.data_type()) {
                 return Err("page ORDER BY lacks attested integer comparison".to_string());
@@ -72,10 +82,12 @@ fn stage(
         keyed.push((index, values));
     }
     keyed.sort_by(|a, b| super::page_bags::compare_ordered_rows(&a.1, &b.1, &shape.keys));
-    if !shape.with_ties && keyed.windows(2).any(|pair| {
-        super::page_bags::compare_ordered_rows(&pair[0].1, &pair[1].1, &shape.keys)
-            == std::cmp::Ordering::Equal
-    }) {
+    if !shape.with_ties
+        && keyed.windows(2).any(|pair| {
+            super::page_bags::compare_ordered_rows(&pair[0].1, &pair[1].1, &shape.keys)
+                == std::cmp::Ordering::Equal
+        })
+    {
         return Err("ambiguous page peer identities cannot be certified".to_string());
     }
     if shape.with_ties && shape.offset > 0 {
@@ -86,15 +98,18 @@ fn stage(
     } else {
         None
     };
-    Ok(keyed.into_iter().enumerate().filter_map(|(position, (index, keys))| {
-        let window = position >= shape.offset
-            && position - shape.offset < shape.limit;
-        let peer = cutoff.as_deref().is_some_and(|last| {
-            super::page_bags::compare_ordered_rows(&keys, last, &shape.keys)
-                == std::cmp::Ordering::Equal
-        });
-        (window || peer).then_some(index)
-    }).collect())
+    Ok(keyed
+        .into_iter()
+        .enumerate()
+        .filter_map(|(position, (index, keys))| {
+            let window = position >= shape.offset && position - shape.offset < shape.limit;
+            let peer = cutoff.as_deref().is_some_and(|last| {
+                super::page_bags::compare_ordered_rows(&keys, last, &shape.keys)
+                    == std::cmp::Ordering::Equal
+            });
+            (window || peer).then_some(index)
+        })
+        .collect())
 }
 
 /// Prove both CTE pagination boundaries from the canonical nested page program.
@@ -133,7 +148,11 @@ pub fn physical_finite_composed_page_plan(
     if snapshot.relation() != page.source() {
         return residual("CTE source identity differs from physical snapshot");
     }
-    let Some(schema) = bundle.source_schemas().iter().find(|s| s.relation() == page.source()) else {
+    let Some(schema) = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == page.source())
+    else {
         return residual("composed page requires authoritative physical column types");
     };
     let mut names = BTreeSet::new();
@@ -156,10 +175,19 @@ pub fn physical_finite_composed_page_plan(
         Err(reason) => return residual(reason),
     };
     let selected = second.iter().copied().collect::<BTreeSet<_>>();
-    let source_row_ids = all.iter().map(|i| format!("{}#{i}", page.source())).collect();
-    let selected_source_ids = second.iter().map(|i| format!("{}#{i}", page.source())).collect();
-    let rejected_source_ids = all.iter().filter(|i| !selected.contains(i))
-        .map(|i| format!("{}#{i}", page.source())).collect();
+    let source_row_ids = all
+        .iter()
+        .map(|i| format!("{}#{i}", page.source()))
+        .collect();
+    let selected_source_ids = second
+        .iter()
+        .map(|i| format!("{}#{i}", page.source()))
+        .collect();
+    let rejected_source_ids = all
+        .iter()
+        .filter(|i| !selected.contains(i))
+        .map(|i| format!("{}#{i}", page.source()))
+        .collect();
     let mut terminal = Vec::new();
     for index in second {
         let Some(row) = snapshot.rows().get(index) else {
@@ -206,7 +234,8 @@ pub fn physical_finite_composed_page_membership_plan(
             if !exact.terminal.iter().any(|row| row == requested) =>
         {
             PhysicalComposedPageProof::Impossible {
-                reason: "requested output tuple is absent from complete nested page bag".to_string(),
+                reason: "requested output tuple is absent from complete nested page bag"
+                    .to_string(),
             }
         }
         other => other,
