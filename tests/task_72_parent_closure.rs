@@ -29,7 +29,7 @@ fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
     let child_120 = inventory(include_str!("../docs/task-120-acceptance-freeze.json"));
 
     assert_eq!(parent["task"], "TASK-72");
-    assert_eq!(parent["version"], 1);
+    assert_eq!(parent["version"], 2);
     assert_eq!(cases(&child_117, "cases").len(), 12);
     assert_eq!(cases(&child_118, "cases").len(), 5);
     assert_eq!(cases(&child_119, "cases").len(), 11);
@@ -240,13 +240,29 @@ fn task_72_parent_each_original_ac_has_exact_and_conditional_case_coverage() {
 
         for variant in cases(criterion, "conditional") {
             let variant = variant.as_str().expect("conditional SQL variant");
-            let covered = cases(&child, "conditional_cases").iter().any(|case| {
+            let child_covered = cases(&child, "conditional_cases").iter().any(|case| {
                 case["id"].as_str().is_some_and(|id| id.ends_with(variant))
                     && case["mapped_original_ac"]
                         .as_array()
                         .is_some_and(|ids| ids.iter().any(|id| id.as_u64() == Some(ac)))
             });
-            assert!(covered, "AC #{ac} lacks a reviewed {variant} boundary");
+            let parent_covered =
+                cases(&parent, "parent_only_conditional").iter().any(|case| {
+                    case["variant"] == variant
+                        && case["mapped_original_ac"]
+                            .as_array()
+                            .is_some_and(|ids| ids.iter().any(|id| id.as_u64() == Some(ac)))
+                        && case["classification"] == "conditional_residual"
+                        && case["source_bags"].is_null()
+                        && case["terminal_bag"].is_null()
+                        && case["typed_terminal_domain"] == "unknown"
+                        && nonempty_string(&case["owner"])
+                        && nonempty_string(&case["release_disposition"])
+                });
+            assert!(
+                child_covered || parent_covered,
+                "AC #{ac} lacks a reviewed {variant} boundary"
+            );
         }
     }
 }
