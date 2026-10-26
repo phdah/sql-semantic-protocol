@@ -65,7 +65,11 @@ schema:
     let dialect = dialect_from_name("postgresql").unwrap();
 
     let mut checked = 0;
-    for case in inventory["cases"].as_array().unwrap() {
+    let cases = inventory["cases"].as_array().unwrap().iter().chain(
+        inventory["additional_mandatory_cases"].as_array().unwrap().iter()
+            .filter(|case| case["id"] == "76-C135-P-renamed-producer")
+    );
+    for case in cases {
         let sql = case["sql"]
             .as_str()
             .unwrap()
@@ -137,7 +141,8 @@ schema:
             assert_eq!(exact.terminal, expected_rows, "{adapter}");
             assert_eq!(
                 exact.selected_source_ids,
-                case["selected_source_ids"]
+                case.get("selected_source_ids")
+                    .unwrap_or(&case["selected_ids"])
                     .as_array()
                     .unwrap()
                     .iter()
@@ -151,5 +156,5 @@ schema:
         assert_eq!(proofs[0], proofs[1], "direct/dbt parity");
         assert_eq!(proofs[0], proofs[2], "direct/ODCS parity");
     }
-    assert_eq!(checked, 6);
+    assert_eq!(checked, 9);
 }
