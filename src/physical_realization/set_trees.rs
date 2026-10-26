@@ -707,3 +707,24 @@ pub fn physical_finite_set_tree_plan(
         terminal_domains,
     }))
 }
+
+/// Classify exact membership of an entire terminal tuple after all branch and
+/// set-level page windows have been applied. A row not in the whole bag is
+/// Impossible; no parser-only guess is promoted beyond Residual.
+pub fn physical_finite_set_tree_membership_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    snapshots: &[PhysicalWriteState],
+    requested: &BTreeMap<String, LiteralValue>,
+) -> PhysicalFiniteSetTreeProof {
+    match physical_finite_set_tree_plan(bundle, target_layer_id, snapshots) {
+        PhysicalFiniteSetTreeProof::Exact(exact)
+            if !exact.terminal.iter().any(|row| row == requested) =>
+        {
+            PhysicalFiniteSetTreeProof::Impossible {
+                reason: "requested tuple is absent from complete paginated set bag".to_string(),
+            }
+        }
+        result => result,
+    }
+}
