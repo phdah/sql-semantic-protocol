@@ -21,9 +21,9 @@ are mapped without claiming parent signoff or unexecuted native vendor laws.
 | `76-C135-N-set-zero` | Source remains five original rows, branch members and rejections complete; outer LIMIT 0 returns Empty | `tests/task_135_set_branch_pages.rs`, native DuckDB zero-result oracle |
 | `76-C135-N-null-duplicates` | Two tied `k=1` physical rows with distinct `seq`; explicit NULLS LAST and total secondary order select exactly `s#2,s#3` | `tests/task_135_nested_pages.rs`; SQL/dbt/ODCS complete bags and typed domains |
 
-All finite source/terminal row identities are retained. Ordinary page ties,
-implicit NULL ordering and an unordered producer yield typed Residual, never an
-arbitrary Exact; see `76-C135-R-peer-order`,
+All finite source/terminal row identities are retained. Ordinary page ties, branch-local WHERE+LIMIT without a certified
+WHERE-before-page source law, implicit NULL ordering and an unordered producer
+yield typed Residual, never an arbitrary Exact; see `76-C135-R-peer-order`,
 `76-C135-R-implicit-null`, and
 `76-C135-R-unresolved-producer`. Vendor engine/session equivalence is not
 inferred from parser acceptance. All three conditional variants have owner
