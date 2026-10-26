@@ -50,12 +50,14 @@ use crate::protocol::{
     MergeClause as ProtocolMergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn,
     Predicate, Predicates, Protocol, ProtocolStatement, QuantifiedSubqueryPredicate,
     QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, RowConditions,
-    ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SignedIntegerCastKind,
-    SignedIntegerWidth, SourceRelation, SubqueryQuantifier, SubquerySemantics, UnaryExpression,
-    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
-    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
+    SamplingMethod, SamplingQuantity, SamplingSeed, SamplingSeedSyntax, SamplingSyntax,
+    SamplingUnit, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression,
+    SignedIntegerCastKind, SignedIntegerWidth, SourceRelation, SubqueryQuantifier,
+    SubquerySemantics, TableSampling, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
+    WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 use temporal_literals::normalize_temporal_identity_cast;
@@ -329,6 +331,7 @@ mod output;
 mod predicates;
 mod queries;
 mod relations;
+mod sampling;
 mod sets;
 mod star_projection;
 mod subqueries;
@@ -355,6 +358,7 @@ use output::*;
 use predicates::*;
 use queries::*;
 use relations::*;
+use sampling::*;
 use sets::*;
 use subqueries::*;
 use typing::*;

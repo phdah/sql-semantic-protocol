@@ -1,5 +1,11 @@
 # SQL Semantic Protocol contract
 
+### Canonical table sampling evidence (TASK-136)
+
+When a SELECT samples a physical table using `SAMPLE` or `TABLESAMPLE`, its query protocol can include a `sampling` array. Each entry identifies the physical table, zero-based FROM/JOIN occurrence, keyword, optional method (`row`, `bernoulli`, `system`, `block`), typed literal quantity and unit, optional `SEED`/`REPEATABLE` value and whether bucket/offset options require further evidence. Unknown quantity/seed expressions are represented by `null` rather than inferred.
+
+Each entry reports `membership: "residual"`, **including seeded sampling**. A parsed algorithm or seed never proves an engine-independent selected row set; exact survivor counts, interval bounds, and rejected physical row identities need a native deterministic sampling oracle. Sampling never permits a direct or set-branch physical page to treat the unsampled source as the complete terminal bag. An unsampled query omits `sampling` entirely.
+
 This document describes the single active SQL Semantic Protocol contract. Its version is always the Cargo package version emitted through `PROTOCOL_VERSION`, and `schema/protocol.schema.json` carries the same version as its `protocol_version` constant.
 
 Versioned contract files are immutable historical snapshots. Runtime code, release automation, and active-contract tests use the unversioned paths so a version bump updates content rather than requiring path renames.

@@ -648,6 +648,7 @@ pub(super) fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_row_shaping(row_shaping)
+    .with_sampling(analyze_query_sampling(query))
     .with_nested_page(nested_page)
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
