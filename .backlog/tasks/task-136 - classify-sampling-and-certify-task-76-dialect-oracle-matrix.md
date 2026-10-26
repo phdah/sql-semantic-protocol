@@ -1,9 +1,10 @@
 ---
 id: TASK-136
 title: Classify sampling and certify TASK-76 dialect/oracle matrix
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
+updated_date: '2026-10-26'
 updated_date: '2026-10-17'
 labels: []
 milestone: m-3
@@ -39,6 +40,10 @@ type: feature
 - [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-136; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-76 parent open.
 <!-- AC:END -->
+
+## Implementation evidence
+
+The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) identifies deterministic pagination and conditional sampling proof boundaries. Semantic implementation, independent public tests and final CI remain required before any acceptance checkbox can be signed off.
 
 ## Next
 
