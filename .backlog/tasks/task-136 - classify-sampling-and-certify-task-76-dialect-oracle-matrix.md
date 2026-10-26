@@ -42,7 +42,7 @@ type: feature
 
 ## Implementation evidence
 
-The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) defines five mandatory deterministic full-bag cases and five conditional sampling/ordering cases. All 130 sqlparser dialect spellings were independently observed in CI; `tests/task_136_dialect_matrix.rs` enforces the exact-versus-residual physical classification. `tests/task_136_frozen_matrix.rs` checks complete independent DuckDB source/terminal bags, row identities, typed domains and requested Impossible outcomes. `tests/task_136_adapter_parity.rs` checks all 30 SQL/dbt/ODCS cells, while `tests/task_136_dbt_core_e2e.rs` executes the compiled dbt model in DuckDB. Final implementation CI and independent signoff are required before checking the acceptance criteria.
+The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) defines five mandatory deterministic full-bag cases and six conditional sampling/ordering cases. All 143 sqlparser dialect spellings were independently observed in CI; `tests/task_136_dialect_matrix.rs` enforces the exact-versus-residual physical classification. `tests/task_136_frozen_matrix.rs` checks complete independent DuckDB source/terminal bags, row identities, typed domains and requested Impossible outcomes. `tests/task_136_adapter_parity.rs` checks all 33 SQL/dbt/ODCS cells, while `tests/task_136_dbt_core_e2e.rs` executes the compiled dbt model in DuckDB. Final implementation CI and independent signoff are required before checking the acceptance criteria.
 
 ## Next
 
