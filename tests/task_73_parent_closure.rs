@@ -19,7 +19,12 @@ fn text(value: &Value) -> bool {
     value.as_str().is_some_and(|value| !value.trim().is_empty())
 }
 
-struct AcRequirement(u64, &'static [&'static str], &'static [&'static str], &'static [&'static str]);
+struct AcRequirement(
+    u64,
+    &'static [&'static str],
+    &'static [&'static str],
+    &'static [&'static str],
+);
 
 const REQUIRED_CASES: &[&str] = &[
     "73-C124-P-1-1",
@@ -125,7 +130,9 @@ fn original_aggregate_parent_acceptance_has_an_independent_fixed_scope() {
         ),
     ];
     assert_eq!(mappings.len(), expected.len());
-    for (criterion, AcRequirement(id, required, grouping, numeric)) in mappings.iter().zip(expected.iter()) {
+    for (criterion, AcRequirement(id, required, grouping, numeric)) in
+        mappings.iter().zip(expected.iter())
+    {
         assert_eq!(criterion["id"], *id);
         assert_eq!(
             criterion["mandatory_case_ids"],
