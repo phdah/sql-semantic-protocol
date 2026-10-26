@@ -48,7 +48,7 @@ fn native_bag(case: &Value) {
     assert_eq!(observed, expected, "{}: complete physical source", case["id"]);
 
     // SQL Server TOP is compared with a verified DuckDB-equivalent ordered LIMIT.
-    let sql = case["oracle_sql"].as_str().unwrap_or(case["sql"].as_str().unwrap());
+    let sql = case["native_oracle_sql"].as_str().unwrap_or(case["sql"].as_str().unwrap());
     let terminal = db.prepare(sql).unwrap()
         .query_map([], |row| row.get::<_,Option<i64>>(0)).unwrap()
         .collect::<Result<Vec<_>,_>>().unwrap();
@@ -75,7 +75,7 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         let analyzed = bundle(case, dialect);
         let target = analyzed.layers().last().unwrap().id();
         let physical = state(case);
-        let actual = physical_finite_page_bag_plan(&analyzed, target, &[physical.clone()]);
+        let actual = physical_finite_page_bag_plan(&analyzed, target, std::slice::from_ref(&physical));
         let PhysicalFinitePageProof::Exact(exact) = actual else {
             panic!("{}: expected exact physical outcome, got {actual:?}",case["id"]);
         };
@@ -107,7 +107,7 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,&[physical.clone()],&missing),
             PhysicalFinitePageProof::Impossible { .. }), "{}: negative membership must be impossible",case["id"]);
         if let Some(first) = exact.terminal.first() {
-            assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,&[physical],first),
+            assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,std::slice::from_ref(&physical),first),
                 PhysicalFinitePageProof::Exact(_)), "{}: positive membership should be exact",case["id"]);
         }
         let wire: Value = serde_json::from_str(&to_bundle_json(&analyzed)).unwrap();
