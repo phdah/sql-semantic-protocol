@@ -129,9 +129,7 @@ pub(super) fn collect_set_branch_evidence(
                 // lossless tuple-count boundary, and page witnesses must be
                 // constructed from the complete source before the set law.
                 (None, false)
-            } else if branch_query.limit_clause.is_none()
-                && branch_query.fetch.is_none()
-            {
+            } else if branch_query.limit_clause.is_none() && branch_query.fetch.is_none() {
                 match branch_query.with.as_ref() {
                     None => (analyze_set_leaf_boundary(expression, &analyzed), false),
                     Some(with) => {
