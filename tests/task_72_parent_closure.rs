@@ -37,7 +37,11 @@ const ORIGINAL_AC_SCOPE: &[(u64, &[&str], &[&str])] = &[
             "joined-grouped-branch",
         ],
     ),
-    (3, &["six_operator_nullable_bag", "nested_shared_physical_source"], &[]),
+    (
+        3,
+        &["six_operator_nullable_bag", "nested_shared_physical_source"],
+        &[],
+    ),
     (
         4,
         &["set_level_row_shaping"],
@@ -355,15 +359,19 @@ fn task_72_joined_grouped_branch_is_executable_but_physical_set_proof_is_residua
 
     use sql_semantic_protocol::{
         analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-        physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetTreeProof,
-        PhysicalWriteRow, PhysicalWriteState, ProtocolStatement, RelationCatalog, RelationSchema,
-        SchemaColumn, SqlInput,
+        physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue,
+        PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState, ProtocolStatement,
+        RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     };
 
     let parent = inventory(include_str!("../docs/task-72-acceptance-freeze.json"));
     let child = inventory(include_str!("../docs/task-120-acceptance-freeze.json"));
     let boundaries = cases(&parent, "parent_only_conditional");
-    assert_eq!(boundaries.len(), 1, "the parent-owned boundary must be explicit");
+    assert_eq!(
+        boundaries.len(),
+        1,
+        "the parent-owned boundary must be explicit"
+    );
     let boundary = &boundaries[0];
     assert_eq!(boundary["id"], "72-PARENT-C-joined-grouped-branch");
     assert_eq!(boundary["classification"], "conditional_residual");
@@ -443,7 +451,11 @@ fn task_72_joined_grouped_branch_is_executable_but_physical_set_proof_is_residua
     let dialects = cases(&child, "dialect_identities");
     let cells = cases(boundary, "dialect_cells");
     assert_eq!(dialects.len(), 13);
-    assert_eq!(cells.len(), dialects.len(), "all 13 dialects require classifications");
+    assert_eq!(
+        cells.len(),
+        dialects.len(),
+        "all 13 dialects require classifications"
+    );
 
     for (dialect, cell) in dialects.iter().zip(cells) {
         let name = dialect.as_str().expect("canonical parser dialect");
