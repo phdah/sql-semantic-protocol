@@ -303,7 +303,14 @@ pub(super) fn analyze_set_leaf_boundary(
         return None;
     };
     if !table.joins.is_empty()
-        || !matches!(table.relation, TableFactor::Table { args: None, sample: None, .. })
+        || !matches!(
+            table.relation,
+            TableFactor::Table {
+                args: None,
+                sample: None,
+                ..
+            }
+        )
     {
         return None;
     }
