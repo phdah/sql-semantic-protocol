@@ -67,7 +67,31 @@ fn freeze_covers_every_required_variant_with_typed_domains_and_both_witness_dire
                 || case.get("left_page_rejected").is_some()
         );
     }
-    assert_eq!(ids.len(), 6);
+    assert_eq!(
+        ids,
+        [
+            "76-C135-P-cte-nested",
+            "76-C135-N-empty",
+            "76-C135-P-renamed-producer",
+            "76-C135-P-set-branch",
+            "76-C135-N-set-zero",
+            "76-C135-N-null-duplicates",
+        ]
+        .into_iter()
+        .collect(),
+        "a mandatory fixture may not disappear behind an unchanged count"
+    );
+    assert_eq!(
+        freeze["acceptance_contract"]["mandatory_ids"],
+        json!([
+            "76-C135-P-cte-nested",
+            "76-C135-N-empty",
+            "76-C135-P-renamed-producer",
+            "76-C135-P-set-branch",
+            "76-C135-N-set-zero",
+            "76-C135-N-null-duplicates"
+        ])
+    );
     assert_eq!(
         freeze["dialect_matrix"]["dialects"]
             .as_array()
