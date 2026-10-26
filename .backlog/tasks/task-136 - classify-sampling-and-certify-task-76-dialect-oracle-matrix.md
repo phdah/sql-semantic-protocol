@@ -5,7 +5,6 @@ status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-26'
-updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,7 +42,7 @@ type: feature
 
 ## Implementation evidence
 
-The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) identifies deterministic pagination and conditional sampling proof boundaries. Semantic implementation, independent public tests and final CI remain required before any acceptance checkbox can be signed off.
+The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) defines five mandatory deterministic full-bag cases and five conditional sampling/ordering cases. All 130 sqlparser dialect spellings were independently observed in CI; `tests/task_136_dialect_matrix.rs` enforces the exact-versus-residual physical classification. `tests/task_136_frozen_matrix.rs` checks complete independent DuckDB source/terminal bags, row identities, typed domains and requested Impossible outcomes. `tests/task_136_adapter_parity.rs` checks all 30 SQL/dbt/ODCS cells, while `tests/task_136_dbt_core_e2e.rs` executes the compiled dbt model in DuckDB. Final implementation CI and independent signoff are required before checking the acceptance criteria.
 
 ## Next
 
