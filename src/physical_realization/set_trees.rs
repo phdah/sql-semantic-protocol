@@ -319,8 +319,14 @@ fn branch_page_survivors(
     for (index, row) in rows.iter().enumerate() {
         let mut values = Vec::new();
         for key in &shape.keys {
-            let column = projected.get(key.index).ok_or("branch ORDER BY column is not projected")?;
-            let value = integer(row.values().get(column).ok_or("branch sort column is absent")?)?;
+            let column = projected
+                .get(key.index)
+                .ok_or("branch ORDER BY column is not projected")?;
+            let value = integer(
+                row.values()
+                    .get(column)
+                    .ok_or("branch sort column is absent")?,
+            )?;
             if value.is_none() && key.nulls_first.is_none() {
                 return Err("branch NULL sort needs an explicit NULLS FIRST/LAST");
             }
@@ -332,10 +338,12 @@ fn branch_page_survivors(
     if shape.with_ties && shape.offset != 0 {
         return Err("branch FETCH WITH TIES and OFFSET is not certified");
     }
-    if !shape.with_ties && keyed.windows(2).any(|pair| {
-        super::page_bags::compare_ordered_rows(&pair[0].1, &pair[1].1, &shape.keys)
-            == std::cmp::Ordering::Equal
-    }) {
+    if !shape.with_ties
+        && keyed.windows(2).any(|pair| {
+            super::page_bags::compare_ordered_rows(&pair[0].1, &pair[1].1, &shape.keys)
+                == std::cmp::Ordering::Equal
+        })
+    {
         return Err("branch ORDER BY does not prove physical peer membership");
     }
     let cutoff = if shape.with_ties && shape.limit > 0 {
@@ -343,14 +351,18 @@ fn branch_page_survivors(
     } else {
         None
     };
-    Ok(keyed.into_iter().enumerate().filter_map(|(position, (index, keys))| {
-        let window = position >= shape.offset && position - shape.offset < shape.limit;
-        let boundary_peer = cutoff.as_deref().is_some_and(|peer| {
-            super::page_bags::compare_ordered_rows(&keys, peer, &shape.keys)
-                == std::cmp::Ordering::Equal
-        });
-        (window || boundary_peer).then_some(index)
-    }).collect())
+    Ok(keyed
+        .into_iter()
+        .enumerate()
+        .filter_map(|(position, (index, keys))| {
+            let window = position >= shape.offset && position - shape.offset < shape.limit;
+            let boundary_peer = cutoff.as_deref().is_some_and(|peer| {
+                super::page_bags::compare_ordered_rows(&keys, peer, &shape.keys)
+                    == std::cmp::Ordering::Equal
+            });
+            (window || boundary_peer).then_some(index)
+        })
+        .collect())
 }
 
 fn tree_count(
@@ -528,7 +540,11 @@ pub fn physical_finite_set_tree_plan(
                 .entry(tuple)
                 .or_insert_with(|| vec![Vec::new(); operation.branches().len()]);
             match truth {
-                Some(true) if page_members.as_ref().is_some_and(|selected| !selected.contains(&physical_index)) => {
+                Some(true)
+                    if page_members
+                        .as_ref()
+                        .is_some_and(|selected| !selected.contains(&physical_index)) =>
+                {
                     page_rejected_row_ids.push(id.to_string());
                 }
                 Some(true) => {
