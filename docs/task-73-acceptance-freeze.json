@@ -1,0 +1,233 @@
+{
+  "task": "TASK-73",
+  "version": 1,
+  "purpose": "Independent original-parent acceptance inventory. Pin original obligations without replacing the four merged child source/terminal oracles.",
+  "source_of_truth": {
+    "TASK-121": "docs/task-121-acceptance-freeze.json",
+    "TASK-122": "docs/task-122-acceptance-freeze.json",
+    "TASK-123": "docs/task-123-acceptance-freeze.json",
+    "TASK-124": "docs/task-124-acceptance-freeze.json"
+  },
+  "fixture_ids": [
+    "73-C121-P",
+    "73-C121-N",
+    "73-C122-P",
+    "73-C122-N",
+    "73-C123-P",
+    "73-C123-N",
+    "73-C124-P",
+    "73-C124-N"
+  ],
+  "mandatory_case_ids": [
+    "73-C124-P-1-1",
+    "73-C124-P-1-2",
+    "73-C124-P-1-3",
+    "73-C124-N-1-4",
+    "73-C124-P-1-5",
+    "73-C124-P-2-1",
+    "73-C124-P-2-2",
+    "73-C124-N-2-3",
+    "73-C124-P-2-4",
+    "73-C124-P-3-1",
+    "73-C124-N-3-2",
+    "73-C124-P-3-3"
+  ],
+  "conditional_case_ids": [
+    "73-C124-N-3-4",
+    "73-C124-N-3-5",
+    "73-C124-N-3-6",
+    "73-C124-N-3-7"
+  ],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "mandatory_case_ids": [
+        "73-C124-P-1-1",
+        "73-C124-P-1-2",
+        "73-C124-P-1-5",
+        "73-C124-P-2-1",
+        "73-C124-P-2-2",
+        "73-C124-P-2-4"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/122/124"
+    },
+    {
+      "id": 2,
+      "mandatory_case_ids": [
+        "73-C124-N-2-3",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-122/123/124"
+    },
+    {
+      "id": 3,
+      "mandatory_case_ids": [
+        "73-C124-P-1-3",
+        "73-C124-N-1-4",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [
+        "73-C124-N-3-4",
+        "73-C124-N-3-5",
+        "73-C124-N-3-6",
+        "73-C124-N-3-7"
+      ],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/123/124"
+    },
+    {
+      "id": 4,
+      "mandatory_case_ids": [
+        "73-C124-P-1-2",
+        "73-C124-P-1-5",
+        "73-C124-N-2-3",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [
+        "73-C121-C-decimal-average",
+        "73-C121-C-overflow",
+        "73-C121-C-noninteger"
+      ],
+      "source": "TASK-121/122/123/124"
+    },
+    {
+      "id": 5,
+      "mandatory_case_ids": [
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/122/123/124"
+    },
+    {
+      "id": 6,
+      "mandatory_case_ids": [
+        "73-C124-P-1-1",
+        "73-C124-P-1-2",
+        "73-C124-P-1-3",
+        "73-C124-N-1-4",
+        "73-C124-P-1-5",
+        "73-C124-P-2-1",
+        "73-C124-P-2-2",
+        "73-C124-N-2-3",
+        "73-C124-P-2-4",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [
+        "73-C124-N-3-4",
+        "73-C124-N-3-5",
+        "73-C124-N-3-6",
+        "73-C124-N-3-7"
+      ],
+      "numeric_conditional_ids": [
+        "73-C121-C-decimal-average",
+        "73-C121-C-overflow",
+        "73-C121-C-noninteger"
+      ],
+      "source": "TASK-121/122/123/124"
+    }
+  ],
+  "portable_gate": {
+    "mandatory_complete_bag_cases": 12,
+    "conditional_grouping_cases": 4,
+    "parser_dialects": 13,
+    "mandatory_parser_cells": 156,
+    "mandatory_adapter_cells": 36,
+    "conditional_parser_cells": 52,
+    "conditional_adapter_cells": 12,
+    "engine": "duckdb",
+    "native_vendor_engines_certified": false,
+    "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
+    "adapter_oracle": "tests/task_124_aggregate_adapters.rs",
+    "materialized_dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "required_dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ]
+  },
+  "grouping_boundaries": [
+    {
+      "case_id": "73-C124-N-3-4",
+      "variant": "GROUPING SETS",
+      "owner": "TASK-124",
+      "reason": "subtotal provenance and synthetic NULL grouping keys are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-5",
+      "variant": "ROLLUP",
+      "owner": "TASK-124",
+      "reason": "hierarchy and subtotal identities are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-6",
+      "variant": "CUBE",
+      "owner": "TASK-124",
+      "reason": "cube grouping identities and NULL-key provenance are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-7",
+      "variant": "GROUP BY ALL",
+      "owner": "TASK-124",
+      "reason": "dialect-dependent inferred grouping expressions are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    }
+  ],
+  "numeric_boundaries": [
+    {
+      "id": "73-C121-C-decimal-average",
+      "owner": "TASK-121",
+      "reason": "nonintegral AVG requires attested scale and rounding",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    },
+    {
+      "id": "73-C121-C-overflow",
+      "owner": "TASK-121",
+      "reason": "SUM overflow requires proven result type and checked arithmetic",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    },
+    {
+      "id": "73-C121-C-noninteger",
+      "owner": "TASK-121",
+      "reason": "floating, decimal and collated text laws require type/session evidence",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    }
+  ],
+  "non_promotions": [
+    "Parser/dialect classifications do not certify native database engines",
+    "Reviewed Residual never means an empty terminal bag or Exact physical outcome",
+    "No unverified mandatory portable case may be classified as Residual",
+    "Release TASK-91 is independent of TASK-73 finite parent signoff"
+  ],
+  "status": "parent_original_ac1_to_ac6_reviewed_pending_final_head_ci"
+}

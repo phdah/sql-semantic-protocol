@@ -1,10 +1,10 @@
 ---
 id: TASK-73
 title: Prove grouped aggregates and HAVING across relational pipelines
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-26'
 labels: []
 milestone: m-3
 dependencies: 
@@ -69,3 +69,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-121, TASK-122, TASK-124; #2 -> TASK-122, TASK-123, TASK-124; #3 -> TASK-121, TASK-123, TASK-124; #4 -> TASK-121, TASK-122, TASK-123, TASK-124; #5 -> TASK-121, TASK-122, TASK-123, TASK-124; #6 -> TASK-121, TASK-122, TASK-123, TASK-124.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent acceptance review (2026-10-26)
+
+The versioned [TASK-73 parent freeze](../../docs/task-73-acceptance-freeze.json), [original AC audit](../../docs/task-73-acceptance-audit.md) and [executable CI guard](../../tests/task_73_parent_closure.rs) pin the mandatory oracle and conditional evidence from merged TASK-121..124. All six parent AC stay unchecked until this PR's final-head CI is green and the original parent criteria are independently signed off. TASK-91 remains a separate release gate.
