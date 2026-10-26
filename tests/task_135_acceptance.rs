@@ -106,7 +106,7 @@ fn canonical_json_retains_separate_cte_and_set_branch_windows() {
     assert!(schema.contains("\"nested_page\""));
     assert!(schema.contains("Branch-local ORDER BY and LIMIT/FETCH"));
 
-    let set_sql = freeze["additional_mandatory_cases"][0 + 1]["sql"]
+    let set_sql = freeze["additional_mandatory_cases"][1]["sql"]
         .as_str()
         .unwrap();
     let output = analyze(set_sql);
