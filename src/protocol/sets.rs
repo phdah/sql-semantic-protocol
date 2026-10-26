@@ -120,6 +120,7 @@ pub struct SetBranch {
     condition_exactness: ConditionExactness,
     dependencies: Vec<String>,
     witness_boundary: Option<SetWitnessBoundary>,
+    row_shaping: Option<SetRowShaping>,
     empty_input_preserving: bool,
 }
 
@@ -139,9 +140,11 @@ impl SetBranch {
             condition_exactness: query.condition_exactness().clone(),
             dependencies: query.dependencies().to_vec(),
             witness_boundary,
+            row_shaping: query.row_shaping().cloned(),
             empty_input_preserving: query.sources().len() == 1
                 && (query.row_preserving_projection()
                     || query.filter_only_row_shape()
+                    || query.row_shaping().is_some()
                     || certified_local_row_shape)
                 && query.aggregation().is_none()
                 && query.set_operation().is_none()
@@ -154,6 +157,11 @@ impl SetBranch {
                     )
                 }),
         }
+    }
+
+    /// Explicit branch-local ordering and page bounds, never a set-level page.
+    pub fn row_shaping(&self) -> Option<&SetRowShaping> {
+        self.row_shaping.as_ref()
     }
 
     /// Whether the parsed branch is a direct one-to-one read or filter of one
