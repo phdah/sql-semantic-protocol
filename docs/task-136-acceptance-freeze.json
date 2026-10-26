@@ -1,8 +1,8 @@
 {
   "task": "TASK-136",
   "parent": "TASK-76",
-  "version": 2,
-  "status": "reviewed_frozen_matrix_pending_final_ci",
+  "version": 3,
+  "status": "reviewed_expanded_frozen_matrix_pending_final_ci",
   "fixture_ids": [
     "76-C136-P",
     "76-C136-N"
@@ -2015,13 +2015,203 @@
       ],
       "negative_source_ids": null,
       "canonical_support": "Residual: sampling or implicit native/session order"
+    },
+    {
+      "id": "76-C136-N-sample-seeded",
+      "classification": "conditional",
+      "sql": "SELECT k FROM s SAMPLE (50) SEED (7)",
+      "source": [
+        1,
+        2,
+        3
+      ],
+      "output": null,
+      "selected": null,
+      "rejected": null,
+      "expected": "Residual",
+      "reason": "SAMPLE SEED literal does not attest warehouse RNG algorithm, stable physical membership, or deterministic replay",
+      "owner": "TASK-136",
+      "disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed",
+      "source_relation": "s",
+      "source_column": "k",
+      "physical_source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed Residual until native seed/method/physical-row execution proof is reviewed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "source": "direct_sql",
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
+        },
+        {
+          "source": "compiled_dbt",
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
+        },
+        {
+          "source": "odcs",
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
+        }
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s SAMPLE (50) SEED (7)",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "SAMPLE SEED literal does not attest warehouse RNG algorithm, stable physical membership, or deterministic replay"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: seeded SAMPLE has no attested native row selection"
     }
   ],
   "conditional_native_execution": "unverified; no vendor/session engine certification asserted",
   "signed_off": false,
-  "dialect_obligations": 130,
-  "adapter_obligations": 30,
+  "dialect_obligations": 143,
+  "adapter_obligations": 33,
   "parser_baseline": "All 10 frozen SQL spellings parsed in all 13 exposed sqlparser dialects; observed in GitHub CI run 40358327924; native engine semantics unverified",
   "native_certification": "Independent DuckDB oracles for deterministic cases only; SQL Server TOP compared through DuckDB-equivalent LIMIT; vendor/session native execution not asserted",
-  "oracle_contract": "Full source and terminal bags checked via independent DuckDB SQL, stable row identity and multiplicity for mandatory cases, exact domain, negative requested membership Impossible"
+  "oracle_contract": "Full source and terminal bags checked via independent DuckDB SQL, stable row identity and multiplicity for mandatory cases, exact domain, negative requested membership Impossible",
+  "conditional_sample_coverage": [
+    "SAMPLE without seed",
+    "SAMPLE SEED(7)",
+    "TABLESAMPLE SYSTEM",
+    "TABLESAMPLE BERNOULLI REPEATABLE(7)"
+  ]
 }
