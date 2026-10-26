@@ -22,6 +22,9 @@ seeds:
     task134_source:
       +column_types:
         k: INTEGER
+    task135_source:
+      +column_types:
+        k: INTEGER
     task128_window_source:
       +column_types:
         id: INTEGER
