@@ -308,6 +308,11 @@ pub(super) fn analyze_query(
     } else {
         None
     };
+    let nested_page = if set_operation.is_none() {
+        analyze_nested_page(query, &output, metadata)
+    } else {
+        None
+    };
     inspect_query_features(query, set_operation.as_ref(), &mut diagnostics);
     if row_shaping.is_some() {
         diagnostics.retain(|diagnostic| {
@@ -624,6 +629,7 @@ pub(super) fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_row_shaping(row_shaping)
+    .with_nested_page(nested_page)
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)
