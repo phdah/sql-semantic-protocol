@@ -1,7 +1,7 @@
 ---
 id: TASK-73
 title: Prove grouped aggregates and HAVING across relational pipelines
-status: Done
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-26'
@@ -35,7 +35,7 @@ GROUP BY/HAVING proof currently excludes WHERE/JOIN inputs and common aggregate 
 
 <!-- AC:BEGIN -->
 - [x] #1 Support COUNT(*)/COUNT(expr), SUM, MIN, MAX, AVG and supported typed aggregate families with DISTINCT, FILTER, multiple aggregates, aliases and grouped HAVING Boolean trees.
-- [x] #2 Prove contributions through upstream WHERE, multi-joins and projection layers, including duplicate amplification, null contributors, impossible aggregates, and multiple group identities.
+- [ ] #2 Prove contributions through upstream WHERE, multi-joins and projection layers, including duplicate amplification, null contributors, impossible aggregates, and multiple group identities.
 - [x] #3 Cover GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL, global aggregation/empty groups and dialect-specific GROUPING semantics where parseable.
 - [x] #4 Provide exact positive and rejected existing-group constructions and final group/aggregate column value domains with typed arithmetic and overflow/decimal rules.
 - [x] #5 Validate with DuckDB full snapshots for the committed aggregate_summary.sql and independent cross-operator fixtures.
@@ -72,10 +72,10 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Independent parent acceptance review (2026-10-26)
 
-The versioned [TASK-73 parent freeze](../../docs/task-73-acceptance-freeze.json), [original AC audit](../../docs/task-73-acceptance-audit.md) and [executable CI guard](../../tests/task_73_parent_closure.rs) pin the mandatory oracle and conditional evidence from merged TASK-121..124. All six parent AC are signed off for the frozen portable scope after independent original-AC review and green implementation-head CI. The final metadata-head CI is a separate merge gate. TASK-91 remains a separate release gate.
+The versioned [TASK-73 parent freeze](../../docs/task-73-acceptance-freeze.json), [original AC audit](../../docs/task-73-acceptance-audit.md) and [executable CI guard](../../tests/task_73_parent_closure.rs) pin the mandatory oracle and conditional evidence from merged TASK-121..124. The frozen portable floor has independent exact oracles, but original AC #2 is not signed off: an upstream projection-layer and multi-join complete physical/terminal oracle remains missing. This task stays In Progress until that originally named obligation is implemented and verified. Final PR-head CI and TASK-91 remain separate gates.
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Original TASK-73 AC #1..#6 signed off for the frozen, executable portable matrix. Merged TASK-121..124 provide 12 complete independent DuckDB source/terminal cases, 156 parser-dialect and 36 SQL/dbt/ODCS adapter cells, NULL-inclusive typed domains and positive/rejected group proofs. Four grouping extensions, GROUPING() and three numeric/engine boundaries remain explicit non-Exact, owner-reviewed release conditions. [Implementation-head CI run 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) passed 9/9 jobs at 64599c7b10de1361f0a51011d489db1d19023365. Final metadata-head CI remains a PR merge gate, not a reason to reopen independently verified semantic cases. TASK-91 release approval is separate.
+Original TASK-73 AC #2 remains open, so the parent is not signed off. Merged TASK-121..124 provide a verified minimum portable floor of 12 complete independent DuckDB source/terminal cases, 156 parser-dialect and 36 SQL/dbt/ODCS adapter cells, NULL-inclusive typed domains and positive/rejected group proofs. Four grouping extensions, GROUPING() and three numeric/engine boundaries remain explicit non-Exact, owner-reviewed release conditions. [Implementation-head CI run 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) passed 9/9 jobs at 64599c7b10de1361f0a51011d489db1d19023365. Remaining AC #2 proof requires exact upstream projection and multi-join execution with full typed source and terminal outcomes. Final PR-head CI is also required. TASK-91 release approval is separate.
 <!-- SECTION:FINAL_SUMMARY:END -->

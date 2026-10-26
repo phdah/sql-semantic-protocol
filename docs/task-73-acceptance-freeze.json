@@ -52,7 +52,8 @@
       ],
       "conditional_case_ids": [],
       "numeric_conditional_ids": [],
-      "source": "TASK-121/122/124"
+      "source": "TASK-121/122/124",
+      "verification_status": "frozen_portable_evidence_verified"
     },
     {
       "id": 2,
@@ -64,7 +65,8 @@
       ],
       "conditional_case_ids": [],
       "numeric_conditional_ids": [],
-      "source": "TASK-122/123/124"
+      "source": "TASK-122/123/124",
+      "verification_status": "blocked_missing_upstream_projection_and_multijoin_exactness"
     },
     {
       "id": 3,
@@ -81,7 +83,8 @@
         "73-C73-C-grouping-function"
       ],
       "numeric_conditional_ids": [],
-      "source": "TASK-121/123/124"
+      "source": "TASK-121/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
     },
     {
       "id": 4,
@@ -98,7 +101,8 @@
         "73-C121-C-overflow",
         "73-C121-C-noninteger"
       ],
-      "source": "TASK-121/122/123/124"
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
     },
     {
       "id": 5,
@@ -109,7 +113,8 @@
       ],
       "conditional_case_ids": [],
       "numeric_conditional_ids": [],
-      "source": "TASK-121/122/123/124"
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
     },
     {
       "id": 6,
@@ -139,7 +144,8 @@
         "73-C121-C-overflow",
         "73-C121-C-noninteger"
       ],
-      "source": "TASK-121/122/123/124"
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
     }
   ],
   "portable_gate": {
@@ -232,7 +238,7 @@
     "No unverified mandatory portable case may be classified as Residual",
     "Release TASK-91 is independent of TASK-73 finite parent signoff"
   ],
-  "status": "parent_original_ac1_to_ac6_verified_metadata_head_ci_required",
+  "status": "parent_portable_floor_verified_original_ac2_unresolved",
   "grouping_function_boundary": {
     "id": "73-C73-C-grouping-function",
     "owner": "TASK-73",

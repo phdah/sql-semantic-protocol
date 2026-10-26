@@ -39,7 +39,7 @@
   },
   "task_73_parent_acceptance": {
     "owner": "TASK-73",
-    "status": "parent_original_ac1_to_ac6_signed_off_portable_native_vendor_uncertified",
+    "status": "portable_floor_verified_original_ac2_unresolved",
     "task": ".backlog/tasks/task-73 - complete-aggregation-and-grouping-witnesses.md",
     "freeze": "docs/task-73-acceptance-freeze.json",
     "audit": "docs/task-73-acceptance-audit.md",
@@ -74,12 +74,19 @@
     "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
     "parity_oracle": "tests/task_124_aggregate_adapters.rs",
     "dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
-    "parent_signed_off": true,
+    "parent_signed_off": false,
     "release_approved": false,
-    "remaining_gate": "final metadata-head CI required before merging PR #153; TASK-91 separate release authorization",
+    "remaining_gate": "Original TASK-73 AC #2 needs exact upstream projection-layer and three-relation/multi-join oracles; final PR CI required; TASK-91 separate release authorization",
     "reviewed_implementation_sha": "64599c7b10de1361f0a51011d489db1d19023365",
     "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315",
-    "grouping_function_case_id": "73-C73-C-grouping-function"
+    "grouping_function_case_id": "73-C73-C-grouping-function",
+    "verified_original_ac": [
+      1,
+      3,
+      4,
+      5,
+      6
+    ]
   },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",

@@ -1,6 +1,6 @@
 # TASK-73 independent parent acceptance audit
 
-**State:** Original AC #1..#6 signed off against the frozen portable proof floor after 9/9 implementation-head CI. Final metadata-head CI remains required before merge. TASK-91 release approval is independent.
+**State:** The 12 mandatory portable cases and their cross-dialect/adapter oracles passed the prior implementation-head CI. Original AC #2 is not signed off: upstream projection-layer and multi-join Exact evidence is missing. TASK-73 remains In Progress; final review-fix CI and TASK-91 release approval are separate gates.
 
 ## Source of truth
 
@@ -13,7 +13,7 @@ All four child PRs are merged on `main`: #131 (basic aggregates), #132 (DISTINCT
 | AC | Mandatory evidence | Reviewed, non-promoted boundary |
 | --- | --- | --- |
 | #1 COUNT/SUM/MIN/MAX/AVG, aliases, DISTINCT/FILTER/HAVING | Global/grouped nullable duplicates; DISTINCT, FILTER and Boolean HAVING exact frozen bags | FILTER's dialect-specific parser boundary does not imply a runtime guarantee |
-| #2 WHERE/JOIN/projection and group provenance | Complete two-relation join, duplicate amplification, rejected group, empty global join and per-source IDs | No claim of arbitrary unconstrained producer graph synthesis |
+| #2 WHERE/JOIN/projection and group provenance | Complete direct two-relation join, duplicate amplification, rejected group, empty global join and per-source IDs | **Open:** No independent exact upstream projection-layer or three-relation/multi-join aggregate oracle. The exact joined planner currently requires one join and exactly two physical sources. |
 | #3 Empty groups and grouping extensions | Empty global yields one group; empty GROUP BY yields none; an independent DuckDB oracle distinguishes real NULL keys from subtotal NULLs | GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL and GROUPING() stay parser-bound or typed Residual/explicit unsupported in uncertified engines |
 | #4 Positive/rejected typed domains and overflow | Exact typed inclusive bounds, NULL sets and TRUE/FALSE/UNKNOWN HAVING, closed physical and terminal bags | Nonintegral AVG, overflow and unproven numeric/collation semantics remain explicitly non-Exact |
 | #5 DuckDB and dbt independent execution | 12 complete DuckDB physical/terminal oracles and real materialized `aggregate_summary.sql` expected `north:1:42` | No fabricated database-native outcomes outside DuckDB |
@@ -29,6 +29,10 @@ The four grouping extensions are owned by TASK-124. The GROUPING() bit-function 
 
 **Standards axis:** This change is confined to a parent acceptance freeze, public integration guard, audit, coverage registration and Backlog.md status. No production semantic rule or protocol shape changes, no new crate dependency, and no duplicate bag oracle.
 
-**Spec axis:** Each original AC has a pinned mandatory case mapping; both positive and rejected cases retain exact physical bags, typed domains and adapter/parser classifications. The seven conditional families are owner-reviewed, non-promoted and distinct from mandatory Exact scope.
+**Spec axis:** Each original AC has a pinned case mapping, but the finite portable floor does not discharge every literal requirement of AC #2. The remaining upstream projection-layer and multi-join paths need an exact canonical source/terminal oracle and corresponding dialect/adapter evidence before AC #2 or the parent can be signed off. The eight conditional boundaries remain non-Exact and owned.
 
-Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test`, `cargo doc --no-deps`, no-default-features tests, schema/golden checks and real dbt E2E on the final PR head. All nine implementation-head jobs passed in [CI 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) at `64599c7b10de1361f0a51011d489db1d19023365`. The independent Standards and Spec review found no blocking portable case or unowned conditional law. Parent Done and checked ACs are now recorded; final metadata-head CI remains the merge gate. This PR does not approve TASK-91.
+Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test`, `cargo doc --no-deps`, no-default-features tests, schema/golden checks and real dbt E2E on the final PR head. All nine implementation-head jobs passed in [CI 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) at `64599c7b10de1361f0a51011d489db1d19023365`. The 12 frozen core cases remain evidenced, but independent Spec review identified the unverified upstream projection/multi-join requirement in original AC #2. Keep AC #2 unchecked, parent In Progress and parent_signed_off=false until it is implemented and independently tested. Final PR-head CI remains required. This PR does not approve TASK-91.
+
+## Outstanding parent requirement
+
+The canonical joined aggregate planner currently requires a single INNER JOIN and exactly two physical sources. Its direct-source oracle does not prove an upstream projected producer or a join chain with three or more physical sources. Add bounded complete source and terminal bags with typed domains, positive/rejected membership, independent DuckDB execution and SQL/dbt/ODCS plus dialect classification for those explicitly named AC #2 paths. No status flag or green existing fixture can substitute for that missing executable evidence.

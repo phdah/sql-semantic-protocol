@@ -399,6 +399,20 @@ fn parent_coverage_manifest_agrees_with_frozen_original_acceptance() {
         parent["grouping_function_boundary"]["id"]
     );
     assert_eq!(row["release_approved"], false);
+    assert_eq!(row["parent_signed_off"], false);
+    assert_eq!(row["verified_original_ac"], json!([1, 3, 4, 5, 6]));
+    assert_eq!(
+        parent["status"],
+        "parent_portable_floor_verified_original_ac2_unresolved"
+    );
+    let ac2 = rows(&parent, "original_acceptance_criteria")
+        .iter()
+        .find(|criterion| criterion["id"] == 2)
+        .expect("original AC #2");
+    assert_eq!(
+        ac2["verification_status"],
+        "blocked_missing_upstream_projection_and_multijoin_exactness"
+    );
 }
 
 #[test]
@@ -561,7 +575,11 @@ fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
             Err(error) => assert!(!error.to_string().trim().is_empty()),
             Ok(bundle) => {
                 let target = bundle.layers().last().expect("analyzed target").id();
-                let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&source));
+                let proof = physical_finite_aggregate_bag_plan(
+                    &bundle,
+                    target,
+                    std::slice::from_ref(&source),
+                );
                 assert!(
                     matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
                     "{dialect}: unproven GROUPING semantics promoted to Exact: {proof:?}"
