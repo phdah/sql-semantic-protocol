@@ -246,8 +246,9 @@ fn task_72_parent_each_original_ac_has_exact_and_conditional_case_coverage() {
                         .as_array()
                         .is_some_and(|ids| ids.iter().any(|id| id.as_u64() == Some(ac)))
             });
-            let parent_covered =
-                cases(&parent, "parent_only_conditional").iter().any(|case| {
+            let parent_covered = cases(&parent, "parent_only_conditional")
+                .iter()
+                .any(|case| {
                     case["variant"] == variant
                         && case["mapped_original_ac"]
                             .as_array()
