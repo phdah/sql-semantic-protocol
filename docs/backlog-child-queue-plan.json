@@ -571,7 +571,13 @@
           "fixture_ids": [
             "76-C135-P",
             "76-C135-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_pending_merge",
+          "freeze": "docs/task-135-acceptance-freeze.json",
+          "signoff_audit": "docs/task-135-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/150",
+          "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40317980536",
+          "dependency_gate": "TASK-136 remains blocked until TASK-135 Done and PR #150 merged on main; parent TASK-76 independently unsigned"
         },
         {
           "title": "Classify sampling and certify TASK-76 dialect/oracle matrix",

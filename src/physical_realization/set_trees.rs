@@ -20,6 +20,8 @@ pub struct PhysicalSetTreeBranch {
     pub false_row_ids: Vec<String>,
     /// Complete row identities for which the branch condition is SQL UNKNOWN.
     pub unknown_row_ids: Vec<String>,
+    /// Physical rows rejected specifically by branch-local pagination.
+    pub page_rejected_row_ids: Vec<String>,
 }
 
 /// Full positional nullable tuple, source identities, and final multiplicity.
@@ -197,7 +199,12 @@ fn branch_source<'a>(
     layer_id: &str,
     branch: &'a SetBranch,
 ) -> Result<ResolvedSetBranch<'a>, &'static str> {
-    if !branch.condition_exactness().is_exact()
+    // SQL applies branch WHERE before ORDER BY/LIMIT. The bounded page
+    // evaluator below currently certifies unfiltered input bags only.
+    if branch.row_shaping().is_some() && branch.predicates().where_predicate().is_some() {
+        return Err("filtered branch pagination needs WHERE-before-page physical evaluation");
+    }
+    if (!branch.condition_exactness().is_exact() && branch.row_shaping().is_none())
         || !branch.empty_input_preserving()
         || branch.predicates().having_predicate().is_some()
         || branch.predicates().qualify_predicate().is_some()
@@ -298,6 +305,69 @@ fn branch_source<'a>(
         projected: mapped,
         predicate_columns: columns,
     })
+}
+
+/// Compute branch-local survivor identities from its complete source bag.
+///
+/// Keep set-operator tuple equality separate from source ordering: a branch
+/// page executes before UNION/INTERSECT/EXCEPT bag multiplication. Missing
+/// or tied physical ordering evidence is a Residual, never an arbitrary choice.
+fn branch_page_survivors(
+    shape: &crate::protocol::SetRowShaping,
+    projected: &[String],
+    rows: &[PhysicalWriteRow],
+) -> Result<BTreeSet<usize>, &'static str> {
+    if shape.keys.is_empty() {
+        return Err("branch pagination has no certified ORDER BY");
+    }
+    let mut keyed = Vec::new();
+    for (index, row) in rows.iter().enumerate() {
+        let mut values = Vec::new();
+        for key in &shape.keys {
+            let column = projected
+                .get(key.index)
+                .ok_or("branch ORDER BY column is not projected")?;
+            let value = integer(
+                row.values()
+                    .get(column)
+                    .ok_or("branch sort column is absent")?,
+            )?;
+            if value.is_none() && key.nulls_first.is_none() {
+                return Err("branch NULL sort needs an explicit NULLS FIRST/LAST");
+            }
+            values.push(value);
+        }
+        keyed.push((index, values));
+    }
+    keyed.sort_by(|a, b| super::page_bags::compare_ordered_rows(&a.1, &b.1, &shape.keys));
+    if shape.with_ties && shape.offset != 0 {
+        return Err("branch FETCH WITH TIES and OFFSET is not certified");
+    }
+    if !shape.with_ties
+        && keyed.windows(2).any(|pair| {
+            super::page_bags::compare_ordered_rows(&pair[0].1, &pair[1].1, &shape.keys)
+                == std::cmp::Ordering::Equal
+        })
+    {
+        return Err("branch ORDER BY does not prove physical peer membership");
+    }
+    let cutoff = if shape.with_ties && shape.limit > 0 {
+        keyed.get(shape.limit - 1).map(|(_, keys)| keys.clone())
+    } else {
+        None
+    };
+    Ok(keyed
+        .into_iter()
+        .enumerate()
+        .filter_map(|(position, (index, keys))| {
+            let window = position >= shape.offset && position - shape.offset < shape.limit;
+            let boundary_peer = cutoff.as_deref().is_some_and(|peer| {
+                super::page_bags::compare_ordered_rows(&keys, peer, &shape.keys)
+                    == std::cmp::Ordering::Equal
+            });
+            (window || boundary_peer).then_some(index)
+        })
+        .collect())
 }
 
 fn tree_count(
@@ -436,10 +506,19 @@ pub fn physical_finite_set_tree_plan(
         let Some(state) = snapshots.iter().find(|state| state.relation() == source) else {
             return residual("missing source snapshot for a set branch");
         };
+        let page_members = if let Some(shape) = branch.row_shaping() {
+            match branch_page_survivors(shape, &mapped, state.rows()) {
+                Ok(members) => Some(members),
+                Err(reason) => return residual(reason),
+            }
+        } else {
+            None
+        };
         let mut selected_row_ids = Vec::new();
         let mut false_row_ids = Vec::new();
         let mut unknown_row_ids = Vec::new();
-        for row in state.rows() {
+        let mut page_rejected_row_ids = Vec::new();
+        for (physical_index, row) in state.rows().iter().enumerate() {
             let Some(id) = physical_id(row) else {
                 return residual("source identity vanished while evaluating branch");
             };
@@ -466,6 +545,13 @@ pub fn physical_finite_set_tree_plan(
                 .entry(tuple)
                 .or_insert_with(|| vec![Vec::new(); operation.branches().len()]);
             match truth {
+                Some(true)
+                    if page_members
+                        .as_ref()
+                        .is_some_and(|selected| !selected.contains(&physical_index)) =>
+                {
+                    page_rejected_row_ids.push(id.to_string());
+                }
                 Some(true) => {
                     rows[index].push(id.to_string());
                     selected_row_ids.push(id.to_string());
@@ -480,6 +566,7 @@ pub fn physical_finite_set_tree_plan(
             selected_row_ids,
             false_row_ids,
             unknown_row_ids,
+            page_rejected_row_ids,
         });
     }
     // Resolve all candidate tuple frequencies before applying global shaping.
@@ -624,4 +711,25 @@ pub fn physical_finite_set_tree_plan(
         terminal,
         terminal_domains,
     }))
+}
+
+/// Classify exact membership of an entire terminal tuple after all branch and
+/// set-level page windows have been applied. A row not in the whole bag is
+/// Impossible; no parser-only guess is promoted beyond Residual.
+pub fn physical_finite_set_tree_membership_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    snapshots: &[PhysicalWriteState],
+    requested: &BTreeMap<String, LiteralValue>,
+) -> PhysicalFiniteSetTreeProof {
+    match physical_finite_set_tree_plan(bundle, target_layer_id, snapshots) {
+        PhysicalFiniteSetTreeProof::Exact(exact)
+            if !exact.terminal.iter().any(|row| row == requested) =>
+        {
+            PhysicalFiniteSetTreeProof::Impossible {
+                reason: "requested tuple is absent from complete paginated set bag".to_string(),
+            }
+        }
+        result => result,
+    }
 }

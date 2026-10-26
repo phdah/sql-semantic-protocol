@@ -120,6 +120,7 @@ pub struct SetBranch {
     condition_exactness: ConditionExactness,
     dependencies: Vec<String>,
     witness_boundary: Option<SetWitnessBoundary>,
+    row_shaping: Option<SetRowShaping>,
     empty_input_preserving: bool,
 }
 
@@ -139,9 +140,11 @@ impl SetBranch {
             condition_exactness: query.condition_exactness().clone(),
             dependencies: query.dependencies().to_vec(),
             witness_boundary,
+            row_shaping: query.row_shaping().cloned(),
             empty_input_preserving: query.sources().len() == 1
                 && (query.row_preserving_projection()
                     || query.filter_only_row_shape()
+                    || query.row_shaping().is_some()
                     || certified_local_row_shape)
                 && query.aggregation().is_none()
                 && query.set_operation().is_none()
@@ -154,6 +157,11 @@ impl SetBranch {
                     )
                 }),
         }
+    }
+
+    /// Explicit branch-local ordering and page bounds, never a set-level page.
+    pub fn row_shaping(&self) -> Option<&SetRowShaping> {
+        self.row_shaping.as_ref()
     }
 
     /// Whether the parsed branch is a direct one-to-one read or filter of one
@@ -341,6 +349,55 @@ pub struct SetRowShaping {
     pub limit: usize,
     /// Include the complete boundary peer group for FETCH/TOP WITH TIES.
     pub with_ties: bool,
+}
+
+/// Two ordered pagination stages over one complete physical source.
+///
+/// Each projected column retains its authoritative physical source identity.
+/// The inner page is materialized before the outer page is evaluated. Neither
+/// stage's offset may be pushed through the other's ordering or limit.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NestedPage {
+    source: String,
+    projected_columns: Vec<(String, String)>,
+    inner: SetRowShaping,
+    outer: SetRowShaping,
+}
+
+impl NestedPage {
+    pub(crate) fn new(
+        source: String,
+        projected_columns: Vec<(String, String)>,
+        inner: SetRowShaping,
+        outer: SetRowShaping,
+    ) -> Self {
+        Self {
+            source,
+            projected_columns,
+            inner,
+            outer,
+        }
+    }
+
+    /// Authoritative physical source relation for both stages.
+    pub fn source(&self) -> &str {
+        &self.source
+    }
+
+    /// Ordered pairs of final output and physical input column names.
+    pub fn projected_columns(&self) -> &[(String, String)] {
+        &self.projected_columns
+    }
+
+    /// The producer's independently bounded page.
+    pub fn inner(&self) -> &SetRowShaping {
+        &self.inner
+    }
+
+    /// The final consumer's independently bounded page.
+    pub fn outer(&self) -> &SetRowShaping {
+        &self.outer
+    }
 }
 
 /// One UNION, INTERSECT, or EXCEPT operation.

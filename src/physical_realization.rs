@@ -492,6 +492,7 @@ mod joint_distributions;
 mod membership;
 mod operators;
 mod page_bags;
+mod page_composition;
 mod rank_bags;
 mod ranking;
 mod scalar_quantified;
@@ -549,6 +550,10 @@ pub use page_bags::{
     physical_finite_page_bag_plan, physical_finite_page_membership_plan, PhysicalFinitePageExact,
     PhysicalFinitePageProof, PhysicalPageRow,
 };
+pub use page_composition::{
+    physical_finite_composed_page_membership_plan, physical_finite_composed_page_plan,
+    PhysicalComposedPageExact, PhysicalComposedPageProof,
+};
 pub use rank_bags::{
     physical_finite_rank_bag_plan, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
     PhysicalRankRow,
@@ -566,8 +571,9 @@ pub use set_bags::{
     PhysicalSetColumnDomain, PhysicalSetTuple,
 };
 pub use set_trees::{
-    physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
-    PhysicalSetTreeBranch, PhysicalSetTreeTuple,
+    physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
+    PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
+    PhysicalSetTreeTuple,
 };
 pub use window_bags::{
     physical_finite_window_bag_plan, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,

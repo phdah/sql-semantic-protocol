@@ -42,6 +42,10 @@ sources:
         columns:
           - name: k
             data_type: INTEGER
+      - name: task135_source
+        columns:
+          - name: k
+            data_type: INTEGER
       - name: task128_window_source
         columns:
           - name: id

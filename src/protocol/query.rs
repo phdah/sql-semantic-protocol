@@ -79,6 +79,7 @@ pub struct QueryStatement {
     window_grouped_count_source: Option<Box<WindowGroupedCountSource>>,
     set_operation: Option<Box<SetOperation>>,
     row_shaping: Option<Box<SetRowShaping>>,
+    nested_page: Option<Box<NestedPage>>,
     finite_table: Option<Box<FiniteTable>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -117,6 +118,7 @@ impl QueryStatement {
             window_grouped_count_source: None,
             set_operation: None,
             row_shaping: None,
+            nested_page: None,
             finite_table: None,
             produced_relation: None,
             write: None,
@@ -311,6 +313,16 @@ impl QueryStatement {
     /// Typed direct SELECT ordering and literal page bounds; exactness requires physical evidence.
     pub fn row_shaping(&self) -> Option<&SetRowShaping> {
         self.row_shaping.as_deref()
+    }
+
+    pub(crate) fn with_nested_page(mut self, nested: Option<NestedPage>) -> Self {
+        self.nested_page = nested.map(Box::new);
+        self
+    }
+
+    /// Explicitly ordered producer and consumer pagination without flattening offsets.
+    pub fn nested_page(&self) -> Option<&NestedPage> {
+        self.nested_page.as_deref()
     }
 
     pub(crate) fn with_produced_relation(mut self, produced_relation: Option<String>) -> Self {

@@ -1,0 +1,878 @@
+{
+  "task": "TASK-135",
+  "parent": "TASK-76",
+  "version": 2,
+  "status": "verified_bounded_child_pending_merge",
+  "fixture_ids": [
+    "76-C135-P",
+    "76-C135-N"
+  ],
+  "mapped_parent_ac": [
+    2,
+    4,
+    5,
+    6
+  ],
+  "known_mandatory_core": [
+    "two sequential bounded row windows on one CTE",
+    "set branch ORDER/LIMIT",
+    "row-preserving producer copies"
+  ],
+  "conditional_boundaries": [
+    {
+      "variant": "unattested inner/outer ordering",
+      "owner": "TASK-135",
+      "release_disposition": "blocking until reviewed exact or sound conditional classification"
+    },
+    {
+      "variant": "implicit NULL ordering, ambiguous peer winner",
+      "owner": "TASK-135",
+      "release_disposition": "Residual, native runtime/session not certified"
+    }
+  ],
+  "cases": [
+    {
+      "id": "76-C135-P-cte-nested",
+      "fixture_family": "76-C135-P",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "selected_source_ids": [
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#3",
+        "s#4"
+      ],
+      "terminal_bag": [
+        3
+      ],
+      "terminal_domains": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": {
+        "positive": "Exact",
+        "not_true": "Impossible when requested output tuple absent"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "source": "direct_sql",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        },
+        {
+          "source": "dbt_compiled",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        },
+        {
+          "source": "odcs",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        }
+      ],
+      "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
+      "verification": "independent_complete_duckdb_source_and_terminal_oracle",
+      "expected_parser_status": "supported_in_all_13_sqlparser_dialects"
+    },
+    {
+      "id": "76-C135-N-empty",
+      "fixture_family": "76-C135-N",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [],
+      "source_row_ids": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [],
+      "terminal_bag": [],
+      "terminal_domains": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": {
+        "positive": "Exact",
+        "not_true": "Impossible when requested output tuple absent"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "source": "direct_sql",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        },
+        {
+          "source": "dbt_compiled",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        },
+        {
+          "source": "odcs",
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
+        }
+      ],
+      "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
+      "verification": "independent_complete_duckdb_source_and_terminal_oracle",
+      "expected_parser_status": "supported_in_all_13_sqlparser_dialects"
+    }
+  ],
+  "unverified_scope": [],
+  "signoff": {
+    "all_mandatory_verified": true,
+    "dialect_adapter_oracles_green": true,
+    "required_ci_green": true,
+    "parent_done": false,
+    "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40317980536",
+    "verified_semantic_head": "445b92ac0cd50d9e226832a55446f9fc6bb0cf68",
+    "verified_jobs": 9,
+    "matt_review": "standards_and_spec_verified_no_remaining_mandatory_gaps",
+    "final_pr_head_ci_gate": "required_after_signoff_metadata"
+  },
+  "acceptance_contract": {
+    "original_parent_ac": [
+      2,
+      4,
+      5,
+      6
+    ],
+    "task_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mandatory_ids": [
+      "76-C135-P-cte-nested",
+      "76-C135-N-empty",
+      "76-C135-P-renamed-producer",
+      "76-C135-P-set-branch",
+      "76-C135-N-set-zero",
+      "76-C135-N-null-duplicates"
+    ],
+    "conditional_ids": [
+      "76-C135-R-peer-order",
+      "76-C135-R-implicit-null",
+      "76-C135-R-unresolved-producer"
+    ]
+  },
+  "additional_mandatory_cases": [
+    {
+      "id": "76-C135-P-renamed-producer",
+      "fixture_family": "76-C135-P",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k AS producer_key FROM s ORDER BY producer_key LIMIT 4) SELECT producer_key AS k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "producer_bag": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminal_bag": [
+        3
+      ],
+      "selected_ids": [
+        "s#2"
+      ],
+      "rejected_ids": [
+        "s#0",
+        "s#1",
+        "s#3",
+        "s#4"
+      ],
+      "domain": {
+        "k": {
+          "type": "INTEGER",
+          "finite_values": [
+            3
+          ],
+          "null": false,
+          "lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "negative_membership": {
+        "tuple": {
+          "k": 1
+        },
+        "status": "Impossible"
+      },
+      "oracles": [
+        "tests/task_135_nested_pages.rs::copy_producer_renames_do_not_change_source_ids_or_page_offsets"
+      ],
+      "adapter_requirements": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
+    },
+    {
+      "id": "76-C135-P-set-branch",
+      "fixture_family": "76-C135-P",
+      "classification": "mandatory",
+      "sql": "(SELECT k FROM s ORDER BY k LIMIT 3) UNION ALL (SELECT k FROM s WHERE k = 5) ORDER BY k LIMIT 3",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_ids": [
+        "row0",
+        "row1",
+        "row2",
+        "row3",
+        "row4"
+      ],
+      "left_selected": [
+        "row0",
+        "row1",
+        "row2"
+      ],
+      "left_page_rejected": [
+        "row3",
+        "row4"
+      ],
+      "right_selected": [
+        "row4"
+      ],
+      "right_predicate_false": [
+        "row0",
+        "row1",
+        "row2",
+        "row3"
+      ],
+      "terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "domain": {
+        "k": {
+          "type": "INTEGER",
+          "finite_values": [
+            1,
+            2,
+            3
+          ],
+          "null": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "negative_membership": {
+        "tuple": {
+          "k": 4
+        },
+        "status": "Impossible"
+      },
+      "oracles": [
+        "tests/task_135_set_branch_pages.rs::branch_limit_precedes_union_all_and_final_limit"
+      ],
+      "adapter_requirements": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
+    },
+    {
+      "id": "76-C135-N-set-zero",
+      "fixture_family": "76-C135-N",
+      "classification": "mandatory",
+      "sql": "(SELECT k FROM s ORDER BY k LIMIT 2) UNION ALL (SELECT k FROM s WHERE k = 5) ORDER BY k LIMIT 0",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_ids": [
+        "row0",
+        "row1",
+        "row2",
+        "row3",
+        "row4"
+      ],
+      "left_selected": [
+        "row0",
+        "row1"
+      ],
+      "left_page_rejected": [
+        "row2",
+        "row3",
+        "row4"
+      ],
+      "right_selected": [
+        "row4"
+      ],
+      "terminal_bag": [],
+      "domain": {
+        "k": {
+          "type": "INTEGER",
+          "finite_values": [],
+          "null": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "negative_membership": {
+        "tuple": {
+          "k": 1
+        },
+        "status": "Impossible"
+      },
+      "oracles": [
+        "tests/task_135_set_branch_pages.rs::branch_pagination_zero_terminal_is_exact_not_fabricated"
+      ],
+      "adapter_requirements": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
+    },
+    {
+      "id": "76-C135-N-null-duplicates",
+      "fixture_family": "76-C135-N",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k, seq FROM s ORDER BY k NULLS LAST, seq LIMIT 4) SELECT k, seq FROM page ORDER BY k NULLS LAST, seq DESC LIMIT 2 OFFSET 1",
+      "source_bag": [
+        {
+          "k": null,
+          "seq": 5
+        },
+        {
+          "k": 1,
+          "seq": 2
+        },
+        {
+          "k": 1,
+          "seq": 1
+        },
+        {
+          "k": 2,
+          "seq": 3
+        },
+        {
+          "k": 3,
+          "seq": 4
+        }
+      ],
+      "source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "terminal_bag": [
+        {
+          "k": 1,
+          "seq": 1
+        },
+        {
+          "k": 2,
+          "seq": 3
+        }
+      ],
+      "selected_ids": [
+        "s#2",
+        "s#3"
+      ],
+      "rejected_ids": [
+        "s#0",
+        "s#1",
+        "s#4"
+      ],
+      "domain": {
+        "k": {
+          "type": "INTEGER",
+          "finite_values": [
+            1,
+            2
+          ],
+          "null": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "seq": {
+          "type": "INTEGER",
+          "finite_values": [
+            1,
+            3
+          ],
+          "null": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "negative_membership": {
+        "tuple": {
+          "k": null,
+          "seq": 5
+        },
+        "status": "Impossible"
+      },
+      "oracles": [
+        "tests/task_135_nested_pages.rs::nullable_duplicate_keys_with_unique_tiebreakers_keep_correct_physical_identities"
+      ],
+      "adapter_requirements": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
+    }
+  ],
+  "conditional_cases": [
+    {
+      "id": "76-C135-R-peer-order",
+      "status": "Residual",
+      "owner": "TASK-135",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_bag": [
+        1,
+        2,
+        2,
+        4,
+        5
+      ],
+      "reason": "nonunique physical page ORDER BY cannot certify selected source row identities",
+      "release_disposition": "reviewed_conditional_session_order_not_certified"
+    },
+    {
+      "id": "76-C135-R-implicit-null",
+      "status": "Residual",
+      "owner": "TASK-135",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_bag": [
+        1,
+        null,
+        3,
+        4,
+        5
+      ],
+      "reason": "NULL ordering without explicit FIRST/LAST is session or dialect dependent",
+      "release_disposition": "reviewed_conditional_native_not_certified"
+    },
+    {
+      "id": "76-C135-R-unresolved-producer",
+      "status": "Residual",
+      "owner": "TASK-135",
+      "sql": "WITH page AS (SELECT k FROM s LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "reason": "producer lacks deterministic ORDER BY, so physical survivors are not proven",
+      "release_disposition": "reviewed_conditional_nonordered_boundary"
+    }
+  ],
+  "dialect_matrix": {
+    "owner": "TASK-135",
+    "dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "required_variants": [
+      "cte_nested",
+      "renamed_producer",
+      "set_branch",
+      "set_zero",
+      "null_duplicates"
+    ],
+    "boundary": "Parser acceptance is not vendor engine execution evidence",
+    "state": "verified_all_65_parser_and_canonical_cells",
+    "executable_evidence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40316658111"
+  },
+  "adapter_matrix": {
+    "owner": "TASK-135",
+    "sources": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs"
+    ],
+    "required_variants": [
+      "cte_nested",
+      "cte_empty",
+      "renamed_producer",
+      "set_branch",
+      "set_zero",
+      "null_duplicates"
+    ],
+    "boundary": "manifest compiled SQL owns query; catalog or ODCS owns schema",
+    "state": "verified_18_complete_bag_parity_cells",
+    "real_dbt_core_e2e": "tests/task_135_dbt_core_e2e.rs"
+  }
+}

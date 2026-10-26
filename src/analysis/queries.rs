@@ -302,9 +302,33 @@ pub(super) fn analyze_query(
 
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+        // Generic nested-query diagnostics predate independently certified
+        // branch row-shaping. Suppress only those recognized at *all*
+        // syntactically shaped set leaves. Other gaps remain explicit.
+        if set_operation.as_ref().is_some_and(|set| {
+            set.branches()
+                .iter()
+                .any(|branch| branch.row_shaping().is_some())
+                && set
+                    .branches()
+                    .iter()
+                    .all(|branch| branch.row_shaping().is_some() || branch.empty_input_preserving())
+        }) {
+            diagnostics.retain(|diagnostic| {
+                !matches!(
+                    diagnostic.code(),
+                    "unsupported_order_by" | "unsupported_limit" | "unsupported_fetch"
+                )
+            });
+        }
     }
     let row_shaping = if set_operation.is_none() {
         analyze_direct_row_shaping(query, &output)
+    } else {
+        None
+    };
+    let nested_page = if set_operation.is_none() {
+        analyze_nested_page(query, &output, metadata)
     } else {
         None
     };
@@ -624,6 +648,7 @@ pub(super) fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_row_shaping(row_shaping)
+    .with_nested_page(nested_page)
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)
