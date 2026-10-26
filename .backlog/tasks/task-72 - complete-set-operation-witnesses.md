@@ -1,10 +1,10 @@
 ---
 id: TASK-72
 title: Prove full set-operation trees with aligned values and bags
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-26'
 labels: []
 milestone: m-3
 dependencies: 
@@ -68,3 +68,17 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-117, TASK-118, TASK-119, TASK-120; #2 -> TASK-118, TASK-119, TASK-120; #3 -> TASK-117, TASK-118, TASK-120; #4 -> TASK-119, TASK-120; #5 -> TASK-117, TASK-118, TASK-119, TASK-120; #6 -> TASK-117, TASK-118, TASK-119, TASK-120.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent closure review (2026-10-26)
+
+The [parent acceptance inventory](../../docs/task-72-acceptance-freeze.json) and
+[independent audit](../../docs/task-72-acceptance-audit.md) map original AC #1..#6 to
+all four merged child matrices and document the six conditional/vendor laws. The
+parent-level regression guard is `tests/task_72_parent_closure.rs`; existing
+TASK-117..120 public integration tests own independent DuckDB source/terminal
+bags, 13 parser identities and SQL/dbt/ODCS parity. No physical semantics or
+consumer contract are changed by this acceptance review.
+
+**Pending:** green CI on the final parent PR head and independent review of the
+original acceptance criteria and conditional release dispositions. Do not check
+AC #1..#6 or mark TASK-72 Done before those gates pass. TASK-91 remains separate.
