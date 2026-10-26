@@ -7,6 +7,7 @@ pub(crate) struct RowConditions {
     pub(super) predicates: Box<Predicates>,
     pub(super) column_domains: Vec<ColumnDomain>,
     pub(super) exactness: ConditionExactness,
+    pub(super) sampling: Vec<TableSampling>,
 }
 
 impl RowConditions {
@@ -20,6 +21,7 @@ impl RowConditions {
             predicates: Box::new(predicates),
             column_domains,
             exactness,
+            sampling: Vec::new(),
         }
     }
 }
@@ -80,7 +82,6 @@ pub struct QueryStatement {
     set_operation: Option<Box<SetOperation>>,
     row_shaping: Option<Box<SetRowShaping>>,
     nested_page: Option<Box<NestedPage>>,
-    sampling: Vec<TableSampling>,
     finite_table: Option<Box<FiniteTable>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -120,7 +121,6 @@ impl QueryStatement {
             set_operation: None,
             row_shaping: None,
             nested_page: None,
-            sampling: Vec::new(),
             finite_table: None,
             produced_relation: None,
             write: None,
@@ -318,13 +318,13 @@ impl QueryStatement {
     }
 
     pub(crate) fn with_sampling(mut self, sampling: Vec<TableSampling>) -> Self {
-        self.sampling = sampling;
+        self.row_conditions.sampling = sampling;
         self
     }
 
     /// Source-independent sampled table occurrences; no Exact membership is implied.
     pub fn sampling(&self) -> &[TableSampling] {
-        &self.sampling
+        &self.row_conditions.sampling
     }
 
     pub(crate) fn with_nested_page(mut self, nested: Option<NestedPage>) -> Self {
