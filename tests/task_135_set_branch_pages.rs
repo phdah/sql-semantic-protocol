@@ -1,9 +1,10 @@
 //! TASK-135 physical proof of set branch pagination before set bag arithmetic.
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name,
+    physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -139,16 +140,12 @@ fn absent_output_of_composed_set_pages_is_impossible_not_residual() {
     let values = [Some(1), Some(2), Some(3), Some(4), Some(5)];
     let analyzed = bundle(SQL);
     let target = analyzed.layers().last().unwrap().id();
-    let wanted = BTreeMap::from([
-        ("k".to_string(), LiteralValue::Number("4".to_string()))
-    ]);
+    let wanted = BTreeMap::from([("k".to_string(), LiteralValue::Number("4".to_string()))]);
     assert!(matches!(
         physical_finite_set_tree_membership_plan(&analyzed, target, &[state(&values)], &wanted),
         PhysicalFiniteSetTreeProof::Impossible { .. }
     ));
-    let selected = BTreeMap::from([
-        ("k".to_string(), LiteralValue::Number("2".to_string()))
-    ]);
+    let selected = BTreeMap::from([("k".to_string(), LiteralValue::Number("2".to_string()))]);
     assert!(matches!(
         physical_finite_set_tree_membership_plan(&analyzed, target, &[state(&values)], &selected),
         PhysicalFiniteSetTreeProof::Exact(_)
