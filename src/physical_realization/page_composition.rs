@@ -82,14 +82,14 @@ fn stage(
         return Err("OFFSET WITH TIES has no attested producer law".to_string());
     }
     let cutoff = if shape.with_ties && shape.limit > 0 {
-        keyed.get(shape.limit - 1).map(|(_, keys)| keys.as_slice())
+        keyed.get(shape.limit - 1).map(|(_, keys)| keys.clone())
     } else {
         None
     };
     Ok(keyed.into_iter().enumerate().filter_map(|(position, (index, keys))| {
         let window = position >= shape.offset
             && position - shape.offset < shape.limit;
-        let peer = cutoff.is_some_and(|last| {
+        let peer = cutoff.as_deref().is_some_and(|last| {
             super::page_bags::compare_ordered_rows(&keys, last, &shape.keys)
                 == std::cmp::Ordering::Equal
         });
