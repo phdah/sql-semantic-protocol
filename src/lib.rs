@@ -12,6 +12,7 @@
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
 //! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - dialect_from_name resolves built-in dialects for consumers without a direct sqlparser dependency.
+//! - TableSampling carries parsed sampling method, quantity and seed evidence without falsely proving membership.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
 //! - JoinWitness and JoinWitnessDirection describe matched, unmatched and null-extended input obligations.
