@@ -1,4 +1,4 @@
-//! All 130 frozen TASK-136 parser/canonical-dialect obligations are executable.
+//! All 143 frozen TASK-136 parser/canonical-dialect obligations are executable.
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
@@ -35,10 +35,10 @@ fn state(case: &Value) -> PhysicalWriteState {
     .unwrap()
 }
 #[test]
-fn all_130_declared_parser_cells_preserve_the_frozen_canonical_outcome() {
+fn all_143_declared_parser_cells_preserve_the_frozen_canonical_outcome() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-136-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     let mut mandatory = 0;
     let mut conditional = 0;
     for case in freeze["cases"].as_array().unwrap() {
@@ -129,5 +129,5 @@ fn all_130_declared_parser_cells_preserve_the_frozen_canonical_outcome() {
         }
     }
     assert_eq!(mandatory, 65, "5 mandatory cases x 13 dialects");
-    assert_eq!(conditional, 65, "5 conditional cases x 13 dialects");
+    assert_eq!(conditional, 78, "6 conditional cases x 13 dialects");
 }
