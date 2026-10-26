@@ -135,13 +135,33 @@ fn task_72_parent_mandatory_bags_keep_complete_exact_oracles() {
             .collect();
         assert_eq!(names.len(), 13, "duplicate parser classification");
 
-        let adapters = case["adapter_cells"].as_object().expect("source adapters");
-        assert_eq!(adapters.len(), 3);
-        for adapter in ["sql", "dbt", "odcs"] {
+        let adapters = &case["adapter_cells"];
+        if let Some(mapping) = adapters.as_object() {
+            assert_eq!(mapping.len(), 3);
+            for adapter in ["sql", "dbt", "odcs"] {
+                assert_eq!(
+                    mapping.get(adapter).and_then(Value::as_str),
+                    Some("mandatory")
+                );
+            }
+        } else {
+            let cells = adapters.as_array().expect("adapter evidence cells");
+            let names: BTreeSet<_> = cells
+                .iter()
+                .map(|cell| cell["name"].as_str().expect("source adapter"))
+                .collect();
             assert_eq!(
-                adapters.get(adapter).and_then(Value::as_str),
-                Some("mandatory")
+                names,
+                BTreeSet::from([
+                    "direct_sql",
+                    "dbt_compiled_sql_catalog",
+                    "odcs_equivalent_schemas",
+                ])
             );
+            for cell in cells {
+                assert_eq!(cell["verified"], true);
+                assert!(nonempty_string(&cell["classification"]));
+            }
         }
         for ac in case["mapped_original_ac"]
             .as_array()
