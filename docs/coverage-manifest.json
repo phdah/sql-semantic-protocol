@@ -13005,5 +13005,18 @@
       5
     ],
     "merge_gate": "final PR head CI must also pass after signoff metadata commit"
+  },
+  "task_135_composed_pagination_acceptance": {
+    "owner": "TASK-135",
+    "parent": "TASK-76",
+    "status": "implementation_in_progress_not_signed_off",
+    "freeze": "docs/task-135-acceptance-freeze.json",
+    "fixture_ids": ["76-C135-P", "76-C135-N"],
+    "mandatory_exact_verified": 0,
+    "unverified_mandatory": ["set branch ordering/limit", "producer copies", "NULL and duplicate oracle"],
+    "sql_dbt_odcs_parity_verified": false,
+    "full_13_dialect_matrix_verified": false,
+    "child_done": false,
+    "parent_signed_off": false
   }
 }
