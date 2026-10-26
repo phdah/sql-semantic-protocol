@@ -571,7 +571,7 @@ pub use set_bags::{
     PhysicalSetColumnDomain, PhysicalSetTuple,
 };
 pub use set_trees::{
-    physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
+    physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan, PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof,
     PhysicalSetTreeBranch, PhysicalSetTreeTuple,
 };
 pub use window_bags::{
