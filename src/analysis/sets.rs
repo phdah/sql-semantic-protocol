@@ -122,7 +122,14 @@ pub(super) fn collect_set_branch_evidence(
             // Inner CTE rows are not independent physical bags. Only an
             // identity-preserving single-source CTE, certified below, can be
             // rebound to the complete underlying physical source assignment.
-            let (boundary, certified_local) = if branch_query.limit_clause.is_none()
+            let (boundary, certified_local) = if analyzed.row_shaping().is_some()
+                && branch_query.with.is_none()
+            {
+                // The branch has a fully normalized physical page. It is not a
+                // lossless tuple-count boundary, and page witnesses must be
+                // constructed from the complete source before the set law.
+                (None, false)
+            } else if branch_query.limit_clause.is_none()
                 && branch_query.fetch.is_none()
             {
                 match branch_query.with.as_ref() {
