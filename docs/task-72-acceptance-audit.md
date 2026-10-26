@@ -55,6 +55,11 @@ Arbitrary joined/grouped branch production is not covered by the portable
 TASK-118 exact source-producer boundary. Parent freeze v2 now tracks
 `72-PARENT-C-joined-grouped-branch` with explicit unknown terminal domain,
 Residual positive/NOT TRUE evidence and null (not fabricated empty) bags.
+The parent guard executes this fixture on DuckDB with complete source rows and
+asserts the nonempty native terminal histogram, then independently requires a
+`Residual` physical set proof for each of the 13 explicitly classified parser
+dialects. It also pins the original AC-to-mandatory/conditional-family mapping
+independently of the editable inventory, so removing a required family fails CI.
 TASK-85 owns the required whole-source producer composition, TASK-89 owns
 integrated execution evidence, and TASK-91 owns any release disposition.
 This **conditional coverage boundary** is not a constructive proof or native

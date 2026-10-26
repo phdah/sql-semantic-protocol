@@ -166,11 +166,64 @@
       "positive_proof": "Residual: no whole-source joined/grouped producer physical bag attested at the TASK-72 set-only seam",
       "not_true_proof": "Residual: no complete rejected terminal partition attested at this seam",
       "typed_terminal_domain": "unknown",
-      "parser_status": "conditional: representative SQL only, not native engine conformance",
       "adapters": "conditional: no independent compiled dbt/ODCS physical oracle for joined/grouped branch at this seam",
       "owner": "TASK-85",
       "reason": "nontrivial joined/grouped producers require one closed physical assignment through the producer and all set branches",
-      "release_disposition": "TASK-85/TASK-89 must provide an integrated exact physical source/terminal oracle, or TASK-91 must explicitly approve a bounded release deferral; no exactness or native vendor claim is made here"
+      "release_disposition": "TASK-85/TASK-89 must provide an integrated exact physical source/terminal oracle, or TASK-91 must explicitly approve a bounded release deferral; no exactness or native vendor claim is made here",
+      "dialect_cells": [
+        {
+          "name": "generic",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "mysql",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "postgresql",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "hive",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "sqlite",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "snowflake",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "redshift",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "mssql",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "clickhouse",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "bigquery",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "ansi",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "duckdb",
+          "classification": "conditional_residual"
+        },
+        {
+          "name": "databricks",
+          "classification": "conditional_residual"
+        }
+      ]
     }
   ]
 }

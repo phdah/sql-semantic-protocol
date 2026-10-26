@@ -20,6 +20,57 @@ fn nonempty_string(value: &Value) -> bool {
     value.as_str().is_some_and(|text| !text.trim().is_empty())
 }
 
+const ORIGINAL_AC_SCOPE: &[(u64, &[&str], &[&str])] = &[
+    (
+        1,
+        &["six_operator_nullable_bag", "nested_shared_physical_source"],
+        &["minus", "coercion"],
+    ),
+    (
+        2,
+        &["nested_shared_physical_source", "set_level_row_shaping"],
+        &[
+            "by-name",
+            "corresponding",
+            "coercion",
+            "branch-limit",
+            "joined-grouped-branch",
+        ],
+    ),
+    (3, &["six_operator_nullable_bag", "nested_shared_physical_source"], &[]),
+    (
+        4,
+        &["set_level_row_shaping"],
+        &["order-tie", "branch-limit", "coercion"],
+    ),
+    (
+        5,
+        &[
+            "six_operator_nullable_bag",
+            "nested_shared_physical_source",
+            "set_level_row_shaping",
+        ],
+        &[],
+    ),
+    (
+        6,
+        &[
+            "six_operator_nullable_bag",
+            "nested_shared_physical_source",
+            "set_level_row_shaping",
+        ],
+        &[
+            "minus",
+            "by-name",
+            "corresponding",
+            "coercion",
+            "order-tie",
+            "branch-limit",
+            "joined-grouped-branch",
+        ],
+    ),
+];
+
 #[test]
 fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
     let parent = inventory(include_str!("../docs/task-72-acceptance-freeze.json"));
@@ -41,11 +92,21 @@ fn task_72_parent_has_a_finite_original_ac_and_child_evidence_map() {
         .map(|criterion| criterion["id"].as_u64().expect("original AC number"))
         .collect();
     assert_eq!(ac_ids, BTreeSet::from([1, 2, 3, 4, 5, 6]));
-    for criterion in ac {
-        assert!(!criterion["mandatory"]
-            .as_array()
-            .expect("mandatory families")
-            .is_empty());
+    // Contract ownership is independent of the editable freeze. Removing a
+    // mandatory or conditional family must fail this test, not shrink its scope.
+    assert_eq!(ac.len(), ORIGINAL_AC_SCOPE.len());
+    for (criterion, &(id, mandatory, conditional)) in ac.iter().zip(ORIGINAL_AC_SCOPE) {
+        assert_eq!(criterion["id"], id, "original AC identity/order changed");
+        assert_eq!(
+            criterion["mandatory"],
+            serde_json::json!(mandatory),
+            "AC #{id}: mandatory families changed without review"
+        );
+        assert_eq!(
+            criterion["conditional"],
+            serde_json::json!(conditional),
+            "AC #{id}: conditional families changed without review"
+        );
         assert!(nonempty_string(&criterion["source"]));
     }
 
@@ -285,5 +346,136 @@ fn task_72_parent_each_original_ac_has_exact_and_conditional_case_coverage() {
                 "AC #{ac} lacks a reviewed {variant} boundary"
             );
         }
+    }
+}
+
+#[test]
+fn task_72_joined_grouped_branch_is_executable_but_physical_set_proof_is_residual() {
+    use std::collections::BTreeMap;
+
+    use sql_semantic_protocol::{
+        analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
+        physical_finite_set_tree_plan, ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetTreeProof,
+        PhysicalWriteRow, PhysicalWriteState, ProtocolStatement, RelationCatalog, RelationSchema,
+        SchemaColumn, SqlInput,
+    };
+
+    let parent = inventory(include_str!("../docs/task-72-acceptance-freeze.json"));
+    let child = inventory(include_str!("../docs/task-120-acceptance-freeze.json"));
+    let boundaries = cases(&parent, "parent_only_conditional");
+    assert_eq!(boundaries.len(), 1, "the parent-owned boundary must be explicit");
+    let boundary = &boundaries[0];
+    assert_eq!(boundary["id"], "72-PARENT-C-joined-grouped-branch");
+    assert_eq!(boundary["classification"], "conditional_residual");
+    assert_eq!(boundary["mapped_original_ac"], serde_json::json!([2, 6]));
+    assert_eq!(boundary["owner"], "TASK-85");
+    assert_eq!(boundary["typed_terminal_domain"], "unknown");
+    assert!(boundary["source_bags"].is_null());
+    assert!(boundary["terminal_bag"].is_null());
+    assert!(nonempty_string(&boundary["positive_proof"]));
+    assert!(nonempty_string(&boundary["not_true_proof"]));
+    assert!(nonempty_string(&boundary["release_disposition"]));
+
+    // Source snapshots are complete and stable, but these rows are test inputs,
+    // not an attested exact producer-to-set proof.
+    let source_rows = [
+        ("a", [("a1", 1, 10), ("a2", 1, 11)]),
+        ("b", [("b1", 1, 12), ("b2", 1, 13)]),
+        ("c", [("c1", 1, 2), ("c2", 3, 5)]),
+    ];
+    let db = duckdb::Connection::open_in_memory().expect("independent DuckDB execution");
+    let mut states = Vec::new();
+    for (source, rows) in source_rows {
+        db.execute_batch(&format!(
+            "CREATE TABLE {source} (id VARCHAR, k INTEGER, v INTEGER)"
+        ))
+        .expect("physical schema");
+        let mut physical_rows = Vec::new();
+        for (id, key, value) in rows {
+            db.execute_batch(&format!(
+                "INSERT INTO {source} VALUES ('{id}', {key}, {value})"
+            ))
+            .expect("physical row");
+            physical_rows.push(
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Text(id.to_string())),
+                    ("k".to_string(), LiteralValue::Number(key.to_string())),
+                    ("v".to_string(), LiteralValue::Number(value.to_string())),
+                ]))
+                .expect("stable source identity"),
+            );
+        }
+        states.push(PhysicalWriteState::new(source, physical_rows).expect("physical source"));
+    }
+
+    let sql = boundary["sql"].as_str().expect("frozen conditional SQL");
+    let mut terminal = db
+        .prepare(sql)
+        .expect("DuckDB accepts a joined/grouped set branch")
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .expect("execute native terminal")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("complete native terminal");
+    terminal.sort();
+    assert_eq!(terminal, vec![(1, 2), (1, 4), (3, 5)]);
+
+    let schemas = ["a", "b", "c"]
+        .into_iter()
+        .map(|source| {
+            RelationSchema::new(
+                source,
+                ["id", "k", "v"]
+                    .into_iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(
+                            column,
+                            if column == "id" { "VARCHAR" } else { "INTEGER" },
+                            "postgresql",
+                        )
+                        .expect("typed physical column")
+                    })
+                    .collect(),
+            )
+            .expect("source schema")
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).expect("complete source catalog");
+    let dialects = cases(&child, "dialect_identities");
+    let cells = cases(boundary, "dialect_cells");
+    assert_eq!(dialects.len(), 13);
+    assert_eq!(cells.len(), dialects.len(), "all 13 dialects require classifications");
+
+    for (dialect, cell) in dialects.iter().zip(cells) {
+        let name = dialect.as_str().expect("canonical parser dialect");
+        assert_eq!(cell["name"], name, "misordered or missing dialect: {name}");
+        assert_eq!(
+            cell["classification"], "conditional_residual",
+            "{name}: this physical composition is not certified Exact"
+        );
+        let parser = dialect_from_name(name).expect("exposed parser");
+        let parsed = analyze_sql(sql, name, parser.as_ref())
+            .unwrap_or_else(|error| panic!("{name}: conditional SQL parser: {error}"));
+        assert!(
+            parsed.statements().iter().any(|statement| matches!(
+                statement,
+                ProtocolStatement::Query(query) if query.set_operation().is_some()
+            )),
+            "{name}: the set operation must survive parsing"
+        );
+        let input = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            "TASK-72-joined-grouped",
+            &input,
+            name,
+            parser.as_ref(),
+        )];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .unwrap_or_else(|error| panic!("{name}: conditional analysis: {error}"));
+        let target = bundle.layers().last().expect("terminal set layer").id();
+        let proof = physical_finite_set_tree_plan(&bundle, target, &states);
+        assert!(
+            matches!(proof, PhysicalFiniteSetTreeProof::Residual { .. }),
+            "{name}: joined/grouped branch must remain an explicit residual: {proof:?}"
+        );
     }
 }
