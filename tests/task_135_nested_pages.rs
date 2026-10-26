@@ -12,44 +12,62 @@ use std::collections::BTreeMap;
 const SQL: &str = "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) \
 SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2";
 
-fn evaluate(sql: &str, values: &[Option<i64>]) -> (
-    sql_semantic_protocol::AnalysisBundle,
-    PhysicalWriteState,
-) {
+fn evaluate(
+    sql: &str,
+    values: &[Option<i64>],
+) -> (sql_semantic_protocol::AnalysisBundle, PhysicalWriteState) {
     let parser = dialect_from_name("duckdb").unwrap();
     let input = SqlInput::inline(sql);
-    let inputs = [ConfiguredSqlInput::new("page", &input, "duckdb", parser.as_ref())];
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new("s", vec![
-            SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap(),
-        ]).unwrap(),
-    ]).unwrap();
+    let inputs = [ConfiguredSqlInput::new(
+        "page",
+        &input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "s",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
     let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
     let source = PhysicalWriteState::new(
         "s",
-        values.iter().map(|value| {
-            PhysicalWriteRow::new(BTreeMap::from([(
-                "k".to_string(),
-                value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-            )])).unwrap()
-        }).collect(),
-    ).unwrap();
+        values
+            .iter()
+            .map(|value| {
+                PhysicalWriteRow::new(BTreeMap::from([(
+                    "k".to_string(),
+                    value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                )]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap();
     (bundle, source)
 }
 
-fn source_and_result_from_duckdb(sql: &str, values: &[Option<i64>]) -> (Vec<Option<i64>>, Vec<Option<i64>>) {
+fn source_and_result_from_duckdb(
+    sql: &str,
+    values: &[Option<i64>],
+) -> (Vec<Option<i64>>, Vec<Option<i64>>) {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE s (k INTEGER)").unwrap();
     for value in values {
         db.execute_batch(&format!(
             "INSERT INTO s VALUES ({})",
             value.map_or("NULL".to_string(), |v| v.to_string())
-        )).unwrap();
+        ))
+        .unwrap();
     }
     let query = |sql: &str| {
         let mut statement = db.prepare(sql).unwrap();
-        statement.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-            .collect::<Result<Vec<_>, _>>().unwrap()
+        statement
+            .query_map([], |row| row.get::<_, Option<i64>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
     (query("SELECT k FROM s ORDER BY k NULLS LAST"), query(sql))
 }
@@ -68,12 +86,19 @@ fn two_pages_compose_without_moving_outer_offset_across_inner_limit() {
         panic!("expected exact nested page: {result:?}");
     };
     assert_eq!(exact.source, "s");
-    assert_eq!(exact.source_row_ids, vec!["s#0", "s#1", "s#2", "s#3", "s#4"]);
+    assert_eq!(
+        exact.source_row_ids,
+        vec!["s#0", "s#1", "s#2", "s#3", "s#4"]
+    );
     assert_eq!(exact.selected_source_ids, vec!["s#2"]);
     assert_eq!(exact.rejected_source_ids, vec!["s#0", "s#1", "s#3", "s#4"]);
-    assert_eq!(exact.terminal, vec![BTreeMap::from([(
-        "k".to_string(), LiteralValue::Number("3".to_string()),
-    )])]);
+    assert_eq!(
+        exact.terminal,
+        vec![BTreeMap::from([(
+            "k".to_string(),
+            LiteralValue::Number("3".to_string()),
+        )])]
+    );
     assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
     assert!(matches!(exact.terminal_domains["k"], ValueDomain::Set(_)));
 
