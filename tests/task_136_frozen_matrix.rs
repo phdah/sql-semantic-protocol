@@ -214,5 +214,5 @@ fn conditional_frozen_cases_do_not_overclaim_complete_row_membership() {
             );
         }
     }
-    assert_eq!(checked, 5);
+    assert_eq!(checked, 6);
 }
