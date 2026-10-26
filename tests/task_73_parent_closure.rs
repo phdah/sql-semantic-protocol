@@ -399,11 +399,11 @@ fn parent_coverage_manifest_agrees_with_frozen_original_acceptance() {
         parent["grouping_function_boundary"]["id"]
     );
     assert_eq!(row["release_approved"], false);
-    assert_eq!(row["parent_signed_off"], false);
-    assert_eq!(row["verified_original_ac"], json!([1, 3, 4, 5, 6]));
+    assert_eq!(row["parent_signed_off"], true);
+    assert_eq!(row["verified_original_ac"], json!([1, 2, 3, 4, 5, 6]));
     assert_eq!(
         parent["status"],
-        "parent_portable_floor_verified_original_ac2_unresolved"
+        "parent_original_ac1_to_ac6_signed_off_portable_release_separate"
     );
     let ac2 = rows(&parent, "original_acceptance_criteria")
         .iter()
@@ -411,7 +411,7 @@ fn parent_coverage_manifest_agrees_with_frozen_original_acceptance() {
         .expect("original AC #2");
     assert_eq!(
         ac2["verification_status"],
-        "pending_parent_cross_task_oracle_ci"
+        "frozen_portable_evidence_verified"
     );
     assert_eq!(
         ac2["upstream_composition_case_ids"],

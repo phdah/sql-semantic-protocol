@@ -1,7 +1,7 @@
 ---
 id: TASK-73
 title: Prove grouped aggregates and HAVING across relational pipelines
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-26'
@@ -35,7 +35,7 @@ GROUP BY/HAVING proof currently excludes WHERE/JOIN inputs and common aggregate 
 
 <!-- AC:BEGIN -->
 - [x] #1 Support COUNT(*)/COUNT(expr), SUM, MIN, MAX, AVG and supported typed aggregate families with DISTINCT, FILTER, multiple aggregates, aliases and grouped HAVING Boolean trees.
-- [ ] #2 Prove contributions through upstream WHERE, multi-joins and projection layers, including duplicate amplification, null contributors, impossible aggregates, and multiple group identities.
+- [x] #2 Prove contributions through upstream WHERE, multi-joins and projection layers, including duplicate amplification, null contributors, impossible aggregates, and multiple group identities.
 - [x] #3 Cover GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL, global aggregation/empty groups and dialect-specific GROUPING semantics where parseable.
 - [x] #4 Provide exact positive and rejected existing-group constructions and final group/aggregate column value domains with typed arithmetic and overflow/decimal rules.
 - [x] #5 Validate with DuckDB full snapshots for the committed aggregate_summary.sql and independent cross-operator fixtures.
@@ -59,23 +59,23 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Dependency-ordered bounded child queue (2026-10-17)
 
-**TASK-73 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+**TASK-73 is a parent signoff, not an implementation child.** Its six original AC are now independently verified for the frozen portable scope, with TASK-91 kept as the separate release gate. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
 
 - **[TASK-121](task-121%20-%20prove-basic-grouped-and-global-aggregate-value-domains.md)** (1/4): COUNT(*), COUNT(expr), SUM, MIN, MAX, AVG; NULL/duplicate; empty global versus grouped. Fixtures `73-C121-P`, `73-C121-N`.
 - **[TASK-122](task-122%20-%20prove-distinct-filter-having-and-multiple-group-identities.md)** (2/4): COUNT DISTINCT; FILTER WHERE; mixed HAVING predicates; two aggregates and aliases. Fixtures `73-C122-P`, `73-C122-N`.
 - **[TASK-123](task-123%20-%20compose-aggregates-after-filtered-joins-and-classify-grouping-variants.md)** (3/4): WHERE then JOIN then GROUP/HAVING; GROUPING SETS, ROLLUP, CUBE, GROUP BY ALL. Fixtures `73-C123-P`, `73-C123-N`.
 - **[TASK-124](task-124%20-%20independently-certify-task-73-group-and-aggregate-oracles.md)** (4/4): committed aggregate_summary.sql; direct/dbt/ODCS; all exposed dialect paths. Fixtures `73-C124-P`, `73-C124-N`.
 
-**Original acceptance mapping:** #1 -> TASK-121, TASK-122, TASK-124; #2 -> TASK-122, TASK-123, TASK-124; #3 -> TASK-121, TASK-123, TASK-124; #4 -> TASK-121, TASK-122, TASK-123, TASK-124; #5 -> TASK-121, TASK-122, TASK-123, TASK-124; #6 -> TASK-121, TASK-122, TASK-123, TASK-124.
+**Original acceptance mapping:** #1 -> TASK-121, TASK-122, TASK-124; #2 -> TASK-115, TASK-122, TASK-123, TASK-124; #3 -> TASK-121, TASK-123, TASK-124; #4 -> TASK-121, TASK-122, TASK-123, TASK-124; #5 -> TASK-121, TASK-122, TASK-123, TASK-124; #6 -> TASK-121, TASK-122, TASK-123, TASK-124.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
 
 ## Independent parent acceptance review (2026-10-26)
 
-The versioned [TASK-73 parent freeze](../../docs/task-73-acceptance-freeze.json), [original AC audit](../../docs/task-73-acceptance-audit.md) and [executable CI guard](../../tests/task_73_parent_closure.rs) pin the mandatory oracle and conditional evidence from merged TASK-121..124. The frozen portable floor has independent exact oracles. TASK-115 already provides exact three-source join and projected stage GROUP/HAVING physical-bag proof; TASK-73 now pins two positive/rejected cross-task oracles and independently tests them. This task stays In Progress until the current PR-head CI verifies that added evidence. Final PR-head CI and TASK-91 remain separate gates.
+The versioned [TASK-73 parent freeze](../../docs/task-73-acceptance-freeze.json), [original AC audit](../../docs/task-73-acceptance-audit.md) and [executable CI guard](../../tests/task_73_parent_closure.rs) pin the mandatory oracle and conditional evidence from merged TASK-121..124. The frozen portable floor has independent exact oracles. TASK-115 already provides exact three-source join and projected stage GROUP/HAVING physical-bag proof; TASK-73 now pins two positive/rejected cross-task oracles and independently tests them. Parent implementation-head CI verified all mandatory cases; all six original AC are signed off for the bounded portable scope. Final metadata-head CI remains a PR merge gate and TASK-91 remains an independent release gate.
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Original TASK-73 AC #2 remains open, so the parent is not signed off. Merged TASK-121..124 provide a verified minimum portable floor of 12 complete independent DuckDB source/terminal cases, 156 parser-dialect and 36 SQL/dbt/ODCS adapter cells, NULL-inclusive typed domains and positive/rejected group proofs. Four grouping extensions, GROUPING() and three numeric/engine boundaries remain explicit non-Exact, owner-reviewed release conditions. [Implementation-head CI run 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) passed 9/9 jobs at 64599c7b10de1361f0a51011d489db1d19023365. AC #2 now references the existing exact TASK-115 upstream projection/multi-join cases with a new independent parent oracle; final-head CI verification remains required. Final PR-head CI is also required. TASK-91 release approval is separate.
+Original TASK-73 AC #1..#6 are independently signed off for the frozen portable scope. Merged TASK-121..124 provide 12 complete DuckDB source/terminal cases, 156 parser-dialect and 36 SQL/dbt/ODCS adapter cells. TASK-115 supplies two additional exact three-source WHERE/JOIN/CTAS projection/GROUP/HAVING P/N cases with 26 dialect cells and six adapter cells; TASK-73 re-executes their full physical identity, terminal, typed domain and DuckDB oracles. Four grouping extensions, GROUPING() and three numeric/engine boundaries remain explicit non-Exact, owner-reviewed release conditions. [Implementation-head CI run 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) passed 9/9 jobs at 64599c7b10de1361f0a51011d489db1d19023365. Parent implementation-head [CI 40410973612](https://github.com/phdah/sql-semantic-protocol/actions/runs/40410973612) verified the final original AC #2 evidence. Final metadata-head CI is required before merge. TASK-91 release approval is separate.
 <!-- SECTION:FINAL_SUMMARY:END -->

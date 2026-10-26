@@ -6,7 +6,8 @@
     "TASK-121": "docs/task-121-acceptance-freeze.json",
     "TASK-122": "docs/task-122-acceptance-freeze.json",
     "TASK-123": "docs/task-123-acceptance-freeze.json",
-    "TASK-124": "docs/task-124-acceptance-freeze.json"
+    "TASK-124": "docs/task-124-acceptance-freeze.json",
+    "TASK-115": "docs/task-115-acceptance-freeze.json"
   },
   "fixture_ids": [
     "73-C121-P",
@@ -65,8 +66,8 @@
       ],
       "conditional_case_ids": [],
       "numeric_conditional_ids": [],
-      "source": "TASK-122/123/124",
-      "verification_status": "pending_parent_cross_task_oracle_ci",
+      "source": "TASK-115/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified",
       "upstream_composition_case_ids": [
         "71-C115-P-GROUP",
         "71-C115-N-GROUP"
@@ -245,7 +246,7 @@
     "No unverified mandatory portable case may be classified as Residual",
     "Release TASK-91 is independent of TASK-73 finite parent signoff"
   ],
-  "status": "parent_portable_floor_verified_original_ac2_unresolved",
+  "status": "parent_original_ac1_to_ac6_signed_off_portable_release_separate",
   "grouping_function_boundary": {
     "id": "73-C73-C-grouping-function",
     "owner": "TASK-73",
