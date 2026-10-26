@@ -50,7 +50,8 @@ use crate::protocol::{
     MergeClause as ProtocolMergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn,
     Predicate, Predicates, Protocol, ProtocolStatement, QuantifiedSubqueryPredicate,
     QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, RowConditions,
-    ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation, SetOperator,
+    SamplingMethod, SamplingQuantity, SamplingSeed, SamplingSeedSyntax, SamplingSyntax,
+    SamplingUnit, TableSampling, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation, SetOperator,
     SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SignedIntegerCastKind,
     SignedIntegerWidth, SourceRelation, SubqueryQuantifier, SubquerySemantics, UnaryExpression,
     UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
@@ -328,6 +329,7 @@ mod lineage;
 mod output;
 mod predicates;
 mod queries;
+mod sampling;
 mod relations;
 mod sets;
 mod star_projection;
@@ -354,6 +356,7 @@ use lineage::*;
 use output::*;
 use predicates::*;
 use queries::*;
+use sampling::*;
 use relations::*;
 use sets::*;
 use subqueries::*;
