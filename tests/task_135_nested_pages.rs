@@ -140,24 +140,37 @@ fn nested_pages_reject_ambiguous_peer_identity_and_implicit_null_order() {
     ));
 }
 
-
 #[test]
 fn nullable_duplicate_keys_with_unique_tiebreakers_keep_correct_physical_identities() {
     let sql = "WITH page AS (SELECT k, seq FROM s \
 ORDER BY k NULLS LAST, seq LIMIT 4) \
 SELECT k, seq FROM page ORDER BY k NULLS LAST, seq DESC LIMIT 2 OFFSET 1";
-    let values = [(None, 5), (Some(1), 2), (Some(1), 1), (Some(2), 3), (Some(3), 4)];
+    let values = [
+        (None, 5),
+        (Some(1), 2),
+        (Some(1), 1),
+        (Some(2), 3),
+        (Some(3), 4),
+    ];
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE s(k INTEGER, seq INTEGER)").unwrap();
+    db.execute_batch("CREATE TABLE s(k INTEGER, seq INTEGER)")
+        .unwrap();
     for (k, seq) in &values {
         db.execute_batch(&format!(
             "INSERT INTO s VALUES ({}, {seq})",
             k.map_or("NULL".to_string(), |n| n.to_string())
-        )).unwrap();
+        ))
+        .unwrap();
     }
-    let actual = db.prepare(sql).unwrap().query_map([], |row| {
-        Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
-    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    let actual = db
+        .prepare(sql)
+        .unwrap()
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(actual, vec![(Some(1), 1), (Some(2), 3)]);
 
     let schema = RelationCatalog::from_schemas(&[RelationSchema::new(
@@ -166,37 +179,58 @@ SELECT k, seq FROM page ORDER BY k NULLS LAST, seq DESC LIMIT 2 OFFSET 1";
             SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap(),
             SchemaColumn::from_sql_type("seq", "INTEGER", "postgresql").unwrap(),
         ],
-    ).unwrap()]).unwrap();
+    )
+    .unwrap()])
+    .unwrap();
     let parser = dialect_from_name("duckdb").unwrap();
     let input = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
-        "TASK-135-null-duplicates", &input, "duckdb", parser.as_ref()
+        "TASK-135-null-duplicates",
+        &input,
+        "duckdb",
+        parser.as_ref(),
     )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &schema).unwrap();
     let state = PhysicalWriteState::new(
         "s",
-        values.iter().map(|(k, seq)| {
-            PhysicalWriteRow::new(BTreeMap::from([
-                ("k".to_string(), k.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
-                ("seq".to_string(), LiteralValue::Number(seq.to_string())),
-            ])).unwrap()
-        }).collect()
-    ).unwrap();
+        values
+            .iter()
+            .map(|(k, seq)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "k".to_string(),
+                        k.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    ),
+                    ("seq".to_string(), LiteralValue::Number(seq.to_string())),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap();
     let target = bundle.layers().last().unwrap().id();
     let proof = physical_finite_composed_page_plan(&bundle, target, &[state]);
     let PhysicalComposedPageProof::Exact(exact) = proof else {
         panic!("NULL and duplicate k with unique secondary ordering must be exact: {proof:?}");
     };
-    assert_eq!(exact.source_row_ids, vec!["s#0", "s#1", "s#2", "s#3", "s#4"]);
+    assert_eq!(
+        exact.source_row_ids,
+        vec!["s#0", "s#1", "s#2", "s#3", "s#4"]
+    );
     assert_eq!(exact.selected_source_ids, vec!["s#2", "s#3"]);
     assert_eq!(exact.rejected_source_ids, vec!["s#0", "s#1", "s#4"]);
-    let expected = actual.into_iter().map(|(k, seq)| BTreeMap::from([
-        (
-            "k".to_string(),
-            k.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-        ),
-        ("seq".to_string(), LiteralValue::Number(seq.to_string()))
-    ])).collect::<Vec<_>>();
+    let expected = actual
+        .into_iter()
+        .map(|(k, seq)| {
+            BTreeMap::from([
+                (
+                    "k".to_string(),
+                    k.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                ),
+                ("seq".to_string(), LiteralValue::Number(seq.to_string())),
+            ])
+        })
+        .collect::<Vec<_>>();
     assert_eq!(exact.terminal, expected);
     assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
     assert_eq!(exact.terminal_domains["seq"].admits_null(), Some(false));
