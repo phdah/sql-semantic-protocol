@@ -389,15 +389,33 @@ pub(super) fn analyze_nested_page(
     metadata: &AnalysisMetadata<'_>,
 ) -> Option<crate::protocol::NestedPage> {
     let with = query.with.as_ref()?;
-    let [cte] = with.cte_tables.as_slice() else { return None; };
-    if with.recursive || !cte.alias.columns.is_empty() { return None; }
-    let SetExpr::Select(outer_select) = query.body.as_ref() else { return None; };
-    if outer_select.distinct.is_some() { return None; }
-    let [outer_from] = outer_select.from.as_slice() else { return None; };
-    let TableFactor::Table { name, args: None, sample: None, .. } = &outer_from.relation else {
+    let [cte] = with.cte_tables.as_slice() else {
         return None;
     };
-    if name.to_string() != cte.alias.name.value { return None; }
+    if with.recursive || !cte.alias.columns.is_empty() {
+        return None;
+    }
+    let SetExpr::Select(outer_select) = query.body.as_ref() else {
+        return None;
+    };
+    if outer_select.distinct.is_some() {
+        return None;
+    }
+    let [outer_from] = outer_select.from.as_slice() else {
+        return None;
+    };
+    let TableFactor::Table {
+        name,
+        args: None,
+        sample: None,
+        ..
+    } = &outer_from.relation
+    else {
+        return None;
+    };
+    if name.to_string() != cte.alias.name.value {
+        return None;
+    }
 
     // Remove only the locally recognized CTE declaration for structural
     // validation. The emitted row-shaping values are AST-independent.
@@ -422,11 +440,7 @@ pub(super) fn analyze_nested_page(
         return None;
     }
     let mut projected = Vec::new();
-    for (inner_column, outer_column) in inner
-        .output()
-        .columns()
-        .iter()
-        .zip(outer_output.columns())
+    for (inner_column, outer_column) in inner.output().columns().iter().zip(outer_output.columns())
     {
         let Expression::Column(inner_expression) = inner_column.expression() else {
             return None;
@@ -443,7 +457,10 @@ pub(super) fn analyze_nested_page(
         ));
     }
     Some(crate::protocol::NestedPage::new(
-        source, projected, inner_shape, outer_shape,
+        source,
+        projected,
+        inner_shape,
+        outer_shape,
     ))
 }
 
