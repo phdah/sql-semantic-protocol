@@ -7,9 +7,9 @@
     "fixture_ids": ["76-C136-P", "76-C136-N"],
     "status": "in_progress_unverified",
     "mandatory_cases": 5,
-    "conditional_cases": 5,
-    "dialect_cells_required": 130,
-    "adapter_cells_required": 30,
+    "conditional_cases": 6,
+    "dialect_cells_required": 143,
+    "adapter_cells_required": 33,
     "child_ac_verified": [],
     "parent_signed_off": false,
     "release_approved": false
