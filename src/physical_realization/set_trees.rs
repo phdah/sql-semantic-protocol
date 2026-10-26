@@ -199,7 +199,7 @@ fn branch_source<'a>(
     layer_id: &str,
     branch: &'a SetBranch,
 ) -> Result<ResolvedSetBranch<'a>, &'static str> {
-    if !branch.condition_exactness().is_exact()
+    if (!branch.condition_exactness().is_exact() && branch.row_shaping().is_none())
         || !branch.empty_input_preserving()
         || branch.predicates().having_predicate().is_some()
         || branch.predicates().qualify_predicate().is_some()
