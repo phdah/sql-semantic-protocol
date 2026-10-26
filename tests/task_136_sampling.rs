@@ -217,3 +217,16 @@ fn all_exposed_dialects_keep_sampling_opaque_or_reject_the_parser_form() {
         }
     }
 }
+
+#[test]
+fn sampled_distinct_cannot_reuse_an_unsampled_closed_world_bag() {
+    let outcome = proof(
+        "SELECT DISTINCT k FROM s TABLESAMPLE SYSTEM (50)",
+        "generic",
+        &[1, 1, 2],
+    );
+    assert!(
+        matches!(outcome, PhysicalFinitePageProof::Residual { .. }),
+        "{outcome:?}"
+    );
+}
