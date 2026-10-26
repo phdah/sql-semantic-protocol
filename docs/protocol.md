@@ -36,6 +36,21 @@ unspecified order or the identity of an arbitrary SQL peer winner.
 This operator-local proof does not certify nested pagination, pagination after
 JOIN/GROUP/QUALIFY, vendor execution or TASK-76 parent acceptance.
 
+## Bounded producer and consumer pagination (TASK-135)
+
+A directly projected, independently ordered single-source CTE page followed
+by an ordered outer page carries `nested_page`: authoritative physical source,
+positional output/source column mappings and distinct `inner`/`outer`
+`row_shaping` contracts. Applying a final offset to the original physical
+source rather than to the inner page is unsound. The public
+`physical_finite_composed_page_plan` proves both boundaries sequentially
+against one complete physical input bag and emits exact selected/rejected
+source identities, the full terminal bag and finite typed terminal domains.
+A requested absent tuple is Impossible; incomplete schema, unclear ties,
+implicit NULL order, non-copy producers and set-branch pagination remain
+Residual. DuckDB oracle evidence does not certify native vendor runtimes.
+TASK-76 parent acceptance remains independent.
+
 ## Finite literal tables and bounded transformations (TASK-137, TASK-138)
 
 Simple source-free `VALUES`, typed literal-array `UNNEST`/`EXPLODE`, deterministic schema-attested `SELECT * EXCEPT/EXCLUDE/RENAME/REPLACE` over finite VALUES, and fixed-key integer SUM PIVOT or named-column UNPIVOT may carry `finite_table` on the canonical query. The
