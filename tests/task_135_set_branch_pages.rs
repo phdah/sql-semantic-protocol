@@ -12,39 +12,62 @@ const SQL: &str = "(SELECT k FROM s ORDER BY k LIMIT 3) UNION ALL (SELECT k FROM
 fn bundle(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
     let input = SqlInput::inline(sql);
-    let inputs = [ConfiguredSqlInput::new("TASK-135-branch", &input, "duckdb", dialect.as_ref())];
+    let inputs = [ConfiguredSqlInput::new(
+        "TASK-135-branch",
+        &input,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     let schema = RelationCatalog::from_schemas(&[RelationSchema::new(
         "s",
         vec![
             SchemaColumn::from_sql_type("id", "TEXT", "postgresql").unwrap(),
             SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap(),
         ],
-    ).unwrap()]).unwrap();
+    )
+    .unwrap()])
+    .unwrap();
     analyze_configured_inputs_with_catalog(&inputs, &schema).unwrap()
 }
 
 fn state(values: &[Option<i64>]) -> PhysicalWriteState {
-    PhysicalWriteState::new("s", values.iter().enumerate().map(|(i, value)| {
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Text(format!("row{i}"))),
-            ("k".to_string(), value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
-        ])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        "s",
+        values
+            .iter()
+            .enumerate()
+            .map(|(i, value)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Text(format!("row{i}"))),
+                    (
+                        "k".to_string(),
+                        value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    ),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn native(sql: &str, values: &[Option<i64>]) -> (Vec<Option<i64>>, Vec<Option<i64>>) {
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE s (id TEXT, k INTEGER)").unwrap();
+    db.execute_batch("CREATE TABLE s (id TEXT, k INTEGER)")
+        .unwrap();
     for (i, value) in values.iter().enumerate() {
         db.execute_batch(&format!(
             "INSERT INTO s VALUES ('row{i}', {})",
             value.map_or("NULL".to_string(), |n| n.to_string())
-        )).unwrap();
+        ))
+        .unwrap();
     }
     let query = |sql: &str| {
         let mut stmt = db.prepare(sql).unwrap();
-        stmt.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-            .collect::<Result<Vec<_>, _>>().unwrap()
+        stmt.query_map([], |row| row.get::<_, Option<i64>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
     (query("SELECT k FROM s ORDER BY id"), query(sql))
 }
@@ -61,11 +84,15 @@ fn branch_limit_precedes_union_all_and_final_limit() {
     let PhysicalFiniteSetTreeProof::Exact(exact) = proof else {
         panic!("branch-local pagination must be exact: {proof:?}");
     };
-    let result = exact.terminal.iter().map(|row| match row.get("k").unwrap() {
-        LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
-        LiteralValue::Null => None,
-        other => panic!("unexpected value {other:?}")
-    }).collect::<Vec<_>>();
+    let result = exact
+        .terminal
+        .iter()
+        .map(|row| match row.get("k").unwrap() {
+            LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
+            LiteralValue::Null => None,
+            other => panic!("unexpected value {other:?}"),
+        })
+        .collect::<Vec<_>>();
     assert_eq!(result, output);
     assert_eq!(exact.sources, ["s"]);
     assert_eq!(exact.branches.len(), 2);
@@ -86,14 +113,17 @@ fn branch_pagination_zero_terminal_is_exact_not_fabricated() {
         panic!("set branch with zero terminal must be exact: {proof:?}");
     };
     assert!(exact.terminal.is_empty());
-    assert!(exact.terminal_domains.iter().all(|domain| domain.values.is_empty()));
+    assert!(exact
+        .terminal_domains
+        .iter()
+        .all(|domain| domain.values.is_empty()));
 }
 
 #[test]
 fn incomplete_physical_peer_order_or_implicit_null_sort_stays_residual() {
     for values in [
         vec![Some(1), Some(1), Some(3), Some(4), Some(5)],
-        vec![Some(1), None, Some(3), Some(4), Some(5)]
+        vec![Some(1), None, Some(3), Some(4), Some(5)],
     ] {
         let analyzed = bundle(SQL);
         let layer = analyzed.layers().last().unwrap().id();
