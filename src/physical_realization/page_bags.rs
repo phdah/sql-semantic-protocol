@@ -53,7 +53,7 @@ fn residual(reason: impl Into<String>) -> PhysicalFinitePageProof {
     }
 }
 
-fn compare_ordered_rows(
+pub(super) fn compare_ordered_rows(
     lhs: &[Option<i128>],
     rhs: &[Option<i128>],
     keys: &[crate::protocol::SetSortKey],
