@@ -200,3 +200,36 @@ fn task_72_parent_conditionals_cannot_be_promoted_without_vendor_evidence() {
         assert!(case["expected_terminal_tuple_histogram"].is_null());
     }
 }
+
+#[test]
+fn task_72_parent_each_original_ac_has_exact_and_conditional_case_coverage() {
+    let parent = inventory(include_str!("../docs/task-72-acceptance-freeze.json"));
+    let child = inventory(include_str!("../docs/task-120-acceptance-freeze.json"));
+
+    for criterion in cases(&parent, "original_acceptance_criteria") {
+        let ac = criterion["id"].as_u64().expect("original acceptance criterion");
+        for family in cases(criterion, "mandatory") {
+            let family = family.as_str().expect("mandatory semantic family");
+            let covered = cases(&child, "mandatory_cases").iter().any(|case| {
+                case["variant"] == family
+                    && case["mapped_original_ac"]
+                        .as_array()
+                        .is_some_and(|ids| ids.iter().any(|id| id.as_u64() == Some(ac)))
+            });
+            assert!(covered, "AC #{ac} lacks an exact {family} case");
+        }
+
+        for variant in cases(criterion, "conditional") {
+            let variant = variant.as_str().expect("conditional SQL variant");
+            let covered = cases(&child, "conditional_cases").iter().any(|case| {
+                case["id"]
+                    .as_str()
+                    .is_some_and(|id| id.ends_with(variant))
+                    && case["mapped_original_ac"]
+                        .as_array()
+                        .is_some_and(|ids| ids.iter().any(|id| id.as_u64() == Some(ac)))
+            });
+            assert!(covered, "AC #{ac} lacks a reviewed {variant} boundary");
+        }
+    }
+}
