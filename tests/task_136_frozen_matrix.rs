@@ -160,7 +160,7 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
             assert_eq!(values["inclusive"],true);
         }
         let missing = BTreeMap::from([("k".to_string(),LiteralValue::Number("999".to_string()))]);
-        assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,&[physical.clone()],&missing),
+        assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,std::slice::from_ref(&physical),&missing),
             PhysicalFinitePageProof::Impossible { .. }), "{}: negative membership must be impossible",case["id"]);
         if let Some(first) = exact.terminal.first() {
             assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,std::slice::from_ref(&physical),first),
