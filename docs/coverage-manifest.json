@@ -4,15 +4,36 @@
     "parent": "TASK-76",
     "task": ".backlog/tasks/task-136 - classify-sampling-and-certify-task-76-dialect-oracle-matrix.md",
     "freeze": "docs/task-136-acceptance-freeze.json",
-    "fixture_ids": ["76-C136-P", "76-C136-N"],
-    "status": "in_progress_unverified",
+    "fixture_ids": [
+      "76-C136-P",
+      "76-C136-N"
+    ],
+    "status": "verified_child_acceptance_pending_merge",
     "mandatory_cases": 5,
     "conditional_cases": 6,
     "dialect_cells_required": 143,
     "adapter_cells_required": 33,
-    "child_ac_verified": [],
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "verified": true,
+    "mandatory_cases_verified": 5,
+    "conditional_cases_reviewed": 6,
+    "dialect_cells_verified": 143,
+    "adapter_cells_verified": 33,
+    "audit": "docs/task-136-acceptance-audit.md",
+    "public_dialect_matrix": "tests/task_136_dialect_matrix.rs",
+    "public_adapter_matrix": "tests/task_136_adapter_parity.rs",
+    "native_duckdb_oracle": "tests/task_136_frozen_matrix.rs",
+    "dbt_e2e_oracle": "tests/task_136_dbt_core_e2e.rs",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40361928399",
+    "ci_head": "82d9842d8d77be813ca7f44e680d07a05dac0702"
   },
   "task_140_fanout_acceptance": {
     "owner": "TASK-140",
