@@ -39,7 +39,7 @@ fn sample_from_factor(factor: &TableFactor, source_instance: usize) -> Option<Ta
         TableSampleKind::BeforeTableAlias(sample)
         | TableSampleKind::AfterTableAlias(sample) => sample,
     };
-    let syntax = match sample.modifier {
+    let syntax = match &sample.modifier {
         TableSampleModifier::Sample => SamplingSyntax::Sample,
         TableSampleModifier::TableSample => SamplingSyntax::TableSample,
     };
@@ -61,7 +61,7 @@ fn sample_from_factor(factor: &TableFactor, source_instance: usize) -> Option<Ta
         SamplingQuantity::new(value, unit)
     });
     let seed = sample.seed.as_ref().map(|seed| {
-        let syntax = match seed.modifier {
+        let syntax = match &seed.modifier {
             TableSampleSeedModifier::Seed => SamplingSeedSyntax::Seed,
             TableSampleSeedModifier::Repeatable => SamplingSeedSyntax::Repeatable,
         };
