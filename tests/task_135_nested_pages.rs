@@ -236,7 +236,6 @@ SELECT k, seq FROM page ORDER BY k NULLS LAST, seq DESC LIMIT 2 OFFSET 1";
     assert_eq!(exact.terminal_domains["seq"].admits_null(), Some(false));
 }
 
-
 #[test]
 fn copy_producer_renames_do_not_change_source_ids_or_page_offsets() {
     let sql = "WITH page AS (SELECT k AS producer_key FROM s ORDER BY producer_key LIMIT 4) \
@@ -254,9 +253,10 @@ SELECT producer_key AS k FROM page ORDER BY k LIMIT 1 OFFSET 2";
     assert_eq!(exact.rejected_source_ids, ["s#0", "s#1", "s#3", "s#4"]);
     assert_eq!(
         exact.terminal,
-        [BTreeMap::from([
-            ("k".to_string(), LiteralValue::Number("3".to_string()))
-        ])]
+        [BTreeMap::from([(
+            "k".to_string(),
+            LiteralValue::Number("3".to_string())
+        )])]
     );
     assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
 }
