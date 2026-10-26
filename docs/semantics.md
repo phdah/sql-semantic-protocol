@@ -1,5 +1,9 @@
 # Semantic model and behavior
 
+### Sampling and row-membership uncertainty (TASK-136)
+
+TABLESAMPLE/SAMPLE is a row-selection boundary. A seed can describe a repeatable request but does not establish a portable sampling algorithm or the exact physical rows chosen. The analyzer retains typed sampling method, quantity, seed syntax and physical source occurrence in the canonical query and reports sample membership as residual. Explicit full-source input bags alone do not turn stochastic samples into Exact output or Impossible rejected-membership witnesses. Named ORDER BY, LIMIT and FETCH without sampling still use their complete-bag proof paths; ties, implicit NULL order and unverified vendor execution laws remain conditional.
+
 Understand how SQL and metadata become normalized, deterministic protocol outcomes. For the normative JSON shape, see [the protocol contract](protocol.md). For runnable commands, see [CLI usage](cli.md).
 
 
