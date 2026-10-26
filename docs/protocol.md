@@ -47,8 +47,17 @@ source rather than to the inner page is unsound. The public
 against one complete physical input bag and emits exact selected/rejected
 source identities, the full terminal bag and finite typed terminal domains.
 A requested absent tuple is Impossible; incomplete schema, unclear ties,
-implicit NULL order, non-copy producers and set-branch pagination remain
-Residual. DuckDB oracle evidence does not certify native vendor runtimes.
+implicit NULL order and non-copy producers remain Residual. A parenthesized
+single-source set branch with certified local ORDER BY/LIMIT is evaluated
+before enclosing UNION/INTERSECT/EXCEPT multiplicity and any set-level page.
+Its `membership.branches[].row_shaping` retains the local page, while
+`physical_finite_set_tree_plan` reports selected and `page_rejected_row_ids`
+separately from SQL FALSE/UNKNOWN predicate rejections.
+`physical_finite_set_tree_membership_plan` proves absent terminal tuples
+Impossible only after constructing the complete original and terminal bags.
+Uncertified branch peer identity, unsupported coercions, or stochastic
+source ordering stay Residual. DuckDB oracle evidence does not certify
+native vendor runtimes.
 TASK-76 parent acceptance remains independent.
 
 ## Finite literal tables and bounded transformations (TASK-137, TASK-138)
