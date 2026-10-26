@@ -377,6 +377,76 @@ pub(super) fn analyze_set_row_shaping(
         .filter(|shape| !shape.with_ties)
 }
 
+/// Certify the finite two-stage CTE page shape before physical source proof.
+///
+/// A local CTE must have exactly one independently ordered source-column page;
+/// the consumer must project only unchanged CTE columns and page them again.
+/// Set branches, renamed producer columns, filters and unresolved copies stay
+/// unproved until their producer-specific bag laws are available.
+pub(super) fn analyze_nested_page(
+    query: &SqlQuery,
+    outer_output: &Output,
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<crate::protocol::NestedPage> {
+    let with = query.with.as_ref()?;
+    let [cte] = with.cte_tables.as_slice() else { return None; };
+    if with.recursive || !cte.alias.columns.is_empty() { return None; }
+    let SetExpr::Select(outer_select) = query.body.as_ref() else { return None; };
+    if outer_select.distinct.is_some() { return None; }
+    let [outer_from] = outer_select.from.as_slice() else { return None; };
+    let TableFactor::Table { name, args: None, sample: None, .. } = &outer_from.relation else {
+        return None;
+    };
+    if name.to_string() != cte.alias.name.value { return None; }
+
+    // Remove only the locally recognized CTE declaration for structural
+    // validation. The emitted row-shaping values are AST-independent.
+    let mut outer_direct = query.clone();
+    outer_direct.with = None;
+    let outer_shape = analyze_direct_row_shaping(&outer_direct, outer_output)?;
+    let inner = analyze_query(&cte.query, None, metadata);
+    let inner_shape = inner.row_shaping()?.clone();
+    if inner.aggregation().is_some()
+        || inner.set_operation().is_some()
+        || inner.sources().len() != 1
+        || !inner.joins().is_empty()
+        || inner.predicates().where_predicate().is_some()
+        || inner.predicates().having_predicate().is_some()
+        || inner.predicates().qualify_predicate().is_some()
+        || !inner.diagnostics().is_empty()
+    {
+        return None;
+    }
+    let source = inner.sources()[0].name().to_string();
+    if inner.output().columns().len() != outer_output.columns().len() {
+        return None;
+    }
+    let mut projected = Vec::new();
+    for (inner_column, outer_column) in inner
+        .output()
+        .columns()
+        .iter()
+        .zip(outer_output.columns())
+    {
+        let Expression::Column(inner_expression) = inner_column.expression() else {
+            return None;
+        };
+        let Expression::Column(outer_expression) = outer_column.expression() else {
+            return None;
+        };
+        if outer_expression.name() != inner_column.name() {
+            return None;
+        }
+        projected.push((
+            outer_column.name().to_string(),
+            inner_expression.name().to_string(),
+        ));
+    }
+    Some(crate::protocol::NestedPage::new(
+        source, projected, inner_shape, outer_shape,
+    ))
+}
+
 /// Normalize a plain SELECT's ordering and literal limit without embedding SQL ASTs in the
 /// protocol. This is only syntax evidence; physical exactness requires a complete source bag.
 pub(super) fn analyze_direct_row_shaping(
