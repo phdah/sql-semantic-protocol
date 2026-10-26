@@ -32,12 +32,14 @@ fn sample_from_factor(factor: &TableFactor, source_instance: usize) -> Option<Ta
         name,
         sample: Some(kind),
         ..
-    } = factor else {
+    } = factor
+    else {
         return None;
     };
     let sample = match kind {
-        TableSampleKind::BeforeTableAlias(sample)
-        | TableSampleKind::AfterTableAlias(sample) => sample,
+        TableSampleKind::BeforeTableAlias(sample) | TableSampleKind::AfterTableAlias(sample) => {
+            sample
+        }
     };
     let syntax = match &sample.modifier {
         TableSampleModifier::Sample => SamplingSyntax::Sample,
