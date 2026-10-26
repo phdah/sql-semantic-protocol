@@ -25,6 +25,18 @@ pub struct PhysicalFiniteTableExact {
     pub terminal_domains: BTreeMap<String, ValueDomain>,
     /// Attested column types, including zero-row results whose domains are Empty.
     pub terminal_column_types: BTreeMap<String, FiniteColumnType>,
+    /// Independent complete physical source bags, with left/right scope names.
+    pub physical_inputs: BTreeMap<String, Vec<BTreeMap<String, LiteralValue>>>,
+    /// Source-row identities for every physical input, retaining duplicates.
+    pub physical_input_ids: BTreeMap<String, Vec<String>>,
+    /// Exhaustive TRUE pairs for finite joined source inputs.
+    pub joined_selected: Vec<[String; 2]>,
+    /// Exhaustive NOT TRUE pairs, including NULL-key UNKNOWN.
+    pub joined_not_true: Vec<[String; 2]>,
+    /// Explicit FALSE comparisons between two non-NULL unequal keys.
+    pub joined_false: Vec<[String; 2]>,
+    /// Explicit UNKNOWN comparisons with at least one SQL NULL key.
+    pub joined_unknown: Vec<[String; 2]>,
 }
 
 /// Sound classification of complete literal rows and optional row membership.
@@ -182,6 +194,86 @@ pub fn physical_finite_table_plan(
     } else {
         (Vec::new(), Vec::new(), Vec::new())
     };
+    // The joined producer is a canonical source, not an opportunity to
+    // invent independent rows after the group/count has been evaluated.
+    // Enumerate all physical input pairs exactly once from its frozen bags.
+    let mut physical_inputs = BTreeMap::new();
+    let mut physical_input_ids = BTreeMap::new();
+    let mut joined_selected = Vec::new();
+    let mut joined_not_true = Vec::new();
+    let mut joined_false = Vec::new();
+    let mut joined_unknown = Vec::new();
+    let join = table
+        .source()
+        .filter(|source| matches!(source.kind(), crate::protocol::FiniteTableKind::Joined))
+        .unwrap_or(table);
+    if let Some((left, right)) = join.joined_sources() {
+        for (label, input) in [("left", left), ("right", right)] {
+            let ids = input
+                .rows()
+                .iter()
+                .enumerate()
+                .map(|(index, _)| {
+                    let position =
+                        if matches!(input.kind(), crate::protocol::FiniteTableKind::Values) {
+                            index
+                        } else {
+                            index + 1
+                        };
+                    format!("{label}/{}:{position}", input.kind().as_str())
+                })
+                .collect::<Vec<_>>();
+            let bag = input
+                .rows()
+                .iter()
+                .map(|row| {
+                    input
+                        .columns()
+                        .iter()
+                        .cloned()
+                        .zip(row.iter().map(|value| value.value().clone()))
+                        .collect::<BTreeMap<_, _>>()
+                })
+                .collect::<Vec<_>>();
+            physical_input_ids.insert(label.to_string(), ids);
+            physical_inputs.insert(label.to_string(), bag);
+        }
+        let Some(left_ids) = physical_input_ids.get("left") else {
+            return PhysicalFiniteTableProof::Residual {
+                reason: "left joined physical population is not attested".to_string(),
+            };
+        };
+        let Some(right_ids) = physical_input_ids.get("right") else {
+            return PhysicalFiniteTableProof::Residual {
+                reason: "right joined physical population is not attested".to_string(),
+            };
+        };
+        for (li, left_id) in left_ids.iter().enumerate() {
+            for (ri, right_id) in right_ids.iter().enumerate() {
+                let pair = [left_id.clone(), right_id.clone()];
+                if join.joined_pairs().contains(&[li, ri]) {
+                    joined_selected.push(pair);
+                } else {
+                    let nullable = left
+                        .rows()
+                        .get(li)
+                        .and_then(|row| row.first())
+                        .is_some_and(|value| value.value() == &LiteralValue::Null)
+                        || right
+                            .rows()
+                            .get(ri)
+                            .and_then(|row| row.first())
+                            .is_some_and(|value| value.value() == &LiteralValue::Null);
+                    if nullable {
+                        joined_unknown.push(pair.clone());
+                    } else {
+                        joined_false.push(pair.clone());
+                    }
+                    joined_not_true.push(pair);
+                }
+            }
+        }
+    }
     let terminal_domains = query
         .output()
         .columns()
@@ -203,5 +295,11 @@ pub fn physical_finite_table_plan(
         contributors,
         terminal_domains,
         terminal_column_types,
+        physical_inputs,
+        physical_input_ids,
+        joined_selected,
+        joined_not_true,
+        joined_false,
+        joined_unknown,
     }))
 }

@@ -8305,7 +8305,7 @@
       }
     },
     "finiteTable": {
-      "description": "Complete typed source-free finite constructor, wildcard projection, fixed-key PIVOT or UNPIVOT bag, including NULL and duplicate rows.",
+      "description": "Complete typed source-free finite constructor, wildcard projection, PIVOT/UNPIVOT or COUNT(*) grouping bag, including NULL and duplicate rows.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -8322,7 +8322,9 @@
             "explode",
             "star",
             "pivot",
-            "unpivot"
+            "unpivot",
+            "grouped",
+            "joined"
           ]
         },
         "columns": {
@@ -8363,6 +8365,21 @@
           "type": "array",
           "description": "Indices into source.rows, one nonempty array for every output row",
           "items": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 0}}
+        },
+        "joined_sources": {
+          "type": "array",
+          "description": "Both independent complete physical inputs to a finite equijoin",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/finiteTable"}
+        },
+        "join_pairs": {
+          "type": "array",
+          "description": "Ordered exhaustive non-NULL equality matches as left/right physical row indexes",
+          "items": {
+            "type": "array", "minItems": 2, "maxItems": 2,
+            "items": {"type": "integer", "minimum": 0}
+          }
         }
       }
     }

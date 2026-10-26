@@ -1,0 +1,1688 @@
+{
+  "version": 5,
+  "owner": "TASK-140",
+  "parent": "TASK-77",
+  "fixture_ids": [
+    "77-C140-P",
+    "77-C140-N"
+  ],
+  "status": "verified_bounded_child_pending_merge",
+  "definition_of_done": "No mandatory cell may be signed off without complete exact domain, physical bag, adapter and native SQL oracle",
+  "variants": [
+    {
+      "id": "77-C140-P-GROUP",
+      "family": "unnest_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "unnest:1",
+          "v": 1
+        },
+        {
+          "id": "unnest:2",
+          "v": 1
+        },
+        {
+          "id": "unnest:3",
+          "v": 2
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 2,
+          "contributors": [
+            "unnest:1",
+            "unnest:2"
+          ]
+        },
+        {
+          "v": 2,
+          "n": 1,
+          "contributors": [
+            "unnest:3"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "value 3 is absent from entire closed input group bag",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs"
+    },
+    {
+      "id": "77-C140-N-ABSENCE",
+      "family": "unnest_group_absent",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": "77-C140-P-GROUP",
+      "terminal": "77-C140-P-GROUP",
+      "wanted": {
+        "v": 3,
+        "n": 1
+      },
+      "positive": "IMPOSSIBLE",
+      "not_true": "physical source bag contains no v=3",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs"
+    },
+    {
+      "id": "77-C140-P-VALUES",
+      "family": "values_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM (VALUES (1),(1),(NULL)) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "values:0",
+          "v": 1
+        },
+        {
+          "id": "values:1",
+          "v": 1
+        },
+        {
+          "id": "values:2",
+          "v": null
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 2,
+          "contributors": [
+            "values:0",
+            "values:1"
+          ]
+        },
+        {
+          "v": null,
+          "n": 1,
+          "contributors": [
+            "values:2"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            null
+          ],
+          "nullable": true,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 1,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "NULL forms a single group",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs"
+    },
+    {
+      "id": "77-C140-P-JOIN",
+      "family": "unnest_join_group",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v = u.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "unnest:1",
+          "v": 1
+        },
+        {
+          "id": "unnest:2",
+          "v": 1
+        },
+        {
+          "id": "unnest:3",
+          "v": 2
+        },
+        {
+          "id": "values:0",
+          "v": 1
+        },
+        {
+          "id": "values:1",
+          "v": 1
+        },
+        {
+          "id": "values:2",
+          "v": 2
+        }
+      ],
+      "terminal": [
+        {
+          "v": 1,
+          "n": 4,
+          "contributors": [
+            "joined:1",
+            "joined:2",
+            "joined:3",
+            "joined:4"
+          ]
+        },
+        {
+          "v": 2,
+          "n": 1,
+          "contributors": [
+            "joined:5"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            4
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 4,
+            "inclusive": true
+          }
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "NULL equality must reject nonmatches",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs",
+      "complete_pair_partition": {
+        "selected": [
+          [
+            "left/unnest:1",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:1",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:2"
+          ]
+        ],
+        "not_true": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ]
+        ],
+        "truth": "INNER '=' selects SQL TRUE only; FALSE and UNKNOWN are NOT TRUE",
+        "complete_cartesian_count": 9,
+        "unknown": [],
+        "false": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ]
+        ],
+        "three_valued_law": "Every candidate pair is exactly one of TRUE, FALSE, UNKNOWN; NOT TRUE is FALSE ∪ UNKNOWN"
+      },
+      "expected_leaf_ids": {
+        "left": [
+          "left/unnest:1",
+          "left/unnest:2",
+          "left/unnest:3"
+        ],
+        "right": [
+          "right/values:0",
+          "right/values:1",
+          "right/values:2"
+        ]
+      }
+    },
+    {
+      "id": "77-C140-C-OPAQUE",
+      "family": "opaque_source",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v",
+      "kind": "conditional",
+      "terminal": null,
+      "positive": "RESIDUAL",
+      "not_true": "No typed closed-world array evidence",
+      "owner": "TASK-140",
+      "release_disposition": {
+        "owner": "TASK-140",
+        "status": "reviewed_conditional_residual",
+        "reason": "No typed closed-world array evidence",
+        "native_engine_certification": "none"
+      },
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "hive",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "residual",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "residual",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "not certified; exactness deliberately withheld"
+    },
+    {
+      "id": "77-C140-P-JOIN-NULL",
+      "family": "unnest_join_nullable",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON t.v = u.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": [
+        {
+          "id": "left/unnest:1",
+          "v": 1
+        },
+        {
+          "id": "left/unnest:2",
+          "v": 1
+        },
+        {
+          "id": "left/unnest:3",
+          "v": 2
+        },
+        {
+          "id": "left/unnest:4",
+          "v": null
+        },
+        {
+          "id": "right/values:0",
+          "v": 1
+        },
+        {
+          "id": "right/values:1",
+          "v": 1
+        },
+        {
+          "id": "right/values:2",
+          "v": 2
+        },
+        {
+          "id": "right/values:3",
+          "v": null
+        }
+      ],
+      "selected_pairs": 5,
+      "rejected_pairs": 11,
+      "terminal": [
+        {
+          "v": 1,
+          "n": 4,
+          "contributors": [
+            "joined:1",
+            "joined:2",
+            "joined:3",
+            "joined:4"
+          ]
+        },
+        {
+          "v": 2,
+          "n": 1,
+          "contributors": [
+            "joined:5"
+          ]
+        }
+      ],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "n": {
+          "type": "integer",
+          "values": [
+            1,
+            4
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 4,
+            "inclusive": true
+          }
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "All 11 non-equality and SQL NULL/UNKNOWN physical pairs rejected",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs",
+      "complete_pair_partition": {
+        "selected": [
+          [
+            "left/unnest:1",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:1",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:2"
+          ]
+        ],
+        "not_true": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:1",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:3"
+          ]
+        ],
+        "truth": "INNER '=' selects SQL TRUE only; FALSE and UNKNOWN are NOT TRUE",
+        "complete_cartesian_count": 16,
+        "unknown": [
+          [
+            "left/unnest:1",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:3"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:1"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:4",
+            "right/values:3"
+          ]
+        ],
+        "false": [
+          [
+            "left/unnest:1",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:2",
+            "right/values:2"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:0"
+          ],
+          [
+            "left/unnest:3",
+            "right/values:1"
+          ]
+        ],
+        "three_valued_law": "Every candidate pair is exactly one of TRUE, FALSE, UNKNOWN; NOT TRUE is FALSE ∪ UNKNOWN"
+      },
+      "expected_leaf_ids": {
+        "left": [
+          "left/unnest:1",
+          "left/unnest:2",
+          "left/unnest:3",
+          "left/unnest:4"
+        ],
+        "right": [
+          "right/values:0",
+          "right/values:1",
+          "right/values:2",
+          "right/values:3"
+        ]
+      }
+    },
+    {
+      "id": "77-C140-P-JOIN-REVERSE",
+      "family": "unnest_join_reverse",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2,NULL]) AS t(v) JOIN (VALUES(1),(1),(2),(NULL)) AS u(v) ON u.v = t.v GROUP BY t.v",
+      "kind": "mandatory",
+      "source": "77-C140-P-JOIN-NULL",
+      "terminal": "77-C140-P-JOIN-NULL",
+      "positive": "EXACT",
+      "not_true": "reversed ON equality preserves full TRUE/NOT TRUE source partitions",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser accepts an array/table construct in this dialect but cannot prove the DuckDB-style literal UNNEST law; engine-native array table generator is not certified",
+          "release_disposition": {
+            "owner": "TASK-140",
+            "status": "reviewed_conditional_parser_engine_boundary",
+            "native_execution": "not_certified",
+            "reason": "SQLite and MSSQL do not expose the same native literal UNNEST([..]) law; dialect parse acceptance is not an exact vendor assertion"
+          }
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "ansi",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs"
+    },
+    {
+      "id": "77-C140-C-NON-EQUI",
+      "family": "conditional_non_equality",
+      "sql": "SELECT t.v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) JOIN (VALUES(1),(1),(2)) AS u(v) ON t.v > u.v GROUP BY t.v",
+      "kind": "conditional",
+      "terminal": null,
+      "positive": "RESIDUAL",
+      "not_true": "unsupported finite non-equijoin cannot claim exact proof",
+      "owner": "TASK-140",
+      "release_disposition": {
+        "owner": "TASK-140",
+        "status": "reviewed_conditional_residual",
+        "reason": "unsupported finite non-equijoin cannot claim exact proof",
+        "native_engine_certification": "none"
+      },
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "hive",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "residual",
+          "certified": true,
+          "boundary": "parser-accepted SQL lacks a complete certified finite producer"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "residual",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "residual",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "not certified; exactness deliberately withheld"
+    },
+    {
+      "id": "77-C140-P-EMPTY",
+      "family": "typed_empty_group",
+      "sql": "SELECT v, COUNT(*) AS n FROM UNNEST(CAST([] AS INTEGER[])) AS t(v) GROUP BY v",
+      "kind": "mandatory",
+      "source": [],
+      "terminal": [],
+      "domains": {
+        "v": {
+          "type": "integer",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        },
+        "n": {
+          "type": "integer",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "positive": "EXACT",
+      "not_true": "empty typed source implies every terminal group is impossible",
+      "parser_cells": [
+        {
+          "dialect": "generic",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mysql",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "hive",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "mssql",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "exact",
+          "certified": true,
+          "boundary": null
+        },
+        {
+          "dialect": "databricks",
+          "classification": "parser_boundary",
+          "certified": true,
+          "boundary": "sqlparser rejected this dialect form"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "compiled_dbt",
+          "classification": "exact",
+          "certified": true
+        },
+        {
+          "adapter": "odcs",
+          "classification": "inapplicable_without_literal_rows",
+          "certified": true,
+          "reason": "ODCS schema metadata may type a physical relation but cannot supply SQL literal or array element bag values"
+        }
+      ],
+      "canonical_dialect": "duckdb",
+      "source_column_identity": "v:integer",
+      "dialect_owner": "TASK-140",
+      "native_engine": "DuckDB",
+      "native_sql_oracle": "independent full source and complete terminal DuckDB bag; tests/task_140_finite_group_bags.rs"
+    }
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_sources": [
+    "direct_sql",
+    "compiled_dbt",
+    "odcs"
+  ],
+  "verification": {
+    "semantic_exact_cases_verified": 7,
+    "mandatory_cases_to_verify": 7,
+    "parser_cells_to_verify": 117,
+    "adapter_cells_to_verify": 27,
+    "dbt_e2e": true,
+    "ci_signoff": true,
+    "task_done": true,
+    "observed_dialect_matrix": true,
+    "parser_cells_observed": 117,
+    "parser_cells_currently_certified": 117,
+    "join_mandatory_residual_cells": 0,
+    "exact_parser_cells": 72,
+    "residual_parser_cells": 36,
+    "parser_boundary_cells": 9,
+    "native_oracle_test": "tests/task_140_finite_group_bags.rs",
+    "real_dbt_core_test": "tests/task_140_dbt_core_e2e.rs",
+    "dialect_adapter_test": "tests/task_140_dialect_adapter_matrix.rs",
+    "frozen_case_count": 9,
+    "adapter_cells_currently_certified": 27,
+    "dialect_adapter_matrix_independently_observed": true,
+    "final_code_head": "b8a0a01461f22e16a13e3ea8de8d463df61a98fd",
+    "final_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40242206911",
+    "final_required_jobs_passed": 9,
+    "frozen_cases_independently_reviewed": 9,
+    "acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
+  "notes": [
+    "Parser-supported SQL forms require observed per-dialect outcome or named parser boundary; do not infer dialect parity from a single parser.",
+    "Source-free UNNEST and VALUES group cases are the initial implementation slice; mandatory JOIN fanout remains a blocking implementation gap until proved from the same complete source bag.",
+    "This inventory is provisional until all mandatory dialect, dbt and ODCS cells are populated and independently checked; never mark TASK-140 Done from partial green tests.",
+    "All current dialect statuses were directly observed in GitHub CI run 40239974202; mandatory JOIN residuals are intentionally uncertified until implementation is fixed and rerun.",
+    "The join positive and nullable cases list all physical TRUE and NOT TRUE identity pairs (9 and 16 Cartesian opportunities) with explicit NULL UNKNOWN rejections and inclusive typed terminal domain bounds.",
+    "CI focused run 40241037204 observed exact direct/compiled dbt join and nullable/reversed variants for the 11 compatible parser dialect identities; SQLite/MSSQL native UNNEST syntax is a separately owned, noncertified conditional parser/engine law.",
+    "The physical proof independently classifies every matched and nonselected join pair as SQL TRUE, FALSE or UNKNOWN, and confirms NOT TRUE is exactly FALSE union UNKNOWN.",
+    "The bounded TASK-140 nine-case, 117-dialect and 27-adapter matrices, positive/Impossible, nullable SQL TRUE/FALSE/UNKNOWN, complete DuckDB and actual dbt Core oracles were independently reconciled against final implementation CI. Parent TASK-77 retains independent original acceptance signoff after child merge."
+  ]
+}

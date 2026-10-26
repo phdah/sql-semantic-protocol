@@ -672,7 +672,13 @@
           "fixture_ids": [
             "77-C140-P",
             "77-C140-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_pending_merge",
+          "freeze": "docs/task-140-acceptance-freeze.json",
+          "signoff_audit": "docs/task-140-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/149",
+          "verified_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40242206911",
+          "dependency_gate": "TASK-77 parent original AC signoff remains blocked until PR #149 is merged and each original AC is independently verified"
         }
       ]
     },

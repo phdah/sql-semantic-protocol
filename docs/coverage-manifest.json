@@ -1,4 +1,44 @@
 {
+  "task_140_fanout_acceptance": {
+    "owner": "TASK-140",
+    "parent": "TASK-77",
+    "status": "verified_bounded_child_pending_merge",
+    "task": ".backlog/tasks/task-140 - compose-table-fanout-with-joins-dbt-and-certify-task-77.md",
+    "freeze": "docs/task-140-acceptance-freeze.json",
+    "fixture_ids": [
+      "77-C140-P",
+      "77-C140-N"
+    ],
+    "supported_exact_slice": "typed_source_free_values_unnest_explode_count_and_two_input_integer_inner_equality_bags",
+    "native_oracle": "tests/task_140_finite_group_bags.rs",
+    "mandatory_join_variants_verified": true,
+    "all_dialects_verified": true,
+    "dbt_adapter_verified": true,
+    "odcs_adapter_verified": true,
+    "ci_verified": true,
+    "parent_signed_off": false,
+    "mandatory_cases_verified": 7,
+    "conditional_cases_reviewed": 2,
+    "parser_cells_verified": 117,
+    "adapter_cells_verified": 27,
+    "parser_exact": 72,
+    "parser_residual": 36,
+    "parser_boundary": 9,
+    "false_unknown_physical_oracles_verified": true,
+    "audit": "docs/task-140-acceptance-audit.md",
+    "dbt_core_oracle": "tests/task_140_dbt_core_e2e.rs",
+    "parser_adapter_oracle": "tests/task_140_dialect_adapter_matrix.rs",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40242206911",
+    "ci_code_head": "b8a0a01461f22e16a13e3ea8de8d463df61a98fd",
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "release_approved": false
+  },
   "task_133_pagination_acceptance": {
     "owner": "TASK-133",
     "parent": "TASK-76",
