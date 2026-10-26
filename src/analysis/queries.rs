@@ -306,14 +306,19 @@ pub(super) fn analyze_query(
         // branch row-shaping. Suppress only those recognized at *all*
         // syntactically shaped set leaves. Other gaps remain explicit.
         if set_operation.as_ref().is_some_and(|set| {
-            set.branches().iter().any(|branch| branch.row_shaping().is_some())
-                && set.branches().iter().all(|branch| {
-                    branch.row_shaping().is_some()
-                        || branch.empty_input_preserving()
-                })
+            set.branches()
+                .iter()
+                .any(|branch| branch.row_shaping().is_some())
+                && set
+                    .branches()
+                    .iter()
+                    .all(|branch| branch.row_shaping().is_some() || branch.empty_input_preserving())
         }) {
             diagnostics.retain(|diagnostic| {
-                !matches!(diagnostic.code(), "unsupported_order_by" | "unsupported_limit" | "unsupported_fetch")
+                !matches!(
+                    diagnostic.code(),
+                    "unsupported_order_by" | "unsupported_limit" | "unsupported_fetch"
+                )
             });
         }
     }
