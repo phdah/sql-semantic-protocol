@@ -133,6 +133,7 @@ pub fn physical_finite_page_bag_plan(
     if snapshot.relation() != source.name()
         || !walker.sources.contains(source.name())
         || !query.joins().is_empty()
+        || !query.sampling().is_empty()
         || (query.aggregation().is_some() && distinct.is_none())
         || query.set_operation().is_some()
         || query.predicates().where_predicate().is_some()
