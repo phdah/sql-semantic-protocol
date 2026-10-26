@@ -96,6 +96,17 @@ pub(super) fn query_statement_to_value(statement: &QueryStatement) -> Value {
     if let Some(row_shaping) = statement.row_shaping() {
         value["row_shaping"] = row_shaping_to_value(row_shaping);
     }
+    if let Some(page) = statement.nested_page() {
+        value["nested_page"] = json!({
+            "source": page.source(),
+            "projected_columns": page.projected_columns().iter().map(|(output, source)| json!({
+                "output": output,
+                "source": source,
+            })).collect::<Vec<_>>(),
+            "inner": row_shaping_to_value(page.inner()),
+            "outer": row_shaping_to_value(page.outer()),
+        });
+    }
 
     if let Some(write) = statement.write() {
         value["write"] = write_operation_to_value(write);
