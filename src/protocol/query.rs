@@ -80,6 +80,7 @@ pub struct QueryStatement {
     set_operation: Option<Box<SetOperation>>,
     row_shaping: Option<Box<SetRowShaping>>,
     nested_page: Option<Box<NestedPage>>,
+    sampling: Vec<TableSampling>,
     finite_table: Option<Box<FiniteTable>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -119,6 +120,7 @@ impl QueryStatement {
             set_operation: None,
             row_shaping: None,
             nested_page: None,
+            sampling: Vec::new(),
             finite_table: None,
             produced_relation: None,
             write: None,
@@ -313,6 +315,16 @@ impl QueryStatement {
     /// Typed direct SELECT ordering and literal page bounds; exactness requires physical evidence.
     pub fn row_shaping(&self) -> Option<&SetRowShaping> {
         self.row_shaping.as_deref()
+    }
+
+    pub(crate) fn with_sampling(mut self, sampling: Vec<TableSampling>) -> Self {
+        self.sampling = sampling;
+        self
+    }
+
+    /// Source-independent sampled table occurrences; no Exact membership is implied.
+    pub fn sampling(&self) -> &[TableSampling] {
+        &self.sampling
     }
 
     pub(crate) fn with_nested_page(mut self, nested: Option<NestedPage>) -> Self {
