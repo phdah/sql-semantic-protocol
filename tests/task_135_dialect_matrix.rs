@@ -187,6 +187,7 @@ fn all_exposed_dialects_classify_renamed_cte_set_branch_and_null_duplicated_page
                             "{name}/{dialect}: parsed CTE SQL must be canonical Exact: {proof:?}"
                         );
                     }
+                    println!("TASK-135 {name}/{dialect}: parsed, canonical Exact");
                     exact += 1;
                 }
                 Err(error) => {
