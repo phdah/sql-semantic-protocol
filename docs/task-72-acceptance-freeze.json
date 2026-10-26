@@ -1,0 +1,151 @@
+{
+  "task": "TASK-72",
+  "version": 1,
+  "purpose": "Parent closure inventory; references the child's immutable source/terminal oracles without copying semantic facts",
+  "source_of_truth": {
+    "TASK-117": "docs/task-117-acceptance-freeze.json",
+    "TASK-118": "docs/task-118-acceptance-freeze.json",
+    "TASK-119": "docs/task-119-acceptance-freeze.json",
+    "TASK-120": "docs/task-120-acceptance-freeze.json"
+  },
+  "fixture_ids": [
+    "72-C117-P",
+    "72-C117-N",
+    "72-C118-P",
+    "72-C118-N",
+    "72-C119-P",
+    "72-C119-N",
+    "72-C120-P",
+    "72-C120-N"
+  ],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "mandatory": [
+        "six_operator_nullable_bag",
+        "nested_shared_physical_source"
+      ],
+      "conditional": [
+        "minus",
+        "coercion"
+      ],
+      "source": "TASK-117/118/119/120"
+    },
+    {
+      "id": 2,
+      "mandatory": [
+        "nested_shared_physical_source",
+        "set_level_row_shaping"
+      ],
+      "conditional": [
+        "by-name",
+        "corresponding",
+        "coercion",
+        "branch-limit"
+      ],
+      "source": "TASK-118/119/120"
+    },
+    {
+      "id": 3,
+      "mandatory": [
+        "six_operator_nullable_bag",
+        "nested_shared_physical_source"
+      ],
+      "conditional": [],
+      "source": "TASK-117/118/120"
+    },
+    {
+      "id": 4,
+      "mandatory": [
+        "set_level_row_shaping"
+      ],
+      "conditional": [
+        "order-tie",
+        "branch-limit",
+        "coercion"
+      ],
+      "source": "TASK-119/120"
+    },
+    {
+      "id": 5,
+      "mandatory": [
+        "six_operator_nullable_bag",
+        "nested_shared_physical_source",
+        "set_level_row_shaping"
+      ],
+      "conditional": [],
+      "source": "TASK-117/118/119/120"
+    },
+    {
+      "id": 6,
+      "mandatory": [
+        "six_operator_nullable_bag",
+        "nested_shared_physical_source",
+        "set_level_row_shaping"
+      ],
+      "conditional": [
+        "minus",
+        "by-name",
+        "corresponding",
+        "coercion",
+        "order-tie",
+        "branch-limit"
+      ],
+      "source": "TASK-117/118/119/120"
+    }
+  ],
+  "portable_gate": {
+    "mandatory_cases": 21,
+    "conditional_cases": 6,
+    "parser_dialects": 13,
+    "mandatory_dialect_cells": 273,
+    "mandatory_adapter_cells": 63,
+    "independently_executed_engine": "duckdb",
+    "oracle": "tests/task_120_parent_set_matrix.rs",
+    "adapter_oracle": "tests/task_120_set_adapters.rs"
+  },
+  "conditional_boundaries": [
+    {
+      "variant": "minus",
+      "owner": "TASK-120",
+      "reason": "parser acceptance is not a portable native MINUS law",
+      "release_disposition": "release gate must approve native vendor evidence before promoting to Exact"
+    },
+    {
+      "variant": "by-name",
+      "owner": "TASK-120",
+      "reason": "unproved name alignment, duplicate names and variant dialect semantics",
+      "release_disposition": "native/parser equivalence not certified; retain Residual"
+    },
+    {
+      "variant": "corresponding",
+      "owner": "TASK-120",
+      "reason": "vendor CORRESPONDING alignment is not attested",
+      "release_disposition": "native/parser equivalence not certified; retain Residual"
+    },
+    {
+      "variant": "coercion",
+      "owner": "TASK-120",
+      "reason": "unattested mixed-type conversion and collation laws cannot prove tuple frequencies",
+      "release_disposition": "requires explicit typed conversion and collation evidence"
+    },
+    {
+      "variant": "branch-limit",
+      "owner": "TASK-120",
+      "reason": "nested branch-local row shaping without exact physical source proof",
+      "release_disposition": "requires separately attested producer bag"
+    },
+    {
+      "variant": "order-tie",
+      "owner": "TASK-120",
+      "reason": "nondeterministic ties do not prove exact physical survivor identity",
+      "release_disposition": "requires deterministic ordering evidence"
+    }
+  ],
+  "non_promotions": [
+    "13 sqlparser paths do not certify 13 native database engines",
+    "unknown/Residual terminal bag is not an empty bag",
+    "TASK-91 release authorization is independent"
+  ],
+  "status": "parent_review_pending_fresh_pr_ci"
+}
