@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
     parse_dbt_manifest, parse_odcs_yaml, physical_finite_page_bag_plan, to_bundle_json,
-    ConfiguredSqlInput, LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalFinitePageProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -21,13 +21,15 @@ fn source(case: &Value) -> PhysicalWriteState {
 }
 
 fn schemas() -> (RelationCatalog, RelationCatalog) {
-    let direct = RelationCatalog::from_schemas(&[
-        RelationSchema::new(RELATION, vec![
-            SchemaColumn::from_sql_type("k","INTEGER","postgresql").unwrap()
-        ]).unwrap()
-    ]).unwrap();
+    let direct = RelationCatalog::from_schemas(&[RelationSchema::new(
+        RELATION,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
     let known = RelationCatalog::new(&[RELATION]).unwrap();
-    let parsed = parse_odcs_yaml(r#"
+    let parsed = parse_odcs_yaml(
+        r#"
 apiVersion: v3.2.0
 kind: DataContract
 id: task136samples
@@ -40,7 +42,11 @@ schema:
     properties:
       - name: k
         physicalType: INTEGER
-"#, "postgresql", &known).unwrap();
+"#,
+        "postgresql",
+        &known,
+    )
+    .unwrap();
     let odcs = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
     (direct, odcs)
 }
@@ -68,7 +74,8 @@ fn dbt_manifest(sql: &str) -> String {
                 "name": "s", "columns": {"k": {"name":"k", "data_type":"INTEGER"}}
             }
         }
-    }).to_string()
+    })
+    .to_string()
 }
 
 #[test]
