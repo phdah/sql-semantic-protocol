@@ -13009,14 +13009,33 @@
   "task_135_composed_pagination_acceptance": {
     "owner": "TASK-135",
     "parent": "TASK-76",
-    "status": "implementation_in_progress_not_signed_off",
+    "status": "bounded_acceptance_matrix_frozen_pending_final_head_ci",
     "freeze": "docs/task-135-acceptance-freeze.json",
-    "fixture_ids": ["76-C135-P", "76-C135-N"],
-    "mandatory_exact_verified": 0,
-    "unverified_mandatory": ["set branch ordering/limit", "producer copies", "NULL and duplicate oracle"],
-    "sql_dbt_odcs_parity_verified": false,
-    "full_13_dialect_matrix_verified": false,
+    "audit": "docs/task-135-acceptance-audit.md",
+    "fixture_ids": [
+      "76-C135-P",
+      "76-C135-N"
+    ],
+    "mandatory_cases": 6,
+    "conditional_cases": 3,
+    "expected_mandatory_exact_cells": 6,
+    "expected_parser_canonical_cells": 65,
+    "expected_adapter_cells": 18,
+    "unverified_mandatory": [],
+    "named_conditionals": [
+      "unattested physical peer identity",
+      "implicit NULL ordering",
+      "unordered CTE producer"
+    ],
+    "native_vendor_certified": false,
+    "real_dbt_core_e2e": "tests/task_135_dbt_core_e2e.rs",
+    "complete_duckdb_source_terminal_oracles": [
+      "tests/task_135_nested_pages.rs",
+      "tests/task_135_set_branch_pages.rs"
+    ],
+    "ci_signoff_pending": true,
     "child_done": false,
-    "parent_signed_off": false
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
