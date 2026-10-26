@@ -44,7 +44,7 @@ ASOF ordering lineage and unsupported ASOF/APPLY diagnostics: `src/analysis/join
 
 TASK-114 finite complete row bags: `src/protocol/relations.rs` owns typed ASOF and correlated `JoinExecution`; `src/analysis/joins.rs` owns AST-derived correlation and physical source-instance identity, and `src/analysis/queries.rs` the parser-certified special-join outer row shape. `src/constructive/types.rs` owns selected/nonselected complete identity pair laws `FiniteJoinLaw` and `TemporalJoinLaw`, `src/physical_realization/join_finite.rs` owns certified signed-integer nearest/range and LATERAL/APPLY source populations, and `src/physical_realization/join_temporal.rs` owns explicitly zone-free temporal complete bags. `src/constructive/cases.rs` validates source bag invariants. `src/emission/constructive.rs` and `schema/protocol.schema.json` own the wire contract. Independent public oracles: `tests/task_114_finite_populations.rs`, `tests/task_114_canonical_frozen.rs`, `tests/task_114_temporal_population.rs`, `tests/task_114_special_adapter_parity.rs`, `tests/task_114_frozen_execution.rs`, `tests/task_114_dialect_matrix.rs`, `tests/task_114_dialect_constructive.rs`.
 
-TASK-130 finite scalar IN/NOT IN: `src/subquery_witness.rs` owns the
+TASK-143 finite scalar IN/NOT IN: `src/subquery_witness.rs` owns the
 parser-independent scalar member/correlation keys; `src/physical_realization/in_bags.rs`
 evaluates complete source-row bags as SQL TRUE/FALSE/UNKNOWN for scalar
 and positional integer tuples, retaining candidate identities, selected/rejected
