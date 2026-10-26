@@ -230,3 +230,25 @@ fn sampled_distinct_cannot_reuse_an_unsampled_closed_world_bag() {
         "{outcome:?}"
     );
 }
+
+#[test]
+fn sample_seed_is_preserved_without_claiming_native_rng_membership() {
+    let protocol = analyze("SELECT k FROM s SAMPLE (50) SEED (7)", "snowflake");
+    let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+        panic!("SAMPLE must remain an analyzed query");
+    };
+    let [sample] = query.sampling() else {
+        panic!("seeded SAMPLE must remain canonical evidence");
+    };
+    assert_eq!(sample.syntax(), SamplingSyntax::Sample);
+    let seed = sample.seed().expect("SQL SEED must be preserved");
+    assert_eq!(seed.syntax(), SamplingSeedSyntax::Seed);
+    assert_eq!(seed.value(), Some(&LiteralValue::Number("7".to_string())));
+    assert!(query.condition_exactness().residual_conditions().iter().any(|r| {
+        r.reason() == ResidualConditionReason::TableSample
+    }));
+    assert!(matches!(
+        proof("SELECT k FROM s SAMPLE (50) SEED (7)", "snowflake", &[1, 2, 3]),
+        PhysicalFinitePageProof::Residual { .. }
+    ));
+}
