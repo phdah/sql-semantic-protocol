@@ -2,7 +2,7 @@
   "task": "TASK-135",
   "parent": "TASK-76",
   "version": 2,
-  "status": "acceptance_inventory_frozen_pending_final_verification",
+  "status": "six_mandatory_and_three_conditional_evidence_verified_pending_final_ci",
   "fixture_ids": [
     "76-C135-P",
     "76-C135-N"
@@ -97,103 +97,119 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "hive",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         },
         {
           "source": "dbt_compiled",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         },
         {
           "source": "odcs",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         }
       ],
       "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
-      "verification": "required_public_test_and_independent_duckdb",
-      "expected_parser_status": "parse_supported"
+      "verification": "independent_complete_duckdb_source_and_terminal_oracle",
+      "expected_parser_status": "supported_in_all_13_sqlparser_dialects"
     },
     {
       "id": "76-C135-N-empty",
@@ -232,109 +248,125 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "mysql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "postgresql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "hive",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "sqlite",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "snowflake",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "redshift",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "mssql",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "clickhouse",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "bigquery",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "ansi",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "duckdb",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         },
         {
           "dialect": "databricks",
-          "parser": "expected_supported",
-          "canonical": "expected_exact_after_physical_evidence",
-          "owner": "TASK-135"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_dialect_matrix.rs"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         },
         {
           "source": "dbt_compiled",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         },
         {
           "source": "odcs",
-          "status": "expected_exact",
-          "owner": "TASK-135"
+          "status": "canonical_exact",
+          "owner": "TASK-135",
+          "evidence": "tests/task_135_adapter_parity.rs"
         }
       ],
       "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
-      "verification": "required_public_test_and_independent_duckdb",
-      "expected_parser_status": "parse_supported"
+      "verification": "independent_complete_duckdb_source_and_terminal_oracle",
+      "expected_parser_status": "supported_in_all_13_sqlparser_dialects"
     }
   ],
   "unverified_scope": [],
   "signoff": {
-    "all_mandatory_verified": false,
-    "dialect_adapter_oracles_green": false,
+    "all_mandatory_verified": true,
+    "dialect_adapter_oracles_green": true,
     "required_ci_green": false,
     "parent_done": false
   },
@@ -449,7 +481,10 @@
         "ansi",
         "duckdb",
         "databricks"
-      ]
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
     },
     {
       "id": "76-C135-P-set-branch",
@@ -540,7 +575,10 @@
         "ansi",
         "duckdb",
         "databricks"
-      ]
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
     },
     {
       "id": "76-C135-N-set-zero",
@@ -611,7 +649,10 @@
         "ansi",
         "duckdb",
         "databricks"
-      ]
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
     },
     {
       "id": "76-C135-N-null-duplicates",
@@ -729,7 +770,10 @@
         "ansi",
         "duckdb",
         "databricks"
-      ]
+      ],
+      "verification": "independently_executed_exact",
+      "dialect_status": "13_parsed_and_exact",
+      "adapter_status": "direct_sql_dbt_compiled_odcs_exact"
     }
   ],
   "conditional_cases": [
@@ -804,7 +848,8 @@
       "null_duplicates"
     ],
     "boundary": "Parser acceptance is not vendor engine execution evidence",
-    "state": "expected_checked_by_public_matrix"
+    "state": "verified_all_65_parser_and_canonical_cells",
+    "executable_evidence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40316658111"
   },
   "adapter_matrix": {
     "owner": "TASK-135",
@@ -822,6 +867,7 @@
       "null_duplicates"
     ],
     "boundary": "manifest compiled SQL owns query; catalog or ODCS owns schema",
-    "state": "expected_checked_by_public_adapter_oracles"
+    "state": "verified_18_complete_bag_parity_cells",
+    "real_dbt_core_e2e": "tests/task_135_dbt_core_e2e.rs"
   }
 }
