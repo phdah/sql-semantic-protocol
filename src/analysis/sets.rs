@@ -302,7 +302,9 @@ pub(super) fn analyze_set_leaf_boundary(
     let [table] = select.from.as_slice() else {
         return None;
     };
-    if !table.joins.is_empty() || !matches!(table.relation, TableFactor::Table { args: None, .. }) {
+    if !table.joins.is_empty()
+        || !matches!(table.relation, TableFactor::Table { args: None, sample: None, .. })
+    {
         return None;
     }
     if query
