@@ -260,3 +260,17 @@ SELECT producer_key AS k FROM page ORDER BY k LIMIT 1 OFFSET 2";
     );
     assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
 }
+
+
+#[test]
+fn unordered_cte_producer_must_not_claim_exact_page_membership() {
+    let sql = "WITH page AS (SELECT k FROM s LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2";
+    let values = [Some(1), Some(2), Some(3), Some(4), Some(5)];
+    let (bundle, source) = evaluate(sql, &values);
+    let layer = bundle.layers().last().unwrap().id();
+    let proof = physical_finite_composed_page_plan(&bundle, layer, &[source]);
+    assert!(
+        matches!(proof, PhysicalComposedPageProof::Residual { .. }),
+        "producer with no deterministic row order may not be exact: {proof:?}"
+    );
+}
