@@ -2,7 +2,7 @@
   "task": "TASK-135",
   "parent": "TASK-76",
   "version": 2,
-  "status": "six_mandatory_and_three_conditional_evidence_verified_pending_final_ci",
+  "status": "verified_bounded_child_pending_merge",
   "fixture_ids": [
     "76-C135-P",
     "76-C135-N"
@@ -367,8 +367,13 @@
   "signoff": {
     "all_mandatory_verified": true,
     "dialect_adapter_oracles_green": true,
-    "required_ci_green": false,
-    "parent_done": false
+    "required_ci_green": true,
+    "parent_done": false,
+    "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40317980536",
+    "verified_semantic_head": "445b92ac0cd50d9e226832a55446f9fc6bb0cf68",
+    "verified_jobs": 9,
+    "matt_review": "standards_and_spec_verified_no_remaining_mandatory_gaps",
+    "final_pr_head_ci_gate": "required_after_signoff_metadata"
   },
   "acceptance_contract": {
     "original_parent_ac": [
