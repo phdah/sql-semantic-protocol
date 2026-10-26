@@ -66,8 +66,11 @@ schema:
 
     let mut checked = 0;
     let cases = inventory["cases"].as_array().unwrap().iter().chain(
-        inventory["additional_mandatory_cases"].as_array().unwrap().iter()
-            .filter(|case| case["id"] == "76-C135-P-renamed-producer")
+        inventory["additional_mandatory_cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|case| case["id"] == "76-C135-P-renamed-producer"),
     );
     for case in cases {
         let sql = case["sql"]
