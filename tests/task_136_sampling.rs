@@ -244,11 +244,17 @@ fn sample_seed_is_preserved_without_claiming_native_rng_membership() {
     let seed = sample.seed().expect("SQL SEED must be preserved");
     assert_eq!(seed.syntax(), SamplingSeedSyntax::Seed);
     assert_eq!(seed.value(), Some(&LiteralValue::Number("7".to_string())));
-    assert!(query.condition_exactness().residual_conditions().iter().any(|r| {
-        r.reason() == ResidualConditionReason::TableSample
-    }));
+    assert!(query
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .any(|r| { r.reason() == ResidualConditionReason::TableSample }));
     assert!(matches!(
-        proof("SELECT k FROM s SAMPLE (50) SEED (7)", "snowflake", &[1, 2, 3]),
+        proof(
+            "SELECT k FROM s SAMPLE (50) SEED (7)",
+            "snowflake",
+            &[1, 2, 3]
+        ),
         PhysicalFinitePageProof::Residual { .. }
     ));
 }
