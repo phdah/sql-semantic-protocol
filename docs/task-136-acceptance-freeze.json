@@ -1,8 +1,8 @@
 {
   "task": "TASK-136",
   "parent": "TASK-76",
-  "version": 1,
-  "status": "in_progress_unverified",
+  "version": 2,
+  "status": "reviewed_frozen_matrix_pending_final_ci",
   "fixture_ids": [
     "76-C136-P",
     "76-C136-N"
@@ -59,100 +59,184 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "set",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "membership_proof": {
+        "positive": "Exact",
+        "not_true": "Impossible for requested tuple k=999 under closed physical bag"
+      },
+      "terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": [
+        "s#2"
+      ],
+      "canonical_support": "Exact physical bag for certified full source and sorted deterministic page",
+      "positive_membership": {
+        "k": 1
+      }
     },
     {
       "id": "76-C136-N-offset-empty",
@@ -189,100 +273,168 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 1 OFFSET 9",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "empty",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "membership_proof": {
+        "positive": "Impossible: no terminal members",
+        "not_true": "Impossible for requested tuple k=999 under closed physical bag"
+      },
+      "terminal_bag": [],
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "canonical_support": "Exact physical bag for certified full source and sorted deterministic page",
+      "positive_membership": null
     },
     {
       "id": "76-C136-P-fetch",
@@ -325,100 +477,184 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k FETCH FIRST 2 ROWS ONLY",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "set",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "membership_proof": {
+        "positive": "Exact",
+        "not_true": "Impossible for requested tuple k=999 under closed physical bag"
+      },
+      "terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": [
+        "s#2"
+      ],
+      "canonical_support": "Exact physical bag for certified full source and sorted deterministic page",
+      "positive_membership": {
+        "k": 1
+      }
     },
     {
       "id": "76-C136-P-top",
@@ -461,100 +697,184 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 2",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "set",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "membership_proof": {
+        "positive": "Exact",
+        "not_true": "Impossible for requested tuple k=999 under closed physical bag"
+      },
+      "terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": [
+        "s#2"
+      ],
+      "canonical_support": "Exact physical bag for certified full source and sorted deterministic page",
+      "positive_membership": {
+        "k": 1
+      }
     },
     {
       "id": "76-C136-P-null-last",
@@ -597,100 +917,184 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "exact_if_parsed_and_attested",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "exact_physical_bag",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "DuckDB equivalent core executed; native vendor not certified"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_exact_when_sql_and_schema_equivalent",
-          "verification": "pending"
+          "expected": "canonical_exact_full_bag",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k NULLS LAST LIMIT 2",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "set",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "membership_proof": {
+        "positive": "Exact",
+        "not_true": "Impossible for requested tuple k=999 under closed physical bag"
+      },
+      "terminal_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_bag": [
+        {
+          "k": null
+        },
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "negative_source_ids": [
+        "s#0"
+      ],
+      "canonical_support": "Exact physical bag for certified full source and sorted deterministic page",
+      "positive_membership": {
+        "k": 1
+      }
     },
     {
       "id": "76-C136-N-tie",
@@ -718,100 +1122,163 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until total order attested"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "ambiguous physical identity across boundary peers"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: sampling or implicit native/session order"
     },
     {
       "id": "76-C136-N-implicit-null",
@@ -839,100 +1306,163 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain Residual until explicit NULL sorting attested"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s ORDER BY k LIMIT 1",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "implicit vendor/session NULL ordering"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": null
+        },
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: sampling or implicit native/session order"
     },
     {
       "id": "76-C136-P-system",
@@ -960,100 +1490,163 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed stochastic Residual and source schema-bound possible-domain evidence"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s TABLESAMPLE SYSTEM (50)",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "stochastic system sampling cannot prove complete row identity"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: sampling or implicit native/session order"
     },
     {
       "id": "76-C136-N-seeded",
@@ -1081,100 +1674,163 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "retain typed seeded Residual until native algorithm and deterministic execution attested"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s TABLESAMPLE BERNOULLI (50) REPEATABLE (7)",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "seed does not establish portable engine algorithm or exact row membership"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: sampling or implicit native/session order"
     },
     {
       "id": "76-C136-N-sample",
@@ -1202,102 +1858,170 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "mysql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "postgresql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "hive",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "sqlite",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "snowflake",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "redshift",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "mssql",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "clickhouse",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "bigquery",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "ansi",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "duckdb",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         },
         {
           "dialect": "databricks",
-          "parser": "pending_verified_parser_or_boundary",
-          "canonical": "residual_if_parsed",
-          "verification": "tests/task_136_sampling.rs"
+          "parser": "parsed",
+          "canonical": "residual_membership",
+          "verification": "tests/task_136_dialect_matrix.rs",
+          "native_execution": "unverified",
+          "release_disposition": "parser boundary or canonical typed Residual; never assume exactness"
         }
       ],
       "adapter_cells": [
         {
           "source": "direct_sql",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "compiled_dbt",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         },
         {
           "source": "odcs",
-          "expected": "canonical_residual_or_parser_boundary",
-          "verification": "pending"
+          "expected": "canonical_residual",
+          "verification": "tests/task_136_adapter_parity.rs",
+          "status": "frozen_expected_pending_ci"
         }
-      ]
+      ],
+      "output_column": "k",
+      "native_oracle_sql": "SELECT k FROM s SAMPLE (50)",
+      "negative_requested_row": {
+        "k": 999
+      },
+      "source_relation_instance": "s:from:0",
+      "terminal_domain": {
+        "k": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "reason": "SAMPLE dialect method, seed and exact row membership not guaranteed"
+        }
+      },
+      "membership_proof": {
+        "positive": "Residual",
+        "not_true": "Residual: no guaranteed selected/rejected physical identities"
+      },
+      "terminal_bag": null,
+      "source_bag": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "negative_source_ids": null,
+      "canonical_support": "Residual: sampling or implicit native/session order"
     }
   ],
   "conditional_native_execution": "unverified; no vendor/session engine certification asserted",
-  "signed_off": false
+  "signed_off": false,
+  "dialect_obligations": 130,
+  "adapter_obligations": 30,
+  "parser_baseline": "All 10 frozen SQL spellings parsed in all 13 exposed sqlparser dialects; observed in GitHub CI run 40358327924; native engine semantics unverified",
+  "native_certification": "Independent DuckDB oracles for deterministic cases only; SQL Server TOP compared through DuckDB-equivalent LIMIT; vendor/session native execution not asserted",
+  "oracle_contract": "Full source and terminal bags checked via independent DuckDB SQL, stable row identity and multiplicity for mandatory cases, exact domain, negative requested membership Impossible"
 }
