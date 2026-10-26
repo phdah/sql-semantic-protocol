@@ -374,6 +374,7 @@ pub(super) fn analyze_set_row_shaping(
     branches: &[SetBranch],
 ) -> Option<crate::protocol::SetRowShaping> {
     analyze_row_shaping(query, branches.first()?.output().columns(), None)
+        .filter(|shape| !shape.with_ties)
 }
 
 /// Normalize a plain SELECT's ordering and literal limit without embedding SQL ASTs in the
@@ -391,10 +392,13 @@ pub(super) fn analyze_direct_row_shaping(
         || select.from.len() != 1
         || !matches!(
             &select.from[0].relation,
-            TableFactor::Table { sample: None, .. }
+            TableFactor::Table {
+                args: None,
+                sample: None,
+                ..
+            }
         )
         || !select.from[0].joins.is_empty()
-        || select.distinct.is_some()
         || select.selection.is_some()
         || select.having.is_some()
         || select.qualify.is_some()
@@ -458,15 +462,15 @@ fn analyze_row_shaping(
         });
     }
 
-    let (limit, offset) = if let Some(top) = top {
-        if top.with_ties || top.percent || query.limit_clause.is_some() || query.fetch.is_some() {
+    let (limit, offset, with_ties) = if let Some(top) = top {
+        if top.percent || query.limit_clause.is_some() || query.fetch.is_some() {
             return None;
         }
         let limit = match top.quantity.as_ref()? {
             TopQuantity::Constant(value) => usize::try_from(*value).ok()?,
             TopQuantity::Expr(expression) => nonnegative_literal(expression)?,
         };
-        (limit, 0)
+        (limit, 0, top.with_ties)
     } else {
         match (&query.limit_clause, &query.fetch) {
             (
@@ -482,16 +486,20 @@ fn analyze_row_shaping(
                     Some(offset) => nonnegative_literal(&offset.value)?,
                     None => 0,
                 },
+                false,
             ),
-            (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => {
-                (nonnegative_literal(limit)?, nonnegative_literal(offset)?)
-            }
-            (None, Some(fetch)) if !fetch.with_ties && !fetch.percent => (
+            (Some(LimitClause::OffsetCommaLimit { offset, limit }), None) => (
+                nonnegative_literal(limit)?,
+                nonnegative_literal(offset)?,
+                false,
+            ),
+            (None, Some(fetch)) if !fetch.percent => (
                 match &fetch.quantity {
                     Some(quantity) => nonnegative_literal(quantity)?,
                     None => 1,
                 },
                 0,
+                fetch.with_ties,
             ),
             _ => return None,
         }
@@ -500,6 +508,7 @@ fn analyze_row_shaping(
         keys,
         offset,
         limit,
+        with_ties,
     })
 }
 

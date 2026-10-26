@@ -251,6 +251,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "task128_groups",
         "task128_ntile",
         "task133_pagination",
+        "task134_distinct",
         "task137_literal_unnest",
         "task138_finite_star",
         "task138_fixed_pivot",
@@ -912,6 +913,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task128_window_source")
                 && !id.ends_with(".task133_pagination")
                 && !id.ends_with(".task133_source")
+                && !id.ends_with(".task134_distinct")
+                && !id.ends_with(".task134_source")
                 && !id.ends_with(".task189_decimal_windows")
                 && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task138_finite_star")
@@ -930,6 +933,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             source["name"] != "task189_decimal_source"
                 && source["name"] != "task128_window_source"
                 && source["name"] != "task133_source"
+                && source["name"] != "task134_source"
         });
     let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
     let mut legacy_catalog_json: Value = serde_json::from_str(&catalog_text).unwrap();
@@ -942,6 +946,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task128_window_source")
                 && !id.ends_with(".task133_pagination")
                 && !id.ends_with(".task133_source")
+                && !id.ends_with(".task134_distinct")
+                && !id.ends_with(".task134_source")
                 && !id.ends_with(".task189_decimal_windows")
                 && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task138_finite_star")
@@ -962,6 +968,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task133_source")
                 && !id.ends_with(".task133_pagination")
                 && !id.ends_with(".task133_source")
+                && !id.ends_with(".task134_distinct")
+                && !id.ends_with(".task134_source")
         });
     let legacy_catalog = parse_dbt_catalog(&legacy_catalog_json.to_string()).unwrap();
     let legacy_bundle = analyze_dbt_artifacts(

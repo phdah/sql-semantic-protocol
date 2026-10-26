@@ -339,6 +339,8 @@ pub struct SetRowShaping {
     pub offset: usize,
     /// Maximum rows retained.
     pub limit: usize,
+    /// Include the complete boundary peer group for FETCH/TOP WITH TIES.
+    pub with_ties: bool,
 }
 
 /// One UNION, INTERSECT, or EXCEPT operation.

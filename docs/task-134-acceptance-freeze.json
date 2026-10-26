@@ -1,0 +1,861 @@
+{
+  "task": "TASK-134",
+  "parent": "TASK-76",
+  "version": 1,
+  "status": "verified_bounded_child_pending_merge",
+  "fixture_ids": [
+    "76-C134-P",
+    "76-C134-N"
+  ],
+  "scope": [
+    "WITH TIES",
+    "DISTINCT",
+    "DISTINCT ON",
+    "explicit and implicit SQL NULL ordering",
+    "QUALIFY plus pagination fail-closed boundary"
+  ],
+  "source_truth": "complete physical source rows, no fabricated row ordering for peers",
+  "mandatory_count": 6,
+  "conditional_count": 3,
+  "mapped_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "parser_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_sources": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs"
+  ],
+  "cases": [
+    {
+      "id": "76-C134-P-with-ties",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k DESC FETCH FIRST 2 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        3,
+        2,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Ties at cutoff all survive, multiplicity three",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-P-distinct",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT DISTINCT k FROM s ORDER BY k LIMIT 3",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        1,
+        2,
+        3
+      ],
+      "terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "rejected_source_ids": [],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Duplicate contributors coalesce into one terminal tuple; no chosen physical representative",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-P-distinct-on",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT DISTINCT ON (k) k FROM s ORDER BY k",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_bag": [
+        1,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            1,
+            2
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Identical projections coalesce; differing non-key projections require tie-safe total ordering",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-P-explicit-nulls",
+      "group": "76-C134-P",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k NULLS FIRST FETCH FIRST 1 ROW WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        null,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        null
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "selected_source_ids": [
+        "s#0"
+      ],
+      "rejected_source_ids": [
+        "s#1",
+        "s#2"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": true,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Explicit NULL ordering includes NULL group",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-N-with-ties-zero",
+      "group": "76-C134-N",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 0 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Zero cutoff is an exact empty bag",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-N-absent",
+      "group": "76-C134-N",
+      "classification": "mandatory",
+      "sql": "SELECT k FROM s ORDER BY k DESC FETCH FIRST 2 ROWS WITH TIES",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        3,
+        2,
+        2,
+        1
+      ],
+      "terminal_bag": [
+        3,
+        2,
+        2
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3"
+      ],
+      "selected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#3"
+      ],
+      "typed_output_domain": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            2,
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": "Exact",
+      "oracle": "DuckDB full source and terminal multiset, independently asserted",
+      "source_identity": "all physical rows tracked, peer-order identities unclaimed",
+      "notes": "Requested k=1 is impossible in complete terminal bag",
+      "dialect_cells": {
+        "generic": "exact",
+        "mysql": "exact",
+        "postgresql": "exact",
+        "hive": "exact",
+        "sqlite": "exact",
+        "snowflake": "exact",
+        "redshift": "exact",
+        "mssql": "exact",
+        "clickhouse": "exact",
+        "bigquery": "exact",
+        "ansi": "exact",
+        "duckdb": "exact",
+        "databricks": "exact"
+      },
+      "adapter_cells": {
+        "direct_sql": "exact required",
+        "dbt_compiled": "exact required",
+        "odcs": "exact required"
+      },
+      "validation": "verified_exact_complete_source_terminal_dialect_adapter_native_duckdb",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "all physical contributors to each certified terminal tuple have stable source identity",
+        "not_true": "all source rows outside the exact terminal contributor sets are known from the closed source bag",
+        "membership": "terminal existence is Exact or Impossible only after the entire source bag is proved"
+      }
+    },
+    {
+      "id": "76-C134-N-implicit-null",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT k FROM s ORDER BY k FETCH FIRST 1 ROW WITH TIES",
+      "source_bag": [
+        null,
+        2
+      ],
+      "proof": "Residual",
+      "reason": "NULL order not explicit; session-dependent",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "verified_typed_residual_owner_reviewed",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "NULL order not explicit; session-dependent",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
+    },
+    {
+      "id": "76-C134-N-distinct-on-tie",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT DISTINCT ON (k) k, v FROM s ORDER BY k",
+      "source_bag": [
+        1,
+        1
+      ],
+      "proof": "Residual",
+      "reason": "DISTINCT ON order fails to choose a deterministic member for non-key output",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "verified_typed_residual_owner_reviewed",
+      "complete_physical_source": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          },
+          {
+            "name": "v",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ],
+        "rows": [
+          {
+            "id": "s#0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "s#1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "s#2",
+            "k": 2,
+            "v": 30
+          }
+        ],
+        "expected_truth": "unproved winner for key 1; DISTINCT ON output (1,10) or (1,20) remains conditional",
+        "terminal_domain": {
+          "kind": "unknown",
+          "reason": "non-key value depends on unresolved peer selection"
+        },
+        "verified_regression": "tests/task_134_distinct_on.rs::distinct_on_tied_nonkey_projection_is_residual"
+      },
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "DISTINCT ON order fails to choose a deterministic member for non-key output",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
+    },
+    {
+      "id": "76-C134-N-qualify",
+      "group": "76-C134-N",
+      "classification": "conditional",
+      "sql": "SELECT k FROM s QUALIFY ROW_NUMBER() OVER (ORDER BY k) <= 2 ORDER BY k LIMIT 1",
+      "source_bag": [
+        1,
+        2,
+        3
+      ],
+      "proof": "Residual",
+      "reason": "QUALIFY producer not independently proven by page executor",
+      "owner": "TASK-134",
+      "release_disposition": "no native vendor/session exactness claim",
+      "dialect_cells": {
+        "generic": "residual",
+        "mysql": "residual",
+        "postgresql": "residual",
+        "hive": "residual",
+        "sqlite": "residual",
+        "snowflake": "residual",
+        "redshift": "residual",
+        "mssql": "residual",
+        "clickhouse": "residual",
+        "bigquery": "residual",
+        "ansi": "residual",
+        "duckdb": "residual",
+        "databricks": "residual"
+      },
+      "adapter_cells": {
+        "direct_sql": "typed residual required",
+        "dbt_compiled": "typed residual required",
+        "odcs": "typed residual required"
+      },
+      "validation": "verified_typed_residual_owner_reviewed",
+      "source_relation": "s",
+      "column_instances": [
+        "s.k"
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2"
+      ],
+      "source_columns": {
+        "k": "INTEGER NULL"
+      },
+      "truth_evidence": {
+        "positive": "unproved selection or membership: no source identity is certified as an exact terminal survivor",
+        "not_true": "unproved rejection: complete input identities are retained; no missing proof is converted into Impossible",
+        "source_truth": "complete physical source snapshot is required to certify a bound"
+      },
+      "typed_output_domain": {
+        "k": {
+          "kind": "unknown",
+          "reason": "QUALIFY producer not independently proven by page executor",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null
+        }
+      },
+      "terminal_bag": null,
+      "positive_membership": null,
+      "negative_membership": null
+    }
+  ],
+  "signoff": {
+    "all_mandatory_exact": true,
+    "all_dialect_cells_verified": true,
+    "all_adapter_cells_verified": true,
+    "all_ci_green": true,
+    "reviewed": true,
+    "mandatory_exact_cases": 6,
+    "reviewed_conditional_cases": 3,
+    "parser_exact_cells": 78,
+    "parser_residual_cells": 39,
+    "adapter_cells": 27,
+    "dbt_core_execution": "passed",
+    "verified_code_head": "64bb50288fcc58704f403718a65ca89f62b8255a",
+    "verified_ci_run_id": 40228675764,
+    "verified_checks": 9,
+    "final_pr_head_gate": "verify final metadata-only head CI before merge",
+    "parent_task_signed_off": false,
+    "release_approved": false
+  },
+  "parser_evidence": {
+    "source": "CI run 40227228471, executed task_134_frozen_matrix.rs across 13 sqlparser dialects",
+    "mandatory_exact_cells": 78,
+    "conditional_residual_cells": 39,
+    "all_cases_parser_accepted": true,
+    "non_duckdb_native_execution": "not certified",
+    "owner": "TASK-134"
+  },
+  "physical_truth_semantics": {
+    "ordinary_page": "row survives iff it is in the deterministically selected physical page",
+    "distinct": "terminal tuple multiplicity is one; all matching physical inputs contribute provenance, without a fabricated representative row",
+    "distinct_on": "when complete candidate tuples project identical outputs, terminal bag is exact but physical representative identity is not asserted; ambiguous non-key output remains Residual",
+    "source_evidence": "caller-attested closed physical bag, authoritative signed integer column type, stable source identifiers, and full terminal set domains",
+    "oracles": "native DuckDB whole source and terminal bags for every mandatory case; conditional boundaries never described as native vendor execution"
+  }
+}

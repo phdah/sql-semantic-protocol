@@ -1350,6 +1350,10 @@
             "limit": {
               "type": "integer",
               "minimum": 0
+            },
+            "with_ties": {
+              "description": "Include all peers equal to the FETCH/TOP cutoff; omitted for ordinary pagination.",
+              "const": true
             }
           }
         }
