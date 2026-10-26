@@ -199,6 +199,11 @@ fn branch_source<'a>(
     layer_id: &str,
     branch: &'a SetBranch,
 ) -> Result<ResolvedSetBranch<'a>, &'static str> {
+    // SQL applies branch WHERE before ORDER BY/LIMIT. The bounded page
+    // evaluator below currently certifies unfiltered input bags only.
+    if branch.row_shaping().is_some() && branch.predicates().where_predicate().is_some() {
+        return Err("filtered branch pagination needs WHERE-before-page physical evaluation");
+    }
     if (!branch.condition_exactness().is_exact() && branch.row_shaping().is_none())
         || !branch.empty_input_preserving()
         || branch.predicates().having_predicate().is_some()
