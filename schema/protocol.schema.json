@@ -1229,7 +1229,122 @@
         "set_operation": {
           "$ref": "#/$defs/setOperation"
         },
-        "row_shaping": {
+        "sampling": {
+          "description": "Canonical sampled table sources. Syntax, method, requested quantity and seed are evidence, not a portable proof of the selected physical row bag.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "source_instance",
+              "syntax",
+              "method",
+              "quantity",
+              "seed",
+              "options_unproven",
+              "membership"
+            ],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "source_instance": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "syntax": {
+                "enum": [
+                  "sample",
+                  "tablesample"
+                ]
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "row",
+                  "bernoulli",
+                  "system",
+                  "block",
+                  null
+                ]
+              },
+              "quantity": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "value",
+                      "unit"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": [
+                          "string",
+                          "number",
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "unit": {
+                        "enum": [
+                          "rows",
+                          "percent",
+                          null
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "seed": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "syntax",
+                      "value"
+                    ],
+                    "properties": {
+                      "syntax": {
+                        "enum": [
+                          "seed",
+                          "repeatable"
+                        ]
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "number",
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "options_unproven": {
+                "type": "boolean"
+              },
+              "membership": {
+                "const": "residual"
+              }
+            }
+          }
+        },
+                "row_shaping": {
           "description": "Canonical direct SELECT ordering and nonnegative page bounds; a physical proof must still certify ties, NULL sorting, and complete source rows.",
           "$ref": "#/$defs/setOperation/properties/row_shaping"
         },
