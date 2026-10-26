@@ -1,0 +1,358 @@
+{
+  "task": "TASK-135",
+  "parent": "TASK-76",
+  "version": 1,
+  "status": "implementation_in_progress_not_signed_off",
+  "fixture_ids": [
+    "76-C135-P",
+    "76-C135-N"
+  ],
+  "mapped_parent_ac": [
+    2,
+    4,
+    5,
+    6
+  ],
+  "known_mandatory_core": [
+    "two sequential bounded row windows on one CTE",
+    "set branch ORDER/LIMIT",
+    "row-preserving producer copies"
+  ],
+  "conditional_boundaries": [
+    {
+      "variant": "unattested inner/outer ordering",
+      "owner": "TASK-135",
+      "release_disposition": "blocking until reviewed exact or sound conditional classification"
+    },
+    {
+      "variant": "implicit NULL ordering, ambiguous peer winner",
+      "owner": "TASK-135",
+      "release_disposition": "Residual, native runtime/session not certified"
+    }
+  ],
+  "cases": [
+    {
+      "id": "76-C135-P-cte-nested",
+      "fixture_family": "76-C135-P",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_row_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4"
+      ],
+      "selected_source_ids": [
+        "s#2"
+      ],
+      "rejected_source_ids": [
+        "s#0",
+        "s#1",
+        "s#3",
+        "s#4"
+      ],
+      "terminal_bag": [
+        3
+      ],
+      "terminal_domains": {
+        "k": {
+          "kind": "set",
+          "type": "INTEGER",
+          "values": [
+            3
+          ],
+          "nullable": false,
+          "lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "proof": {
+        "positive": "Exact",
+        "not_true": "Impossible when requested output tuple absent"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "source": "direct_sql",
+          "status": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "source": "dbt_compiled",
+          "status": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "source": "odcs",
+          "status": "unverified",
+          "owner": "TASK-135"
+        }
+      ],
+      "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
+      "verification": "unverified"
+    },
+    {
+      "id": "76-C135-N-empty",
+      "fixture_family": "76-C135-N",
+      "classification": "mandatory",
+      "sql": "WITH page AS (SELECT k FROM s ORDER BY k LIMIT 4) SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2",
+      "source_schema": {
+        "relation": "s",
+        "columns": [
+          {
+            "name": "k",
+            "type": "INTEGER",
+            "nullable": true
+          }
+        ]
+      },
+      "source_bag": [],
+      "source_row_ids": [],
+      "selected_source_ids": [],
+      "rejected_source_ids": [],
+      "terminal_bag": [],
+      "terminal_domains": {
+        "k": {
+          "kind": "empty",
+          "type": "INTEGER",
+          "values": [],
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "proof": {
+        "positive": "Exact",
+        "not_true": "Impossible when requested output tuple absent"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified",
+          "canonical": "unverified",
+          "owner": "TASK-135"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "source": "direct_sql",
+          "status": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "source": "dbt_compiled",
+          "status": "unverified",
+          "owner": "TASK-135"
+        },
+        {
+          "source": "odcs",
+          "status": "unverified",
+          "owner": "TASK-135"
+        }
+      ],
+      "duckdb_oracle": "complete SELECT k FROM s source + complete terminal SELECT; no program-generated expected rows",
+      "verification": "unverified"
+    }
+  ],
+  "unverified_scope": [
+    {
+      "id": "76-C135-P-set-branch",
+      "classification": "mandatory",
+      "expected": "exact physical/terminal set branch ORDER/LIMIT bag, typed NULL/multiplicity",
+      "status": "unverified_blocker"
+    },
+    {
+      "id": "76-C135-P-producer-copies",
+      "classification": "mandatory",
+      "expected": "exact producer output and physical identity under row-preserving copy",
+      "status": "unverified_blocker"
+    },
+    {
+      "id": "76-C135-N-null-duplicates",
+      "classification": "mandatory",
+      "expected": "complete positive/NOT TRUE source and terminal bags with nullable duplicate rows",
+      "status": "unverified_blocker"
+    }
+  ],
+  "signoff": {
+    "all_mandatory_verified": false,
+    "dialect_adapter_oracles_green": false,
+    "required_ci_green": false,
+    "parent_done": false
+  }
+}
