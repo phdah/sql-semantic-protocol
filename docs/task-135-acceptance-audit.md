@@ -2,7 +2,7 @@
 
 ## Scope and status
 
-**Status: pending final-head CI and task signoff.** This child implements the frozen
+**Status: all five TASK-135 acceptance criteria independently verified; final metadata-only PR-head CI remains a merge gate.** This child implements the frozen
 `76-C135-P` and `76-C135-N` families. TASK-76 parent remains open.
 The task-owned immutable matrix is `docs/task-135-acceptance-freeze.json`
 (version 2); `docs/coverage-manifest.json` links the tracked owner.
@@ -78,8 +78,9 @@ the six-case acceptance inventory, positive and NOT TRUE source identities
 are independently exercised, and conservative uncertainties are typed.
 Set-branch limits apply before set-operator multiplication; CTE OFFSET does
 not leak across a producer boundary. No runtime-native vendor proof or
-TASK-76 parent completion is claimed. Final CI is the remaining signoff
-gate until the final PR head is verified.
+TASK-76 parent completion is claimed. No unverified mandatory cell remains.
+The implementation head passed 9/9 required checks; metadata-only final-head CI
+remains an independently enforced merge gate.
 
 ## Release disposition
 
@@ -88,3 +89,14 @@ This PR adds the optional `nested_page` JSON and
 and an additional per-branch page-rejection field. The PR uses a breaking
 Conventional Commit title; the next major version is controlled by
 Release Please. TASK-76 parent and TASK-91 release gate stay open.
+
+## Final implementation verification
+
+- Full implementation head: `445b92ac0cd50d9e226832a55446f9fc6bb0cf68`.
+- [GitHub Actions run 40317980536](https://github.com/phdah/sql-semantic-protocol/actions/runs/40317980536): **all nine jobs succeeded**, including Rust formatting, all-features strict Clippy, full tests, Rust docs, no-default lint/tests/docs/dependency guard, and real dbt Core seed/run/docs E2E.
+- [GitHub Actions run 40316658111](https://github.com/phdah/sql-semantic-protocol/actions/runs/40316658111): all 65 task-specific dialect/fixture parser paths emitted canonical Exact, and real compiled dbt Core source/terminal bags were independently executed.
+- Direct SQL, compiled dbt manifest, and ODCS parity tests certify all 18 frozen adapter cells; no claim is made about unexecuted vendor-native semantics.
+- Code review after the first implementation identified and fixed a potential unsound branch WHERE+LIMIT ordering shortcut; `tests/task_135_set_branch_pages.rs::filtered_branch_page_cannot_apply_limit_before_where` now explicitly verifies Residual rather than false Exact.
+- The final acceptance inventory remains bounded to six mandatory and three individually owned conditional cases. All original TASK-135 AC #1..#5 are signed off; TASK-76 original parent ACs remain unsigned.
+
+The final metadata commit must pass the same nine checks before the PR is merge-ready. Do not merge automatically.
