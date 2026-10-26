@@ -363,20 +363,33 @@ impl NestedPage {
         inner: SetRowShaping,
         outer: SetRowShaping,
     ) -> Self {
-        Self { source, projected_columns, inner, outer }
+        Self {
+            source,
+            projected_columns,
+            inner,
+            outer,
+        }
     }
 
     /// Authoritative physical source relation for both stages.
-    pub fn source(&self) -> &str { &self.source }
+    pub fn source(&self) -> &str {
+        &self.source
+    }
 
     /// Ordered pairs of final output and physical input column names.
-    pub fn projected_columns(&self) -> &[(String, String)] { &self.projected_columns }
+    pub fn projected_columns(&self) -> &[(String, String)] {
+        &self.projected_columns
+    }
 
     /// The producer's independently bounded page.
-    pub fn inner(&self) -> &SetRowShaping { &self.inner }
+    pub fn inner(&self) -> &SetRowShaping {
+        &self.inner
+    }
 
     /// The final consumer's independently bounded page.
-    pub fn outer(&self) -> &SetRowShaping { &self.outer }
+    pub fn outer(&self) -> &SetRowShaping {
+        &self.outer
+    }
 }
 
 /// One UNION, INTERSECT, or EXCEPT operation.
