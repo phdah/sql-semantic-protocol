@@ -235,3 +235,28 @@ SELECT k, seq FROM page ORDER BY k NULLS LAST, seq DESC LIMIT 2 OFFSET 1";
     assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
     assert_eq!(exact.terminal_domains["seq"].admits_null(), Some(false));
 }
+
+
+#[test]
+fn copy_producer_renames_do_not_change_source_ids_or_page_offsets() {
+    let sql = "WITH page AS (SELECT k AS producer_key FROM s ORDER BY producer_key LIMIT 4) \
+SELECT producer_key AS k FROM page ORDER BY k LIMIT 1 OFFSET 2";
+    let values = [Some(1), Some(2), Some(3), Some(4), Some(5)];
+    let (_, duck_output) = source_and_result_from_duckdb(sql, &values);
+    assert_eq!(duck_output, vec![Some(3)]);
+    let (bundle, source) = evaluate(sql, &values);
+    let target = bundle.layers().last().unwrap().id();
+    let proof = physical_finite_composed_page_plan(&bundle, target, &[source]);
+    let PhysicalComposedPageProof::Exact(exact) = proof else {
+        panic!("renamed CTE copy must preserve physical source identity: {proof:?}");
+    };
+    assert_eq!(exact.selected_source_ids, ["s#2"]);
+    assert_eq!(exact.rejected_source_ids, ["s#0", "s#1", "s#3", "s#4"]);
+    assert_eq!(
+        exact.terminal,
+        [BTreeMap::from([
+            ("k".to_string(), LiteralValue::Number("3".to_string()))
+        ])]
+    );
+    assert_eq!(exact.terminal_domains["k"].admits_null(), Some(false));
+}
