@@ -43,7 +43,7 @@ dialect/adapter breadth and conditional release owner.
 
 ## Conditional release dispositions
 
-The six named conditional classes are MINUS, BY NAME, CORRESPONDING,
+The six TASK-120 conditional classes are MINUS, BY NAME, CORRESPONDING,
 mixed-type coercion/collation, local branch LIMIT and ambiguous ORDER ties.
 TASK-120 remains the evidence owner. Each stays Residual/parser-boundary
 until the required typed execution or semantic law is attested. In particular,
@@ -51,10 +51,14 @@ a parser accepting MINUS does not prove its native engine output; a
 non-exact terminal result must not be serialized as the empty set.
 
 Arbitrary joined/grouped branch production is not covered by the portable
-TASK-118 exact source-producer boundary. It must remain Residual unless a
-complete original physical input and terminal bag can be established. This
-is a **conditional coverage boundary**, not certification of its native law.
-TASK-88/89/91 retain the broader vendor, combined-DAG and release checks.
+TASK-118 exact source-producer boundary. Parent freeze v2 now tracks
+`72-PARENT-C-joined-grouped-branch` with explicit unknown terminal domain,
+Residual positive/NOT TRUE evidence and null (not fabricated empty) bags.
+TASK-85 owns the required whole-source producer composition, TASK-89 owns
+integrated execution evidence, and TASK-91 owns any release disposition.
+This **conditional coverage boundary** is not a constructive proof or native
+vendor certification. Cross-feature release approval is not inferred from
+TASK-72 portable signoff.
 
 ## Two-axis review
 
