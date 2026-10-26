@@ -494,10 +494,7 @@ fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
     let actual_adapters: BTreeSet<&str> = adapter_cells.keys().map(String::as_str).collect();
     assert_eq!(actual_adapters, expected_adapters);
     for status in adapter_cells.values() {
-        assert_eq!(
-            status,
-            "typed_Residual_or_explicit_unsupported_if_parsed"
-        );
+        assert_eq!(status, "typed_Residual_or_explicit_unsupported_if_parsed");
     }
 
     let schema = RelationSchema::new(
@@ -505,8 +502,7 @@ fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
         [("id", "VARCHAR"), ("k", "INTEGER"), ("x", "INTEGER")]
             .into_iter()
             .map(|(column, datatype)| {
-                SchemaColumn::from_sql_type(column, datatype, "postgresql")
-                    .expect("source type")
+                SchemaColumn::from_sql_type(column, datatype, "postgresql").expect("source type")
             })
             .collect(),
     )
@@ -565,7 +561,7 @@ fn parent_grouping_function_distinguishes_null_keys_and_fails_closed() {
             Err(error) => assert!(!error.to_string().trim().is_empty()),
             Ok(bundle) => {
                 let target = bundle.layers().last().expect("analyzed target").id();
-                let proof = physical_finite_aggregate_bag_plan(&bundle, target, &[source.clone()]);
+                let proof = physical_finite_aggregate_bag_plan(&bundle, target, std::slice::from_ref(&source));
                 assert!(
                     matches!(proof, PhysicalFiniteAggregateProof::Residual { .. }),
                     "{dialect}: unproven GROUPING semantics promoted to Exact: {proof:?}"
