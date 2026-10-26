@@ -229,5 +229,5 @@
     "No unverified mandatory portable case may be classified as Residual",
     "Release TASK-91 is independent of TASK-73 finite parent signoff"
   ],
-  "status": "parent_original_ac1_to_ac6_reviewed_pending_final_head_ci"
+  "status": "parent_original_ac1_to_ac6_verified_metadata_head_ci_required"
 }

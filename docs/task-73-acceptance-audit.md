@@ -1,6 +1,6 @@
 # TASK-73 independent parent acceptance audit
 
-**State:** Original AC #1..#6 mapped to a finite portable proof floor. Parent status remains In Progress until this PR's final-head CI passes. TASK-91 release approval is independent.
+**State:** Original AC #1..#6 signed off against the frozen portable proof floor after 9/9 implementation-head CI. Final metadata-head CI remains required before merge. TASK-91 release approval is independent.
 
 ## Source of truth
 
@@ -31,4 +31,4 @@ The four grouping extensions are owned by TASK-124. Unknown subtotal/group ident
 
 **Spec axis:** Each original AC has a pinned mandatory case mapping; both positive and rejected cases retain exact physical bags, typed domains and adapter/parser classifications. The seven conditional families are owner-reviewed, non-promoted and distinct from mandatory Exact scope.
 
-Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test`, `cargo doc --no-deps`, no-default-features tests, schema/golden checks and real dbt E2E on the final PR head. Parent Done and checked ACs require all checks green; this PR does not approve TASK-91.
+Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test`, `cargo doc --no-deps`, no-default-features tests, schema/golden checks and real dbt E2E on the final PR head. All nine implementation-head jobs passed in [CI 40404594315](https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315) at `64599c7b10de1361f0a51011d489db1d19023365`. The independent Standards and Spec review found no blocking portable case or unowned conditional law. Parent Done and checked ACs are now recorded; final metadata-head CI remains the merge gate. This PR does not approve TASK-91.

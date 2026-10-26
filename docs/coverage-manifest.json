@@ -39,7 +39,7 @@
   },
   "task_73_parent_acceptance": {
     "owner": "TASK-73",
-    "status": "original_ac_reviewed_pending_final_head_ci",
+    "status": "parent_original_ac1_to_ac6_signed_off_portable_native_vendor_uncertified",
     "task": ".backlog/tasks/task-73 - complete-aggregation-and-grouping-witnesses.md",
     "freeze": "docs/task-73-acceptance-freeze.json",
     "audit": "docs/task-73-acceptance-audit.md",
@@ -74,9 +74,11 @@
     "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
     "parity_oracle": "tests/task_124_aggregate_adapters.rs",
     "dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
-    "remaining_gate": "final-head CI and separate original parent-AC signoff before marking Done"
+    "remaining_gate": "final metadata-head CI required before merging PR #153; TASK-91 separate release authorization",
+    "reviewed_implementation_sha": "64599c7b10de1361f0a51011d489db1d19023365",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40404594315"
   },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",
