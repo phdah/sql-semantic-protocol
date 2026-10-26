@@ -1,4 +1,42 @@
 {
+  "task_72_parent_acceptance": {
+    "owner": "TASK-72",
+    "status": "portable_parent_original_ac1_to_ac6_signed_off_native_runtime_uncertified",
+    "task": ".backlog/tasks/task-72 - complete-set-operation-witnesses.md",
+    "freeze": "docs/task-72-acceptance-freeze.json",
+    "audit": "docs/task-72-acceptance-audit.md",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "children": [
+      "TASK-117",
+      "TASK-118",
+      "TASK-119",
+      "TASK-120"
+    ],
+    "mandatory_cases": 21,
+    "reviewed_child_conditional_cases": 6,
+    "explicit_cross_feature_conditional_cases": 1,
+    "mandatory_parser_cells": 273,
+    "mandatory_adapter_cells": 63,
+    "tests": [
+      "tests/task_72_parent_closure.rs",
+      "tests/task_120_parent_set_matrix.rs",
+      "tests/task_120_set_adapters.rs"
+    ],
+    "native_oracle": "DuckDB",
+    "parent_signed_off": true,
+    "release_approved": false,
+    "conditional_owner": "TASK-120 plus TASK-85 for joined/grouped producer composition",
+    "remaining_gate": "metadata closure commit must pass final-head CI before PR merge; TASK-91 retains release authorization",
+    "reviewed_implementation_sha": "09c5d1f6ff7af73f4e71b87460dfa5249d246d30",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40386781099"
+  },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",
     "parent": "TASK-76",
