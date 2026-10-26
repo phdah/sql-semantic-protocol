@@ -151,3 +151,18 @@ fn absent_output_of_composed_set_pages_is_impossible_not_residual() {
         PhysicalFiniteSetTreeProof::Exact(_)
     ));
 }
+
+#[test]
+fn filtered_branch_page_cannot_apply_limit_before_where() {
+    // The first branch's WHERE eliminates low keys before its LIMIT.
+    // A physical plan that pages the whole source first would be unsound.
+    let sql = "(SELECT k FROM s WHERE k > 2 ORDER BY k LIMIT 1) UNION ALL (SELECT k FROM s WHERE k = 1)";
+    let values = [Some(1), Some(2), Some(3), Some(4), Some(5)];
+    assert_eq!(native(sql, &values).1.len(), 2);
+    let analyzed = bundle(sql);
+    let layer = analyzed.layers().last().unwrap().id();
+    assert!(matches!(
+        physical_finite_set_tree_plan(&analyzed, layer, &[state(&values)]),
+        PhysicalFiniteSetTreeProof::Residual { .. }
+    ));
+}
