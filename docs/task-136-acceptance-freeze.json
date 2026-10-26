@@ -2,7 +2,7 @@
   "task": "TASK-136",
   "parent": "TASK-76",
   "version": 3,
-  "status": "reviewed_expanded_frozen_matrix_pending_final_ci",
+  "status": "verified_child_acceptance_pending_merge",
   "fixture_ids": [
     "76-C136-P",
     "76-C136-N"
@@ -167,19 +167,19 @@
           "source": "direct_sql",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -381,19 +381,19 @@
           "source": "direct_sql",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -585,19 +585,19 @@
           "source": "direct_sql",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -805,19 +805,19 @@
           "source": "direct_sql",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1025,19 +1025,19 @@
           "source": "direct_sql",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_exact_full_bag",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1230,19 +1230,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1414,19 +1414,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1598,19 +1598,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1782,19 +1782,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -1966,19 +1966,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -2150,19 +2150,19 @@
           "source": "direct_sql",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "compiled_dbt",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         },
         {
           "source": "odcs",
           "expected": "canonical_residual",
           "verification": "tests/task_136_adapter_parity.rs",
-          "status": "frozen_expected_pending_ci"
+          "status": "verified"
         }
       ],
       "output_column": "k",
@@ -2202,7 +2202,7 @@
     }
   ],
   "conditional_native_execution": "unverified; no vendor/session engine certification asserted",
-  "signed_off": false,
+  "signed_off": true,
   "dialect_obligations": 143,
   "adapter_obligations": 33,
   "parser_baseline": "All 10 frozen SQL spellings parsed in all 13 exposed sqlparser dialects; observed in GitHub CI run 40358327924; native engine semantics unverified",
@@ -2213,5 +2213,13 @@
     "SAMPLE SEED(7)",
     "TABLESAMPLE SYSTEM",
     "TABLESAMPLE BERNOULLI REPEATABLE(7)"
-  ]
+  ],
+  "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40361928399",
+  "ci_implementation_head": "82d9842d8d77be813ca7f44e680d07a05dac0702",
+  "mandatory_exact_cases_verified": 5,
+  "conditional_residual_cases_reviewed": 6,
+  "parser_cells_verified": 143,
+  "adapter_cells_verified": 33,
+  "native_vendor_release_approved": false,
+  "parent_signed_off": false
 }
