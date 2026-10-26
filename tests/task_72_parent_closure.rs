@@ -98,7 +98,24 @@ fn task_72_parent_mandatory_bags_keep_complete_exact_oracles() {
             case["source_bags"].is_object(),
             "missing complete physical bag"
         );
-        assert!(case["canonical_source_instances"].is_object());
+        let declared: BTreeSet<_> = case["source_bags"]
+            .as_object()
+            .expect("complete source bags")
+            .keys()
+            .map(String::as_str)
+            .collect();
+        let sources = &case["canonical_source_instances"];
+        let instances: BTreeSet<_> = if let Some(mapping) = sources.as_object() {
+            mapping.keys().map(String::as_str).collect()
+        } else {
+            sources
+                .as_array()
+                .expect("canonical source identities")
+                .iter()
+                .map(|value| value.as_str().expect("source identity"))
+                .collect()
+        };
+        assert_eq!(instances, declared, "physical source instance mismatch");
         assert!(case["expected_terminal_tuple_histogram"].is_array());
         assert!(case["typed_terminal_domains"].is_array());
         assert!(nonempty_string(&case["positive_proof"]));
