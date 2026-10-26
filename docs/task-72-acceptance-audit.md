@@ -1,7 +1,8 @@
 # TASK-72 original-parent acceptance audit
 
-**State:** parent review in progress; original AC #1..#6 remain unchecked until
-final-head CI and independent review. TASK-91 is a separate release gate.
+**State:** TASK-72 original AC #1..#6 signed off for frozen portable semantics;
+release-gated native/vendor and cross-feature conditional laws remain
+uncertified. TASK-91 is a separate release gate.
 
 ## Source of truth
 
@@ -82,3 +83,20 @@ schema/golden regressions; and `make dbt-e2e`. Review that all 21
 mandatory cases, 273 parser cases and 63 adapter cases still execute.
 Only then mark TASK-72 AC #1..#6 complete and proceed to downstream
 dependency queues. No release approval is implied.
+
+## Final original-parent signoff
+
+The independent TASK-72 standards and specification review finds zero open
+mandatory portable cells and zero unowned conditional boundary cells.
+Version 2 of the parent freeze additionally names the cross-feature
+joined/grouped producer as an explicitly unproved physical source/terminal
+obligation owned by TASK-85/TASK-89. It is not a false zero-row or Exact
+claim. Original AC #1..#6 are signed off under their finite release contract,
+not as universal native engine or combined-DAG certification.
+
+[CI run 40386781099](https://github.com/phdah/sql-semantic-protocol/actions/runs/40386781099)
+passed **all 9/9 checks** on implementation head
+`09c5d1f6ff7af73f4e71b87460dfa5249d246d30`:
+strict formatting/lint, full default/no-default Rust suites, docs,
+no-default dependency guard and dbt Core E2E. This final metadata-only
+signoff commit requires a separate green final-head CI before merging.

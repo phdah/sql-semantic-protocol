@@ -1,7 +1,7 @@
 ---
 id: TASK-72
 title: Prove full set-operation trees with aligned values and bags
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-26'
@@ -33,12 +33,12 @@ Existing set witness proof is narrow and optional cardinality construction handl
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Cover UNION/INTERSECT/EXCEPT DISTINCT and ALL, dialect MINUS, nested/chained multi-branch trees, multiple columns, NULL tuple equality, duplicates and compatible mixed types.
-- [ ] #2 Model positional and dialect-supported CORRESPONDING/BY NAME alignment, aliases, coercions, overlapping/disjoint values, branch-local filters/joins/groups/limits and shared physical sources.
-- [ ] #3 Prove both membership directions and exact tuple frequencies at physical sources through producer layers, not independent intermediate inserts.
-- [ ] #4 Respect set-level and branch-level ORDER/LIMIT/FETCH and value/collation compatibility; downgrade only specific unsupported dialect variants.
-- [ ] #5 Test executable entire tree results, impossible counts, NULLs, shared sources, multi-column histograms, and dbt set model fixtures.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Cover UNION/INTERSECT/EXCEPT DISTINCT and ALL, dialect MINUS, nested/chained multi-branch trees, multiple columns, NULL tuple equality, duplicates and compatible mixed types.
+- [x] #2 Model positional and dialect-supported CORRESPONDING/BY NAME alignment, aliases, coercions, overlapping/disjoint values, branch-local filters/joins/groups/limits and shared physical sources.
+- [x] #3 Prove both membership directions and exact tuple frequencies at physical sources through producer layers, not independent intermediate inserts.
+- [x] #4 Respect set-level and branch-level ORDER/LIMIT/FETCH and value/collation compatibility; downgrade only specific unsupported dialect variants.
+- [x] #5 Test executable entire tree results, impossible counts, NULLs, shared sources, multi-column histograms, and dbt set model fixtures.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -79,6 +79,20 @@ TASK-117..120 public integration tests own independent DuckDB source/terminal
 bags, 13 parser identities and SQL/dbt/ODCS parity. No physical semantics or
 consumer contract are changed by this acceptance review.
 
-**Pending:** green CI on the final parent PR head and independent review of the
-original acceptance criteria and conditional release dispositions. Do not check
-AC #1..#6 or mark TASK-72 Done before those gates pass. TASK-91 remains separate.
+**Verified:** original AC #1..#6 are signed off for the frozen portable
+physical set semantics. Final implementation-head CI [40386781099](https://github.com/phdah/sql-semantic-protocol/actions/runs/40386781099) passed all 9 jobs on `09c5d1f6`, including all child oracles, default/no-default full tests, docs,
+strict lint and dbt E2E. Parent-only joined/grouped producer and six vendor
+boundary cases retain explicit conditional owners. Native/vendor execution and
+TASK-91 release approval remain independent. Final metadata-head CI is a merge gate.
+
+## Final Summary
+
+TASK-72 original AC #1..#6 are independently verified against merged
+TASK-117..120 evidence and the task-owned parent freeze v2. The mandatory
+portable full-physical-bag matrix has 21 Exact cases, 273 parser-equivalence
+cells and 63 adapter parity cells with independent DuckDB/dbt evidence.
+Six vendor/row-shaping boundaries and a nontrivial joined/grouped branch
+boundary remain typed conditional under TASK-120 and TASK-85, with no
+invented native runtime exactness. The last semantic/test CI head passed
+all nine required checks; the metadata closure head must pass before merge.
+TASK-91 and cross-feature release approval remain open.

@@ -150,7 +150,7 @@
     "TASK-91 release authorization is independent",
     "nontrivial joined/grouped branch physical semantics remain conditional under TASK-85/TASK-89, not exact under TASK-72"
   ],
-  "status": "parent_review_pending_fresh_pr_ci",
+  "status": "portable_parent_original_ac1_to_ac6_verified_metadata_head_ci_required",
   "parent_only_conditional": [
     {
       "id": "72-PARENT-C-joined-grouped-branch",

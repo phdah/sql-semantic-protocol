@@ -1,7 +1,7 @@
 {
   "task_72_parent_acceptance": {
     "owner": "TASK-72",
-    "status": "independent_parent_audit_pending_final_head_ci",
+    "status": "portable_parent_original_ac1_to_ac6_signed_off_native_runtime_uncertified",
     "task": ".backlog/tasks/task-72 - complete-set-operation-witnesses.md",
     "freeze": "docs/task-72-acceptance-freeze.json",
     "audit": "docs/task-72-acceptance-audit.md",
@@ -30,10 +30,12 @@
       "tests/task_120_set_adapters.rs"
     ],
     "native_oracle": "DuckDB",
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "conditional_owner": "TASK-120 plus TASK-85 for joined/grouped producer composition",
-    "remaining_gate": "final PR-head checks and independent review; TASK-91 release gate remains open"
+    "remaining_gate": "metadata closure commit must pass final-head CI before PR merge; TASK-91 retains release authorization",
+    "reviewed_implementation_sha": "09c5d1f6ff7af73f4e71b87460dfa5249d246d30",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40386781099"
   },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",
