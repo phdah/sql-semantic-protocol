@@ -1,7 +1,7 @@
 ---
 id: TASK-136
 title: Classify sampling and certify TASK-76 dialect/oracle matrix
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-26'
@@ -33,16 +33,16 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
-- [ ] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
-- [ ] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
-- [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-136; no claim of native engine execution without an executable oracle.
-- [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-76 parent open.
+- [x] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
+- [x] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
+- [x] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
+- [x] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-136; no claim of native engine execution without an executable oracle.
+- [x] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-76 parent open.
 <!-- AC:END -->
 
 ## Implementation evidence
 
-The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) defines five mandatory deterministic full-bag cases and six conditional sampling/ordering cases. All 143 sqlparser dialect spellings were independently observed in CI; `tests/task_136_dialect_matrix.rs` enforces the exact-versus-residual physical classification. `tests/task_136_frozen_matrix.rs` checks complete independent DuckDB source/terminal bags, row identities, typed domains and requested Impossible outcomes. `tests/task_136_adapter_parity.rs` checks all 33 SQL/dbt/ODCS cells, while `tests/task_136_dbt_core_e2e.rs` executes the compiled dbt model in DuckDB. Final implementation CI and independent signoff are required before checking the acceptance criteria.
+The versioned [TASK-136 acceptance inventory](../../docs/task-136-acceptance-freeze.json) defines five mandatory deterministic full-bag cases and six conditional sampling/ordering cases. All 143 sqlparser dialect spellings were independently observed in CI; `tests/task_136_dialect_matrix.rs` enforces the exact-versus-residual physical classification. `tests/task_136_frozen_matrix.rs` checks complete independent DuckDB source/terminal bags, row identities, typed domains and requested Impossible outcomes. `tests/task_136_adapter_parity.rs` checks all 33 SQL/dbt/ODCS cells, while `tests/task_136_dbt_core_e2e.rs` executes the compiled dbt model in DuckDB. The independent spec and repository-standards review verified every frozen mandatory case and reviewed the six conditional laws. Final implementation CI [40361928399](https://github.com/phdah/sql-semantic-protocol/actions/runs/40361928399) passed all 9 checks on head `82d9842d8d77be813ca7f44e680d07a05dac0702`: formatting, strict default and no-default Clippy, full Rust tests, Rust docs, dependency guard and real dbt Core E2E. All five child acceptance criteria are signed off. TASK-76 remains open for independent original-parent AC certification, and the final metadata-only PR head is subject to its own merge gate.
 
 ## Next
 
