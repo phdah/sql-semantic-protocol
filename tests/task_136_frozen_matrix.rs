@@ -52,27 +52,61 @@ fn native_bag(case: &Value) {
     db.execute_batch("CREATE TABLE s (k INTEGER)").unwrap();
     for entry in case["source"].as_array().unwrap() {
         let scalar = entry.as_i64().map_or("NULL".to_string(), |v| v.to_string());
-        db.execute_batch(&format!("INSERT INTO s VALUES ({scalar})")).unwrap();
+        db.execute_batch(&format!("INSERT INTO s VALUES ({scalar})"))
+            .unwrap();
     }
-    let observed = db.prepare("SELECT k FROM s").unwrap()
-        .query_map([], |row| row.get::<_,Option<i64>>(0)).unwrap()
-        .collect::<Result<Vec<_>,_>>().unwrap();
+    let observed = db
+        .prepare("SELECT k FROM s")
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     let mut observed = observed;
-    let mut expected = case["source"].as_array().unwrap().iter().map(Value::as_i64).collect::<Vec<_>>();
+    let mut expected = case["source"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(Value::as_i64)
+        .collect::<Vec<_>>();
     observed.sort();
     expected.sort();
-    assert_eq!(observed, expected, "{}: complete physical source", case["id"]);
+    assert_eq!(
+        observed, expected,
+        "{}: complete physical source",
+        case["id"]
+    );
 
     // SQL Server TOP is compared with a verified DuckDB-equivalent ordered LIMIT.
-    let sql = case["native_oracle_sql"].as_str().unwrap_or(case["sql"].as_str().unwrap());
-    let terminal = db.prepare(sql).unwrap()
-        .query_map([], |row| row.get::<_,Option<i64>>(0)).unwrap()
-        .collect::<Result<Vec<_>,_>>().unwrap();
-    let expected = case["output"].as_array().unwrap().iter().map(Value::as_i64).collect::<Vec<_>>();
-    assert_eq!(terminal, expected, "{}: native complete terminal", case["id"]);
+    let sql = case["native_oracle_sql"]
+        .as_str()
+        .unwrap_or(case["sql"].as_str().unwrap());
+    let terminal = db
+        .prepare(sql)
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    let expected = case["output"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(Value::as_i64)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        terminal, expected,
+        "{}: native complete terminal",
+        case["id"]
+    );
 }
 fn ids(items: &Value) -> Vec<String> {
-    items.as_array().unwrap().iter().map(|item| item.as_str().unwrap().to_string()).collect()
+    items
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item.as_str().unwrap().to_string())
+        .collect()
 }
 fn emitted_bag(exact: &sql_semantic_protocol::PhysicalFinitePageExact) -> Vec<LiteralValue> {
     exact.terminal.iter().map(|row| row["k"].clone()).collect()
@@ -100,9 +134,13 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         let analyzed = bundle(case, dialect);
         let target = analyzed.layers().last().unwrap().id();
         let physical = state(case);
-        let actual = physical_finite_page_bag_plan(&analyzed, target, std::slice::from_ref(&physical));
+        let actual =
+            physical_finite_page_bag_plan(&analyzed, target, std::slice::from_ref(&physical));
         let PhysicalFinitePageProof::Exact(exact) = actual else {
-            panic!("{}: expected exact physical outcome, got {actual:?}",case["id"]);
+            panic!(
+                "{}: expected exact physical outcome, got {actual:?}",
+                case["id"]
+            );
         };
         assert_eq!(exact.source, "s");
         assert_eq!(exact.rows.len(), case["source"].as_array().unwrap().len());
@@ -146,25 +184,67 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         if case["output"].as_array().unwrap().is_empty() {
             assert!(matches!(domain, ValueDomain::Empty), "{domain:?}");
         } else {
-            let ValueDomain::Set(set) = domain else { panic!("not finite strongest domain: {domain:?}"); };
+            let ValueDomain::Set(set) = domain else {
+                panic!("not finite strongest domain: {domain:?}");
+            };
             assert_eq!(set.mode(), SetMode::Include);
-            let mut got = set.values().iter().map(|item| format!("{:?}",item.value())).collect::<Vec<_>>();
-            let mut want = case["output"].as_array().unwrap().iter().map(value).map(|x| format!("{x:?}")).collect::<Vec<_>>();
-            got.sort();want.sort();want.dedup();
-            assert_eq!(got,want, "typed exact output set");
+            let mut got = set
+                .values()
+                .iter()
+                .map(|item| format!("{:?}", item.value()))
+                .collect::<Vec<_>>();
+            let mut want = case["output"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(value)
+                .map(|x| format!("{x:?}"))
+                .collect::<Vec<_>>();
+            got.sort();
+            want.sort();
+            want.dedup();
+            assert_eq!(got, want, "typed exact output set");
             assert_eq!(domain.admits_null(), values["nullable"].as_bool());
-            let nonnull = case["output"].as_array().unwrap().iter().filter_map(Value::as_i64).collect::<Vec<_>>();
+            let nonnull = case["output"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter_map(Value::as_i64)
+                .collect::<Vec<_>>();
             let min = *nonnull.iter().min().unwrap();
             let max = *nonnull.iter().max().unwrap();
-            assert_eq!(values["lower"],min);assert_eq!(values["upper"],max);
-            assert_eq!(values["inclusive"],true);
+            assert_eq!(values["lower"], min);
+            assert_eq!(values["upper"], max);
+            assert_eq!(values["inclusive"], true);
         }
-        let missing = BTreeMap::from([("k".to_string(),LiteralValue::Number("999".to_string()))]);
-        assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,std::slice::from_ref(&physical),&missing),
-            PhysicalFinitePageProof::Impossible { .. }), "{}: negative membership must be impossible",case["id"]);
+        let missing = BTreeMap::from([("k".to_string(), LiteralValue::Number("999".to_string()))]);
+        assert!(
+            matches!(
+                physical_finite_page_membership_plan(
+                    &analyzed,
+                    target,
+                    std::slice::from_ref(&physical),
+                    &missing
+                ),
+                PhysicalFinitePageProof::Impossible { .. }
+            ),
+            "{}: negative membership must be impossible",
+            case["id"]
+        );
         if let Some(first) = exact.terminal.first() {
-            assert!(matches!(physical_finite_page_membership_plan(&analyzed,target,std::slice::from_ref(&physical),first),
-                PhysicalFinitePageProof::Exact(_)), "{}: positive membership should be exact",case["id"]);
+            assert!(
+                matches!(
+                    physical_finite_page_membership_plan(
+                        &analyzed,
+                        target,
+                        std::slice::from_ref(&physical),
+                        first
+                    ),
+                    PhysicalFinitePageProof::Exact(_)
+                ),
+                "{}: positive membership should be exact",
+                case["id"]
+            );
         }
         let wire: Value = serde_json::from_str(&to_bundle_json(&analyzed)).unwrap();
         assert!(wire["inputs"][0]["statements"][0]["row_shaping"].is_object());
