@@ -87,6 +87,12 @@ pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
     if let Some(shape) = operation.row_shaping() {
         value["row_shaping"] = row_shaping_to_value(shape);
     }
+    for (index, branch) in operation.branches().iter().enumerate() {
+        if let Some(shape) = branch.row_shaping() {
+            value["membership"]["branches"][index]["row_shaping"] =
+                row_shaping_to_value(shape);
+        }
+    }
     value
 }
 
