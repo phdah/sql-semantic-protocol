@@ -180,5 +180,5 @@ fn sampling_and_deterministic_page_fact_parity_from_all_three_evidence_sources()
         assert_eq!(comparable[0], comparable[1], "direct/ODCS parity: {sql}");
         assert_eq!(comparable[0], comparable[2], "direct/dbt parity: {sql}");
     }
-    assert_eq!(total, 30);
+    assert_eq!(total, 33);
 }
