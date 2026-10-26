@@ -4780,7 +4780,11 @@
         },
         "empty_input_preserving": {
           "type": "boolean",
-          "description": "A single-source direct read or row filter whose empty input cannot create output rows."
+          "description": "A single-source direct read, row filter or certified branch-local page whose empty input cannot create output rows."
+        },
+        "row_shaping": {
+          "description": "Branch-local ORDER BY and LIMIT/FETCH; evaluated before the enclosing set operation.",
+          "$ref": "#/$defs/setOperation/properties/row_shaping"
         }
       }
     },
