@@ -79,11 +79,19 @@ NULL/tie defaults never claim exact row identity. SQL, dbt and ODCS reuse
 the same canonical proof. Original TASK-76 criteria #1..#6 remain
 a separate parent audit, not automatically signed by this child.
 
-## Final-head gate
+## Final-head verification and independent signoff
 
-Before marking the five TASK-136 AC Done, confirm final-head
-`cargo fmt --check`, strict all-features/no-default-features Clippy,
-full Rust tests/no-default tests, `cargo doc --no-deps`, real dbt
-seed/run/docs E2E, active schema/golden and every mandatory fixture.
-Record the final CI URL and head SHA. The child and parent remain open
-until that independent verification is complete.
+- Frozen mandatory, conditional, dialect, adapter, typed-domain, rejected/Impossible
+  and complete native DuckDB cases were reviewed through their public tests.
+- [GitHub CI 40361928399](https://github.com/phdah/sql-semantic-protocol/actions/runs/40361928399)
+  on implementation head `82d9842d8d77be813ca7f44e680d07a05dac0702`: **9 of 9 checks passed**.
+- Rust formatting, strict default/no-default Clippy, full/no-default Rust test
+  suites, documentation, no-default dependency guard and real dbt Core
+  seed/run/docs E2E are all green.
+- **TASK-136 AC #1..#5: independently signed off.** This is the bounded child
+  acceptance, not native-vendor stochastic certification. Six conditional
+  laws stay typed Residual with owner TASK-136 and pending vendor disposition.
+- **TASK-76 original AC #1..#6: open.** The parent remains pending a separate
+  review after this PR is merged. Release TASK-91 is separately held.
+- Final metadata-only signoff commit CI is a merge gate. No automatic release
+  or parent signoff is implied by marking TASK-136 Done.
