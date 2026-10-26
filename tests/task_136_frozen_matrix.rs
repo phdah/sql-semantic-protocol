@@ -4,8 +4,8 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_page_bag_plan,
     physical_finite_page_membership_plan, to_bundle_json, ConfiguredSqlInput, LiteralValue,
-    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
+    PhysicalFinitePageProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema,
+    SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 
@@ -13,22 +13,38 @@ fn freeze() -> Value {
     serde_json::from_str(include_str!("../docs/task-136-acceptance-freeze.json")).unwrap()
 }
 fn value(v: &Value) -> LiteralValue {
-    v.as_i64().map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
+    v.as_i64()
+        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
 }
 fn state(case: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new("s", case["source"].as_array().unwrap().iter().map(|v| {
-        PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), value(v))])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        "s",
+        case["source"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), value(v))])).unwrap())
+            .collect(),
+    )
+    .unwrap()
 }
 fn catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[RelationSchema::new("s", vec![
-        SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()
-    ]).unwrap()]).unwrap()
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        "s",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
+    .unwrap()
 }
 fn bundle(case: &Value, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
     let parser = dialect_from_name(dialect).unwrap();
     let input = SqlInput::inline(case["sql"].as_str().unwrap());
-    let configured = [ConfiguredSqlInput::new(case["id"].as_str().unwrap(), &input, dialect, parser.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        case["id"].as_str().unwrap(),
+        &input,
+        dialect,
+        parser.as_ref(),
+    )];
     analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap()
 }
 fn native_bag(case: &Value) {
@@ -65,13 +81,22 @@ fn emitted_bag(exact: &sql_semantic_protocol::PhysicalFinitePageExact) -> Vec<Li
 #[test]
 fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_directions() {
     let frozen = freeze();
-    assert_eq!(frozen["fixture_ids"], serde_json::json!(["76-C136-P", "76-C136-N"]));
+    assert_eq!(
+        frozen["fixture_ids"],
+        serde_json::json!(["76-C136-P", "76-C136-N"])
+    );
     let mut checked = 0;
     for case in frozen["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory" { continue; }
+        if case["classification"] != "mandatory" {
+            continue;
+        }
         checked += 1;
         native_bag(case);
-        let dialect = if case["id"] == "76-C136-P-top" { "mssql" } else { "duckdb" };
+        let dialect = if case["id"] == "76-C136-P-top" {
+            "mssql"
+        } else {
+            "duckdb"
+        };
         let analyzed = bundle(case, dialect);
         let target = analyzed.layers().last().unwrap().id();
         let physical = state(case);
@@ -81,10 +106,41 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         };
         assert_eq!(exact.source, "s");
         assert_eq!(exact.rows.len(), case["source"].as_array().unwrap().len());
-        assert_eq!(exact.rows.iter().map(|row| row.source_row_id.clone()).collect::<Vec<_>>(), ids(&case["physical_source_row_ids"]));
-        assert_eq!(exact.rows.iter().filter(|row| row.survives).map(|row| row.source_row_id.clone()).collect::<Vec<_>>(), ids(&case["selected"]));
-        assert_eq!(exact.rows.iter().filter(|row| !row.survives).map(|row| row.source_row_id.clone()).collect::<Vec<_>>(), ids(&case["rejected"]));
-        assert_eq!(emitted_bag(&exact), case["output"].as_array().unwrap().iter().map(value).collect::<Vec<_>>());
+        assert_eq!(
+            exact
+                .rows
+                .iter()
+                .map(|row| row.source_row_id.clone())
+                .collect::<Vec<_>>(),
+            ids(&case["physical_source_row_ids"])
+        );
+        assert_eq!(
+            exact
+                .rows
+                .iter()
+                .filter(|row| row.survives)
+                .map(|row| row.source_row_id.clone())
+                .collect::<Vec<_>>(),
+            ids(&case["selected"])
+        );
+        assert_eq!(
+            exact
+                .rows
+                .iter()
+                .filter(|row| !row.survives)
+                .map(|row| row.source_row_id.clone())
+                .collect::<Vec<_>>(),
+            ids(&case["rejected"])
+        );
+        assert_eq!(
+            emitted_bag(&exact),
+            case["output"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(value)
+                .collect::<Vec<_>>()
+        );
         let domain = &exact.terminal_domains["k"];
         let values = &case["domain"]["k"];
         if case["output"].as_array().unwrap().is_empty() {
@@ -114,7 +170,7 @@ fn mandatory_frozen_cases_prove_full_physical_bags_domains_and_both_membership_d
         assert!(wire["inputs"][0]["statements"][0]["row_shaping"].is_object());
         assert_eq!(wire["protocol_version"], env!("CARGO_PKG_VERSION"));
     }
-    assert_eq!(checked,5);
+    assert_eq!(checked, 5);
 }
 
 #[test]
@@ -122,22 +178,41 @@ fn conditional_frozen_cases_do_not_overclaim_complete_row_membership() {
     let frozen = freeze();
     let mut checked = 0;
     for case in frozen["cases"].as_array().unwrap() {
-        if case["classification"] != "conditional" { continue; }
+        if case["classification"] != "conditional" {
+            continue;
+        }
         checked += 1;
-        assert_eq!(case["owner"],"TASK-136");
-        assert!(case["disposition"].as_str().unwrap().contains("Residual")
-            || case["disposition"].as_str().unwrap().contains("parser boundary"));
+        assert_eq!(case["owner"], "TASK-136");
+        assert!(
+            case["disposition"].as_str().unwrap().contains("Residual")
+                || case["disposition"]
+                    .as_str()
+                    .unwrap()
+                    .contains("parser boundary")
+        );
         // All five conditional cases must carry an explicit unproved membership boundary.
-        let dialect = if case["id"] == "76-C136-N-sample" { "snowflake" } else { "generic" };
+        let dialect = if case["id"] == "76-C136-N-sample" {
+            "snowflake"
+        } else {
+            "generic"
+        };
         let parser = dialect_from_name(dialect).unwrap();
         let input = SqlInput::inline(case["sql"].as_str().unwrap());
-        let configured = [ConfiguredSqlInput::new("TASK-136",&input,dialect,parser.as_ref())];
-        if let Ok(bundle) = analyze_configured_inputs_with_catalog(&configured,&catalog()) {
+        let configured = [ConfiguredSqlInput::new(
+            "TASK-136",
+            &input,
+            dialect,
+            parser.as_ref(),
+        )];
+        if let Ok(bundle) = analyze_configured_inputs_with_catalog(&configured, &catalog()) {
             let target = bundle.layers().last().unwrap().id();
-            let result = physical_finite_page_bag_plan(&bundle,target,&[state(case)]);
-            assert!(matches!(result,PhysicalFinitePageProof::Residual { .. }),
-                "{}: conditional not Residual: {result:?}",case["id"]);
+            let result = physical_finite_page_bag_plan(&bundle, target, &[state(case)]);
+            assert!(
+                matches!(result, PhysicalFinitePageProof::Residual { .. }),
+                "{}: conditional not Residual: {result:?}",
+                case["id"]
+            );
         }
     }
-    assert_eq!(checked,5);
+    assert_eq!(checked, 5);
 }
