@@ -160,7 +160,10 @@ fn duckdb_output(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
                     } else {
                         format!(
                             "'{}'",
-                            value.as_str().expect("physical identity").replace('\'', "''")
+                            value
+                                .as_str()
+                                .expect("physical identity")
+                                .replace('\'', "''")
                         )
                     }
                 })
@@ -208,7 +211,10 @@ fn original_ac2_exact_three_source_projected_group_oracles() {
     let parent = parent();
     let evidence = &parent["upstream_composition"];
     assert_eq!(evidence["owner"], "TASK-115");
-    assert_eq!(evidence["source_of_truth"], "docs/task-115-acceptance-freeze.json");
+    assert_eq!(
+        evidence["source_of_truth"],
+        "docs/task-115-acceptance-freeze.json"
+    );
     assert_eq!(evidence["mandatory_dialect_cells"], 26);
     assert_eq!(evidence["mandatory_adapter_cells"], 6);
     assert_eq!(evidence["native_engine"], "duckdb");
@@ -289,9 +295,18 @@ fn original_ac2_exact_three_source_projected_group_oracles() {
             let mut rejected = exact.rejected.clone();
             selected.sort();
             rejected.sort();
-            assert_eq!(selected, expected_selected, "{case_id}/{dialect}: TRUE triples");
-            assert_eq!(rejected, expected_rejected, "{case_id}/{dialect}: NOT TRUE triples");
-            assert_eq!(exact.terminal, expected, "{case_id}/{dialect}: complete output");
+            assert_eq!(
+                selected, expected_selected,
+                "{case_id}/{dialect}: TRUE triples"
+            );
+            assert_eq!(
+                rejected, expected_rejected,
+                "{case_id}/{dialect}: NOT TRUE triples"
+            );
+            assert_eq!(
+                exact.terminal, expected,
+                "{case_id}/{dialect}: complete output"
+            );
             let mut expected_counts = BTreeMap::<i128, usize>::new();
             for source in &expected_selected {
                 let key = case["physical_source_bags"]["l"]
@@ -336,7 +351,11 @@ fn original_ac2_exact_three_source_projected_group_oracles() {
                     }
                     _ => None,
                 };
-                assert_eq!(domain.bounds(), bounds, "{case_id}/{dialect}: inclusive bounds");
+                assert_eq!(
+                    domain.bounds(),
+                    bounds,
+                    "{case_id}/{dialect}: inclusive bounds"
+                );
             }
         }
         assert_eq!(
