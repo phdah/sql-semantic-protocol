@@ -45,12 +45,14 @@ fn state(relation: &str, rows: &[(i64, i64)]) -> PhysicalWriteState {
     .unwrap()
 }
 
+type CteWitness<'a> = (&'a str, &'a [(i64, i64)], &'a str);
+
 fn check_full_bags(
     sql: &str,
     source: &[(i64, i64)],
     prior: &[(i64, i64)],
     expected: &[(i64, i64)],
-    cte_witness: Option<(&str, &[(i64, i64)], &str)>,
+    cte_witness: Option<CteWitness<'_>>,
 ) {
     let bundle = analysis(sql);
     let initial = [state("source", source), state("target", prior)];
