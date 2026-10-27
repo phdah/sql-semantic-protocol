@@ -12,8 +12,7 @@ fn filtered_qualify_matches_across_direct_dbt_and_odcs_adapters() {
     use std::collections::BTreeMap;
 
     let freeze: Value =
-        serde_json::from_str(include_str!("../docs/task-74-filtered-qualify-freeze.json"))
-            .unwrap();
+        serde_json::from_str(include_str!("../docs/task-74-filtered-qualify-freeze.json")).unwrap();
     let dialect = "postgresql";
     let parser = dialect_from_name(dialect).unwrap();
     let relation = "warehouse.raw.s";
@@ -41,12 +40,22 @@ fn filtered_qualify_matches_across_direct_dbt_and_odcs_adapters() {
             .replace("FROM s WHERE", "FROM warehouse.raw.s AS s WHERE");
         let input = SqlInput::inline(&sql);
         let direct = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                dialect,
+                parser.as_ref(),
+            )],
             &direct_catalog,
         )
         .unwrap();
         let odcs = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, &input, dialect, parser.as_ref())],
+            &[ConfiguredSqlInput::new(
+                id,
+                &input,
+                dialect,
+                parser.as_ref(),
+            )],
             &odcs_catalog,
         )
         .unwrap();
