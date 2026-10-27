@@ -13303,7 +13303,7 @@
   "task_146_insert_select_cte_acceptance": {
     "owner": "TASK-146",
     "parent": "TASK-80",
-    "state": "expanded_frozen_oracles_pending_final_execution",
+    "state": "child_task_acceptance_signed_off_portable_native_vendor_execution_uncertified",
     "freeze": "docs/task-146-acceptance-freeze.json",
     "fixture_ids": [
       "80-C146-P",
@@ -13313,7 +13313,7 @@
     "conditional_cases": 3,
     "parser_cells_required": 195,
     "adapter_cells_required": 45,
-    "mandatory_verified": 0,
+    "mandatory_verified": 12,
     "parent_signed_off": false,
     "release_approved": false,
     "freeze_version": 3,
@@ -13334,6 +13334,24 @@
     "conditional_fk_violation": "Residual: immediate FK enforcement/deferral not attested; independent native DuckDB rejects",
     "vendor_parser_cells_required": 52,
     "conditional_scope_boundaries": 4,
-    "parser_cells_observed": 195
+    "parser_cells_observed": 195,
+    "mandatory_exact_verified": 10,
+    "mandatory_impossible_verified": 2,
+    "conditional_residual_reviewed": 3,
+    "parser_cells_verified": 195,
+    "adapter_cells_verified": 45,
+    "vendor_parser_cells_verified": 52,
+    "conditional_scope_boundaries_reviewed": 4,
+    "child_signed_off": true,
+    "verified_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "final_code_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597",
+    "final_code_ci_sha": "8a5095a91ea2664d2983421c7ba4ecef5ea1036c",
+    "final_metadata_ci_gate": "Final metadata-only PR head must pass all required CI before merge"
   }
 }

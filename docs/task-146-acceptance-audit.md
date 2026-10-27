@@ -7,10 +7,7 @@ release gate TASK-91 are independent and remain unsigned.
 
 ## Acceptance inventory
 
-The immutable preimplementation v1 and expanded v2 inventories are preserved by Git history;
-explicit v3 positional-swapping oracles distinguish SQL output position
-from source column name even when their values differ;
-`docs/task-146-acceptance-freeze.json` v3 extends it with the previously
+The immutable preimplementation v1 and expanded v2 inventories are preserved by Git history. Explicit v3 positional-swapping oracles distinguish SQL output position from source column name even when their values differ. `docs/task-146-acceptance-freeze.json` v3 includes with the previously
 missing NULL, FK and ordered-write oracles, independent source row identities,
 closed TRUE/NOT TRUE partitions, intermediate CTE bags and typed output bounds.
 There are 12 mandatory and three conditional physical cases, 195 parser-dialect
@@ -25,7 +22,7 @@ text and declared complete populations, not a consumer-side SQL interpreter.
 | #1 Freeze two fixed fixture IDs, full variants, domains, comparison assumptions, source/intermediate/target bags, conditional dispositions | `docs/task-146-acceptance-freeze.json`; `docs/coverage-manifest.json` | Verify every frozen cell |
 | #2 Canonical row-local SELECT and one nonrecursive CTE, column reorder, FK/PK/CHECK, ordered poststates, typed fail-closed unproved stages | `src/analysis/writes.rs`, `src/protocol/writes.rs`, `src/physical_realization/write_states/{projection,operators}.rs`; `tests/task_146_insert_select.rs` | Exact/Impossible/Residual reviewed |
 | #3 Complete native DuckDB source, local CTE, prior/final target bags, null and duplicate multiplicities, positive and rejected rows, typed inclusive bounds | `tests/task_146_acceptance_matrix.rs`; `tests/task_146_insert_select.rs` | All 12 mandatory case oracles pass |
-| #4 Thirteen parser dialect classifications and direct SQL/dbt warehouse catalog/ODCS v3.2 equivalent schema evidence; vendor boundary fail-closed | `tests/task_146_dialect_adapter.rs` | All 169 parser and 39 adapter cells independently checked |
+| #4 Thirteen parser dialect classifications and direct SQL/dbt warehouse catalog/ODCS v3.2 equivalent schema evidence; vendor boundary fail-closed | `tests/task_146_dialect_adapter.rs` | All 195 parser and 45 adapter cells independently checked |
 | #5 fmt, strict default/no-default Clippy, full tests, docs, dbt Core E2E, active wire schema, independent standards/spec review | `tests/task_146_insert_select.rs` and GitHub Actions PR #157 | Final-head all 9 jobs green, all mandatory cells reviewed |
 
 ## Conditional and vendor execution boundaries
@@ -51,6 +48,10 @@ text and declared complete populations, not a consumer-side SQL interpreter.
 
 ## Final-head release gate
 
-All bounded child criteria remain **open until the actual final PR head CI
-and frozen-cell reconciliation have passed**. TASK-80 parent and TASK-91
-release approval are not implied by a green TASK-146 child.
+**All TASK-146 child AC #1..#5 are independently signed off against the reviewed v3 portable inventory.** The implementation head `8a5095a91ea2664d2983421c7ba4ecef5ea1036c` passed all nine required jobs in [CI run 40597758597](https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597), including fmt, strict Clippy (default/no-default), complete Rust tests (default/no-default), documentation, dependency guard and real compiled dbt Core E2E. All 12 mandatory cases (10 Exact, two Impossible) were checked against independent native DuckDB complete physical input/intermediate/output bags. All 195 parser, 45 direct/dbt/ODCS and 52 vendor parser cells were exercised. The three conditional cases and four scope boundaries remain explicitly owned Residual rather than native-vendor certifications.
+
+**Standards review:** A single canonical producer/consumer stage owns row-local SQL semantics, the physical executor never reparses SQL or fabricates local physical input rows, typed null/constraint checks and complete source identities are preserved, and unsupported vendor/session laws fail closed. Optional protocol emission and strict schema, public Rust API and docs agree. No unresolved standards finding blocks the frozen portable child.
+
+**Spec review:** AC #1 fixture/metadata inventory is complete; AC #2 covers direct and bounded CTE SELECT, positional target reorder, ordered poststates and enforced PK/CHECK/FK; AC #3 independently executes positive, negative, duplicates, null, FK/CHECK and full-stage target oracles in DuckDB; AC #4 verifies all 13 parser identities and SQL/dbt/ODCS parity with explicit vendor boundaries; AC #5 has every nine required CI jobs green and active JSON/schema tests. No mandatory gap remains in the reviewed bounded TASK-146 contract.
+
+The final metadata-only PR head must also pass its merge-gate CI. The parent TASK-80, vendor-native execution laws and TASK-91 release approval remain independent and unsigned.

@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-146",
   "parent": "TASK-80",
-  "state": "v3_frozen_parser_observations_pending_final_head_and_adapter_signoff",
+  "state": "reviewed_portable_child_acceptance",
   "original_parent_ac": [
     1,
     2,
@@ -133,100 +133,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -328,100 +344,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -510,100 +542,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -692,100 +740,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -889,100 +953,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -1079,100 +1159,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#2"
@@ -1279,100 +1375,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#0",
@@ -1448,100 +1560,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -1596,100 +1724,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -1743,100 +1887,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "not_executable_without_attested_portable_law",
+      "status": "reviewed_conditional_residual",
       "release_disposition": "conditional_owner_review_required",
       "authority": {
         "source_and_target_snapshots": "caller_attested_complete",
@@ -1873,100 +2033,116 @@
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "canonical_unsupported",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "not_executable_without_attested_portable_law",
+      "status": "reviewed_conditional_residual",
       "release_disposition": "conditional_owner_review_required",
       "authority": {
         "source_and_target_snapshots": "caller_attested_complete",
@@ -2046,100 +2222,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -2256,100 +2448,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -2419,100 +2627,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "independent_native_error_with_atomic_target_rollback",
-      "status": "conditional_residual_verified_by_complete_DuckDB_rejection",
+      "native_duckdb_oracle": "independent_native_DuckDB_rejection_atomic_prestate_oracle_ci_40597758597",
+      "status": "reviewed_conditional_residual",
       "release_disposition": "portable_statement_end_FK_impossibility_unproved_without_deferral_timing; native_DuckDB_rejects_complete_bag",
       "selected_source_rows": [
         "source#1",
@@ -2636,100 +2860,116 @@
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mysql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "postgresql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "hive": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "sqlite": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "snowflake": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "redshift": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "mssql": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "clickhouse": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "bigquery": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "ansi": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "duckdb": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "databricks": {
           "state": "parsed_canonical",
           "required": true,
           "owner": "TASK-146",
-          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
       "adapter_cells": {
         "direct_sql": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "dbt_compiled": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         },
         "odcs_schema": {
           "state": "expected_equivalent_physical_plan",
           "required_when_equivalent": true,
-          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI",
+          "verified_in_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597"
         }
       },
-      "native_duckdb_oracle": "pending_execution",
-      "status": "frozen_unverified",
+      "native_duckdb_oracle": "executed_original_frozen_sql_full_source_target_bags_and_intermediate_proofs_ci_40597758597",
+      "status": "mandatory_oracle_verified",
       "release_disposition": "blocks_signoff_until_certified",
       "selected_source_rows": [
         "source#1",
@@ -2836,5 +3076,25 @@
     "parsed_canonical": 182,
     "canonical_unsupported": 13,
     "parser_boundary": 0
-  }
+  },
+  "mandatory_verified": 12,
+  "mandatory_exact_verified": 10,
+  "mandatory_impossible_verified": 2,
+  "conditional_residual_reviewed": 3,
+  "parser_cells_verified": 195,
+  "adapter_cells_verified": 45,
+  "vendor_parser_cells_verified": 52,
+  "conditional_scope_boundaries_reviewed": 4,
+  "task_ac_verified": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "verified_semantic_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597",
+  "verified_semantic_ci_sha": "8a5095a91ea2664d2983421c7ba4ecef5ea1036c",
+  "metadata_ci_gate": "Final metadata commit must independently pass required CI before merge",
+  "parent_signed_off": false,
+  "release_approved": false
 }
