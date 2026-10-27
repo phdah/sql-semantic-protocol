@@ -1,7 +1,7 @@
 ---
 id: TASK-146
 title: Compose INSERT SELECT column reorder and CTE sources
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
@@ -43,3 +43,18 @@ type: feature
 ## Sequencing
 
 Next: [TASK-147](task-147%20-%20classify-conflict-overwrite-returning-and-upsert-syntax.md) after this child is merged.
+
+
+## Implementation increment (2026-10-27)
+
+[Draft PR #157](https://github.com/phdah/sql-semantic-protocol/pull/157)
+introduces a canonical two-stage single-CTE INSERT SELECT constructor and
+complete-source/target public DuckDB bag regressions. The task-specific v1
+[finite acceptance freeze](../../docs/task-146-acceptance-freeze.json) is
+registered in the coverage manifest before semantic changes.
+
+**Acceptance is not yet signed off.** The required full variant matrix, FK/CHECK
+source/target oracle, all dialect and direct/dbt/ODCS equivalence cases and
+final implementation-head CI remain separate gates. Original TASK-80 parent
+criteria are unchanged and unchecked. TASK-147 is blocked until this child is
+independently verified and the PR merged.
