@@ -342,3 +342,29 @@ fn inserting_an_unproved_default_expression_is_not_an_exact_write() {
         );
     }
 }
+
+#[test]
+fn emitted_protocol_carries_source_free_write_actions_and_exact_literal_rows() {
+    let literal = analysis(
+        "INSERT INTO target (id,score) VALUES (1,10),(2,NULL)", "duckdb"
+    );
+    let encoded = sql_semantic_protocol::to_bundle_json(&literal);
+    assert_eq!(encoded, sql_semantic_protocol::to_bundle_json(&literal));
+    let document: serde_json::Value = serde_json::from_str(&encoded).unwrap();
+    let statement = &document["inputs"][0]["statements"][0];
+    assert_eq!(statement["write"]["kind"],"append");
+    assert_eq!(statement["write"]["default_values"],false);
+    assert_eq!(statement["write"]["state_effect"]["branches"][0]["action"]["kind"],"insert_query");
+    assert_eq!(statement["finite_table"]["rows"].as_array().unwrap().len(),2);
+
+    let defaults = analysis("INSERT INTO target DEFAULT VALUES","duckdb");
+    let document:serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&defaults)).unwrap();
+    let statement=&document["inputs"][0]["statements"][0];
+    assert_eq!(statement["write"]["default_values"],true);
+    assert_eq!(statement["write"]["target"],"target");
+    assert_eq!(statement["write"]["state_effect"]["branches"][0]["action"]["kind"],
+        "insert_default_values");
+    assert_eq!(statement["write"]["state_effect"]["affected_rows"]["minimum"],1);
+    assert_eq!(statement["write"]["state_effect"]["affected_rows"]["maximum"],1);
+}
