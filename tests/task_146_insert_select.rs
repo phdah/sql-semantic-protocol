@@ -124,7 +124,10 @@ fn check_full_bags(
             .unwrap()
             .map(|row| row.unwrap())
             .collect::<Vec<_>>();
-        assert_eq!(actual, expected_rows, "independent complete DuckDB CTE bag: {name}");
+        assert_eq!(
+            actual, expected_rows,
+            "independent complete DuckDB CTE bag: {name}"
+        );
     }
     db.execute_batch(sql).unwrap();
     let mut statement = db
@@ -162,9 +165,12 @@ fn cte_filter_proves_the_entire_source_and_target_bags() {
         &[(1, 10), (2, 20), (3, 30)],
         &[],
         &[(2, 20), (3, 30)],
-        Some(("filtered", &[(2, 20), (3, 30)],
+        Some((
+            "filtered",
+            &[(2, 20), (3, 30)],
             "WITH filtered AS (SELECT id,score FROM source WHERE id > 1)
-             SELECT id,score FROM filtered ORDER BY id")),
+             SELECT id,score FROM filtered ORDER BY id",
+        )),
     );
 }
 
@@ -177,9 +183,12 @@ fn cte_outer_filter_and_duplicates_keep_original_row_multiplicity() {
         &[(1, 10), (2, 20), (2, 20), (3, 30)],
         &[],
         &[(2, 20), (2, 20), (3, 30)],
-        Some(("staged", &[(1, 10), (2, 20), (2, 20), (3, 30)],
+        Some((
+            "staged",
+            &[(1, 10), (2, 20), (2, 20), (3, 30)],
             "WITH staged AS (SELECT id,score FROM source)
-             SELECT id,score FROM staged ORDER BY id")),
+             SELECT id,score FROM staged ORDER BY id",
+        )),
     );
 }
 
@@ -300,21 +309,29 @@ fn cte_insert_check_violation_preserves_prior_complete_target() {
 
 fn fk_bundle(sql: &str) -> AnalysisBundle {
     let mut bundle = analysis(sql);
-    let evidence = || vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-146").unwrap(),
-        ConstraintEnforcement::Enforced,
-    )];
+    let evidence = || {
+        vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-146").unwrap(),
+            ConstraintEnforcement::Enforced,
+        )]
+    };
     bundle.enrich_relation_constraints(&[
         RelationConstraintSet::new(
             "target",
             vec![RelationConstraint::foreign_key(
-                vec!["score".to_string()], "source", vec!["id".to_string()], evidence(),
-            ).unwrap()],
-        ).unwrap(),
+                vec!["score".to_string()],
+                "source",
+                vec!["id".to_string()],
+                evidence(),
+            )
+            .unwrap()],
+        )
+        .unwrap(),
         RelationConstraintSet::new(
             "source",
             vec![RelationConstraint::primary_key(vec!["id".to_string()], evidence()).unwrap()],
-        ).unwrap(),
+        )
+        .unwrap(),
     ]);
     bundle
 }
@@ -328,23 +345,44 @@ fn cte_insert_enforces_referenced_primary_key_and_complete_fk_bag() {
     let source = state("source", &[(1, 1), (2, 2), (3, 3)]);
     let target = state("target", &[(0, 1)]);
     let plan = physical_ordered_write_state_plan(&valid, &[source.clone(), target.clone()]);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("attested FK and PK with full population must be exact: {plan:?}");
     };
     assert_eq!(transitions[0].affected().inserted(), 2);
     assert_eq!(transitions[0].before(), &target);
-    assert_eq!(transitions[0].intermediate_states()[0].rows(),
-        state("staged", &[(2, 2), (3, 3)]).rows());
-    assert_eq!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows(),
-        state("target", &[(0, 1), (2, 2), (3, 3)]).rows());
+    assert_eq!(
+        transitions[0].intermediate_states()[0].rows(),
+        state("staged", &[(2, 2), (3, 3)]).rows()
+    );
+    assert_eq!(
+        final_states
+            .iter()
+            .find(|s| s.relation() == "target")
+            .unwrap()
+            .rows(),
+        state("target", &[(0, 1), (2, 2), (3, 3)]).rows()
+    );
 
     let violation = physical_ordered_write_state_plan(
         &valid,
-        &[state("source", &[(1, 1), (2, 42), (3, 3)]), state("target", &[])],
+        &[
+            state("source", &[(1, 1), (2, 42), (3, 3)]),
+            state("target", &[]),
+        ],
     );
-    assert!(matches!(violation, PhysicalWriteStatePlan::Impossible { .. }), "{violation:?}");
+    assert!(
+        matches!(violation, PhysicalWriteStatePlan::Impossible { .. }),
+        "{violation:?}"
+    );
     let missing_ref = physical_ordered_write_state_plan(&valid, &[state("target", &[])]);
-    assert!(matches!(missing_ref, PhysicalWriteStatePlan::Residual { .. }), "{missing_ref:?}");
+    assert!(
+        matches!(missing_ref, PhysicalWriteStatePlan::Residual { .. }),
+        "{missing_ref:?}"
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -352,12 +390,18 @@ fn cte_insert_enforces_referenced_primary_key_and_complete_fk_bag() {
          CREATE TABLE target(id INTEGER,score INTEGER REFERENCES source(id));
          INSERT INTO source VALUES (1,1),(2,2),(3,3);
          INSERT INTO target VALUES (0,1);",
-    ).unwrap();
+    )
+    .unwrap();
     db.execute_batch(sql).unwrap();
-    let mut q = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
-    let matched: Vec<(i64,i64)> = q.query_map([], |r| Ok((r.get(0)?,r.get(1)?))).unwrap()
-        .map(|r| r.unwrap()).collect();
-    assert_eq!(matched, vec![(0,1),(2,2),(3,3)]);
+    let mut q = db
+        .prepare("SELECT id,score FROM target ORDER BY id")
+        .unwrap();
+    let matched: Vec<(i64, i64)> = q
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(|r| r.unwrap())
+        .collect();
+    assert_eq!(matched, vec![(0, 1), (2, 2), (3, 3)]);
     drop(q);
 
     let bad = Connection::open_in_memory().unwrap();
@@ -365,9 +409,12 @@ fn cte_insert_enforces_referenced_primary_key_and_complete_fk_bag() {
         "CREATE TABLE source(id INTEGER PRIMARY KEY,score INTEGER);
          CREATE TABLE target(id INTEGER,score INTEGER REFERENCES source(id));
          INSERT INTO source VALUES (1,1),(2,42),(3,3);",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(bad.execute_batch(sql).is_err());
-    let count: i64 = bad.query_row("SELECT COUNT(*) FROM target", [], |r| r.get(0)).unwrap();
+    let count: i64 = bad
+        .query_row("SELECT COUNT(*) FROM target", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(count, 0, "FK violation cannot partially insert");
 }
 
@@ -378,19 +425,31 @@ fn ordered_insert_cte_then_insert_from_target_reads_prior_committed_state() {
         SELECT id,score FROM staged;
         INSERT INTO target(id,score) SELECT id + 10,score FROM target WHERE id = 2;";
     let bundle = analysis(sql);
-    let source = state("source", &[(1,10),(2,20),(3,30)]);
-    let target = state("target", &[(0,0)]);
-    let plan = physical_ordered_write_state_plan(&bundle, &[source.clone(),target.clone()]);
-    let PhysicalWriteStatePlan::Feasible { transitions,final_states } = plan else {
+    let source = state("source", &[(1, 10), (2, 20), (3, 30)]);
+    let target = state("target", &[(0, 0)]);
+    let plan = physical_ordered_write_state_plan(&bundle, &[source.clone(), target.clone()]);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("ordered CTE and subsequent target read must be exact: {plan:?}");
     };
     assert_eq!(transitions.len(), 2);
     assert_eq!(transitions[0].affected().inserted(), 2);
     assert_eq!(transitions[1].affected().inserted(), 1);
-    assert_eq!(transitions[1].before().rows(),
-        state("target", &[(0,0),(2,20),(3,30)]).rows());
-    assert_eq!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows(),
-        state("target", &[(0,0),(2,20),(3,30),(12,20)]).rows());
+    assert_eq!(
+        transitions[1].before().rows(),
+        state("target", &[(0, 0), (2, 20), (3, 30)]).rows()
+    );
+    assert_eq!(
+        final_states
+            .iter()
+            .find(|s| s.relation() == "target")
+            .unwrap()
+            .rows(),
+        state("target", &[(0, 0), (2, 20), (3, 30), (12, 20)]).rows()
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -398,12 +457,18 @@ fn ordered_insert_cte_then_insert_from_target_reads_prior_committed_state() {
          CREATE TABLE target(id INTEGER,score INTEGER);
          INSERT INTO source VALUES (1,10),(2,20),(3,30);
          INSERT INTO target VALUES (0,0);",
-    ).unwrap();
+    )
+    .unwrap();
     db.execute_batch(sql).unwrap();
-    let mut q = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
-    let rows = q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,i64>(1)?))).unwrap()
-        .map(|r| r.unwrap()).collect::<Vec<_>>();
-    assert_eq!(rows,vec![(0,0),(2,20),(3,30),(12,20)]);
+    let mut q = db
+        .prepare("SELECT id,score FROM target ORDER BY id")
+        .unwrap();
+    let rows = q
+        .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+        .unwrap()
+        .map(|r| r.unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(rows, vec![(0, 0), (2, 20), (3, 30), (12, 20)]);
 }
 
 #[test]
@@ -420,17 +485,23 @@ fn insert_cte_rejects_unproved_scope_shaping_and_never_serializes_it_as_exact() 
     ] {
         let bundle = analysis(sql);
         let plan = physical_ordered_write_state_plan(
-            &bundle,&[state("source",&[(1,10)]),state("target",&[])],
+            &bundle,
+            &[state("source", &[(1, 10)]), state("target", &[])],
         );
-        assert!(!matches!(plan,PhysicalWriteStatePlan::Feasible{..}),"{sql}");
+        assert!(
+            !matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+            "{sql}"
+        );
     }
 }
 
 #[test]
 fn cte_insert_wire_emits_both_parser_independent_stages() {
-    let bundle = analysis("INSERT INTO target(score,id) WITH filtered AS
+    let bundle = analysis(
+        "INSERT INTO target(score,id) WITH filtered AS
          (SELECT id,score FROM source WHERE id > 1)
-         SELECT score,id FROM filtered");
+         SELECT score,id FROM filtered",
+    );
     let wire = sql_semantic_protocol::to_bundle_json(&bundle);
     assert_eq!(wire, sql_semantic_protocol::to_bundle_json(&bundle));
     let json: serde_json::Value = serde_json::from_str(&wire).unwrap();
@@ -441,5 +512,8 @@ fn cte_insert_wire_emits_both_parser_independent_stages() {
     assert_eq!(stage["consumer"]["kind"], "query");
     assert_eq!(stage["producer"]["sources"][0]["name"], "source");
     assert_eq!(stage["consumer"]["sources"][0]["name"], "filtered");
-    assert_eq!(statement["write"]["target_columns"],serde_json::json!(["score","id"]));
+    assert_eq!(
+        statement["write"]["target_columns"],
+        serde_json::json!(["score", "id"])
+    );
 }
