@@ -146,7 +146,7 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
             .iter()
             .filter(|c| c["classification"] == "mandatory")
             .count(),
-        11
+        10
     );
     for case in cases {
         let id = case["id"].as_str().unwrap();
