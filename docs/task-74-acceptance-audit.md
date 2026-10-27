@@ -1,57 +1,44 @@
-# TASK-74 independent parent acceptance review
+# TASK-74 independent parent acceptance audit
 
-**Status:** Parent closure blocked on original AC #3's missing exact upstream WHERE-filtered window/QUALIFY physical proof. All five child tasks are Done and merged on `main`. Existing oracle evidence is verified; this review does not sign off TASK-74 or TASK-91.
+**State:** Original parent AC #1..#6 are independently signed off for the frozen portable scope. The five child tasks are Done and merged. Final PR-head CI remains the merge gate; TASK-91 independently controls protocol v3 release authorization.
 
-## Authoritative contract
+## Scope and frozen evidence
 
-The [v1 parent inventory](task-74-acceptance-freeze.json) pins each of the six unchanged original parent acceptance criteria to the existing, versioned child matrices and their canonical oracles. The child inventories own all physical source rows, terminal values, typed bounds and individual parser/adapter classifications. No independent, inconsistent copy of their expected outcomes is maintained.
+The [v3 parent acceptance inventory](task-74-acceptance-freeze.json) is the machine-readable owner of original AC #1..#6 mapping, mandatory/conditional classification and independent parent review. It preserves the child freezes as canonical owners of their exact source and terminal bags. Across the five merged children it references 34 Exact cases and 22 reviewed conditional cases. The separate [filtered WHERE/QUALIFY matrix](task-74-filtered-qualify-freeze.json) adds four Exact and one reviewed Residual, totaling **38 mandatory Exact** and **23 conditional** cases.
 
-| Merged child | PR | Owned semantics | Full-bag and negative evidence |
-| --- | --- | --- | --- |
-| TASK-125 | #135 | ROW_NUMBER, RANK, DENSE_RANK; peers, direction, partition and NULLs | `tests/task_125_rank_bags.rs` |
-| TASK-126 | #136 | LAG, LEAD, FIRST/LAST_VALUE and bounded ROWS; empty forward frame | `tests/task_126_window_bags.rs` |
-| TASK-189 | #137 | COUNT(*), COUNT(expr), SUM/AVG/MIN/MAX; partition, running, moving, forward; typed fractional DECIMAL | `tests/task_189_window_aggregates.rs`, `tests/task_189_decimal_windows.rs` |
-| TASK-127 | #138 | Multi-condition QUALIFY, JOIN and grouped producer composition, complete TRUE/NOT TRUE identities | `tests/task_127_qualify_bags.rs`, `tests/task_127_upstream_native_oracles.rs` |
-| TASK-128 | #139 | NTILE, GROUPS/RANGE peer frames, collation/session boundaries and materialized ranked_orders | `tests/task_128_advanced_windows.rs`, `tests/task_128_dbt_core_e2e.rs` |
-
-The inventory pins **34 mandatory Exact** and **22 reviewed conditional** individual cases across all five freezes, plus each original positive/negative family ID. All five freezes enumerate the **13 parser dialect names** and **three adapter identities**; the dbt alias used by TASK-128 is normalized at the parent boundary. Per-child adapters and per-case parser classifications remain checked by the existing child executable suites.
-
-## Original acceptance criteria
-
-| AC | Independently reviewed evidence | Explicit limits |
+| Child | Merged PR | Audited contract and independent native oracles |
 | --- | --- | --- |
-| #1 ranking, navigation and framed aggregates | TASK-125 peer ranking; TASK-126 navigation/ROWS; TASK-189 exact integer/finite DECIMAL aggregates; TASK-128 bounded advanced NTILE and peer frames | DISTINCT/FILTER over windows without certified physical/engine laws remain typed Residual, never exact |
-| #2 PARTITION/ORDER/frame and peer/NULL laws | TASK-125 tied order, ASC/DESC and explicit NULLS; TASK-126 and TASK-189 explicit ROWS; TASK-128 peer-aware RANGE/GROUPS | Implicit default NULL placement, arbitrary numeric RANGE offsets and collation/session comparison remain non-Exact |
-| #3 QUALIFY and composed producers | TASK-127 conjunctions of multiple windows, full joined and grouped upstream bags and their positive/rejected identities; TASK-189 aggregate QUALIFY and TASK-128 NTILE/RANGE QUALIFY | Untested producer shapes and underordered ROW_NUMBER remain Residual; existing `tests/window_witness.rs` covers projected-window alias predicates separately |
-| #4 nondeterminism | TASK-125/126/189/127 prove underordered peer limits, TASK-128 refuses unsupported NTILE tie/implicit session laws | No arbitrary tied ROW_NUMBER winner or unexecuted vendor claim |
-| #5 independent DuckDB native execution and ranked_orders | The five child native full-source/terminal suites; TASK-127 P4 and P5 are independently re-executed by `tests/task_74_parent_closure.rs`; TASK-128 dbt Core executes `ranked_orders.sql` | DuckDB native result is not evidence for 13 distinct SQL engines |
-| #6 typed domains, adapters, parser and negative regression | The parent guard rejects missing/misclassified child cases, invalid AC mappings, absent typed terminal oracles and truncated dialect inventories; child suites independently test public protocol, adapters and golden/schema regressions | SQLite numeric oracles are native only where specifically executed; remaining vendor/session laws are owner-reviewed non-Exact |
+| TASK-125 | #135 | ROW_NUMBER, RANK, DENSE_RANK, peer order and NULLs; `tests/task_125_rank_bags.rs` |
+| TASK-126 | #136 | LAG/LEAD, FIRST/LAST_VALUE and bounded ROWS frames; `tests/task_126_window_bags.rs` |
+| TASK-189 | #137 | COUNT/SUM/AVG/MIN/MAX aggregate windows and finite DECIMAL/NULL domains; `tests/task_189_window_aggregates.rs`, `tests/task_189_decimal_windows.rs` |
+| TASK-127 | #138 | Joined/grouped producers, conjunctive ranking QUALIFY, exact selected/rejected identities; `tests/task_127_qualify_bags.rs`, `tests/task_127_upstream_native_oracles.rs` |
+| TASK-128 | #139 | NTILE, GROUPS/RANGE, explicit NULL order, ranked_orders.sql native dbt model; `tests/task_128_advanced_windows.rs`, `tests/task_128_dbt_core_e2e.rs` |
 
-## Parent-owned execution regression
+## Original criteria independent crosswalk
 
-`tests/task_74_parent_closure.rs` executes two cross-operator cases from the previously merged TASK-127 frozen matrix without replacing their canonical fixtures:
+| AC | Mandatory evidence | Conditional boundary |
+| --- | --- | --- |
+| #1 Window functions | Exact rank/navigation/analytic COUNT/SUM/AVG/MIN/MAX and bounded advanced-frame cases in children 125/126/189/128 | DISTINCT/FILTER and unattested function/engine types remain non-Exact |
+| #2 Order and frames | Deterministic explicit partition, ASC/DESC, tie laws, ROWS, RANGE and GROUPS evidence in all five children | Implicit NULL order, COLLATE, numeric offset and session laws remain reviewed Residual |
+| #3 QUALIFY composition | TASK-127 joined and grouped complete upstream rows; four Exact parent WHERE-filtered cases; TASK-189 aggregate QUALIFY; TASK-128 NTILE/RANGE QUALIFY; independent outer projected ROW_NUMBER predicate | Underordered physical peer identity and unsupported producer expressions remain Residual |
+| #4 Nondeterminism | Stable rank peer laws and explicit rejection of underordered ROW_NUMBER/NTILE outcomes | Non-unique ORDER BY and vendor-dependent comparator/session claims remain non-Exact |
+| #5 Engine oracles | Native DuckDB complete source/terminal bags for five children, parent JOIN/GROUP and WHERE cases, and real ranked_orders dbt Core E2E | 13 parser dialects do not certify 13 native SQL engines |
+| #6 Cross-dialect, adapters and output domains | 13 parser identities, direct SQL/compiled dbt/ODCS parity, typed inclusive output domains, NULL/Impossible/Residual regressions, schema/golden CI | Native vendor runtime behavior is not inferred from parser support |
 
-- `74-C127-P4`: two independent physical JOIN source bags, qualifying full joined row identities, complete SQL terminal bag and typed inclusive bounds
-- `74-C127-P5`: six physical source rows, GROUP BY/COUNT(*) producer, tie-broken QUALIFY, complete terminal bag, precise NULL/domain evidence
+## Parent-owned independent execution
 
-An additional parent-frozen projected-window pair (`74-PARENT-PROJECTED-P`/`74-PARENT-PROJECTED-N`) checks an outer WHERE predicate over a nested ROW_NUMBER result via the public SQL analysis API, complete native DuckDB source/TRUE/NOT TRUE bags, stable source identities, and inclusive bounded projected rank outcomes. This covers the projected-window part of original AC #3 without promoting unexecuted vendor behavior.
+`tests/task_74_parent_closure.rs` re-executes frozen TASK-127 P4 and P5 joined/grouped QUALIFY complete DuckDB source and terminal multisets with precise typed output bounds. It additionally validates an outer projected ROW_NUMBER filter against the public SQL analyzer and full DuckDB TRUE and NOT TRUE bags. The executable parent guard verifies each child's frozen variant identity, source/terminal and domain evidence, all required parser/adapter names, original AC mapping, and the mandatory/conditional union.
 
-For both joined/grouped cases, the parent regression creates and reads back every physical DuckDB source row before executing the actual SQL, compares complete terminal *multisets* and cross-checks the frozen inclusive typed domains. That is an additional independent native execution boundary rather than metadata-only signoff.
+The [frozen filtered matrix](task-74-filtered-qualify-freeze.json) contains four Exact SQL cases: nullable signed-integer comparison with duplicate peer values (P1), SQL `IS NULL OR` three-valued selection (P2), conjunctive `AND` (P3), and a zero-row WHERE-TRUE partition (N1). Its computed-expression case (C1) is explicitly Residual. `tests/task_74_filtered_qualify.rs` independently asserts full physical and terminal DuckDB bags, WHERE TRUE versus FALSE/UNKNOWN physical identities, QUALIFY TRUE versus NOT TRUE identities, 13 canonical parser dialect paths and exact finite typed inclusive output domains. `tests/task_74_filtered_adapters.rs` checks equivalent direct SQL, compiled dbt manifest and ODCS source schema evidence against the same public physical API.
 
-The invariant test also pins every mandatory and conditional case ID from TASK-125/126/189/127/128, including the five finite-DECIMAL Exact cases and two numeric Residual counterexamples in TASK-189's secondary matrix. It rejects missing child fixture IDs, missing typed domains, incomplete 13-dialect coverage and an unchecked original AC mapping.
+The canonical evaluator first compiles every WHERE branch against authoritative signed-integer column types and identities, then evaluates complete SQL three-valued TRUE/FALSE/UNKNOWN physical populations. Windows partition only WHERE-TRUE rows. Original physical rows stay in `source_row_ids`; WHERE-not-TRUE rows are retained in `rejected_upstream_row_ids`, QUALIFY-not-TRUE in `rejected_row_ids`, and survivors in `terminal_row_ids`. Unsupported computations never silently become false or Exact. The parser separately certifies a WHERE+QUALIFY direct-table shape without loosening JOIN, DISTINCT, grouping, TOP or LIMIT safety rules.
 
-## Reviewed conditional disposition
+## Review
 
-Conditional underordered peers, implicit NULL ordering, COLLATE/session rules, unbounded or offset RANGE, unsupported FILTER/DISTINCT, overflow/decimal promotion and vendor-specific output types remain owned by their respective child task. Residual classification is not used for any required bounded Exact case. Parser support across 13 dialects does not certify runtime engine support in 13 engines; DuckDB native execution and the expressly pinned SQLite numeric checks are the only native evidence counted here.
+**Standards:** Narrow parser certification and one typed physical filter module, no unsafe, no new dependency and no changed public JSON protocol schema. Deterministic identities and value domains come from the same complete source bag. Unsupported and vendor/session cases fail closed.
 
-## Two-axis review and merge gate
+**Spec:** All six original AC have executable mandatory evidence. The previously missing filtered upstream input is implemented and native-oracle tested. The reviewed conditional cases are not used to excuse any missing Exact outcome. TASK-91 remains independently release-blocked.
 
-**Standards:** Parent evidence lives in a single JSON inventory, an independent executable integration test, the task tracker, code map and coverage manifest. The production parser, canonical protocol and emission contract remain unchanged. No extra dependency, guessed semantics or additional public wire shape is introduced.
+**Verified implementation head:** [CI 40484240246](https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246) passed 9/9 jobs: cargo fmt, strict Clippy both feature configurations, full tests both configurations, Rust docs both configurations, no-default dependencies and executed dbt Core E2E. Full tests include schema/golden and native DuckDB regressions.
 
-**Spec:** All six original TASK-74 criteria are mapped to existing merged child evidence; the critical upstream JOIN/GROUP-to-QUALIFY paths receive an additional parent-owned DuckDB full-bag re-execution. No child is reopened. TASK-91 remains a separate release authorization gate.
-
-## Mandatory gap preventing parent signoff
-
-Original AC #3 explicitly requires interaction of QUALIFY with a filtered input. The canonical `physical_finite_window_bag_plan` and `composed_window_plan` both return Residual for a query carrying an upstream `WHERE` predicate; the merged TASK-127 child tests cover JOIN and GROUP producers but not this independent mandatory physical WHERE-to-QUALIFY case. The v2 inventory records `74-PARENT-FILTERED-QUALIFY` as **mandatory_unverified**, with the exact SQL and expected independent closure evidence. It must not be silently reclassified as an accepted conditional boundary. Do not check AC #3 or mark TASK-74 Done until a focused implementation proves upstream WHERE TRUE/FALSE/UNKNOWN source identities, exact post-filter ranking, terminal and rejected bags, portable typed domains and parser/adapter evidence. The physical planner and tests need another implementation iteration.
-
-Run `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, schema/golden checks and real `make dbt-e2e` on the final implementation and acceptance-metadata PR head. **Do not mark TASK-74 Done or merge this PR until that verification succeeds.**
+**Merge gate:** final acceptance-metadata PR head must pass the same CI before merge. TASK-74 is Done for the portable scope; it does not authorize protocol 3.0.0 or native vendor runtime certification.
