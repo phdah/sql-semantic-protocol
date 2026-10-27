@@ -13223,6 +13223,10 @@
     "dbt_native_oracle": "tests/task_128_dbt_core_e2e.rs",
     "parent_signed_off": false,
     "release_approved": false,
-    "remaining_gate": "Final PR-head CI and independent evidence review required before TASK-74 Done; TASK-91 is a separate gate"
+    "remaining_gate": "Final PR-head CI and independent evidence review required before TASK-74 Done; TASK-91 is a separate gate",
+    "projected_window_native_oracles": [
+      "74-PARENT-PROJECTED-P",
+      "74-PARENT-PROJECTED-N"
+    ]
   }
 }
