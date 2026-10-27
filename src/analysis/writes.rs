@@ -67,10 +67,7 @@ pub(super) fn analyze_insert(
     };
     if !matches!(
         source.body.as_ref(),
-        SetExpr::Select(_)
-            | SetExpr::Query(_)
-            | SetExpr::SetOperation { .. }
-            | SetExpr::Values(_)
+        SetExpr::Select(_) | SetExpr::Query(_) | SetExpr::SetOperation { .. } | SetExpr::Values(_)
     ) {
         return unsupported_write_statement(
             "insert",

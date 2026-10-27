@@ -191,7 +191,9 @@ pub(super) fn append_rows(
         vec![Vec::new()]
     } else if let Some(table) = query.finite_table() {
         if table.kind() != crate::protocol::FiniteTableKind::Values {
-            return Err(residual("INSERT finite source is not a literal VALUES table"));
+            return Err(residual(
+                "INSERT finite source is not a literal VALUES table",
+            ));
         }
         table
             .rows()
