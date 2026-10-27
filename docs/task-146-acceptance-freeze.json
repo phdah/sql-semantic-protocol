@@ -1,0 +1,1243 @@
+{
+  "version": 1,
+  "owner": "TASK-146",
+  "parent": "TASK-80",
+  "state": "frozen_preimplementation_pending_execution",
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "fixture_ids": [
+    "80-C146-P",
+    "80-C146-N"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "required_oracles": [
+    "complete physical initial source and target bags",
+    "complete typed poststate with stable row multiplicity",
+    "source and terminal SQL TRUE and NOT TRUE identities",
+    "independent DuckDB full source and target bags",
+    "schema-backed PK FK CHECK enforcement",
+    "13 dialect parser classification per case",
+    "SQL/dbt catalog/ODCS adapter parity where equivalent",
+    "strict Clippy format tests docs no-default-features dbt E2E and schema"
+  ],
+  "conditional_ownership": {
+    "owner": "TASK-146",
+    "native_vendor": "unverified_without_engine_execution",
+    "multiple_recursive_ctes": "Residual",
+    "opaque_join_aggregate_cte": "Residual",
+    "missing_complete_source": "Residual",
+    "unattested_keys_or_comparisons": "Residual"
+  },
+  "cases": [
+    {
+      "id": "80-C146-P-direct-filter",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target (id, score) SELECT id, score FROM source WHERE id > 1",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "target_after#1",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_truth_and_rejection": "complete source WHERE TRUE=[source#1,source#2], NOT TRUE=[source#0]",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-P-direct-reorder",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target (score,id) SELECT score,id FROM source WHERE id > 1",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [
+        {
+          "instance": "target#0",
+          "id": 0,
+          "score": 0
+        }
+      ],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 0,
+          "score": 0
+        },
+        {
+          "instance": "target_after#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "target_after#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 0,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 0,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_truth_and_rejection": "positional target mapping; unchanged target#0",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-P-cte-filter",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target (score,id) WITH filtered AS (SELECT id, score FROM source WHERE id > 1) SELECT score,id FROM filtered",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "target_after#1",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_truth_and_rejection": "CTE is local materialization, not independently caller-supplied source",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-P-cte-outer-filter",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target(id,score) WITH staged AS (SELECT id,score FROM source) SELECT id,score FROM staged WHERE id >= 3",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 3,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_truth_and_rejection": "outer filter only passes stage row source#2",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-P-cte-duplicates",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target(id,score) WITH staged AS (SELECT id,score FROM source WHERE id=2) SELECT id,score FROM staged",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "target_after#1",
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_truth_and_rejection": "preserve distinct source#0/source#1 multiplicity",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-N-pk-collision",
+      "fixture_id": "80-C146-N",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1",
+      "classification": "mandatory",
+      "proof": "Impossible",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [
+        {
+          "instance": "target#0",
+          "id": 2,
+          "score": 99
+        }
+      ],
+      "expected_target_bag": null,
+      "terminal_typed_domains": {
+        "type": "empty_or_unproved"
+      },
+      "expected_truth_and_rejection": "attested enforced PK id duplicate with target before; atomic failure",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-N-check",
+      "fixture_id": "80-C146-N",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1",
+      "classification": "mandatory",
+      "proof": "Impossible",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": -20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "terminal_typed_domains": {
+        "type": "empty_or_unproved"
+      },
+      "expected_truth_and_rejection": "attested CHECK score >= 0 rejects selected source#1",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified"
+    },
+    {
+      "id": "80-C146-N-missing-source",
+      "fixture_id": "80-C146-N",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1",
+      "classification": "conditional",
+      "proof": "Residual",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": null,
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "terminal_typed_domains": {
+        "type": "empty_or_unproved"
+      },
+      "expected_truth_and_rejection": "source complete physical population unavailable; never invent rows",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "conditional_owner_review_required"
+    },
+    {
+      "id": "80-C146-N-recursive-cte",
+      "fixture_id": "80-C146-N",
+      "sql": "INSERT INTO target(id,score) WITH RECURSIVE staged AS (SELECT id,score FROM source) SELECT id,score FROM staged",
+      "classification": "conditional",
+      "proof": "Residual",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "terminal_typed_domains": {
+        "type": "empty_or_unproved"
+      },
+      "expected_truth_and_rejection": "recursive CTE requires termination and producer evidence",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "conditional_owner_review_required"
+    }
+  ]
+}
