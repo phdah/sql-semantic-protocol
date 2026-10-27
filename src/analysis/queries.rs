@@ -619,6 +619,27 @@ pub(super) fn analyze_query(
                 && select.from.len() == 1
                 && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. }));
 
+    // Filtering happens before partitioning; certify that WHERE plus QUALIFY
+    // has no DISTINCT, TOP, grouping, sampling, joins or other row-shaping
+    // operators. Predicate and window laws are proved separately on full bags.
+    let filtered_window_goal_output_shape = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.top.is_none()
+                && select.distinct.is_none()
+                && select.selection.is_some()
+                && select.qualify.is_some()
+                && select.having.is_none()
+                && select.prewhere.is_none()
+                && select.connect_by.is_none()
+                && select.lateral_views.is_empty()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty())
+                && select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.is_empty());
+
     let special_join_goal_output_shape = query.with.is_none()
         && query.limit_clause.is_none()
         && query.fetch.is_none()
@@ -659,6 +680,7 @@ pub(super) fn analyze_query(
     .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
     .with_ranked_composition(ranked_composed_shape, grouped_count_source)
     .with_filtered_join_goal_shape(filtered_join_goal_output_shape)
+    .with_filtered_window_goal_shape(filtered_window_goal_output_shape)
     .with_special_join_goal_shape(special_join_goal_output_shape)
     .with_group_witness()
     .with_window_witness()

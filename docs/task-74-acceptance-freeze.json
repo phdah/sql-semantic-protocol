@@ -1,0 +1,512 @@
+{
+  "task": "TASK-74",
+  "version": 3,
+  "reviewed_at": "2026-10-27",
+  "purpose": "Independent original-parent acceptance inventory. Child freezes remain canonical for exact source/terminal rows, expected domains and conditional parser/native classifications.",
+  "source_of_truth": {
+    "TASK-125": {
+      "freeze": "docs/task-125-acceptance-freeze.json",
+      "fixture_ids": [
+        "74-C125-P",
+        "74-C125-N"
+      ],
+      "version": 2,
+      "mandatory_case_ids": [
+        "74-C125-P1",
+        "74-C125-N1",
+        "74-C125-P2",
+        "74-C125-P3",
+        "74-C125-P4",
+        "74-C125-P5",
+        "74-C125-P6",
+        "74-C125-N2",
+        "74-C125-P7"
+      ],
+      "conditional_case_ids": [
+        "74-C125-C1",
+        "74-C125-C2"
+      ],
+      "original_parent_ac_map": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "reviewed_child_audit": "docs/task-125-acceptance-audit.md"
+    },
+    "TASK-126": {
+      "freeze": "docs/task-126-acceptance-freeze.json",
+      "fixture_ids": [
+        "74-C126-P",
+        "74-C126-N"
+      ],
+      "version": 1,
+      "mandatory_case_ids": [
+        "74-C126-P1",
+        "74-C126-P2",
+        "74-C126-N1"
+      ],
+      "conditional_case_ids": [
+        "74-C126-C1",
+        "74-C126-C2",
+        "74-C126-C3",
+        "74-C126-C4",
+        "74-C126-C5"
+      ],
+      "original_parent_ac_map": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "reviewed_child_audit": "docs/task-126-acceptance-audit.md"
+    },
+    "TASK-189": {
+      "freeze": "docs/task-189-acceptance-freeze.json",
+      "fixture_ids": [
+        "74-C189-P",
+        "74-C189-N"
+      ],
+      "version": 5,
+      "mandatory_case_ids": [
+        "74-C189-P1",
+        "74-C189-P2",
+        "74-C189-P3",
+        "74-C189-N1",
+        "74-C189-P5",
+        "74-C189-P6",
+        "74-C189-P7",
+        "74-C189-P8",
+        "74-C189-P9",
+        "74-C189-N4"
+      ],
+      "conditional_case_ids": [
+        "74-C189-C1",
+        "74-C189-C2",
+        "74-C189-C3",
+        "74-C189-C4",
+        "74-C189-C5",
+        "74-C189-C6",
+        "74-C189-N2",
+        "74-C189-N3"
+      ],
+      "original_parent_ac_map": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "reviewed_child_audit": "docs/task-189-acceptance-audit.md"
+    },
+    "TASK-127": {
+      "freeze": "docs/task-127-acceptance-freeze.json",
+      "fixture_ids": [
+        "74-C127-P",
+        "74-C127-N"
+      ],
+      "version": 1,
+      "mandatory_case_ids": [
+        "74-C127-P1",
+        "74-C127-P2",
+        "74-C127-P3",
+        "74-C127-N1",
+        "74-C127-P6",
+        "74-C127-P4",
+        "74-C127-P5"
+      ],
+      "conditional_case_ids": [
+        "74-C127-N2"
+      ],
+      "original_parent_ac_map": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reviewed_child_audit": "docs/task-127-acceptance-audit.md"
+    },
+    "TASK-128": {
+      "freeze": "docs/task-128-acceptance-freeze.json",
+      "fixture_ids": [
+        "74-C128-P",
+        "74-C128-N"
+      ],
+      "version": 5,
+      "mandatory_case_ids": [
+        "74-C128-P1",
+        "74-C128-P2",
+        "74-C128-P3",
+        "74-C128-P4",
+        "74-C128-P5"
+      ],
+      "conditional_case_ids": [
+        "74-C128-N1",
+        "74-C128-N2",
+        "74-C128-N3",
+        "74-C128-N4",
+        "74-C128-N5",
+        "74-C128-N6"
+      ],
+      "original_parent_ac_map": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reviewed_child_audit": "docs/task-128-acceptance-audit.md"
+    }
+  },
+  "fixture_ids": [
+    "74-C125-P",
+    "74-C125-N",
+    "74-C126-P",
+    "74-C126-N",
+    "74-C189-P",
+    "74-C189-N",
+    "74-C127-P",
+    "74-C127-N",
+    "74-C128-P",
+    "74-C128-N"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_case_ids": [
+    "74-C125-P1",
+    "74-C125-N1",
+    "74-C125-P2",
+    "74-C125-P3",
+    "74-C125-P4",
+    "74-C125-P5",
+    "74-C125-P6",
+    "74-C125-N2",
+    "74-C125-P7",
+    "74-C126-P1",
+    "74-C126-P2",
+    "74-C126-N1",
+    "74-C189-P1",
+    "74-C189-P2",
+    "74-C189-P3",
+    "74-C189-N1",
+    "74-C189-P5",
+    "74-C189-P6",
+    "74-C189-P7",
+    "74-C189-P8",
+    "74-C189-P9",
+    "74-C189-N4",
+    "74-C127-P1",
+    "74-C127-P2",
+    "74-C127-P3",
+    "74-C127-N1",
+    "74-C127-P6",
+    "74-C127-P4",
+    "74-C127-P5",
+    "74-C128-P1",
+    "74-C128-P2",
+    "74-C128-P3",
+    "74-C128-P4",
+    "74-C128-P5"
+  ],
+  "conditional_case_ids": [
+    "74-C125-C1",
+    "74-C125-C2",
+    "74-C126-C1",
+    "74-C126-C2",
+    "74-C126-C3",
+    "74-C126-C4",
+    "74-C126-C5",
+    "74-C189-C1",
+    "74-C189-C2",
+    "74-C189-C3",
+    "74-C189-C4",
+    "74-C189-C5",
+    "74-C189-C6",
+    "74-C189-N2",
+    "74-C189-N3",
+    "74-C127-N2",
+    "74-C128-N1",
+    "74-C128-N2",
+    "74-C128-N3",
+    "74-C128-N4",
+    "74-C128-N5",
+    "74-C128-N6"
+  ],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "obligation": "Ranking, navigation, NTILE and aggregate windows with exact typed outcomes",
+      "mandatory_case_ids": [
+        "74-C125-P1",
+        "74-C125-P3",
+        "74-C126-P1",
+        "74-C126-P2",
+        "74-C189-P2",
+        "74-C189-P6",
+        "74-C127-P1",
+        "74-C128-P1"
+      ],
+      "conditional_case_ids": [
+        "74-C189-C1",
+        "74-C189-C2"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
+    },
+    {
+      "id": 2,
+      "obligation": "Partition and total-order laws, peer groups, frame types, NULL and collation boundaries",
+      "mandatory_case_ids": [
+        "74-C125-P4",
+        "74-C125-P5",
+        "74-C126-P2",
+        "74-C189-P3",
+        "74-C128-P2",
+        "74-C128-P3"
+      ],
+      "conditional_case_ids": [
+        "74-C125-C2",
+        "74-C126-C3",
+        "74-C128-N3",
+        "74-C128-N4",
+        "74-C128-N5",
+        "74-C128-N6"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
+    },
+    {
+      "id": 3,
+      "obligation": "QUALIFY TRUE and NOT TRUE with multiple windows and joined/grouped upstream producers",
+      "mandatory_case_ids": [
+        "74-C127-P2",
+        "74-C127-P3",
+        "74-C127-P4",
+        "74-C127-P5",
+        "74-C189-P5",
+        "74-C128-P4",
+        "74-C128-P5",
+        "74-PARENT-FILTERED-P1",
+        "74-PARENT-FILTERED-P2",
+        "74-PARENT-FILTERED-P3",
+        "74-PARENT-FILTERED-N1"
+      ],
+      "conditional_case_ids": [
+        "74-C127-N2",
+        "74-PARENT-FILTERED-C1"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope",
+      "additional_parent_case_ids": [
+        "74-PARENT-PROJECTED-P",
+        "74-PARENT-PROJECTED-N",
+        "74-PARENT-FILTERED-P1",
+        "74-PARENT-FILTERED-P2",
+        "74-PARENT-FILTERED-P3",
+        "74-PARENT-FILTERED-N1"
+      ]
+    },
+    {
+      "id": 4,
+      "obligation": "Unproven tied ordering and engine session semantics explicitly non-Exact",
+      "mandatory_case_ids": [
+        "74-C125-P2",
+        "74-C127-P6",
+        "74-C128-P3"
+      ],
+      "conditional_case_ids": [
+        "74-C125-C1",
+        "74-C126-C1",
+        "74-C189-C4",
+        "74-C127-N2",
+        "74-C128-N2",
+        "74-C128-N3",
+        "74-C128-N6"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
+    },
+    {
+      "id": 5,
+      "obligation": "Independent native DuckDB complete source/terminal bags and ranked_orders dbt fixture",
+      "mandatory_case_ids": [
+        "74-C125-P1",
+        "74-C126-P1",
+        "74-C189-P2",
+        "74-C127-P4",
+        "74-C127-P5",
+        "74-C128-P3",
+        "74-C128-P4"
+      ],
+      "conditional_case_ids": [
+        "74-C128-N3"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
+    },
+    {
+      "id": 6,
+      "obligation": "All 13 parser dialects, 3 schema adapters, typed output domains and regression gates",
+      "mandatory_case_ids": [
+        "74-C125-P7",
+        "74-C126-N1",
+        "74-C189-N1",
+        "74-C127-N1",
+        "74-C128-P2"
+      ],
+      "conditional_case_ids": [
+        "74-C189-N2",
+        "74-C189-N3",
+        "74-C128-N4"
+      ],
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
+    }
+  ],
+  "cross_operator_native_cases": [
+    "74-C127-P4",
+    "74-C127-P5"
+  ],
+  "physical_oracles": [
+    "tests/task_125_rank_bags.rs",
+    "tests/task_126_window_bags.rs",
+    "tests/task_189_window_aggregates.rs",
+    "tests/task_189_decimal_windows.rs",
+    "tests/task_127_upstream_native_oracles.rs",
+    "tests/task_128_advanced_windows.rs"
+  ],
+  "dbt_execution_oracle": "tests/task_128_dbt_core_e2e.rs",
+  "parent_public_regression": "tests/task_74_parent_closure.rs",
+  "conditional_policy": "Conditional parser, numeric precision, implicit NULL ordering, collation, underordered peers and vendor/session boundaries stay non-Exact without separately executed engine law. Only DuckDB (and named SQLite numeric counterexamples) have native executable evidence.",
+  "release_approved": false,
+  "parent_signed_off": true,
+  "remaining_gate": "Latest PR-head CI must pass before merge; TASK-91 controls release approval independently. Vendor/session runtime laws without native oracle remain conditional, not portable Exact.",
+  "projected_window_oracle": {
+    "owner": "TASK-74",
+    "case_ids": [
+      "74-PARENT-PROJECTED-P",
+      "74-PARENT-PROJECTED-N"
+    ],
+    "source_schema": {
+      "events": {
+        "account_id": "INTEGER",
+        "score": "INTEGER"
+      }
+    },
+    "full_source_bag": [
+      {
+        "account_id": 1,
+        "score": 10
+      },
+      {
+        "account_id": 1,
+        "score": 20
+      },
+      {
+        "account_id": 1,
+        "score": 30
+      },
+      {
+        "account_id": 2,
+        "score": 5
+      },
+      {
+        "account_id": 2,
+        "score": 15
+      }
+    ],
+    "positive_sql": "SELECT ranked.rn FROM (SELECT ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events) ranked WHERE ranked.rn <= 2",
+    "negative_sql": "SELECT account_id, score FROM (SELECT account_id, score, ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events) ranked WHERE rn > 2",
+    "expected_positive_terminal_bag": [
+      {
+        "rn": 1
+      },
+      {
+        "rn": 2
+      },
+      {
+        "rn": 1
+      },
+      {
+        "rn": 2
+      }
+    ],
+    "expected_not_true_physical_bag": [
+      {
+        "account_id": 1,
+        "score": 30
+      }
+    ],
+    "terminal_domain": {
+      "rn": {
+        "kind": "integer",
+        "values": [
+          1,
+          2
+        ],
+        "nullable": false,
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true
+      }
+    },
+    "positive_proof": "Exact",
+    "not_true_proof": "Exact",
+    "native_engine": "DuckDB",
+    "adapter_boundary": "Direct SQL API witness plus DuckDB native full physical/source and terminal bags. dbt/ODCS equivalent window adapter paths are owned by TASK-125/127.",
+    "dialect_boundary": "Generic SQL analyzer; all 13 dialect paths for canonical rank/QUALIFY are owned and checked by child matrices. No native vendor execution claim."
+  },
+  "revision_note": "v3 independently certifies original AC #3 WHERE->window->QUALIFY, adding four complete DuckDB exact physical bags and one computed-expression Residual to the five already-merged child inventories.",
+  "mandatory_unverified": [],
+  "filtered_source_evidence": {
+    "freeze": "docs/task-74-filtered-qualify-freeze.json",
+    "fixture_ids": [
+      "74-PARENT-FILTERED-P",
+      "74-PARENT-FILTERED-N"
+    ],
+    "version": 1,
+    "original_parent_ac": 3,
+    "mandatory_case_ids": [
+      "74-PARENT-FILTERED-P1",
+      "74-PARENT-FILTERED-P2",
+      "74-PARENT-FILTERED-P3",
+      "74-PARENT-FILTERED-N1"
+    ],
+    "conditional_case_ids": [
+      "74-PARENT-FILTERED-C1"
+    ],
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "native_oracle": "tests/task_74_filtered_qualify.rs",
+    "adapter_parity": "tests/task_74_filtered_adapters.rs",
+    "mandatory_parser_cells": 52,
+    "mandatory_adapter_cells": 12,
+    "conditional_parser_cells": 13,
+    "conditional_adapter_cells": 3,
+    "proof": "verified_complete_physical_source_where_true_not_true_qualify_true_not_true_typed_domains_and_native_duckdb"
+  },
+  "reviewed_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246",
+  "total_mandatory_exact_cases": 38,
+  "total_reviewed_conditional_cases": 23
+}

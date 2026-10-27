@@ -1,0 +1,588 @@
+{
+  "task": "TASK-74",
+  "version": 1,
+  "owner": "TASK-74",
+  "purpose": "Immutable preimplementation matrix for original AC3 upstream WHERE then QUALIFY, distinct WHERE/QUALIFY source identities and complete DuckDB oracles.",
+  "fixture_ids": [
+    "74-PARENT-FILTERED-P",
+    "74-PARENT-FILTERED-N"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_case_ids": [
+    "74-PARENT-FILTERED-P1",
+    "74-PARENT-FILTERED-P2",
+    "74-PARENT-FILTERED-P3",
+    "74-PARENT-FILTERED-N1"
+  ],
+  "conditional_case_ids": [
+    "74-PARENT-FILTERED-C1"
+  ],
+  "cases": [
+    {
+      "id": "74-PARENT-FILTERED-P1",
+      "family": "comparison_nullable_duplicate_partition",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x > 0 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "expected_full_terminal_bag": [
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "rn": 1
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "rn": 1
+        }
+      ],
+      "where_true_ids": [
+        "s#0",
+        "s#2",
+        "s#4",
+        "s#5"
+      ],
+      "where_not_true_ids": [
+        "s#1",
+        "s#3"
+      ],
+      "qualify_not_true_ids": [
+        "s#0",
+        "s#5"
+      ],
+      "terminal_row_ids": [
+        "s#2",
+        "s#4"
+      ],
+      "typed_terminal_domains": {
+        "id": {
+          "inclusive_bounds": [
+            3,
+            5
+          ],
+          "nullable": false
+        },
+        "k": {
+          "inclusive_bounds": [
+            0,
+            1
+          ],
+          "nullable": false
+        },
+        "x": {
+          "inclusive_bounds": [
+            5,
+            30
+          ],
+          "nullable": false
+        },
+        "rn": {
+          "inclusive_bounds": [
+            1,
+            1
+          ],
+          "nullable": false
+        }
+      },
+      "proof": "Exact",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER",
+          "k": "INTEGER",
+          "x": "INTEGER"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 10
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": null
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 30
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": -2
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 5
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 5
+          }
+        ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_exact_required",
+        "dbt_compiled": "verified_exact_required",
+        "odcs_schema": "verified_exact_required"
+      }
+    },
+    {
+      "id": "74-PARENT-FILTERED-P2",
+      "family": "null_or_negative_where",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x IS NULL OR x < 0 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "expected_full_terminal_bag": [
+        {
+          "id": 2,
+          "k": 0,
+          "x": null,
+          "rn": 1
+        },
+        {
+          "id": 4,
+          "k": 1,
+          "x": -2,
+          "rn": 1
+        }
+      ],
+      "where_true_ids": [
+        "s#1",
+        "s#3"
+      ],
+      "where_not_true_ids": [
+        "s#0",
+        "s#2",
+        "s#4",
+        "s#5"
+      ],
+      "qualify_not_true_ids": [],
+      "terminal_row_ids": [
+        "s#1",
+        "s#3"
+      ],
+      "typed_terminal_domains": {
+        "id": {
+          "inclusive_bounds": [
+            2,
+            4
+          ],
+          "nullable": false
+        },
+        "k": {
+          "inclusive_bounds": [
+            0,
+            1
+          ],
+          "nullable": false
+        },
+        "x": {
+          "inclusive_bounds": [
+            -2,
+            -2
+          ],
+          "nullable": true
+        },
+        "rn": {
+          "inclusive_bounds": [
+            1,
+            1
+          ],
+          "nullable": false
+        }
+      },
+      "proof": "Exact",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER",
+          "k": "INTEGER",
+          "x": "INTEGER"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 10
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": null
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 30
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": -2
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 5
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 5
+          }
+        ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_exact_required",
+        "dbt_compiled": "verified_exact_required",
+        "odcs_schema": "verified_exact_required"
+      }
+    },
+    {
+      "id": "74-PARENT-FILTERED-P3",
+      "family": "compound_where_filter",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x >= 5 AND id <> 6 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "expected_full_terminal_bag": [
+        {
+          "id": 3,
+          "k": 0,
+          "x": 30,
+          "rn": 1
+        },
+        {
+          "id": 5,
+          "k": 1,
+          "x": 5,
+          "rn": 1
+        }
+      ],
+      "where_true_ids": [
+        "s#0",
+        "s#2",
+        "s#4"
+      ],
+      "where_not_true_ids": [
+        "s#1",
+        "s#3",
+        "s#5"
+      ],
+      "qualify_not_true_ids": [
+        "s#0"
+      ],
+      "terminal_row_ids": [
+        "s#2",
+        "s#4"
+      ],
+      "typed_terminal_domains": {
+        "id": {
+          "inclusive_bounds": [
+            3,
+            5
+          ],
+          "nullable": false
+        },
+        "k": {
+          "inclusive_bounds": [
+            0,
+            1
+          ],
+          "nullable": false
+        },
+        "x": {
+          "inclusive_bounds": [
+            5,
+            30
+          ],
+          "nullable": false
+        },
+        "rn": {
+          "inclusive_bounds": [
+            1,
+            1
+          ],
+          "nullable": false
+        }
+      },
+      "proof": "Exact",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER",
+          "k": "INTEGER",
+          "x": "INTEGER"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 10
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": null
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 30
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": -2
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 5
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 5
+          }
+        ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_exact_required",
+        "dbt_compiled": "verified_exact_required",
+        "odcs_schema": "verified_exact_required"
+      }
+    },
+    {
+      "id": "74-PARENT-FILTERED-N1",
+      "family": "zero_eligible_rows",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x > 100 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "expected_full_terminal_bag": [],
+      "where_true_ids": [],
+      "where_not_true_ids": [
+        "s#0",
+        "s#1",
+        "s#2",
+        "s#3",
+        "s#4",
+        "s#5"
+      ],
+      "qualify_not_true_ids": [],
+      "terminal_row_ids": [],
+      "typed_terminal_domains": {
+        "id": {
+          "empty": true
+        },
+        "k": {
+          "empty": true
+        },
+        "x": {
+          "empty": true
+        },
+        "rn": {
+          "empty": true
+        }
+      },
+      "proof": "Exact",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER",
+          "k": "INTEGER",
+          "x": "INTEGER"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 10
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": null
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 30
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": -2
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 5
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 5
+          }
+        ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_exact_required",
+        "dbt_compiled": "verified_exact_required",
+        "odcs_schema": "verified_exact_required"
+      }
+    },
+    {
+      "id": "74-PARENT-FILTERED-C1",
+      "family": "computed_filter_residual",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x + 1 > 0 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "proof": "Residual",
+      "reason": "Uncertified computed WHERE expression cannot select a physical row bag; no exact partitions can be inferred.",
+      "source_schema": {
+        "s": {
+          "id": "INTEGER",
+          "k": "INTEGER",
+          "x": "INTEGER"
+        }
+      },
+      "physical_source_bags": {
+        "s": [
+          {
+            "id": 1,
+            "k": 0,
+            "x": 10
+          },
+          {
+            "id": 2,
+            "k": 0,
+            "x": null
+          },
+          {
+            "id": 3,
+            "k": 0,
+            "x": 30
+          },
+          {
+            "id": 4,
+            "k": 1,
+            "x": -2
+          },
+          {
+            "id": 5,
+            "k": 1,
+            "x": 5
+          },
+          {
+            "id": 6,
+            "k": 1,
+            "x": 5
+          }
+        ]
+      },
+      "parser_status_by_dialect": {
+        "generic": "parsed",
+        "mysql": "parsed",
+        "postgresql": "parsed",
+        "hive": "parsed",
+        "sqlite": "parsed",
+        "snowflake": "parsed",
+        "redshift": "parsed",
+        "mssql": "parsed",
+        "clickhouse": "parsed",
+        "bigquery": "parsed",
+        "ansi": "parsed",
+        "duckdb": "parsed",
+        "databricks": "parsed"
+      },
+      "adapter_status": {
+        "direct_sql": "verified_residual",
+        "dbt_compiled": "verified_residual",
+        "odcs_schema": "verified_residual"
+      }
+    }
+  ],
+  "conditional_owner": "TASK-74",
+  "conditional_policy": "Computed WHERE, unresolved types, ambiguous columns and vendor/session laws fail closed as typed Residual. An unsupported filter is not false even when data happens to agree; all mandatory integer/NULL cases are exact.",
+  "oracle": "Native DuckDB independently executes all complete physical input and terminal row bags, preserves SQL NULL/UNKNOWN and multiplicities, with WHERE and QUALIFY rejected physical IDs from a single stable source."
+}

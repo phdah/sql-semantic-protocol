@@ -501,6 +501,7 @@ mod set_trees;
 mod sets;
 mod window_bags;
 mod window_composition;
+mod window_filters;
 mod write_states;
 
 pub use aggregate_bags::{
