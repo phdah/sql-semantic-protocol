@@ -13185,5 +13185,44 @@
       5
     ],
     "merge_gate": "final PR head must pass CI after metadata-only signoff; parent TASK-76 remains open"
+  },
+  "task_74_parent_acceptance": {
+    "owner": "TASK-74",
+    "status": "independent_original_parent_ac1_to_ac6_review_pending_final_pr_head_ci",
+    "task": ".backlog/tasks/task-74 - complete-window-and-qualify-witnesses.md",
+    "freeze": "docs/task-74-acceptance-freeze.json",
+    "audit": "docs/task-74-acceptance-audit.md",
+    "children": [
+      "TASK-125",
+      "TASK-126",
+      "TASK-189",
+      "TASK-127",
+      "TASK-128"
+    ],
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cases": 34,
+    "conditional_cases": 22,
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "public_guard": "tests/task_74_parent_closure.rs",
+    "cross_operator_native_oracles": [
+      "74-C127-P4",
+      "74-C127-P5"
+    ],
+    "dbt_native_oracle": "tests/task_128_dbt_core_e2e.rs",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "remaining_gate": "Final PR-head CI and independent evidence review required before TASK-74 Done; TASK-91 is a separate gate"
   }
 }
