@@ -34,7 +34,9 @@ The inventory pins **34 mandatory Exact** and **22 reviewed conditional** indivi
 - `74-C127-P4`: two independent physical JOIN source bags, qualifying full joined row identities, complete SQL terminal bag and typed inclusive bounds
 - `74-C127-P5`: six physical source rows, GROUP BY/COUNT(*) producer, tie-broken QUALIFY, complete terminal bag, precise NULL/domain evidence
 
-For both, the parent regression creates and reads back every physical DuckDB source row before executing the actual SQL, compares complete terminal *multisets* and cross-checks the frozen inclusive typed domains. That is an additional independent native execution boundary rather than metadata-only signoff.
+An additional parent-frozen projected-window pair (`74-PARENT-PROJECTED-P`/`74-PARENT-PROJECTED-N`) checks an outer WHERE predicate over a nested ROW_NUMBER result via the public SQL analysis API, complete native DuckDB source/TRUE/NOT TRUE bags, stable source identities, and inclusive bounded projected rank outcomes. This covers the projected-window part of original AC #3 without promoting unexecuted vendor behavior.
+
+For both joined/grouped cases, the parent regression creates and reads back every physical DuckDB source row before executing the actual SQL, compares complete terminal *multisets* and cross-checks the frozen inclusive typed domains. That is an additional independent native execution boundary rather than metadata-only signoff.
 
 The invariant test also pins every mandatory and conditional case ID from TASK-125/126/189/127/128, including the five finite-DECIMAL Exact cases and two numeric Residual counterexamples in TASK-189's secondary matrix. It rejects missing child fixture IDs, missing typed domains, incomplete 13-dialect coverage and an unchecked original AC mapping.
 
