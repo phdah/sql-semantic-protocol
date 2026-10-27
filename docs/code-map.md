@@ -4,9 +4,18 @@ in `src/analysis/finite_tables.rs`. `src/protocol/writes.rs` owns the typed
 source-free default write marker and effect cardinality; `src/physical_realization/write_states/operators.rs`
 applies exact literal rows or one authoritative all-default row, preserving
 the complete prestate and schema feasibility. `src/emission/statements.rs`
-and `schema/protocol.schema.json` own the emitted action and flag. The finite
-acceptance inventory is `docs/task-145-acceptance-freeze.json` and public DuckDB
-oracle is `tests/task_145_insert_values.rs`. TASK-80 parent is separate.
+and `schema/protocol.schema.json` own the emitted action and flag. The v2 finite
+acceptance inventory is `docs/task-145-acceptance-freeze.json`; the independent
+full-bag DuckDB and typed-domain matrix is `tests/task_145_acceptance_matrix.rs`.
+`tests/task_145_insert_values.rs` covers generated fields, attested identity
+sequences, missing metadata and canonical wire emission;
+`tests/task_145_typed_write.rs` covers Arrow-like state feasibility;
+`tests/task_145_precedence.rs` checks ordered writes and transaction residuals;
+`tests/task_145_dialect_adapter.rs` checks all 156 parser cells and 36
+SQL/dbt-catalog/ODCS-schema equivalence cases. Vendor-only modifiers fail closed
+through `tests/task_145_vendor_boundaries.rs`; their portable semantics belong
+to TASK-147. Reviewed signoff evidence is `docs/task-145-acceptance-audit.md`.
+TASK-80 parent is separately owned by TASK-145..148.
 
 TASK-136 sampling: `src/analysis/sampling.rs` owns sqlparser AST method/quantity/seed normalization, `src/protocol/sampling.rs` holds source-independent typed evidence, and `src/protocol/query.rs` owns sampled source instances. `src/emission/statements.rs` and `schema/protocol.schema.json` own the optional query `sampling` contract. `src/analysis/sets.rs` refuses a sampled source as an independently materializable lossless set branch. `tests/task_136_sampling.rs` verifies typed JSON, schema and sampled DISTINCT safety; `tests/task_136_frozen_matrix.rs` supplies the native DuckDB exact/Impossible complete-bag oracle. `tests/task_136_dialect_matrix.rs` verifies 143 canonical parser/dialect cells; `tests/task_136_adapter_parity.rs` verifies 33 direct SQL/dbt/ODCS cases, and `tests/task_136_dbt_core_e2e.rs` runs a real compiled model. Versioned child signoff is tracked in `docs/task-136-acceptance-freeze.json` and `docs/task-136-acceptance-audit.md`; native vendor sampling laws remain conditional. Parent TASK-76 is not signed off.
 

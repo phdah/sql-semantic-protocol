@@ -13251,7 +13251,7 @@
   "task_145_insert_values_acceptance": {
     "owner": "TASK-145",
     "parent": "TASK-80",
-    "status": "frozen_preimplementation_unverified",
+    "status": "implemented_under_independent_final_head_review",
     "freeze": "docs/task-145-acceptance-freeze.json",
     "fixture_ids": [
       "80-C145-P",
@@ -13262,7 +13262,7 @@
     "mandatory_verified": 0,
     "parser_cells_verified": 0,
     "adapter_cells_verified": 0,
-    "native_oracle": "DuckDB",
+    "native_oracle": "tests/task_145_acceptance_matrix.rs",
     "parent_signed_off": false,
     "release_approved": false,
     "original_parent_ac": [
@@ -13271,6 +13271,26 @@
       3,
       5,
       6
-    ]
+    ],
+    "freeze_version": 2,
+    "audit": "docs/task-145-acceptance-audit.md",
+    "mandatory_exact_cases": 8,
+    "mandatory_impossible_cases": 1,
+    "vendor_residual_boundaries": 7,
+    "parser_cells_required": 156,
+    "adapter_cells_required": 36,
+    "parser_oracle": "tests/task_145_dialect_adapter.rs",
+    "adapter_oracle": "tests/task_145_dialect_adapter.rs",
+    "typed_state_oracle": "tests/task_145_typed_write.rs",
+    "generated_identity_oracle": "tests/task_145_insert_values.rs",
+    "ordered_transaction_boundary_oracle": "tests/task_145_precedence.rs",
+    "wire_schema_oracle": "tests/task_145_insert_values.rs",
+    "native_vendor_execution_certified": false,
+    "downstream_parent_siblings": [
+      "TASK-146",
+      "TASK-147",
+      "TASK-148"
+    ],
+    "child_signed_off": false
   }
 }
