@@ -268,7 +268,10 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
                 "{id}/{name}: upper inclusive bound"
             );
             assert_eq!(
-                values.values().iter().any(|item| item.value() == &LiteralValue::Null),
+                values
+                    .values()
+                    .iter()
+                    .any(|item| item.value() == &LiteralValue::Null),
                 expectation["nullable"] == true,
                 "{id}/{name}"
             );
