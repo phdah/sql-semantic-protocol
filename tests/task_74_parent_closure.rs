@@ -199,7 +199,7 @@ fn run_complete_native_case(case: &Value) -> Vec<Value> {
         for row in bag {
             let cells = col_names
                 .iter()
-                .map(|col| row[col].to_string())
+                .map(|col| row[col.as_str()].to_string())
                 .collect::<Vec<_>>()
                 .join(", ");
             db.execute_batch(&format!("INSERT INTO {table} ({names}) VALUES ({cells})"))
@@ -229,7 +229,7 @@ fn run_complete_native_case(case: &Value) -> Vec<Value> {
     {
         let mut numeric = expected
             .iter()
-            .filter_map(|row| row[column].as_i64())
+            .filter_map(|row| row[column.as_str()].as_i64())
             .collect::<Vec<_>>();
         assert!(!numeric.is_empty(), "exact outcome domain for {column}");
         numeric.sort_unstable();
@@ -241,7 +241,7 @@ fn run_complete_native_case(case: &Value) -> Vec<Value> {
         );
         assert_eq!(
             domain["nullable"],
-            expected.iter().any(|row| row[column].is_null()),
+            expected.iter().any(|row| row[column.as_str()].is_null()),
             "{} {column} nullability",
             case["id"]
         );
