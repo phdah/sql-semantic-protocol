@@ -13188,7 +13188,7 @@
   },
   "task_74_parent_acceptance": {
     "owner": "TASK-74",
-    "status": "blocked_original_ac3_filtered_source_physical_qualify_missing",
+    "status": "parent_original_ac1_to_ac6_signed_off_portable_vendor_runtime_uncertified",
     "task": ".backlog/tasks/task-74 - complete-window-and-qualify-witnesses.md",
     "freeze": "docs/task-74-acceptance-freeze.json",
     "audit": "docs/task-74-acceptance-audit.md",
@@ -13207,8 +13207,8 @@
       5,
       6
     ],
-    "mandatory_cases": 34,
-    "conditional_cases": 22,
+    "mandatory_cases": 38,
+    "conditional_cases": 23,
     "required_dialects": 13,
     "required_adapters": [
       "direct_sql",
@@ -13221,15 +13221,31 @@
       "74-C127-P5"
     ],
     "dbt_native_oracle": "tests/task_128_dbt_core_e2e.rs",
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
-    "remaining_gate": "Implement and oracle-verify mandatory upstream WHERE + QUALIFY physical window proof, then final CI and parent AC signoff; TASK-91 separate release gate.",
+    "remaining_gate": "Final PR-head CI required before merge; TASK-91 separately controls protocol 3.0.0 release authorization",
     "projected_window_native_oracles": [
       "74-PARENT-PROJECTED-P",
       "74-PARENT-PROJECTED-N"
     ],
-    "mandatory_unverified": [
-      "74-PARENT-FILTERED-QUALIFY"
-    ]
+    "mandatory_unverified": [],
+    "child_mandatory_cases": 34,
+    "child_conditional_cases": 22,
+    "filtered_mandatory_cases": 4,
+    "filtered_conditional_cases": 1,
+    "filtered_freeze": "docs/task-74-filtered-qualify-freeze.json",
+    "filtered_native_oracle": "tests/task_74_filtered_qualify.rs",
+    "filtered_adapter_parity": "tests/task_74_filtered_adapters.rs",
+    "filtered_mandatory_parser_cells": 52,
+    "filtered_mandatory_adapter_cells": 12,
+    "verified_original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246"
   }
 }
