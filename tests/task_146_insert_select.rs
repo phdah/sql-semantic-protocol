@@ -6,9 +6,9 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     AnalysisBundle, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn analysis(sql: &str) -> AnalysisBundle {
@@ -17,9 +17,7 @@ fn analysis(sql: &str) -> AnalysisBundle {
             name,
             ["id", "score"]
                 .into_iter()
-                .map(|column| {
-                    SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()
-                })
+                .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap())
                 .collect(),
         )
         .unwrap()
@@ -66,7 +64,10 @@ fn check_full_bags(
     assert_eq!(transitions.len(), 1);
     let transition = &transitions[0];
     assert_eq!(transition.before().rows(), state("target", prior).rows());
-    assert_eq!(transition.affected().inserted(), (expected.len() - prior.len()) as u64);
+    assert_eq!(
+        transition.affected().inserted(),
+        (expected.len() - prior.len()) as u64
+    );
     let target = final_states
         .iter()
         .find(|state| state.relation() == "target")
@@ -78,7 +79,11 @@ fn check_full_bags(
         .find(|state| state.relation() == "source")
         .unwrap();
     assert_eq!(source_state.rows(), state("source", source).rows());
-    assert_eq!(final_states.len(), 2, "CTE must not become an independent physical source");
+    assert_eq!(
+        final_states.len(),
+        2,
+        "CTE must not become an independent physical source"
+    );
     let target_schema = bundle
         .source_schemas()
         .iter()
@@ -102,14 +107,19 @@ fn check_full_bags(
             .unwrap();
     }
     db.execute_batch(sql).unwrap();
-    let mut statement = db.prepare("SELECT id,score FROM target ORDER BY id,score").unwrap();
+    let mut statement = db
+        .prepare("SELECT id,score FROM target ORDER BY id,score")
+        .unwrap();
     let rows = statement
         .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
         .unwrap();
     let observed = rows.map(|row| row.unwrap()).collect::<Vec<_>>();
     let mut expected_sorted = expected.to_vec();
     expected_sorted.sort();
-    assert_eq!(observed, expected_sorted, "independent DuckDB full terminal bag");
+    assert_eq!(
+        observed, expected_sorted,
+        "independent DuckDB full terminal bag"
+    );
 }
 
 #[test]
@@ -161,9 +171,8 @@ fn cte_never_makes_a_missing_physical_source_exact() {
 
 #[test]
 fn insert_select_duplicate_primary_key_is_atomically_impossible() {
-    let mut bundle = analysis(
-        "INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1",
-    );
+    let mut bundle =
+        analysis("INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1");
     let evidence = vec![ConstraintEvidence::new(
         ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-146").unwrap(),
         ConstraintEnforcement::Enforced,
@@ -176,7 +185,10 @@ fn insert_select_duplicate_primary_key_is_atomically_impossible() {
     assert!(matches!(
         physical_ordered_write_state_plan(
             &bundle,
-            &[state("source", &[(1, 10), (2, 20)]), state("target", &[(2, 99)])],
+            &[
+                state("source", &[(1, 10), (2, 20)]),
+                state("target", &[(2, 99)])
+            ],
         ),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
@@ -193,7 +205,13 @@ fn insert_select_duplicate_primary_key_is_atomically_impossible() {
         .execute_batch("INSERT INTO target SELECT * FROM source WHERE id > 1")
         .is_err());
     let prior: (i64, i64) = db
-        .query_row("SELECT id,score FROM target", [], |r| Ok((r.get(0)?, r.get(1)?)))
+        .query_row("SELECT id,score FROM target", [], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
         .unwrap();
-    assert_eq!(prior, (2, 99), "failed SQL must preserve entire prior target");
+    assert_eq!(
+        prior,
+        (2, 99),
+        "failed SQL must preserve entire prior target"
+    );
 }
