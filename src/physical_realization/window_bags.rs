@@ -903,7 +903,9 @@ pub fn physical_finite_window_bag_plan(
         || query.predicates().having_predicate().is_some()
         || !query.subquery_witnesses().is_empty()
         || !query.diagnostics().is_empty()
-        || (query.predicates().qualify_predicate().is_some() && !query.ranked_goal_output_shape())
+        || (query.predicates().qualify_predicate().is_some()
+            && !query.ranked_goal_output_shape()
+            && !query.filtered_window_goal_output_shape())
         || (query.predicates().qualify_predicate().is_none() && !query.plain_goal_output_shape())
     {
         return residual("window query has unproved source or terminal row shaping");
