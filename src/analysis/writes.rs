@@ -138,7 +138,13 @@ pub(super) fn analyze_insert(
                 && query.aggregation().is_none()
                 && query.joins().is_empty()
         };
-        if !proven(&producer) || !proven(&consumer) || consumer.sources().first().is_none_or(|source| source.name() != cte_name) {
+        if !proven(&producer)
+            || !proven(&consumer)
+            || consumer
+                .sources()
+                .first()
+                .is_none_or(|source| source.name() != cte_name)
+        {
             return unsupported_write_statement(
                 "insert",
                 "unsupported_insert_cte",
