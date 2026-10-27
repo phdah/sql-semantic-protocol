@@ -375,7 +375,7 @@ fn cte_insert_enforces_referenced_primary_key_and_complete_fk_bag() {
         ],
     );
     assert!(
-        matches!(violation, PhysicalWriteStatePlan::Impossible { .. }),
+        matches!(violation, PhysicalWriteStatePlan::Residual { .. }),
         "{violation:?}"
     );
     let missing_ref = physical_ordered_write_state_plan(&valid, &[state("target", &[])]);
