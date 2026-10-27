@@ -108,7 +108,11 @@
           "lower": 2,
           "upper": 3,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            2,
+            3
+          ]
         },
         "score": {
           "type": "INTEGER",
@@ -116,7 +120,11 @@
           "lower": 20,
           "upper": 30,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            20,
+            30
+          ]
         }
       },
       "expected_truth_and_rejection": "complete source WHERE TRUE=[source#1,source#2], NOT TRUE=[source#0]",
@@ -203,7 +211,21 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-direct-reorder",
@@ -263,7 +285,12 @@
           "lower": 0,
           "upper": 3,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            0,
+            2,
+            3
+          ]
         },
         "score": {
           "type": "INTEGER",
@@ -271,7 +298,12 @@
           "lower": 0,
           "upper": 30,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            0,
+            20,
+            30
+          ]
         }
       },
       "expected_truth_and_rejection": "positional target mapping; unchanged target#0",
@@ -358,7 +390,21 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-cte-filter",
@@ -407,7 +453,11 @@
           "lower": 2,
           "upper": 3,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            2,
+            3
+          ]
         },
         "score": {
           "type": "INTEGER",
@@ -415,7 +465,11 @@
           "lower": 20,
           "upper": 30,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            20,
+            30
+          ]
         }
       },
       "expected_truth_and_rejection": "CTE is local materialization, not independently caller-supplied source",
@@ -502,7 +556,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "filtered",
+        "rows": [
+          {
+            "instance": "filtered#0",
+            "id": 2,
+            "score": 20
+          },
+          {
+            "instance": "filtered#1",
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-cte-outer-filter",
@@ -546,7 +629,10 @@
           "lower": 3,
           "upper": 3,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            3
+          ]
         },
         "score": {
           "type": "INTEGER",
@@ -554,7 +640,10 @@
           "lower": 30,
           "upper": 30,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            30
+          ]
         }
       },
       "expected_truth_and_rejection": "outer filter only passes stage row source#2",
@@ -641,7 +730,41 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0",
+        "source#1"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 1,
+            "score": 10
+          },
+          {
+            "instance": "staged#1",
+            "id": 2,
+            "score": 20
+          },
+          {
+            "instance": "staged#2",
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-cte-duplicates",
@@ -690,7 +813,10 @@
           "lower": 2,
           "upper": 2,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            2
+          ]
         },
         "score": {
           "type": "INTEGER",
@@ -698,7 +824,10 @@
           "lower": 20,
           "upper": 20,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "values": [
+            20
+          ]
         }
       },
       "expected_truth_and_rejection": "preserve distinct source#0/source#1 multiplicity",
@@ -785,7 +914,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#0",
+        "source#1"
+      ],
+      "rejected_source_rows": [
+        "source#2"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": 20
+          },
+          {
+            "instance": "staged#1",
+            "id": 2,
+            "score": 20
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-N-pk-collision",
@@ -909,7 +1067,21 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "target.id_PK",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-N-check",
@@ -1027,7 +1199,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": -20
+          },
+          {
+            "instance": "staged#1",
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "target.score_GTE_0"
+      }
     },
     {
       "id": "80-C146-N-missing-source",
@@ -1129,7 +1330,13 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "conditional_owner_review_required"
+      "release_disposition": "conditional_owner_review_required",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-N-recursive-cte",
@@ -1237,7 +1444,13 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "conditional_owner_review_required"
+      "release_disposition": "conditional_owner_review_required",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-N-null-unknown",
@@ -1285,8 +1498,8 @@
           "nullable": false,
           "lower": 2,
           "upper": 3,
-          "lower_inclusive": 2,
-          "upper_inclusive": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             2,
             3
@@ -1297,8 +1510,8 @@
           "nullable": true,
           "lower": 30,
           "upper": 30,
-          "lower_inclusive": 1,
-          "upper_inclusive": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             30
           ]
@@ -1388,7 +1601,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": null
+          },
+          {
+            "instance": "staged#1",
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-fk-safe",
@@ -1447,8 +1689,8 @@
           "nullable": false,
           "lower": 0,
           "upper": 3,
-          "lower_inclusive": 3,
-          "upper_inclusive": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             0,
             2,
@@ -1460,8 +1702,8 @@
           "nullable": false,
           "lower": 1,
           "upper": 3,
-          "lower_inclusive": 3,
-          "upper_inclusive": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             1,
             2,
@@ -1553,7 +1795,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": 2
+          },
+          {
+            "instance": "staged#1",
+            "id": 3,
+            "score": 3
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "source.id_PK+target.score_FK",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-N-fk-violation",
@@ -1671,7 +1942,36 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": 42
+          },
+          {
+            "instance": "staged#1",
+            "id": 3,
+            "score": 3
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "source.id_PK+target.score_FK",
+        "attested_check": "none"
+      }
     },
     {
       "id": "80-C146-P-ordered",
@@ -1735,8 +2035,8 @@
           "nullable": false,
           "lower": 0,
           "upper": 12,
-          "lower_inclusive": 4,
-          "upper_inclusive": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             0,
             2,
@@ -1749,8 +2049,8 @@
           "nullable": false,
           "lower": 0,
           "upper": 30,
-          "lower_inclusive": 4,
-          "upper_inclusive": 4,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
           "values": [
             0,
             20,
@@ -1843,11 +2143,41 @@
       },
       "native_duckdb_oracle": "pending_execution",
       "status": "frozen_unverified",
-      "release_disposition": "blocks_signoff_until_certified"
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "expected_intermediate": {
+        "name": "staged",
+        "rows": [
+          {
+            "instance": "staged#0",
+            "id": 2,
+            "score": 20
+          },
+          {
+            "instance": "staged#1",
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
     }
   ],
   "mandatory_count": 11,
   "conditional_count": 2,
   "parser_cells_required": 169,
-  "adapter_cells_required": 39
+  "adapter_cells_required": 39,
+  "native_vendor_execution_certified": false
 }
