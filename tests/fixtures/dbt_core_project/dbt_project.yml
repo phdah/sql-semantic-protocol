@@ -28,6 +28,10 @@ seeds:
     task136_source:
       +column_types:
         k: INTEGER
+    task146_source:
+      +column_types:
+        id: INTEGER
+        score: INTEGER
     task128_window_source:
       +column_types:
         id: INTEGER
