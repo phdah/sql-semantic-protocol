@@ -305,7 +305,6 @@ fn joined_and_grouped_qualify_reexecute_complete_native_source_and_terminal_bags
     }
 }
 
-
 #[test]
 fn projected_outer_rank_predicate_has_exact_true_and_not_true_native_bags() {
     use sql_semantic_protocol::{ProtocolStatement, WindowWitnessDirection};
@@ -339,7 +338,10 @@ fn projected_outer_rank_predicate_has_exact_true_and_not_true_native_bags() {
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch("CREATE TABLE events(account_id INTEGER, score INTEGER)")
         .expect("physical source schema");
-    for row in oracle["full_source_bag"].as_array().expect("full source bag") {
+    for row in oracle["full_source_bag"]
+        .as_array()
+        .expect("full source bag")
+    {
         db.execute_batch(&format!(
             "INSERT INTO events VALUES ({}, {})",
             row["account_id"], row["score"]
@@ -360,10 +362,7 @@ fn projected_outer_rank_predicate_has_exact_true_and_not_true_native_bags() {
                 .expect("exact positive terminal bag")
         )
     );
-    let rejected = read_bag(
-        &db,
-        oracle["negative_sql"].as_str().expect("NOT TRUE SQL"),
-    );
+    let rejected = read_bag(&db, oracle["negative_sql"].as_str().expect("NOT TRUE SQL"));
     assert_eq!(
         canonical_bag(&rejected),
         canonical_bag(
