@@ -1,6 +1,6 @@
 {
   "task": "TASK-74",
-  "version": 1,
+  "version": 2,
   "reviewed_at": "2026-10-27",
   "purpose": "Independent original-parent acceptance inventory. Child freezes remain canonical for exact source/terminal rows, expected domains and conditional parser/native classifications.",
   "source_of_truth": {
@@ -310,7 +310,7 @@
       "conditional_case_ids": [
         "74-C127-N2"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci",
+      "verification_status": "blocked_missing_exact_upstream_where_qualify",
       "additional_parent_case_ids": [
         "74-PARENT-PROJECTED-P",
         "74-PARENT-PROJECTED-N"
@@ -387,7 +387,7 @@
   "conditional_policy": "Conditional parser, numeric precision, implicit NULL ordering, collation, underordered peers and vendor/session boundaries stay non-Exact without separately executed engine law. Only DuckDB (and named SQLite numeric counterexamples) have native executable evidence.",
   "release_approved": false,
   "parent_signed_off": false,
-  "remaining_gate": "Independent review and final PR-head CI required prior to marking parent Done; TASK-91 is a separate release gate",
+  "remaining_gate": "Original AC #3 exact upstream WHERE/QUALIFY proof missing; only after implementation and independent final PR-head CI may TASK-74 be marked Done. TASK-91 separate release gate.",
   "projected_window_oracle": {
     "owner": "TASK-74",
     "case_ids": [
@@ -463,5 +463,18 @@
     "native_engine": "DuckDB",
     "adapter_boundary": "Direct SQL API witness plus DuckDB native full physical/source and terminal bags. dbt/ODCS equivalent window adapter paths are owned by TASK-125/127.",
     "dialect_boundary": "Generic SQL analyzer; all 13 dialect paths for canonical rank/QUALIFY are owned and checked by child matrices. No native vendor execution claim."
-  }
+  },
+  "revision_note": "Parent review corrects v1's omission of original AC #3's mandatory upstream WHERE-filtered window/QUALIFY physical proof; child freezes are unchanged and the parent remains unsigned.",
+  "mandatory_unverified": [
+    {
+      "id": "74-PARENT-FILTERED-QUALIFY",
+      "original_ac": 3,
+      "owner": "TASK-74",
+      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x > 0 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
+      "required_evidence": "Complete authoritative source bag, WHERE TRUE/FALSE/UNKNOWN row identities, post-filter ranking/QUALIFY TRUE and NOT TRUE, exact integer output domains, native DuckDB full source/terminal oracle, and 13-dialect plus SQL/dbt/ODCS parity.",
+      "observed_gap": "physical_finite_window_bag_plan and composed_window_plan explicitly return Residual when query.predicates().where_predicate() is Some; no independent exact physical proof for the original filtered-input acceptance requirement.",
+      "classification": "mandatory_missing_exact",
+      "signoff": "blocked"
+    }
+  ]
 }
