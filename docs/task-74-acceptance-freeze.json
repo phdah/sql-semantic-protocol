@@ -310,7 +310,11 @@
       "conditional_case_ids": [
         "74-C127-N2"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "parent_review_requires_final_pr_head_ci",
+      "additional_parent_case_ids": [
+        "74-PARENT-PROJECTED-P",
+        "74-PARENT-PROJECTED-N"
+      ]
     },
     {
       "id": 4,
@@ -383,5 +387,81 @@
   "conditional_policy": "Conditional parser, numeric precision, implicit NULL ordering, collation, underordered peers and vendor/session boundaries stay non-Exact without separately executed engine law. Only DuckDB (and named SQLite numeric counterexamples) have native executable evidence.",
   "release_approved": false,
   "parent_signed_off": false,
-  "remaining_gate": "Independent review and final PR-head CI required prior to marking parent Done; TASK-91 is a separate release gate"
+  "remaining_gate": "Independent review and final PR-head CI required prior to marking parent Done; TASK-91 is a separate release gate",
+  "projected_window_oracle": {
+    "owner": "TASK-74",
+    "case_ids": [
+      "74-PARENT-PROJECTED-P",
+      "74-PARENT-PROJECTED-N"
+    ],
+    "source_schema": {
+      "events": {
+        "account_id": "INTEGER",
+        "score": "INTEGER"
+      }
+    },
+    "full_source_bag": [
+      {
+        "account_id": 1,
+        "score": 10
+      },
+      {
+        "account_id": 1,
+        "score": 20
+      },
+      {
+        "account_id": 1,
+        "score": 30
+      },
+      {
+        "account_id": 2,
+        "score": 5
+      },
+      {
+        "account_id": 2,
+        "score": 15
+      }
+    ],
+    "positive_sql": "SELECT ranked.rn FROM (SELECT ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events) ranked WHERE ranked.rn <= 2",
+    "negative_sql": "SELECT account_id, score FROM (SELECT account_id, score, ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events) ranked WHERE rn > 2",
+    "expected_positive_terminal_bag": [
+      {
+        "rn": 1
+      },
+      {
+        "rn": 2
+      },
+      {
+        "rn": 1
+      },
+      {
+        "rn": 2
+      }
+    ],
+    "expected_not_true_physical_bag": [
+      {
+        "account_id": 1,
+        "score": 30
+      }
+    ],
+    "terminal_domain": {
+      "rn": {
+        "kind": "integer",
+        "values": [
+          1,
+          2
+        ],
+        "nullable": false,
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true
+      }
+    },
+    "positive_proof": "Exact",
+    "not_true_proof": "Exact",
+    "native_engine": "DuckDB",
+    "adapter_boundary": "Direct SQL API witness plus DuckDB native full physical/source and terminal bags. dbt/ODCS equivalent window adapter paths are owned by TASK-125/127.",
+    "dialect_boundary": "Generic SQL analyzer; all 13 dialect paths for canonical rank/QUALIFY are owned and checked by child matrices. No native vendor execution claim."
+  }
 }
