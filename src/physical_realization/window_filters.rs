@@ -7,7 +7,7 @@ use super::*;
 use crate::protocol::{ComparisonOperator, LiteralType, LiteralValue};
 use crate::relation::RelationSchema;
 
-enum Scalar {
+pub(super) enum Scalar {
     Column(String),
     Integer(Option<i128>),
 }
