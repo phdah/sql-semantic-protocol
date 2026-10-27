@@ -2972,6 +2972,7 @@
         "definition_mode",
         "kind",
         "target_columns",
+        "default_values",
         "match_condition",
         "merge_clauses",
         "selection",
@@ -3016,6 +3017,10 @@
           "items": {
             "$ref": "#/$defs/nonEmptyString"
           }
+        },
+        "default_values": {
+          "type": "boolean",
+          "description": "True only for an INSERT DEFAULT VALUES action with a single source-free row."
         },
         "match_condition": {
           "oneOf": [

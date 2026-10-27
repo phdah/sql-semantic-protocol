@@ -1,7 +1,7 @@
 ---
 id: TASK-145
 title: Construct typed INSERT VALUES and DEFAULT VALUES state
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'

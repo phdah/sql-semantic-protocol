@@ -1,3 +1,13 @@
+TASK-145 source-free INSERT constructors: `src/analysis/writes.rs` recognizes
+ordinary VALUES and DEFAULT VALUES, reusing the canonical finite literal bags
+in `src/analysis/finite_tables.rs`. `src/protocol/writes.rs` owns the typed
+source-free default write marker and effect cardinality; `src/physical_realization/write_states/operators.rs`
+applies exact literal rows or one authoritative all-default row, preserving
+the complete prestate and schema feasibility. `src/emission/statements.rs`
+and `schema/protocol.schema.json` own the emitted action and flag. The finite
+acceptance inventory is `docs/task-145-acceptance-freeze.json` and public DuckDB
+oracle is `tests/task_145_insert_values.rs`. TASK-80 parent is separate.
+
 TASK-136 sampling: `src/analysis/sampling.rs` owns sqlparser AST method/quantity/seed normalization, `src/protocol/sampling.rs` holds source-independent typed evidence, and `src/protocol/query.rs` owns sampled source instances. `src/emission/statements.rs` and `schema/protocol.schema.json` own the optional query `sampling` contract. `src/analysis/sets.rs` refuses a sampled source as an independently materializable lossless set branch. `tests/task_136_sampling.rs` verifies typed JSON, schema and sampled DISTINCT safety; `tests/task_136_frozen_matrix.rs` supplies the native DuckDB exact/Impossible complete-bag oracle. `tests/task_136_dialect_matrix.rs` verifies 143 canonical parser/dialect cells; `tests/task_136_adapter_parity.rs` verifies 33 direct SQL/dbt/ODCS cases, and `tests/task_136_dbt_core_e2e.rs` runs a real compiled model. Versioned child signoff is tracked in `docs/task-136-acceptance-freeze.json` and `docs/task-136-acceptance-audit.md`; native vendor sampling laws remain conditional. Parent TASK-76 is not signed off.
 
 TASK-135 composed pagination: `src/analysis/sets.rs` certifies inner/outer CTE pagination and independently ordered set branch leaves; `src/protocol/{query,sets}.rs` preserves both ordered row-shaping stages and each branch's own constraints. `src/physical_realization/page_composition.rs` proves complete original and terminal bags for source-backed CTE pages; `src/physical_realization/set_trees.rs` applies each branch page before set multiplicity, retaining page-rejected identities and typed terminal domains. `src/emission/{statements,aggregation_sets}.rs` and `schema/protocol.schema.json` own the canonical JSON shape. Oracle fixtures live in `tests/task_135_*.rs`, with real dbt Core seed/model under `tests/fixtures/dbt_core_project`; the signed acceptance matrix is `docs/task-135-acceptance-freeze.json`. Implicit NULL order, unproved peers, and unordered producers are residual; TASK-76 parent is separate.
