@@ -13303,15 +13303,33 @@
   "task_146_insert_select_cte_acceptance": {
     "owner": "TASK-146",
     "parent": "TASK-80",
-    "state": "frozen_preimplementation_pending_execution",
+    "state": "expanded_frozen_oracles_pending_final_execution",
     "freeze": "docs/task-146-acceptance-freeze.json",
-    "fixture_ids": ["80-C146-P", "80-C146-N"],
-    "mandatory_cases": 7,
+    "fixture_ids": [
+      "80-C146-P",
+      "80-C146-N"
+    ],
+    "mandatory_cases": 11,
     "conditional_cases": 2,
-    "parser_cells_required": 117,
-    "adapter_cells_required": 27,
+    "parser_cells_required": 169,
+    "adapter_cells_required": 39,
     "mandatory_verified": 0,
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "freeze_version": 2,
+    "native_oracle": "tests/task_146_acceptance_matrix.rs",
+    "parser_oracle": "tests/task_146_dialect_adapter.rs",
+    "adapter_oracle": "tests/task_146_dialect_adapter.rs",
+    "constraint_oracle": "tests/task_146_insert_select.rs",
+    "wire_schema_oracle": "tests/task_146_insert_select.rs",
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "native_vendor_execution_certified": false
   }
 }
