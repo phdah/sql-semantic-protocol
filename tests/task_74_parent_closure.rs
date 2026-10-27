@@ -304,3 +304,83 @@ fn joined_and_grouped_qualify_reexecute_complete_native_source_and_terminal_bags
         }
     }
 }
+
+
+#[test]
+fn projected_outer_rank_predicate_has_exact_true_and_not_true_native_bags() {
+    use sql_semantic_protocol::{ProtocolStatement, WindowWitnessDirection};
+    use sqlparser::dialect::GenericDialect;
+
+    let oracle = &parent()["projected_window_oracle"];
+    assert_eq!(
+        values(&oracle["case_ids"]),
+        values(&json!(["74-PARENT-PROJECTED-P", "74-PARENT-PROJECTED-N"]))
+    );
+    let sql = oracle["positive_sql"].as_str().expect("projected rank SQL");
+    let protocol = sql_semantic_protocol::analyze_sql(sql, "generic", &GenericDialect {})
+        .expect("public parser-independent SQL analysis");
+    let witness = match protocol.statements().first() {
+        Some(ProtocolStatement::Query(query)) => query
+            .window_witness()
+            .expect("projected ROW_NUMBER witness"),
+        other => panic!("projected query missing: {other:?}"),
+    };
+    assert!(matches!(
+        witness.qualifying(),
+        WindowWitnessDirection::Exact(case)
+            if case.min_preceding() == 0 && case.max_preceding() == Some(1)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        WindowWitnessDirection::Exact(case)
+            if case.min_preceding() == 2 && case.max_preceding().is_none()
+    ));
+
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    db.execute_batch("CREATE TABLE events(account_id INTEGER, score INTEGER)")
+        .expect("physical source schema");
+    for row in oracle["full_source_bag"].as_array().expect("full source bag") {
+        db.execute_batch(&format!(
+            "INSERT INTO events VALUES ({}, {})",
+            row["account_id"], row["score"]
+        ))
+        .expect("native source row");
+    }
+    let physical = read_bag(&db, "SELECT account_id, score FROM events");
+    assert_eq!(
+        canonical_bag(&physical),
+        canonical_bag(oracle["full_source_bag"].as_array().expect("source bag"))
+    );
+    let actual_positive = read_bag(&db, sql);
+    assert_eq!(
+        canonical_bag(&actual_positive),
+        canonical_bag(
+            oracle["expected_positive_terminal_bag"]
+                .as_array()
+                .expect("exact positive terminal bag")
+        )
+    );
+    let rejected = read_bag(
+        &db,
+        oracle["negative_sql"].as_str().expect("NOT TRUE SQL"),
+    );
+    assert_eq!(
+        canonical_bag(&rejected),
+        canonical_bag(
+            oracle["expected_not_true_physical_bag"]
+                .as_array()
+                .expect("exact NOT TRUE bag")
+        )
+    );
+    let positive_ranks = actual_positive
+        .iter()
+        .filter_map(|row| row["rn"].as_i64())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(positive_ranks, [1, 2].into_iter().collect());
+    let domain = &oracle["terminal_domain"]["rn"];
+    assert_eq!(domain["lower"], 1);
+    assert_eq!(domain["upper"], 2);
+    assert_eq!(domain["nullable"], false);
+    assert_eq!(domain["lower_inclusive"], true);
+    assert_eq!(domain["upper_inclusive"], true);
+}
