@@ -12,7 +12,8 @@ The immutable preimplementation v1 inventory is preserved by Git history;
 missing NULL, FK and ordered-write oracles, independent source row identities,
 closed TRUE/NOT TRUE partitions, intermediate CTE bags and typed output bounds.
 There are 10 mandatory and three conditional physical cases, 169 parser-dialect
-cells and 39 SQL/dbt/ODCS evidence cells. The tests use the actual frozen SQL
+cells, 39 SQL/dbt/ODCS evidence cells, 52 separately frozen vendor
+modifier parser-boundary cells and four unsafe scope/ordering boundaries. The tests use the actual frozen SQL
 text and declared complete populations, not a consumer-side SQL interpreter.
 
 ## Verification by original child criterion
