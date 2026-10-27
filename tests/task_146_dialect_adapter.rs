@@ -167,9 +167,14 @@ fn equivalent_source_target_catalogs_prove_identical_closed_world_states() {
     let freeze = freeze();
     let direct = direct_catalog();
     let dbt = dbt_catalog();
-    let mut catalogs = vec![("direct_sql", direct), ("dbt_compiled", dbt)];
     #[cfg(feature = "odcs")]
-    catalogs.push(("odcs_schema", odcs_catalog()));
+    let catalogs = vec![
+        ("direct_sql", direct),
+        ("dbt_compiled", dbt),
+        ("odcs_schema", odcs_catalog()),
+    ];
+    #[cfg(not(feature = "odcs"))]
+    let catalogs = vec![("direct_sql", direct), ("dbt_compiled", dbt)];
 
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
