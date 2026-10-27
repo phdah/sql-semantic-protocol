@@ -205,7 +205,9 @@ pub(super) fn append_rows(
         if cte_columns.is_empty()
             || cte_columns.iter().collect::<BTreeSet<_>>().len() != cte_columns.len()
         {
-            return Err(residual("INSERT CTE producer columns are not uniquely named"));
+            return Err(residual(
+                "INSERT CTE producer columns are not uniquely named",
+            ));
         }
         let cte_rows = evaluate_simple_select(bundle, cte.producer(), states)?
             .into_iter()
