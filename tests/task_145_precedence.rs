@@ -28,8 +28,9 @@ fn bundle(queries: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let inputs = queries.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
-    let configured = inputs.iter().enumerate().map(|(i,source)| {
-        ConfiguredSqlInput::new(format!("task145-{i}"), source,"duckdb",dialect.as_ref())
+    let names = (0..inputs.len()).map(|i| format!("task145-{i}")).collect::<Vec<_>>();
+    let configured = inputs.iter().zip(&names).map(|(source, id)| {
+        ConfiguredSqlInput::new(id, source, "duckdb", dialect.as_ref())
     }).collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured,&catalog).unwrap()
 }
