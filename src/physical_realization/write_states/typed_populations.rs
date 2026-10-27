@@ -546,7 +546,8 @@ pub fn physical_typed_ordered_write_plan(
                 if table.kind() != crate::protocol::FiniteTableKind::Values {
                     return gap("typed INSERT finite source must be literal VALUES");
                 }
-                table.rows()
+                table
+                    .rows()
                     .iter()
                     .map(|row| {
                         row.iter()

@@ -216,7 +216,7 @@ fn all_156_frozen_parser_cells_have_explicit_canonical_or_parser_boundaries() {
                         } else if sql.contains("VALUES") {
                             assert!(!write.default_values());
                             let table = statement.finite_table().expect("literal VALUES bag");
-                            assert_eq!(table.rows().len(), sql.matches("),").count()+1);
+                            assert_eq!(table.rows().len(), sql.matches("),").count() + 1);
                         }
                         exact += 1;
                         "parsed_canonical"
@@ -228,17 +228,24 @@ fn all_156_frozen_parser_cells_have_explicit_canonical_or_parser_boundaries() {
                     _ => panic!("{dialect}: INSERT has unexpected statement variant"),
                 },
             };
-            let expected = case["dialect_parser_cells"][dialect]["state"].as_str().unwrap();
+            let expected = case["dialect_parser_cells"][dialect]["state"]
+                .as_str()
+                .unwrap();
             if status != expected {
-                disagreements.push(format!("{} / {dialect}: expected={expected} actual={status}",
-                    case["id"].as_str().unwrap()));
+                disagreements.push(format!(
+                    "{} / {dialect}: expected={expected} actual={status}",
+                    case["id"].as_str().unwrap()
+                ));
             }
             cells += 1;
         }
     }
     assert_eq!(cells, 156);
-    assert_eq!(exact+unsupported+parser_boundaries, 156);
-    assert!(disagreements.is_empty(), "TASK-145 parser inventory mismatch: {disagreements:?}");
+    assert_eq!(exact + unsupported + parser_boundaries, 156);
+    assert!(
+        disagreements.is_empty(),
+        "TASK-145 parser inventory mismatch: {disagreements:?}"
+    );
 }
 
 /// Equivalent schema metadata changes provenance, never insertion effects.
@@ -248,26 +255,33 @@ fn all_156_frozen_parser_cells_have_explicit_canonical_or_parser_boundaries() {
 #[test]
 fn all_frozen_cases_have_direct_dbt_and_odcs_schema_parity() {
     use sql_semantic_protocol::{
-        parse_odcs_yaml, ConstraintValue, ConstraintEnforcement, ConstraintEvidence,
-        ConstraintProvenance, ConstraintSourceKind, RelationConstraint,
-        RelationConstraintSet, ColumnValueKind, ColumnValueSource,
+        parse_odcs_yaml, ColumnValueKind, ColumnValueSource, ConstraintEnforcement,
+        ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue,
+        RelationConstraint, RelationConstraintSet,
     };
     const RAW: &str = "warehouse.raw.orders";
-    let schemas = [TARGET, RAW].into_iter().map(|relation| {
-        RelationSchema::new(relation,vec![
-            SchemaColumn::from_sql_type("id","BIGINT","postgresql").unwrap(),
-            SchemaColumn::from_sql_type("amount","INTEGER","postgresql").unwrap(),
-        ]).unwrap()
-    }).collect::<Vec<_>>();
+    let schemas = [TARGET, RAW]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                vec![
+                    SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+                    SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+                ],
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(&schemas).unwrap();
 
     let manifest = parse_dbt_manifest(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let dialect = dialect_from_name("postgresql").unwrap();
-    let dbt = analyze_dbt_artifacts(&manifest,&catalog,"postgresql",dialect.as_ref()).unwrap();
+    let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", dialect.as_ref()).unwrap();
     let dbt_catalog = RelationCatalog::from_schemas(dbt.source_schemas()).unwrap();
 
-    let known = RelationCatalog::new(&[TARGET,RAW]).unwrap();
+    let known = RelationCatalog::new(&[TARGET, RAW]).unwrap();
     let odcs = parse_odcs_yaml(
         r#"
 apiVersion: v3.2.0
@@ -291,14 +305,20 @@ schema:
         physicalType: BIGINT
       - name: amount
         physicalType: INTEGER
-"#, "postgresql", &known,
-    ).unwrap();
+"#,
+        "postgresql",
+        &known,
+    )
+    .unwrap();
     let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
 
-    let evidence = || vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata,"task145-equivalent").unwrap(),
-        ConstraintEnforcement::Enforced,
-    )];
+    let evidence = || {
+        vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task145-equivalent")
+                .unwrap(),
+            ConstraintEnforcement::Enforced,
+        )]
+    };
     let freeze = task_145_freeze();
     let mut count = 0;
     for case in freeze["cases"].as_array().unwrap() {
@@ -307,48 +327,73 @@ schema:
             .replace("target", TARGET)
             .replace("empty_source", RAW)
             .replace("score", "amount");
-        let actual = [(&direct_catalog,"direct"),(&dbt_catalog,"dbt"),(&odcs_catalog,"odcs")]
-            .into_iter().map(|(schema,origin)| {
-                let input=SqlInput::inline(&sql);
-                let configured=ConfiguredSqlInput::new("task145-parity",&input,"postgresql",dialect.as_ref());
-                let mut bundle=analyze_configured_inputs_with_catalog(&[configured],schema).unwrap();
-                let id=case["id"].as_str().unwrap();
-                let mut constraints = vec![];
-                if id.ends_with("unique-violation") {
-                    constraints.push(RelationConstraint::primary_key(vec!["id".into()],evidence()).unwrap());
-                }
-                let defaults = if id.ends_with("default-values") {
-                    vec![("id",5),("amount",7)]
-                } else if id.ends_with("default-omission") {
-                    vec![("amount",7)]
-                } else {
-                    vec![]
-                };
-                let set=RelationConstraintSet::new(TARGET,constraints).unwrap()
-                    .with_column_value_sources(defaults.into_iter().map(|(column,value)| {
-                        ColumnValueSource::new(column,ColumnValueKind::Default,
-                            Some(ConstraintValue::Integer(value)),evidence()).unwrap()
-                    }).collect());
-                bundle.enrich_relation_constraints(&[set]);
-                let mut initial=vec![PhysicalWriteState::new(TARGET,vec![]).unwrap()];
-                if id.ends_with("zero-source") {
-                    initial.push(PhysicalWriteState::new(RAW,vec![]).unwrap());
-                }
-                let proof = physical_ordered_write_state_plan(&bundle,&initial);
-                match case["proof"].as_str().unwrap() {
-                    "Exact" => assert!(matches!(proof,PhysicalWriteStatePlan::Feasible{..}),
-                        "{origin}/{id}: {proof:?}"),
-                    "Impossible" => assert!(matches!(proof,PhysicalWriteStatePlan::Impossible{..}),
-                        "{origin}/{id}: {proof:?}"),
-                    "Residual" => assert!(matches!(proof,PhysicalWriteStatePlan::Residual{..}),
-                        "{origin}/{id}: {proof:?}"),
-                    other => panic!("unexpected proof {other}"),
-                }
-                proof
-            }).collect::<Vec<_>>();
-        assert_eq!(actual[0],actual[1], "{}: dbt provenance", case["id"]);
-        assert_eq!(actual[0],actual[2], "{}: ODCS provenance", case["id"]);
-        count+=1;
+        let actual = [
+            (&direct_catalog, "direct"),
+            (&dbt_catalog, "dbt"),
+            (&odcs_catalog, "odcs"),
+        ]
+        .into_iter()
+        .map(|(schema, origin)| {
+            let input = SqlInput::inline(&sql);
+            let configured =
+                ConfiguredSqlInput::new("task145-parity", &input, "postgresql", dialect.as_ref());
+            let mut bundle = analyze_configured_inputs_with_catalog(&[configured], schema).unwrap();
+            let id = case["id"].as_str().unwrap();
+            let mut constraints = vec![];
+            if id.ends_with("unique-violation") {
+                constraints
+                    .push(RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap());
+            }
+            let defaults = if id.ends_with("default-values") {
+                vec![("id", 5), ("amount", 7)]
+            } else if id.ends_with("default-omission") {
+                vec![("amount", 7)]
+            } else {
+                vec![]
+            };
+            let set = RelationConstraintSet::new(TARGET, constraints)
+                .unwrap()
+                .with_column_value_sources(
+                    defaults
+                        .into_iter()
+                        .map(|(column, value)| {
+                            ColumnValueSource::new(
+                                column,
+                                ColumnValueKind::Default,
+                                Some(ConstraintValue::Integer(value)),
+                                evidence(),
+                            )
+                            .unwrap()
+                        })
+                        .collect(),
+                );
+            bundle.enrich_relation_constraints(&[set]);
+            let mut initial = vec![PhysicalWriteState::new(TARGET, vec![]).unwrap()];
+            if id.ends_with("zero-source") {
+                initial.push(PhysicalWriteState::new(RAW, vec![]).unwrap());
+            }
+            let proof = physical_ordered_write_state_plan(&bundle, &initial);
+            match case["proof"].as_str().unwrap() {
+                "Exact" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Feasible { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
+                "Impossible" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Impossible { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
+                "Residual" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Residual { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
+                other => panic!("unexpected proof {other}"),
+            }
+            proof
+        })
+        .collect::<Vec<_>>();
+        assert_eq!(actual[0], actual[1], "{}: dbt provenance", case["id"]);
+        assert_eq!(actual[0], actual[2], "{}: ODCS provenance", case["id"]);
+        count += 1;
     }
-    assert_eq!(count,12);
+    assert_eq!(count, 12);
 }
