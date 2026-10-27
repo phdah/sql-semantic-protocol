@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-146",
   "parent": "TASK-80",
-  "state": "frozen_v3_bounded_source_target_and_positional_oracles_pending_execution",
+  "state": "v3_frozen_parser_observations_pending_final_head_and_adapter_signoff",
   "original_parent_ac": [
     1,
     2,
@@ -130,69 +130,82 @@
       "expected_truth_and_rejection": "complete source WHERE TRUE=[source#1,source#2], NOT TRUE=[source#0]",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -309,69 +322,82 @@
       "expected_truth_and_rejection": "positional target mapping; unchanged target#0",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -481,69 +507,82 @@
       "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -653,69 +692,82 @@
       "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -834,69 +886,82 @@
       "expected_truth_and_rejection": "CTE is local materialization, not independently caller-supplied source",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1008,69 +1073,82 @@
       "expected_truth_and_rejection": "outer filter only passes stage row source#2",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1192,69 +1270,82 @@
       "expected_truth_and_rejection": "preserve distinct source#0/source#1 multiplicity",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1345,69 +1436,82 @@
       "expected_truth_and_rejection": "attested enforced PK id duplicate with target before; atomic failure",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1477,69 +1581,82 @@
       "expected_truth_and_rejection": "attested CHECK score >= 0 rejects selected source#1",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1608,69 +1725,82 @@
       "expected_truth_and_rejection": "source complete physical population unavailable; never invent rows",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1722,69 +1852,82 @@
       "expected_truth_and_rejection": "recursive CTE requires termination and producer evidence",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -1879,69 +2022,82 @@
       "expected_truth_and_rejection": "source#0 WHERE UNKNOWN rejected, source#1 and #2 accepted; SQL NULL remains physical in score; target missing=(99,99)",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -2073,69 +2229,82 @@
       "expected_truth_and_rejection": "target.score FK to complete source.id enforced PK, all selected values referenced",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -2220,69 +2389,82 @@
       "expected_truth_and_rejection": "FK target.score=42 has no source.id in full bag. DuckDB rejects atomically; canonical impossibility remains Residual until immediate enforcement/deferral evidence exists.",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -2421,69 +2603,82 @@
       "expected_truth_and_rejection": "second write reads complete result of first, never independent target producer",
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "required": true,
-          "owner": "TASK-146"
+          "owner": "TASK-146",
+          "evidence": "CI parser/canonical oracle on sqlparser 0.58; v3 positional cases independently verified by final-head CI"
         }
       },
       "adapter_cells": {
@@ -2603,5 +2798,10 @@
       "owner": "TASK-146",
       "expected": "Residual"
     }
-  ]
+  ],
+  "parser_classification_summary": {
+    "parsed_canonical": 182,
+    "canonical_unsupported": 13,
+    "parser_boundary": 0
+  }
 }
