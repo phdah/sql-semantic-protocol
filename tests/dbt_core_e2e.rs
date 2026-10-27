@@ -922,6 +922,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task136_page")
                 && !id.ends_with(".task135_source")
                 && !id.ends_with(".task136_source")
+                && !id.ends_with(".task146_source")
                 && !id.ends_with(".task189_decimal_windows")
                 && !id.ends_with(".task137_literal_unnest")
                 && !id.ends_with(".task138_finite_star")
@@ -931,6 +932,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task139_nullable_duplicate_elements")
                 && !id.ends_with(".task140_grouped_fanout")
                 && !id.ends_with(".task140_joined_fanout")
+                && !id.ends_with(".task146_insert_source")
+                && !id.ends_with(".task146_source")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_manifest_json["sources"]
@@ -943,6 +946,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && source["name"] != "task134_source"
                 && source["name"] != "task135_source"
                 && source["name"] != "task136_source"
+                && source["name"] != "task146_source"
         });
     let legacy_manifest = parse_dbt_manifest(&legacy_manifest_json.to_string()).unwrap();
     let mut legacy_catalog_json: Value = serde_json::from_str(&catalog_text).unwrap();
@@ -970,6 +974,8 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 && !id.ends_with(".task139_nullable_duplicate_elements")
                 && !id.ends_with(".task140_grouped_fanout")
                 && !id.ends_with(".task140_joined_fanout")
+                && !id.ends_with(".task146_insert_source")
+                && !id.ends_with(".task146_source")
                 && !id.ends_with(".task189_decimal_source")
         });
     legacy_catalog_json["sources"]
