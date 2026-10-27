@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    AnalysisBundle, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    AnalysisBundle, CheckCompareOperator, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput,
 };
@@ -214,4 +214,56 @@ fn insert_select_duplicate_primary_key_is_atomically_impossible() {
         (2, 99),
         "failed SQL must preserve entire prior target"
     );
+}
+
+#[test]
+fn cte_insert_check_violation_preserves_prior_complete_target() {
+    let sql = "INSERT INTO target(id,score) WITH staged AS
+        (SELECT id,score FROM source WHERE id > 1)
+        SELECT id,score FROM staged";
+    let mut bundle = analysis(sql);
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-146").unwrap(),
+        ConstraintEnforcement::Enforced,
+    )];
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![
+            RelationConstraint::check_comparison(
+                "score",
+                CheckCompareOperator::Gte,
+                ConstraintValue::Integer(0),
+                evidence,
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap()]);
+    let plan = physical_ordered_write_state_plan(
+        &bundle,
+        &[
+            state("source", &[(1, 10), (2, -20), (3, 30)]),
+            state("target", &[(0, 0)]),
+        ],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER, score INTEGER);
+         CREATE TABLE target(id INTEGER, score INTEGER CHECK(score >= 0));
+         INSERT INTO source VALUES (1,10),(2,-20),(3,30);
+         INSERT INTO target VALUES (0,0);",
+    )
+    .unwrap();
+    assert!(db.execute_batch(sql).is_err());
+    let existing: Vec<(i64, i64)> = {
+        let mut query = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
+        query
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect()
+    };
+    assert_eq!(existing, vec![(0, 0)]);
 }
