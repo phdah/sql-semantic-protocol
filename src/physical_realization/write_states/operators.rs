@@ -163,6 +163,7 @@ pub(super) fn append_rows(
     target: &str,
     before: Option<&PhysicalWriteState>,
     identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
+    intermediate_states: &mut Vec<PhysicalWriteState>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let Some(write) = query.write() else {
@@ -221,14 +222,14 @@ pub(super) fn append_rows(
             })
             .collect::<StateResult<Vec<_>>>()?;
         let mut local_states = states.clone();
-        local_states.insert(
-            cte.name().to_string(),
-            PhysicalWriteState {
-                relation: cte.name().to_string(),
-                rows: cte_rows,
-            },
-        );
-        evaluate_simple_select(bundle, cte.consumer(), &local_states)?
+        let intermediate = PhysicalWriteState {
+            relation: cte.name().to_string(),
+            rows: cte_rows,
+        };
+        local_states.insert(cte.name().to_string(), intermediate.clone());
+        let result = evaluate_simple_select(bundle, cte.consumer(), &local_states)?;
+        intermediate_states.push(intermediate);
+        result
     } else if let Some(table) = query.finite_table() {
         if table.kind() != crate::protocol::FiniteTableKind::Values {
             return Err(residual(
