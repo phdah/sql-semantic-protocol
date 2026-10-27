@@ -13247,5 +13247,30 @@
       6
     ],
     "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246"
+  },
+  "task_145_insert_values_acceptance": {
+    "owner": "TASK-145",
+    "parent": "TASK-80",
+    "status": "frozen_preimplementation_unverified",
+    "freeze": "docs/task-145-acceptance-freeze.json",
+    "fixture_ids": [
+      "80-C145-P",
+      "80-C145-N"
+    ],
+    "mandatory_cases": 9,
+    "conditional_cases": 3,
+    "mandatory_verified": 0,
+    "parser_cells_verified": 0,
+    "adapter_cells_verified": 0,
+    "native_oracle": "DuckDB",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ]
   }
 }
