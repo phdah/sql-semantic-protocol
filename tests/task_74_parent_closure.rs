@@ -6,11 +6,26 @@ use serde_json::{json, Map, Value};
 use std::collections::BTreeSet;
 
 const CHILDREN: [(&str, &str); 5] = [
-    ("TASK-125", include_str!("../docs/task-125-acceptance-freeze.json")),
-    ("TASK-126", include_str!("../docs/task-126-acceptance-freeze.json")),
-    ("TASK-189", include_str!("../docs/task-189-acceptance-freeze.json")),
-    ("TASK-127", include_str!("../docs/task-127-acceptance-freeze.json")),
-    ("TASK-128", include_str!("../docs/task-128-acceptance-freeze.json")),
+    (
+        "TASK-125",
+        include_str!("../docs/task-125-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-126",
+        include_str!("../docs/task-126-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-189",
+        include_str!("../docs/task-189-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-127",
+        include_str!("../docs/task-127-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-128",
+        include_str!("../docs/task-128-acceptance-freeze.json"),
+    ),
 ];
 
 fn parent() -> Value {
@@ -45,7 +60,10 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
     let dialects = values(&freeze["required_dialects"]);
     let adapters = values(&freeze["required_adapters"]);
     assert_eq!(dialects.len(), 13);
-    assert_eq!(adapters, values(&json!(["direct_sql", "dbt_compiled", "odcs_schema"])));
+    assert_eq!(
+        adapters,
+        values(&json!(["direct_sql", "dbt_compiled", "odcs_schema"]))
+    );
 
     let mut mandatory = BTreeSet::new();
     let mut conditional = BTreeSet::new();
@@ -62,7 +80,11 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
         );
         assert_eq!(record["version"], child["version"]);
         let child_dialects = child.get("required_dialects").unwrap_or(&child["dialects"]);
-        assert_eq!(values(child_dialects), dialects, "{task} parser dialect coverage");
+        assert_eq!(
+            values(child_dialects),
+            dialects,
+            "{task} parser dialect coverage"
+        );
         let child_adapters = child.get("required_adapters").unwrap_or(&child["adapters"]);
         let normalized = values(child_adapters)
             .into_iter()
@@ -82,9 +104,7 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
         let mut task_mandatory = BTreeSet::new();
         let mut task_conditional = BTreeSet::new();
         let cases = child["cases"].as_array().expect("frozen cases");
-        let numeric = child
-            .get("numeric_oracle_cases")
-            .and_then(Value::as_array);
+        let numeric = child.get("numeric_oracle_cases").and_then(Value::as_array);
         for case in cases.iter().chain(numeric.into_iter().flatten()) {
             let case_id = case["id"].as_str().expect("stable fixture variant");
             assert!(!case["sql"].as_str().unwrap_or("").is_empty(), "{case_id}");
@@ -113,17 +133,35 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
                         .is_some_and(|domain| domain.is_array() || domain.is_object()),
                     "{case_id} has no typed outcome domain"
                 );
-                assert!(task_mandatory.insert(case_id.to_owned()), "duplicate {case_id}");
+                assert!(
+                    task_mandatory.insert(case_id.to_owned()),
+                    "duplicate {case_id}"
+                );
                 assert!(mandatory.insert(case_id.to_owned()), "duplicate {case_id}");
             } else {
-                assert!(task_conditional.insert(case_id.to_owned()), "duplicate {case_id}");
-                assert!(conditional.insert(case_id.to_owned()), "duplicate {case_id}");
+                assert!(
+                    task_conditional.insert(case_id.to_owned()),
+                    "duplicate {case_id}"
+                );
+                assert!(
+                    conditional.insert(case_id.to_owned()),
+                    "duplicate {case_id}"
+                );
             }
         }
-        assert_eq!(task_mandatory, values(&record["mandatory_case_ids"]), "{task}");
-        assert_eq!(task_conditional, values(&record["conditional_case_ids"]), "{task}");
+        assert_eq!(
+            task_mandatory,
+            values(&record["mandatory_case_ids"]),
+            "{task}"
+        );
+        assert_eq!(
+            task_conditional,
+            values(&record["conditional_case_ids"]),
+            "{task}"
+        );
         assert!(
-            child.get("mandatory_unverified")
+            child
+                .get("mandatory_unverified")
                 .is_none_or(|v| v.as_array().is_some_and(Vec::is_empty)),
             "{task} has unverified mandatory cases"
         );
