@@ -255,8 +255,7 @@ fn equivalent_source_target_catalogs_prove_identical_closed_world_states() {
         let mut expected = None;
         for (origin, catalog) in &catalogs {
             assert_eq!(
-                case["adapter_cells"][*origin]["state"],
-                "expected_equivalent_physical_plan",
+                case["adapter_cells"][*origin]["state"], "expected_equivalent_physical_plan",
                 "{id}: frozen adapter expectation for {origin}"
             );
             let proof = parity_case(case, catalog);
