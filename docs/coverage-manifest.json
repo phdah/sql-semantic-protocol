@@ -13331,6 +13331,8 @@
       6
     ],
     "native_vendor_execution_certified": false,
-    "conditional_fk_violation": "Residual: immediate FK enforcement/deferral not attested; independent native DuckDB rejects"
+    "conditional_fk_violation": "Residual: immediate FK enforcement/deferral not attested; independent native DuckDB rejects",
+    "vendor_parser_cells_required": 52,
+    "conditional_scope_boundaries": 4
   }
 }
