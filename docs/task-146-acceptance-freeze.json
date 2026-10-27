@@ -465,13 +465,7 @@
           "score": 30
         }
       ],
-      "prior_target_bag": [
-        {
-          "instance": "target#0",
-          "id": 0,
-          "score": 0
-        }
-      ],
+      "prior_target_bag": [],
       "expected_target_bag": [
         {
           "instance": "target_after#0",
@@ -510,7 +504,7 @@
           ]
         }
       },
-      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
+      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE. Prior target is empty; final bag consists only of two swapped inserts.",
       "dialect_parser_cells": {
         "generic": {
           "state": "parsed_canonical",
@@ -653,13 +647,7 @@
           "score": 30
         }
       ],
-      "prior_target_bag": [
-        {
-          "instance": "target#0",
-          "id": 0,
-          "score": 0
-        }
-      ],
+      "prior_target_bag": [],
       "expected_target_bag": [
         {
           "instance": "target_after#0",
@@ -698,7 +686,7 @@
           ]
         }
       },
-      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
+      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE. Prior target is empty; final bag consists only of two swapped inserts.",
       "dialect_parser_cells": {
         "generic": {
           "state": "parsed_canonical",
