@@ -70,7 +70,10 @@ pub(super) enum Filter {
     And(Vec<Self>),
     Or(Vec<Self>),
     Not(Box<Self>),
-    IsNull { operand: Scalar, negated: bool },
+    IsNull {
+        operand: Scalar,
+        negated: bool,
+    },
 }
 
 impl Filter {
