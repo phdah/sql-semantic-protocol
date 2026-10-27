@@ -50,6 +50,7 @@ fn check_full_bags(
     source: &[(i64, i64)],
     prior: &[(i64, i64)],
     expected: &[(i64, i64)],
+    cte_witness: Option<(&str, &[(i64, i64)], &str)>,
 ) {
     let bundle = analysis(sql);
     let initial = [state("source", source), state("target", prior)];
@@ -63,6 +64,14 @@ fn check_full_bags(
     };
     assert_eq!(transitions.len(), 1);
     let transition = &transitions[0];
+    if let Some((name, expected_rows, _)) = cte_witness {
+        assert_eq!(transition.intermediate_states().len(), 1);
+        let materialized = &transition.intermediate_states()[0];
+        assert_eq!(materialized.relation(), name);
+        assert_eq!(materialized.rows(), state(name, expected_rows).rows());
+    } else {
+        assert!(transition.intermediate_states().is_empty());
+    }
     assert_eq!(transition.before().rows(), state("target", prior).rows());
     assert_eq!(
         transition.affected().inserted(),
@@ -106,6 +115,15 @@ fn check_full_bags(
         db.execute_batch(&format!("INSERT INTO target VALUES ({id}, {score})"))
             .unwrap();
     }
+    if let Some((name, expected_rows, stage_sql)) = cte_witness {
+        let mut statement = db.prepare(stage_sql).unwrap();
+        let actual = statement
+            .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(actual, expected_rows, "independent complete DuckDB CTE bag: {name}");
+    }
     db.execute_batch(sql).unwrap();
     let mut statement = db
         .prepare("SELECT id,score FROM target ORDER BY id,score")
@@ -129,6 +147,7 @@ fn insert_select_filters_and_reorders_into_existing_target() {
         &[(1, 10), (2, 20), (3, 30)],
         &[(0, 0)],
         &[(0, 0), (2, 20), (3, 30)],
+        None,
     );
 }
 
@@ -141,6 +160,9 @@ fn cte_filter_proves_the_entire_source_and_target_bags() {
         &[(1, 10), (2, 20), (3, 30)],
         &[],
         &[(2, 20), (3, 30)],
+        Some(("filtered", &[(2, 20), (3, 30)],
+            "WITH filtered AS (SELECT id,score FROM source WHERE id > 1)
+             SELECT id,score FROM filtered ORDER BY id")),
     );
 }
 
@@ -153,6 +175,9 @@ fn cte_outer_filter_and_duplicates_keep_original_row_multiplicity() {
         &[(1, 10), (2, 20), (2, 20), (3, 30)],
         &[],
         &[(2, 20), (2, 20), (3, 30)],
+        Some(("staged", &[(1, 10), (2, 20), (2, 20), (3, 30)],
+            "WITH staged AS (SELECT id,score FROM source)
+             SELECT id,score FROM staged ORDER BY id")),
     );
 }
 
