@@ -4,17 +4,15 @@ use sql_semantic_protocol::{analyze_inputs, dialect_from_name, ProtocolStatement
 
 #[test]
 fn vendor_insert_modifiers_require_distinct_semantics_or_parser_boundary() {
-    let vendor_cases = [
-        ("sqlite", "INSERT OR IGNORE INTO target (id,score) VALUES (1,10)"),
-        ("mysql", "REPLACE INTO target (id,score) VALUES (1,10)"),
-        ("hive", "INSERT OVERWRITE TABLE target VALUES (1,10)"),
-        ("postgresql", "INSERT INTO target (id,score) VALUES (1,10) ON CONFLICT(id) DO NOTHING"),
-        ("postgresql", "INSERT INTO target (id,score) VALUES (1,10) RETURNING id"),
-        ("mysql", "INSERT INTO target SET id = 1, score = 10"),
-        ("mysql", "INSERT INTO target (id,score) VALUES (1,10) ON DUPLICATE KEY UPDATE score=11"),
-    ];
+    let matrix: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-145-acceptance-freeze.json")).unwrap();
+    let vendor_cases=matrix["vendor_syntax_boundaries"].as_array().unwrap();
     let mut checked = 0;
-    for (dialect, sql) in vendor_cases {
+    for case in vendor_cases {
+        assert_eq!(case["owner"],"TASK-145");
+        assert_eq!(case["typed_proof"],"Residual");
+        let dialect=case["dialect"].as_str().unwrap();
+        let sql=case["sql"].as_str().unwrap();
         let parser = dialect_from_name(dialect).unwrap();
         // Parser rejection is not evidence of native runtime behavior.
         if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
