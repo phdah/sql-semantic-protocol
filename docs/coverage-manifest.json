@@ -13247,5 +13247,57 @@
       6
     ],
     "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246"
+  },
+  "task_145_insert_values_acceptance": {
+    "owner": "TASK-145",
+    "parent": "TASK-80",
+    "status": "child_task_acceptance_signed_off_portable_vendor_execution_uncertified",
+    "freeze": "docs/task-145-acceptance-freeze.json",
+    "fixture_ids": [
+      "80-C145-P",
+      "80-C145-N"
+    ],
+    "mandatory_cases": 9,
+    "conditional_cases": 3,
+    "mandatory_verified": 9,
+    "parser_cells_verified": 156,
+    "adapter_cells_verified": 36,
+    "native_oracle": "tests/task_145_acceptance_matrix.rs",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ],
+    "freeze_version": 2,
+    "audit": "docs/task-145-acceptance-audit.md",
+    "mandatory_exact_cases": 8,
+    "mandatory_impossible_cases": 1,
+    "vendor_residual_boundaries": 7,
+    "parser_cells_required": 156,
+    "adapter_cells_required": 36,
+    "parser_oracle": "tests/task_145_dialect_adapter.rs",
+    "adapter_oracle": "tests/task_145_dialect_adapter.rs",
+    "typed_state_oracle": "tests/task_145_typed_write.rs",
+    "generated_identity_oracle": "tests/task_145_insert_values.rs",
+    "ordered_transaction_boundary_oracle": "tests/task_145_precedence.rs",
+    "wire_schema_oracle": "tests/task_145_insert_values.rs",
+    "native_vendor_execution_certified": false,
+    "downstream_parent_siblings": [
+      "TASK-146",
+      "TASK-147",
+      "TASK-148"
+    ],
+    "child_signed_off": true,
+    "mandatory_exact_verified": 8,
+    "mandatory_impossible_verified": 1,
+    "conditional_residual_reviewed": 3,
+    "vendor_residual_cells_reviewed": 7,
+    "final_code_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433",
+    "final_code_ci_sha": "aca462931a7afdbcb905bd4181ca2a9f5ca1b9b3",
+    "final_metadata_ci_gate": "new branch HEAD must pass before merge"
   }
 }

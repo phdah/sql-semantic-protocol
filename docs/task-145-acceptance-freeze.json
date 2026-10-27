@@ -1,0 +1,2023 @@
+{
+  "version": 2,
+  "owner": "TASK-145",
+  "parent": "TASK-80",
+  "state": "reviewed_portable_child_acceptance",
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "fixture_ids": [
+    "80-C145-P",
+    "80-C145-N"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_requires": [
+    "exact closed physical initial/intermediate/final bag",
+    "stable row identity and multiplicity",
+    "typed per-column bounds and NULL evidence",
+    "positive and NOT TRUE membership",
+    "native independent DuckDB full bag oracle",
+    "13 parser dialect classifications",
+    "direct/dbt/ODCS parity when schema facts equivalent",
+    "strict fmt/clippy/test/docs/no-default-features/dbt/schema CI"
+  ],
+  "conditional_ownership": {
+    "owner": "TASK-145",
+    "native_vendor": "not_certified_by_parser",
+    "missing_defaults": "Residual",
+    "generated_or_identity_without_attestation": "Residual",
+    "unknown_cast": "Residual"
+  },
+  "cases": [
+    {
+      "id": "80-C145-P-values-explicit",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id, score) VALUES (1, 10), (2, 20)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0",
+        "target#1"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "bounds": {
+            "lower": 1,
+            "upper": 2,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10,
+            20
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-implicit-order",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target VALUES (1, 10), (2, 20)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0",
+        "target#1"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "bounds": {
+            "lower": 1,
+            "upper": 2,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10,
+            20
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-reordered",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (score, id) VALUES (10, 1), (20, 2)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0",
+        "target#1"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "bounds": {
+            "lower": 1,
+            "upper": 2,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10,
+            20
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-duplicate-bag",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id, score) VALUES (1, 10), (1, 10)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0",
+        "target#1"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            1
+          ],
+          "bounds": {
+            "lower": 1,
+            "upper": 1,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 10,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-default-omission",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id) VALUES (1), (2)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 1,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 7
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0",
+        "target#1"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            1,
+            2
+          ],
+          "bounds": {
+            "lower": 1,
+            "upper": 2,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            7
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 7,
+            "upper": 7,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "score DEFAULT 7 attested"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 7
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-default-values",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target DEFAULT VALUES",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": 5,
+          "score": 7
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            5
+          ],
+          "bounds": {
+            "lower": 5,
+            "upper": 5,
+            "inclusive": [
+              true,
+              true
+            ]
+          },
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            7
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 7,
+            "upper": 7,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "id DEFAULT 5, score DEFAULT 7 attested"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": 5,
+          "score": 7
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-P-zero-source",
+      "fixture_id": "80-C145-P",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id, score) SELECT id, score FROM empty_source",
+      "prior_target_bag": [],
+      "expected_target_bag": [],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [],
+          "bounds": null,
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [],
+          "kind": "closed_finite_bag",
+          "bounds": null
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-N-null-value",
+      "fixture_id": "80-C145-N",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id, score) VALUES (NULL, 10)",
+      "prior_target_bag": [],
+      "expected_target_bag": [
+        {
+          "id": null,
+          "score": 10
+        }
+      ],
+      "source_relation": null,
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Exact",
+      "source_row_ids": [
+        "target#0"
+      ],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            null
+          ],
+          "bounds": null,
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 10,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": {
+          "id": null,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-N-unique-violation",
+      "fixture_id": "80-C145-N",
+      "classification": "mandatory",
+      "sql": "INSERT INTO target (id, score) VALUES (1, 10), (1, 20)",
+      "prior_target_bag": [],
+      "expected_target_bag": [],
+      "source_relation": null,
+      "positive": "Impossible, no inserted row can commit under the enforced primary key",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
+      "proof": "Impossible",
+      "source_row_ids": [],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [],
+          "bounds": null,
+          "kind": "closed_finite_bag"
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [],
+          "kind": "closed_finite_bag",
+          "bounds": null
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Impossible",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-N-unattested-default",
+      "fixture_id": "80-C145-N",
+      "classification": "conditional",
+      "sql": "INSERT INTO target (id) VALUES (1)",
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "source_relation": null,
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
+      "proof": "Residual",
+      "source_row_ids": [],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        },
+        "score": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "no_exact_native_target_bag_claim",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-N-unattested-identity",
+      "fixture_id": "80-C145-N",
+      "classification": "conditional",
+      "sql": "INSERT INTO target (score) VALUES (10)",
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "source_relation": null,
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
+      "proof": "Residual",
+      "source_row_ids": [],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        },
+        "score": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "parsed_canonical",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "no_exact_native_target_bag_claim",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "80-C145-N-cast-uncertainty",
+      "fixture_id": "80-C145-N",
+      "classification": "conditional",
+      "sql": "INSERT INTO target (id, score) VALUES ('unknown', 10)",
+      "prior_target_bag": [],
+      "expected_target_bag": null,
+      "source_relation": null,
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
+      "proof": "Residual",
+      "source_row_ids": [],
+      "column_instances": [
+        "target.id",
+        "target.score"
+      ],
+      "domain": {
+        "id": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        },
+        "score": {
+          "type": "INTEGER",
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
+        }
+      },
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mysql": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "postgresql": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "hive": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "sqlite": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "snowflake": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "redshift": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "mssql": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "clickhouse": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "bigquery": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "ansi": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "duckdb": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        },
+        "databricks": {
+          "state": "canonical_unsupported",
+          "owner": "TASK-145",
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
+        }
+      },
+      "adapters": {
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
+      },
+      "native_execution": "no_exact_native_target_bag_claim",
+      "owner": "TASK-145",
+      "assumptions": {
+        "target_schema": "target(id INTEGER, score INTEGER)",
+        "comparator": "exact_signed_integer",
+        "constraint_enforcement": "requires_attested_database_evidence",
+        "default_evidence": "as declared per-case"
+      },
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "matrix_review": {
+    "reason": "Independent acceptance review found missing score bounds and incorrectly claimed empty certified bags for unproved conditional cases; v2 preserves frozen SQL, IDs, and finite scope and makes obligations explicit.",
+    "previous_version": 1,
+    "original_variants_unchanged": true,
+    "oracle": "DuckDB crate ~1.10506.0",
+    "parser": "sqlparser 0.58.0",
+    "native_vendor_engine_execution": "not_certified",
+    "owner": "TASK-145"
+  },
+  "vendor_syntax_boundaries": [
+    {
+      "id": "80-C145-V1",
+      "dialect": "sqlite",
+      "sql": "INSERT OR IGNORE INTO target (id,score) VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V2",
+      "dialect": "mysql",
+      "sql": "REPLACE INTO target (id,score) VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V3",
+      "dialect": "hive",
+      "sql": "INSERT OVERWRITE TABLE target VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V4",
+      "dialect": "postgresql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) ON CONFLICT(id) DO NOTHING",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V5",
+      "dialect": "postgresql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) RETURNING id",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V6",
+      "dialect": "mysql",
+      "sql": "INSERT INTO target SET id = 1, score = 10",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V7",
+      "dialect": "mysql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) ON DUPLICATE KEY UPDATE score=11",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    }
+  ],
+  "signoff": {
+    "child": "TASK-145",
+    "status": "all_mandatory_portable_proof_cells_verified",
+    "mandatory_cases_verified": 9,
+    "exact_cases_verified": 8,
+    "impossible_cases_verified": 1,
+    "conditional_residual_cases_reviewed": 3,
+    "dialect_parser_cells_verified": 156,
+    "adapter_source_schema_parity_cells_verified": 36,
+    "vendor_parser_residual_cells_reviewed": 7,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433",
+    "implementation_head": "aca462931a7afdbcb905bd4181ca2a9f5ca1b9b3",
+    "final_metadata_head_ci": "required_before_merge",
+    "native_vendor_certified": false,
+    "parent_done": false,
+    "release_authorized": false
+  }
+}

@@ -66,6 +66,7 @@ pub struct WriteOperation {
     definition_mode: Option<WriteDefinitionMode>,
     kind: WriteKind,
     target_columns: Vec<String>,
+    default_values: bool,
     match_condition: Option<Predicate>,
     merge_clauses: Vec<MergeClause>,
     selection: Option<Predicate>,
@@ -81,6 +82,7 @@ impl WriteOperation {
             definition_mode: Some(mode),
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
+            default_values: false,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
@@ -96,12 +98,20 @@ impl WriteOperation {
             definition_mode: None,
             kind: WriteKind::Append,
             target_columns,
+            default_values: false,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
             assignments: Vec::new(),
             selection_domains: Vec::new(),
         }
+    }
+
+    /// One row entirely from independently attested target defaults.
+    pub(crate) fn append_default_values(target: String) -> Self {
+        let mut operation = Self::append(target, Vec::new());
+        operation.default_values = true;
+        operation
     }
 
     pub(crate) fn conditional_mutation(
@@ -116,6 +126,7 @@ impl WriteOperation {
             definition_mode: None,
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
+            default_values: false,
             match_condition: Some(match_condition),
             merge_clauses,
             selection: None,
@@ -137,6 +148,7 @@ impl WriteOperation {
             definition_mode: None,
             kind: WriteKind::Update,
             target_columns: Vec::new(),
+            default_values: false,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -157,6 +169,7 @@ impl WriteOperation {
             definition_mode: None,
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
+            default_values: false,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -188,6 +201,11 @@ impl WriteOperation {
     /// Return explicit INSERT target columns in SQL order.
     pub fn target_columns(&self) -> &[String] {
         &self.target_columns
+    }
+
+    /// Whether this INSERT appends one default-valued row without a query source.
+    pub fn default_values(&self) -> bool {
+        self.default_values
     }
 
     /// Return the MERGE match condition for conditional mutations.
@@ -223,15 +241,26 @@ impl WriteOperation {
     /// idempotence regardless of the initial rows.
     pub fn state_effect(&self) -> Option<WriteStateEffect> {
         let initial = WriteInitialState::CallerSupplied;
-        let unbounded = WriteAffectedRows {
-            minimum: 0,
-            maximum: None,
+        let affected_rows = if self.default_values {
+            WriteAffectedRows {
+                minimum: 1,
+                maximum: Some(1),
+            }
+        } else {
+            WriteAffectedRows {
+                minimum: 0,
+                maximum: None,
+            }
         };
-        let mut reasons = vec![WriteUncertainty::AffectedRowsUnknown];
+        let mut reasons = if self.default_values {
+            Vec::new()
+        } else {
+            vec![WriteUncertainty::AffectedRowsUnknown]
+        };
         let (branches, post_state, idempotence) = match self.kind {
             WriteKind::Definition => return None,
             WriteKind::Append => {
-                if self.target_columns.is_empty() {
+                if self.target_columns.is_empty() && !self.default_values {
                     reasons.push(WriteUncertainty::ImplicitTargetColumns);
                 }
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
@@ -240,7 +269,11 @@ impl WriteOperation {
                         match_kind: None,
                         predicate: None,
                         domains: Vec::new(),
-                        action: WriteEffectAction::InsertQuery,
+                        action: if self.default_values {
+                            WriteEffectAction::InsertDefaultValues
+                        } else {
+                            WriteEffectAction::InsertQuery
+                        },
                     }],
                     WritePostState::ApplyToInitial,
                     WriteIdempotence::Unproven,
@@ -316,7 +349,7 @@ impl WriteOperation {
         };
         Some(WriteStateEffect {
             initial,
-            affected_rows: unbounded,
+            affected_rows,
             post_state,
             idempotence,
             branches,
@@ -441,6 +474,8 @@ impl WriteEffectBranch {
 pub enum WriteEffectAction {
     /// INSERT SELECT takes its inserted rows from the owning query output.
     InsertQuery,
+    /// INSERT DEFAULT VALUES creates one row using attested target metadata.
+    InsertDefaultValues,
     /// An UPDATE, DELETE, or MERGE action, including explicit unsupported actions.
     Mutation(MergeAction),
 }
@@ -508,7 +543,7 @@ impl WriteRowCounts {
 /// Why verified DML counts cannot satisfy the stated target-state contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WriteCountError {
-    /// Count of action kinds inconsistent with SQL mutation class.
+    /// Counts contradict the SQL mutation class or declared affected-row bounds.
     InvalidActionCounts,
     /// UPDATE/DELETE cannot affect more distinct target rows than existed.
     ExceedsInitialRows,
@@ -605,6 +640,19 @@ impl WriteStateEffect {
             .ok_or(WriteCountError::Overflow)?;
         if target_changed > initial {
             return Err(WriteCountError::ExceedsInitialRows);
+        }
+        // A precise affected-row interval is a contract, not just emitted
+        // metadata. In particular DEFAULT VALUES must insert exactly one row.
+        let affected = inserted
+            .checked_add(target_changed)
+            .ok_or(WriteCountError::Overflow)?;
+        if affected < self.affected_rows.minimum
+            || self
+                .affected_rows
+                .maximum
+                .is_some_and(|maximum| affected > maximum)
+        {
+            return Err(WriteCountError::InvalidActionCounts);
         }
         match self.cardinality_rule {
             WriteCardinalityRule::Append if updated != 0 || deleted != 0 => {

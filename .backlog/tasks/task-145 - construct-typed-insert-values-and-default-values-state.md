@@ -1,10 +1,10 @@
 ---
 id: TASK-145
 title: Construct typed INSERT VALUES and DEFAULT VALUES state
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-27'
 labels: []
 milestone: m-3
 dependencies:
@@ -37,13 +37,27 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before editing semantics, freeze each named variant and both fixture IDs in a versioned, immutable task matrix linked from `docs/coverage-manifest.json`. Each mandatory cell fixes SQL syntax, parser-dialect status, canonical row/source identity, concrete prestate and expected full poststate, typed column domains (NULL/bound inclusivity), positive and NOT TRUE proof strength, comparison assumptions, adapter evidence and conditional release disposition. Missing/unverified exact cells block Done.
-- [ ] #2 Implement the **finite variant inventory above** using the canonical protocol and physical state model. Match the independent row/state oracle exactly, including write/transaction precedence, before/after rows, untouched rows, enforced constraints and Exact/Impossible/Residual classification. Never invent a producer state or infer a dialect law from parser support.
-- [ ] #3 Execute the named oracle plus its rejected/NULL/duplicate/impossible contrast on full DuckDB source, intermediate and target snapshots. Assert full bag, row identities, domain bounds, affected counts and final state, not only parsed output or one success count.
-- [ ] #4 Test all 13 exposed parser dialects where syntax is shared and relevant vendor syntax boundaries; assert direct SQL, dbt and ODCS parity wherever identical metadata evidence exists. Vendor/session/engine-only claims require versioned evidence; missing evidence is typed Residual with owner TASK-145 and reviewed disposition.
-- [ ] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-80 open.
+- [x] #1 Before editing semantics, freeze each named variant and both fixture IDs in a versioned, immutable task matrix linked from `docs/coverage-manifest.json`. Each mandatory cell fixes SQL syntax, parser-dialect status, canonical row/source identity, concrete prestate and expected full poststate, typed column domains (NULL/bound inclusivity), positive and NOT TRUE proof strength, comparison assumptions, adapter evidence and conditional release disposition. Missing/unverified exact cells block Done.
+- [x] #2 Implement the **finite variant inventory above** using the canonical protocol and physical state model. Match the independent row/state oracle exactly, including write/transaction precedence, before/after rows, untouched rows, enforced constraints and Exact/Impossible/Residual classification. Never invent a producer state or infer a dialect law from parser support.
+- [x] #3 Execute the named oracle plus its rejected/NULL/duplicate/impossible contrast on full DuckDB source, intermediate and target snapshots. Assert full bag, row identities, domain bounds, affected counts and final state, not only parsed output or one success count.
+- [x] #4 Test all 13 exposed parser dialects where syntax is shared and relevant vendor syntax boundaries; assert direct SQL, dbt and ODCS parity wherever identical metadata evidence exists. Vendor/session/engine-only claims require versioned evidence; missing evidence is typed Residual with owner TASK-145 and reviewed disposition.
+- [x] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-80 open.
 <!-- AC:END -->
 
 ## Sequencing
 
 Next: [TASK-146](task-146%20-%20compose-insert-select-column-reorder-and-cte-sources.md) after this child is merged.
+
+## Child acceptance signoff (2026-10-27)
+
+The reviewed finite TASK-145 fixture matrix v2 and its independent acceptance
+audit are `docs/task-145-acceptance-freeze.json` and
+`docs/task-145-acceptance-audit.md`. Eight exact and one impossible mandatory
+physical target oracle are verified; three conditional cases remain correctly
+typed Residual with owner TASK-145. The 156 dialect parser and 36 equivalent
+SQL/dbt-catalog/ODCS-schema cells, plus seven vendor syntax boundaries,
+are covered by public regression tests. All CI jobs passed on implementation
+head `aca462931a7afdbcb905bd4181ca2a9f5ca1b9b3` in
+[GitHub CI run 40571172433](https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433).
+The final metadata-only branch head must independently pass the same CI before
+merge. Native non-DuckDB runtime behavior and parent TASK-80 remain uncertified.

@@ -180,24 +180,25 @@ fn merge_records_condition_actions_and_source_dependencies() {
 }
 
 #[test]
-fn unsupported_insert_write_forms_remain_explicit() {
+fn source_free_literal_insert_values_is_a_canonical_append() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
         &[SqlInput::inline("INSERT INTO target VALUES (1)")],
         "generic",
         &dialect,
     )
-    .expect("unsupported INSERT form should remain analyzable");
+    .expect("literal INSERT VALUES must be analyzable");
 
-    assert!(bundle.layers().is_empty());
-    let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0] else {
-        panic!("INSERT VALUES should not be treated as INSERT-select");
+    assert_eq!(bundle.layers().len(), 1);
+    assert_eq!(bundle.layers()[0].write_kind(), Some(WriteKind::Append));
+    let ProtocolStatement::Query(statement) = &bundle.inputs()[0].statements()[0] else {
+        panic!("INSERT VALUES must retain canonical source-free rows");
     };
-    assert_eq!(statement.category(), "insert");
-    assert_eq!(
-        statement.diagnostics()[0].code(),
-        "unsupported_insert_source"
-    );
+    assert_eq!(statement.finite_table().unwrap().rows().len(), 1);
+    let write = statement.write().unwrap();
+    assert_eq!(write.target(), "target");
+    assert!(write.target_columns().is_empty());
+    assert!(!write.default_values());
 }
 
 #[test]

@@ -1760,3 +1760,22 @@ any candidate compares TRUE, UNKNOWN if none is TRUE but at least one is UNKNOWN
 and FALSE otherwise. NOT IN negates this truth, preserving UNKNOWN. An empty
 candidate set is FALSE for IN and TRUE for NOT IN, including NULL outer keys.
 Scalar-only abstract qualifying/rejected witness cases are explicitly Residual for tuple operands; only independently attested complete candidate populations establish their exact positional truth. DISTINCT subqueries cannot certify the unmodified physical candidate identity bag. The finite population proof is not a claim of native non-DuckDB execution.
+
+### Source-free INSERT rows
+
+An `INSERT ... VALUES` with provable integer/NULL literals retains the complete
+positional input bag in the statement's canonical `finite_table`, with
+`write.kind = "append"`. The physical write-state interpreter uses those
+canonical rows and the target's attested schema, preserving duplicates and
+column list ordering. Expressions without a safely typed literal value are
+reported unsupported, not silently approximated.
+
+`INSERT ... DEFAULT VALUES` has no query input, uses
+`write.default_values = true`, and emits the state-effect action
+`insert_default_values` with exactly one affected row, conditional on
+successful target constraint validation. The physical row is exact only if
+every target value is established by authoritative default, generated or
+identity evidence, including a caller-attested identity sequence when
+needed. Missing or opaque default evidence yields a typed residual rather
+than an invented SQL NULL. Other writes set `default_values = false`.
+
