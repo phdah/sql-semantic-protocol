@@ -104,7 +104,10 @@ fn literal_bag(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 }
 
 fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut result = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut result = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     result.sort();
     result
 }
@@ -136,7 +139,13 @@ fn native(case: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         .as_array()
         .unwrap()
         .iter()
-        .map(|row| (row["id"].as_i64().unwrap(), row["k"].as_i64().unwrap(), row["x"].as_i64()))
+        .map(|row| {
+            (
+                row["id"].as_i64().unwrap(),
+                row["k"].as_i64().unwrap(),
+                row["x"].as_i64(),
+            )
+        })
         .collect::<Vec<_>>();
     assert_eq!(actual_source, expected_source, "DuckDB physical bag");
 
@@ -176,24 +185,63 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
             panic!("{id}: mandatory physical proof is not Exact: {proof:?}");
         };
         let all_ids = (0..6).map(|i| format!("s#{i}")).collect::<BTreeSet<_>>();
-        let true_ids = ids(case, "where_true_ids").into_iter().collect::<BTreeSet<_>>();
-        let false_ids = ids(case, "where_not_true_ids").into_iter().collect::<BTreeSet<_>>();
-        assert_eq!(true_ids.union(&false_ids).cloned().collect::<BTreeSet<_>>(), all_ids, "{id}");
+        let true_ids = ids(case, "where_true_ids")
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        let false_ids = ids(case, "where_not_true_ids")
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            true_ids.union(&false_ids).cloned().collect::<BTreeSet<_>>(),
+            all_ids,
+            "{id}"
+        );
         assert!(true_ids.is_disjoint(&false_ids), "{id}");
-        assert_eq!(exact.source_row_ids.iter().cloned().collect::<BTreeSet<_>>(), all_ids, "{id}");
-        assert_eq!(exact.rejected_upstream_row_ids, ids(case, "where_not_true_ids"), "{id}");
-        assert_eq!(exact.rejected_row_ids, ids(case, "qualify_not_true_ids"), "{id}");
-        assert_eq!(exact.terminal_row_ids, ids(case, "terminal_row_ids"), "{id}");
+        assert_eq!(
+            exact
+                .source_row_ids
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>(),
+            all_ids,
+            "{id}"
+        );
+        assert_eq!(
+            exact.rejected_upstream_row_ids,
+            ids(case, "where_not_true_ids"),
+            "{id}"
+        );
+        assert_eq!(
+            exact.rejected_row_ids,
+            ids(case, "qualify_not_true_ids"),
+            "{id}"
+        );
+        assert_eq!(
+            exact.terminal_row_ids,
+            ids(case, "terminal_row_ids"),
+            "{id}"
+        );
         assert_eq!(
             exact.terminal_row_ids.len() + exact.rejected_row_ids.len(),
             true_ids.len(),
             "{id}: QUALIFY must partition only WHERE TRUE rows"
         );
-        assert_eq!(bag(&exact.terminal), bag(&literal_bag(case)), "{id}: frozen terminal bag");
-        assert_eq!(bag(&exact.terminal), bag(&native(case)), "{id}: independent DuckDB bag");
+        assert_eq!(
+            bag(&exact.terminal),
+            bag(&literal_bag(case)),
+            "{id}: frozen terminal bag"
+        );
+        assert_eq!(
+            bag(&exact.terminal),
+            bag(&native(case)),
+            "{id}: independent DuckDB bag"
+        );
 
         for (name, expectation) in case["typed_terminal_domains"].as_object().unwrap() {
-            let actual = exact.terminal_domains.get(name).expect("terminal column domain");
+            let actual = exact
+                .terminal_domains
+                .get(name)
+                .expect("terminal column domain");
             if expectation["empty"] == true {
                 assert!(matches!(actual, ValueDomain::Empty), "{id}/{name}");
                 continue;
@@ -201,10 +249,13 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
             let ValueDomain::Set(values) = actual else {
                 panic!("{id}/{name}: expected exact finite values: {actual:?}");
             };
-            let actual_numbers = values.iter().filter_map(|v| match v {
-                LiteralValue::Number(number) => number.parse::<i64>().ok(),
-                _ => None,
-            }).collect::<BTreeSet<_>>();
+            let actual_numbers = values
+                .iter()
+                .filter_map(|v| match v {
+                    LiteralValue::Number(number) => number.parse::<i64>().ok(),
+                    _ => None,
+                })
+                .collect::<BTreeSet<_>>();
             assert_eq!(
                 actual_numbers.iter().next().copied(),
                 expectation["inclusive_bounds"][0].as_i64(),
@@ -215,7 +266,11 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
                 expectation["inclusive_bounds"][1].as_i64(),
                 "{id}/{name}: upper inclusive bound"
             );
-            assert_eq!(values.contains(&LiteralValue::Null), expectation["nullable"] == true, "{id}/{name}");
+            assert_eq!(
+                values.contains(&LiteralValue::Null),
+                expectation["nullable"] == true,
+                "{id}/{name}"
+            );
         }
     }
 }
@@ -223,11 +278,19 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
 #[test]
 fn computed_where_is_residual_even_if_a_complete_sample_is_available() {
     let freeze = freeze();
-    let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == "74-PARENT-FILTERED-C1").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "74-PARENT-FILTERED-C1")
+        .unwrap();
     let bundle = analyze(case, "duckdb");
     let target = bundle.layers().last().unwrap().id();
     let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
-    assert!(matches!(proof, PhysicalFiniteWindowProof::Residual { .. }), "{proof:?}");
+    assert!(
+        matches!(proof, PhysicalFiniteWindowProof::Residual { .. }),
+        "{proof:?}"
+    );
 }
 
 #[test]
@@ -246,7 +309,10 @@ fn frozen_filtered_window_parser_matrix_covers_all_thirteen_dialects() {
                 let bundle = analyze(case, name);
                 let target = bundle.layers().last().unwrap().id();
                 let proof = physical_finite_window_bag_plan(&bundle, target, &[source(case)]);
-                assert!(matches!(proof, PhysicalFiniteWindowProof::Exact(_)), "{name}: {proof:?}");
+                assert!(
+                    matches!(proof, PhysicalFiniteWindowProof::Exact(_)),
+                    "{name}: {proof:?}"
+                );
             }
         }
     }
