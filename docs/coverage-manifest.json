@@ -13299,5 +13299,19 @@
     "final_code_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433",
     "final_code_ci_sha": "aca462931a7afdbcb905bd4181ca2a9f5ca1b9b3",
     "final_metadata_ci_gate": "new branch HEAD must pass before merge"
+  },
+  "task_146_insert_select_cte_acceptance": {
+    "owner": "TASK-146",
+    "parent": "TASK-80",
+    "state": "frozen_preimplementation_pending_execution",
+    "freeze": "docs/task-146-acceptance-freeze.json",
+    "fixture_ids": ["80-C146-P", "80-C146-N"],
+    "mandatory_cases": 7,
+    "conditional_cases": 2,
+    "parser_cells_required": 117,
+    "adapter_cells_required": 27,
+    "mandatory_verified": 0,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
