@@ -520,12 +520,14 @@ fn cte_insert_wire_emits_both_parser_independent_stages() {
 
 #[test]
 fn insert_ordered_source_requires_order_execution_law_before_claiming_exact_rows() {
-    let bundle = analysis(
-        "INSERT INTO target(id,score) SELECT id,score FROM source ORDER BY id DESC",
-    );
+    let bundle =
+        analysis("INSERT INTO target(id,score) SELECT id,score FROM source ORDER BY id DESC");
     let plan = physical_ordered_write_state_plan(
         &bundle,
-        &[state("source",&[(1,10),(2,20)]),state("target",&[])],
+        &[state("source", &[(1, 10), (2, 20)]), state("target", &[])],
     );
-    assert!(!matches!(plan,PhysicalWriteStatePlan::Feasible { .. }),"{plan:?}");
+    assert!(
+        !matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+        "{plan:?}"
+    );
 }
