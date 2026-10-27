@@ -160,6 +160,7 @@ fn all_117_frozen_parser_cells_classify_exact_or_unsupported_without_inference()
                             "parsed_canonical"
                         }
                     }
+                    _ => panic!("unexpected future protocol statement form"),
                 },
             };
             let expected = case["dialect_parser_cells"][dialect]["state"].as_str().unwrap();
@@ -222,6 +223,7 @@ fn vendor_qualifiers_never_become_unproved_plain_append() {
                 let unsupported = match &bundle.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => true,
                     ProtocolStatement::Query(q) => q.write().is_none(),
+                    _ => true,
                 };
                 assert!(unsupported, "{dialect}: unproved vendor append law: {sql}");
             }
