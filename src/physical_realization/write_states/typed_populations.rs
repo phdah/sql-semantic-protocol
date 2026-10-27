@@ -509,6 +509,77 @@ pub fn physical_typed_ordered_write_plan(
         if kind != WriteKind::Append {
             return gap("typed write operation needs additional SQL execution evidence");
         }
+        // A source-free constructor is already a complete canonical row bag.
+        // Do not send its literal rows through a source-backed SELECT evaluator.
+        if write.default_values() || query.finite_table().is_some() {
+            let Some(schema) = bundle
+                .source_schemas()
+                .iter()
+                .find(|schema| schema.relation() == target)
+            else {
+                return gap("typed INSERT target schema is missing");
+            };
+            let columns = if write.default_values() {
+                Vec::new()
+            } else if write.target_columns().is_empty() {
+                schema
+                    .columns()
+                    .iter()
+                    .map(|column| column.name().to_string())
+                    .collect::<Vec<_>>()
+            } else {
+                write.target_columns().to_vec()
+            };
+            if columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+                || columns
+                    .iter()
+                    .any(|name| !schema.columns().iter().any(|column| column.name() == name))
+            {
+                return gap("typed INSERT VALUES columns must be declared and distinct");
+            }
+            let values = if write.default_values() {
+                vec![Vec::new()]
+            } else {
+                let Some(table) = query.finite_table() else {
+                    return gap("typed literal INSERT needs canonical finite rows");
+                };
+                if table.kind() != crate::protocol::FiniteTableKind::Values {
+                    return gap("typed INSERT finite source must be literal VALUES");
+                }
+                table.rows()
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|value| PhysicalTypedValue::Scalar(value.value().clone()))
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>()
+            };
+            let mut inserted = Vec::new();
+            for values in values {
+                if columns.len() != values.len() {
+                    return gap("typed INSERT VALUES projection arity is unproved");
+                }
+                let row = PhysicalTypedWriteRow {
+                    values: columns.iter().cloned().zip(values).collect(),
+                };
+                let completed = match complete_typed_insert_row(bundle, target, schema, row) {
+                    Ok(row) => row,
+                    Err(reason) => return gap(&reason),
+                };
+                inserted.push(completed);
+            }
+            let Some(state) = states.get_mut(target) else {
+                return gap("complete initial typed INSERT target population is missing");
+            };
+            state.rows.extend(inserted);
+            let snapshots = states.values().cloned().collect::<Vec<_>>();
+            match physical_typed_closed_world_schema_plan(bundle, &snapshots) {
+                PhysicalTypedPopulationPlan::Feasible { .. } => {}
+                other => return other,
+            }
+            continue;
+        }
         if !(query.row_preserving_projection() || query.filter_only_row_shape())
             || query.set_operation().is_some()
             || query.aggregation().is_some()
