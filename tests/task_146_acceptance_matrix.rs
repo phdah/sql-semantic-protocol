@@ -239,7 +239,10 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
                             .map(|i| source_rows[*i])
                             .collect::<Vec<_>>();
                         let selected_bag = normalized_bag(if id.ends_with("positional-swap") {
-                            selected_rows.into_iter().map(|(id, score)| (score, id)).collect()
+                            selected_rows
+                                .into_iter()
+                                .map(|(id, score)| (score, id))
+                                .collect()
                         } else {
                             selected_rows
                         });
