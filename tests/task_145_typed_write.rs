@@ -6,10 +6,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_ordered_write_plan,
     ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
     ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue,
-    GeneratedValueExpression, LiteralValue,
-    PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    GeneratedValueExpression, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn evidence() -> Vec<ConstraintEvidence> {
@@ -141,16 +140,21 @@ fn typed_insert_constructs_attested_generated_columns_from_scalar_inputs() {
     let mut query = bundle("INSERT INTO target(id) VALUES (2),(3)");
     let expression = GeneratedValueExpression::Add(
         Box::new(GeneratedValueExpression::Column("id".to_string())),
-        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+            1,
+        ))),
     );
     query.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
         .unwrap()
-        .with_column_value_sources(vec![
-            ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
-                .unwrap()
-                .with_generated_expression(expression)
-                .unwrap(),
-        ])]);
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Generated,
+            None,
+            evidence(),
+        )
+        .unwrap()
+        .with_generated_expression(expression)
+        .unwrap()])]);
     assert_eq!(
         target(proof(&query, vec![typed_row(Some(0), Some(0))])),
         vec![
@@ -166,14 +170,17 @@ fn typed_insert_does_not_invent_generated_values_from_missing_dependencies() {
     let mut query = bundle("INSERT INTO target(id) VALUES (2)");
     query.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
         .unwrap()
-        .with_column_value_sources(vec![
-            ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
-                .unwrap()
-                .with_generated_expression(GeneratedValueExpression::Column(
-                    "unattested_column".to_string(),
-                ))
-                .unwrap(),
-        ])]);
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Generated,
+            None,
+            evidence(),
+        )
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Column(
+            "unattested_column".to_string(),
+        ))
+        .unwrap()])]);
     assert!(matches!(
         proof(&query, vec![]),
         PhysicalTypedPopulationPlan::Residual { .. }
