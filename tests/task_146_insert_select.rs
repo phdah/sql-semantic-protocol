@@ -544,7 +544,10 @@ fn unproved_transactional_cte_insert_does_not_certify_commit_or_rollback() {
         &bundle,
         &[state("source", &[(1, 10), (2, 20)]), state("target", &[])],
     );
-    assert!(!matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+    assert!(
+        !matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
@@ -554,7 +557,16 @@ fn active_protocol_schema_declares_bounded_insert_cte_contract() {
     let source = &schema["$defs"]["writeOperation"]["properties"]["cte_source"];
     assert_eq!(source["type"], "object");
     assert_eq!(source["additionalProperties"], false);
-    assert_eq!(source["required"], serde_json::json!(["name", "producer", "consumer"]));
-    assert_eq!(source["properties"]["producer"]["$ref"], "#/$defs/queryStatement");
-    assert_eq!(source["properties"]["consumer"]["$ref"], "#/$defs/queryStatement");
+    assert_eq!(
+        source["required"],
+        serde_json::json!(["name", "producer", "consumer"])
+    );
+    assert_eq!(
+        source["properties"]["producer"]["$ref"],
+        "#/$defs/queryStatement"
+    );
+    assert_eq!(
+        source["properties"]["consumer"]["$ref"],
+        "#/$defs/queryStatement"
+    );
 }
