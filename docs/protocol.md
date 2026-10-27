@@ -1574,6 +1574,11 @@ optionally with a normalized WHERE predicate. The physical write planner
 materializes the first stage only from the caller-attested complete source bag,
 then evaluates the consumer over the resulting local rows. The intermediate CTE
 is not an independently supplied physical source or a surviving final state.
+The physical transition records each complete local stage in
+`PhysicalWriteTransition::intermediate_states()`, allowing complete
+source/intermediate/target witnesses and exact stage value frequencies to be
+inspected independently of the terminal write. These stage bags never enter
+`final_states` as fabricated physical relations.
 
 INSERT targets are assigned by SQL position, preserving explicit target-column
 reordering and untouched target rows. Each poststate is validated against
