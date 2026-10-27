@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-145",
   "parent": "TASK-80",
-  "state": "frozen_preimplementation_unverified",
+  "state": "reviewed_portable_child_acceptance",
   "original_parent_ac": [
     1,
     2,
@@ -191,11 +191,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -203,8 +203,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 1,
@@ -364,11 +364,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -376,8 +376,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 1,
@@ -537,11 +537,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -549,8 +549,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 1,
@@ -708,11 +708,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -720,8 +720,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 1,
@@ -880,11 +880,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -892,8 +892,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "score DEFAULT 7 attested"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 1,
@@ -1046,11 +1046,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1058,8 +1058,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "id DEFAULT 5, score DEFAULT 7 attested"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": 5,
@@ -1187,11 +1187,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1199,8 +1199,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": null,
         "not_true": {
@@ -1343,11 +1343,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1355,8 +1355,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": {
           "id": null,
@@ -1484,11 +1484,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_canonical_and_physical_oracle",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "DuckDB_public_immutable_source_terminal_bag_oracle_passed",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1496,8 +1496,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "mandatory_verification_required",
-      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "status": "mandatory_oracle_verified",
+      "release_disposition": "portable_exact_or_impossible_certified_via_independent_duckdb",
       "truth_witnesses": {
         "positive": null,
         "not_true": {
@@ -1620,11 +1620,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "no_exact_native_target_bag_claim",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1632,8 +1632,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "conditional_review_required",
-      "release_disposition": "conditional_residual_pending_independent_review",
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
       "truth_witnesses": {
         "positive": null,
         "not_true": null,
@@ -1753,11 +1753,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "no_exact_native_target_bag_claim",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1765,8 +1765,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "conditional_review_required",
-      "release_disposition": "conditional_residual_pending_independent_review",
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
       "truth_witnesses": {
         "positive": null,
         "not_true": null,
@@ -1886,11 +1886,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "required_independent_physical_oracle",
-        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
-        "odcs_schema": "equivalent_schema_parity_required"
+        "direct_sql": "verified_typed_residual",
+        "dbt_compiled": "verified_equivalent_dbt_catalog_schema_metadata; native_compiled_DML_not_applicable",
+        "odcs_schema": "verified_equivalent_ODCS_v3.2_schema_metadata"
       },
-      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
+      "native_execution": "no_exact_native_target_bag_claim",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1898,8 +1898,8 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "conditional_review_required",
-      "release_disposition": "conditional_residual_pending_independent_review",
+      "status": "conditional_residual_verified",
+      "release_disposition": "reviewed_typed_residual_owned_by_TASK-145",
       "truth_witnesses": {
         "positive": null,
         "not_true": null,
@@ -2002,5 +2002,22 @@
       "native_execution": "unverified",
       "typed_proof": "Residual"
     }
-  ]
+  ],
+  "signoff": {
+    "child": "TASK-145",
+    "status": "all_mandatory_portable_proof_cells_verified",
+    "mandatory_cases_verified": 9,
+    "exact_cases_verified": 8,
+    "impossible_cases_verified": 1,
+    "conditional_residual_cases_reviewed": 3,
+    "dialect_parser_cells_verified": 156,
+    "adapter_source_schema_parity_cells_verified": 36,
+    "vendor_parser_residual_cells_reviewed": 7,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433",
+    "implementation_head": "aca462931a7afdbcb905bd4181ca2a9f5ca1b9b3",
+    "final_metadata_head_ci": "required_before_merge",
+    "native_vendor_certified": false,
+    "parent_done": false,
+    "release_authorized": false
+  }
 }

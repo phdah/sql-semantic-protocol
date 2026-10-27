@@ -61,7 +61,10 @@ TASK-145 owns these typed residual safety boundaries; TASK-147 owns later
 vendor conflict/overwrite/returning constructive semantics. No native
 Snowflake, PostgreSQL, MySQL, or other vendor runtime is claimed.
 
-**Signoff gate:** The PR may be promoted from draft, and TASK-145 marked Done,
-only after the final PR head passes formatting, strict Clippy, full tests,
-Rust docs, no-default-features, dbt Core E2E and active schema/golden checks.
-Keep parent TASK-80 To Do, and do not begin TASK-146 before TASK-145 merges.
+**Reviewed code-head verification:** All nine Rust formatting, strict lint, complete
+Rust test, docs, no-default-features and real dbt Core E2E jobs passed on
+[implementation head aca4629](https://github.com/phdah/sql-semantic-protocol/actions/runs/40571172433).
+All 12 frozen cases, 156 dialect parser cells, 36 parity cells and seven
+vendor boundaries were independently reviewed against the above oracles.
+The metadata-only signoff commit requires its own final-head CI before merge.
+Keep parent TASK-80 To Do; TASK-146 may start only after this PR merges.
