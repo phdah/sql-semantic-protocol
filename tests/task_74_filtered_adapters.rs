@@ -127,7 +127,8 @@ fn filtered_qualify_matches_across_direct_dbt_and_odcs_adapters() {
                 .iter()
                 .find(|layer| layer.consumes().iter().any(|name| name == relation))
                 .unwrap_or_else(|| panic!("{id}/{adapter}: missing source layer"));
-            let proof = physical_finite_window_bag_plan(&bundle, target.id(), std::slice::from_ref(&state));
+            let proof =
+                physical_finite_window_bag_plan(&bundle, target.id(), std::slice::from_ref(&state));
             if case["proof"] == "Exact" {
                 let PhysicalFiniteWindowProof::Exact(exact) = proof else {
                     panic!("{id}/{adapter}: missing Exact proof: {proof:?}");
