@@ -37,6 +37,65 @@
     "reviewed_implementation_sha": "09c5d1f6ff7af73f4e71b87460dfa5249d246d30",
     "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40386781099"
   },
+  "task_73_parent_acceptance": {
+    "owner": "TASK-73",
+    "status": "parent_original_ac1_to_ac6_signed_off_portable_native_vendor_uncertified",
+    "task": ".backlog/tasks/task-73 - complete-aggregation-and-grouping-witnesses.md",
+    "freeze": "docs/task-73-acceptance-freeze.json",
+    "audit": "docs/task-73-acceptance-audit.md",
+    "children": [
+      "TASK-121",
+      "TASK-122",
+      "TASK-123",
+      "TASK-124"
+    ],
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cases": 12,
+    "conditional_grouping_cases": 5,
+    "numeric_conditional_boundaries": 3,
+    "mandatory_parser_cells": 156,
+    "mandatory_adapter_cells": 36,
+    "reviewed_conditional_parser_cells": 65,
+    "reviewed_conditional_adapter_cells": 15,
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "public_guard": "tests/task_73_parent_closure.rs",
+    "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
+    "parity_oracle": "tests/task_124_aggregate_adapters.rs",
+    "dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "parent_signed_off": true,
+    "release_approved": false,
+    "remaining_gate": "Final PR-head CI required before merging; TASK-91 separate release authorization",
+    "reviewed_implementation_sha": "769f85a469658ddde838ebc239c286b2671c5a82",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40410973612",
+    "grouping_function_case_id": "73-C73-C-grouping-function",
+    "verified_original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "upstream_composition_oracle": "tests/task_73_composed_parent.rs",
+    "upstream_composition_case_ids": [
+      "71-C115-P-GROUP",
+      "71-C115-N-GROUP"
+    ],
+    "upstream_composition_dialect_cells": 26,
+    "upstream_composition_adapter_cells": 6
+  },
   "task_136_sampling_acceptance": {
     "owner": "TASK-136",
     "parent": "TASK-76",

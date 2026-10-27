@@ -1,0 +1,387 @@
+{
+  "task": "TASK-73",
+  "version": 1,
+  "purpose": "Independent original-parent acceptance inventory. Pin original obligations without replacing the four merged child source/terminal oracles.",
+  "source_of_truth": {
+    "TASK-121": "docs/task-121-acceptance-freeze.json",
+    "TASK-122": "docs/task-122-acceptance-freeze.json",
+    "TASK-123": "docs/task-123-acceptance-freeze.json",
+    "TASK-124": "docs/task-124-acceptance-freeze.json",
+    "TASK-115": "docs/task-115-acceptance-freeze.json"
+  },
+  "fixture_ids": [
+    "73-C121-P",
+    "73-C121-N",
+    "73-C122-P",
+    "73-C122-N",
+    "73-C123-P",
+    "73-C123-N",
+    "73-C124-P",
+    "73-C124-N"
+  ],
+  "mandatory_case_ids": [
+    "73-C124-P-1-1",
+    "73-C124-P-1-2",
+    "73-C124-P-1-3",
+    "73-C124-N-1-4",
+    "73-C124-P-1-5",
+    "73-C124-P-2-1",
+    "73-C124-P-2-2",
+    "73-C124-N-2-3",
+    "73-C124-P-2-4",
+    "73-C124-P-3-1",
+    "73-C124-N-3-2",
+    "73-C124-P-3-3"
+  ],
+  "conditional_case_ids": [
+    "73-C124-N-3-4",
+    "73-C124-N-3-5",
+    "73-C124-N-3-6",
+    "73-C124-N-3-7",
+    "73-C73-C-grouping-function"
+  ],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "mandatory_case_ids": [
+        "73-C124-P-1-1",
+        "73-C124-P-1-2",
+        "73-C124-P-1-5",
+        "73-C124-P-2-1",
+        "73-C124-P-2-2",
+        "73-C124-P-2-4"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/122/124",
+      "verification_status": "frozen_portable_evidence_verified"
+    },
+    {
+      "id": 2,
+      "mandatory_case_ids": [
+        "73-C124-N-2-3",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-115/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified",
+      "upstream_composition_case_ids": [
+        "71-C115-P-GROUP",
+        "71-C115-N-GROUP"
+      ]
+    },
+    {
+      "id": 3,
+      "mandatory_case_ids": [
+        "73-C124-P-1-3",
+        "73-C124-N-1-4",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [
+        "73-C124-N-3-4",
+        "73-C124-N-3-5",
+        "73-C124-N-3-6",
+        "73-C124-N-3-7",
+        "73-C73-C-grouping-function"
+      ],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
+    },
+    {
+      "id": 4,
+      "mandatory_case_ids": [
+        "73-C124-P-1-2",
+        "73-C124-P-1-5",
+        "73-C124-N-2-3",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [
+        "73-C121-C-decimal-average",
+        "73-C121-C-overflow",
+        "73-C121-C-noninteger"
+      ],
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
+    },
+    {
+      "id": 5,
+      "mandatory_case_ids": [
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [],
+      "numeric_conditional_ids": [],
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
+    },
+    {
+      "id": 6,
+      "mandatory_case_ids": [
+        "73-C124-P-1-1",
+        "73-C124-P-1-2",
+        "73-C124-P-1-3",
+        "73-C124-N-1-4",
+        "73-C124-P-1-5",
+        "73-C124-P-2-1",
+        "73-C124-P-2-2",
+        "73-C124-N-2-3",
+        "73-C124-P-2-4",
+        "73-C124-P-3-1",
+        "73-C124-N-3-2",
+        "73-C124-P-3-3"
+      ],
+      "conditional_case_ids": [
+        "73-C124-N-3-4",
+        "73-C124-N-3-5",
+        "73-C124-N-3-6",
+        "73-C124-N-3-7",
+        "73-C73-C-grouping-function"
+      ],
+      "numeric_conditional_ids": [
+        "73-C121-C-decimal-average",
+        "73-C121-C-overflow",
+        "73-C121-C-noninteger"
+      ],
+      "source": "TASK-121/122/123/124",
+      "verification_status": "frozen_portable_evidence_verified"
+    }
+  ],
+  "portable_gate": {
+    "mandatory_complete_bag_cases": 12,
+    "conditional_grouping_cases": 5,
+    "parser_dialects": 13,
+    "mandatory_parser_cells": 156,
+    "mandatory_adapter_cells": 36,
+    "conditional_parser_cells": 65,
+    "conditional_adapter_cells": 15,
+    "engine": "duckdb",
+    "native_vendor_engines_certified": false,
+    "independent_oracle": "tests/task_124_parent_aggregate_oracles.rs",
+    "adapter_oracle": "tests/task_124_aggregate_adapters.rs",
+    "materialized_dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
+    "required_dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "mandatory_upstream_composition_cases": 2,
+    "mandatory_upstream_composition_dialect_cells": 26,
+    "mandatory_upstream_composition_adapter_cells": 6
+  },
+  "grouping_boundaries": [
+    {
+      "case_id": "73-C124-N-3-4",
+      "variant": "GROUPING SETS",
+      "owner": "TASK-124",
+      "reason": "subtotal provenance and synthetic NULL grouping keys are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-5",
+      "variant": "ROLLUP",
+      "owner": "TASK-124",
+      "reason": "hierarchy and subtotal identities are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-6",
+      "variant": "CUBE",
+      "owner": "TASK-124",
+      "reason": "cube grouping identities and NULL-key provenance are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    },
+    {
+      "case_id": "73-C124-N-3-7",
+      "variant": "GROUP BY ALL",
+      "owner": "TASK-124",
+      "reason": "dialect-dependent inferred grouping expressions are not attested",
+      "release_disposition": "reviewed_parser_or_typed_residual_native_vendor_law_uncertified"
+    }
+  ],
+  "numeric_boundaries": [
+    {
+      "id": "73-C121-C-decimal-average",
+      "owner": "TASK-121",
+      "reason": "nonintegral AVG requires attested scale and rounding",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    },
+    {
+      "id": "73-C121-C-overflow",
+      "owner": "TASK-121",
+      "reason": "SUM overflow requires proven result type and checked arithmetic",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    },
+    {
+      "id": "73-C121-C-noninteger",
+      "owner": "TASK-121",
+      "reason": "floating, decimal and collated text laws require type/session evidence",
+      "release_disposition": "reviewed_residual_no_exactness_claim"
+    }
+  ],
+  "non_promotions": [
+    "Parser/dialect classifications do not certify native database engines",
+    "Reviewed Residual never means an empty terminal bag or Exact physical outcome",
+    "No unverified mandatory portable case may be classified as Residual",
+    "Release TASK-91 is independent of TASK-73 finite parent signoff"
+  ],
+  "status": "parent_original_ac1_to_ac6_signed_off_portable_release_separate",
+  "grouping_function_boundary": {
+    "id": "73-C73-C-grouping-function",
+    "owner": "TASK-73",
+    "variant": "GROUPING(k) with GROUPING SETS, including a real NULL key and a subtotal NULL",
+    "source_case_ids": [
+      "73-C124-P-1-2",
+      "73-C124-P-1-5"
+    ],
+    "sql": "SELECT k, GROUPING(k) AS grouping_flag, COUNT(*) AS row_count FROM s GROUP BY GROUPING SETS ((k), ())",
+    "expected_duckdb_terminal_bag": [
+      {
+        "k": 1,
+        "grouping_flag": 0,
+        "row_count": 2
+      },
+      {
+        "k": 2,
+        "grouping_flag": 0,
+        "row_count": 1
+      },
+      {
+        "k": null,
+        "grouping_flag": 0,
+        "row_count": 1
+      },
+      {
+        "k": null,
+        "grouping_flag": 1,
+        "row_count": 4
+      }
+    ],
+    "expected_parser_dialect_cells": {
+      "generic": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "mysql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "postgresql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "hive": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "sqlite": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "snowflake": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "redshift": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "mssql": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "clickhouse": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "bigquery": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "ansi": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "duckdb": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      },
+      "databricks": {
+        "parser": "may_parse_or_reject",
+        "canonical": "Residual_or_explicit_unsupported_if_parsed",
+        "engine": "not_certified",
+        "owner": "TASK-73"
+      }
+    },
+    "expected_adapter_cells": {
+      "direct_sql": "typed_Residual_or_explicit_unsupported_if_parsed",
+      "dbt_compiled": "typed_Residual_or_explicit_unsupported_if_parsed",
+      "odcs_schema": "typed_Residual_or_explicit_unsupported_if_parsed"
+    },
+    "reason": "GROUPING bit semantics require grouping-set identity: ordinary NULL keys and subtotal-created NULL keys must not be conflated with an Exact result",
+    "release_disposition": "reviewed_duckdb_oracle_non_exact_canonical_native_vendor_law_uncertified"
+  },
+  "upstream_composition": {
+    "owner": "TASK-115",
+    "source_of_truth": "docs/task-115-acceptance-freeze.json",
+    "mandatory_case_ids": [
+      "71-C115-P-GROUP",
+      "71-C115-N-GROUP"
+    ],
+    "required_operator_path": "physical three-source WHERE -> two INNER JOINs -> intermediate projected stage -> GROUP BY/HAVING",
+    "mandatory_dialect_cells": 26,
+    "mandatory_adapter_cells": 6,
+    "native_engine": "duckdb",
+    "native_vendor_engines_certified": false,
+    "parent_oracle": "tests/task_73_composed_parent.rs",
+    "existing_canonical_oracle": "tests/task_115_finite_chain_bags.rs",
+    "existing_duckdb_oracle": "tests/task_115_duckdb_matrix.rs",
+    "existing_adapter_oracle": "tests/task_115_finite_adapter_parity.rs",
+    "cell_disposition": "portable_exact_with_independently_frozen_complete_source_terminal_bags"
+  }
+}
