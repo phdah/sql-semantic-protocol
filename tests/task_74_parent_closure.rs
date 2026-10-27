@@ -56,7 +56,9 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
     let freeze = parent();
     assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["parent_signed_off"], true);
-    assert!(freeze["mandatory_unverified"].as_array().is_some_and(Vec::is_empty));
+    assert!(freeze["mandatory_unverified"]
+        .as_array()
+        .is_some_and(Vec::is_empty));
     assert_eq!(freeze["task"], "TASK-74");
     assert_eq!(freeze["release_approved"], false);
     let dialects = values(&freeze["required_dialects"]);
@@ -180,10 +182,16 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
         serde_json::from_str(include_str!("../docs/task-74-filtered-qualify-freeze.json"))
             .expect("independent frozen WHERE QUALIFY source/terminal oracle");
     let register = &freeze["filtered_source_evidence"];
-    assert_eq!(register["freeze"], "docs/task-74-filtered-qualify-freeze.json");
+    assert_eq!(
+        register["freeze"],
+        "docs/task-74-filtered-qualify-freeze.json"
+    );
     assert_eq!(register["version"], filtered["version"]);
     assert_eq!(register["original_parent_ac"], 3);
-    assert_eq!(values(&filtered["fixture_ids"]), values(&register["fixture_ids"]));
+    assert_eq!(
+        values(&filtered["fixture_ids"]),
+        values(&register["fixture_ids"])
+    );
     assert_eq!(values(&filtered["required_dialects"]), dialects);
     assert_eq!(values(&filtered["required_adapters"]), adapters);
     assert_eq!(filtered["cases"].as_array().unwrap().len(), 5);
@@ -200,7 +208,12 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
             "{id} missing dialect status"
         );
         assert_eq!(
-            case["adapter_status"].as_object().unwrap().keys().cloned().collect::<BTreeSet<_>>(),
+            case["adapter_status"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .cloned()
+                .collect::<BTreeSet<_>>(),
             adapters,
             "{id} missing adapter classification"
         );
@@ -208,26 +221,46 @@ fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criteri
             assert!(case["physical_source_bags"]["s"].is_array(), "{id}");
             assert!(case["expected_full_terminal_bag"].is_array(), "{id}");
             assert!(case["typed_terminal_domains"].is_object(), "{id}");
-            for field in ["where_true_ids", "where_not_true_ids", "qualify_not_true_ids", "terminal_row_ids"] {
-                assert!(case[field].is_array(), "{id}/{field} missing physical identity partition");
+            for field in [
+                "where_true_ids",
+                "where_not_true_ids",
+                "qualify_not_true_ids",
+                "terminal_row_ids",
+            ] {
+                assert!(
+                    case[field].is_array(),
+                    "{id}/{field} missing physical identity partition"
+                );
             }
             assert!(filtered_mandatory.insert(id.to_owned()), "{id}");
         } else {
-            assert_eq!(case["proof"], "Residual", "{id}: unreviewed proof promotion");
+            assert_eq!(
+                case["proof"], "Residual",
+                "{id}: unreviewed proof promotion"
+            );
             assert!(filtered_conditional.insert(id.to_owned()), "{id}");
         }
     }
     assert_eq!(filtered_mandatory, values(&register["mandatory_case_ids"]));
-    assert_eq!(filtered_conditional, values(&register["conditional_case_ids"]));
+    assert_eq!(
+        filtered_conditional,
+        values(&register["conditional_case_ids"])
+    );
     assert_eq!(filtered_mandatory, values(&filtered["mandatory_case_ids"]));
-    assert_eq!(filtered_conditional, values(&filtered["conditional_case_ids"]));
+    assert_eq!(
+        filtered_conditional,
+        values(&filtered["conditional_case_ids"])
+    );
     mandatory.extend(filtered_mandatory);
     conditional.extend(filtered_conditional);
     assert!(mandatory.is_disjoint(&conditional));
     assert_eq!(mandatory.len(), 38);
     assert_eq!(conditional.len(), 23);
     assert_eq!(freeze["total_mandatory_exact_cases"], mandatory.len());
-    assert_eq!(freeze["total_reviewed_conditional_cases"], conditional.len());
+    assert_eq!(
+        freeze["total_reviewed_conditional_cases"],
+        conditional.len()
+    );
 
     let criteria = freeze["original_acceptance_criteria"]
         .as_array()
