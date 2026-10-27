@@ -5,7 +5,9 @@ and `src/physical_realization/write_states/{projection,operators}.rs` owns
 the single complete physical input bag and ordered target poststate.
 `src/emission/statements.rs` and `schema/protocol.schema.json` describe
 the optional CTE stage pair. Independent DuckDB physical oracles live in
-`tests/task_146_insert_select.rs`; the versioned acceptance inventory is
+`tests/task_146_insert_select.rs` and the independent full-bag oracle is
+`tests/task_146_acceptance_matrix.rs`; dialect and adapter parity are
+`tests/task_146_dialect_adapter.rs`. The versioned acceptance inventory is
 `docs/task-146-acceptance-freeze.json`. TASK-80 parent remains independent.
 
 TASK-145 source-free INSERT constructors: `src/analysis/writes.rs` recognizes
