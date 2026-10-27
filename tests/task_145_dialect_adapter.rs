@@ -67,6 +67,7 @@ fn each_exposed_dialect_classifies_literal_values_and_default_values_without_fab
                 ProtocolStatement::Unsupported(_) => {
                     // Conservatively unsupported canonical semantics stay non-exact.
                 }
+                _ => panic!("unexpected protocol statement variant for INSERT"),
             }
         }
     }
