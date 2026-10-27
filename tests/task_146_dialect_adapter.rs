@@ -91,12 +91,25 @@ schema:
 }
 
 fn state(relation: &str, rows: &[(Option<i64>, Option<i64>)]) -> PhysicalWriteState {
-    PhysicalWriteState::new(relation, rows.iter().map(|(id, amount)|
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
-            ("amount".to_string(), amount.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
-        ])).unwrap()
-    ).collect()).unwrap()
+    PhysicalWriteState::new(
+        relation,
+        rows.iter()
+            .map(|(id, amount)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "id".to_string(),
+                        id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    ),
+                    (
+                        "amount".to_string(),
+                        amount.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    ),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn evidence() -> Vec<ConstraintEvidence> {
@@ -116,7 +129,8 @@ fn parity_case(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalW
     let sql = normalize_sql(case["sql"].as_str().unwrap());
     let input = SqlInput::inline(&sql);
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = ConfiguredSqlInput::new("task-146-parity", &input, "postgresql", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("task-146-parity", &input, "postgresql", dialect.as_ref());
     let mut bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let id = case["id"].as_str().unwrap();
     let mut constraints = if id.ends_with("pk-collision") {
@@ -135,12 +149,22 @@ fn parity_case(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalW
     let fk = id.ends_with("fk-safe") || id.ends_with("fk-violation");
     let mut sets = Vec::new();
     if fk {
-        constraints.push(RelationConstraint::foreign_key(
-            vec!["amount".into()], SOURCE, vec!["id".into()], evidence(),
-        ).unwrap());
-        sets.push(RelationConstraintSet::new(SOURCE, vec![
-            RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()
-        ]).unwrap());
+        constraints.push(
+            RelationConstraint::foreign_key(
+                vec!["amount".into()],
+                SOURCE,
+                vec!["id".into()],
+                evidence(),
+            )
+            .unwrap(),
+        );
+        sets.push(
+            RelationConstraintSet::new(
+                SOURCE,
+                vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+            )
+            .unwrap(),
+        );
     }
     sets.push(RelationConstraintSet::new(TARGET, constraints).unwrap());
     bundle.enrich_relation_constraints(&sets);
@@ -152,9 +176,11 @@ fn parity_case(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalW
 }
 
 fn json_rows(rows: &serde_json::Value) -> Vec<(Option<i64>, Option<i64>)> {
-    rows.as_array().unwrap().iter().map(|row| {
-        (row["id"].as_i64(), row["score"].as_i64())
-    }).collect()
+    rows.as_array()
+        .unwrap()
+        .iter()
+        .map(|row| (row["id"].as_i64(), row["score"].as_i64()))
+        .collect()
 }
 
 #[test]
@@ -188,9 +214,16 @@ fn all_117_frozen_parser_cells_classify_exact_or_unsupported_without_inference()
                     _ => panic!("unexpected future protocol statement form"),
                 },
             };
-            let expected = case["dialect_parser_cells"][dialect]["state"].as_str().unwrap();
+            let expected = case["dialect_parser_cells"][dialect]["state"]
+                .as_str()
+                .unwrap();
             if observed != expected {
-                mismatch.push(format!("{} / {}: {}", case["id"].as_str().unwrap(), dialect, observed));
+                mismatch.push(format!(
+                    "{} / {}: {}",
+                    case["id"].as_str().unwrap(),
+                    dialect,
+                    observed
+                ));
             }
             cells += 1;
         }
