@@ -50,7 +50,7 @@ fn compiled_cte_select_drives_an_exact_insert_into_a_complete_target() {
     let dialect = dialect_from_name("duckdb").unwrap();
     let insert_sql = format!("INSERT INTO target(score,id) {compiled}");
     let input = SqlInput::inline(&insert_sql);
-    let preliminary = analyze_inputs(&[input.clone()], "duckdb", dialect.as_ref()).unwrap();
+    let preliminary = analyze_inputs(&[SqlInput::inline(&insert_sql)], "duckdb", dialect.as_ref()).unwrap();
     let ProtocolStatement::Query(query) = &preliminary.inputs()[0].statements()[0] else {
         panic!("compiled dbt CTE must normalize into canonical INSERT")
     };
