@@ -6,8 +6,9 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     AnalysisBundle, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, GeneratedValueExpression, LiteralValue,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, PhysicalIdentitySequence,
+    physical_ordered_write_state_plan_with_identities, RelationCatalog,
     RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
     WriteEffectAction,
 };
@@ -248,4 +249,76 @@ fn opaque_insert_literal_is_explicitly_unsupported() {
     let bundle = analysis("INSERT INTO target(id,score) VALUES (1, 1 + 2)", "duckdb");
     let plan = physical_ordered_write_state_plan(&bundle, &[state(&[])]);
     assert!(!matches!(plan, PhysicalWriteStatePlan::Feasible { .. }));
+}
+
+#[test]
+fn generated_insert_fields_use_attested_row_local_dependencies() {
+    let mut bundle = analysis("INSERT INTO target(id) VALUES (2),(3)", "duckdb");
+    let generated = GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".to_string())),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+    );
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target",vec![]).unwrap()
+            .with_column_value_sources(vec![
+                ColumnValueSource::new("score",ColumnValueKind::Generated,None,evidence())
+                    .unwrap().with_generated_expression(generated).unwrap(),
+            ]),
+    ]);
+    assert_eq!(
+        exact_after(&bundle,&[]).rows(),
+        state(&[(Some(2),Some(3)),(Some(3),Some(4))]).rows()
+    );
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER GENERATED ALWAYS AS (id + 1));
+         INSERT INTO target(id) VALUES (2),(3);",
+    ).unwrap();
+    let mut stmt = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
+    let observed = stmt.query_map([], |row| {
+        Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))
+    }).unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
+    assert_eq!(observed, vec![(2,3),(3,4)]);
+}
+
+#[test]
+fn identity_insert_requires_caller_attested_sequence_and_preserves_row_order() {
+    let mut bundle = analysis("INSERT INTO target(score) VALUES (10),(20)", "duckdb");
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target",vec![]).unwrap()
+            .with_column_value_sources(vec![
+                ColumnValueSource::new("id",ColumnValueKind::Identity,None,evidence()).unwrap(),
+            ]),
+    ]);
+    assert!(matches!(
+        physical_ordered_write_state_plan(&bundle,&[state(&[])]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let sequence = PhysicalIdentitySequence::new("target","id",100,5).unwrap();
+    let exact = physical_ordered_write_state_plan_with_identities(
+        &bundle,&[state(&[])], &[sequence]
+    );
+    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = exact else {
+        panic!("attested identity must be constructible: {exact:?}");
+    };
+    assert_eq!(transitions[0].affected().inserted(),2);
+    assert_eq!(
+        final_states[0].rows(),
+        state(&[(Some(100),Some(10)),(Some(105),Some(20))]).rows()
+    );
+}
+
+#[test]
+fn inserting_an_unproved_default_expression_is_not_an_exact_write() {
+    for sql in [
+        "INSERT INTO target(id,score) VALUES (1,DEFAULT)",
+        "INSERT INTO target(id,score) VALUES (1,1+2)",
+        "INSERT INTO target(id,score) VALUES (1,'not-an-integer')",
+    ] {
+        let bundle = analysis(sql,"duckdb");
+        assert!(!matches!(
+            physical_ordered_write_state_plan(&bundle,&[state(&[])]),
+            PhysicalWriteStatePlan::Feasible { .. }
+        ), "{sql}");
+    }
 }
