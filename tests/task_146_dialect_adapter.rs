@@ -284,14 +284,16 @@ fn equivalent_source_target_catalogs_prove_identical_closed_world_states() {
 
 #[test]
 fn vendor_qualifiers_never_become_unproved_plain_append() {
-    let boundaries = [
-        "INSERT IGNORE INTO target(id,score) SELECT id,score FROM source",
-        "INSERT OVERWRITE INTO target SELECT id,score FROM source",
-        "INSERT INTO target(id,score) SELECT id,score FROM source RETURNING id",
-        "INSERT INTO target(id,score) SELECT id,score FROM source ON CONFLICT DO NOTHING",
-    ];
-    for sql in boundaries {
+    let freeze = freeze();
+    let boundaries = freeze["vendor_boundaries"].as_array().unwrap();
+    assert_eq!(boundaries.len(), 4);
+    let mut cells = 0;
+    for boundary in boundaries {
+        let sql = boundary["sql"].as_str().unwrap();
+        assert_eq!(boundary["owner"], "TASK-146");
+        assert_eq!(boundary["follow_up_owner"], "TASK-147");
         for dialect in DIALECTS {
+            cells += 1;
             let parser = dialect_from_name(dialect).unwrap();
             if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
                 let unsupported = match &bundle.inputs()[0].statements()[0] {
@@ -303,4 +305,5 @@ fn vendor_qualifiers_never_become_unproved_plain_append() {
             }
         }
     }
+    assert_eq!(cells, 52);
 }
