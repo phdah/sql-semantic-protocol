@@ -58,6 +58,41 @@ impl WriteDefinitionMode {
     }
 }
 
+/// A single nonrecursive CTE materialized from a closed physical source bag
+/// and consumed by an INSERT SELECT without independent physical rows.
+/// The two query operators remain canonical, normalized and parser-independent.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InsertCteSource {
+    name: String,
+    producer: Box<QueryStatement>,
+    consumer: Box<QueryStatement>,
+}
+
+impl InsertCteSource {
+    pub(crate) fn new(name: String, producer: QueryStatement, consumer: QueryStatement) -> Self {
+        Self {
+            name,
+            producer: Box::new(producer),
+            consumer: Box::new(consumer),
+        }
+    }
+
+    /// Local CTE identity, scoped only to the INSERT statement.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Normalized, row-local CTE producer evaluated on a complete source bag.
+    pub fn producer(&self) -> &QueryStatement {
+        &self.producer
+    }
+
+    /// Normalized outer SELECT consuming the CTE's complete produced bag.
+    pub fn consumer(&self) -> &QueryStatement {
+        &self.consumer
+    }
+}
+
 /// Parser-independent semantics for a write into a named relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
@@ -67,6 +102,7 @@ pub struct WriteOperation {
     kind: WriteKind,
     target_columns: Vec<String>,
     default_values: bool,
+    insert_cte_source: Option<Box<InsertCteSource>>,
     match_condition: Option<Predicate>,
     merge_clauses: Vec<MergeClause>,
     selection: Option<Predicate>,
@@ -83,6 +119,7 @@ impl WriteOperation {
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
             default_values: false,
+            insert_cte_source: None,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
@@ -99,6 +136,7 @@ impl WriteOperation {
             kind: WriteKind::Append,
             target_columns,
             default_values: false,
+            insert_cte_source: None,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
@@ -127,6 +165,7 @@ impl WriteOperation {
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
             default_values: false,
+            insert_cte_source: None,
             match_condition: Some(match_condition),
             merge_clauses,
             selection: None,
@@ -149,6 +188,7 @@ impl WriteOperation {
             kind: WriteKind::Update,
             target_columns: Vec::new(),
             default_values: false,
+            insert_cte_source: None,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -170,6 +210,7 @@ impl WriteOperation {
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
             default_values: false,
+            insert_cte_source: None,
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -206,6 +247,16 @@ impl WriteOperation {
     /// Whether this INSERT appends one default-valued row without a query source.
     pub fn default_values(&self) -> bool {
         self.default_values
+    }
+
+    /// Canonical nonrecursive CTE source, if the INSERT has a proven local stage.
+    pub fn insert_cte_source(&self) -> Option<&InsertCteSource> {
+        self.insert_cte_source.as_deref()
+    }
+
+    pub(crate) fn with_insert_cte_source(mut self, source: InsertCteSource) -> Self {
+        self.insert_cte_source = Some(Box::new(source));
+        self
     }
 
     /// Return the MERGE match condition for conditional mutations.
