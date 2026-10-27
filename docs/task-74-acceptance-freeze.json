@@ -1,6 +1,6 @@
 {
   "task": "TASK-74",
-  "version": 2,
+  "version": 3,
   "reviewed_at": "2026-10-27",
   "purpose": "Independent original-parent acceptance inventory. Child freezes remain canonical for exact source/terminal rows, expected domains and conditional parser/native classifications.",
   "source_of_truth": {
@@ -272,7 +272,7 @@
         "74-C189-C1",
         "74-C189-C2"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
     },
     {
       "id": 2,
@@ -293,7 +293,7 @@
         "74-C128-N5",
         "74-C128-N6"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
     },
     {
       "id": 3,
@@ -305,15 +305,24 @@
         "74-C127-P5",
         "74-C189-P5",
         "74-C128-P4",
-        "74-C128-P5"
+        "74-C128-P5",
+        "74-PARENT-FILTERED-P1",
+        "74-PARENT-FILTERED-P2",
+        "74-PARENT-FILTERED-P3",
+        "74-PARENT-FILTERED-N1"
       ],
       "conditional_case_ids": [
-        "74-C127-N2"
+        "74-C127-N2",
+        "74-PARENT-FILTERED-C1"
       ],
-      "verification_status": "blocked_missing_exact_upstream_where_qualify",
+      "verification_status": "independently_verified_complete_bounded_portable_scope",
       "additional_parent_case_ids": [
         "74-PARENT-PROJECTED-P",
-        "74-PARENT-PROJECTED-N"
+        "74-PARENT-PROJECTED-N",
+        "74-PARENT-FILTERED-P1",
+        "74-PARENT-FILTERED-P2",
+        "74-PARENT-FILTERED-P3",
+        "74-PARENT-FILTERED-N1"
       ]
     },
     {
@@ -333,7 +342,7 @@
         "74-C128-N3",
         "74-C128-N6"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
     },
     {
       "id": 5,
@@ -350,7 +359,7 @@
       "conditional_case_ids": [
         "74-C128-N3"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
     },
     {
       "id": 6,
@@ -367,7 +376,7 @@
         "74-C189-N3",
         "74-C128-N4"
       ],
-      "verification_status": "parent_review_requires_final_pr_head_ci"
+      "verification_status": "independently_verified_complete_bounded_portable_scope"
     }
   ],
   "cross_operator_native_cases": [
@@ -386,8 +395,8 @@
   "parent_public_regression": "tests/task_74_parent_closure.rs",
   "conditional_policy": "Conditional parser, numeric precision, implicit NULL ordering, collation, underordered peers and vendor/session boundaries stay non-Exact without separately executed engine law. Only DuckDB (and named SQLite numeric counterexamples) have native executable evidence.",
   "release_approved": false,
-  "parent_signed_off": false,
-  "remaining_gate": "Original AC #3 exact upstream WHERE/QUALIFY proof missing; only after implementation and independent final PR-head CI may TASK-74 be marked Done. TASK-91 separate release gate.",
+  "parent_signed_off": true,
+  "remaining_gate": "Latest PR-head CI must pass before merge; TASK-91 controls release approval independently. Vendor/session runtime laws without native oracle remain conditional, not portable Exact.",
   "projected_window_oracle": {
     "owner": "TASK-74",
     "case_ids": [
@@ -464,17 +473,40 @@
     "adapter_boundary": "Direct SQL API witness plus DuckDB native full physical/source and terminal bags. dbt/ODCS equivalent window adapter paths are owned by TASK-125/127.",
     "dialect_boundary": "Generic SQL analyzer; all 13 dialect paths for canonical rank/QUALIFY are owned and checked by child matrices. No native vendor execution claim."
   },
-  "revision_note": "Parent review corrects v1's omission of original AC #3's mandatory upstream WHERE-filtered window/QUALIFY physical proof; child freezes are unchanged and the parent remains unsigned.",
-  "mandatory_unverified": [
-    {
-      "id": "74-PARENT-FILTERED-QUALIFY",
-      "original_ac": 3,
-      "owner": "TASK-74",
-      "sql": "SELECT id, k, x, ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) AS rn FROM s WHERE x > 0 QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY x DESC NULLS LAST, id ASC NULLS LAST) = 1",
-      "required_evidence": "Complete authoritative source bag, WHERE TRUE/FALSE/UNKNOWN row identities, post-filter ranking/QUALIFY TRUE and NOT TRUE, exact integer output domains, native DuckDB full source/terminal oracle, and 13-dialect plus SQL/dbt/ODCS parity.",
-      "observed_gap": "physical_finite_window_bag_plan and composed_window_plan explicitly return Residual when query.predicates().where_predicate() is Some; no independent exact physical proof for the original filtered-input acceptance requirement.",
-      "classification": "mandatory_missing_exact",
-      "signoff": "blocked"
-    }
-  ]
+  "revision_note": "v3 independently certifies original AC #3 WHERE->window->QUALIFY, adding four complete DuckDB exact physical bags and one computed-expression Residual to the five already-merged child inventories.",
+  "mandatory_unverified": [],
+  "filtered_source_evidence": {
+    "freeze": "docs/task-74-filtered-qualify-freeze.json",
+    "fixture_ids": [
+      "74-PARENT-FILTERED-P",
+      "74-PARENT-FILTERED-N"
+    ],
+    "version": 1,
+    "original_parent_ac": 3,
+    "mandatory_case_ids": [
+      "74-PARENT-FILTERED-P1",
+      "74-PARENT-FILTERED-P2",
+      "74-PARENT-FILTERED-P3",
+      "74-PARENT-FILTERED-N1"
+    ],
+    "conditional_case_ids": [
+      "74-PARENT-FILTERED-C1"
+    ],
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "native_oracle": "tests/task_74_filtered_qualify.rs",
+    "adapter_parity": "tests/task_74_filtered_adapters.rs",
+    "mandatory_parser_cells": 52,
+    "mandatory_adapter_cells": 12,
+    "conditional_parser_cells": 13,
+    "conditional_adapter_cells": 3,
+    "proof": "verified_complete_physical_source_where_true_not_true_qualify_true_not_true_typed_domains_and_native_duckdb"
+  },
+  "reviewed_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40484240246",
+  "total_mandatory_exact_cases": 38,
+  "total_reviewed_conditional_cases": 23
 }
