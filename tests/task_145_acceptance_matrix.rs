@@ -355,7 +355,7 @@ fn every_frozen_conditional_case_fails_closed() {
         let id = case["id"].as_str().unwrap();
         assert_eq!(
             case["release_disposition"],
-            "conditional_residual_pending_independent_review"
+            "reviewed_typed_residual_owned_by_TASK-145"
         );
         let (bundle, snapshots) = prepared(case);
         let result = physical_ordered_write_state_plan(&bundle, &snapshots);
