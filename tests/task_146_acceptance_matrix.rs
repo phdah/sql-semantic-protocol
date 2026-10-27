@@ -209,6 +209,29 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
                         "{id}: untouched source"
                     );
                 }
+                if let Some(source_rows) = &source {
+                    if let (Some(selected), Some(rejected)) = (
+                        case["selected_source_rows"].as_array(),
+                        case["rejected_source_rows"].as_array(),
+                    ) {
+                        let index = |label: &serde_json::Value| -> usize {
+                            label.as_str().unwrap().split('#').nth(1).unwrap().parse().unwrap()
+                        };
+                        let selected_indices = selected.iter().map(index).collect::<Vec<_>>();
+                        let rejected_indices = rejected.iter().map(index).collect::<Vec<_>>();
+                        let mut combined = selected_indices.clone();
+                        combined.extend(rejected_indices);
+                        combined.sort();
+                        assert_eq!(combined, (0..source_rows.len()).collect::<Vec<_>>(),
+                            "{id}: every physical source row classified as TRUE or NOT TRUE");
+                        let selected_rows = selected_indices.iter().map(|i| source_rows[*i]).collect::<Vec<_>>();
+                        let selected_bag = normalized_bag(selected_rows);
+                        let appended = normalized_bag(expected[initial.len()..(initial.len()+selected.len())].to_vec());
+                        assert_eq!(selected_bag, appended, "{id}: selected physical row identity and exact output bag");
+                    }
+                }
+                assert!(!expected.contains(&(Some(999999),Some(999999))),
+                    "{id}: closed-world terminal negative tuple witness");
                 if let Some(witness) = case.get("expected_intermediate") {
                     let stage = &transitions[0].intermediate_states()[0];
                     assert_eq!(
@@ -222,6 +245,18 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
                         "{id}: entire CTE bag"
                     );
                     assert_eq!(transitions[0].intermediate_states().len(), 1);
+                    let stage_schema = RelationSchema::new(
+                        stage.relation(),
+                        ["id", "score"].into_iter()
+                            .map(|c| SchemaColumn::from_sql_type(c, "INTEGER", "postgresql").unwrap())
+                            .collect()
+                    ).unwrap();
+                    let stage_domains = stage.exact_domains(&stage_schema).unwrap();
+                    assert_eq!(stage_domains.len(), 2);
+                    for domain in stage_domains {
+                        assert_eq!(domain.values().iter().map(|(_,n)|*n).sum::<u64>(),
+                            stage.rows().len() as u64, "{id}: closed CTE column-frequency bag");
+                    }
                 } else {
                     assert!(
                         transitions[0].intermediate_states().is_empty(),
