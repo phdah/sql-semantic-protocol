@@ -10,7 +10,7 @@ use sql_semantic_protocol::{
     ConstraintProvenance, ConstraintSourceKind, ConstraintValue, GeneratedValueExpression,
     LiteralValue, PhysicalIdentitySequence, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput, WriteEffectAction,
+    RelationSchema, SchemaColumn, SqlInput, WriteEffectAction, WriteRowCounts,
 };
 
 fn analysis(sql: &str, dialect: &str) -> AnalysisBundle {
@@ -187,6 +187,17 @@ fn default_values_and_omitted_columns_require_authoritative_evidence() {
     ));
     assert_eq!(effect[0].effect().affected_rows().minimum(), 1);
     assert_eq!(effect[0].effect().affected_rows().maximum(), Some(1));
+    let state_effect = effect[0].effect();
+    assert_eq!(
+        state_effect.resulting_rows(0, WriteRowCounts::new(1, 0, 0)),
+        Ok(1)
+    );
+    assert!(state_effect
+        .resulting_rows(0, WriteRowCounts::new(0, 0, 0))
+        .is_err());
+    assert!(state_effect
+        .resulting_rows(0, WriteRowCounts::new(2, 0, 0))
+        .is_err());
     assert_eq!(
         exact_after(&full_default, &[]).rows(),
         state(&[(Some(5), Some(7))]).rows()
