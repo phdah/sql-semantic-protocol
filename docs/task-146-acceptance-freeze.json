@@ -2179,5 +2179,70 @@
   "conditional_count": 3,
   "parser_cells_required": 169,
   "adapter_cells_required": 39,
-  "native_vendor_execution_certified": false
+  "native_vendor_execution_certified": false,
+  "vendor_boundaries": [
+    {
+      "id": "80-C146-N-insert-ignore",
+      "sql": "INSERT IGNORE INTO target(id,score) SELECT id,score FROM source",
+      "owner": "TASK-146",
+      "follow_up_owner": "TASK-147",
+      "native_approval": false,
+      "expected": "parser_boundary_or_canonical_unsupported",
+      "release_disposition": "unsafe_vendor_conflict_law_unproved"
+    },
+    {
+      "id": "80-C146-N-insert-overwrite",
+      "sql": "INSERT OVERWRITE INTO target SELECT id,score FROM source",
+      "owner": "TASK-146",
+      "follow_up_owner": "TASK-147",
+      "native_approval": false,
+      "expected": "parser_boundary_or_canonical_unsupported",
+      "release_disposition": "unsafe_overwrite_law_unproved"
+    },
+    {
+      "id": "80-C146-N-insert-returning",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source RETURNING id",
+      "owner": "TASK-146",
+      "follow_up_owner": "TASK-147",
+      "native_approval": false,
+      "expected": "parser_boundary_or_canonical_unsupported",
+      "release_disposition": "unsafe_returning_side_effects_unproved"
+    },
+    {
+      "id": "80-C146-N-upsert-conflict",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source ON CONFLICT DO NOTHING",
+      "owner": "TASK-146",
+      "follow_up_owner": "TASK-147",
+      "native_approval": false,
+      "expected": "parser_boundary_or_canonical_unsupported",
+      "release_disposition": "unsafe_upsert_law_unproved"
+    }
+  ],
+  "vendor_parser_cells_required": 52,
+  "conditional_scope_boundaries": [
+    {
+      "id": "80-C146-N-recursive-scope",
+      "sql": "INSERT INTO target(id,score) WITH RECURSIVE staged AS (SELECT id,score FROM source) SELECT id,score FROM staged",
+      "owner": "TASK-146",
+      "expected": "Residual"
+    },
+    {
+      "id": "80-C146-N-multiple-scopes",
+      "sql": "INSERT INTO target(id,score) WITH a AS (SELECT id,score FROM source), b AS (SELECT id,score FROM a) SELECT id,score FROM b",
+      "owner": "TASK-146",
+      "expected": "Residual"
+    },
+    {
+      "id": "80-C146-N-page-scope",
+      "sql": "INSERT INTO target(id,score) WITH staged AS (SELECT id,score FROM source LIMIT 1) SELECT id,score FROM staged",
+      "owner": "TASK-146",
+      "expected": "Residual"
+    },
+    {
+      "id": "80-C146-N-source-order",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source ORDER BY id DESC",
+      "owner": "TASK-146",
+      "expected": "Residual"
+    }
+  ]
 }
