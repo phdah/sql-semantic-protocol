@@ -5,10 +5,10 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    AnalysisBundle, CheckCompareOperator, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    AnalysisBundle, CheckCompareOperator, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn analysis(sql: &str) -> AnalysisBundle {
@@ -228,15 +228,13 @@ fn cte_insert_check_violation_preserves_prior_complete_target() {
     )];
     bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
         "target",
-        vec![
-            RelationConstraint::check_comparison(
-                "score",
-                CheckCompareOperator::Gte,
-                ConstraintValue::Integer(0),
-                evidence,
-            )
-            .unwrap(),
-        ],
+        vec![RelationConstraint::check_comparison(
+            "score",
+            CheckCompareOperator::Gte,
+            ConstraintValue::Integer(0),
+            evidence,
+        )
+        .unwrap()],
     )
     .unwrap()]);
     let plan = physical_ordered_write_state_plan(
@@ -246,7 +244,10 @@ fn cte_insert_check_violation_preserves_prior_complete_target() {
             state("target", &[(0, 0)]),
         ],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "{plan:?}"
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -258,7 +259,9 @@ fn cte_insert_check_violation_preserves_prior_complete_target() {
     .unwrap();
     assert!(db.execute_batch(sql).is_err());
     let existing: Vec<(i64, i64)> = {
-        let mut query = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
+        let mut query = db
+            .prepare("SELECT id,score FROM target ORDER BY id")
+            .unwrap();
         query
             .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
             .unwrap()
