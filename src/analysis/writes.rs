@@ -76,6 +76,13 @@ pub(super) fn analyze_insert(
             "only INSERT SELECT and literal VALUES source semantics are supported",
         );
     }
+    if source.order_by.is_some() {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_source_order",
+            "INSERT SELECT source ordering requires an attested execution-order law",
+        );
+    }
     // A single, nonrecursive CTE has one independently normalized producer
     // and one consumer. Neither stage may borrow an invented physical bag.
     // Other local scopes remain unsupported until their source-row laws
@@ -88,7 +95,7 @@ pub(super) fn analyze_insert(
                 "INSERT CTE requires exactly one independently proved producer",
             );
         };
-        if with.recursive || !cte.alias.columns.is_empty() {
+        if with.recursive || !cte.alias.columns.is_empty() || cte.query.order_by.is_some() {
             return unsupported_write_statement(
                 "insert",
                 "unsupported_insert_cte",
