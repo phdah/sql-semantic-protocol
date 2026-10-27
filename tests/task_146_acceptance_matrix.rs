@@ -140,13 +140,13 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
         serde_json::json!(["80-C146-P", "80-C146-N"])
     );
     let cases = freeze["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 13);
+    assert_eq!(cases.len(), 15);
     assert_eq!(
         cases
             .iter()
             .filter(|c| c["classification"] == "mandatory")
             .count(),
-        10
+        12
     );
     for case in cases {
         let id = case["id"].as_str().unwrap();
@@ -238,7 +238,11 @@ fn all_frozen_mandatory_cases_agree_with_native_duckdb_and_complete_domains() {
                             .iter()
                             .map(|i| source_rows[*i])
                             .collect::<Vec<_>>();
-                        let selected_bag = normalized_bag(selected_rows);
+                        let selected_bag = normalized_bag(if id.ends_with("positional-swap") {
+                            selected_rows.into_iter().map(|(id, score)| (score, id)).collect()
+                        } else {
+                            selected_rows
+                        });
                         let appended = normalized_bag(
                             expected[initial.len()..(initial.len() + selected.len())].to_vec(),
                         );
