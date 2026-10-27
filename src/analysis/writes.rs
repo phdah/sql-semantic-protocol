@@ -1,6 +1,7 @@
 //! INSERT, UPDATE, DELETE and MERGE analysis.
 
 use super::*;
+use crate::protocol::InsertCteSource;
 
 pub(super) fn analyze_insert(
     insert: &SqlInsert,
