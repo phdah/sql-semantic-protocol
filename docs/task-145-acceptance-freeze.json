@@ -115,69 +115,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -252,69 +252,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -389,69 +389,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -524,69 +524,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -660,69 +660,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -790,69 +790,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -902,69 +902,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -1025,69 +1025,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -1137,69 +1137,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -1249,69 +1249,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -1361,69 +1361,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "parsed_canonical",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
@@ -1473,69 +1473,69 @@
       },
       "dialect_parser_cells": {
         "generic": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mysql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "postgresql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "hive": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "sqlite": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "snowflake": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "redshift": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "mssql": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "clickhouse": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "bigquery": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "ansi": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "duckdb": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         },
         "databricks": {
-          "state": "unverified",
+          "state": "canonical_unsupported",
           "owner": "TASK-145",
-          "boundary": "parser_syntax_not_native_runtime"
+          "boundary": "sqlparser_ast_semantics_only_no_native_vendor_execution"
         }
       },
       "adapters": {
