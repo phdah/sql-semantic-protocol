@@ -543,7 +543,7 @@ impl WriteRowCounts {
 /// Why verified DML counts cannot satisfy the stated target-state contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WriteCountError {
-    /// Count of action kinds inconsistent with SQL mutation class.
+    /// Counts contradict the SQL mutation class or declared affected-row bounds.
     InvalidActionCounts,
     /// UPDATE/DELETE cannot affect more distinct target rows than existed.
     ExceedsInitialRows,
@@ -640,6 +640,19 @@ impl WriteStateEffect {
             .ok_or(WriteCountError::Overflow)?;
         if target_changed > initial {
             return Err(WriteCountError::ExceedsInitialRows);
+        }
+        // A precise affected-row interval is a contract, not just emitted
+        // metadata. In particular DEFAULT VALUES must insert exactly one row.
+        let affected = inserted
+            .checked_add(target_changed)
+            .ok_or(WriteCountError::Overflow)?;
+        if affected < self.affected_rows.minimum
+            || self
+                .affected_rows
+                .maximum
+                .is_some_and(|maximum| affected > maximum)
+        {
+            return Err(WriteCountError::InvalidActionCounts);
         }
         match self.cardinality_rule {
             WriteCardinalityRule::Append if updated != 0 || deleted != 0 => {
