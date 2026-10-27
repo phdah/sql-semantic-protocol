@@ -210,16 +210,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -402,16 +405,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -587,16 +593,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -772,16 +781,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -966,16 +978,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1153,16 +1168,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1350,16 +1368,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1516,16 +1537,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1661,16 +1685,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1805,16 +1832,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -1932,16 +1962,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -2102,16 +2135,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -2309,16 +2345,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
@@ -2469,16 +2508,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "independent_native_error_with_atomic_target_rollback",
@@ -2683,16 +2725,19 @@
       },
       "adapter_cells": {
         "direct_sql": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "dbt_compiled": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         },
         "odcs_schema": {
-          "state": "unverified",
-          "required_when_equivalent": true
+          "state": "expected_equivalent_physical_plan",
+          "required_when_equivalent": true,
+          "evidence": "direct/dbt catalog/ODCS schema parity required; verified only after all equivalent cells pass final-head CI"
         }
       },
       "native_duckdb_oracle": "pending_execution",
