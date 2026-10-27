@@ -33,7 +33,7 @@ pub struct PhysicalFiniteWindowExact {
     pub physical_sources: Vec<String>,
     /// Every physical row identity per source, including JOIN and QUALIFY rejections.
     pub physical_source_row_ids: BTreeMap<String, Vec<String>>,
-    /// Upstream join Cartesian candidates rejected before QUALIFY.
+    /// Upstream physical source or join candidates rejected before QUALIFY.
     pub rejected_upstream_row_ids: Vec<String>,
     /// Complete physical contributors for every joined or grouped producer row.
     pub producer_contributors: BTreeMap<String, Vec<String>>,
@@ -900,7 +900,6 @@ pub fn physical_finite_window_bag_plan(
         || !query.joins().is_empty()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
-        || query.predicates().where_predicate().is_some()
         || query.predicates().having_predicate().is_some()
         || !query.subquery_witnesses().is_empty()
         || !query.diagnostics().is_empty()
@@ -916,6 +915,34 @@ pub fn physical_finite_window_bag_plan(
     else {
         return residual("window proof requires authoritative physical datatypes");
     };
+    // WHERE is evaluated on the complete physical source before window frames
+    // or partitions are constructed. Unsupported branches fail closed, even if
+    // an observed source bag would short-circuit those branches.
+    let where_filter = match query.predicates().where_predicate() {
+        Some(predicate) => {
+            match super::window_filters::Filter::compile(predicate, source, schema) {
+                Ok(filter) => Some(filter),
+                Err(reason) => return residual(reason),
+            }
+        }
+        None => None,
+    };
+    let mut where_not_true = Vec::new();
+    let mut eligible = Vec::new();
+    for (index, row) in snapshot.rows().iter().enumerate() {
+        let truth = match &where_filter {
+            Some(filter) => match filter.evaluate(row) {
+                Ok(truth) => truth,
+                Err(reason) => return residual(reason),
+            },
+            None => Some(true),
+        };
+        if truth == Some(true) {
+            eligible.push(index);
+        } else {
+            where_not_true.push(format!("{}#{index}", source.name()));
+        }
+    }
     let mut seen_names = BTreeSet::new();
     let mut keys: Option<RankKeys> = None;
     let mut operations = Vec::<WindowColumn>::new();
@@ -1005,7 +1032,10 @@ pub fn physical_finite_window_bag_plan(
         return residual("window target has no supported window function");
     };
     let mut partitions = BTreeMap::<Vec<Option<i128>>, Vec<(usize, Vec<Option<i128>>)>>::new();
-    for (index, row) in snapshot.rows().iter().enumerate() {
+    for &index in &eligible {
+        let Some(row) = snapshot.rows().get(index) else {
+            return residual("WHERE selected an absent physical source row");
+        };
         let partition = match keys
             .partition
             .iter()
@@ -1092,7 +1122,10 @@ pub fn physical_finite_window_bag_plan(
     let mut terminal = Vec::new();
     let mut terminal_row_ids = Vec::new();
     let mut rejected_row_ids = Vec::new();
-    for (index, row) in snapshot.rows().iter().enumerate() {
+    for &index in &eligible {
+        let Some(row) = snapshot.rows().get(index) else {
+            return residual("window evaluation lost a filtered source row");
+        };
         let row_id = format!("{}#{index}", source.name());
         let mut survives = true;
         for (column, operator, threshold) in &qualify {
@@ -1167,7 +1200,7 @@ pub fn physical_finite_window_bag_plan(
                 .map(|index| format!("{}#{index}", source.name()))
                 .collect(),
         )]),
-        rejected_upstream_row_ids: Vec::new(),
+        rejected_upstream_row_ids: where_not_true,
         producer_contributors: BTreeMap::new(),
         terminal,
         terminal_domains: domains,
