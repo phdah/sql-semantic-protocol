@@ -224,7 +224,7 @@ pub use protocol::{
     UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
     WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteAffectedRows,
     WriteCardinalityRule, WriteCountError, WriteDefinitionMode, WriteEffectAction,
-    WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind, WriteOperation,
+    WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind, WriteOperation, InsertCteSource,
     WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
     PROTOCOL_VERSION,
 };
