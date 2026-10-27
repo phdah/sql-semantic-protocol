@@ -262,6 +262,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         "task139_nullable_duplicate_elements",
         "task140_grouped_fanout",
         "task140_joined_fanout",
+        "task146_insert_source",
         "task189_decimal_windows",
         "ordered_limited_union",
         "ranked_orders",
