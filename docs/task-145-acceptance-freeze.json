@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-145",
   "parent": "TASK-80",
   "state": "frozen_preimplementation_unverified",
@@ -76,8 +76,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0",
@@ -102,7 +102,8 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
@@ -110,7 +111,16 @@
           "values": [
             10,
             20
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -181,11 +191,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -193,8 +203,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-implicit-order",
@@ -213,8 +249,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0",
@@ -239,7 +275,8 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
@@ -247,7 +284,16 @@
           "values": [
             10,
             20
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -318,11 +364,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -330,8 +376,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-reordered",
@@ -350,8 +422,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0",
@@ -376,7 +448,8 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
@@ -384,7 +457,16 @@
           "values": [
             10,
             20
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 20,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -455,11 +537,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -467,8 +549,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-duplicate-bag",
@@ -487,8 +595,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0",
@@ -512,14 +620,24 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
           "values": [
             10
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 10,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -590,11 +708,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -602,8 +720,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-default-omission",
@@ -622,8 +766,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0",
@@ -648,14 +792,24 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
           "values": [
             7
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 7,
+            "upper": 7,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -726,11 +880,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -738,8 +892,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "score DEFAULT 7 attested"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 1,
+          "score": 7
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-default-values",
@@ -754,8 +934,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0"
@@ -778,14 +958,24 @@
               true,
               true
             ]
-          }
+          },
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
           "values": [
             7
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 7,
+            "upper": 7,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -856,11 +1046,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -868,8 +1058,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "id DEFAULT 5, score DEFAULT 7 attested"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": 5,
+          "score": 7
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-P-zero-source",
@@ -879,8 +1095,8 @@
       "prior_target_bag": [],
       "expected_target_bag": [],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [],
       "column_instances": [
@@ -892,12 +1108,15 @@
           "type": "INTEGER",
           "nullable": false,
           "values": [],
-          "bounds": null
+          "bounds": null,
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
-          "values": []
+          "values": [],
+          "kind": "closed_finite_bag",
+          "bounds": null
         }
       },
       "dialect_parser_cells": {
@@ -968,11 +1187,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -980,8 +1199,31 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-N-null-value",
@@ -996,8 +1238,8 @@
         }
       ],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Exact for every value in expected complete target bag",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Exact",
       "source_row_ids": [
         "target#0"
@@ -1013,14 +1255,24 @@
           "values": [
             null
           ],
-          "bounds": null
+          "bounds": null,
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
           "values": [
             10
-          ]
+          ],
+          "kind": "closed_finite_bag",
+          "bounds": {
+            "lower": 10,
+            "upper": 10,
+            "inclusive": [
+              true,
+              true
+            ]
+          }
         }
       },
       "dialect_parser_cells": {
@@ -1091,11 +1343,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1103,8 +1355,34 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": {
+          "id": null,
+          "score": 10
+        },
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Exact",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-N-unique-violation",
@@ -1114,8 +1392,8 @@
       "prior_target_bag": [],
       "expected_target_bag": [],
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Impossible, no inserted row can commit under the enforced primary key",
+      "not_true": "Exact absence of (id=999999, score=999999) in the complete terminal state",
       "proof": "Impossible",
       "source_row_ids": [],
       "column_instances": [
@@ -1127,12 +1405,15 @@
           "type": "INTEGER",
           "nullable": false,
           "values": [],
-          "bounds": null
+          "bounds": null,
+          "kind": "closed_finite_bag"
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
-          "values": []
+          "values": [],
+          "kind": "closed_finite_bag",
+          "bounds": null
         }
       },
       "dialect_parser_cells": {
@@ -1203,11 +1484,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1215,8 +1496,31 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "mandatory_exact_not_yet_verified"
+      "status": "mandatory_verification_required",
+      "release_disposition": "mandatory_full_duckdb_and_protocol_certification_required",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": {
+          "id": 999999,
+          "score": 999999
+        },
+        "positive_strength": "Impossible",
+        "not_true_strength": "Exact"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-N-unattested-default",
@@ -1224,10 +1528,10 @@
       "classification": "conditional",
       "sql": "INSERT INTO target (id) VALUES (1)",
       "prior_target_bag": [],
-      "expected_target_bag": [],
+      "expected_target_bag": null,
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
       "proof": "Residual",
       "source_row_ids": [],
       "column_instances": [
@@ -1237,14 +1541,15 @@
       "domain": {
         "id": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": [],
+          "kind": "unknown",
+          "nullable": "unproven",
           "bounds": null
         },
         "score": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": []
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
         }
       },
       "dialect_parser_cells": {
@@ -1315,11 +1620,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1327,8 +1632,28 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "conditional_residual_pending_independent_review"
+      "status": "conditional_review_required",
+      "release_disposition": "conditional_residual_pending_independent_review",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-N-unattested-identity",
@@ -1336,10 +1661,10 @@
       "classification": "conditional",
       "sql": "INSERT INTO target (score) VALUES (10)",
       "prior_target_bag": [],
-      "expected_target_bag": [],
+      "expected_target_bag": null,
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
       "proof": "Residual",
       "source_row_ids": [],
       "column_instances": [
@@ -1349,14 +1674,15 @@
       "domain": {
         "id": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": [],
+          "kind": "unknown",
+          "nullable": "unproven",
           "bounds": null
         },
         "score": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": []
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
         }
       },
       "dialect_parser_cells": {
@@ -1427,11 +1753,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1439,8 +1765,28 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "conditional_residual_pending_independent_review"
+      "status": "conditional_review_required",
+      "release_disposition": "conditional_residual_pending_independent_review",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "id": "80-C145-N-cast-uncertainty",
@@ -1448,10 +1794,10 @@
       "classification": "conditional",
       "sql": "INSERT INTO target (id, score) VALUES ('unknown', 10)",
       "prior_target_bag": [],
-      "expected_target_bag": [],
+      "expected_target_bag": null,
       "source_relation": null,
-      "positive": "all specified inserted rows present with bag multiplicity",
-      "not_true": "all absent target tuples established from complete poststate",
+      "positive": "Residual, no physical row construction certified",
+      "not_true": "Residual, target membership cannot be decided from missing evidence",
       "proof": "Residual",
       "source_row_ids": [],
       "column_instances": [
@@ -1461,14 +1807,15 @@
       "domain": {
         "id": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": [],
+          "kind": "unknown",
+          "nullable": "unproven",
           "bounds": null
         },
         "score": {
           "type": "INTEGER",
-          "nullable": false,
-          "values": []
+          "kind": "unknown",
+          "nullable": "unproven",
+          "bounds": null
         }
       },
       "dialect_parser_cells": {
@@ -1539,11 +1886,11 @@
         }
       },
       "adapters": {
-        "direct_sql": "mandatory_unverified",
-        "dbt_compiled": "mandatory_unverified",
-        "odcs_schema": "mandatory_unverified"
+        "direct_sql": "required_independent_physical_oracle",
+        "dbt_compiled": "metadata_parity_required; compiled_model_not_asserted_to_execute_insert",
+        "odcs_schema": "equivalent_schema_parity_required"
       },
-      "native_execution": "duckdb_unverified",
+      "native_execution": "duckdb_full_bag_oracle_required; non_duckdb_runtime_unverified",
       "owner": "TASK-145",
       "assumptions": {
         "target_schema": "target(id INTEGER, score INTEGER)",
@@ -1551,8 +1898,109 @@
         "constraint_enforcement": "requires_attested_database_evidence",
         "default_evidence": "as declared per-case"
       },
-      "status": "frozen_unverified",
-      "release_disposition": "conditional_residual_pending_independent_review"
+      "status": "conditional_review_required",
+      "release_disposition": "conditional_residual_pending_independent_review",
+      "truth_witnesses": {
+        "positive": null,
+        "not_true": null,
+        "positive_strength": "Residual",
+        "not_true_strength": "Residual"
+      },
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "required_task_ac": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "matrix_review": {
+    "reason": "Independent acceptance review found missing score bounds and incorrectly claimed empty certified bags for unproved conditional cases; v2 preserves frozen SQL, IDs, and finite scope and makes obligations explicit.",
+    "previous_version": 1,
+    "original_variants_unchanged": true,
+    "oracle": "DuckDB crate ~1.10506.0",
+    "parser": "sqlparser 0.58.0",
+    "native_vendor_engine_execution": "not_certified",
+    "owner": "TASK-145"
+  },
+  "vendor_syntax_boundaries": [
+    {
+      "id": "80-C145-V1",
+      "dialect": "sqlite",
+      "sql": "INSERT OR IGNORE INTO target (id,score) VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V2",
+      "dialect": "mysql",
+      "sql": "REPLACE INTO target (id,score) VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V3",
+      "dialect": "hive",
+      "sql": "INSERT OVERWRITE TABLE target VALUES (1,10)",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V4",
+      "dialect": "postgresql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) ON CONFLICT(id) DO NOTHING",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V5",
+      "dialect": "postgresql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) RETURNING id",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V6",
+      "dialect": "mysql",
+      "sql": "INSERT INTO target SET id = 1, score = 10",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
+    },
+    {
+      "id": "80-C145-V7",
+      "dialect": "mysql",
+      "sql": "INSERT INTO target (id,score) VALUES (1,10) ON DUPLICATE KEY UPDATE score=11",
+      "expected": "unsupported_or_parser_boundary",
+      "owner": "TASK-145",
+      "release_disposition": "conditional_vendor_dml_law_not_certified",
+      "native_execution": "unverified",
+      "typed_proof": "Residual"
     }
   ]
 }
