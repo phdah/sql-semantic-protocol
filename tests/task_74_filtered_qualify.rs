@@ -250,8 +250,9 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
                 panic!("{id}/{name}: expected exact finite values: {actual:?}");
             };
             let actual_numbers = values
+                .values()
                 .iter()
-                .filter_map(|v| match v {
+                .filter_map(|v| match v.value() {
                     LiteralValue::Number(number) => number.parse::<i64>().ok(),
                     _ => None,
                 })
@@ -267,7 +268,7 @@ fn exact_where_then_qualify_preserves_closed_world_three_valued_identities_and_d
                 "{id}/{name}: upper inclusive bound"
             );
             assert_eq!(
-                values.contains(&LiteralValue::Null),
+                values.values().iter().any(|item| item.value() == &LiteralValue::Null),
                 expectation["nullable"] == true,
                 "{id}/{name}"
             );
