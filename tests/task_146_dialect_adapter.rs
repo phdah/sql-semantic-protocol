@@ -12,8 +12,19 @@ use sql_semantic_protocol::{
 };
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 const TARGET: &str = "warehouse.analytics.stg_orders";
 const SOURCE: &str = "warehouse.raw.orders";
@@ -23,16 +34,17 @@ fn freeze() -> serde_json::Value {
 }
 
 fn direct_catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(
-        &[TARGET, SOURCE]
-            .map(|relation| RelationSchema::new(
-                relation,
-                ["id", "amount"]
-                    .into_iter()
-                    .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap())
-                    .collect(),
-            ).unwrap()),
-    ).unwrap()
+    RelationCatalog::from_schemas(&[TARGET, SOURCE].map(|relation| {
+        RelationSchema::new(
+            relation,
+            ["id", "amount"]
+                .into_iter()
+                .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    }))
+    .unwrap()
 }
 
 fn dbt_catalog() -> RelationCatalog {
@@ -47,7 +59,8 @@ fn dbt_catalog() -> RelationCatalog {
 fn odcs_catalog() -> RelationCatalog {
     use sql_semantic_protocol::parse_odcs_yaml;
     let known = RelationCatalog::new(&[TARGET, SOURCE]).unwrap();
-    let contract = parse_odcs_yaml(r#"
+    let contract = parse_odcs_yaml(
+        r#"
 apiVersion: v3.2.0
 kind: DataContract
 id: task146parity
@@ -69,7 +82,11 @@ schema:
         physicalType: INTEGER
       - name: amount
         physicalType: INTEGER
-"#,"postgresql", &known).unwrap();
+"#,
+        "postgresql",
+        &known,
+    )
+    .unwrap();
     RelationCatalog::from_schemas(contract.source_schemas()).unwrap()
 }
 
@@ -90,7 +107,9 @@ fn evidence() -> Vec<ConstraintEvidence> {
 }
 
 fn normalize_sql(sql: &str) -> String {
-    sql.replace("target", TARGET).replace("source", SOURCE).replace("score", "amount")
+    sql.replace("target", TARGET)
+        .replace("source", SOURCE)
+        .replace("score", "amount")
 }
 
 fn parity_case(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
@@ -103,8 +122,13 @@ fn parity_case(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalW
     let mut constraints = if id.ends_with("pk-collision") {
         vec![RelationConstraint::primary_key(vec!["id".to_string()], evidence()).unwrap()]
     } else if id.ends_with("check") {
-        vec![RelationConstraint::check_comparison("amount", CheckCompareOperator::Gte,
-            ConstraintValue::Integer(0), evidence()).unwrap()]
+        vec![RelationConstraint::check_comparison(
+            "amount",
+            CheckCompareOperator::Gte,
+            ConstraintValue::Integer(0),
+            evidence(),
+        )
+        .unwrap()]
     } else {
         vec![]
     };
@@ -142,7 +166,8 @@ fn all_117_frozen_parser_cells_classify_exact_or_unsupported_without_inference()
         for dialect in DIALECTS {
             let parser = dialect_from_name(dialect).unwrap();
             let sql = case["sql"].as_str().unwrap();
-            let observed = match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
+            let observed = match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref())
+            {
                 Err(_) => "parser_boundary",
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => "canonical_unsupported",
@@ -171,7 +196,11 @@ fn all_117_frozen_parser_cells_classify_exact_or_unsupported_without_inference()
         }
     }
     assert_eq!(cells, matrix["cases"].as_array().unwrap().len() * 13);
-    assert!(mismatch.is_empty(), "dialect classifications: {}", mismatch.join("; "));
+    assert!(
+        mismatch.is_empty(),
+        "dialect classifications: {}",
+        mismatch.join("; ")
+    );
 }
 
 #[test]
@@ -194,14 +223,26 @@ fn equivalent_source_target_catalogs_prove_identical_closed_world_states() {
         for (origin, catalog) in &catalogs {
             let proof = parity_case(case, catalog);
             if let Some(baseline) = &expected {
-                assert_eq!(&proof, baseline, "{id}: {origin} diverged from equivalent direct metadata");
+                assert_eq!(
+                    &proof, baseline,
+                    "{id}: {origin} diverged from equivalent direct metadata"
+                );
             } else {
                 expected = Some(proof.clone());
             }
             match case["proof"].as_str().unwrap() {
-                "Exact" => assert!(matches!(proof, PhysicalWriteStatePlan::Feasible { .. }), "{origin}/{id}: {proof:?}"),
-                "Impossible" => assert!(matches!(proof, PhysicalWriteStatePlan::Impossible { .. }), "{origin}/{id}: {proof:?}"),
-                "Residual" => assert!(matches!(proof, PhysicalWriteStatePlan::Residual { .. }), "{origin}/{id}: {proof:?}"),
+                "Exact" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Feasible { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
+                "Impossible" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Impossible { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
+                "Residual" => assert!(
+                    matches!(proof, PhysicalWriteStatePlan::Residual { .. }),
+                    "{origin}/{id}: {proof:?}"
+                ),
                 other => panic!("unrecognized frozen proof: {other}"),
             };
         }
