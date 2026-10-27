@@ -1,6 +1,6 @@
 # TASK-74 independent parent acceptance review
 
-**Status:** Parent closure candidate. All five child tasks are Done and their PRs are merged on `main`; this review does not certify TASK-91, unexecuted vendor engines or the final PR head before CI runs.
+**Status:** Parent closure blocked on original AC #3's missing exact upstream WHERE-filtered window/QUALIFY physical proof. All five child tasks are Done and merged on `main`. Existing oracle evidence is verified; this review does not sign off TASK-74 or TASK-91.
 
 ## Authoritative contract
 
@@ -49,5 +49,9 @@ Conditional underordered peers, implicit NULL ordering, COLLATE/session rules, u
 **Standards:** Parent evidence lives in a single JSON inventory, an independent executable integration test, the task tracker, code map and coverage manifest. The production parser, canonical protocol and emission contract remain unchanged. No extra dependency, guessed semantics or additional public wire shape is introduced.
 
 **Spec:** All six original TASK-74 criteria are mapped to existing merged child evidence; the critical upstream JOIN/GROUP-to-QUALIFY paths receive an additional parent-owned DuckDB full-bag re-execution. No child is reopened. TASK-91 remains a separate release authorization gate.
+
+## Mandatory gap preventing parent signoff
+
+Original AC #3 explicitly requires interaction of QUALIFY with a filtered input. The canonical `physical_finite_window_bag_plan` and `composed_window_plan` both return Residual for a query carrying an upstream `WHERE` predicate; the merged TASK-127 child tests cover JOIN and GROUP producers but not this independent mandatory physical WHERE-to-QUALIFY case. The v2 inventory records `74-PARENT-FILTERED-QUALIFY` as **mandatory_unverified**, with the exact SQL and expected independent closure evidence. It must not be silently reclassified as an accepted conditional boundary. Do not check AC #3 or mark TASK-74 Done until a focused implementation proves upstream WHERE TRUE/FALSE/UNKNOWN source identities, exact post-filter ranking, terminal and rejected bags, portable typed domains and parser/adapter evidence. The physical planner and tests need another implementation iteration.
 
 Run `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, schema/golden checks and real `make dbt-e2e` on the final implementation and acceptance-metadata PR head. **Do not mark TASK-74 Done or merge this PR until that verification succeeds.**
