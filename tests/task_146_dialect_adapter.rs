@@ -184,7 +184,7 @@ fn json_rows(rows: &serde_json::Value) -> Vec<(Option<i64>, Option<i64>)> {
 }
 
 #[test]
-fn all_117_frozen_parser_cells_classify_exact_or_unsupported_without_inference() {
+fn all_195_frozen_parser_cells_classify_exact_or_unsupported_without_inference() {
     let matrix = freeze();
     let mut cells = 0;
     let mut mismatch = Vec::new();
@@ -254,6 +254,11 @@ fn equivalent_source_target_catalogs_prove_identical_closed_world_states() {
         let id = case["id"].as_str().unwrap();
         let mut expected = None;
         for (origin, catalog) in &catalogs {
+            assert_eq!(
+                case["adapter_cells"][*origin]["state"],
+                "expected_equivalent_physical_plan",
+                "{id}: frozen adapter expectation for {origin}"
+            );
             let proof = parity_case(case, catalog);
             if let Some(baseline) = &expected {
                 assert_eq!(
