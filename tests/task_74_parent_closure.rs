@@ -54,7 +54,7 @@ fn exact(task: &str, case: &Value) -> bool {
 #[test]
 fn parent_inventory_covers_every_child_case_dialect_adapter_and_original_criterion() {
     let freeze = parent();
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
     assert_eq!(freeze["task"], "TASK-74");
     assert_eq!(freeze["release_approved"], false);
     let dialects = values(&freeze["required_dialects"]);
