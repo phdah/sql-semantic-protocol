@@ -531,3 +531,30 @@ fn insert_ordered_source_requires_order_execution_law_before_claiming_exact_rows
         "{plan:?}"
     );
 }
+
+#[test]
+fn unproved_transactional_cte_insert_does_not_certify_commit_or_rollback() {
+    let sql = "BEGIN TRANSACTION;
+        INSERT INTO target(id,score) WITH staged AS
+          (SELECT id,score FROM source WHERE id > 1)
+          SELECT id,score FROM staged;
+        ROLLBACK;";
+    let bundle = analysis(sql);
+    let plan = physical_ordered_write_state_plan(
+        &bundle,
+        &[state("source", &[(1, 10), (2, 20)]), state("target", &[])],
+    );
+    assert!(!matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+}
+
+#[test]
+fn active_protocol_schema_declares_bounded_insert_cte_contract() {
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    let source = &schema["$defs"]["writeOperation"]["properties"]["cte_source"];
+    assert_eq!(source["type"], "object");
+    assert_eq!(source["additionalProperties"], false);
+    assert_eq!(source["required"], serde_json::json!(["name", "producer", "consumer"]));
+    assert_eq!(source["properties"]["producer"]["$ref"], "#/$defs/queryStatement");
+    assert_eq!(source["properties"]["consumer"]["$ref"], "#/$defs/queryStatement");
+}
