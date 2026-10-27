@@ -9,7 +9,7 @@ acceptance inventory is `docs/task-145-acceptance-freeze.json`; the independent
 full-bag DuckDB and typed-domain matrix is `tests/task_145_acceptance_matrix.rs`.
 `tests/task_145_insert_values.rs` covers generated fields, attested identity
 sequences, missing metadata and canonical wire emission;
-`tests/task_145_typed_write.rs` covers Arrow-like state feasibility;
+`tests/task_145_typed_write.rs` covers Arrow-like state feasibility and attested row-local generated scalar fields (but not sequence allocation);
 `tests/task_145_precedence.rs` checks ordered writes and transaction residuals;
 `tests/task_145_dialect_adapter.rs` checks all 156 parser cells and 36
 SQL/dbt-catalog/ODCS-schema equivalence cases. Vendor-only modifiers fail closed
