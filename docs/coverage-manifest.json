@@ -13309,8 +13309,8 @@
       "80-C146-P",
       "80-C146-N"
     ],
-    "mandatory_cases": 11,
-    "conditional_cases": 2,
+    "mandatory_cases": 10,
+    "conditional_cases": 3,
     "parser_cells_required": 169,
     "adapter_cells_required": 39,
     "mandatory_verified": 0,
@@ -13330,6 +13330,7 @@
       5,
       6
     ],
-    "native_vendor_execution_certified": false
+    "native_vendor_execution_certified": false,
+    "conditional_fk_violation": "Residual: immediate FK enforcement/deferral not attested; independent native DuckDB rejects"
   }
 }
