@@ -52,7 +52,7 @@ caller-owned INSERT statements. A dbt compiled model is **not** represented as
 an independently executed DML write. These are proof-boundary facts, not missing
 portable mandatory implementation.
 
-Identity allocation is exact only with caller-attested sequence state.
+Scalar and typed physical writes construct attested row-local generated fields through the same canonical evaluator. Typed writes without a caller-supplied sequence state remain Residual for identities. Identity allocation in the scalar planner is exact only with caller-attested sequence state.
 Generated expressions are exact only for supported, attested row-local laws.
 Opaque defaults, implicit casts, vendor ON CONFLICT/IGNORE/REPLACE/OVERWRITE/
 RETURNING execution laws and real SQL transaction semantics are conditionally
