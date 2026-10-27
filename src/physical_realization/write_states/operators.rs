@@ -169,7 +169,9 @@ pub(super) fn append_rows(
         return Err(residual("missing INSERT write"));
     };
     let schema = schema_for(bundle, target)?;
-    let columns = if write.target_columns().is_empty() {
+    let columns = if write.default_values() {
+        Vec::new()
+    } else if write.target_columns().is_empty() {
         schema
             .columns()
             .iter()
@@ -185,11 +187,24 @@ pub(super) fn append_rows(
     {
         return Err(residual("INSERT targets duplicate or undeclared columns"));
     }
-    let produced = evaluate_simple_select(bundle, query, states)?;
+    let produced = if write.default_values() {
+        vec![Vec::new()]
+    } else if let Some(table) = query.finite_table() {
+        if table.kind() != crate::protocol::FiniteTableKind::Values {
+            return Err(residual("INSERT finite source is not a literal VALUES table"));
+        }
+        table
+            .rows()
+            .iter()
+            .map(|row| row.iter().map(|value| value.value().clone()).collect())
+            .collect()
+    } else {
+        evaluate_simple_select(bundle, query, states)?
+    };
     let mut next = before.clone();
     for output_row in produced {
         if output_row.len() != columns.len() {
-            return Err(residual("INSERT SELECT projection arity is not proved"));
+            return Err(residual("INSERT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
         next.rows.push(complete_insert_row(

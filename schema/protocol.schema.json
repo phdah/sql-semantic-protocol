@@ -6723,7 +6723,7 @@
               ],
               "properties": {
                 "kind": {
-                  "const": "insert_query"
+                  "enum": ["insert_query", "insert_default_values"]
                 }
               }
             }

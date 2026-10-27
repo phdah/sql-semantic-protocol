@@ -163,6 +163,7 @@ pub(super) fn write_state_effect_to_value(effect: &crate::WriteStateEffect) -> V
             "domains": branch.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
             "action": match branch.action() {
                 WriteEffectAction::InsertQuery => json!({"kind": "insert_query"}),
+                WriteEffectAction::InsertDefaultValues => json!({"kind": "insert_default_values"}),
                 WriteEffectAction::Mutation(action) => merge_action_to_value(action),
             }
         })).collect::<Vec<_>>(),
@@ -180,6 +181,7 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         "definition_mode": write.definition_mode().map(|mode| mode.as_str()),
         "kind": write.kind().as_str(),
         "target_columns": write.target_columns(),
+        "default_values": write.default_values(),
         "match_condition": write.match_condition().map_or(Value::Null, predicate_to_value),
         "merge_clauses": write
             .merge_clauses()

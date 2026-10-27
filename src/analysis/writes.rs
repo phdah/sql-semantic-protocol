@@ -17,24 +17,6 @@ pub(super) fn analyze_insert(
         }
     };
 
-    let Some(source) = &insert.source else {
-        return unsupported_write_statement(
-            "insert",
-            "unsupported_insert_source",
-            "only INSERT INTO ... SELECT source semantics are supported",
-        );
-    };
-    if !matches!(
-        source.body.as_ref(),
-        SetExpr::Select(_) | SetExpr::Query(_) | SetExpr::SetOperation { .. }
-    ) {
-        return unsupported_write_statement(
-            "insert",
-            "unsupported_insert_source",
-            "only INSERT INTO ... SELECT source semantics are supported",
-        );
-    }
-
     if insert.overwrite
         || insert.replace_into
         || insert.ignore
@@ -57,9 +39,54 @@ pub(super) fn analyze_insert(
     }
 
     let target_columns = insert.columns.iter().map(ToString::to_string).collect();
-    let query = analyze_query(source, Some(target.clone()), metadata)
-        .with_write(Some(WriteOperation::append(target, target_columns)));
-    ProtocolStatement::Query(query)
+    let Some(source) = &insert.source else {
+        // sqlparser represents DEFAULT VALUES with no source after parsing.
+        if !insert.columns.is_empty() {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_source",
+                "DEFAULT VALUES cannot specify a target column list",
+            );
+        }
+        return ProtocolStatement::Query(
+            QueryStatement::new(
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                RowConditions::new(
+                    Predicates::new(None, None, None),
+                    Vec::new(),
+                    ConditionExactness::from_residuals(Vec::new()),
+                ),
+                Output::new(Vec::new()),
+                Vec::new(),
+            )
+            .with_produced_relation(Some(target.clone()))
+            .with_write(Some(WriteOperation::append_default_values(target))),
+        );
+    };
+    if !matches!(
+        source.body.as_ref(),
+        SetExpr::Select(_)
+            | SetExpr::Query(_)
+            | SetExpr::SetOperation { .. }
+            | SetExpr::Values(_)
+    ) {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_source",
+            "only INSERT SELECT and literal VALUES source semantics are supported",
+        );
+    }
+    let query = analyze_query(source, Some(target.clone()), metadata);
+    if matches!(source.body.as_ref(), SetExpr::Values(_)) && query.finite_table().is_none() {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_values",
+            "VALUES has an expression without a provable finite literal value",
+        );
+    }
+    ProtocolStatement::Query(query.with_write(Some(WriteOperation::append(target, target_columns))))
 }
 
 fn refine_write_value_domain(
