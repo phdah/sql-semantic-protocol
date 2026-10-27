@@ -156,9 +156,9 @@ fn typed_insert_constructs_attested_generated_columns_from_scalar_inputs() {
         .with_generated_expression(expression)
         .unwrap()])]);
     assert_eq!(
-        target(proof(&query, vec![typed_row(Some(0), Some(0))])),
+        target(proof(&query, vec![typed_row(Some(0), Some(1))])),
         vec![
-            typed_row(Some(0), Some(0)),
+            typed_row(Some(0), Some(1)),
             typed_row(Some(2), Some(3)),
             typed_row(Some(3), Some(4)),
         ]
