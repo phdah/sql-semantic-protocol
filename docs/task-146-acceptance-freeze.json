@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-146",
   "parent": "TASK-80",
-  "state": "frozen_extended_oracle_inventory_pending_execution",
+  "state": "frozen_v3_bounded_source_target_and_positional_oracles_pending_execution",
   "original_parent_ac": [
     1,
     2,
@@ -404,6 +404,365 @@
         "compare": "exact_integer_with_SQL_three_valued_null",
         "enforced_keys": "none",
         "attested_check": "none"
+      }
+    },
+    {
+      "id": "80-C146-P-direct-positional-swap",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target(score,id) SELECT id,score FROM source WHERE id > 1",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [
+        {
+          "instance": "target#0",
+          "id": 0,
+          "score": 0
+        }
+      ],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 20,
+          "score": 2
+        },
+        {
+          "instance": "target_after#1",
+          "id": 30,
+          "score": 3
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            20,
+            30
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            2,
+            3
+          ]
+        }
+      },
+      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      }
+    },
+    {
+      "id": "80-C146-P-cte-positional-swap",
+      "fixture_id": "80-C146-P",
+      "sql": "INSERT INTO target(score,id) WITH filtered AS (SELECT id,score FROM source WHERE id > 1) SELECT id,score FROM filtered",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "relation_schema": [
+        "source(id INTEGER, score INTEGER)",
+        "target(id INTEGER, score INTEGER)"
+      ],
+      "source_row_bag": [
+        {
+          "instance": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "instance": "source#1",
+          "id": 2,
+          "score": 20
+        },
+        {
+          "instance": "source#2",
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prior_target_bag": [
+        {
+          "instance": "target#0",
+          "id": 0,
+          "score": 0
+        }
+      ],
+      "expected_target_bag": [
+        {
+          "instance": "target_after#0",
+          "id": 20,
+          "score": 2
+        },
+        {
+          "instance": "target_after#1",
+          "id": 30,
+          "score": 3
+        }
+      ],
+      "terminal_typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            20,
+            30
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            2,
+            3
+          ]
+        }
+      },
+      "expected_truth_and_rejection": "source#1 and source#2 pass WHERE id>1; SQL INSERT target (score,id) binds SELECT (id,score) positionally, yielding target (id,score)=(20,2),(30,3); source#0 is NOT TRUE",
+      "dialect_parser_cells": {
+        "generic": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mysql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "postgresql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "hive": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "sqlite": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "snowflake": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "redshift": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "mssql": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "clickhouse": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "bigquery": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "ansi": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "duckdb": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        },
+        "databricks": {
+          "state": "unverified",
+          "required": true,
+          "owner": "TASK-146"
+        }
+      },
+      "adapter_cells": {
+        "direct_sql": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "dbt_compiled": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        },
+        "odcs_schema": {
+          "state": "unverified",
+          "required_when_equivalent": true
+        }
+      },
+      "native_duckdb_oracle": "pending_execution",
+      "status": "frozen_unverified",
+      "release_disposition": "blocks_signoff_until_certified",
+      "selected_source_rows": [
+        "source#1",
+        "source#2"
+      ],
+      "rejected_source_rows": [
+        "source#0"
+      ],
+      "absence_witness": "No other source row qualifies under the complete predicate bag; target tuple (999999,999999) is absent for every Exact poststate",
+      "authority": {
+        "source_and_target_snapshots": "caller_attested_complete",
+        "compare": "exact_integer_with_SQL_three_valued_null",
+        "enforced_keys": "none",
+        "attested_check": "none"
+      },
+      "expected_intermediate": {
+        "name": "filtered",
+        "rows": [
+          {
+            "instance": "filtered#0",
+            "id": 2,
+            "score": 20
+          },
+          {
+            "instance": "filtered#1",
+            "id": 3,
+            "score": 30
+          }
+        ]
       }
     },
     {
@@ -2175,10 +2534,10 @@
       }
     }
   ],
-  "mandatory_count": 10,
+  "mandatory_count": 12,
   "conditional_count": 3,
-  "parser_cells_required": 169,
-  "adapter_cells_required": 39,
+  "parser_cells_required": 195,
+  "adapter_cells_required": 45,
   "native_vendor_execution_certified": false,
   "vendor_boundaries": [
     {
