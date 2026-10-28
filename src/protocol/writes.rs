@@ -93,6 +93,26 @@ impl InsertCteSource {
     }
 }
 
+/// An INSERT conflict rule, restricted to an explicitly named unique key.
+///
+/// Whether that key is actually enforced and comparable is verified against
+/// canonical schema evidence and the complete physical target population.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InsertConflictPolicy {
+    columns: Vec<String>,
+}
+
+impl InsertConflictPolicy {
+    pub(crate) fn do_nothing(columns: Vec<String>) -> Self {
+        Self { columns }
+    }
+
+    /// The exact, ordered conflict target. No implicit unique keys are inferred.
+    pub fn columns(&self) -> &[String] {
+        &self.columns
+    }
+}
+
 /// Parser-independent semantics for a write into a named relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
@@ -103,6 +123,8 @@ pub struct WriteOperation {
     target_columns: Vec<String>,
     default_values: bool,
     insert_cte_source: Option<Box<InsertCteSource>>,
+    insert_conflict: Option<InsertConflictPolicy>,
+    returning_columns: Vec<String>,
     match_condition: Option<Predicate>,
     merge_clauses: Vec<MergeClause>,
     selection: Option<Predicate>,
@@ -120,6 +142,8 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            insert_conflict: None,
+            returning_columns: Vec::new(),
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
@@ -137,6 +161,8 @@ impl WriteOperation {
             target_columns,
             default_values: false,
             insert_cte_source: None,
+            insert_conflict: None,
+            returning_columns: Vec::new(),
             match_condition: None,
             merge_clauses: Vec::new(),
             selection: None,
@@ -166,6 +192,8 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            insert_conflict: None,
+            returning_columns: Vec::new(),
             match_condition: Some(match_condition),
             merge_clauses,
             selection: None,
@@ -189,6 +217,8 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            insert_conflict: None,
+            returning_columns: Vec::new(),
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -211,6 +241,8 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            insert_conflict: None,
+            returning_columns: Vec::new(),
             match_condition: None,
             merge_clauses: Vec::new(),
             selection,
@@ -256,6 +288,26 @@ impl WriteOperation {
 
     pub(crate) fn with_insert_cte_source(mut self, source: InsertCteSource) -> Self {
         self.insert_cte_source = Some(Box::new(source));
+        self
+    }
+
+    /// Targeted DO NOTHING rule, or None for unconditional INSERT and other writes.
+    pub fn insert_conflict(&self) -> Option<&InsertConflictPolicy> {
+        self.insert_conflict.as_ref()
+    }
+
+    pub(crate) fn with_insert_conflict(mut self, policy: InsertConflictPolicy) -> Self {
+        self.insert_conflict = Some(policy);
+        self
+    }
+
+    /// Column identities projected by an INSERT RETURNING clause.
+    pub fn returning_columns(&self) -> &[String] {
+        &self.returning_columns
+    }
+
+    pub(crate) fn with_returning_columns(mut self, columns: Vec<String>) -> Self {
+        self.returning_columns = columns;
         self
     }
 
