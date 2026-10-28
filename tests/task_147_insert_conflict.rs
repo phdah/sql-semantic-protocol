@@ -183,6 +183,49 @@ fn nullable_primary_key_is_impossible_not_a_suppressed_conflict() {
 }
 
 #[test]
+fn nullable_unique_conflict_without_native_null_equality_evidence_is_residual() {
+    let mut query = bundle(SQL, false);
+    query.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::unique_key(
+            vec!["id".into()],
+            vec![ConstraintEvidence::new(
+                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-null").unwrap(),
+                ConstraintEnforcement::Enforced,
+            )],
+        ).unwrap()],
+    ).unwrap()]);
+    let plan = physical_ordered_write_state_plan(
+        &query,
+        &[state("source", &[(None, 20)]), state("target", &[])],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+}
+
+#[test]
+fn other_enforced_unique_constraints_prevent_false_conflict_suppression() {
+    let mut query = bundle(SQL, true);
+    query.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::unique_key(
+            vec!["score".into()],
+            vec![ConstraintEvidence::new(
+                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-other").unwrap(),
+                ConstraintEnforcement::Enforced,
+            )],
+        ).unwrap()],
+    ).unwrap()]);
+    let plan = physical_ordered_write_state_plan(
+        &query,
+        &[
+            state("source", &[(Some(1), 20), (Some(2), 30)]),
+            state("target", &[(Some(1), 10)]),
+        ],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+}
+
+#[test]
 fn unproved_vendor_and_upsert_actions_are_explicitly_unsupported() {
     for sql in [
         "INSERT INTO target(id,score) VALUES (1,2) ON CONFLICT(id) DO UPDATE SET score=3",
