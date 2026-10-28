@@ -1247,57 +1247,213 @@
     }
   ],
   "dialect_cells": {
-    "generic": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "mysql": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "postgresql": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "hive": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "sqlite": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "snowflake": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "redshift": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "mssql": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "clickhouse": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
+    "ansi": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
     },
     "bigquery": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
     },
-    "ansi": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
-    },
-    "duckdb": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
+    "clickhouse": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
     },
     "databricks": {
-      "status": "pending_parser_matrix_final_head_ci",
-      "engine_execution_proof": false
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "duckdb": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "generic": {
+      "80-C147-N-conditional-1": "canonical_unsupported",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "hive": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "mssql": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "mysql": {
+      "80-C147-N-conditional-1": "canonical_unsupported",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "postgresql": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "redshift": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "snowflake": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "sqlite": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
     }
   },
   "adapter_cells": {
@@ -1423,5 +1579,12 @@
       "remaining_parent": "TASK-148 and parent independent evidence"
     }
   },
-  "parent_ac_4": "Not owned by TASK-147, TASK-148 must certify subsequent reads/DDL and idempotence"
+  "parent_ac_4": "Not owned by TASK-147, TASK-148 must certify subsequent reads/DDL and idempotence",
+  "dialect_matrix_evidence": {
+    "source": "GitHub Actions rust/no-default-features/test",
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40652883004",
+    "test": "tests/task_147_dialect_inventory.rs",
+    "classification": "canonical_parser_only; no native vendor equivalence",
+    "filtered_case": "inferred_same_ast_shape_pending_final_head_reexecution"
+  }
 }
