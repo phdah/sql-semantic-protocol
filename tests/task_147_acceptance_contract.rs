@@ -60,7 +60,6 @@ fn every_required_fixture_dialect_adapter_and_parent_mapping_is_frozen() {
             "canonical_source_instances",
             "canonical_target_instances",
             "expected_native_source_after",
-            "expected_native_target_after",
             "adapter_evidence",
             "release_disposition",
         ] {
@@ -72,6 +71,7 @@ fn every_required_fixture_dialect_adapter_and_parent_mapping_is_frozen() {
         if case["class"] == "mandatory_exact" {
             for field in [
                 "expected_poststate",
+                "expected_native_target_after",
                 "expected_returning",
                 "typed_domains",
                 "typed_returning_domains",
@@ -85,6 +85,7 @@ fn every_required_fixture_dialect_adapter_and_parent_mapping_is_frozen() {
         if case["class"] == "conditional_residual" {
             assert_eq!(case["proof"], "Residual", "{id}");
             assert_eq!(case["owner"], "TASK-147", "{id}");
+            assert!(case["expected_native_target_after"].is_null(), "{id}: native poststate unproven");
             assert!(
                 case["expected_poststate"].is_null(),
                 "{id}: native law is unknown"
