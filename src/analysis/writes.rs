@@ -43,7 +43,11 @@ pub(super) fn analyze_insert(
                     Some(sqlparser::ast::ConflictTarget::Columns(columns)),
                     sqlparser::ast::OnConflictAction::DoNothing,
                 ) if !columns.is_empty()
-                    && columns.iter().map(|column| &column.value).collect::<BTreeSet<_>>().len()
+                    && columns
+                        .iter()
+                        .map(|column| &column.value)
+                        .collect::<BTreeSet<_>>()
+                        .len()
                         == columns.len() =>
                 {
                     Some(InsertConflictPolicy::do_nothing(
@@ -255,8 +259,8 @@ pub(super) fn analyze_insert(
             "VALUES has an expression without a provable finite literal value",
         );
     }
-    let mut write = WriteOperation::append(target, target_columns)
-        .with_returning_columns(returning_columns);
+    let mut write =
+        WriteOperation::append(target, target_columns).with_returning_columns(returning_columns);
     if let Some(conflict) = conflict_policy {
         write = write.with_insert_conflict(conflict);
     }
