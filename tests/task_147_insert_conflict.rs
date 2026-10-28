@@ -190,16 +190,22 @@ fn nullable_unique_conflict_without_native_null_equality_evidence_is_residual() 
         vec![RelationConstraint::unique_key(
             vec!["id".into()],
             vec![ConstraintEvidence::new(
-                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-null").unwrap(),
+                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-null")
+                    .unwrap(),
                 ConstraintEnforcement::Enforced,
             )],
-        ).unwrap()],
-    ).unwrap()]);
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
     let plan = physical_ordered_write_state_plan(
         &query,
         &[state("source", &[(None, 20)]), state("target", &[])],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
@@ -210,11 +216,14 @@ fn other_enforced_unique_constraints_prevent_false_conflict_suppression() {
         vec![RelationConstraint::unique_key(
             vec!["score".into()],
             vec![ConstraintEvidence::new(
-                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-other").unwrap(),
+                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147-other")
+                    .unwrap(),
                 ConstraintEnforcement::Enforced,
             )],
-        ).unwrap()],
-    ).unwrap()]);
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
     let plan = physical_ordered_write_state_plan(
         &query,
         &[
@@ -222,7 +231,10 @@ fn other_enforced_unique_constraints_prevent_false_conflict_suppression() {
             state("target", &[(Some(1), 10)]),
         ],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
