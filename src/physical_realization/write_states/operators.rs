@@ -247,8 +247,10 @@ pub(super) fn append_rows(
     if write.insert_conflict().is_some()
         && bundle.relation_constraints().iter().any(|set| {
             set.relation() == target
-                && set.column_value_sources().iter().any(|source|
-                    source.kind() == crate::column_sources::ColumnValueKind::Identity)
+                && set
+                    .column_value_sources()
+                    .iter()
+                    .any(|source| source.kind() == crate::column_sources::ColumnValueKind::Identity)
         })
     {
         return Err(residual(
@@ -261,23 +263,19 @@ pub(super) fn append_rows(
             return Err(residual("INSERT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        let candidate = complete_insert_row(
-            bundle,
-            target,
-            values,
-            schema,
-            identity_sequences,
-        )?;
+        let candidate = complete_insert_row(bundle, target, values, schema, identity_sequences)?;
         if let Some(policy) = write.insert_conflict() {
             // Validate the named key even for an empty initial target bag.
             // A collision may also be against a preceding row in this INSERT.
-            super::constraints::validate_insert_conflict_target(
-                bundle, target, policy.columns(),
-            )?;
+            super::constraints::validate_insert_conflict_target(bundle, target, policy.columns())?;
             let mut conflict = false;
             for prior in &next.rows {
                 if super::constraints::targeted_insert_conflict(
-                    bundle, target, policy.columns(), &candidate, prior,
+                    bundle,
+                    target,
+                    policy.columns(),
+                    &candidate,
+                    prior,
                 )? {
                     conflict = true;
                     break;
