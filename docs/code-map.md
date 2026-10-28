@@ -1,3 +1,16 @@
+TASK-147 targeted conflict/RETURNING: `src/analysis/writes.rs` converts explicit
+ON CONFLICT key columns/DO NOTHING and simple RETURNING columns into the
+parser-independent `src/protocol/writes.rs` contract. The optional wire
+fields are emitted by `src/emission/statements.rs` and validated by
+`schema/protocol.schema.json`. `src/physical_realization/write_states/constraints.rs`
+requires an enforced matching key and proves tuple collision without
+assuming NULL/collation laws; `write_states/operators.rs` suppresses only
+proven conflicts; `write_states.rs` projects only inserted rows into
+`PhysicalWriteTransition::returning`. Complete target/source/RETURNING DuckDB
+oracle: `tests/task_147_insert_conflict.rs`; dialect boundaries:
+`tests/task_147_dialect_matrix.rs`. Conditional vendor/overwrite cases are
+frozen in `docs/task-147-acceptance-freeze.json` pending native evidence.
+TASK-80 parent remains separate.
 TASK-146 bounded INSERT SELECT source composition: `src/analysis/writes.rs`
 owns parser-side certification of a single nonrecursive row-local CTE,
 `src/protocol/writes.rs` owns the canonical normalized producer and consumer,
