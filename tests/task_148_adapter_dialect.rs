@@ -197,6 +197,7 @@ fn all_thirteen_dialects_have_explicit_parser_or_canonical_outcomes() {
                         }
                         supported[index] += 1;
                     }
+                    _ => panic!("{dialect}: INSERT parser returned an unclassified statement"),
                 },
             }
         }
