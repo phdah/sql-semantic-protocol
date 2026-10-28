@@ -5,11 +5,10 @@ use std::collections::BTreeMap;
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const TARGET: &str = "warehouse.analytics.stg_orders";
@@ -36,7 +35,8 @@ fn dbt_catalog() -> RelationCatalog {
     let manifest = parse_dbt_manifest(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let dialect = dialect_from_name("postgresql").unwrap();
-    let result = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", dialect.as_ref()).unwrap();
+    let result =
+        analyze_dbt_artifacts(&manifest, &catalog, "postgresql", dialect.as_ref()).unwrap();
     RelationCatalog::from_schemas(result.source_schemas()).unwrap()
 }
 
@@ -94,40 +94,55 @@ fn state(relation: &str, rows: &[(i64, i64)]) -> PhysicalWriteState {
 fn execute(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let sql = SqlInput::inline(SQL);
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = ConfiguredSqlInput::new("task-147-parity", &sql, "postgresql", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("task-147-parity", &sql, "postgresql", dialect.as_ref());
     let mut bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let evidence = vec![ConstraintEvidence::new(
         ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            TARGET,
-            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
-        )
-        .unwrap(),
-    ]);
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        TARGET,
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+    )
+    .unwrap()]);
     physical_ordered_write_state_plan(
         &bundle,
-        &[state(SOURCE, &[(1, 20), (2, 30)]), state(TARGET, &[(1, 10)])],
+        &[
+            state(SOURCE, &[(1, 20), (2, 30)]),
+            state(TARGET, &[(1, 10)]),
+        ],
     )
 }
 
 fn assert_full_bag(plan: &PhysicalWriteStatePlan) {
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("equivalent metadata must preserve exact physical proof: {plan:?}");
     };
     assert_eq!(transitions.len(), 1);
     let transition = &transitions[0];
     assert_eq!(transition.before().rows(), state(TARGET, &[(1, 10)]).rows());
-    assert_eq!(transition.after().rows(), state(TARGET, &[(1, 10), (2, 30)]).rows());
+    assert_eq!(
+        transition.after().rows(),
+        state(TARGET, &[(1, 10), (2, 30)]).rows()
+    );
     assert_eq!(transition.affected().inserted(), 1);
     assert_eq!(
         transition.returning().unwrap().rows()[0].values(),
         &BTreeMap::from([("id".into(), LiteralValue::Number("2".into()))])
     );
-    assert_eq!(final_states.iter().find(|state| state.relation() == SOURCE).unwrap().rows(),
-        state(SOURCE, &[(1, 20), (2, 30)]).rows());
+    assert_eq!(
+        final_states
+            .iter()
+            .find(|state| state.relation() == SOURCE)
+            .unwrap()
+            .rows(),
+        state(SOURCE, &[(1, 20), (2, 30)]).rows()
+    );
 }
 
 #[test]
