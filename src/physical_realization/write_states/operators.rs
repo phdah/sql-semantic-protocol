@@ -286,14 +286,17 @@ pub(super) fn append_rows(
             // SQL UNIQUE NULL semantics vary by engine and declaration.
             // A single nullable candidate without a competing row does not
             // establish which native NULLS DISTINCT law applies.
-            if policy.columns().iter().any(|column| {
-                matches!(candidate.values.get(column), Some(LiteralValue::Null))
-            }) {
+            if policy
+                .columns()
+                .iter()
+                .any(|column| matches!(candidate.values.get(column), Some(LiteralValue::Null)))
+            {
                 let primary = bundle.relation_constraints().iter().any(|set| {
-                    set.relation() == target && set.constraints().iter().any(|constraint| {
-                        matches!(constraint, RelationConstraint::PrimaryKey(key)
+                    set.relation() == target
+                        && set.constraints().iter().any(|constraint| {
+                            matches!(constraint, RelationConstraint::PrimaryKey(key)
                             if key.columns() == policy.columns())
-                    })
+                        })
                 });
                 if primary {
                     return Err(impossible("enforced PRIMARY KEY cannot contain NULL"));
