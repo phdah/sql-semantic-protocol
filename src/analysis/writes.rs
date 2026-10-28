@@ -1,7 +1,7 @@
 //! INSERT, UPDATE, DELETE and MERGE analysis.
 
 use super::*;
-use crate::protocol::InsertCteSource;
+use crate::protocol::{InsertConflictPolicy, InsertCteSource};
 
 pub(super) fn analyze_insert(
     insert: &SqlInsert,
@@ -18,15 +18,86 @@ pub(super) fn analyze_insert(
         }
     };
 
-    if insert.overwrite
-        || insert.replace_into
-        || insert.ignore
-        || insert.or.is_some()
-        || !insert.assignments.is_empty()
+    // Conflict actions are distinct laws, not aliases for ordinary append.
+    // Unnamed conflict targets, DO UPDATE, REPLACE and IGNORE require native
+    // error/enforcement semantics that the parser cannot certify.
+    if insert.overwrite {
+        return unsupported_write_statement(
+            "insert",
+            "unproved_insert_overwrite_scope",
+            "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)",
+        );
+    }
+    if insert.replace_into || insert.ignore || insert.or.is_some() {
+        return unsupported_write_statement(
+            "insert",
+            "unproved_insert_vendor_conflict_action",
+            "INSERT IGNORE/REPLACE needs native constraint and error-handling laws (TASK-147)",
+        );
+    }
+    let conflict_policy = match insert.on.as_ref() {
+        None => None,
+        Some(sqlparser::ast::OnInsert::OnConflict(conflict)) => {
+            match (&conflict.conflict_target, &conflict.action) {
+                (
+                    Some(sqlparser::ast::ConflictTarget::Columns(columns)),
+                    sqlparser::ast::OnConflictAction::DoNothing,
+                ) if !columns.is_empty()
+                    && columns.iter().map(|column| &column.value).collect::<BTreeSet<_>>().len()
+                        == columns.len() =>
+                {
+                    Some(InsertConflictPolicy::do_nothing(
+                        columns.iter().map(|column| column.value.clone()).collect(),
+                    ))
+                }
+                _ => {
+                    return unsupported_write_statement(
+                        "insert",
+                        "unproved_insert_upsert_action",
+                        "ON CONFLICT needs a named unique key and DO NOTHING; updates and inferred targets remain residual (TASK-147)",
+                    );
+                }
+            }
+        }
+        Some(sqlparser::ast::OnInsert::DuplicateKeyUpdate(_)) => {
+            return unsupported_write_statement(
+                "insert",
+                "unproved_insert_duplicate_key_update",
+                "ON DUPLICATE KEY UPDATE needs native conflict and assignment laws (TASK-147)",
+            );
+        }
+    };
+    let returning_columns = match insert.returning.as_ref() {
+        None => Vec::new(),
+        Some(items) if !items.is_empty() => {
+            let mut columns = Vec::new();
+            for item in items {
+                match item {
+                    SelectItem::UnnamedExpr(Expr::Identifier(column)) => {
+                        columns.push(column.value.clone());
+                    }
+                    _ => {
+                        return unsupported_write_statement(
+                            "insert",
+                            "unproved_insert_returning_projection",
+                            "RETURNING requires direct unqualified target columns (TASK-147)",
+                        );
+                    }
+                }
+            }
+            columns
+        }
+        Some(_) => {
+            return unsupported_write_statement(
+                "insert",
+                "unproved_insert_returning_projection",
+                "empty RETURNING projection has no canonical row shape (TASK-147)",
+            );
+        }
+    };
+    if !insert.assignments.is_empty()
         || insert.partitioned.is_some()
         || !insert.after_columns.is_empty()
-        || insert.on.is_some()
-        || insert.returning.is_some()
         || insert.priority.is_some()
         || insert.insert_alias.is_some()
         || insert.settings.is_some()
@@ -41,6 +112,13 @@ pub(super) fn analyze_insert(
 
     let target_columns = insert.columns.iter().map(ToString::to_string).collect();
     let Some(source) = &insert.source else {
+        if conflict_policy.is_some() || !returning_columns.is_empty() {
+            return unsupported_write_statement(
+                "insert",
+                "unproved_insert_default_modifiers",
+                "DEFAULT VALUES conflict handling and RETURNING require separate proof (TASK-147)",
+            );
+        }
         // sqlparser represents DEFAULT VALUES with no source after parsing.
         if !insert.columns.is_empty() {
             return unsupported_write_statement(
@@ -163,7 +241,11 @@ pub(super) fn analyze_insert(
             "VALUES has an expression without a provable finite literal value",
         );
     }
-    let mut write = WriteOperation::append(target, target_columns);
+    let mut write = WriteOperation::append(target, target_columns)
+        .with_returning_columns(returning_columns);
+    if let Some(conflict) = conflict_policy {
+        write = write.with_insert_conflict(conflict);
+    }
     if let Some(cte) = insert_cte {
         write = write.with_insert_cte_source(cte);
     }
