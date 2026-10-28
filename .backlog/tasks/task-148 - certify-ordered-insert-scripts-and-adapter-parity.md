@@ -1,10 +1,10 @@
 ---
 id: TASK-148
 title: Certify ordered INSERT scripts and adapter parity
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-28'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,12 @@ type: feature
 ## Sequencing
 
 Then independently verify all original TASK-80 AC and parent signoff; TASK-91 is a separate gate.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- The frozen TASK-148 v1 matrix is `docs/task-148-acceptance-freeze.json`.
+- `tests/task_148_ordered_insert.rs` asserts complete VALUES, SELECT, CTE SELECT and DEFAULT VALUES write states, subsequent CTAS/read behavior, typed domains and full native DuckDB bags, plus PK Impossible and unproved transaction Residual.
+- `tests/task_148_adapter_dialect.rs` exercises all 13 parser dialect identities and source-equivalent SQL/dbt/ODCS metadata paths.
+- Acceptance criteria remain unchecked until mandatory/conditional cells, dbt E2E, and final-head CI are independently signed off. TASK-80 remains open.
+<!-- SECTION:NOTES:END -->
