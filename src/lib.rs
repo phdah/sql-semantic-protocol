@@ -36,6 +36,7 @@
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
+//! - PhysicalWriteTransition::returning_exact_domains derives exact schema-backed returned value frequencies, including empty INSERT RETURNING bags.
 //! - InsertCteSource preserves one canonical producer/consumer CTE pair for INSERT SELECT without inventing physical stage populations.
 //! - physical_typed_closed_world_schema_plan checks complete multi-source nested Arrow-style populations against the same canonical scalar and cross-relation constraints.
 //! - to_physical_typed_population_json exports validated nested physical populations as exact-bit witness sidecars.

@@ -101,6 +101,13 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
         "source is immutable across the write"
     );
     assert_eq!(final_states.len(), 2);
+    let schema = bundle(SQL, true);
+    let target_schema = schema.source_schemas().iter()
+        .find(|s| s.relation() == "target").unwrap();
+    let domains = transition.returning_exact_domains(target_schema).unwrap();
+    assert_eq!(domains.len(), 1);
+    assert_eq!(domains[0].column(), "id");
+    assert_eq!(domains[0].values(), &[(LiteralValue::Number("2".into()), 1)]);
 
     // The independent DuckDB oracle exercises complete source, prestate,
     // poststate and actual RETURNING output rather than just row counts.
@@ -129,6 +136,28 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
         .map(|row| row.unwrap())
         .collect::<Vec<_>>();
     assert_eq!(observed, vec![(1, 10), (2, 30)]);
+}
+
+#[test]
+fn fully_ignored_insert_has_empty_but_typed_returning_domain() {
+    let query = bundle(SQL, true);
+    let before = state("target", &[(Some(1), 10)]);
+    let plan = physical_ordered_write_state_plan(
+        &query,
+        &[state("source", &[(Some(1), 20)]), before.clone()],
+    );
+    let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
+        panic!("fully ignored INSERT must retain complete physical state: {plan:?}");
+    };
+    let effect = &transitions[0];
+    assert_eq!(effect.after(), &before);
+    assert_eq!(effect.affected().inserted(), 0);
+    assert!(effect.returning().unwrap().rows().is_empty());
+    let schema = query.source_schemas().iter().find(|s| s.relation()=="target").unwrap();
+    let domains = effect.returning_exact_domains(schema).unwrap();
+    assert_eq!(domains.len(), 1);
+    assert_eq!(domains[0].column(), "id");
+    assert!(domains[0].values().is_empty());
 }
 
 #[test]

@@ -13,7 +13,7 @@ an inferred conflict.
 An INSERT with direct named RETURNING columns may include
 `returning_columns`; the independent `PhysicalWriteTransition::returning()`
 returns exactly those columns for actually inserted target rows, excluding
-skipped conflict rows. Missing schema and projection evidence are Residual.
+skipped conflict rows. `PhysicalWriteTransition::returning_exact_domains(schema)` derives exact, schema-backed returned-column value frequencies, including empty return bags. Missing schema and projection evidence are Residual.
 Native IGNORE/REPLACE behavior, unscoped OVERWRITE, inferred conflict targets,
 DO UPDATE and vendor error/sequence behavior remain explicit unsupported or
 Residual, not plain append.

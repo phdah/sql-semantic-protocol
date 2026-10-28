@@ -198,6 +198,7 @@ pub struct PhysicalWriteTransition {
     affected: WriteRowCounts,
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
+    returning_columns: Vec<String>,
 }
 
 impl PhysicalWriteTransition {
@@ -232,6 +233,30 @@ impl PhysicalWriteTransition {
     /// None means the SQL statement has no supported RETURNING clause.
     pub fn returning(&self) -> Option<&PhysicalWriteState> {
         self.returning.as_ref()
+    }
+
+    /// Exact typed value frequencies of each returned column, including
+    /// empty results, in the SQL RETURNING projection order.
+    ///
+    /// Uses the caller-attested target schema; never infers missing columns
+    /// or coerces values from the statement's SELECT source.
+    pub fn returning_exact_domains(
+        &self,
+        schema: &RelationSchema,
+    ) -> Option<Vec<PhysicalWriteColumnDomain>> {
+        let returned = self.returning.as_ref()?;
+        if schema.relation() != returned.relation() {
+            return None;
+        }
+        let columns = self
+            .returning_columns
+            .iter()
+            .map(|name| {
+                schema.columns().iter().find(|column| column.name() == name).cloned()
+            })
+            .collect::<Option<Vec<_>>>()?;
+        let projection = RelationSchema::new(returned.relation().to_string(), columns).ok()?;
+        returned.exact_domains(&projection)
     }
 }
 
@@ -556,6 +581,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             affected: counts,
             intermediate_states,
             returning,
+            returning_columns: write.returning_columns().to_vec(),
         });
     }
     PhysicalWriteStatePlan::Feasible {

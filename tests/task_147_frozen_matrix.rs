@@ -226,6 +226,15 @@ fn every_frozen_mandatory_case_proves_full_source_target_returning_and_domain_or
                     .find(|s| s.relation() == "target")
                     .unwrap();
                 let domains = transition.after().exact_domains(schema).unwrap();
+                let returning_domains = transition.returning_exact_domains(schema).unwrap();
+                assert_eq!(returning_domains.len(), 1);
+                assert_eq!(returning_domains[0].column(), "id");
+                let returned_values = returning_domains[0].values();
+                assert_eq!(returned_values.len(), 1);
+                assert_eq!(returned_values[0].0, LiteralValue::Number(
+                    expected_returning[0].to_string(),
+                ));
+                assert_eq!(returned_values[0].1, 1);
                 for domain in domains {
                     let expected_domain = &case["typed_domains"][domain.column()];
                     assert_eq!(expected_domain["type"], "INTEGER");
