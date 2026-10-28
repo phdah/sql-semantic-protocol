@@ -134,7 +134,7 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
 #[test]
 fn same_statement_duplicate_keys_are_rejected_by_full_target_bag() {
     let data = [
-        state("source", &[(Some(1), 20), (Some(1), 30)]),
+        state("source", &[(Some(1), 20), (Some(1), 20)]),
         state("target", &[]),
     ];
     let plan = physical_ordered_write_state_plan(&bundle(SQL, true), &data);
@@ -147,6 +147,19 @@ fn same_statement_duplicate_keys_are_rejected_by_full_target_bag() {
         state("target", &[(Some(1), 20)]).rows()
     );
     assert_eq!(transitions[0].returning().unwrap().rows().len(), 1);
+}
+
+#[test]
+fn unordered_conflicting_source_payloads_are_residual() {
+    let data = [
+        state("source", &[(Some(1), 20), (Some(1), 30)]),
+        state("target", &[]),
+    ];
+    let plan = physical_ordered_write_state_plan(&bundle(SQL, true), &data);
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
