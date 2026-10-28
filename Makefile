@@ -36,6 +36,7 @@ dbt-e2e:
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_138_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_139_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_140_dbt_core_e2e -- --ignored --nocapture
+	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_146_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_133_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_134_dbt_core_e2e -- --ignored --nocapture
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) cargo test --test task_135_dbt_core_e2e -- --ignored --nocapture

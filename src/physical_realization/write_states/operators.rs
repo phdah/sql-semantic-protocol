@@ -163,6 +163,7 @@ pub(super) fn append_rows(
     target: &str,
     before: Option<&PhysicalWriteState>,
     identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
+    intermediate_states: &mut Vec<PhysicalWriteState>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let Some(write) = query.write() else {
@@ -189,6 +190,46 @@ pub(super) fn append_rows(
     }
     let produced = if write.default_values() {
         vec![Vec::new()]
+    } else if let Some(cte) = write.insert_cte_source() {
+        if states.contains_key(cte.name()) {
+            return Err(residual(
+                "INSERT CTE shadows an existing physical relation identity",
+            ));
+        }
+        let cte_columns = cte
+            .producer()
+            .output()
+            .columns()
+            .iter()
+            .map(|column| column.name().to_string())
+            .collect::<Vec<_>>();
+        if cte_columns.is_empty()
+            || cte_columns.iter().collect::<BTreeSet<_>>().len() != cte_columns.len()
+        {
+            return Err(residual(
+                "INSERT CTE producer columns are not uniquely named",
+            ));
+        }
+        let cte_rows = evaluate_simple_select(bundle, cte.producer(), states)?
+            .into_iter()
+            .map(|values| {
+                if values.len() != cte_columns.len() {
+                    return Err(residual("INSERT CTE producer output arity is unproved"));
+                }
+                Ok(PhysicalWriteRow {
+                    values: cte_columns.iter().cloned().zip(values).collect(),
+                })
+            })
+            .collect::<StateResult<Vec<_>>>()?;
+        let mut local_states = states.clone();
+        let intermediate = PhysicalWriteState {
+            relation: cte.name().to_string(),
+            rows: cte_rows,
+        };
+        local_states.insert(cte.name().to_string(), intermediate.clone());
+        let result = evaluate_simple_select(bundle, cte.consumer(), &local_states)?;
+        intermediate_states.push(intermediate);
+        result
     } else if let Some(table) = query.finite_table() {
         if table.kind() != crate::protocol::FiniteTableKind::Values {
             return Err(residual(

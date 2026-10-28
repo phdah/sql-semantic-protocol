@@ -26,6 +26,8 @@ pub(super) fn evaluate_simple_select(
 ) -> StateResult<Vec<Vec<LiteralValue>>> {
     if !(query.filter_only_row_shape() || query.row_preserving_projection())
         || query.set_operation().is_some()
+        || query.row_shaping().is_some()
+        || !query.sampling().is_empty()
         || query.aggregation().is_some()
         || !query.joins().is_empty()
         || query.predicates().having_predicate().is_some()

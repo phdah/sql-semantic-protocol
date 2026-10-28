@@ -1565,6 +1565,28 @@ For `rank_population`, the protocol carries `boundary`, `partition_key`, `order`
 Set `operator_population` compositions cover up to four locally proven, type-certified, lossless producer branches, including nested UNION/UNION ALL/INTERSECT/EXCEPT trees. Their typed per-branch tuple counts are reconciled only after mapping all boundaries to physical source identities, preserving SQL bag multiplicity and NULL-safe tuple equality. A shared-source EXCEPT/EXCEPT ALL zero-output proof requires two complete copies of the same physical tuple column; a filtered copy cannot substitute. Aggregate-derived COUNT(*) Boolean filters and non-NULL COUNT(group-key) groups lift exact contributor cardinalities while unsupported expressions retain typed residuals.
 
 
+### Bounded INSERT SELECT CTE source evidence (TASK-146)
+
+A recognized single, nonrecursive INSERT CTE has optional `write.cte_source`
+with a local `name`, a canonical `producer` query, and a canonical
+`consumer` query. Each stage must be a single-source row-local projection,
+optionally with a normalized WHERE predicate. The physical write planner
+materializes the first stage only from the caller-attested complete source bag,
+then evaluates the consumer over the resulting local rows. The intermediate CTE
+is not an independently supplied physical source or a surviving final state.
+The physical transition records each complete local stage in
+`PhysicalWriteTransition::intermediate_states()`, allowing complete
+source/intermediate/target witnesses and exact stage value frequencies to be
+inspected independently of the terminal write. These stage bags never enter
+`final_states` as fabricated physical relations.
+
+INSERT targets are assigned by SQL position, preserving explicit target-column
+reordering and untouched target rows. Each poststate is validated against
+authoritative schema, key, CHECK and FK evidence. Recursive/multiple CTEs,
+opaque row shaping, unproved scalar functions, and missing physical source
+populations remain unsupported or typed Residual rather than being promoted to
+an exact source construction. The optional field is absent on ordinary writes.
+
 ### Ordered DML/DDL physical state evidence (TASK-98)
 
 The active write-operation JSON schema adds `target_alias` (nullable

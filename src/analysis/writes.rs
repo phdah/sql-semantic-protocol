@@ -1,6 +1,7 @@
 //! INSERT, UPDATE, DELETE and MERGE analysis.
 
 use super::*;
+use crate::protocol::InsertCteSource;
 
 pub(super) fn analyze_insert(
     insert: &SqlInsert,
@@ -75,6 +76,85 @@ pub(super) fn analyze_insert(
             "only INSERT SELECT and literal VALUES source semantics are supported",
         );
     }
+    if source.order_by.is_some() {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_source_order",
+            "INSERT SELECT source ordering requires an attested execution-order law",
+        );
+    }
+    // A single, nonrecursive CTE has one independently normalized producer
+    // and one consumer. Neither stage may borrow an invented physical bag.
+    // Other local scopes remain unsupported until their source-row laws
+    // are explicitly represented in the canonical protocol.
+    let insert_cte = if let Some(with) = &source.with {
+        let [cte] = with.cte_tables.as_slice() else {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "INSERT CTE requires exactly one independently proved producer",
+            );
+        };
+        if with.recursive || !cte.alias.columns.is_empty() || cte.query.order_by.is_some() {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "recursive and column-renamed CTE producers require additional scope evidence",
+            );
+        }
+        let cte_name = cte.alias.name.to_string();
+        let SetExpr::Select(outer) = source.body.as_ref() else {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "INSERT CTE consumer requires a direct SELECT",
+            );
+        };
+        let [from] = outer.from.as_slice() else {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "INSERT CTE consumer must read exactly one local relation",
+            );
+        };
+        if !from.joins.is_empty()
+            || !matches!(&from.relation, TableFactor::Table { name, args: None, sample: None, .. }
+                if name.to_string() == cte_name)
+        {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "INSERT CTE consumer must refer only to its local producer",
+            );
+        }
+        let producer = analyze_query(&cte.query, None, metadata);
+        let mut outer_query = source.as_ref().clone();
+        outer_query.with = None;
+        let consumer = analyze_query(&outer_query, None, metadata);
+        let proven = |query: &QueryStatement| {
+            (query.row_preserving_projection() || query.filter_only_row_shape())
+                && query.sources().len() == 1
+                && query.set_operation().is_none()
+                && query.aggregation().is_none()
+                && query.joins().is_empty()
+        };
+        if !proven(&producer)
+            || !proven(&consumer)
+            || consumer
+                .sources()
+                .first()
+                .is_none_or(|source| source.name() != cte_name)
+        {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_cte",
+                "INSERT CTE has unproved producer or consumer row-shaping",
+            );
+        }
+        Some(InsertCteSource::new(cte_name, producer, consumer))
+    } else {
+        None
+    };
     let query = analyze_query(source, Some(target.clone()), metadata);
     if matches!(source.body.as_ref(), SetExpr::Values(_)) && query.finite_table().is_none() {
         return unsupported_write_statement(
@@ -83,7 +163,11 @@ pub(super) fn analyze_insert(
             "VALUES has an expression without a provable finite literal value",
         );
     }
-    ProtocolStatement::Query(query.with_write(Some(WriteOperation::append(target, target_columns))))
+    let mut write = WriteOperation::append(target, target_columns);
+    if let Some(cte) = insert_cte {
+        write = write.with_insert_cte_source(cte);
+    }
+    ProtocolStatement::Query(query.with_write(Some(write)))
 }
 
 fn refine_write_value_domain(

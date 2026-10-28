@@ -196,6 +196,7 @@ pub struct PhysicalWriteTransition {
     before: PhysicalWriteState,
     after: PhysicalWriteState,
     affected: WriteRowCounts,
+    intermediate_states: Vec<PhysicalWriteState>,
 }
 
 impl PhysicalWriteTransition {
@@ -218,6 +219,12 @@ impl PhysicalWriteTransition {
     /// Exact logical action counts, not estimated source-row counts.
     pub fn affected(&self) -> WriteRowCounts {
         self.affected
+    }
+
+    /// Complete local CTE materializations used for this write, never caller-supplied
+    /// independent physical populations. Row order preserves source multiplicity.
+    pub fn intermediate_states(&self) -> &[PhysicalWriteState] {
+        &self.intermediate_states
     }
 }
 
@@ -448,6 +455,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         };
         let target = write.target();
         let before = states.get(target).cloned();
+        let mut intermediate_states = Vec::new();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Append => append_rows(
@@ -457,6 +465,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 target,
                 before.as_ref(),
                 &mut identity_sequences,
+                &mut intermediate_states,
             ),
             WriteKind::Update => {
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
@@ -516,6 +525,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             before,
             after,
             affected: counts,
+            intermediate_states,
         });
     }
     PhysicalWriteStatePlan::Feasible {

@@ -175,7 +175,7 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
     let state_effect = write
         .state_effect()
         .map(|effect| write_state_effect_to_value(&effect));
-    json!({
+    let mut value = json!({
         "target": write.target(),
         "target_alias": write.target_alias(),
         "definition_mode": write.definition_mode().map(|mode| mode.as_str()),
@@ -195,7 +195,15 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
             "value": write_value_to_value(assignment.value())
         })).collect::<Vec<_>>(),
         "state_effect": state_effect
-    })
+    });
+    if let Some(cte) = write.insert_cte_source() {
+        value["cte_source"] = json!({
+            "name": cte.name(),
+            "producer": query_statement_to_value(cte.producer()),
+            "consumer": query_statement_to_value(cte.consumer())
+        });
+    }
+    value
 }
 
 pub(super) fn merge_clause_to_value(clause: &MergeClause) -> Value {

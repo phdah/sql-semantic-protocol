@@ -3022,6 +3022,17 @@
           "type": "boolean",
           "description": "True only for an INSERT DEFAULT VALUES action with a single source-free row."
         },
+        "cte_source": {
+          "description": "Closed-bag nonrecursive INSERT CTE producer and outer SELECT, normalized to canonical queries.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "producer", "consumer"],
+          "properties": {
+            "name": { "$ref": "#/$defs/nonEmptyString" },
+            "producer": { "$ref": "#/$defs/queryStatement" },
+            "consumer": { "$ref": "#/$defs/queryStatement" }
+          }
+        },
         "match_condition": {
           "oneOf": [
             {
