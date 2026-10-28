@@ -209,20 +209,19 @@ fn all_thirteen_dialects_have_explicit_parser_or_canonical_outcomes() {
     );
 }
 
-
 #[test]
 fn all_frozen_parser_cells_match_exact_expected_statement_classifications() {
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-148-acceptance-freeze.json")).unwrap();
     let cases = freeze["cases"].as_array().unwrap();
-    assert_eq!(cases.len(),6);
+    assert_eq!(cases.len(), 6);
     let mut inspected = 0_usize;
     for case in cases {
         for dialect in DIALECTS {
             let parser = dialect_from_name(dialect).unwrap();
             let expected = case["parser_cells"][dialect].as_array().unwrap();
             let statements = case["statements"].as_array().unwrap();
-            assert_eq!(statements.len(),expected.len());
+            assert_eq!(statements.len(), expected.len());
             for (index, sql) in statements.iter().enumerate() {
                 let result = analyze_inputs(
                     &[SqlInput::inline(sql.as_str().unwrap())],
@@ -238,14 +237,20 @@ fn all_frozen_parser_cells_match_exact_expected_statement_classifications() {
                     },
                 };
                 let expected_status = expected[index].as_str().unwrap();
-                assert!(matches!(expected_status,"parser_boundary"|"canonical"|"unsupported"));
-                assert_eq!(observed,expected_status,
-                    "{} in {} statement #{}",case["id"],dialect,index);
+                assert!(matches!(
+                    expected_status,
+                    "parser_boundary" | "canonical" | "unsupported"
+                ));
+                assert_eq!(
+                    observed, expected_status,
+                    "{} in {} statement #{}",
+                    case["id"], dialect, index
+                );
                 inspected += 1;
             }
         }
     }
-    assert_eq!(inspected,182);
+    assert_eq!(inspected, 182);
 }
 
 fn execute_two_stage_variant(
