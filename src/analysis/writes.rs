@@ -66,6 +66,13 @@ pub(super) fn analyze_insert(
                 "ON DUPLICATE KEY UPDATE needs native conflict and assignment laws (TASK-147)",
             );
         }
+        Some(_) => {
+            return unsupported_write_statement(
+                "insert",
+                "unproved_insert_vendor_conflict_action",
+                "unrecognized INSERT conflict semantics cannot be certified (TASK-147)",
+            );
+        }
     };
     let returning_columns = match insert.returning.as_ref() {
         None => Vec::new(),
