@@ -85,7 +85,10 @@ fn every_required_fixture_dialect_adapter_and_parent_mapping_is_frozen() {
         if case["class"] == "conditional_residual" {
             assert_eq!(case["proof"], "Residual", "{id}");
             assert_eq!(case["owner"], "TASK-147", "{id}");
-            assert!(case["expected_native_target_after"].is_null(), "{id}: native poststate unproven");
+            assert!(
+                case["expected_native_target_after"].is_null(),
+                "{id}: native poststate unproven"
+            );
             assert!(
                 case["expected_poststate"].is_null(),
                 "{id}: native law is unknown"
