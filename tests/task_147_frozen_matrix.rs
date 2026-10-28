@@ -105,7 +105,7 @@ fn every_frozen_mandatory_case_proves_full_source_target_returning_and_domain_or
         matrix["fixture_ids"],
         serde_json::json!(["80-C147-P", "80-C147-N"])
     );
-    assert_eq!(cases.len(), 4);
+    assert_eq!(cases.len(), 5);
     for case in cases {
         let sql = case["sql"].as_str().unwrap();
         let source = rows(&case["source"]);
@@ -148,6 +148,24 @@ fn every_frozen_mandatory_case_proves_full_source_target_returning_and_domain_or
             native_rows(&db, "SELECT id,score FROM source WHERE TRUE"),
             sorted(source.clone())
         );
+        if let Some(source_sql) = case["source_select_sql"].as_str() {
+            let selected = rows(&case["expected_selected_source_rows"]);
+            assert_eq!(native_rows(&db, source_sql), sorted(selected));
+            let excluded = native_rows(
+                &db,
+                "SELECT id,score FROM source WHERE NOT (id > 1) OR (id > 1) IS NULL",
+            );
+            assert_eq!(excluded, sorted(vec![(None, 40), (Some(1), 20)]));
+            assert_eq!(
+                native_rows(&db, "SELECT id,score FROM source WHERE (id > 1) IS NULL"),
+                vec![(None, 40)],
+            );
+            assert_eq!(
+                case["sql_not_true_source_ids"],
+                serde_json::json!(["source#0", "source#1"]),
+            );
+            assert_eq!(case["expected_unknown_source_ids"], serde_json::json!(["source#0"]));
+        }
         assert_eq!(
             native_rows(&db, "SELECT id,score FROM target"),
             sorted(prior.clone())
