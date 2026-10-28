@@ -197,6 +197,8 @@ pub struct PhysicalWriteTransition {
     after: PhysicalWriteState,
     affected: WriteRowCounts,
     intermediate_states: Vec<PhysicalWriteState>,
+    returning: Option<PhysicalWriteState>,
+    returning_columns: Vec<String>,
 }
 
 impl PhysicalWriteTransition {
@@ -225,6 +227,40 @@ impl PhysicalWriteTransition {
     /// independent physical populations. Row order preserves source multiplicity.
     pub fn intermediate_states(&self) -> &[PhysicalWriteState] {
         &self.intermediate_states
+    }
+
+    /// Complete INSERT RETURNING projection with only rows actually inserted.
+    /// None means the SQL statement has no supported RETURNING clause.
+    pub fn returning(&self) -> Option<&PhysicalWriteState> {
+        self.returning.as_ref()
+    }
+
+    /// Exact typed value frequencies of each returned column, including
+    /// empty results, in the SQL RETURNING projection order.
+    ///
+    /// Uses the caller-attested target schema; never infers missing columns
+    /// or coerces values from the statement's SELECT source.
+    pub fn returning_exact_domains(
+        &self,
+        schema: &RelationSchema,
+    ) -> Option<Vec<PhysicalWriteColumnDomain>> {
+        let returned = self.returning.as_ref()?;
+        if schema.relation() != returned.relation() {
+            return None;
+        }
+        let columns = self
+            .returning_columns
+            .iter()
+            .map(|name| {
+                schema
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == name)
+                    .cloned()
+            })
+            .collect::<Option<Vec<_>>>()?;
+        let projection = RelationSchema::new(returned.relation().to_string(), columns).ok()?;
+        returned.exact_domains(&projection)
     }
 }
 
@@ -519,6 +555,28 @@ pub fn physical_ordered_write_state_plan_with_identities(
         if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
+        let returning = if kind == WriteKind::Append && !write.returning_columns().is_empty() {
+            let mut rows = Vec::new();
+            for row in after.rows.iter().skip(before.rows.len()) {
+                let mut values = BTreeMap::new();
+                for column in write.returning_columns() {
+                    let Some(value) = row.values.get(column) else {
+                        return failure(
+                            Some(layer.id()),
+                            residual("INSERT RETURNING column missing from complete target schema"),
+                        );
+                    };
+                    values.insert(column.clone(), value.clone());
+                }
+                rows.push(PhysicalWriteRow { values });
+            }
+            Some(PhysicalWriteState {
+                relation: target.to_string(),
+                rows,
+            })
+        } else {
+            None
+        };
         transitions.push(PhysicalWriteTransition {
             layer_id: layer.id().to_string(),
             kind,
@@ -526,6 +584,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
             after,
             affected: counts,
             intermediate_states,
+            returning,
+            returning_columns: write.returning_columns().to_vec(),
         });
     }
     PhysicalWriteStatePlan::Feasible {

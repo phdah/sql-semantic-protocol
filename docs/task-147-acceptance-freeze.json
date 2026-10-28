@@ -1,0 +1,1939 @@
+{
+  "version": 2,
+  "owner": "TASK-147",
+  "parent": "TASK-80",
+  "state": "verified_bounded_task147_child_pending_merge",
+  "fixture_ids": [
+    "80-C147-P",
+    "80-C147-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dependencies": [
+    "TASK-146"
+  ],
+  "schema": [
+    "source(id INTEGER,score INTEGER)",
+    "target(id INTEGER PRIMARY KEY,score INTEGER)"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_cases": [
+    {
+      "id": "80-C147-P-targeted-conflict-returning",
+      "fixture_id": "80-C147-P",
+      "class": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_returning": [
+        {
+          "id": 2
+        }
+      ],
+      "skipped_source_ids": [
+        "source#0"
+      ],
+      "inserted_source_ids": [
+        "source#1"
+      ],
+      "sql_true_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "sql_not_true_source_ids": [],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "Exact",
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "constraint_evidence": "enforced target(id) PRIMARY KEY, exact integer equality",
+      "comparison_assumptions": [
+        "SQL integer equality",
+        "complete source and target bags"
+      ],
+      "null_uniqueness": "no NULL in key",
+      "oracle": "DuckDB full source/prestate/poststate/RETURNING",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_native_target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "proof_positive": "Exact",
+      "proof_not_true": "Exact_empty_where_true_fixture",
+      "adapter_evidence": {
+        "direct_sql": "source SQL canonicalized from sqlparser",
+        "dbt_compiled": "same schema supplied from authoritative dbt catalog",
+        "odcs_schema": "same typed schema supplied from ODCS 3.2 documents"
+      },
+      "parser_evidence": "tests/task_147_dialect_inventory.rs verifies all 13 parser classifications",
+      "release_disposition": "mandatory_exact_native_duckdb_required",
+      "typed_returning_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
+    },
+    {
+      "id": "80-C147-N-duplicate-source",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_returning": [
+        {
+          "id": 1
+        }
+      ],
+      "skipped_source_ids": [
+        "source#1"
+      ],
+      "inserted_source_ids": [
+        "source#0"
+      ],
+      "sql_true_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "sql_not_true_source_ids": [],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "Exact",
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "constraint_evidence": "enforced target(id) PRIMARY KEY",
+      "comparison_assumptions": [
+        "identical duplicate payloads yield equal terminal bag independent of winner",
+        "exact integer key equality"
+      ],
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        }
+      ],
+      "canonical_target_instances": [],
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_native_target_after": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "proof_positive": "Exact",
+      "proof_not_true": "Exact_empty_where_true_fixture",
+      "adapter_evidence": {
+        "direct_sql": "source SQL canonicalized from sqlparser",
+        "dbt_compiled": "same schema supplied from authoritative dbt catalog",
+        "odcs_schema": "same typed schema supplied from ODCS 3.2 documents"
+      },
+      "parser_evidence": "tests/task_147_dialect_inventory.rs verifies all 13 parser classifications",
+      "release_disposition": "mandatory_exact_native_duckdb_required",
+      "typed_returning_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
+    },
+    {
+      "id": "80-C147-N-unattested-target-key",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_negative",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "proof": "Residual",
+      "reason": "missing enforced target key",
+      "owner": "TASK-147",
+      "expected_affected": null,
+      "typed_domains": null,
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        }
+      ],
+      "canonical_target_instances": [],
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_native_target_after": [],
+      "canonical_intermediate_states": [],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "comparison_assumptions": [
+        "complete physical input bag",
+        "exact signed integer comparison"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source SQL canonicalized from sqlparser",
+        "dbt_compiled": "same schema supplied from authoritative dbt catalog",
+        "odcs_schema": "same typed schema supplied from ODCS 3.2 documents"
+      },
+      "parser_evidence": "tests/task_147_dialect_inventory.rs verifies all 13 parser classifications",
+      "release_disposition": "negative_evidence_no_false_exactness_required",
+      "typed_returning_domains": null
+    },
+    {
+      "id": "80-C147-N-null-primary-key",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_negative",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "expected_poststate": null,
+      "proof": "Impossible",
+      "reason": "enforced PRIMARY KEY excludes NULL",
+      "owner": "TASK-147",
+      "expected_affected": null,
+      "typed_domains": null,
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": null,
+            "score": 20
+          }
+        }
+      ],
+      "canonical_target_instances": [],
+      "expected_native_source_after": [
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "expected_native_target_after": [],
+      "canonical_intermediate_states": [],
+      "proof_positive": "Impossible",
+      "proof_not_true": "Impossible",
+      "comparison_assumptions": [
+        "complete physical input bag",
+        "exact signed integer comparison"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source SQL canonicalized from sqlparser",
+        "dbt_compiled": "same schema supplied from authoritative dbt catalog",
+        "odcs_schema": "same typed schema supplied from ODCS 3.2 documents"
+      },
+      "parser_evidence": "tests/task_147_dialect_inventory.rs verifies all 13 parser classifications",
+      "release_disposition": "negative_evidence_no_false_exactness_required",
+      "typed_returning_domains": null
+    },
+    {
+      "id": "80-C147-N-null-and-where-not-true",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE id > 1 ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 40
+        },
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_returning": [
+        {
+          "id": 2
+        }
+      ],
+      "source_select_sql": "SELECT id,score FROM source WHERE id > 1",
+      "expected_selected_source_rows": [
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_rejected_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "expected_unknown_source_ids": [
+        "source#0"
+      ],
+      "skipped_source_ids": [],
+      "inserted_source_ids": [
+        "source#2"
+      ],
+      "sql_true_source_ids": [
+        "source#2"
+      ],
+      "sql_not_true_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "Exact",
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "constraint_evidence": "enforced target(id) PRIMARY KEY; source NULL is rejected by SQL UNKNOWN",
+      "comparison_assumptions": [
+        "exact integer comparison",
+        "SQL NULL comparison UNKNOWN is NOT TRUE",
+        "complete SQL source/target bags"
+      ],
+      "null_uniqueness": "target PK has no NULL; source nullable id does not reach INSERT",
+      "oracle": "independent DuckDB full selected/rejected/target/RETURNING bags",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": null,
+            "score": 40
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#2",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_source_after": [
+        {
+          "id": null,
+          "score": 40
+        },
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_native_target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "proof_positive": "Exact",
+      "proof_not_true": "Exact_SQL_FALSE_and_UNKNOWN",
+      "adapter_evidence": {
+        "direct_sql": "canonical WHERE and conflict source",
+        "dbt_compiled": "equivalent typed source catalog",
+        "odcs_schema": "equivalent typed source catalog"
+      },
+      "parser_evidence": "tests/task_147_dialect_inventory.rs",
+      "release_disposition": "mandatory_exact_native_duckdb_required",
+      "typed_returning_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
+    }
+  ],
+  "conditional_cases": [
+    {
+      "variant": "insert_ignore",
+      "sql": "INSERT IGNORE INTO target (id,score) VALUES (1,20),(2,30)",
+      "proof": "Residual",
+      "reason": "vendor IGNORE suppresses engine-specific errors beyond unique collisions",
+      "id": "80-C147-N-conditional-1",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "insert_or_replace",
+      "sql": "INSERT OR REPLACE INTO target (id,score) VALUES (1,20),(2,30)",
+      "proof": "Residual",
+      "reason": "REPLACE can delete existing rows, cascading/trigger semantics unknown",
+      "id": "80-C147-N-conditional-2",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "insert_overwrite",
+      "sql": "INSERT OVERWRITE TABLE target SELECT id,score FROM source",
+      "proof": "Residual",
+      "reason": "replacement and partition scope require engine evidence",
+      "id": "80-C147-N-conditional-3",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "upsert_update",
+      "sql": "INSERT INTO target(id,score) VALUES(1,20) ON CONFLICT(id) DO UPDATE SET score=excluded.score",
+      "proof": "Residual",
+      "reason": "UPDATE conflict branch and excluded alias not normalized",
+      "id": "80-C147-N-conditional-4",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "on_conflict_unqualified",
+      "sql": "INSERT INTO target(id,score) VALUES(1,20) ON CONFLICT DO NOTHING",
+      "proof": "Residual",
+      "reason": "unspecified key may collide on multiple enforced keys",
+      "id": "80-C147-N-conditional-5",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "returning_expression",
+      "sql": "INSERT INTO target(id,score) VALUES(2,30) RETURNING id+1",
+      "proof": "Residual",
+      "reason": "nontrivial returned expression requires independent output proof",
+      "id": "80-C147-N-conditional-6",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "nullable_unique",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "proof": "Residual",
+      "reason": "nullable UNIQUE NULLS DISTINCT law not attested",
+      "id": "80-C147-N-conditional-7",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "variant": "identity_on_conflict",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "proof": "Residual",
+      "reason": "sequence consumption after ignored conflict unverified",
+      "id": "80-C147-N-conditional-8",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 2,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [
+        {
+          "target_id": "target_before#0",
+          "row": {
+            "id": 1,
+            "score": 10
+          }
+        }
+      ],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    },
+    {
+      "id": "80-C147-N-unordered-source-collision",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "proof": "Residual",
+      "reason": "different candidate payloads share a key and source row order lacks attested winner law",
+      "owner": "TASK-147",
+      "disposition": "unverified_native_ordering; never infer winning candidate",
+      "release_disposition": "reviewed_unproven_engine_semantics; typed_residual_only; release_gate_TASK_91_unapproved",
+      "comparison_assumptions": [
+        "native engine laws unavailable; no inference from parser acceptance"
+      ],
+      "proof_positive": "Residual",
+      "proof_not_true": "Residual",
+      "canonical_source_instances": [
+        {
+          "source_id": "source#0",
+          "row": {
+            "id": 1,
+            "score": 20
+          }
+        },
+        {
+          "source_id": "source#1",
+          "row": {
+            "id": 1,
+            "score": 30
+          }
+        }
+      ],
+      "canonical_target_instances": [],
+      "expected_native_target_after": null,
+      "expected_native_source_after": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "canonical_intermediate_states": [],
+      "adapter_evidence": "parser/canonical classification only; unverified native execution is not an exact adapter claim"
+    }
+  ],
+  "dialect_cells": {
+    "ansi": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "bigquery": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "clickhouse": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "databricks": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "duckdb": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "generic": {
+      "80-C147-N-conditional-1": "canonical_unsupported",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "hive": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "mssql": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "mysql": {
+      "80-C147-N-conditional-1": "canonical_unsupported",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "postgresql": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "redshift": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "snowflake": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    },
+    "sqlite": {
+      "80-C147-N-conditional-1": "parser_boundary",
+      "80-C147-N-conditional-2": "canonical_unsupported",
+      "80-C147-N-conditional-3": "canonical_unsupported",
+      "80-C147-N-conditional-4": "canonical_unsupported",
+      "80-C147-N-conditional-5": "canonical_unsupported",
+      "80-C147-N-conditional-6": "canonical_unsupported",
+      "80-C147-N-conditional-7": "canonical_conflict",
+      "80-C147-N-conditional-8": "canonical_conflict",
+      "80-C147-N-duplicate-source": "canonical_conflict",
+      "80-C147-N-null-primary-key": "canonical_conflict",
+      "80-C147-N-unattested-target-key": "canonical_conflict",
+      "80-C147-N-unordered-source-collision": "canonical_conflict",
+      "80-C147-P-targeted-conflict-returning": "canonical_conflict",
+      "80-C147-N-null-and-where-not-true": "canonical_conflict"
+    }
+  },
+  "adapter_cells": {
+    "direct_sql": {
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
+    },
+    "dbt_compiled": {
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
+    },
+    "odcs_schema": {
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
+    }
+  },
+  "proof_requirements": [
+    "source and target complete bags",
+    "SQL TRUE and NOT TRUE identities",
+    "enforced named key",
+    "NULL and duplicate contrast",
+    "exact returned rows and affected counts",
+    "typed terminal value domains",
+    "constraint provenance",
+    "13 parser dialect boundaries",
+    "dbt and ODCS metadata parity where equivalent",
+    "full native DuckDB oracle"
+  ],
+  "verification": {
+    "fmt": "passed",
+    "clippy": "passed_strict_all_targets_all_features",
+    "cargo_test": "passed_all_rust_tests",
+    "cargo_doc": "passed",
+    "no_default_features": "passed_tests_lint_doc_dependencies",
+    "dbt_e2e": "passed",
+    "schema_snapshot": "passed_public_contract_tests",
+    "implementation_sha": "515aab7939fa94b5a92247a65402fb351273a0e4",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652"
+  },
+  "done": true,
+  "previous_snapshot": "docs/task-147-acceptance-freeze-v1.json",
+  "review_amendments": [
+    "Distinguish unordered duplicate payloads from identical duplicates",
+    "Preserve TASK-145 and TASK-146 legacy unsupported boundaries with bounded canonical exceptions",
+    "Add schema, native full-bag and adapter parity evidence"
+  ],
+  "child_ac_mapping": {
+    "1": {
+      "fixture_ids": [
+        "80-C147-P",
+        "80-C147-N"
+      ],
+      "tests": [
+        "tests/task_147_dialect_inventory.rs",
+        "tests/task_147_wire_contract.rs"
+      ],
+      "freeze": "docs/task-147-acceptance-freeze.json"
+    },
+    "2": {
+      "fixture_ids": [
+        "80-C147-P",
+        "80-C147-N"
+      ],
+      "tests": [
+        "tests/task_147_insert_conflict.rs"
+      ],
+      "source": "src/physical_realization/write_states/operators.rs"
+    },
+    "3": {
+      "fixture_ids": [
+        "80-C147-P",
+        "80-C147-N"
+      ],
+      "tests": [
+        "tests/task_147_frozen_matrix.rs"
+      ],
+      "engine": "DuckDB"
+    },
+    "4": {
+      "fixture_ids": [
+        "80-C147-P",
+        "80-C147-N"
+      ],
+      "tests": [
+        "tests/task_147_dialect_inventory.rs",
+        "tests/task_147_adapter_parity.rs"
+      ],
+      "dialects": 13,
+      "adapters": 3
+    },
+    "5": {
+      "checks": [
+        "fmt",
+        "clippy",
+        "cargo_test",
+        "cargo_doc",
+        "no_default_features",
+        "dbt_e2e",
+        "schema_snapshot"
+      ],
+      "state": "pending_full_ci"
+    }
+  },
+  "parent_ac_mapping": {
+    "1": {
+      "local_scope": "explicit ON CONFLICT, IGNORE, REPLACE, UPSERT, OVERWRITE and RETURNING classifications",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and independent TASK-80 signoff"
+    },
+    "2": {
+      "local_scope": "enforced named key, complete pre/source/poststate, affected insert counts, skipped keys",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 ordered scripts and TASK-80 closure"
+    },
+    "3": {
+      "local_scope": "conflicting and nonconflicting source, skipped/untouched target, SQL FALSE and UNKNOWN",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and TASK-80 closure"
+    },
+    "5": {
+      "local_scope": "DuckDB complete source/target snapshots, NULL, duplicates, missing key and conflicting payload",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and parent independent runtime coverage"
+    },
+    "6": {
+      "local_scope": "SQL/dbt/ODCS equivalent schema, 13 dialects, JSON schema and public API",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and parent independent evidence"
+    }
+  },
+  "parent_ac_4": "Not owned by TASK-147, TASK-148 must certify subsequent reads/DDL and idempotence",
+  "dialect_matrix_evidence": {
+    "source": "GitHub Actions rust/no-default-features/test",
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40652883004",
+    "test": "tests/task_147_dialect_inventory.rs",
+    "classification": "canonical_parser_only; no native vendor equivalence",
+    "filtered_case": "verified_by_full_final_implementation_head_ci"
+  },
+  "required_dialect_cells": 182,
+  "required_adapter_cells": 42,
+  "verified_implementation_head": "515aab7939fa94b5a92247a65402fb351273a0e4",
+  "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652",
+  "verified_ci_jobs": 9,
+  "verified_child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "parent_signed_off": false,
+  "release_approved": false
+}

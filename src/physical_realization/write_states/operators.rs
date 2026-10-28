@@ -244,19 +244,94 @@ pub(super) fn append_rows(
     } else {
         evaluate_simple_select(bundle, query, states)?
     };
+    if write.insert_conflict().is_some()
+        && bundle.relation_constraints().iter().any(|set| {
+            set.relation() == target
+                && set
+                    .column_value_sources()
+                    .iter()
+                    .any(|source| source.kind() == crate::column_sources::ColumnValueKind::Identity)
+        })
+    {
+        return Err(residual(
+            "ON CONFLICT with identity allocation needs a proven sequence consumption law",
+        ));
+    }
     let mut next = before.clone();
     for output_row in produced {
         if output_row.len() != columns.len() {
             return Err(residual("INSERT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows.push(complete_insert_row(
-            bundle,
-            target,
-            values,
-            schema,
-            identity_sequences,
-        )?);
+        let candidate = complete_insert_row(bundle, target, values, schema, identity_sequences)?;
+        if write.insert_conflict().is_some() {
+            // A skipped tuple is not necessarily exempt from datatype checks.
+            // Reject unclear validation precedence as Residual, not a false
+            // successful conflict suppression or an unconditional Impossible.
+            let candidate_state = PhysicalWriteState {
+                relation: target.to_string(),
+                rows: vec![candidate.clone()],
+            };
+            if super::constraints::validate_state(bundle, &candidate_state).is_err() {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "ON CONFLICT candidate has unproved datatype validation precedence",
+                ));
+            }
+        }
+        if let Some(policy) = write.insert_conflict() {
+            // Validate the named key even for an empty initial target bag.
+            // A collision may also be against a preceding row in this INSERT.
+            super::constraints::validate_insert_conflict_target(bundle, target, policy.columns())?;
+            // SQL UNIQUE NULL semantics vary by engine and declaration.
+            // A single nullable candidate without a competing row does not
+            // establish which native NULLS DISTINCT law applies.
+            if policy
+                .columns()
+                .iter()
+                .any(|column| matches!(candidate.values.get(column), Some(LiteralValue::Null)))
+            {
+                let primary = bundle.relation_constraints().iter().any(|set| {
+                    set.relation() == target
+                        && set.constraints().iter().any(|constraint| {
+                            matches!(constraint, RelationConstraint::PrimaryKey(key)
+                            if key.columns() == policy.columns())
+                        })
+                });
+                if primary {
+                    return Err(impossible("enforced PRIMARY KEY cannot contain NULL"));
+                }
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "nullable ON CONFLICT UNIQUE key needs a native NULLS DISTINCT law",
+                ));
+            }
+            let mut conflict = false;
+            for (index, prior) in next.rows.iter().enumerate() {
+                if super::constraints::targeted_insert_conflict(
+                    bundle,
+                    target,
+                    policy.columns(),
+                    &candidate,
+                    prior,
+                )? {
+                    // SELECT does not certify source iteration order. Two
+                    // colliding newly inserted rows with different payloads
+                    // may select different winners on a native engine.
+                    if index >= before.rows.len() && prior != &candidate {
+                        return Err(residual(
+                            "unordered INSERT conflict has different candidate payloads",
+                        ));
+                    }
+                    conflict = true;
+                    break;
+                }
+            }
+            if conflict {
+                continue;
+            }
+        }
+        next.rows.push(candidate);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;

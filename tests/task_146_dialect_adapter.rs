@@ -302,7 +302,14 @@ fn vendor_qualifiers_never_become_unproved_plain_append() {
             if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
                 let unsupported = match &bundle.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => true,
-                    ProtocolStatement::Query(q) => q.write().is_none(),
+                    ProtocolStatement::Query(q) => {
+                        if boundary["id"] == "80-C146-N-insert-returning" {
+                            let write = q.write().expect("bounded RETURNING write");
+                            write.insert_conflict().is_none() && write.returning_columns() == ["id"]
+                        } else {
+                            q.write().is_none()
+                        }
+                    }
                     _ => true,
                 };
                 assert!(unsupported, "{dialect}: unproved vendor append law: {sql}");

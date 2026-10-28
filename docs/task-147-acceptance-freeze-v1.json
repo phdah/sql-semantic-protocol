@@ -1,0 +1,568 @@
+{
+  "version": 1,
+  "owner": "TASK-147",
+  "parent": "TASK-80",
+  "state": "review_in_progress",
+  "fixture_ids": [
+    "80-C147-P",
+    "80-C147-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dependencies": [
+    "TASK-146"
+  ],
+  "schema": [
+    "source(id INTEGER,score INTEGER)",
+    "target(id INTEGER PRIMARY KEY,score INTEGER)"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs_schema"
+  ],
+  "mandatory_cases": [
+    {
+      "id": "80-C147-P-targeted-conflict-returning",
+      "fixture_id": "80-C147-P",
+      "class": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_returning": [
+        {
+          "id": 2
+        }
+      ],
+      "skipped_source_ids": [
+        "source#0"
+      ],
+      "inserted_source_ids": [
+        "source#1"
+      ],
+      "sql_true_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "sql_not_true_source_ids": [],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "Exact",
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "constraint_evidence": "enforced target(id) PRIMARY KEY, exact integer equality",
+      "comparison_assumptions": [
+        "SQL integer equality",
+        "complete source and target bags"
+      ],
+      "null_uniqueness": "no NULL in key",
+      "oracle": "DuckDB full source/prestate/poststate/RETURNING"
+    },
+    {
+      "id": "80-C147-N-duplicate-source",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_returning": [
+        {
+          "id": 1
+        }
+      ],
+      "skipped_source_ids": [
+        "source#1"
+      ],
+      "inserted_source_ids": [
+        "source#0"
+      ],
+      "sql_true_source_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "sql_not_true_source_ids": [],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "Exact",
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "constraint_evidence": "enforced target(id) PRIMARY KEY",
+      "comparison_assumptions": [
+        "complete insertion order as input bag",
+        "exact integer key equality"
+      ]
+    },
+    {
+      "id": "80-C147-N-unattested-target-key",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_negative",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "proof": "Residual",
+      "reason": "missing enforced target key",
+      "owner": "TASK-147",
+      "expected_affected": null,
+      "typed_domains": null
+    },
+    {
+      "id": "80-C147-N-null-primary-key",
+      "fixture_id": "80-C147-N",
+      "class": "mandatory_negative",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "expected_poststate": null,
+      "proof": "Impossible",
+      "reason": "enforced PRIMARY KEY excludes NULL",
+      "owner": "TASK-147",
+      "expected_affected": null,
+      "typed_domains": null
+    }
+  ],
+  "conditional_cases": [
+    {
+      "variant": "insert_ignore",
+      "sql": "INSERT IGNORE INTO target (id,score) VALUES (1,20),(2,30)",
+      "proof": "Residual",
+      "reason": "vendor IGNORE suppresses engine-specific errors beyond unique collisions",
+      "id": "80-C147-N-conditional-1",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "insert_or_replace",
+      "sql": "INSERT OR REPLACE INTO target (id,score) VALUES (1,20),(2,30)",
+      "proof": "Residual",
+      "reason": "REPLACE can delete existing rows, cascading/trigger semantics unknown",
+      "id": "80-C147-N-conditional-2",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "insert_overwrite",
+      "sql": "INSERT OVERWRITE TABLE target SELECT id,score FROM source",
+      "proof": "Residual",
+      "reason": "replacement and partition scope require engine evidence",
+      "id": "80-C147-N-conditional-3",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "upsert_update",
+      "sql": "INSERT INTO target(id,score) VALUES(1,20) ON CONFLICT(id) DO UPDATE SET score=excluded.score",
+      "proof": "Residual",
+      "reason": "UPDATE conflict branch and excluded alias not normalized",
+      "id": "80-C147-N-conditional-4",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "on_conflict_unqualified",
+      "sql": "INSERT INTO target(id,score) VALUES(1,20) ON CONFLICT DO NOTHING",
+      "proof": "Residual",
+      "reason": "unspecified key may collide on multiple enforced keys",
+      "id": "80-C147-N-conditional-5",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "returning_expression",
+      "sql": "INSERT INTO target(id,score) VALUES(2,30) RETURNING id+1",
+      "proof": "Residual",
+      "reason": "nontrivial returned expression requires independent output proof",
+      "id": "80-C147-N-conditional-6",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "nullable_unique",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "proof": "Residual",
+      "reason": "nullable UNIQUE NULLS DISTINCT law not attested",
+      "id": "80-C147-N-conditional-7",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    },
+    {
+      "variant": "identity_on_conflict",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "proof": "Residual",
+      "reason": "sequence consumption after ignored conflict unverified",
+      "id": "80-C147-N-conditional-8",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "owner": "TASK-147",
+      "disposition": "not_approved_for_exact; pending native vendor evidence",
+      "prestate": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null
+    }
+  ],
+  "dialect_cells": {
+    "generic": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "mysql": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "postgresql": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "hive": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "sqlite": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "snowflake": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "redshift": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "mssql": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "clickhouse": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "bigquery": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "ansi": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "duckdb": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    },
+    "databricks": {
+      "status": "pending_parser_matrix_final_head_ci",
+      "engine_execution_proof": false
+    }
+  },
+  "adapter_cells": {
+    "direct_sql": {
+      "status": "pending_final_head_ci_and_metadata_evidence"
+    },
+    "dbt_compiled": {
+      "status": "pending_final_head_ci_and_metadata_evidence"
+    },
+    "odcs_schema": {
+      "status": "pending_final_head_ci_and_metadata_evidence"
+    }
+  },
+  "proof_requirements": [
+    "source and target complete bags",
+    "SQL TRUE and NOT TRUE identities",
+    "enforced named key",
+    "NULL and duplicate contrast",
+    "exact returned rows and affected counts",
+    "typed terminal value domains",
+    "constraint provenance",
+    "13 parser dialect boundaries",
+    "dbt and ODCS metadata parity where equivalent",
+    "full native DuckDB oracle"
+  ],
+  "verification": {
+    "fmt": "pending",
+    "clippy": "pending",
+    "cargo_test": "pending",
+    "cargo_doc": "pending",
+    "no_default_features": "pending",
+    "dbt_e2e": "pending",
+    "schema_snapshot": "pending"
+  },
+  "done": false
+}

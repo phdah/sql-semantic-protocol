@@ -1,5 +1,27 @@
 # SQL Semantic Protocol contract
 
+## Targeted INSERT conflict and RETURNING evidence (TASK-147)
+
+A normalized INSERT can optionally carry `insert_conflict` with `action:
+"do_nothing"` and explicitly ordered `target_columns`. The physical
+interpreter certifies row suppression only with a complete target population,
+an independently enforced matching PRIMARY/UNIQUE key and proven tuple equality.
+It checks collisions against earlier inserted rows from the same statement as
+well as the prestate. An unsupported or absent key declaration never licenses
+an inferred conflict.
+
+An INSERT with direct named RETURNING columns may include
+`returning_columns`; the independent `PhysicalWriteTransition::returning()`
+returns exactly those columns for actually inserted target rows, excluding
+skipped conflict rows. `PhysicalWriteTransition::returning_exact_domains(schema)` derives exact, schema-backed returned-column value frequencies, including empty return bags. Missing schema and projection evidence are Residual.
+Native IGNORE/REPLACE behavior, unscoped OVERWRITE, inferred conflict targets,
+DO UPDATE and vendor error/sequence behavior remain explicit unsupported or
+Residual, not plain append.
+
+This is bounded TASK-147 child evidence, not TASK-80 parent signoff.
+
+
+
 ### Canonical table sampling evidence (TASK-136)
 
 When a SELECT samples a physical table using `SAMPLE` or `TABLESAMPLE`, its query protocol can include a `sampling` array. Each entry identifies the physical table, zero-based FROM/JOIN occurrence, keyword, optional method (`row`, `bernoulli`, `system`, `block`), typed literal quantity and unit, optional `SEED`/`REPEATABLE` value and whether bucket/offset options require further evidence. Unknown quantity/seed expressions are represented by `null` rather than inferred.

@@ -1,4 +1,40 @@
 {
+  "task_147_insert_conflict_acceptance": {
+    "owner": "TASK-147",
+    "parent": "TASK-80",
+    "status": "verified_child_acceptance_pending_merge",
+    "freeze": "docs/task-147-acceptance-freeze.json",
+    "audit": "docs/task-147-acceptance-audit.md",
+    "fixture_ids": [
+      "80-C147-P",
+      "80-C147-N"
+    ],
+    "mandatory_cases": 5,
+    "conditional_cases": 9,
+    "test_oracle": "tests/task_147_insert_conflict.rs",
+    "parser_matrix": "tests/task_147_dialect_matrix.rs",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "verified": true,
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mandatory_cases_verified": 5,
+    "conditional_cases_reviewed": 9,
+    "dialect_cells_verified": 182,
+    "adapter_cells_verified": 42,
+    "ci_head": "515aab7939fa94b5a92247a65402fb351273a0e4",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652",
+    "public_contract": "tests/task_147_acceptance_contract.rs",
+    "adapter_parity": "tests/task_147_adapter_parity.rs",
+    "wire_snapshot": "tests/task_147_wire_contract.rs",
+    "native_duckdb_oracle": "tests/task_147_frozen_matrix.rs",
+    "freeze_v1": "docs/task-147-acceptance-freeze-v1.json"
+  },
   "task_72_parent_acceptance": {
     "owner": "TASK-72",
     "status": "portable_parent_original_ac1_to_ac6_signed_off_native_runtime_uncertified",
