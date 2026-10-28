@@ -269,7 +269,7 @@ pub(super) fn append_rows(
             // A collision may also be against a preceding row in this INSERT.
             super::constraints::validate_insert_conflict_target(bundle, target, policy.columns())?;
             let mut conflict = false;
-            for prior in &next.rows {
+            for (index, prior) in next.rows.iter().enumerate() {
                 if super::constraints::targeted_insert_conflict(
                     bundle,
                     target,
@@ -277,6 +277,14 @@ pub(super) fn append_rows(
                     &candidate,
                     prior,
                 )? {
+                    // SELECT does not certify source iteration order. Two
+                    // colliding newly inserted rows with different payloads
+                    // may select different winners on a native engine.
+                    if index >= before.rows.len() && prior != &candidate {
+                        return Err(residual(
+                            "unordered INSERT conflict has different candidate payloads",
+                        ));
+                    }
                     conflict = true;
                     break;
                 }
