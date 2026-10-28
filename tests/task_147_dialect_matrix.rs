@@ -5,8 +5,19 @@ use sql_semantic_protocol::{
 };
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-    "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 #[test]
@@ -26,7 +37,11 @@ fn portable_conflict_syntax_is_canonical_for_every_parser_that_accepts_it() {
         };
         let write = query.write().expect("normalized INSERT operation");
         assert_eq!(write.kind(), WriteKind::Append, "{dialect}");
-        assert_eq!(write.insert_conflict().unwrap().columns(), &["id"], "{dialect}");
+        assert_eq!(
+            write.insert_conflict().unwrap().columns(),
+            &["id"],
+            "{dialect}"
+        );
         assert_eq!(write.returning_columns(), &["id"], "{dialect}");
         supported += 1;
     }
@@ -41,11 +56,15 @@ fn unsupported_conflict_operators_never_become_plain_append() {
             "INSERT INTO target(id,score) VALUES (1,2) ON CONFLICT DO NOTHING",
             "INSERT INTO target(id,score) VALUES (1,2) ON CONFLICT(id) DO UPDATE SET score=3",
         ] {
-            let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) else {
+            let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref())
+            else {
                 continue;
             };
             assert!(
-                matches!(bundle.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+                matches!(
+                    bundle.inputs()[0].statements()[0],
+                    ProtocolStatement::Unsupported(_)
+                ),
                 "{dialect}: {sql}"
             );
         }
