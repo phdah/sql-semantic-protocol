@@ -352,3 +352,26 @@ fn attested_defaults_are_proven_identically_for_all_metadata_adapters() {
         &[(5, 7), (4, 40)],
     );
 }
+
+
+#[test]
+fn vendor_insert_modifiers_never_silently_become_portable_append() {
+    let vendor_sql = [
+        "INSERT OVERWRITE TABLE target SELECT id,score FROM source",
+        "INSERT IGNORE INTO target(id,score) VALUES (1,10)",
+        "INSERT OR REPLACE INTO target(id,score) VALUES (1,10)",
+    ];
+    let mut checked = 0;
+    for dialect in DIALECTS {
+        let parser = dialect_from_name(dialect).unwrap();
+        for sql in vendor_sql {
+            if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)],dialect,parser.as_ref()) {
+                assert!(matches!(bundle.inputs()[0].statements()[0],
+                    ProtocolStatement::Unsupported(_)),
+                    "{dialect}: vendor modifier cannot inherit unconditional append proof: {sql}");
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(checked,39);
+}
