@@ -1,4 +1,19 @@
 {
+  "task_147_insert_conflict_acceptance": {
+    "owner": "TASK-147",
+    "parent": "TASK-80",
+    "status": "implementation_in_review",
+    "freeze": "docs/task-147-acceptance-freeze.json",
+    "audit": "docs/task-147-acceptance-audit.md",
+    "fixture_ids": ["80-C147-P", "80-C147-N"],
+    "mandatory_cases": 4,
+    "conditional_cases": 8,
+    "test_oracle": "tests/task_147_insert_conflict.rs",
+    "parser_matrix": "tests/task_147_dialect_matrix.rs",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "verified": false
+  },
   "task_72_parent_acceptance": {
     "owner": "TASK-72",
     "status": "portable_parent_original_ac1_to_ac6_signed_off_native_runtime_uncertified",
