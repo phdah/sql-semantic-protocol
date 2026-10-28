@@ -208,3 +208,32 @@ fn all_thirteen_dialects_have_explicit_parser_or_canonical_outcomes() {
         "all four families must have at least one certified parser path: {supported:?}"
     );
 }
+
+
+#[test]
+fn diagnostic_task148_parser_statuses() {
+    let freeze: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-148-acceptance-freeze.json")).unwrap();
+    let mut results = Vec::new();
+    for case in freeze["cases"].as_array().unwrap() {
+        for dialect in DIALECTS {
+            let parser = dialect_from_name(dialect).unwrap();
+            let statuses = case["statements"].as_array().unwrap().iter().map(|sql| {
+                match analyze_inputs(
+                    &[SqlInput::inline(sql.as_str().unwrap())],
+                    dialect,
+                    parser.as_ref(),
+                ) {
+                    Err(_) => "parser_boundary",
+                    Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
+                        ProtocolStatement::Query(_) => "canonical",
+                        ProtocolStatement::Unsupported(_) => "unsupported",
+                        _ => "other",
+                    }
+                }
+            }).collect::<Vec<_>>();
+            results.push(format!("{}:{}:{}",case["id"].as_str().unwrap(), dialect, statuses.join(",")));
+        }
+    }
+    panic!("TASK148_PARSER_ORACLE {}", results.join("|"));
+}
