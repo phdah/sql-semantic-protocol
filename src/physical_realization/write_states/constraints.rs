@@ -489,6 +489,25 @@ pub(super) fn validate_insert_conflict_target(
             "ON CONFLICT target does not identify an enforced unique key",
         ));
     }
+    // The conflict target is not a blanket exception to other constraints.
+    // The order in which native runtimes check additional UNIQUE, CHECK,
+    // FK and generated values against a skipped tuple is not attested here.
+    // Do not claim success merely because the selected key collides.
+    if set.constraints().iter().any(|constraint| match constraint {
+        RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
+            key.columns() != columns
+        }
+        _ => true,
+    }) || !set.computed_keys().is_empty()
+        || !set.computed_checks().is_empty()
+        || !set.computed_boolean_checks().is_empty()
+        || !set.column_value_sources().is_empty()
+    {
+        return Err(residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "ON CONFLICT with additional target constraints requires an attested check ordering law",
+        ));
+    }
     Ok(())
 }
 
