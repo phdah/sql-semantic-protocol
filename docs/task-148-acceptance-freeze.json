@@ -133,7 +133,73 @@
       },
       "proof": "Exact",
       "observation": "SELECT COUNT(*)=2, independently executed in DuckDB",
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ]
+      },
       "canonical_row_identity": {
         "source": [],
         "target_before": [],
@@ -282,7 +348,60 @@
       "sql_not_true_source_ids": [
         "source#0"
       ],
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
       "canonical_row_identity": {
         "source": [
           {
@@ -473,7 +592,60 @@
       "sql_not_true_source_ids": [
         "source#0"
       ],
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
       "canonical_row_identity": {
         "source": [
           {
@@ -606,7 +778,60 @@
       },
       "required_evidence": "enforced scalar defaults target(id)=5,target(score)=7",
       "proof": "Exact",
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
       "canonical_row_identity": {
         "source": [],
         "target_before": [],
@@ -664,7 +889,60 @@
         "second insert cannot commit"
       ],
       "typed_domain": "No feasible terminal bag under enforced PK",
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
       "canonical_row_identity": {
         "source": [],
         "target_before": [],
@@ -702,7 +980,73 @@
       "proof": "Residual",
       "gap": "UnsupportedStatement",
       "typed_domain": "unknown due to unproved transaction/rollback",
-      "parser_cells": {},
+      "parser_cells": {
+        "generic": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "mysql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "postgresql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "hive": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "sqlite": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "snowflake": [
+          "parser_boundary",
+          "canonical",
+          "unsupported"
+        ],
+        "redshift": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "mssql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "clickhouse": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "bigquery": [
+          "parser_boundary",
+          "canonical",
+          "unsupported"
+        ],
+        "ansi": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "duckdb": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "databricks": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ]
+      },
       "canonical_row_identity": {
         "source": [],
         "target_before": [],
@@ -1081,7 +1425,10 @@
       "parser_boundary"
     ],
     "engine_boundary": "sqlparser result cannot prove native engine behavior",
-    "evidence": "tests/task_148_adapter_dialect.rs"
+    "evidence": "tests/task_148_adapter_dialect.rs",
+    "verified_parser_cells": 78,
+    "verified_statement_cells": 182,
+    "discovered_from": "CI Rust no-default-features execution on 2026-10-28 at commit 0f1f6f9a062c3602c04e7c3a1f3bca2d8b00731b; pinned expected classifications now enforced independently"
   },
   "adapter_cells_spec": {
     "cases": [
