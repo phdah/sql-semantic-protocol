@@ -144,7 +144,9 @@ fn duckdb(case: &serde_json::Value) {
     }
     let original_source = native_rows(&db, "source");
 
-    if case["sql_true_source_ids"].is_array() {
+    // Only source-backed INSERTs have a physical source to filter.
+    // VALUES row identities belong to the statements, not the source table.
+    if case["sql_true_source_ids"].is_array() && case["family"] != "VALUES" {
         let source_rows = rows(&case["source"]);
         for (sql, field) in [
             (
@@ -396,6 +398,10 @@ fn duplicate_key_is_impossible_after_prior_insert_and_sql_oracle_rejects_it() {
         .iter()
         .find(|c| c["id"] == "80-C148-N-duplicate-pk")
         .unwrap();
+    assert_eq!(
+        case["sql_true_source_ids"],
+        serde_json::json!(["values#0", "values#1"])
+    );
     let result = physical_ordered_write_state_plan(
         &analysis(case),
         &[state("source", &[]), state("target", &[])],

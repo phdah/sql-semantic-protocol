@@ -358,7 +358,6 @@ fn attested_defaults_are_proven_identically_for_all_metadata_adapters() {
     );
 }
 
-
 #[test]
 fn vendor_insert_modifiers_never_silently_become_portable_append() {
     let vendor_sql = [
@@ -370,58 +369,81 @@ fn vendor_insert_modifiers_never_silently_become_portable_append() {
     for dialect in DIALECTS {
         let parser = dialect_from_name(dialect).unwrap();
         for sql in vendor_sql {
-            if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)],dialect,parser.as_ref()) {
-                assert!(matches!(bundle.inputs()[0].statements()[0],
-                    ProtocolStatement::Unsupported(_)),
-                    "{dialect}: vendor modifier cannot inherit unconditional append proof: {sql}");
+            if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
+                assert!(
+                    matches!(
+                        bundle.inputs()[0].statements()[0],
+                        ProtocolStatement::Unsupported(_)
+                    ),
+                    "{dialect}: vendor modifier cannot inherit unconditional append proof: {sql}"
+                );
             }
             checked += 1;
         }
     }
-    assert_eq!(checked,39);
+    assert_eq!(checked, 39);
 }
-
 
 fn classify_negative_across_catalogs(
     catalog: &RelationCatalog,
     duplicate_key: bool,
 ) -> PhysicalWriteStatePlan {
     use sql_semantic_protocol::{
-        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-        ConstraintSourceKind, RelationConstraint, RelationConstraintSet,
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        RelationConstraint, RelationConstraintSet,
     };
-    let input=SqlInput::inline(SCRIPT[0]);
-    let dialect=dialect_from_name("postgresql").unwrap();
-    let configured=ConfiguredSqlInput::new("task148-negative-parity",&input,"postgresql",dialect.as_ref());
-    let mut bundle=analyze_configured_inputs_with_catalog(&[configured],catalog).unwrap();
+    let input = SqlInput::inline(SCRIPT[0]);
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = ConfiguredSqlInput::new(
+        "task148-negative-parity",
+        &input,
+        "postgresql",
+        dialect.as_ref(),
+    );
+    let mut bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     if duplicate_key {
-        let evidence=vec![ConstraintEvidence::new(
-            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata,"task148-negative-parity").unwrap(),
+        let evidence = vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(
+                ConstraintSourceKind::ExternalMetadata,
+                "task148-negative-parity",
+            )
+            .unwrap(),
             ConstraintEnforcement::Enforced,
         )];
-        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(TARGET,vec![
-            RelationConstraint::primary_key(vec!["id".into()],evidence).unwrap()
-        ]).unwrap()]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            TARGET,
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+        )
+        .unwrap()]);
     }
-    let mut initial=vec![state(TARGET,&[])];
+    let mut initial = vec![state(TARGET, &[])];
     if duplicate_key {
-        initial.push(state(SOURCE,&[(2,20),(2,30)]));
+        initial.push(state(SOURCE, &[(2, 20), (2, 30)]));
     }
-    physical_ordered_write_state_plan(&bundle,&initial)
+    physical_ordered_write_state_plan(&bundle, &initial)
 }
 
 #[test]
 fn missing_source_and_duplicate_key_remain_fail_closed_across_adapters() {
-    for duplicate_key in [false,true] {
-        let direct=classify_negative_across_catalogs(&direct_catalog(),duplicate_key);
-        let dbt=classify_negative_across_catalogs(&dbt_catalog(),duplicate_key);
+    for duplicate_key in [false, true] {
+        let direct = classify_negative_across_catalogs(&direct_catalog(), duplicate_key);
+        let dbt = classify_negative_across_catalogs(&dbt_catalog(), duplicate_key);
         if duplicate_key {
-            assert!(matches!(direct,PhysicalWriteStatePlan::Impossible{..}),"{direct:?}");
+            assert!(
+                matches!(direct, PhysicalWriteStatePlan::Impossible { .. }),
+                "{direct:?}"
+            );
         } else {
-            assert!(matches!(direct,PhysicalWriteStatePlan::Residual{..}),"{direct:?}");
+            assert!(
+                matches!(direct, PhysicalWriteStatePlan::Residual { .. }),
+                "{direct:?}"
+            );
         }
-        assert_eq!(direct,dbt);
-        #[cfg(feature="odcs")]
-        assert_eq!(direct,classify_negative_across_catalogs(&odcs_catalog(),duplicate_key));
+        assert_eq!(direct, dbt);
+        #[cfg(feature = "odcs")]
+        assert_eq!(
+            direct,
+            classify_negative_across_catalogs(&odcs_catalog(), duplicate_key)
+        );
     }
 }
