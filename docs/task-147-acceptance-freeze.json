@@ -1458,13 +1458,346 @@
   },
   "adapter_cells": {
     "direct_sql": {
-      "status": "pending_final_head_ci_and_metadata_evidence"
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_frozen_matrix.rs; native DuckDB full bags",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "direct_sql",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
     },
     "dbt_compiled": {
-      "status": "pending_final_head_ci_and_metadata_evidence"
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "dbt_compiled",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
     },
     "odcs_schema": {
-      "status": "pending_final_head_ci_and_metadata_evidence"
+      "80-C147-P-targeted-conflict-returning": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-duplicate-source": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unattested-target-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-primary-key": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Impossible",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-null-and-where-not-true": {
+        "status": "required_portable_semantics",
+        "expected_proof": "Exact",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_adapter_parity.rs; equivalent authoritative schema and source",
+        "disposition": "mandatory exact/impossible/residual native differential and adapter parity gates",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-1": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-2": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-3": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-4": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-5": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-6": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-7": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-conditional-8": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      },
+      "80-C147-N-unordered-source-collision": {
+        "status": "conditional_native_law_not_attested",
+        "expected_proof": "Residual",
+        "metadata_source": "odcs_schema",
+        "evidence": "tests/task_147_dialect_inventory.rs; parser-only, not native law",
+        "disposition": "Residual until versioned native engine evidence and TASK-91 release authorization",
+        "owner": "TASK-147"
+      }
     }
   },
   "proof_requirements": [
@@ -1586,5 +1919,7 @@
     "test": "tests/task_147_dialect_inventory.rs",
     "classification": "canonical_parser_only; no native vendor equivalence",
     "filtered_case": "inferred_same_ast_shape_pending_final_head_reexecution"
-  }
+  },
+  "required_dialect_cells": 182,
+  "required_adapter_cells": 42
 }
