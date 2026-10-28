@@ -19,9 +19,11 @@ fn active_schema_describes_bounded_conflict_and_returning_without_requiring_them
         "do_nothing"
     );
     assert_eq!(write["properties"]["returning_columns"]["type"], "array");
-    assert!(write["required"].as_array().unwrap().iter().all(|field| {
-        field != "insert_conflict" && field != "returning_columns"
-    }));
+    assert!(write["required"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|field| { field != "insert_conflict" && field != "returning_columns" }));
 }
 
 #[test]
@@ -41,10 +43,16 @@ fn old_append_wire_stays_identical_and_bounded_fields_have_stable_shape() {
         write["insert_conflict"],
         serde_json::json!({"action":"do_nothing","target_columns":["id"]})
     );
-    assert_eq!(write["returning_columns"], serde_json::json!(["id", "score"]));
+    assert_eq!(
+        write["returning_columns"],
+        serde_json::json!(["id", "score"])
+    );
 
     let second = wire(sql);
-    assert_eq!(document, second, "wire representation must be deterministic");
+    assert_eq!(
+        document, second,
+        "wire representation must be deterministic"
+    );
 }
 
 #[test]
