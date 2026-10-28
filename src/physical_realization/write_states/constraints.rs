@@ -457,16 +457,12 @@ pub(super) fn validate_all_constraints_with_identity(
     Ok(())
 }
 
-/// Whether a complete candidate conflicts with an enforced, exactly targeted
-/// PRIMARY/UNIQUE key. A coincidentally equal value is not a key proof.
-/// Nullable uniqueness and unproved comparisons must never suppress a row.
-pub(super) fn targeted_insert_conflict(
+/// Require a unique-key proof even if the closed-world target has no rows.
+pub(super) fn validate_insert_conflict_target(
     bundle: &AnalysisBundle,
     target: &str,
     columns: &[String],
-    candidate: &PhysicalWriteRow,
-    prior: &PhysicalWriteRow,
-) -> StateResult<bool> {
+) -> StateResult<()> {
     let set = bundle
         .relation_constraints()
         .iter()
@@ -491,6 +487,20 @@ pub(super) fn targeted_insert_conflict(
             "ON CONFLICT target does not identify an enforced unique key",
         ));
     }
+    Ok(())
+}
+
+/// Whether a complete candidate conflicts with an enforced, exactly targeted
+/// PRIMARY/UNIQUE key. A coincidentally equal value is not a key proof.
+/// Nullable uniqueness and unproved comparisons must never suppress a row.
+pub(super) fn targeted_insert_conflict(
+    bundle: &AnalysisBundle,
+    target: &str,
+    columns: &[String],
+    candidate: &PhysicalWriteRow,
+    prior: &PhysicalWriteRow,
+) -> StateResult<bool> {
+    validate_insert_conflict_target(bundle, target, columns)?;
     let values = columns.iter().map(|name| {
         candidate.values.get(name).cloned()
             .ok_or_else(|| residual("ON CONFLICT candidate key column absent"))
