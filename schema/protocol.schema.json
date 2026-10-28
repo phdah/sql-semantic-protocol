@@ -3022,6 +3022,27 @@
           "type": "boolean",
           "description": "True only for an INSERT DEFAULT VALUES action with a single source-free row."
         },
+        "insert_conflict": {
+          "description": "Targeted ON CONFLICT DO NOTHING, exact only with attested enforced key evidence and complete target state.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "target_columns"],
+          "properties": {
+            "action": { "const": "do_nothing" },
+            "target_columns": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/nonEmptyString" }
+            }
+          }
+        },
+        "returning_columns": {
+          "description": "Ordered direct target columns returned for inserted rows only.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        },
         "cte_source": {
           "description": "Closed-bag nonrecursive INSERT CTE producer and outer SELECT, normalized to canonical queries.",
           "type": "object",
