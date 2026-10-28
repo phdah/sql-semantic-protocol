@@ -91,7 +91,7 @@ fn state(relation: &str, rows: &[(i64, i64)]) -> PhysicalWriteState {
     .unwrap()
 }
 
-fn execute(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
+fn execute(catalog: &RelationCatalog, enforced_key: bool) -> PhysicalWriteStatePlan {
     let sql = SqlInput::inline(SQL);
     let dialect = dialect_from_name("postgresql").unwrap();
     let configured =
@@ -101,11 +101,13 @@ fn execute(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
-    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
-        TARGET,
-        vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
-    )
-    .unwrap()]);
+    if enforced_key {
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            TARGET,
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+        )
+        .unwrap()]);
+    }
     physical_ordered_write_state_plan(
         &bundle,
         &[
@@ -147,8 +149,8 @@ fn assert_full_bag(plan: &PhysicalWriteStatePlan) {
 
 #[test]
 fn direct_and_compiled_dbt_catalog_evidence_produce_identical_results() {
-    let direct = execute(&direct_catalog());
-    let dbt = execute(&dbt_catalog());
+    let direct = execute(&direct_catalog(), true);
+    let dbt = execute(&dbt_catalog(), true);
     assert_full_bag(&direct);
     assert_eq!(direct, dbt);
 }
@@ -156,8 +158,25 @@ fn direct_and_compiled_dbt_catalog_evidence_produce_identical_results() {
 #[cfg(feature = "odcs")]
 #[test]
 fn direct_and_odcs_catalog_evidence_produce_identical_results() {
-    let direct = execute(&direct_catalog());
-    let odcs = execute(&odcs_catalog());
+    let direct = execute(&direct_catalog(), true);
+    let odcs = execute(&odcs_catalog(), true);
     assert_full_bag(&direct);
+    assert_eq!(direct, odcs);
+}
+
+#[test]
+fn absent_enforced_key_is_equally_residual_for_direct_and_dbt_metadata() {
+    let direct = execute(&direct_catalog(), false);
+    let dbt = execute(&dbt_catalog(), false);
+    assert!(matches!(direct, PhysicalWriteStatePlan::Residual { .. }), "{direct:?}");
+    assert_eq!(direct, dbt);
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn absent_enforced_key_is_equally_residual_for_direct_and_odcs_metadata() {
+    let direct = execute(&direct_catalog(), false);
+    let odcs = execute(&odcs_catalog(), false);
+    assert!(matches!(direct, PhysicalWriteStatePlan::Residual { .. }), "{direct:?}");
     assert_eq!(direct, odcs);
 }
