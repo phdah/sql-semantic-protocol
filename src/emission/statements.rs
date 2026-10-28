@@ -196,6 +196,15 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         })).collect::<Vec<_>>(),
         "state_effect": state_effect
     });
+    if let Some(conflict) = write.insert_conflict() {
+        value["insert_conflict"] = json!({
+            "action": "do_nothing",
+            "target_columns": conflict.columns(),
+        });
+    }
+    if !write.returning_columns().is_empty() {
+        value["returning_columns"] = json!(write.returning_columns());
+    }
     if let Some(cte) = write.insert_cte_source() {
         value["cte_source"] = json!({
             "name": cte.name(),
