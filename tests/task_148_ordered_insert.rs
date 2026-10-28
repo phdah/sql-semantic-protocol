@@ -143,6 +143,16 @@ fn duckdb(case: &serde_json::Value) {
         }
     }
     let original_source = native_rows(&db, "source");
+    assert_eq!(
+        original_source,
+        sorted(rows(&case["source"])),
+        "independent DuckDB initial source bag"
+    );
+    assert_eq!(
+        native_rows(&db, "target"),
+        sorted(rows(&case["prestate"])),
+        "independent DuckDB initial target bag"
+    );
 
     // Only source-backed INSERTs have a physical source to filter.
     // VALUES row identities belong to the statements, not the source table.
@@ -207,6 +217,7 @@ fn duckdb(case: &serde_json::Value) {
     let mut insert_count = 0;
     for sql in case["statements"].as_array().unwrap() {
         let sql = sql.as_str().unwrap();
+        let before_target_count = native_rows(&db, "target").len();
         if sql == "SELECT COUNT(*) FROM target" {
             let observed: i64 = db.query_row(sql, [], |row| row.get(0)).unwrap();
             assert_eq!(observed, 2, "SELECT must observe preceding INSERT");
@@ -218,6 +229,21 @@ fn duckdb(case: &serde_json::Value) {
         }
         if sql.starts_with("INSERT INTO ") {
             insert_count += 1;
+            let after = native_rows(&db, "target");
+            let expected = if case["id"] == "80-C148-N-duplicate-pk" {
+                vec![(1, 10)]
+            } else {
+                sorted(rows(&case["target_after"]))
+            };
+            assert_eq!(after, expected, "independent DuckDB post-INSERT target bag");
+            if case["classification"] == "mandatory_exact" {
+                let inserted = case["affected"][0]["inserted"].as_u64().unwrap() as usize;
+                assert_eq!(
+                    after.len(),
+                    before_target_count + inserted,
+                    "independent post-INSERT affected count"
+                );
+            }
         }
     }
     if case["id"] == "80-C148-N-duplicate-pk" {
