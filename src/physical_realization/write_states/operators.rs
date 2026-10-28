@@ -264,6 +264,21 @@ pub(super) fn append_rows(
         }
         let values = columns.iter().cloned().zip(output_row).collect();
         let candidate = complete_insert_row(bundle, target, values, schema, identity_sequences)?;
+        if write.insert_conflict().is_some() {
+            // A skipped tuple is not necessarily exempt from datatype checks.
+            // Reject unclear validation precedence as Residual, not a false
+            // successful conflict suppression or an unconditional Impossible.
+            let candidate_state = PhysicalWriteState {
+                relation: target.to_string(),
+                rows: vec![candidate.clone()],
+            };
+            if super::constraints::validate_state(bundle, &candidate_state).is_err() {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "ON CONFLICT candidate has unproved datatype validation precedence",
+                ));
+            }
+        }
         if let Some(policy) = write.insert_conflict() {
             // Validate the named key even for an empty initial target bag.
             // A collision may also be against a preceding row in this INSERT.
