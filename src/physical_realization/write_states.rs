@@ -532,15 +532,19 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 let mut values = BTreeMap::new();
                 for column in write.returning_columns() {
                     let Some(value) = row.values.get(column) else {
-                        return failure(Some(layer.id()), residual(
-                            "INSERT RETURNING column missing from complete target schema",
-                        ));
+                        return failure(
+                            Some(layer.id()),
+                            residual("INSERT RETURNING column missing from complete target schema"),
+                        );
                     };
                     values.insert(column.clone(), value.clone());
                 }
                 rows.push(PhysicalWriteRow { values });
             }
-            Some(PhysicalWriteState { relation: target.to_string(), rows })
+            Some(PhysicalWriteState {
+                relation: target.to_string(),
+                rows,
+            })
         } else {
             None
         };
