@@ -164,7 +164,10 @@ fn every_frozen_mandatory_case_proves_full_source_target_returning_and_domain_or
                 case["sql_not_true_source_ids"],
                 serde_json::json!(["source#0", "source#1"]),
             );
-            assert_eq!(case["expected_unknown_source_ids"], serde_json::json!(["source#0"]));
+            assert_eq!(
+                case["expected_unknown_source_ids"],
+                serde_json::json!(["source#0"])
+            );
         }
         assert_eq!(
             native_rows(&db, "SELECT id,score FROM target"),
