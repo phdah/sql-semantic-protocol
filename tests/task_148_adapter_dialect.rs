@@ -4,16 +4,25 @@ use std::collections::BTreeMap;
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
-    physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput, WriteKind,
+    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
+    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-    "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 const TARGET: &str = "warehouse.analytics.stg_orders";
 const SOURCE: &str = "warehouse.raw.orders";
@@ -24,17 +33,24 @@ const SCRIPT: [&str; 2] = [
 
 fn direct_catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(&[TARGET, SOURCE].map(|relation| {
-        RelationSchema::new(relation, ["id", "amount"].into_iter().map(|column| {
-            SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()
-        }).collect()).unwrap()
-    })).unwrap()
+        RelationSchema::new(
+            relation,
+            ["id", "amount"]
+                .into_iter()
+                .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    }))
+    .unwrap()
 }
 
 fn dbt_catalog() -> RelationCatalog {
     let manifest = parse_dbt_manifest(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let dialect = dialect_from_name("postgresql").unwrap();
-    let analyzed = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", dialect.as_ref()).unwrap();
+    let analyzed =
+        analyze_dbt_artifacts(&manifest, &catalog, "postgresql", dialect.as_ref()).unwrap();
     RelationCatalog::from_schemas(analyzed.source_schemas()).unwrap()
 }
 
@@ -42,7 +58,8 @@ fn dbt_catalog() -> RelationCatalog {
 fn odcs_catalog() -> RelationCatalog {
     use sql_semantic_protocol::parse_odcs_yaml;
     let known = RelationCatalog::new(&[TARGET, SOURCE]).unwrap();
-    let contract = parse_odcs_yaml(r#"
+    let contract = parse_odcs_yaml(
+        r#"
 apiVersion: v3.2.0
 kind: DataContract
 id: task148parity
@@ -64,30 +81,50 @@ schema:
         physicalType: INTEGER
       - name: amount
         physicalType: INTEGER
-"#, "postgresql", &known).unwrap();
+"#,
+        "postgresql",
+        &known,
+    )
+    .unwrap();
     RelationCatalog::from_schemas(contract.source_schemas()).unwrap()
 }
 
 fn state(relation: &str, values: &[(i64, i64)]) -> PhysicalWriteState {
-    PhysicalWriteState::new(relation, values.iter().map(|(id, amount)| {
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Number(id.to_string())),
-            ("amount".to_string(), LiteralValue::Number(amount.to_string())),
-        ])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        relation,
+        values
+            .iter()
+            .map(|(id, amount)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_string(), LiteralValue::Number(id.to_string())),
+                    (
+                        "amount".to_string(),
+                        LiteralValue::Number(amount.to_string()),
+                    ),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn execute(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
-    let sqls = SCRIPT.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let sqls = SCRIPT
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let names = ["task148-parity-1", "task148-parity-2"];
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = sqls.iter().zip(names).map(|(sql, name)| {
-        ConfiguredSqlInput::new(name, sql, "postgresql", dialect.as_ref())
-    }).collect::<Vec<_>>();
+    let configured = sqls
+        .iter()
+        .zip(names)
+        .map(|(sql, name)| ConfiguredSqlInput::new(name, sql, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     physical_ordered_write_state_plan(
         &bundle,
-        &[state(SOURCE, &[(1,10), (2,20)]), state(TARGET, &[(0,0)])],
+        &[state(SOURCE, &[(1, 10), (2, 20)]), state(TARGET, &[(0, 0)])],
     )
 }
 
@@ -95,19 +132,37 @@ fn execute(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
 fn ordered_script_is_source_adapter_independent() {
     let direct = execute(&direct_catalog());
     let dbt = execute(&dbt_catalog());
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = &direct else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = &direct
+    else {
         panic!("expected exact two-append script: {direct:?}");
     };
     assert_eq!(transitions.len(), 2);
-    assert_eq!(transitions[0].before().rows(), state(TARGET, &[(0,0)]).rows());
-    assert_eq!(transitions[0].after().rows(), state(TARGET, &[(0,0),(2,20)]).rows());
+    assert_eq!(
+        transitions[0].before().rows(),
+        state(TARGET, &[(0, 0)]).rows()
+    );
+    assert_eq!(
+        transitions[0].after().rows(),
+        state(TARGET, &[(0, 0), (2, 20)]).rows()
+    );
     assert_eq!(transitions[1].before(), transitions[0].after());
-    assert_eq!(transitions[1].after().rows(), state(TARGET, &[(0,0),(2,20),(4,40)]).rows());
+    assert_eq!(
+        transitions[1].after().rows(),
+        state(TARGET, &[(0, 0), (2, 20), (4, 40)]).rows()
+    );
     assert_eq!(transitions[0].affected().inserted(), 1);
     assert_eq!(transitions[1].affected().inserted(), 1);
-    assert_eq!(final_states.iter().find(|s| s.relation() == SOURCE),
-        Some(&state(SOURCE, &[(1,10),(2,20)])));
-    assert_eq!(direct, dbt, "dbt-introspected types cannot change exact rows");
+    assert_eq!(
+        final_states.iter().find(|s| s.relation() == SOURCE),
+        Some(&state(SOURCE, &[(1, 10), (2, 20)]))
+    );
+    assert_eq!(
+        direct, dbt,
+        "dbt-introspected types cannot change exact rows"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -142,11 +197,13 @@ fn all_thirteen_dialects_have_explicit_parser_or_canonical_outcomes() {
                         }
                         supported[index] += 1;
                     }
-                }
+                },
             }
         }
     }
     assert_eq!(classifications, 52);
-    assert!(supported.iter().all(|count| *count > 0),
-        "all four families must have at least one certified parser path: {supported:?}");
+    assert!(
+        supported.iter().all(|count| *count > 0),
+        "all four families must have at least one certified parser path: {supported:?}"
+    );
 }
