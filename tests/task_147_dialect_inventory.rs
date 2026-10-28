@@ -43,7 +43,7 @@ fn every_frozen_dialect_cell_has_an_explicit_verified_parser_classification() {
         }
     }
     assert_eq!(matrix["dialects"].as_array().unwrap().len(), 13);
-    assert_eq!(seen.len(), 13);
+    assert_eq!(seen.len(), 14);
     let expected = &matrix["dialect_cells"];
     assert_eq!(
         serde_json::to_value(&actual).unwrap(),
