@@ -6,4 +6,18 @@ All other named INSERT variants remain typed unsupported/residual until versione
 
 The v1 immutable inventory is `docs/task-147-acceptance-freeze.json`, referenced by the coverage manifest. Parser dialect tests are `tests/task_147_dialect_matrix.rs`.
 
-**Child is not signed off.** Final-head fmt, Clippy, full cargo tests, no-default-features, docs, schema, dbt E2E, complete 13-dialect and three-adapter cells, and independent source/target oracle review remain required. TASK-80 stays open.
+## Independent bounded acceptance review
+
+TASK-147 child AC #1..#5 are signed off for the finite source-independent scope frozen in `docs/task-147-acceptance-freeze.json` v2. The original v1 inventory is retained separately. The frozen matrix and public regression tests certify 5 mandatory and 9 reviewed conditional variants, 182 specific parser/dialect cells, and 42 adapter classifications. These are distinct from native vendor runtime claims. Both original fixture IDs `80-C147-P` and `80-C147-N` are preserved.
+
+- **AC #1:** Frozen identity, SQL, source and target row state, NULL, typed domain and inclusivity, expected TRUE/NOT TRUE, comparison evidence, parser and adapter classifications, and conditional ownership are guarded by `tests/task_147_acceptance_contract.rs` and `tests/task_147_dialect_inventory.rs`. The v1 snapshot is immutable; v2 changes explicitly add NULL/UNKNOWN rejection and unordered collision review.
+- **AC #2:** `tests/task_147_insert_conflict.rs` exercises the canonical physical key, untouched rows, skipped collisions, zero inserted rows, exact RETURNING value domains and impossibility/residual safety. `src/physical_realization/write_states/` rejects unattested key, engine NULL uniqueness, collision winner, identity sequence, competing constraint and candidate-validation precedence instead of inventing a state.
+- **AC #3:** `tests/task_147_frozen_matrix.rs` independently executes complete DuckDB source, selected/rejected, pre/post-target and returned bags. The frozen literal rows, affected counts, typed domains with bound inclusivity and SQL FALSE/UNKNOWN classification must match. NULL PK impossibility and missing-key residual are explicit.
+- **AC #4:** The frozen per-dialect parser inventory asserts 13 supported parser entry points, with explicit parser boundaries versus normalized canonical forms. `tests/task_147_adapter_parity.rs` verifies equivalent direct SQL, dbt catalog and ODCS 3.2 typed metadata for all mandatory cases. A parser accepted SQL form is **not** native runtime evidence; nine conditional vendor, ordering and NULL cases remain `Residual` with TASK-147 ownership. This is a reviewed non-exact boundary, not release authorization.
+- **AC #5:** The complete GitHub CI run on implementation head `515aab7939fa94b5a92247a65402fb351273a0e4` passed 9 of 9 checks, including rustfmt, strict Clippy, all Rust tests, documentation, tests/lint/docs without default features, dependency isolation and dbt Core E2E. The active JSON schema and backward-compatible wire paths are guarded by `tests/task_147_wire_contract.rs`.
+
+**Code review findings resolved:** prior TASK-145/TASK-146 regression expectations, source duplicate winner ambiguity, NULL UNIQUE law, competing-key check precedence, candidate datatype validation, and missing exact RETURNING domain/empty return handling. The tests and protocol model are source-independent; no vendor dialect execution is implied from parsing.
+
+The parent TASK-80 AC #1, #2, #3, #5, #6 are mapped here but **remain open** pending TASK-148 and a separate parent acceptance review. Parent AC #4 is owned by TASK-148. TASK-91 authorizes release independently. The TASK-147 child is signed off at the verified implementation head, pending clean CI on this documentation-signoff commit and PR merge.
+
+Verified CI: https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652

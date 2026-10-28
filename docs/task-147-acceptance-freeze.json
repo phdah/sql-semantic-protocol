@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-147",
   "parent": "TASK-80",
-  "state": "frozen_v2_awaiting_final_head_independent_oracles",
+  "state": "verified_bounded_task147_child_pending_merge",
   "fixture_ids": [
     "80-C147-P",
     "80-C147-N"
@@ -1813,15 +1813,17 @@
     "full native DuckDB oracle"
   ],
   "verification": {
-    "fmt": "pending",
-    "clippy": "pending",
-    "cargo_test": "pending",
-    "cargo_doc": "pending",
-    "no_default_features": "pending",
-    "dbt_e2e": "pending",
-    "schema_snapshot": "pending"
+    "fmt": "passed",
+    "clippy": "passed_strict_all_targets_all_features",
+    "cargo_test": "passed_all_rust_tests",
+    "cargo_doc": "passed",
+    "no_default_features": "passed_tests_lint_doc_dependencies",
+    "dbt_e2e": "passed",
+    "schema_snapshot": "passed_public_contract_tests",
+    "implementation_sha": "515aab7939fa94b5a92247a65402fb351273a0e4",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652"
   },
-  "done": false,
+  "done": true,
   "previous_snapshot": "docs/task-147-acceptance-freeze-v1.json",
   "review_amendments": [
     "Distinguish unordered duplicate payloads from identical duplicates",
@@ -1918,8 +1920,20 @@
     "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40652883004",
     "test": "tests/task_147_dialect_inventory.rs",
     "classification": "canonical_parser_only; no native vendor equivalence",
-    "filtered_case": "inferred_same_ast_shape_pending_final_head_reexecution"
+    "filtered_case": "verified_by_full_final_implementation_head_ci"
   },
   "required_dialect_cells": 182,
-  "required_adapter_cells": 42
+  "required_adapter_cells": 42,
+  "verified_implementation_head": "515aab7939fa94b5a92247a65402fb351273a0e4",
+  "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40654802652",
+  "verified_ci_jobs": 9,
+  "verified_child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "parent_signed_off": false,
+  "release_approved": false
 }
