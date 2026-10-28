@@ -1,7 +1,7 @@
 ---
 id: TASK-147
 title: Classify conflict overwrite RETURNING and UPSERT syntax
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-17'
