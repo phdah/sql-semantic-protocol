@@ -17,7 +17,10 @@ const SQL: &str = "INSERT INTO target(id,score)
 
 fn row(id: Option<i64>, score: i64) -> PhysicalWriteRow {
     PhysicalWriteRow::new(BTreeMap::from([
-        ("id".to_string(), id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
+        (
+            "id".to_string(),
+            id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+        ),
         ("score".to_string(), LiteralValue::Number(score.to_string())),
     ]))
     .unwrap()
@@ -52,13 +55,11 @@ fn bundle(sql: &str, enforced: bool) -> AnalysisBundle {
             ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task147").unwrap(),
             ConstraintEnforcement::Enforced,
         )];
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new(
-                "target",
-                vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
-            )
-            .unwrap(),
-        ]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+        )
+        .unwrap()]);
     }
     bundle
 }
@@ -67,14 +68,22 @@ fn bundle(sql: &str, enforced: bool) -> AnalysisBundle {
 fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
     let source = state("source", &[(Some(1), 20), (Some(2), 30)]);
     let before = state("target", &[(Some(1), 10)]);
-    let plan = physical_ordered_write_state_plan(&bundle(SQL, true), &[source.clone(), before.clone()]);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let plan =
+        physical_ordered_write_state_plan(&bundle(SQL, true), &[source.clone(), before.clone()]);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("expected exact conflict handling: {plan:?}");
     };
     assert_eq!(transitions.len(), 1);
     let transition = &transitions[0];
     assert_eq!(transition.before(), &before);
-    assert_eq!(transition.after().rows(), state("target", &[(Some(1), 10), (Some(2), 30)]).rows());
+    assert_eq!(
+        transition.after().rows(),
+        state("target", &[(Some(1), 10), (Some(2), 30)]).rows()
+    );
     assert_eq!(transition.affected().inserted(), 1);
     assert_eq!(transition.affected().updated(), 0);
     assert_eq!(transition.affected().deleted(), 0);
@@ -85,7 +94,9 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
         &BTreeMap::from([("id".to_string(), LiteralValue::Number("2".into()))])
     );
     assert_eq!(
-        final_states.iter().find(|state| state.relation() == "source"),
+        final_states
+            .iter()
+            .find(|state| state.relation() == "source"),
         Some(&source),
         "source is immutable across the write"
     );
@@ -99,7 +110,8 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
          CREATE TABLE target(id INTEGER PRIMARY KEY,score INTEGER);
          INSERT INTO target VALUES (1,10);
          INSERT INTO source VALUES (1,20),(2,30);",
-    ).unwrap();
+    )
+    .unwrap();
     let mut statement = db.prepare(SQL).unwrap();
     let observed_returned = statement
         .query_map([], |row| row.get::<_, i64>(0))
@@ -108,21 +120,32 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
         .collect::<Vec<_>>();
     assert_eq!(observed_returned, vec![2]);
     drop(statement);
-    let mut query = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
-    let observed = query.query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
-        .unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
-    assert_eq!(observed, vec![(1,10), (2,30)]);
+    let mut query = db
+        .prepare("SELECT id,score FROM target ORDER BY id")
+        .unwrap();
+    let observed = query
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap()
+        .map(|row| row.unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(observed, vec![(1, 10), (2, 30)]);
 }
 
 #[test]
 fn same_statement_duplicate_keys_are_rejected_by_full_target_bag() {
-    let data = [state("source", &[(Some(1), 20), (Some(1), 30)]), state("target", &[])];
+    let data = [
+        state("source", &[(Some(1), 20), (Some(1), 30)]),
+        state("target", &[]),
+    ];
     let plan = physical_ordered_write_state_plan(&bundle(SQL, true), &data);
     let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
         panic!("conflicts from earlier inserted rows must be suppressed: {plan:?}");
     };
     assert_eq!(transitions[0].affected().inserted(), 1);
-    assert_eq!(transitions[0].after().rows(), state("target", &[(Some(1), 20)]).rows());
+    assert_eq!(
+        transitions[0].after().rows(),
+        state("target", &[(Some(1), 20)]).rows()
+    );
     assert_eq!(transitions[0].returning().unwrap().rows().len(), 1);
 }
 
@@ -130,14 +153,20 @@ fn same_statement_duplicate_keys_are_rejected_by_full_target_bag() {
 fn unverified_conflict_target_is_residual_even_when_target_is_empty() {
     let data = [state("source", &[(Some(1), 20)]), state("target", &[])];
     let plan = physical_ordered_write_state_plan(&bundle(SQL, false), &data);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
 fn nullable_primary_key_is_impossible_not_a_suppressed_conflict() {
     let data = [state("source", &[(None, 20)]), state("target", &[])];
     let plan = physical_ordered_write_state_plan(&bundle(SQL, true), &data);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
@@ -148,9 +177,12 @@ fn unproved_vendor_and_upsert_actions_are_explicitly_unsupported() {
         "INSERT INTO target(id,score) VALUES (1,2) RETURNING id+1",
     ] {
         let bundle = bundle(sql, true);
-        assert!(matches!(
-            physical_ordered_write_state_plan(&bundle, &[state("target", &[])]),
-            PhysicalWriteStatePlan::Residual { .. }
-        ), "{sql}");
+        assert!(
+            matches!(
+                physical_ordered_write_state_plan(&bundle, &[state("target", &[])]),
+                PhysicalWriteStatePlan::Residual { .. }
+            ),
+            "{sql}"
+        );
     }
 }
