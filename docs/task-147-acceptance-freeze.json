@@ -141,7 +141,7 @@
         },
         {
           "id": 1,
-          "score": 30
+          "score": 20
         }
       ],
       "expected_poststate": [
@@ -192,7 +192,7 @@
       },
       "constraint_evidence": "enforced target(id) PRIMARY KEY",
       "comparison_assumptions": [
-        "complete insertion order as input bag",
+        "identical duplicate payloads yield equal terminal bag independent of winner",
         "exact integer key equality"
       ]
     },
@@ -476,6 +476,30 @@
       "expected_poststate": null,
       "expected_returning": null,
       "typed_domains": null
+    },
+    {
+      "id": "80-C147-N-unordered-source-collision",
+      "fixture_id": "80-C147-N",
+      "class": "conditional_residual",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "prestate": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "expected_poststate": null,
+      "expected_returning": null,
+      "typed_domains": null,
+      "proof": "Residual",
+      "reason": "different candidate payloads share a key and source row order lacks attested winner law",
+      "owner": "TASK-147",
+      "disposition": "unverified_native_ordering; never infer winning candidate"
     }
   ],
   "dialect_cells": {
