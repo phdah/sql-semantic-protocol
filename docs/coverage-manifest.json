@@ -1,4 +1,29 @@
 {
+  "task_148_ordered_insert_acceptance": {
+    "owner": "TASK-148",
+    "parent": "TASK-80",
+    "status": "in_progress_ci_unverified",
+    "task": ".backlog/tasks/task-148 - certify-ordered-insert-scripts-and-adapter-parity.md",
+    "freeze": "docs/task-148-acceptance-freeze.json",
+    "fixture_ids": [
+      "80-C148-P",
+      "80-C148-N"
+    ],
+    "mandatory_cases": 6,
+    "conditional_cases": 3,
+    "physical_oracle": "tests/task_148_ordered_insert.rs",
+    "parser_and_adapter_oracle": "tests/task_148_adapter_dialect.rs",
+    "adapter_sources": [
+      "direct_sql",
+      "dbt_compiled_catalog",
+      "odcs_schema"
+    ],
+    "dialects_required": 13,
+    "child_ac_verified": [],
+    "parent_signed_off": false,
+    "release_approved": false,
+    "final_head_ci": null
+  },
   "task_147_insert_conflict_acceptance": {
     "owner": "TASK-147",
     "parent": "TASK-80",
