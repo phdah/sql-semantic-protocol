@@ -467,19 +467,21 @@ pub(super) fn validate_insert_conflict_target(
         .relation_constraints()
         .iter()
         .find(|set| set.relation() == target)
-        .ok_or_else(|| residual_gap(
-            PhysicalWriteStateGap::UnprovedConstraint,
-            "ON CONFLICT requires attested target key metadata",
-        ))?;
-    let enforced = set.constraints().iter().any(|constraint| {
-        match constraint {
-            RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
-                key.columns() == columns
-                    && key.evidence().iter().any(|e|
-                        e.enforcement() == ConstraintEnforcement::Enforced)
-            }
-            _ => false,
+        .ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "ON CONFLICT requires attested target key metadata",
+            )
+        })?;
+    let enforced = set.constraints().iter().any(|constraint| match constraint {
+        RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
+            key.columns() == columns
+                && key
+                    .evidence()
+                    .iter()
+                    .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
         }
+        _ => false,
     });
     if !enforced {
         return Err(residual_gap(
@@ -501,15 +503,28 @@ pub(super) fn targeted_insert_conflict(
     prior: &PhysicalWriteRow,
 ) -> StateResult<bool> {
     validate_insert_conflict_target(bundle, target, columns)?;
-    let values = columns.iter().map(|name| {
-        candidate.values.get(name).cloned()
-            .ok_or_else(|| residual("ON CONFLICT candidate key column absent"))
-    }).collect::<StateResult<Vec<_>>>()?;
-    let existing = columns.iter().map(|name| {
-        prior.values.get(name).cloned()
-            .ok_or_else(|| residual("ON CONFLICT existing key column absent"))
-    }).collect::<StateResult<Vec<_>>>()?;
-    let text_laws = columns.iter()
+    let values = columns
+        .iter()
+        .map(|name| {
+            candidate
+                .values
+                .get(name)
+                .cloned()
+                .ok_or_else(|| residual("ON CONFLICT candidate key column absent"))
+        })
+        .collect::<StateResult<Vec<_>>>()?;
+    let existing = columns
+        .iter()
+        .map(|name| {
+            prior
+                .values
+                .get(name)
+                .cloned()
+                .ok_or_else(|| residual("ON CONFLICT existing key column absent"))
+        })
+        .collect::<StateResult<Vec<_>>>()?;
+    let text_laws = columns
+        .iter()
         .map(|name| attested_binary_text_law(bundle, target, name))
         .collect::<Vec<_>>();
     match unique_key_collision(&values, &existing, &text_laws)? {
