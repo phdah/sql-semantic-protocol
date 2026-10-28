@@ -457,6 +457,60 @@ pub(super) fn validate_all_constraints_with_identity(
     Ok(())
 }
 
+/// Whether a complete candidate conflicts with an enforced, exactly targeted
+/// PRIMARY/UNIQUE key. A coincidentally equal value is not a key proof.
+/// Nullable uniqueness and unproved comparisons must never suppress a row.
+pub(super) fn targeted_insert_conflict(
+    bundle: &AnalysisBundle,
+    target: &str,
+    columns: &[String],
+    candidate: &PhysicalWriteRow,
+    prior: &PhysicalWriteRow,
+) -> StateResult<bool> {
+    let set = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == target)
+        .ok_or_else(|| residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "ON CONFLICT requires attested target key metadata",
+        ))?;
+    let enforced = set.constraints().iter().any(|constraint| {
+        match constraint {
+            RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
+                key.columns() == columns
+                    && key.evidence().iter().any(|e|
+                        e.enforcement() == ConstraintEnforcement::Enforced)
+            }
+            _ => false,
+        }
+    });
+    if !enforced {
+        return Err(residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "ON CONFLICT target does not identify an enforced unique key",
+        ));
+    }
+    let values = columns.iter().map(|name| {
+        candidate.values.get(name).cloned()
+            .ok_or_else(|| residual("ON CONFLICT candidate key column absent"))
+    }).collect::<StateResult<Vec<_>>>()?;
+    let existing = columns.iter().map(|name| {
+        prior.values.get(name).cloned()
+            .ok_or_else(|| residual("ON CONFLICT existing key column absent"))
+    }).collect::<StateResult<Vec<_>>>()?;
+    let text_laws = columns.iter()
+        .map(|name| attested_binary_text_law(bundle, target, name))
+        .collect::<Vec<_>>();
+    match unique_key_collision(&values, &existing, &text_laws)? {
+        Some(equal) => Ok(equal),
+        None => Err(residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "nullable ON CONFLICT key needs engine NULL uniqueness evidence",
+        )),
+    }
+}
+
 /// An attested unique key is violated only by definitely identical non-NULL
 /// components. One NULL-bearing row cannot collide on its own; two possibly
 /// equal NULL-bearing tuples require a dialect's NULLS DISTINCT law.
