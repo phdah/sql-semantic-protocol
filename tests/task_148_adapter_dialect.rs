@@ -237,3 +237,83 @@ fn diagnostic_task148_parser_statuses() {
     }
     panic!("TASK148_PARSER_ORACLE {}", results.join("|"));
 }
+
+
+fn execute_two_stage_variant(
+    catalog: &RelationCatalog,
+    statements: &[&str; 2],
+    with_defaults: bool,
+) -> PhysicalWriteStatePlan {
+    use sql_semantic_protocol::{
+        ColumnValueKind, ColumnValueSource, ConstraintEnforcement,
+        ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        ConstraintValue, RelationConstraintSet,
+    };
+    let sqls = statements.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let names = ["task148-variant-1", "task148-variant-2"];
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = sqls.iter().zip(names).map(|(sql, name)| {
+        ConfiguredSqlInput::new(name, sql, "postgresql", dialect.as_ref())
+    }).collect::<Vec<_>>();
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
+    if with_defaults {
+        let sources = [("id", 5),("amount", 7)].into_iter().map(|(column,value)| {
+            ColumnValueSource::new(
+                column,
+                ColumnValueKind::Default,
+                Some(ConstraintValue::Integer(value)),
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata,"task148-parity-defaults"
+                    ).unwrap(),
+                    ConstraintEnforcement::Enforced,
+                )],
+            ).unwrap()
+        }).collect();
+        bundle.enrich_relation_constraints(&[
+            RelationConstraintSet::new(TARGET,vec![]).unwrap().with_column_value_sources(sources)
+        ]);
+    }
+    physical_ordered_write_state_plan(
+        &bundle,
+        &[state(SOURCE,&[(1,10),(2,20)]),state(TARGET,&[])],
+    )
+}
+
+fn assert_two_stage_variant(
+    sql: &[&str; 2],
+    defaults: bool,
+    expected: &[(i64,i64)],
+) {
+    let direct=execute_two_stage_variant(&direct_catalog(),sql,defaults);
+    let dbt=execute_two_stage_variant(&dbt_catalog(),sql,defaults);
+    let PhysicalWriteStatePlan::Feasible{transitions,final_states}=&direct else {
+        panic!("complete ordered variant expected: {direct:?}");
+    };
+    assert_eq!(transitions.len(),2);
+    assert_eq!(transitions[1].before(),transitions[0].after());
+    assert_eq!(transitions[1].after().rows(),state(TARGET,expected).rows());
+    assert_eq!(final_states.iter().find(|s|s.relation()==SOURCE),
+        Some(&state(SOURCE,&[(1,10),(2,20)])));
+    assert_eq!(direct,dbt);
+    #[cfg(feature="odcs")]
+    assert_eq!(direct,execute_two_stage_variant(&odcs_catalog(),sql,defaults));
+}
+
+#[test]
+fn cte_select_and_literal_append_preserve_adapter_parity() {
+    assert_two_stage_variant(&[
+        "INSERT INTO warehouse.analytics.stg_orders(id,amount)
+         WITH filtered AS (SELECT id,amount FROM warehouse.raw.orders WHERE id > 1)
+         SELECT id,amount FROM filtered",
+        "INSERT INTO warehouse.analytics.stg_orders(id,amount) VALUES (3,30)",
+    ],false,&[(2,20),(3,30)]);
+}
+
+#[test]
+fn attested_defaults_are_proven_identically_for_all_metadata_adapters() {
+    assert_two_stage_variant(&[
+        "INSERT INTO warehouse.analytics.stg_orders DEFAULT VALUES",
+        "INSERT INTO warehouse.analytics.stg_orders(id,amount) VALUES (4,40)",
+    ],true,&[(5,7),(4,40)]);
+}
