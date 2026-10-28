@@ -180,3 +180,82 @@ fn absent_enforced_key_is_equally_residual_for_direct_and_odcs_metadata() {
     assert!(matches!(direct, PhysicalWriteStatePlan::Residual { .. }), "{direct:?}");
     assert_eq!(direct, odcs);
 }
+
+fn frozen_state(relation: &str, rows: &serde_json::Value) -> PhysicalWriteState {
+    PhysicalWriteState::new(
+        relation,
+        rows.as_array().unwrap().iter().map(|row| {
+            PhysicalWriteRow::new(BTreeMap::from([
+                ("id".into(), row["id"].as_i64().map_or(
+                    LiteralValue::Null,
+                    |v| LiteralValue::Number(v.to_string()),
+                )),
+                ("amount".into(), LiteralValue::Number(
+                    row["score"].as_i64().unwrap().to_string(),
+                )),
+            ])).unwrap()
+        }).collect(),
+    ).unwrap()
+}
+
+fn frozen_case(catalog: &RelationCatalog, case: &serde_json::Value) -> PhysicalWriteStatePlan {
+    let normalized = case["sql"].as_str().unwrap()
+        .replace("target", TARGET)
+        .replace("source", SOURCE)
+        .replace("score", "amount");
+    let sql = SqlInput::inline(&normalized);
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let input = ConfiguredSqlInput::new(
+        "task-147-frozen-adapter", &sql, "postgresql", dialect.as_ref(),
+    );
+    let mut bundle = analyze_configured_inputs_with_catalog(&[input], catalog).unwrap();
+    if case["id"] != "80-C147-N-unattested-target-key" {
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            TARGET,
+            vec![RelationConstraint::primary_key(
+                vec!["id".into()],
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata, "task147",
+                    ).unwrap(),
+                    ConstraintEnforcement::Enforced,
+                )],
+            ).unwrap()],
+        ).unwrap()]);
+    }
+    physical_ordered_write_state_plan(&bundle, &[
+        frozen_state(SOURCE, &case["source"]),
+        frozen_state(TARGET, &case["prestate"]),
+    ])
+}
+
+#[test]
+fn all_frozen_mandatory_cases_have_identical_direct_and_dbt_physical_outcomes() {
+    let matrix: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-147-acceptance-freeze.json")).unwrap();
+    assert_eq!(matrix["mandatory_cases"].as_array().unwrap().len(), 5);
+    for case in matrix["mandatory_cases"].as_array().unwrap() {
+        let direct = frozen_case(&direct_catalog(), case);
+        let dbt = frozen_case(&dbt_catalog(), case);
+        assert_eq!(direct, dbt, "{}", case["id"]);
+        match case["proof"].as_str().unwrap() {
+            "Exact" => assert!(matches!(direct, PhysicalWriteStatePlan::Feasible { .. }), "{direct:?}"),
+            "Residual" => assert!(matches!(direct, PhysicalWriteStatePlan::Residual { .. }), "{direct:?}"),
+            "Impossible" => assert!(matches!(direct, PhysicalWriteStatePlan::Impossible { .. }), "{direct:?}"),
+            other => panic!("unexpected proof: {other}"),
+        };
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn all_frozen_mandatory_cases_have_identical_direct_and_odcs_physical_outcomes() {
+    let matrix: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-147-acceptance-freeze.json")).unwrap();
+    assert_eq!(matrix["mandatory_cases"].as_array().unwrap().len(), 5);
+    for case in matrix["mandatory_cases"].as_array().unwrap() {
+        let direct = frozen_case(&direct_catalog(), case);
+        let odcs = frozen_case(&odcs_catalog(), case);
+        assert_eq!(direct, odcs, "{}", case["id"]);
+    }
+}
