@@ -283,6 +283,26 @@ pub(super) fn append_rows(
             // Validate the named key even for an empty initial target bag.
             // A collision may also be against a preceding row in this INSERT.
             super::constraints::validate_insert_conflict_target(bundle, target, policy.columns())?;
+            // SQL UNIQUE NULL semantics vary by engine and declaration.
+            // A single nullable candidate without a competing row does not
+            // establish which native NULLS DISTINCT law applies.
+            if policy.columns().iter().any(|column| {
+                matches!(candidate.values.get(column), Some(LiteralValue::Null))
+            }) {
+                let primary = bundle.relation_constraints().iter().any(|set| {
+                    set.relation() == target && set.constraints().iter().any(|constraint| {
+                        matches!(constraint, RelationConstraint::PrimaryKey(key)
+                            if key.columns() == policy.columns())
+                    })
+                });
+                if primary {
+                    return Err(impossible("enforced PRIMARY KEY cannot contain NULL"));
+                }
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "nullable ON CONFLICT UNIQUE key needs a native NULLS DISTINCT law",
+                ));
+            }
             let mut conflict = false;
             for (index, prior) in next.rows.iter().enumerate() {
                 if super::constraints::targeted_insert_conflict(
