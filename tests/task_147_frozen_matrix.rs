@@ -234,9 +234,10 @@ fn every_frozen_mandatory_case_proves_full_source_target_returning_and_domain_or
                 assert_eq!(returning_domains[0].column(), "id");
                 let returned_values = returning_domains[0].values();
                 assert_eq!(returned_values.len(), 1);
-                assert_eq!(returned_values[0].0, LiteralValue::Number(
-                    expected_returning[0].to_string(),
-                ));
+                assert_eq!(
+                    returned_values[0].0,
+                    LiteralValue::Number(expected_returning[0].to_string(),)
+                );
                 assert_eq!(returned_values[0].1, 1);
                 for domain in domains {
                     let expected_domain = &case["typed_domains"][domain.column()];

@@ -252,7 +252,11 @@ impl PhysicalWriteTransition {
             .returning_columns
             .iter()
             .map(|name| {
-                schema.columns().iter().find(|column| column.name() == name).cloned()
+                schema
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == name)
+                    .cloned()
             })
             .collect::<Option<Vec<_>>>()?;
         let projection = RelationSchema::new(returned.relation().to_string(), columns).ok()?;

@@ -102,12 +102,18 @@ fn targeted_conflict_preserves_existing_row_and_returns_only_inserted_id() {
     );
     assert_eq!(final_states.len(), 2);
     let schema = bundle(SQL, true);
-    let target_schema = schema.source_schemas().iter()
-        .find(|s| s.relation() == "target").unwrap();
+    let target_schema = schema
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     let domains = transition.returning_exact_domains(target_schema).unwrap();
     assert_eq!(domains.len(), 1);
     assert_eq!(domains[0].column(), "id");
-    assert_eq!(domains[0].values(), &[(LiteralValue::Number("2".into()), 1)]);
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("2".into()), 1)]
+    );
 
     // The independent DuckDB oracle exercises complete source, prestate,
     // poststate and actual RETURNING output rather than just row counts.
@@ -153,7 +159,11 @@ fn fully_ignored_insert_has_empty_but_typed_returning_domain() {
     assert_eq!(effect.after(), &before);
     assert_eq!(effect.affected().inserted(), 0);
     assert!(effect.returning().unwrap().rows().is_empty());
-    let schema = query.source_schemas().iter().find(|s| s.relation()=="target").unwrap();
+    let schema = query
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     let domains = effect.returning_exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 1);
     assert_eq!(domains[0].column(), "id");
