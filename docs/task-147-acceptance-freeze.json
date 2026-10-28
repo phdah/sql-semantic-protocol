@@ -1339,7 +1339,7 @@
     "Preserve TASK-145 and TASK-146 legacy unsupported boundaries with bounded canonical exceptions",
     "Add schema, native full-bag and adapter parity evidence"
   ],
-  "original_ac_mapping": {
+  "child_ac_mapping": {
     "1": {
       "fixture_ids": [
         "80-C147-P",
@@ -1395,5 +1395,33 @@
       ],
       "state": "pending_full_ci"
     }
-  }
+  },
+  "parent_ac_mapping": {
+    "1": {
+      "local_scope": "explicit ON CONFLICT, IGNORE, REPLACE, UPSERT, OVERWRITE and RETURNING classifications",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and independent TASK-80 signoff"
+    },
+    "2": {
+      "local_scope": "enforced named key, complete pre/source/poststate, affected insert counts, skipped keys",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 ordered scripts and TASK-80 closure"
+    },
+    "3": {
+      "local_scope": "conflicting and nonconflicting source, skipped/untouched target, SQL FALSE and UNKNOWN",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and TASK-80 closure"
+    },
+    "5": {
+      "local_scope": "DuckDB complete source/target snapshots, NULL, duplicates, missing key and conflicting payload",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and parent independent runtime coverage"
+    },
+    "6": {
+      "local_scope": "SQL/dbt/ODCS equivalent schema, 13 dialects, JSON schema and public API",
+      "complete_child": "TASK-147",
+      "remaining_parent": "TASK-148 and parent independent evidence"
+    }
+  },
+  "parent_ac_4": "Not owned by TASK-147, TASK-148 must certify subsequent reads/DDL and idempotence"
 }
