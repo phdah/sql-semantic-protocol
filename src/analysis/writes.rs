@@ -85,6 +85,13 @@ pub(super) fn analyze_insert(
                     }
                 }
             }
+            if columns.iter().collect::<BTreeSet<_>>().len() != columns.len() {
+                return unsupported_write_statement(
+                    "insert",
+                    "unproved_insert_returning_projection",
+                    "duplicate RETURNING output names require positional identity (TASK-147)",
+                );
+            }
             columns
         }
         Some(_) => {
