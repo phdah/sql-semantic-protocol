@@ -147,30 +147,60 @@ fn duckdb(case: &serde_json::Value) {
     if case["sql_true_source_ids"].is_array() {
         let source_rows = rows(&case["source"]);
         for (sql, field) in [
-            ("SELECT id,score FROM source WHERE id > 1 ORDER BY id,score", "sql_true_source_ids"),
-            ("SELECT id,score FROM source WHERE (id > 1) IS NOT TRUE ORDER BY id,score", "sql_not_true_source_ids"),
+            (
+                "SELECT id,score FROM source WHERE id > 1 ORDER BY id,score",
+                "sql_true_source_ids",
+            ),
+            (
+                "SELECT id,score FROM source WHERE (id > 1) IS NOT TRUE ORDER BY id,score",
+                "sql_not_true_source_ids",
+            ),
         ] {
-            let expected = case[field].as_array().unwrap().iter().map(|label| {
-                let index = label.as_str().unwrap().rsplit_once('#').unwrap().1
-                    .parse::<usize>().unwrap();
-                source_rows[index]
-            }).collect::<Vec<_>>();
+            let expected = case[field]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|label| {
+                    let index = label
+                        .as_str()
+                        .unwrap()
+                        .rsplit_once('#')
+                        .unwrap()
+                        .1
+                        .parse::<usize>()
+                        .unwrap();
+                    source_rows[index]
+                })
+                .collect::<Vec<_>>();
             let mut query = db.prepare(sql).unwrap();
-            let observed = query.query_map([], |row| {
-                Ok((row.get::<_,i64>(0)?,row.get::<_,i64>(1)?))
-            }).unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
-            assert_eq!(observed, expected, "independent DuckDB TRUE/NOT TRUE source bag");
+            let observed = query
+                .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+                .unwrap()
+                .map(|row| row.unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                observed, expected,
+                "independent DuckDB TRUE/NOT TRUE source bag"
+            );
         }
     }
     for stage in case["intermediate"].as_array().unwrap() {
-        let mut query = db.prepare(
-            "WITH filtered AS (SELECT id,score FROM source WHERE id > 1)
-             SELECT id,score FROM filtered ORDER BY id,score"
-        ).unwrap();
-        let observed = query.query_map([], |row| {
-            Ok((row.get::<_,i64>(0)?,row.get::<_,i64>(1)?))
-        }).unwrap().map(|row| row.unwrap()).collect::<Vec<_>>();
-        assert_eq!(observed, rows(&stage["rows"]), "independent complete CTE producer bag");
+        let mut query = db
+            .prepare(
+                "WITH filtered AS (SELECT id,score FROM source WHERE id > 1)
+             SELECT id,score FROM filtered ORDER BY id,score",
+            )
+            .unwrap();
+        let observed = query
+            .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+            .unwrap()
+            .map(|row| row.unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            observed,
+            rows(&stage["rows"]),
+            "independent complete CTE producer bag"
+        );
     }
     let mut insert_count = 0;
     for sql in case["statements"].as_array().unwrap() {
