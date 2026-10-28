@@ -185,7 +185,7 @@ fn all_thirteen_dialects_have_explicit_parser_or_canonical_outcomes() {
         let parser = dialect_from_name(dialect).unwrap();
         for (index, (sql, cte)) in FAMILIES.iter().enumerate() {
             classifications += 1;
-            match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
+            match analyze_inputs(&[SqlInput::inline(*sql)], dialect, parser.as_ref()) {
                 Err(_) => {} // Parser boundary; not a native engine capability claim.
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => {} // Explicit fail-closed canonical boundary.
