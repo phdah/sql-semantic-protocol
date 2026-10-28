@@ -244,19 +244,50 @@ pub(super) fn append_rows(
     } else {
         evaluate_simple_select(bundle, query, states)?
     };
+    if write.insert_conflict().is_some()
+        && bundle.relation_constraints().iter().any(|set| {
+            set.relation() == target
+                && set.column_value_sources().iter().any(|source|
+                    source.kind() == crate::column_sources::ColumnValueKind::Identity)
+        })
+    {
+        return Err(residual(
+            "ON CONFLICT with identity allocation needs a proven sequence consumption law",
+        ));
+    }
     let mut next = before.clone();
     for output_row in produced {
         if output_row.len() != columns.len() {
             return Err(residual("INSERT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows.push(complete_insert_row(
+        let candidate = complete_insert_row(
             bundle,
             target,
             values,
             schema,
             identity_sequences,
-        )?);
+        )?;
+        if let Some(policy) = write.insert_conflict() {
+            // Validate the named key even for an empty initial target bag.
+            // A collision may also be against a preceding row in this INSERT.
+            super::constraints::validate_insert_conflict_target(
+                bundle, target, policy.columns(),
+            )?;
+            let mut conflict = false;
+            for prior in &next.rows {
+                if super::constraints::targeted_insert_conflict(
+                    bundle, target, policy.columns(), &candidate, prior,
+                )? {
+                    conflict = true;
+                    break;
+                }
+            }
+            if conflict {
+                continue;
+            }
+        }
+        next.rows.push(candidate);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
