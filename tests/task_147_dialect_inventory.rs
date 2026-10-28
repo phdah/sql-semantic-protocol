@@ -18,6 +18,7 @@ fn classification(sql: &str, dialect: &str) -> &'static str {
                 None => "canonical_missing_write",
             },
             None => "canonical_missing_write",
+            Some(_) => "canonical_unsupported",
         },
     }
 }
