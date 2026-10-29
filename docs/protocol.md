@@ -4,6 +4,10 @@
 
 Canonical UPDATE and DELETE operations retain the target's complete physical
 before/after bags, including duplicate rows and SQL TRUE/FALSE/UNKNOWN selection.
+`PhysicalWriteTransition::affected_target_ordinals()` exposes the zero-based
+prestate row occurrences selected by each UPDATE/DELETE, so distinct duplicate
+rows remain independently identifiable; ordinals are relative to that
+transition's complete `before()` snapshot, never an inferred output position.
 The physical executor uses the original row for all SET expressions; UPDATE
 RETURNING projects the updated row, while DELETE RETURNING projects the removed
 preimage. Only direct, distinct, unqualified target columns are represented by
