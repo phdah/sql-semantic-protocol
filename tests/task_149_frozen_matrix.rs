@@ -430,6 +430,11 @@ fn every_frozen_physical_cell_matches_native_complete_state_and_truth_partition(
                             .unwrap()
                     })
                     .collect::<Vec<_>>();
+                assert_eq!(
+                    transition.affected_target_ordinals(),
+                    selected.as_slice(),
+                    "{id}: exact original source-row occurrence IDs"
+                );
                 let actual_affected = selected
                     .iter()
                     .map(|i| {
