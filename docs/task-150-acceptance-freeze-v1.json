@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "owner": "TASK-150",
+  "parent": "TASK-81",
+  "status": "frozen_before_implementation_unverified",
+  "fixture_ids": [
+    "81-C150-P",
+    "81-C150-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "comparison_assumptions": [
+    "complete independent target/source populations",
+    "SQL three-valued equality",
+    "one matched source row per updated target required for exact assignment",
+    "deleted target occurrences distinct despite duplicate source matches",
+    "no cross-dialect native vendor execution claims"
+  ],
+  "cases": [
+    {
+      "id": "81-C150-P-update-from-unique",
+      "fixture_id": "81-C150-P",
+      "family": "unique_update_from",
+      "sql": "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_true_ordinals": [
+        0
+      ],
+      "target_not_true_ordinals": [
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    },
+    {
+      "id": "81-C150-P-delete-using-unique",
+      "fixture_id": "81-C150-P",
+      "family": "delete_using",
+      "sql": "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 1
+      },
+      "proof": "exact",
+      "target_true_ordinals": [
+        0
+      ],
+      "target_not_true_ordinals": [
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    },
+    {
+      "id": "81-C150-N-null-nonmatch",
+      "fixture_id": "81-C150-N",
+      "family": "null_not_true",
+      "sql": "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 40
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_true_ordinals": [],
+      "target_not_true_ordinals": [
+        0,
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    },
+    {
+      "id": "81-C150-N-ambiguous-update",
+      "fixture_id": "81-C150-N",
+      "family": "duplicate_update_from",
+      "sql": "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 1,
+          "score": 50
+        }
+      ],
+      "target_after": null,
+      "affected": null,
+      "proof": "residual",
+      "reason": "Multiple source matches do not prove deterministic assignment choice",
+      "owner": "TASK-150",
+      "conditional_release_disposition": "requires native engine/version match-selection evidence",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    },
+    {
+      "id": "81-C150-P-empty-source",
+      "fixture_id": "81-C150-P",
+      "family": "empty_source",
+      "sql": "DELETE FROM target AS t USING source AS s",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_true_ordinals": [],
+      "target_not_true_ordinals": [
+        0,
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    },
+    {
+      "id": "81-C150-N-cte-boundary",
+      "fixture_id": "81-C150-N",
+      "family": "cte_source",
+      "sql": "WITH picked AS (SELECT * FROM source WHERE id = 1) UPDATE target SET score = picked.score FROM picked WHERE target.id = picked.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "target_after": null,
+      "affected": null,
+      "proof": "conditional",
+      "reason": "CTE materialization and source lineage require TASK-78; no independent row insertion",
+      "owner": "TASK-150",
+      "conditional_release_disposition": "defer only when named TASK-78 dependency is satisfied and proved",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+    }
+  ],
+  "signoff": {
+    "mandatory_cases_verified": false,
+    "dialect_matrix_verified": false,
+    "adapter_parity_verified": false,
+    "duckdb_full_bag_verified": false,
+    "full_ci_verified": false
+  }
+}

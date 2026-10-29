@@ -156,6 +156,46 @@ fn complete_insert_row(
     Ok(PhysicalWriteRow { values })
 }
 
+/// Materialize one local CTE from its complete original physical inputs.
+fn materialize_local_cte(
+    bundle: &AnalysisBundle,
+    name: &str,
+    producer: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
+) -> StateResult<PhysicalWriteState> {
+    if states.contains_key(name) {
+        return Err(residual(
+            "local CTE shadows an existing physical relation identity",
+        ));
+    }
+    let columns = producer
+        .output()
+        .columns()
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
+    if columns.is_empty() || columns.iter().collect::<BTreeSet<_>>().len() != columns.len() {
+        return Err(residual(
+            "local CTE producer columns are not uniquely named",
+        ));
+    }
+    let rows = evaluate_simple_select(bundle, producer, states)?
+        .into_iter()
+        .map(|values| {
+            if values.len() != columns.len() {
+                return Err(residual("local CTE producer output arity is unproved"));
+            }
+            Ok(PhysicalWriteRow {
+                values: columns.iter().cloned().zip(values).collect(),
+            })
+        })
+        .collect::<StateResult<Vec<_>>>()?;
+    Ok(PhysicalWriteState {
+        relation: name.to_string(),
+        rows,
+    })
+}
+
 pub(super) fn append_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
@@ -191,41 +231,8 @@ pub(super) fn append_rows(
     let produced = if write.default_values() {
         vec![Vec::new()]
     } else if let Some(cte) = write.insert_cte_source() {
-        if states.contains_key(cte.name()) {
-            return Err(residual(
-                "INSERT CTE shadows an existing physical relation identity",
-            ));
-        }
-        let cte_columns = cte
-            .producer()
-            .output()
-            .columns()
-            .iter()
-            .map(|column| column.name().to_string())
-            .collect::<Vec<_>>();
-        if cte_columns.is_empty()
-            || cte_columns.iter().collect::<BTreeSet<_>>().len() != cte_columns.len()
-        {
-            return Err(residual(
-                "INSERT CTE producer columns are not uniquely named",
-            ));
-        }
-        let cte_rows = evaluate_simple_select(bundle, cte.producer(), states)?
-            .into_iter()
-            .map(|values| {
-                if values.len() != cte_columns.len() {
-                    return Err(residual("INSERT CTE producer output arity is unproved"));
-                }
-                Ok(PhysicalWriteRow {
-                    values: cte_columns.iter().cloned().zip(values).collect(),
-                })
-            })
-            .collect::<StateResult<Vec<_>>>()?;
+        let intermediate = materialize_local_cte(bundle, cte.name(), cte.producer(), states)?;
         let mut local_states = states.clone();
-        let intermediate = PhysicalWriteState {
-            relation: cte.name().to_string(),
-            rows: cte_rows,
-        };
         local_states.insert(cte.name().to_string(), intermediate.clone());
         let result = evaluate_simple_select(bundle, cte.consumer(), &local_states)?;
         intermediate_states.push(intermediate);
@@ -462,45 +469,133 @@ pub(super) fn apply_target_update(
     Ok(next)
 }
 
+/// Prove one UPDATE/DELETE against a complete target bag and, when present,
+/// one independent complete physical source bag.
+///
+/// UPDATE FROM requires no more than one matching source row per target row;
+/// otherwise the selected assignment is engine-dependent and must fail closed.
+/// DELETE USING has existential semantics and deletes each target occurrence
+/// only once even when several source rows satisfy WHERE.
+/// A grouped mutation result sink avoids multiple independent mutable
+/// parameters and keeps the complete local producer bags in the transition.
+pub(super) struct MutationTracking<'a> {
+    pub(super) affected_rows: &'a mut Vec<PhysicalWriteRow>,
+    pub(super) affected_target_ordinals: &'a mut Vec<usize>,
+    pub(super) intermediate_states: &'a mut Vec<PhysicalWriteState>,
+}
+
 pub(super) fn mutate_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
-    delete: bool,
-    affected_rows: &mut Vec<PhysicalWriteRow>,
-    affected_target_ordinals: &mut Vec<usize>,
+    tracking: MutationTracking<'_>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
         .write()
         .ok_or_else(|| residual("missing mutation write"))?;
+    let delete = write.kind() == WriteKind::Delete;
     if !delete {
         validate_update_assignments(bundle, target, write.target_alias(), write.assignments())?;
     }
+
+    // A joined CTE reads only the physical source bag present at this exact
+    // statement boundary. It is never a free initial or intermediate source.
+    let local_states = if let Some(cte) = write.joined_cte_source() {
+        if write
+            .joined_source()
+            .is_none_or(|source| source.name() != cte.name())
+        {
+            return Err(residual("joined CTE producer/source identity mismatch"));
+        }
+        let intermediate = materialize_local_cte(bundle, cte.name(), cte.producer(), states)?;
+        let mut scoped = states.clone();
+        scoped.insert(cte.name().to_string(), intermediate.clone());
+        tracking.intermediate_states.push(intermediate);
+        Some(scoped)
+    } else {
+        None
+    };
+    let states = local_states.as_ref().unwrap_or(states);
+    let joined = if let Some(source) = write.joined_source() {
+        if query.sources() != std::slice::from_ref(source) || source.name() == target {
+            return Err(residual(
+                "joined mutation has unproved source identity or target self-source",
+            ));
+        }
+        if write.joined_cte_source().is_none() {
+            schema_for(bundle, source.name())?;
+        }
+        let source_rows = states.get(source.name()).ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::MissingPopulation,
+                "missing complete UPDATE FROM / DELETE USING source population",
+            )
+        })?;
+        Some((source, source_rows))
+    } else {
+        if !query.sources().is_empty() {
+            return Err(residual("mutation has unaccounted physical sources"));
+        }
+        None
+    };
+    let aliases: Vec<&str> = joined.map_or_else(Vec::new, |(source, _)| {
+        vec![source.alias().unwrap_or(source.name()), source.name()]
+    });
     let mut kept = Vec::new();
     let mut affected = 0_u64;
     for (ordinal, row) in before.rows.iter().enumerate() {
+        // All source matches must be evaluated against the *same* original target
+        // preimage, never a previously modified row or a guessed producer bag.
+        let matched_source = if let Some((source, population)) = joined {
+            let mut matched = None;
+            for candidate in &population.rows {
+                let context = Context {
+                    target: Some((target, row)),
+                    target_alias: write.target_alias(),
+                    source: Some((source.name(), candidate)),
+                };
+                if selected(write.selection(), &context, &aliases)? {
+                    if matched.is_some() && !delete {
+                        return Err(residual(
+                            "multiple UPDATE FROM matches require an attested deterministic source-selection law",
+                        ));
+                    }
+                    matched = Some(candidate);
+                }
+            }
+            matched
+        } else {
+            None
+        };
         let context = Context {
             target: Some((target, row)),
             target_alias: write.target_alias(),
-            source: None,
+            source: matched_source
+                .and_then(|matched| joined.map(|(source, _)| (source.name(), matched))),
         };
-        if !selected(write.selection(), &context, &[])? {
+        let matches = if joined.is_some() {
+            matched_source.is_some()
+        } else {
+            selected(write.selection(), &context, &[])?
+        };
+        if !matches {
             kept.push(row.clone());
             continue;
         }
         affected = affected
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
-        affected_target_ordinals.push(ordinal);
+        tracking.affected_target_ordinals.push(ordinal);
         if delete {
-            // DELETE RETURNING observes the removed preimage, including duplicates.
-            affected_rows.push(row.clone());
+            // DELETE RETURNING contains target preimages, never source rows.
+            tracking.affected_rows.push(row.clone());
         } else {
             let updated =
-                apply_target_update(bundle, target, row, write.assignments(), &context, &[])?;
-            affected_rows.push(updated.clone());
+                apply_target_update(bundle, target, row, write.assignments(), &context, &aliases)?;
+            tracking.affected_rows.push(updated.clone());
             kept.push(updated);
         }
     }

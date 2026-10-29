@@ -38,6 +38,7 @@
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
 //! - PhysicalWriteTransition::returning_exact_domains derives exact schema-backed returned value frequencies, including empty INSERT RETURNING bags.
 //! - InsertCteSource preserves one canonical producer/consumer CTE pair for INSERT SELECT without inventing physical stage populations.
+//! - JoinedMutationCteSource preserves an exact read-only CTE producer feeding UPDATE FROM or DELETE USING without independent physical insertion.
 //! - physical_typed_closed_world_schema_plan checks complete multi-source nested Arrow-style populations against the same canonical scalar and cross-relation constraints.
 //! - to_physical_typed_population_json exports validated nested physical populations as exact-bit witness sidecars.
 //! - physical_typed_append_schema_plan checks caller-supplied nested inserts against preexisting complete target and source snapshots.
@@ -213,22 +214,23 @@ pub use protocol::{
     DiagnosticSeverity, ExistsPredicate, Expression, FiniteColumnType, FiniteTable,
     FiniteTableKind, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryOperand, InSubqueryPredicate, InSubqueryTuple, InsertCteSource, IsNullPredicate,
-    Join, JoinExecution, JoinKind, LikePrefixPredicate, LineageSource, LiteralExpression,
-    LiteralType, LiteralValue, LogicalPredicate, MergeAction, MergeAssignment, MergeClause,
-    MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
-    ProtocolSource, ProtocolStatement, QuantifiedSubqueryPredicate, QueryStatement, RangesDomain,
-    RelationRef, ResidualCondition, ResidualConditionReason, SamplingMethod, SamplingQuantity,
-    SamplingSeed, SamplingSeedSyntax, SamplingSyntax, SamplingUnit, ScalarSubqueryExpression,
-    SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SetWitnessBoundary, SetWitnessCase, SetWitnessDirection, SetWitnessObligation,
-    SignedIntegerCastExpression, SignedIntegerCastKind, SourceRelation, SubqueryQuantifier,
-    SubquerySemantics, TableSampling, UnaryExpression, UnaryOperator, UnknownDomain,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteAffectedRows, WriteCardinalityRule,
-    WriteCountError, WriteDefinitionMode, WriteEffectAction, WriteEffectBranch, WriteIdempotence,
-    WriteInitialState, WriteKind, WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect,
-    WriteUncertainty, WriteValue, PROTOCOL_VERSION,
+    Join, JoinExecution, JoinKind, JoinedMutationCteSource, LikePrefixPredicate, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction, MergeAssignment,
+    MergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates,
+    Protocol, ProtocolSource, ProtocolStatement, QuantifiedSubqueryPredicate, QueryStatement,
+    RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason, SamplingMethod,
+    SamplingQuantity, SamplingSeed, SamplingSeedSyntax, SamplingSyntax, SamplingUnit,
+    ScalarSubqueryExpression, SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand,
+    SetOperation, SetOperator, SetQuantifier, SetWitnessBoundary, SetWitnessCase,
+    SetWitnessDirection, SetWitnessObligation, SignedIntegerCastExpression, SignedIntegerCastKind,
+    SourceRelation, SubqueryQuantifier, SubquerySemantics, TableSampling, UnaryExpression,
+    UnaryOperator, UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteAffectedRows,
+    WriteCardinalityRule, WriteCountError, WriteDefinitionMode, WriteEffectAction,
+    WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind, WriteOperation,
+    WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
+    PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

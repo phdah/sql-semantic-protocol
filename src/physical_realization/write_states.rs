@@ -513,23 +513,17 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 &mut identity_sequences,
                 &mut intermediate_states,
             ),
-            WriteKind::Update => mutate_rows(
+            WriteKind::Update | WriteKind::Delete => mutate_rows(
                 bundle,
                 query,
+                &states,
                 target,
                 before.as_ref(),
-                false,
-                &mut mutation_returning_rows,
-                &mut affected_target_ordinals,
-            ),
-            WriteKind::Delete => mutate_rows(
-                bundle,
-                query,
-                target,
-                before.as_ref(),
-                true,
-                &mut mutation_returning_rows,
-                &mut affected_target_ordinals,
+                operators::MutationTracking {
+                    affected_rows: &mut mutation_returning_rows,
+                    affected_target_ordinals: &mut affected_target_ordinals,
+                    intermediate_states: &mut intermediate_states,
+                },
             ),
             WriteKind::ConditionalMutation => merge_rows(
                 bundle,

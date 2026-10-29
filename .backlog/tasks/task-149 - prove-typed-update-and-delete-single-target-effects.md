@@ -1,7 +1,7 @@
 ---
 id: TASK-149
 title: Prove typed UPDATE and DELETE single-target effects
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-29'
@@ -54,5 +54,5 @@ Next: [TASK-150](task-150%20-%20prove-update-from-and-delete-using-joined-mutati
 <!-- SECTION:NOTES:BEGIN -->
 TASK-149 child acceptance #1..#5 has been independently verified against the frozen v2 inventory and the required CI gates. See [TASK-149 acceptance audit](../../docs/task-149-acceptance-audit.md), [freeze](../../docs/task-149-acceptance-freeze.json), and [CI run 40873925034](https://github.com/phdah/sql-semantic-protocol/actions/runs/40873925034) for green fmt, strict lint, full/default and no-default tests/docs, and dbt E2E. A documentation-only follow-up carries the updated public prestate-row-identity contract.
 
-**Lifecycle:** acceptance evidence signed off pending PR #161 merge. Keep status `In Progress` until merged into `main`; TASK-81 parent remains open for independently owned TASK-150..152 and full original parent criteria.
+**Lifecycle:** PR #161 merged to `main` at `9b8be6b5`; the verified TASK-149 child is Done. TASK-81 parent remains open for independently owned TASK-150..152 and full original parent criteria.
 <!-- SECTION:NOTES:END -->

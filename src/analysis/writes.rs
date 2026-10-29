@@ -1,7 +1,7 @@
 //! INSERT, UPDATE, DELETE and MERGE analysis.
 
 use super::*;
-use crate::protocol::{InsertConflictPolicy, InsertCteSource};
+use crate::protocol::{InsertConflictPolicy, InsertCteSource, JoinedMutationCteSource};
 
 pub(super) fn analyze_insert(
     insert: &SqlInsert,
@@ -308,20 +308,148 @@ fn normalize_mutation_returning(
     Ok(columns)
 }
 
+/// Model a single read-only, nonrecursive CTE feeding UPDATE FROM or DELETE
+/// USING. SQLParser wraps WITH DML in SetExpr::{Update,Delete}; accepting it as
+/// an ordinary read-only Query would silently omit a state-changing statement.
+pub(super) fn analyze_joined_cte_mutation(
+    query: &SqlQuery,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
+    let Some(with) = &query.with else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_nested_dml",
+            "nested DML without a local CTE cannot be certified as a write",
+        );
+    };
+    let [cte] = with.cte_tables.as_slice() else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_shape",
+            "joined mutation requires exactly one read-only CTE producer",
+        );
+    };
+    if with.recursive
+        || !cte.alias.columns.is_empty()
+        || cte.query.with.is_some()
+        || cte.query.order_by.is_some()
+        || cte.query.limit_clause.is_some()
+        || cte.query.fetch.is_some()
+        || query.order_by.is_some()
+        || query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || !query.pipe_operators.is_empty()
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_scope",
+            "recursive, reordered or nested CTE write requires additional producer evidence",
+        );
+    }
+    let name = cte.alias.name.to_string();
+    let statement = match query.body.as_ref() {
+        SetExpr::Update(statement) | SetExpr::Delete(statement) => statement,
+        _ => {
+            return unsupported_write_statement(
+                "query",
+                "unproved_joined_cte_action",
+                "CTE write must be an UPDATE or DELETE",
+            );
+        }
+    };
+    let ProtocolStatement::Query(mutation) = analyze_statement(statement, metadata) else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_mutation",
+            "CTE consumer must be an independently normalized joined mutation",
+        );
+    };
+    let Some(write) = mutation.write() else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_action",
+            "CTE query must contain an actual UPDATE or DELETE",
+        );
+    };
+    if write
+        .joined_source()
+        .is_none_or(|source| source.name() != name)
+        || mutation.sources().len() != 1
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_consumer",
+            "joined mutation must consume its one named local CTE source",
+        );
+    }
+    let producer = analyze_query(&cte.query, None, metadata);
+    if !matches!(cte.query.body.as_ref(), SetExpr::Select(_))
+        || producer.sources().len() != 1
+        || producer.sources()[0].name() == name
+        || producer.sources()[0].name() == write.target()
+        || !producer.joins().is_empty()
+        || producer.set_operation().is_some()
+        || producer.aggregation().is_some()
+        || !(producer.row_preserving_projection() || producer.filter_only_row_shape())
+        || producer.output().columns().is_empty()
+        || producer
+            .output()
+            .columns()
+            .iter()
+            .map(|col| col.name())
+            .collect::<BTreeSet<_>>()
+            .len()
+            != producer.output().columns().len()
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_producer",
+            "CTE producer requires one row-local, uniquely projected complete physical source",
+        );
+    }
+    let physical_dependencies = producer.dependencies().to_vec();
+    let write = write
+        .clone()
+        .with_joined_cte_source(JoinedMutationCteSource::new(name, producer));
+    ProtocolStatement::Query(
+        mutation
+            .with_physical_dependencies(physical_dependencies)
+            .with_write(Some(write)),
+    )
+}
+
+/// Extract one named physical source; do not flatten unrelated JOIN inputs.
+fn named_mutation_source(tables: &[TableWithJoins]) -> Option<SourceRelation> {
+    let [source] = tables else {
+        return None;
+    };
+    if !source.joins.is_empty() {
+        return None;
+    }
+    merge_target_relation(&source.relation)
+}
+
+/// Shared target/source identities must be proved as a self-join in separate scope.
+fn disjoint_mutation_sources(target: &SourceRelation, source: &SourceRelation) -> bool {
+    let target_names = [target.name(), target.alias().unwrap_or(target.name())];
+    let source_names = [source.name(), source.alias().unwrap_or(source.name())];
+    !target_names.iter().any(|name| source_names.contains(name))
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
-    has_from: bool,
+    from: Option<&sqlparser::ast::UpdateTableFromKind>,
     selection: Option<&Expr>,
     returning: Option<&[SelectItem]>,
     has_conflict_modifier: bool,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
-    if has_from || has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
+    if has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
-            "only single-target UPDATE SET without FROM, JOIN, or conflict modifiers is supported",
+            "UPDATE requires one named target, assignments, and no target JOIN or conflict modifier",
         );
     }
     let Some(target_source) = merge_target_relation(&table.relation) else {
@@ -333,6 +461,37 @@ pub(super) fn analyze_update(
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let joined_source = match from {
+        None => None,
+        Some(sqlparser::ast::UpdateTableFromKind::AfterSet(tables))
+        | Some(sqlparser::ast::UpdateTableFromKind::BeforeSet(tables)) => {
+            named_mutation_source(tables)
+        }
+    };
+    if from.is_some() && joined_source.is_none() {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_from",
+            "UPDATE FROM requires exactly one named independent source without joins",
+        );
+    }
+    if joined_source
+        .as_ref()
+        .is_some_and(|source| !disjoint_mutation_sources(&target_source, source))
+    {
+        return unsupported_write_statement(
+            "update",
+            "unproved_update_self_source",
+            "UPDATE FROM cannot reuse or shadow the physical target without a joint alias proof",
+        );
+    }
+    let mut domain_sources = vec![target_source.clone()];
+    domain_sources.extend(joined_source.iter().cloned());
+    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let dependencies = query_sources
+        .iter()
+        .map(|source| source.name().to_string())
+        .collect();
     let returning_columns = match normalize_mutation_returning(returning) {
         Ok(columns) => columns,
         Err(reason) => {
@@ -370,7 +529,7 @@ pub(super) fn analyze_update(
     let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
-        std::slice::from_ref(&target_source),
+        &domain_sources,
     );
     let assignments = assignments
         .iter()
@@ -394,15 +553,9 @@ pub(super) fn analyze_update(
                 let derived = derive_expression_domain_with_column_domains(
                     &expression,
                     &domains,
-                    std::slice::from_ref(&target_source),
+                    &domain_sources,
                 );
-                refine_write_value_domain(
-                    &expression,
-                    derived,
-                    &domains,
-                    std::slice::from_ref(&target_source),
-                    metadata,
-                )
+                refine_write_value_domain(&expression, derived, &domains, &domain_sources, metadata)
             };
             let assignment = MergeAssignment::new(
                 assignment.target.to_string(),
@@ -418,8 +571,8 @@ pub(super) fn analyze_update(
     sort_diagnostics(&mut diagnostics);
     ProtocolStatement::Query(
         QueryStatement::new(
-            Vec::new(),
-            Vec::new(),
+            query_sources,
+            dependencies,
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
@@ -434,10 +587,15 @@ pub(super) fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(
-            WriteOperation::update(target, target_alias, predicate, assignments, domains)
-                .with_returning_columns(returning_columns),
-        )),
+        .with_write(Some({
+            let mut write =
+                WriteOperation::update(target, target_alias, predicate, assignments, domains)
+                    .with_returning_columns(returning_columns);
+            if let Some(source) = joined_source {
+                write = write.with_joined_source(source);
+            }
+            write
+        })),
     )
 }
 
@@ -446,7 +604,6 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         SqlFromTable::WithFromKeyword(tables) | SqlFromTable::WithoutKeyword(tables) => tables,
     };
     if !delete.tables.is_empty()
-        || delete.using.is_some()
         || !delete.order_by.is_empty()
         || delete.limit.is_some()
         || tables.len() != 1
@@ -455,7 +612,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         return unsupported_write_statement(
             "delete",
             "unsupported_delete_form",
-            "only single-target DELETE FROM without USING, JOIN, ORDER BY, or LIMIT is supported",
+            "DELETE requires one named target without target JOIN, ORDER BY, or LIMIT",
         );
     }
     let Some(target_source) = merge_target_relation(&tables[0].relation) else {
@@ -467,6 +624,34 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let joined_source = delete
+        .using
+        .as_ref()
+        .and_then(|tables| named_mutation_source(tables));
+    if delete.using.is_some() && joined_source.is_none() {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_using",
+            "DELETE USING requires exactly one named independent source without joins",
+        );
+    }
+    if joined_source
+        .as_ref()
+        .is_some_and(|source| !disjoint_mutation_sources(&target_source, source))
+    {
+        return unsupported_write_statement(
+            "delete",
+            "unproved_delete_self_source",
+            "DELETE USING cannot reuse or shadow the physical target without a joint alias proof",
+        );
+    }
+    let mut domain_sources = vec![target_source];
+    domain_sources.extend(joined_source.iter().cloned());
+    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let dependencies = query_sources
+        .iter()
+        .map(|source| source.name().to_string())
+        .collect();
     let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
         Ok(columns) => columns,
         Err(reason) => {
@@ -498,13 +683,13 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         .map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
-        &[target_source],
+        &domain_sources,
     );
     sort_diagnostics(&mut diagnostics);
     ProtocolStatement::Query(
         QueryStatement::new(
-            Vec::new(),
-            Vec::new(),
+            query_sources,
+            dependencies,
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
@@ -519,10 +704,14 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(
-            WriteOperation::delete(target, target_alias, predicate, domains)
-                .with_returning_columns(returning_columns),
-        )),
+        .with_write(Some({
+            let mut write = WriteOperation::delete(target, target_alias, predicate, domains)
+                .with_returning_columns(returning_columns);
+            if let Some(source) = joined_source {
+                write = write.with_joined_source(source);
+            }
+            write
+        })),
     )
 }
 

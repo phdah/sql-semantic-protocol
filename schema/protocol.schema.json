@@ -2984,6 +2984,20 @@
         "target": {
           "$ref": "#/$defs/relationName"
         },
+        "joined_cte_source": {
+          "description": "Optional physically derived local nonrecursive CTE source, never an independent caller-supplied relation.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "producer"],
+          "properties": {
+            "name": { "$ref": "#/$defs/nonEmptyString" },
+            "producer": { "$ref": "#/$defs/queryStatement" }
+          }
+        },
+        "joined_source": {
+          "description": "Optional independent complete physical source for UPDATE FROM or DELETE USING. Exact state effects require the matching source bag and unambiguous assignment semantics.",
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/sourceRelation"
+        },
         "target_alias": {
           "oneOf": [
             {

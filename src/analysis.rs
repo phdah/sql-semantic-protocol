@@ -238,14 +238,37 @@ fn analyze_with_metadata(
         .with_source_schemas(source_schemas))
 }
 
+/// A nested row-changing query is never an implicit read-only SELECT.
+fn set_expr_contains_write(expr: &SetExpr) -> bool {
+    match expr {
+        SetExpr::Insert(_) | SetExpr::Update(_) | SetExpr::Delete(_) => true,
+        SetExpr::Query(query) => set_expr_contains_write(query.body.as_ref()),
+        SetExpr::SetOperation { left, right, .. } => {
+            set_expr_contains_write(left) || set_expr_contains_write(right)
+        }
+        SetExpr::Select(_) | SetExpr::Values(_) | SetExpr::Table(_) => false,
+    }
+}
+
 fn analyze_statement(
     statement: &SqlStatement,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => {
-            ProtocolStatement::Query(analyze_query(query, None, metadata))
-        }
+        SqlStatement::Query(query) => match query.body.as_ref() {
+            SetExpr::Update(_) | SetExpr::Delete(_) => analyze_joined_cte_mutation(query, metadata),
+            SetExpr::Insert(_) => unsupported_write_statement(
+                "query",
+                "unsupported_nested_write",
+                "DML inside a query body has no proven ordered write semantics",
+            ),
+            other if set_expr_contains_write(other) => unsupported_write_statement(
+                "query",
+                "unsupported_nested_write",
+                "Nested row-changing query bodies cannot be silently treated as SELECT",
+            ),
+            _ => ProtocolStatement::Query(analyze_query(query, None, metadata)),
+        },
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
                 if create_table.if_not_exists {
@@ -292,7 +315,7 @@ fn analyze_statement(
         } => analyze_update(
             table,
             assignments,
-            from.is_some(),
+            from.as_ref(),
             selection.as_ref(),
             returning.as_deref(),
             or.is_some(),

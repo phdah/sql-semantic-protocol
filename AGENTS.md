@@ -233,6 +233,14 @@ Todos, planned work, and decisions for this project are tracked in a local
 files under `.backlog/` directly, following the format of existing files. The board is
 versioned with the repo, so commit task changes alongside the work they describe.
 
+**Task completion vs merge:** Mark a child task `Done` in its implementation PR
+once its acceptance criteria, independent review, and required implementation CI
+are verified. The merged branch must contain the completed task state, not a stale
+`In Progress` marker requiring a follow-up commit. GitHub PR merge is a separate
+integration gate: a completed but unmerged child **does not** unblock the next
+child, which still requires `Done` **and merged on `main`**. Keep parents open
+until their independent closure requirements are verified.
+
 When a still-open parent task defines a dependency-ordered child execution
 queue, select the **first unfinished child with satisfied dependencies**
 before unrelated backlog work when asked for the "next task". Do not select the

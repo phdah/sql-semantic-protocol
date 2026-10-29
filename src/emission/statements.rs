@@ -194,6 +194,15 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         "assignments": write.assignments().iter().map(merge_assignment_to_value).collect::<Vec<_>>(),
         "state_effect": state_effect
     });
+    if let Some(source) = write.joined_source() {
+        value["joined_source"] = source_relation_to_value(source);
+    }
+    if let Some(cte) = write.joined_cte_source() {
+        value["joined_cte_source"] = json!({
+            "name": cte.name(),
+            "producer": query_statement_to_value(cte.producer())
+        });
+    }
     if let Some(conflict) = write.insert_conflict() {
         value["insert_conflict"] = json!({
             "action": "do_nothing",
