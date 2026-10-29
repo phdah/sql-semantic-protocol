@@ -387,7 +387,7 @@ pub(super) fn analyze_joined_cte_mutation(
         || producer.sources().len() != 1
         || producer.sources()[0].name() == name
         || producer.sources()[0].name() == write.target()
-        || producer.joins().len() != 0
+        || !producer.joins().is_empty()
         || producer.set_operation().is_some()
         || producer.aggregation().is_some()
         || !(producer.row_preserving_projection() || producer.filter_only_row_shape())
