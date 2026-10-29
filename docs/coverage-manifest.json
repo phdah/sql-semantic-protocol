@@ -1,4 +1,18 @@
 {
+  "task_151_qualified_write_acceptance": {
+    "owner": "TASK-151",
+    "parent": "TASK-81",
+    "status": "implementation_in_progress",
+    "freeze": "docs/task-151-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["81-C151-P", "81-C151-N"],
+    "oracle": "tests/task_151_qualified_returning.rs",
+    "audit": "docs/task-151-acceptance-audit.md",
+    "mandatory_cases_verified": false,
+    "adapter_dialect_oracles_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false
+  },
   "task_150_joined_mutations_acceptance": {
     "owner": "TASK-150",
     "parent": "TASK-81",
