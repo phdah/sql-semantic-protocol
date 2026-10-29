@@ -130,6 +130,13 @@ impl QueryStatement {
         }
     }
 
+    /// Replace local-CTE dependencies with the physical dependencies of its
+    /// attested producer, without changing its local source-instance identity.
+    pub(crate) fn with_physical_dependencies(mut self, dependencies: Vec<String>) -> Self {
+        self.dependencies = dependencies;
+        self
+    }
+
     pub(crate) fn with_aggregation(mut self, aggregation: Option<Aggregation>) -> Self {
         self.aggregation = aggregation.map(Box::new);
         self
