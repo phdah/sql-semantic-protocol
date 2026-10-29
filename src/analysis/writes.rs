@@ -1,7 +1,7 @@
 //! INSERT, UPDATE, DELETE and MERGE analysis.
 
 use super::*;
-use crate::protocol::{InsertConflictPolicy, InsertCteSource};
+use crate::protocol::{InsertConflictPolicy, InsertCteSource, JoinedMutationCteSource};
 
 pub(super) fn analyze_insert(
     insert: &SqlInsert,
@@ -306,6 +306,108 @@ fn normalize_mutation_returning(
         }
     }
     Ok(columns)
+}
+
+/// Model a single read-only, nonrecursive CTE feeding UPDATE FROM or DELETE
+/// USING. SQLParser wraps WITH DML in SetExpr::{Update,Delete}; accepting it as
+/// an ordinary read-only Query would silently omit a state-changing statement.
+pub(super) fn analyze_joined_cte_mutation(
+    query: &SqlQuery,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
+    let Some(with) = &query.with else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_nested_dml",
+            "nested DML without a local CTE cannot be certified as a write",
+        );
+    };
+    let [cte] = with.cte_tables.as_slice() else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_shape",
+            "joined mutation requires exactly one read-only CTE producer",
+        );
+    };
+    if with.recursive
+        || !cte.alias.columns.is_empty()
+        || cte.query.with.is_some()
+        || cte.query.order_by.is_some()
+        || cte.query.limit_clause.is_some()
+        || cte.query.fetch.is_some()
+        || query.order_by.is_some()
+        || query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || !query.pipe_operators.is_empty()
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_scope",
+            "recursive, reordered or nested CTE write requires additional producer evidence",
+        );
+    }
+    let name = cte.alias.name.to_string();
+    let statement = match query.body.as_ref() {
+        SetExpr::Update(statement) | SetExpr::Delete(statement) => statement,
+        _ => {
+            return unsupported_write_statement(
+                "query",
+                "unproved_joined_cte_action",
+                "CTE write must be an UPDATE or DELETE",
+            );
+        }
+    };
+    let ProtocolStatement::Query(mutation) = analyze_statement(statement, metadata) else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_mutation",
+            "CTE consumer must be an independently normalized joined mutation",
+        );
+    };
+    let Some(write) = mutation.write() else {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_action",
+            "CTE query must contain an actual UPDATE or DELETE",
+        );
+    };
+    if write
+        .joined_source()
+        .is_none_or(|source| source.name() != name)
+        || mutation.sources().len() != 1
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_consumer",
+            "joined mutation must consume its one named local CTE source",
+        );
+    }
+    let producer = analyze_query(&cte.query, None, metadata);
+    if !matches!(cte.query.body.as_ref(), SetExpr::Select(_))
+        || producer.sources().len() != 1
+        || producer.sources()[0].name() == name
+        || producer.sources()[0].name() == write.target()
+        || producer.joins().len() != 0
+        || producer.set_operation().is_some()
+        || producer.aggregation().is_some()
+        || !(producer.row_preserving_projection() || producer.filter_only_row_shape())
+        || producer.output().columns().is_empty()
+        || producer.output().columns().iter().map(|col| col.name()).collect::<BTreeSet<_>>().len()
+            != producer.output().columns().len()
+    {
+        return unsupported_write_statement(
+            "query",
+            "unproved_joined_cte_producer",
+            "CTE producer requires one row-local, uniquely projected complete physical source",
+        );
+    }
+    let physical_dependencies = producer.dependencies().to_vec();
+    let write = write.clone().with_joined_cte_source(
+        JoinedMutationCteSource::new(name, producer),
+    );
+    ProtocolStatement::Query(mutation
+        .with_physical_dependencies(physical_dependencies)
+        .with_write(Some(write)))
 }
 
 /// Extract one named physical source; do not flatten unrelated JOIN inputs.
