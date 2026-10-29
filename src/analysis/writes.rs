@@ -290,7 +290,8 @@ fn normalize_mutation_returning(
     };
     if items.is_empty() {
         return Err(unsupported_write_statement(
-            kind, "unproved_mutation_returning",
+            kind,
+            "unproved_mutation_returning",
             "RETURNING requires at least one direct target column",
         ));
     }
@@ -301,16 +302,20 @@ fn normalize_mutation_returning(
             SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
                 if !seen.insert(identifier.value.clone()) {
                     return Err(unsupported_write_statement(
-                        kind, "unproved_mutation_returning",
+                        kind,
+                        "unproved_mutation_returning",
                         "duplicate RETURNING column identities require positional evidence",
                     ));
                 }
                 columns.push(identifier.value.clone());
             }
-            _ => return Err(unsupported_write_statement(
-                kind, "unproved_mutation_returning",
-                "only unqualified direct target columns are proven for RETURNING",
-            )),
+            _ => {
+                return Err(unsupported_write_statement(
+                    kind,
+                    "unproved_mutation_returning",
+                    "only unqualified direct target columns are proven for RETURNING",
+                ))
+            }
         }
     }
     Ok(columns)
@@ -325,11 +330,7 @@ pub(super) fn analyze_update(
     has_conflict_modifier: bool,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
-    if has_from
-        || has_conflict_modifier
-        || !table.joins.is_empty()
-        || assignments.is_empty()
-    {
+    if has_from || has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
@@ -390,7 +391,10 @@ pub(super) fn analyze_update(
             // SQL DEFAULT is not the identifier of a physical source column.
             // The marker is evaluated only against authoritative target metadata.
             let expression = if is_default {
-                Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null))
+                Expression::Literal(LiteralExpression::new(
+                    LiteralType::Null,
+                    LiteralValue::Null,
+                ))
             } else {
                 analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics)
             };
@@ -414,7 +418,11 @@ pub(super) fn analyze_update(
                 assignment.target.to_string(),
                 WriteValue::new(expression, domain),
             );
-            if is_default { assignment.with_default() } else { assignment }
+            if is_default {
+                assignment.with_default()
+            } else {
+                assignment
+            }
         })
         .collect();
     sort_diagnostics(&mut diagnostics);
@@ -436,13 +444,10 @@ pub(super) fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::update(
-            target,
-            target_alias,
-            predicate,
-            assignments,
-            domains,
-        ).with_returning_columns(returning_columns))),
+        .with_write(Some(
+            WriteOperation::update(target, target_alias, predicate, assignments, domains)
+                .with_returning_columns(returning_columns),
+        )),
     )
 }
 
@@ -472,10 +477,11 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
-    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref(), "delete") {
-        Ok(columns) => columns,
-        Err(unsupported) => return unsupported,
-    };
+    let returning_columns =
+        match normalize_mutation_returning(delete.returning.as_deref(), "delete") {
+            Ok(columns) => columns,
+            Err(unsupported) => return unsupported,
+        };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -522,12 +528,10 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(
-            target,
-            target_alias,
-            predicate,
-            domains,
-        ).with_returning_columns(returning_columns))),
+        .with_write(Some(
+            WriteOperation::delete(target, target_alias, predicate, domains)
+                .with_returning_columns(returning_columns),
+        )),
     )
 }
 
