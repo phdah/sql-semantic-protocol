@@ -5,13 +5,14 @@ Parent: TASK-81 (independent signoff required)
 
 ## Implemented / bounded
 
-- Canonicalize direct, target-qualified `UPDATE/DELETE ... RETURNING` identifiers to the existing target-column identity, including an explicit target alias or full target name.
-- Reject an unmatched qualifier, wildcard or expression projection, and alias/unqualified duplicate identity instead of constructing fabricated columns.
+- Canonicalize direct, target-qualified `UPDATE/DELETE ... RETURNING` identifiers to the existing target-column identity, using the explicit target alias, or the full target name when unaliased.
+- Reject an unmatched or alias-shadowed qualifier, wildcard or expression projection, and alias/unqualified duplicate identity instead of constructing fabricated columns.
 - Preserve exact UPDATE postimages, DELETE preimages, duplicate occurrences, SQL UNKNOWN nonselection, affected ordinals and typed exact returned-frequency domains through the existing physical write model.
 - Bounded, preimplementation acceptance variants and fixed identities `81-C151-P` and `81-C151-N` are in [freeze v1](task-151-acceptance-freeze.json).
 
-## Standards review
+## Standards review (interim two-axis review)
 
+- The interim Standards axis found and fixed a potential alias-shadowing overclaim: an aliased target no longer accepts a reference using its shadowed table name. The freeze's unbound-reference family includes this negative regression. Final independent review remains pending.
 - Reuses the existing canonical `WriteOperation::returning_columns` contract and physical evaluator, without new parser-dependent public types, runtime dialect gating or dependency changes.
 - No active JSON wire shape change; the output columns retain canonical target names.
 - Native DuckDB oracle and negative integration tests are in `tests/task_151_qualified_returning.rs`.
