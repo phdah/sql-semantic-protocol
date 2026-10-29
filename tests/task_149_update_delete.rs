@@ -1,7 +1,6 @@
 //! TASK-149: independent complete-bag UPDATE/DELETE execution oracle.
 //! Frozen before semantic edits in docs/task-149-acceptance-freeze.json.
 
-use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
@@ -10,21 +9,37 @@ use sql_semantic_protocol::{
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
     RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
+use std::collections::BTreeMap;
 
 fn state(values: &[(Option<i64>, i64)]) -> PhysicalWriteState {
-    PhysicalWriteState::new("target", values.iter().map(|(id, score)| {
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".into(), id.map_or(LiteralValue::Null, |x| LiteralValue::Number(x.to_string()))),
-            ("score".into(), LiteralValue::Number(score.to_string())),
-        ])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        "target",
+        values
+            .iter()
+            .map(|(id, score)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "id".into(),
+                        id.map_or(LiteralValue::Null, |x| LiteralValue::Number(x.to_string())),
+                    ),
+                    ("score".into(), LiteralValue::Number(score.to_string())),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn bundle(sql: &str, default: bool) -> sql_semantic_protocol::AnalysisBundle {
-    let schema = RelationSchema::new("target",
-        ["id", "score"].iter().map(|name|
-            SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap()
-        ).collect()).unwrap();
+    let schema = RelationSchema::new(
+        "target",
+        ["id", "score"]
+            .iter()
+            .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
+            .collect(),
+    )
+    .unwrap();
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let input = SqlInput::inline(sql);
     let dialect = dialect_from_name("duckdb").unwrap();
@@ -35,28 +50,40 @@ fn bundle(sql: &str, default: bool) -> sql_semantic_protocol::AnalysisBundle {
             ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task149").unwrap(),
             ConstraintEnforcement::Enforced,
         )];
-        let source = ColumnValueSource::new("score", ColumnValueKind::Default,
-            Some(ConstraintValue::Integer(7)), evidence).unwrap();
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new("target", vec![]).unwrap()
-                .with_column_value_sources(vec![source])
-        ]);
+        let source = ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Default,
+            Some(ConstraintValue::Integer(7)),
+            evidence,
+        )
+        .unwrap();
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_column_value_sources(vec![source])]);
     }
     bundle
 }
 
 fn native_rows(db: &Connection) -> Vec<(Option<i64>, i64)> {
-    let mut query = db.prepare("SELECT id,score FROM target ORDER BY score,id NULLS LAST").unwrap();
-    query.query_map([], |r| Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?)))
-        .unwrap().map(Result::unwrap).collect()
+    let mut query = db
+        .prepare("SELECT id,score FROM target ORDER BY score,id NULLS LAST")
+        .unwrap();
+    query
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+        })
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
 }
 
 fn duckdb() -> Connection {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE target(id INTEGER, score INTEGER DEFAULT 7);
-         INSERT INTO target(id,score) VALUES (1,10),(2,20),(NULL,30),(2,20);"
-    ).unwrap();
+         INSERT INTO target(id,score) VALUES (1,10),(2,20),(NULL,30),(2,20);",
+    )
+    .unwrap();
     db
 }
 
@@ -65,11 +92,21 @@ fn sorted(mut bag: Vec<(Option<i64>, i64)>) -> Vec<(Option<i64>, i64)> {
     bag
 }
 
-fn run(sql: &str, default: bool) -> (sql_semantic_protocol::PhysicalWriteTransition, Vec<(Option<i64>,i64)>) {
-    let before = [(Some(1),10),(Some(2),20),(None,30),(Some(2),20)];
+fn run(
+    sql: &str,
+    default: bool,
+) -> (
+    sql_semantic_protocol::PhysicalWriteTransition,
+    Vec<(Option<i64>, i64)>,
+) {
+    let before = [(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)];
     let bundle = bundle(sql, default);
     let plan = physical_ordered_write_state_plan(&bundle, &[state(&before)]);
-    let PhysicalWriteStatePlan::Feasible { mut transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        mut transitions,
+        final_states,
+    } = plan
+    else {
         panic!("TASK-149 must construct exact physical state: {plan:?}");
     };
     assert_eq!(transitions.len(), 1);
@@ -77,24 +114,36 @@ fn run(sql: &str, default: bool) -> (sql_semantic_protocol::PhysicalWriteTransit
     assert_eq!(transition.before(), &state(&before));
     assert_eq!(final_states.len(), 1);
     assert_eq!(transition.after(), &final_states[0]);
-    let schema = bundle.source_schemas().iter().find(|s| s.relation() == "target").unwrap();
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     let domains = transition.after().exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 2);
     let id = &domains[0];
     assert_eq!(id.column(), "id");
-    assert_eq!(id.values().iter().map(|(_,count)| *count).sum::<u64>(), transition.after().rows().len() as u64);
-    let final_rows = transition.after().rows().iter().map(|row| {
-        let id = match row.values().get("id").unwrap() {
-            LiteralValue::Null => None,
-            LiteralValue::Number(n) => Some(n.parse::<i64>().unwrap()),
-            other => panic!("unexpected id {other:?}")
-        };
-        let score = match row.values().get("score").unwrap() {
-            LiteralValue::Number(n) => n.parse::<i64>().unwrap(),
-            other => panic!("unexpected score {other:?}")
-        };
-        (id,score)
-    }).collect::<Vec<_>>();
+    assert_eq!(
+        id.values().iter().map(|(_, count)| *count).sum::<u64>(),
+        transition.after().rows().len() as u64
+    );
+    let final_rows = transition
+        .after()
+        .rows()
+        .iter()
+        .map(|row| {
+            let id = match row.values().get("id").unwrap() {
+                LiteralValue::Null => None,
+                LiteralValue::Number(n) => Some(n.parse::<i64>().unwrap()),
+                other => panic!("unexpected id {other:?}"),
+            };
+            let score = match row.values().get("score").unwrap() {
+                LiteralValue::Number(n) => n.parse::<i64>().unwrap(),
+                other => panic!("unexpected score {other:?}"),
+            };
+            (id, score)
+        })
+        .collect::<Vec<_>>();
     (transition, final_rows)
 }
 
@@ -135,32 +184,53 @@ fn delete_preserves_not_true_unknown_duplicates_and_complete_bag() {
 #[test]
 fn mutation_returning_is_exact_before_delete_and_after_update() {
     for (sql, expected_returning) in [
-        ("UPDATE target SET score = 40 WHERE id = 1 RETURNING id,score", vec![(Some(1),40)]),
-        ("DELETE FROM target WHERE id = 2 RETURNING id,score", vec![(Some(2),20),(Some(2),20)]),
+        (
+            "UPDATE target SET score = 40 WHERE id = 1 RETURNING id,score",
+            vec![(Some(1), 40)],
+        ),
+        (
+            "DELETE FROM target WHERE id = 2 RETURNING id,score",
+            vec![(Some(2), 20), (Some(2), 20)],
+        ),
     ] {
         let (transition, expected_after) = run(sql, false);
-        let returned = transition.returning().expect("supported RETURNING must be present");
-        let actual = returned.rows().iter().map(|r| {
-            let id = match r.values().get("id").unwrap() {
-                LiteralValue::Null => None,
-                LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
-                _ => panic!("not an INTEGER id"),
-            };
-            let score = match r.values().get("score").unwrap() {
-                LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
-                _ => panic!("not an INTEGER score"),
-            };
-            (id, score)
-        }).collect::<Vec<_>>();
+        let returned = transition
+            .returning()
+            .expect("supported RETURNING must be present");
+        let actual = returned
+            .rows()
+            .iter()
+            .map(|r| {
+                let id = match r.values().get("id").unwrap() {
+                    LiteralValue::Null => None,
+                    LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
+                    _ => panic!("not an INTEGER id"),
+                };
+                let score = match r.values().get("score").unwrap() {
+                    LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
+                    _ => panic!("not an INTEGER score"),
+                };
+                (id, score)
+            })
+            .collect::<Vec<_>>();
         assert_eq!(sorted(actual), sorted(expected_returning.clone()));
-        let schema = bundle(sql, false).source_schemas().iter().find(|s| s.relation() == "target").unwrap().clone();
+        let schema = bundle(sql, false)
+            .source_schemas()
+            .iter()
+            .find(|s| s.relation() == "target")
+            .unwrap()
+            .clone();
         let exact = transition.returning_exact_domains(&schema).unwrap();
         assert_eq!(exact.len(), 2);
         let db = duckdb();
         let mut statement = db.prepare(sql).unwrap();
-        let native = statement.query_map([], |r|
-            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
-        ).unwrap().map(Result::unwrap).collect::<Vec<_>>();
+        let native = statement
+            .query_map([], |r| {
+                Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+            })
+            .unwrap()
+            .map(Result::unwrap)
+            .collect::<Vec<_>>();
         drop(statement);
         assert_eq!(sorted(native), sorted(expected_returning));
         assert_eq!(sorted(expected_after), sorted(native_rows(&db)));
@@ -170,7 +240,10 @@ fn mutation_returning_is_exact_before_delete_and_after_update() {
 #[test]
 fn unattested_default_cannot_be_constructed() {
     let sql = "UPDATE target SET score = DEFAULT WHERE id = 1";
-    let before = state(&[(Some(1),10)]);
+    let before = state(&[(Some(1), 10)]);
     let plan = physical_ordered_write_state_plan(&bundle(sql, false), &[before]);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
