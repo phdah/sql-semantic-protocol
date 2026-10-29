@@ -2,7 +2,7 @@
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
+    analyze_configured_inputs_with_catalog, dialect_from_name,
     physical_ordered_write_state_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
@@ -263,37 +263,13 @@ fn frozen_rows(json: &serde_json::Value) -> Vec<(Option<i64>, i64)> {
 fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-150-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["owner"], "TASK-150");
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 10);
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
         let target_before = frozen_rows(&case["target_before"]);
-        if case["proof"] == "conditional" {
-            // CTE support is independently gated by producer/materialization scope.
-            // Never reinterpret an unavailable named producer as a free source bag.
-            let input = SqlInput::inline(sql);
-            let dialect = dialect_from_name("duckdb").unwrap();
-            let result = analyze_inputs(&[input], "duckdb", dialect.as_ref());
-            match result {
-                Err(_) => {} // explicit parser boundary, not a runtime proof
-                Ok(bundle) => {
-                    let plan = physical_ordered_write_state_plan(
-                        &bundle,
-                        &[
-                            state("target", &target_before),
-                            state("source", &[(Some(1), 40)]),
-                        ],
-                    );
-                    assert!(
-                        !matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
-                        "{id}: must not invent CTE source rows"
-                    );
-                }
-            }
-            continue;
-        }
         let source = case["source"]
             .as_array()
             .map(|_| frozen_rows(&case["source"]));
@@ -338,6 +314,18 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
             case["affected"]["deleted"].as_u64().unwrap(),
             "{id}"
         );
+        if id == "81-C150-N-cte-boundary" {
+            let stages = transition.intermediate_states();
+            assert_eq!(stages.len(), 1, "{id}");
+            assert_eq!(stages[0].relation(), "picked", "{id}");
+            assert_eq!(rows(&stages[0]), vec![(Some(1), 40)], "{id}");
+            let wire: serde_json::Value = serde_json::from_str(
+                &sql_semantic_protocol::to_bundle_json(&bundle)
+            ).unwrap();
+            let local = &wire["inputs"][0]["statements"][0]["write"]["joined_cte_source"];
+            assert_eq!(local["name"], "picked");
+            assert_eq!(local["producer"]["dependencies"], serde_json::json!(["source"]));
+        }
         let selected: Vec<usize> = case["target_true_ordinals"]
             .as_array()
             .unwrap()
