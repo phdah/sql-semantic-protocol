@@ -1,3 +1,14 @@
+TASK-150 bounded joined UPDATE FROM / DELETE USING: `src/analysis/writes.rs`
+selects a single named independent source without JOINs or target self-source;
+`src/protocol/writes.rs` owns the canonical `joined_source` reference and
+conservative write state effect. `src/physical_realization/write_states/operators.rs`
+evaluates every matching source against the same target preimage and requires a
+single match for UPDATE, but existential matching for DELETE. Wire shape:
+`src/emission/statements.rs`, `schema/protocol.schema.json` and
+`docs/protocol.md`. Public full-bag DuckDB oracle:
+`tests/task_150_joined_writes.rs`; finite pending acceptance inventory:
+`docs/task-150-acceptance-freeze.json`. TASK-81 remains independent.
+
 TASK-149 single-target UPDATE/DELETE proof: `src/analysis/writes.rs` normalizes row-local selectors, direct RETURNING projections and explicit unquoted SET DEFAULT markers; `src/protocol/writes.rs` owns the canonical typed assignment marker. `src/physical_realization/write_states/operators.rs` applies atomically selected updates/deletes against the complete target bag, requiring authoritative scalar defaults and preserving SQL UNKNOWN and duplicate occurrences. `write_states.rs` owns the before/after transition, row counts and projected UPDATE postimages or DELETE preimages; `src/emission/statements.rs` and `schema/protocol.schema.json` own the public wire shape. The versioned freeze is `docs/task-149-acceptance-freeze.json` (historical v1 retained); `tests/task_149_{update_delete,frozen_matrix,dialect_adapter}.rs` own independent native DuckDB, all 13 dialect classifications and direct/dbt/ODCS schema-parity evidence. TASK-81 and TASK-150 remain separate closure work.
 
 TASK-148 ordered INSERT certification: `src/physical_realization/write_states.rs` executes canonical write layers against one evolving complete relation map; `src/physical_realization/write_states/operators.rs` implements VALUES/DEFAULT/SELECT/CTE append and maintains local intermediate source bags; `src/physical_realization/write_states/projection.rs` evaluates row-local source predicates. Independent DuckDB execution and typed full-target/CTE/source truth oracles are in `tests/task_148_ordered_insert.rs` and `tests/task_148_negative_matrix.rs`. All 13 parser dialects plus direct SQL/dbt catalog/ODCS equivalent evidence are checked in `tests/task_148_adapter_dialect.rs`. `docs/task-148-acceptance-freeze.json` is the versioned bounded contract and `docs/task-148-acceptance-audit.md` is the signoff audit. TASK-80 parent acceptance remains separately gated.
