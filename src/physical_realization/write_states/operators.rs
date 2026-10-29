@@ -476,14 +476,21 @@ pub(super) fn apply_target_update(
 /// otherwise the selected assignment is engine-dependent and must fail closed.
 /// DELETE USING has existential semantics and deletes each target occurrence
 /// only once even when several source rows satisfy WHERE.
+/// A grouped mutation result sink avoids multiple independent mutable
+/// parameters and keeps the complete local producer bags in the transition.
+pub(super) struct MutationTracking<'a> {
+    pub(super) affected_rows: &'a mut Vec<PhysicalWriteRow>,
+    pub(super) affected_target_ordinals: &'a mut Vec<usize>,
+    pub(super) intermediate_states: &'a mut Vec<PhysicalWriteState>,
+}
+
 pub(super) fn mutate_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
-    affected_rows: &mut Vec<PhysicalWriteRow>,
-    affected_target_ordinals: &mut Vec<usize>,
+    tracking: MutationTracking<'_>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
@@ -494,13 +501,33 @@ pub(super) fn mutate_rows(
         validate_update_assignments(bundle, target, write.target_alias(), write.assignments())?;
     }
 
+    // A joined CTE reads only the physical source bag present at this exact
+    // statement boundary. It is never a free initial or intermediate source.
+    let local_states = if let Some(cte) = write.joined_cte_source() {
+        if write
+            .joined_source()
+            .is_none_or(|source| source.name() != cte.name())
+        {
+            return Err(residual("joined CTE producer/source identity mismatch"));
+        }
+        let intermediate = materialize_local_cte(bundle, cte.name(), cte.producer(), states)?;
+        let mut scoped = states.clone();
+        scoped.insert(cte.name().to_string(), intermediate.clone());
+        tracking.intermediate_states.push(intermediate);
+        Some(scoped)
+    } else {
+        None
+    };
+    let states = local_states.as_ref().unwrap_or(states);
     let joined = if let Some(source) = write.joined_source() {
         if query.sources() != std::slice::from_ref(source) || source.name() == target {
             return Err(residual(
                 "joined mutation has unproved source identity or target self-source",
             ));
         }
-        schema_for(bundle, source.name())?;
+        if write.joined_cte_source().is_none() {
+            schema_for(bundle, source.name())?;
+        }
         let source_rows = states.get(source.name()).ok_or_else(|| {
             residual_gap(
                 PhysicalWriteStateGap::MissingPopulation,
@@ -561,14 +588,14 @@ pub(super) fn mutate_rows(
         affected = affected
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
-        affected_target_ordinals.push(ordinal);
+        tracking.affected_target_ordinals.push(ordinal);
         if delete {
             // DELETE RETURNING contains target preimages, never source rows.
-            affected_rows.push(row.clone());
+            tracking.affected_rows.push(row.clone());
         } else {
             let updated =
                 apply_target_update(bundle, target, row, write.assignments(), &context, &aliases)?;
-            affected_rows.push(updated.clone());
+            tracking.affected_rows.push(updated.clone());
             kept.push(updated);
         }
     }
