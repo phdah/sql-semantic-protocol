@@ -247,7 +247,10 @@ fn every_frozen_physical_cell_matches_native_complete_state_and_truth_partition(
                     matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
                     "{id}: {plan:?}"
                 );
-                assert!(case["conditional_disposition"].as_str().unwrap().contains("TASK-149"));
+                assert!(case["conditional_disposition"]
+                    .as_str()
+                    .unwrap()
+                    .contains("TASK-149"));
             }
             "impossible" => {
                 assert!(
