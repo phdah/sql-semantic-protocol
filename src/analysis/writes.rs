@@ -378,7 +378,10 @@ pub(super) fn analyze_update(
     let mut domain_sources = vec![target_source.clone()];
     domain_sources.extend(joined_source.iter().cloned());
     let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
-    let dependencies = query_sources.iter().map(|source| source.name().to_string()).collect();
+    let dependencies = query_sources
+        .iter()
+        .map(|source| source.name().to_string())
+        .collect();
     let returning_columns = match normalize_mutation_returning(returning) {
         Ok(columns) => columns,
         Err(reason) => {
@@ -442,13 +445,7 @@ pub(super) fn analyze_update(
                     &domains,
                     &domain_sources,
                 );
-                refine_write_value_domain(
-                    &expression,
-                    derived,
-                    &domains,
-                    &domain_sources,
-                    metadata,
-                )
+                refine_write_value_domain(&expression, derived, &domains, &domain_sources, metadata)
             };
             let assignment = MergeAssignment::new(
                 assignment.target.to_string(),
@@ -481,8 +478,9 @@ pub(super) fn analyze_update(
         )
         .with_produced_relation(Some(target.clone()))
         .with_write(Some({
-            let mut write = WriteOperation::update(target, target_alias, predicate, assignments, domains)
-                .with_returning_columns(returning_columns);
+            let mut write =
+                WriteOperation::update(target, target_alias, predicate, assignments, domains)
+                    .with_returning_columns(returning_columns);
             if let Some(source) = joined_source {
                 write = write.with_joined_source(source);
             }
@@ -516,7 +514,10 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
-    let joined_source = delete.using.as_ref().and_then(|tables| named_mutation_source(tables));
+    let joined_source = delete
+        .using
+        .as_ref()
+        .and_then(|tables| named_mutation_source(tables));
     if delete.using.is_some() && joined_source.is_none() {
         return unsupported_write_statement(
             "delete",
@@ -537,7 +538,10 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     let mut domain_sources = vec![target_source];
     domain_sources.extend(joined_source.iter().cloned());
     let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
-    let dependencies = query_sources.iter().map(|source| source.name().to_string()).collect();
+    let dependencies = query_sources
+        .iter()
+        .map(|source| source.name().to_string())
+        .collect();
     let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
         Ok(columns) => columns,
         Err(reason) => {
