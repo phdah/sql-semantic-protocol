@@ -516,6 +516,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             WriteKind::Update => mutate_rows(
                 bundle,
                 query,
+                &states,
                 target,
                 before.as_ref(),
                 false,
@@ -525,6 +526,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             WriteKind::Delete => mutate_rows(
                 bundle,
                 query,
+                &states,
                 target,
                 before.as_ref(),
                 true,
