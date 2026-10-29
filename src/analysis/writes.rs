@@ -312,7 +312,11 @@ fn normalize_mutation_returning(
                 }
                 &column[0].value
             }
-            _ => return Err("RETURNING requires direct target columns with no expression or wildcard"),
+            _ => {
+                return Err(
+                    "RETURNING requires direct target columns with no expression or wildcard",
+                )
+            }
         };
         if !seen.insert(column.clone()) {
             return Err("duplicate RETURNING column identities require positional evidence");
@@ -506,12 +510,13 @@ pub(super) fn analyze_update(
         .iter()
         .map(|source| source.name().to_string())
         .collect();
-    let returning_columns = match normalize_mutation_returning(returning, &target, target_alias.as_deref()) {
-        Ok(columns) => columns,
-        Err(reason) => {
-            return unsupported_write_statement("update", "unproved_mutation_returning", reason)
-        }
-    };
+    let returning_columns =
+        match normalize_mutation_returning(returning, &target, target_alias.as_deref()) {
+            Ok(columns) => columns,
+            Err(reason) => {
+                return unsupported_write_statement("update", "unproved_mutation_returning", reason)
+            }
+        };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -666,7 +671,11 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         .iter()
         .map(|source| source.name().to_string())
         .collect();
-    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref(), &target, target_alias.as_deref()) {
+    let returning_columns = match normalize_mutation_returning(
+        delete.returning.as_deref(),
+        &target,
+        target_alias.as_deref(),
+    ) {
         Ok(columns) => columns,
         Err(reason) => {
             return unsupported_write_statement("delete", "unproved_mutation_returning", reason)
