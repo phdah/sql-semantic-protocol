@@ -238,6 +238,18 @@ fn analyze_with_metadata(
         .with_source_schemas(source_schemas))
 }
 
+/// A nested row-changing query is never an implicit read-only SELECT.
+fn set_expr_contains_write(expr: &SetExpr) -> bool {
+    match expr {
+        SetExpr::Insert(_) | SetExpr::Update(_) | SetExpr::Delete(_) => true,
+        SetExpr::Query(query) => set_expr_contains_write(query.body.as_ref()),
+        SetExpr::SetOperation { left, right, .. } => {
+            set_expr_contains_write(left) || set_expr_contains_write(right)
+        }
+        SetExpr::Select(_) | SetExpr::Values(_) | SetExpr::Table(_) => false,
+    }
+}
+
 fn analyze_statement(
     statement: &SqlStatement,
     metadata: &AnalysisMetadata<'_>,
@@ -249,6 +261,11 @@ fn analyze_statement(
                 "query",
                 "unsupported_nested_write",
                 "DML inside a query body has no proven ordered write semantics",
+            ),
+            other if set_expr_contains_write(other) => unsupported_write_statement(
+                "query",
+                "unsupported_nested_write",
+                "Nested row-changing query bodies cannot be silently treated as SELECT",
             ),
             _ => ProtocolStatement::Query(analyze_query(query, None, metadata)),
         },
