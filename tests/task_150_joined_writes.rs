@@ -3,8 +3,8 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -20,10 +20,7 @@ fn state(relation: &str, rows: &[(Option<i64>, i64)]) -> PhysicalWriteState {
                             LiteralValue::Number(id.to_string())
                         }),
                     ),
-                    (
-                        "score".to_string(),
-                        LiteralValue::Number(score.to_string()),
-                    ),
+                    ("score".to_string(), LiteralValue::Number(score.to_string())),
                 ]))
                 .unwrap()
             })
@@ -40,9 +37,7 @@ fn analyze(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
                 name,
                 ["id", "score"]
                     .into_iter()
-                    .map(|column| {
-                        SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap()
-                    })
+                    .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap())
                     .collect(),
             )
             .unwrap()
@@ -76,7 +71,11 @@ fn rows(state: &PhysicalWriteState) -> Vec<(Option<i64>, i64)> {
     rows
 }
 
-fn native(before: &[(Option<i64>, i64)], source: &[(Option<i64>, i64)], sql: &str) -> Vec<(Option<i64>, i64)> {
+fn native(
+    before: &[(Option<i64>, i64)],
+    source: &[(Option<i64>, i64)],
+    sql: &str,
+) -> Vec<(Option<i64>, i64)> {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE target(id INTEGER, score INTEGER); CREATE TABLE source(id INTEGER, score INTEGER);").unwrap();
     for (relation, rows) in [("target", before), ("source", source)] {
@@ -91,7 +90,9 @@ fn native(before: &[(Option<i64>, i64)], source: &[(Option<i64>, i64)], sql: &st
     db.execute_batch(sql).unwrap();
     let mut stmt = db.prepare("SELECT id, score FROM target").unwrap();
     let mut result = stmt
-        .query_map([], |row| Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
+        })
         .unwrap()
         .map(Result::unwrap)
         .collect::<Vec<_>>();
@@ -111,7 +112,11 @@ fn exact(
         &bundle,
         &[state("target", before), state("source", source)],
     );
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("joined write must be exact: {plan:?}");
     };
     assert_eq!(transitions.len(), 1);
@@ -119,12 +124,22 @@ fn exact(
     assert_eq!(rows(transition.before()), rows(&state("target", before)));
     assert_eq!(transition.affected().updated(), updated);
     assert_eq!(transition.affected().deleted(), deleted);
-    let final_target = final_states.iter().find(|state| state.relation() == "target").unwrap();
-    let final_source = final_states.iter().find(|state| state.relation() == "source").unwrap();
+    let final_target = final_states
+        .iter()
+        .find(|state| state.relation() == "target")
+        .unwrap();
+    let final_source = final_states
+        .iter()
+        .find(|state| state.relation() == "source")
+        .unwrap();
     assert_eq!(rows(transition.after()), rows(final_target));
     assert_eq!(rows(final_source), rows(&state("source", source)));
     assert_eq!(rows(final_target), native(before, source, sql));
-    let target_schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
+    let target_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "target")
+        .unwrap();
     let domains = final_target.exact_domains(target_schema).unwrap();
     assert_eq!(domains.len(), 2);
     for domain in domains {
@@ -179,12 +194,18 @@ fn duplicate_update_matches_fail_closed_instead_of_choosing_an_arbitrary_row() {
             state("source", &[(Some(1), 40), (Some(1), 50)]),
         ],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
 
 #[test]
 fn missing_source_population_is_residual_not_an_empty_source() {
     let bundle = analyze("DELETE FROM target AS t USING source AS s WHERE t.id = s.id");
     let plan = physical_ordered_write_state_plan(&bundle, &[state("target", &[(Some(1), 10)])]);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
