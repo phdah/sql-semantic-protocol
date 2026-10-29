@@ -321,6 +321,21 @@ fn every_frozen_physical_cell_matches_native_complete_state_and_truth_partition(
                             after_rows.len() as u64,
                             "{id} {name}: multiplicity"
                         );
+                        let proof_counts: BTreeMap<Option<i64>, usize> = domain.values().iter()
+                            .map(|(lit, count)| {
+                                let number = match lit {
+                                    LiteralValue::Null => None,
+                                    LiteralValue::Number(n) => Some(n.parse::<i64>().unwrap()),
+                                    _ => panic!("{id}: unexpected noninteger domain")
+                                };
+                                (number,usize::try_from(*count).unwrap())
+                            }).collect();
+                        assert_eq!(proof_counts,actual,"{id} {name}: exact protocol value frequencies");
+                        let frozen_counts: BTreeMap<Option<i64>, usize> = case["typed_domains"][name]["frequencies"]
+                            .as_array().unwrap().iter()
+                            .map(|pair|(pair["value"].as_i64(),usize::try_from(pair["count"].as_u64().unwrap()).unwrap()))
+                            .collect();
+                        assert_eq!(frozen_counts,actual,"{id} {name}: independent expected frequencies");
                         let nonnull = actual.keys().flatten().copied().collect::<Vec<_>>();
                         if !nonnull.is_empty() {
                             let lower = *nonnull.iter().min().unwrap();
