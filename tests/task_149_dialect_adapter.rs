@@ -221,6 +221,7 @@ fn every_exposed_dialect_classifies_single_target_mutations_without_silent_rewri
                     classified[index] += 1;
                 }
                 ProtocolStatement::Unsupported(_) => {}
+                _ => panic!("{dialect}: mutation input has unexpected protocol statement"),
             }
         }
     }
