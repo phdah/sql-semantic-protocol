@@ -24,8 +24,7 @@
     ],
     "parent_regression": "tests/task_75_parent_closure.rs",
     "parent_signed_off": true,
-    "release_approved": false,
-    "final_pr_ci": "pending"
+    "release_approved": false
   },
   "task_148_ordered_insert_acceptance": {
     "owner": "TASK-148",
