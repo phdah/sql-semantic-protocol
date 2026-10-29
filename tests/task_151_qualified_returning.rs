@@ -221,6 +221,7 @@ fn qualified_delete_returning_is_exact_before_image_for_each_duplicate() {
 fn unbound_or_wildcard_returning_does_not_fabricate_target_columns() {
     for sql in [
         "UPDATE target AS t SET score = 40 RETURNING source.id",
+        "UPDATE target AS t SET score = 40 RETURNING target.id",
         "DELETE FROM target WHERE id = 2 RETURNING *",
     ] {
         let plan = physical_ordered_write_state_plan(&bundle(sql), &[state(&BEFORE)]);
