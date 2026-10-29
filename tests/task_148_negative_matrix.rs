@@ -85,7 +85,10 @@ fn query_bag(db: &Connection, sql: &str) -> Vec<Row> {
 }
 
 fn native_bag(db: &Connection) -> Vec<Row> {
-    query_bag(db, "SELECT id,score FROM target ORDER BY id,score NULLS FIRST")
+    query_bag(
+        db,
+        "SELECT id,score FROM target ORDER BY id,score NULLS FIRST",
+    )
 }
 
 #[test]
