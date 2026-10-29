@@ -360,9 +360,12 @@ fn all_frozen_mutation_cases_have_identical_odcs_schema_evidence() {
 
 #[test]
 fn vendor_mutation_forms_cannot_be_misclassified_as_single_target_exact() {
+    // TASK-150 now normalizes one independent joined source. These are
+    // still conditional on complete physical input bags and never exact
+    // from SQL parsing alone. Keep vendor-only forms in the negative matrix.
     let unsupported = [
-        "UPDATE target SET score = source.score FROM source WHERE target.id = source.id",
-        "DELETE FROM target USING source WHERE target.id = source.id",
+        "UPDATE target SET score = source.score FROM source, extra WHERE target.id = source.id",
+        "DELETE FROM target USING source, extra WHERE target.id = source.id",
         "DELETE FROM target WHERE id = 1 ORDER BY id LIMIT 1",
         "UPDATE target SET score = 40 WHERE id = 1 RETURNING *",
         "DELETE FROM target WHERE id = 1 RETURNING id AS alias_id",
