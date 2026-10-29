@@ -2,14 +2,41 @@
   "task_150_joined_mutations_acceptance": {
     "owner": "TASK-150",
     "parent": "TASK-81",
-    "status": "bounded_implementation_ci_unverified",
+    "status": "verified_bounded_child_pending_merge",
     "freeze": "docs/task-150-acceptance-freeze.json",
-    "fixture_ids": ["81-C150-P", "81-C150-N"],
+    "freeze_version": 3,
+    "fixture_ids": [
+      "81-C150-P",
+      "81-C150-N"
+    ],
     "native_oracle": "tests/task_150_joined_writes.rs",
-    "parser_cells_verified": 0,
-    "adapter_cells_verified": 0,
-    "mandatory_cases_verified": false,
-    "child_signed_off": false,
+    "dialect_adapter_oracle": "tests/task_150_dialect_adapter.rs",
+    "signoff_audit": "docs/task-150-acceptance-audit.md",
+    "mandatory_exact_verified": 8,
+    "conditional_residual_reviewed": 2,
+    "independent_impossible_oracles_verified": 1,
+    "parser_cells_verified": 130,
+    "adapter_cells_verified": 30,
+    "mandatory_cases_verified": true,
+    "child_signed_off": true,
+    "verified_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac_covered": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ],
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581",
+    "implementation_ci_sha": "11565f78586ef486ad8c14a66e4993ea406b5ee0",
+    "final_metadata_ci_gate": "Signoff-only PR head must also pass required CI before merge",
+    "native_vendor_execution_certified": false,
     "parent_signed_off": false,
     "release_approved": false
   },

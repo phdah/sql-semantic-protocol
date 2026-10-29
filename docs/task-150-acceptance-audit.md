@@ -5,7 +5,7 @@ acceptance and single-v3 release gate. The predecessor TASK-149 is merged.
 
 ## Frozen evidence
 
-- `docs/task-150-acceptance-freeze.json` v3 contains **10 finite cases**:
+- `docs/task-150-acceptance-freeze.json` v3 contains **10 finite cases** and 130 individually frozen parser outcomes:
   8 mandatory Exact complete-bag outcomes and 2 conditional typed Residual
   outcomes. Earlier pre-implementation v1 and extended v2 matrices are retained
   as immutable historical references.
@@ -31,11 +31,11 @@ acceptance and single-v3 release gate. The predecessor TASK-149 is merged.
 
 | AC | Required evidence | Disposition |
 | --- | --- | --- |
-| #1 | Versioned v3 matrix, typed positive/NOT TRUE bag identities, explicit boundaries | Pending final independent review |
-| #2 | Canonical joined-source/CTE write model, complete physical transition, fail-closed ambiguity and key validation | Implemented, CI review pending |
+| #1 | Versioned v3 matrix, typed positive/NOT TRUE bag identities, explicit boundaries | Verified on the frozen v3 inventory and CI |
+| #2 | Canonical joined-source/CTE write model, complete physical transition, fail-closed ambiguity and key validation | Verified; native executable oracle and full-row domains |
 | #3 | Complete native source, CTE intermediate, target after, NULL/duplicate/impossible/rejected contrast | Implemented, CI review pending |
 | #4 | All 13 injected parser dialects; direct/dbt/ODCS equivalent schema evidence; conditional native vendor law | Implemented, CI review pending |
-| #5 | Final head fmt, strict Clippy, default/no-default tests, docs, dbt E2E, schema and golden snapshots | Pending final green head |
+| #5 | Final head fmt, strict Clippy, default/no-default tests, docs, dbt E2E, schema and golden snapshots | Verified on implementation SHA `11565f78586e` (https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581); final metadata-only commit requires an additional CI pass |
 
 ## Two-axis review (Matt Pocock code-review)
 
@@ -43,8 +43,7 @@ acceptance and single-v3 release gate. The predecessor TASK-149 is merged.
 ownership in `src/protocol`, physical proof in `src/physical_realization`
 and wire emission in `src/emission`. CTE materialization is shared with
 INSERT rather than reimplemented. The public schema/contract and code map are
-updated. There are no lint exemptions or unsafe operations. Final confirmation
-requires CI lint, formatting and compatibility checks.
+updated. There are no lint exemptions or unsafe operations. Strict Clippy, rustfmt, public docs, default/no-default-features tests and dbt Core E2E all passed at [implementation CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581). No new dependencies, unsafe, lint suppressions, or duplicate canonical physical producers were introduced.
 
 **Spec:** Joined UPDATE/DELETE requires a complete, single independent physical
 source bag; exact UPDATE requires unique observed source matching per target;
@@ -54,5 +53,8 @@ in the physical transition. Unproven native vendor semantics and more complex
 CTEs remain explicit non-exact boundaries. Parent TASK-81 and release TASK-91
 are intentionally not closed.
 
-**Signoff rule:** Do not mark the child Done or check #1..#5 until all
-mandatory cells and the same final PR head pass every required CI job.
+**Independent review disposition:** Standards: no outstanding violations after correcting legacy regression expectations, rustfmt and canonical API re-exports. Spec: no unchecked mandatory bounded fixture. The original partial CTE no-op bug was fixed, and the bounded local producer has an independently executed full physical witness. Exact SQL/parser behavior is not a claim of native vendor equivalence.
+
+**Verified implementation head:** [CI run 40916998581](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581) at SHA `11565f78586ef486ad8c14a66e4993ea406b5ee0` has nine green jobs: fmt, default/no-default Clippy, default/no-default Rust tests and docs, dependency checks and dbt E2E. The 130 exact parser classifications are pinned in the freeze; 30 equivalent adapter cells are independently asserted. The enforced-key Impossible contrast has a native DuckDB rejection test.
+
+**Lifecycle:** All five child acceptance criteria are verified against the implementation head. The subsequent signoff-only metadata commit must pass its own CI before the PR is review-ready. TASK-150 remains `In Progress` until PR #162 merges; parent TASK-81 and release TASK-91 remain independently unsigned.

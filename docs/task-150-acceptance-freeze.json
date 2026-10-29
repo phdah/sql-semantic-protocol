@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-150",
   "parent": "TASK-81",
-  "status": "mandatory_cte_exactness_added_pending_ci",
+  "status": "verified_bounded_child_pending_merge",
   "fixture_ids": [
     "81-C150-P",
     "81-C150-N"
@@ -1006,11 +1006,20 @@
     }
   ],
   "signoff": {
-    "mandatory_cases_verified": false,
-    "dialect_matrix_verified": false,
-    "adapter_parity_verified": false,
-    "duckdb_full_bag_verified": false,
-    "full_ci_verified": false
+    "mandatory_cases_verified": true,
+    "dialect_matrix_verified": true,
+    "adapter_parity_verified": true,
+    "duckdb_full_bag_verified": true,
+    "full_ci_verified": true,
+    "exact_cases": 8,
+    "conditional_residual_cases": 2,
+    "independent_impossible_oracles_verified": 1,
+    "dialect_parser_cells": 130,
+    "adapter_parity_cells": 30,
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581",
+    "ci_commit": "11565f78586ef486ad8c14a66e4993ea406b5ee0",
+    "last_review": "2026-10-29",
+    "merge_gate": "All original TASK-81 parent criteria remain separate; TASK-150 remains In Progress until PR #162 merges"
   },
   "dialect_expected": {
     "81-C150-N-ambiguous-update::ansi": "parsed_canonical",
@@ -1148,5 +1157,38 @@
     "captured_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40916263392",
     "classification": "parser normalization only; not native vendor execution",
     "cells": 130
+  },
+  "independent_impossible_contrast": {
+    "id": "81-C150-N-enforced-target-pk-contradiction",
+    "purpose": "Original AC #3 Impossible contrast, independently executed outside the core 10-case dialect/adapter cross-product",
+    "sql": "UPDATE target AS t SET id = s.id FROM source AS s WHERE t.score = s.score",
+    "target_before": [
+      {
+        "id": 1,
+        "score": 10
+      },
+      {
+        "id": 2,
+        "score": 20
+      }
+    ],
+    "source": [
+      {
+        "id": 2,
+        "score": 10
+      }
+    ],
+    "enforced_constraint": {
+      "relation": "target",
+      "kind": "primary_key",
+      "columns": [
+        "id"
+      ],
+      "attestation": "enforced"
+    },
+    "expected_proof": "impossible",
+    "expected_native_duckdb": "primary key violation",
+    "oracle": "tests/task_150_joined_writes.rs::enforced_target_primary_key_collision_from_joined_update_is_impossible",
+    "owner": "TASK-150"
   }
 }
