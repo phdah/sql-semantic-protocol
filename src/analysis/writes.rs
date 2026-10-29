@@ -376,7 +376,8 @@ pub(super) fn analyze_update(
         .iter()
         .map(|assignment| {
             let is_default = matches!(&assignment.value,
-                Expr::Identifier(identifier) if identifier.value.eq_ignore_ascii_case("DEFAULT"));
+                Expr::Identifier(identifier) if identifier.quote_style.is_none()
+                    && identifier.value.eq_ignore_ascii_case("DEFAULT"));
             // SQL DEFAULT is not the identifier of a physical source column.
             // The marker is evaluated only against authoritative target metadata.
             let expression = if is_default {
