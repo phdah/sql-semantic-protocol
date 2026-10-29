@@ -465,7 +465,6 @@ pub(super) fn apply_target_update(
 pub(super) fn mutate_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
-    _states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
     delete: bool,
