@@ -1,10 +1,10 @@
 ---
 id: TASK-75
 title: Prove correlated, quantified and nested subqueries
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-29'
 labels: []
 milestone: m-3
 dependencies: 
@@ -33,12 +33,12 @@ Current subquery witness supports simple EXISTS/IN on direct physical single-rel
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Support EXISTS/NOT EXISTS, IN/NOT IN, scalar subqueries, ANY/SOME/ALL comparisons, correlated and uncorrelated forms, nesting, multiple correlation keys and aggregation or joins inside subqueries.
-- [ ] #2 Prove outer/inner row multiplicity, scalar zero/one/multiple-row semantics, NULL UNKNOWN behavior, empty results and full anti-membership absence through intermediate producers.
-- [ ] #3 Support semantically equivalent LATERAL/APPLY where parser-supported and keep all source/alias scopes unambiguous.
-- [ ] #4 Expose exact qualifying and rejected cases, impossible cardinalities, typed correlation values and schema/comparison assumptions without delegating operator inference to generator.
-- [ ] #5 DuckDB-test full results for the committed subquery_orders.sql and negative/null/duplicate/correlated fixtures.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Support EXISTS/NOT EXISTS, IN/NOT IN, scalar subqueries, ANY/SOME/ALL comparisons, correlated and uncorrelated forms, nesting, multiple correlation keys and aggregation or joins inside subqueries.
+- [x] #2 Prove outer/inner row multiplicity, scalar zero/one/multiple-row semantics, NULL UNKNOWN behavior, empty results and full anti-membership absence through intermediate producers.
+- [x] #3 Support semantically equivalent LATERAL/APPLY where parser-supported and keep all source/alias scopes unambiguous.
+- [x] #4 Expose exact qualifying and rejected cases, impossible cardinalities, typed correlation values and schema/comparison assumptions without delegating operator inference to generator.
+- [x] #5 DuckDB-test full results for the committed subquery_orders.sql and negative/null/duplicate/correlated fixtures.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -68,3 +68,31 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-129, TASK-130, TASK-131, TASK-132; #2 -> TASK-129, TASK-130, TASK-131, TASK-132; #3 -> TASK-131, TASK-132; #4 -> TASK-129, TASK-130, TASK-131, TASK-132; #5 -> TASK-129, TASK-130, TASK-131, TASK-132; #6 -> TASK-129, TASK-130, TASK-131, TASK-132.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent original acceptance signoff (2026-10-29)
+
+All six original TASK-75 acceptance criteria are independently reconciled in
+[the parent freeze](../../docs/task-75-acceptance-freeze.json) and
+[parent audit](../../docs/task-75-acceptance-audit.md), guarded by
+[`tests/task_75_parent_closure.rs`](../../tests/task_75_parent_closure.rs).
+All four child PRs #140..#143 are merged. The child-owned finite matrices prove
+40 mandatory outcomes (39 Exact, one required scalar runtime cardinality error),
+with 520 parser cells, 120 SQL/dbt/ODCS adapter cells and ten reviewed conditional
+boundaries. Native DuckDB complete physical/terminal and real compiled dbt
+`subquery_orders.sql` oracles are retained, including NULL/duplicates, TRUE/NOT TRUE,
+typed inclusive domains, and full materialized producer identity.
+
+Unsupported nested LATERAL/APPLY and vendor/session laws, DuckDB's native tuple
+NULL comparison differences, and noninteger tuple rules remain explicitly
+non-certified; no parser-only claim is promoted to native runtime Exact.
+The parent-PR final-head CI remains the merge gate. This portable parent signoff
+**does not** authorize protocol 3.0.0 release (TASK-91).
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-75 original AC #1..#6: Done for the frozen portable source/terminal
+contract. Merged TASK-129..132 retain 40 mandatory outcomes and ten reviewed
+conditional boundaries, with independently executed DuckDB and dbt Core proofs.
+Final PR CI is required before merge, and TASK-91 separately gates release.
+<!-- SECTION:FINAL_SUMMARY:END -->
