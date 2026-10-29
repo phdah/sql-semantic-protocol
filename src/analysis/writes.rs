@@ -392,7 +392,13 @@ pub(super) fn analyze_joined_cte_mutation(
         || producer.aggregation().is_some()
         || !(producer.row_preserving_projection() || producer.filter_only_row_shape())
         || producer.output().columns().is_empty()
-        || producer.output().columns().iter().map(|col| col.name()).collect::<BTreeSet<_>>().len()
+        || producer
+            .output()
+            .columns()
+            .iter()
+            .map(|col| col.name())
+            .collect::<BTreeSet<_>>()
+            .len()
             != producer.output().columns().len()
     {
         return unsupported_write_statement(
@@ -402,12 +408,14 @@ pub(super) fn analyze_joined_cte_mutation(
         );
     }
     let physical_dependencies = producer.dependencies().to_vec();
-    let write = write.clone().with_joined_cte_source(
-        JoinedMutationCteSource::new(name, producer),
-    );
-    ProtocolStatement::Query(mutation
-        .with_physical_dependencies(physical_dependencies)
-        .with_write(Some(write)))
+    let write = write
+        .clone()
+        .with_joined_cte_source(JoinedMutationCteSource::new(name, producer));
+    ProtocolStatement::Query(
+        mutation
+            .with_physical_dependencies(physical_dependencies)
+            .with_write(Some(write)),
+    )
 }
 
 /// Extract one named physical source; do not flatten unrelated JOIN inputs.
