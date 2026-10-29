@@ -31,12 +31,13 @@ fn load(text: &str) -> Value {
 }
 
 fn strings(value: &Value) -> BTreeSet<String> {
-    value
-        .as_array()
-        .expect("frozen array")
+    let values = value.as_array().expect("frozen array");
+    let unique: BTreeSet<String> = values
         .iter()
         .map(|value| value.as_str().expect("stable string").to_owned())
-        .collect()
+        .collect();
+    assert_eq!(unique.len(), values.len(), "duplicate frozen IDs");
+    unique
 }
 
 fn aliases(name: &str) -> &str {
@@ -50,12 +51,36 @@ fn aliases(name: &str) -> &str {
 }
 
 fn keys(value: &Value) -> BTreeSet<String> {
-    value
-        .as_object()
-        .expect("explicit coverage cells")
-        .keys()
-        .map(|name| aliases(name).to_owned())
-        .collect()
+    let cells = value.as_object().expect("explicit coverage cells");
+    let normalized: BTreeSet<String> = cells.keys().map(|name| aliases(name).to_owned()).collect();
+    assert_eq!(
+        normalized.len(),
+        cells.len(),
+        "duplicate canonical dialect/adapter cell after alias normalization"
+    );
+    normalized
+}
+
+fn exact_statuses(value: &Value, expected: &[&str], id: &str, matrix: &str) {
+    for (name, status) in value.as_object().expect("frozen coverage matrix") {
+        let status = status.as_str().expect("typed frozen coverage status");
+        assert!(
+            expected.contains(&status),
+            "{id}: {matrix} {name} is not an approved verified/conditional status: {status}"
+        );
+    }
+}
+
+fn physical_source_bags(case: &Value, id: &str) {
+    let sources = case
+        .get("source_bags")
+        .or_else(|| case.get("raw_seed_bags"))
+        .expect("physical source bags");
+    let sources = sources.as_object().expect("physical relation inventory");
+    assert!(!sources.is_empty(), "{id}: missing physical input relations");
+    for (relation, rows) in sources {
+        assert!(rows.is_array(), "{id}: {relation} must be a complete row bag");
+    }
 }
 
 fn nonempty(value: &Value) -> bool {
@@ -87,6 +112,11 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
         strings(&json!(["direct_sql", "dbt_compiled", "odcs_schema"]))
     );
 
+    assert_eq!(
+        keys(&parent["source_of_truth"]),
+        strings(&json!(["TASK-129", "TASK-130", "TASK-131", "TASK-132"]))
+    );
+
     let mut mandatory = BTreeSet::new();
     let mut conditional = BTreeSet::new();
     let mut fixtures = BTreeSet::new();
@@ -112,10 +142,15 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
         for case in child["cases"].as_array().expect("child case inventory") {
             let id = case["id"].as_str().expect("stable case ID");
             assert!(nonempty(&case["sql"]), "{id}: no SQL or fixture");
-            assert!(
-                case["source_bags"].is_object() || case["raw_seed_bags"].is_object(),
-                "{id}: no complete physical source bags"
-            );
+            physical_source_bags(case, id);
+            if task != "TASK-131" {
+                assert_eq!(
+                    case.get("fixture").or_else(|| case.get("fixture_id")),
+                    case.get("fixture").or_else(|| case.get("fixture_id"))
+                        .filter(|fixture| actual_fixtures.contains(fixture.as_str().expect("fixture ID"))),
+                    "{id}: missing or unowned fixture ID"
+                );
+            }
 
             let parser = case
                 .get("parser_status")
@@ -127,21 +162,39 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                 .expect("frozen adapter matrix");
             assert_eq!(keys(parser), dialects, "{id}: parser coverage missing");
             assert_eq!(keys(adapter), adapters, "{id}: adapter coverage missing");
-            assert!(parser
-                .as_object()
-                .expect("dialect cells")
-                .values()
-                .all(nonempty));
-            assert!(adapter
-                .as_object()
-                .expect("adapter cells")
-                .values()
-                .all(nonempty));
+            let (parser_statuses, adapter_statuses): (&[&str], &[&str]) = match task {
+                "TASK-129" => (&["parser_equivalent"], &["verified"]),
+                "TASK-130" => (&["verified_parser_and_canonical"], &["verified"]),
+                "TASK-131" if case["expected_proof"] == "Residual" => {
+                    (&["parsed"], &["Residual_conditional"])
+                }
+                "TASK-131" => (&["parsed"], &["Exact_or_CardinalityViolation_required"]),
+                "TASK-132" => (
+                    &[
+                        "verified_sqlparser_canonical_complete_source_bag_no_native_engine_claim",
+                        "verified_compiled_sql_shared_parser_syntax_four_producers_no_native_engine_claim",
+                    ],
+                    &[
+                        "verified_equivalent_canonical_full_source_bag",
+                        "verified_exact_full_canonical_source_to_terminal_producer_chain",
+                    ],
+                ),
+                _ => panic!("unexpected child {task}"),
+            };
+            exact_statuses(parser, parser_statuses, id, "parser");
+            exact_statuses(adapter, adapter_statuses, id, "adapter");
 
             if task == "TASK-131" && case["expected_proof"] == "Residual" {
                 assert_eq!(
                     case["terminal_oracle"]["status"],
                     "conditional_native_engine_only"
+                );
+                assert_eq!(case["expect"]["owner"], task, "{id}: missing conditional owner");
+                assert_eq!(case["expect"]["type"], "conditional", "{id}");
+                assert!(nonempty(&case["expect"]["reason"]), "{id}: no conditional reason");
+                assert!(
+                    nonempty(&case["release_disposition"]),
+                    "{id}: missing reviewed release disposition"
                 );
                 assert!(child_conditional.insert(id.to_owned()), "{id}");
                 assert!(conditional.insert(id.to_owned()), "{id}");
@@ -164,6 +217,20 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                     assert!(case["terminal_oracle"]["rows"].is_array(), "{id}");
                 }
             } else {
+                if task == "TASK-129" {
+                    assert_eq!(case["duckdb_source_and_terminal_oracle"], "verified", "{id}");
+                } else if task == "TASK-130" {
+                    assert!(
+                        matches!(
+                            case["duckdb_source_and_terminal_oracle"].as_str(),
+                            Some("verified_native_scalar_sql")
+                                | Some("verified_independent_fieldwise_sql_reference")
+                        ),
+                        "{id}: no verified native execution reference"
+                    );
+                } else if task == "TASK-132" {
+                    assert_eq!(case["status"], "verified_mandatory_test_evidence", "{id}");
+                }
                 assert!(nonempty(&case["positive_proof"]), "{id}");
                 assert!(nonempty(&case["not_true_proof"]), "{id}");
                 assert!(
@@ -220,6 +287,14 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
     assert_eq!(parent["portable_gate"]["conditional_cases"], 10);
     assert_eq!(parent["portable_gate"]["mandatory_parser_cells"], 520);
     assert_eq!(parent["portable_gate"]["mandatory_adapter_cells"], 120);
+    assert_eq!(
+        parent["portable_gate"]["mandatory_parser_cells"].as_u64(),
+        Some((mandatory.len() * dialects.len()) as u64)
+    );
+    assert_eq!(
+        parent["portable_gate"]["mandatory_adapter_cells"].as_u64(),
+        Some((mandatory.len() * adapters.len()) as u64)
+    );
 
     let criteria = parent["original_acceptance_criteria"]
         .as_array()
@@ -257,6 +332,11 @@ fn coverage_registry_preserves_parent_signoff_separately_from_release() {
     );
     assert_eq!(row["mandatory_parser_cells"], 520);
     assert_eq!(row["mandatory_adapter_cells"], 120);
+    assert_eq!(
+        strings(&row["merged_children"]),
+        strings(&json!(["TASK-129", "TASK-130", "TASK-131", "TASK-132"]))
+    );
+    assert_eq!(row["parent_regression"], "tests/task_75_parent_closure.rs");
     assert_eq!(row["parent_signed_off"], true);
     assert_eq!(row["release_approved"], false);
 }
