@@ -144,11 +144,14 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
             assert!(nonempty(&case["sql"]), "{id}: no SQL or fixture");
             physical_source_bags(case, id);
             if task != "TASK-131" {
-                assert_eq!(
-                    case.get("fixture").or_else(|| case.get("fixture_id")),
-                    case.get("fixture").or_else(|| case.get("fixture_id"))
-                        .filter(|fixture| actual_fixtures.contains(fixture.as_str().expect("fixture ID"))),
-                    "{id}: missing or unowned fixture ID"
+                let fixture = case
+                    .get("fixture")
+                    .or_else(|| case.get("fixture_id"))
+                    .and_then(Value::as_str)
+                    .expect("mandatory case fixture ID");
+                assert!(
+                    actual_fixtures.contains(fixture),
+                    "{id}: unowned fixture ID {fixture}"
                 );
             }
 
