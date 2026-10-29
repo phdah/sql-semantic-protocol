@@ -462,9 +462,17 @@ pub(super) fn apply_target_update(
     Ok(next)
 }
 
+/// Prove one UPDATE/DELETE against a complete target bag and, when present,
+/// one independent complete physical source bag.
+///
+/// UPDATE FROM requires no more than one matching source row per target row;
+/// otherwise the selected assignment is engine-dependent and must fail closed.
+/// DELETE USING has existential semantics and deletes each target occurrence
+/// only once even when several source rows satisfy WHERE.
 pub(super) fn mutate_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
     delete: bool,
@@ -478,15 +486,72 @@ pub(super) fn mutate_rows(
     if !delete {
         validate_update_assignments(bundle, target, write.target_alias(), write.assignments())?;
     }
+
+    let joined = if let Some(source) = write.joined_source() {
+        if query.sources() != std::slice::from_ref(source) || source.name() == target {
+            return Err(residual(
+                "joined mutation has unproved source identity or target self-source",
+            ));
+        }
+        schema_for(bundle, source.name())?;
+        let source_rows = states.get(source.name()).ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::MissingPopulation,
+                "missing complete UPDATE FROM / DELETE USING source population",
+            )
+        })?;
+        Some((source, source_rows))
+    } else {
+        if !query.sources().is_empty() {
+            return Err(residual("mutation has unaccounted physical sources"));
+        }
+        None
+    };
+    let aliases: Vec<&str> = joined.map_or_else(Vec::new, |(source, _)| {
+        vec![source.alias().unwrap_or(source.name()), source.name()]
+    });
     let mut kept = Vec::new();
     let mut affected = 0_u64;
     for (ordinal, row) in before.rows.iter().enumerate() {
+        // All source matches must be evaluated against the *same* original target
+        // preimage, never a previously modified row or a guessed producer bag.
+        let matched_source = if let Some((source, population)) = joined {
+            let mut matched = None;
+            for candidate in &population.rows {
+                let context = Context {
+                    target: Some((target, row)),
+                    target_alias: write.target_alias(),
+                    source: Some((source.name(), candidate)),
+                };
+                if selected(write.selection(), &context, &aliases)? {
+                    if matched.is_some() && !delete {
+                        return Err(residual(
+                            "multiple UPDATE FROM matches require an attested deterministic source-selection law",
+                        ));
+                    }
+                    matched = Some(candidate);
+                    if delete {
+                        break;
+                    }
+                }
+            }
+            matched
+        } else {
+            None
+        };
         let context = Context {
             target: Some((target, row)),
             target_alias: write.target_alias(),
-            source: None,
+            source: matched_source.and_then(|matched| {
+                joined.map(|(source, _)| (source.name(), matched))
+            }),
         };
-        if !selected(write.selection(), &context, &[])? {
+        let matches = if joined.is_some() {
+            matched_source.is_some()
+        } else {
+            selected(write.selection(), &context, &[])?
+        };
+        if !matches {
             kept.push(row.clone());
             continue;
         }
@@ -495,11 +560,11 @@ pub(super) fn mutate_rows(
             .ok_or_else(|| residual("affected count overflow"))?;
         affected_target_ordinals.push(ordinal);
         if delete {
-            // DELETE RETURNING observes the removed preimage, including duplicates.
+            // DELETE RETURNING contains target preimages, never source rows.
             affected_rows.push(row.clone());
         } else {
             let updated =
-                apply_target_update(bundle, target, row, write.assignments(), &context, &[])?;
+                apply_target_update(bundle, target, row, write.assignments(), &context, &aliases)?;
             affected_rows.push(updated.clone());
             kept.push(updated);
         }
