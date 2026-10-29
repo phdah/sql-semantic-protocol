@@ -570,3 +570,29 @@ fn enforced_target_primary_key_collision_from_joined_update_is_impossible() {
         "native engine must reject enforced key collision"
     );
 }
+
+
+#[test]
+fn complex_cte_mutation_is_explicitly_unsupported_not_a_silent_noop() {
+    use sql_semantic_protocol::{analyze_inputs, ProtocolStatement};
+
+    let dialect = dialect_from_name("duckdb").unwrap();
+    for statement in [
+        "WITH a AS (SELECT id,score FROM source),
+              b AS (SELECT id,score FROM source)
+         UPDATE target AS t SET score = a.score FROM a WHERE t.id = a.id",
+        "WITH RECURSIVE a AS (SELECT id,score FROM source)
+         UPDATE target AS t SET score = a.score FROM a WHERE t.id = a.id",
+    ] {
+        let analyzed = analyze_inputs(&[SqlInput::inline(statement)], "duckdb", dialect.as_ref())
+            .expect("duckdb parser supports wrapped DML syntax");
+        assert!(matches!(analyzed.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+            "unproved CTE must never be emitted as ordinary SELECT");
+        let plan = physical_ordered_write_state_plan(
+            &analyzed,
+            &[state("target", &[(Some(1), 10)]), state("source", &[(Some(1), 40)])],
+        );
+        assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+            "unsupported write cannot be silently skipped: {plan:?}");
+    }
+}
