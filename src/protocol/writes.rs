@@ -905,7 +905,11 @@ pub struct MergeAssignment {
 
 impl MergeAssignment {
     pub(crate) fn new(target: String, value: WriteValue) -> Self {
-        Self { target, value, default_value: false }
+        Self {
+            target,
+            value,
+            default_value: false,
+        }
     }
 
     /// An explicit SQL SET column = DEFAULT action. The placeholder expression
