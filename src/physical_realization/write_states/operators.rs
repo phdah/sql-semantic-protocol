@@ -470,6 +470,7 @@ pub(super) fn mutate_rows(
     before: Option<&PhysicalWriteState>,
     delete: bool,
     affected_rows: &mut Vec<PhysicalWriteRow>,
+    affected_target_ordinals: &mut Vec<usize>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
@@ -480,7 +481,7 @@ pub(super) fn mutate_rows(
     }
     let mut kept = Vec::new();
     let mut affected = 0_u64;
-    for row in &before.rows {
+    for (ordinal, row) in before.rows.iter().enumerate() {
         let context = Context {
             target: Some((target, row)),
             target_alias: write.target_alias(),
@@ -493,6 +494,7 @@ pub(super) fn mutate_rows(
         affected = affected
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
+        affected_target_ordinals.push(ordinal);
         if delete {
             // DELETE RETURNING observes the removed preimage, including duplicates.
             affected_rows.push(row.clone());
