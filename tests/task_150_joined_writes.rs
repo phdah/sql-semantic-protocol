@@ -571,7 +571,6 @@ fn enforced_target_primary_key_collision_from_joined_update_is_impossible() {
     );
 }
 
-
 #[test]
 fn complex_cte_mutation_is_explicitly_unsupported_not_a_silent_noop() {
     use sql_semantic_protocol::{analyze_inputs, ProtocolStatement};
@@ -586,13 +585,23 @@ fn complex_cte_mutation_is_explicitly_unsupported_not_a_silent_noop() {
     ] {
         let analyzed = analyze_inputs(&[SqlInput::inline(statement)], "duckdb", dialect.as_ref())
             .expect("duckdb parser supports wrapped DML syntax");
-        assert!(matches!(analyzed.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
-            "unproved CTE must never be emitted as ordinary SELECT");
+        assert!(
+            matches!(
+                analyzed.inputs()[0].statements()[0],
+                ProtocolStatement::Unsupported(_)
+            ),
+            "unproved CTE must never be emitted as ordinary SELECT"
+        );
         let plan = physical_ordered_write_state_plan(
             &analyzed,
-            &[state("target", &[(Some(1), 10)]), state("source", &[(Some(1), 40)])],
+            &[
+                state("target", &[(Some(1), 10)]),
+                state("source", &[(Some(1), 40)]),
+            ],
         );
-        assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
-            "unsupported write cannot be silently skipped: {plan:?}");
+        assert!(
+            matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+            "unsupported write cannot be silently skipped: {plan:?}"
+        );
     }
 }
