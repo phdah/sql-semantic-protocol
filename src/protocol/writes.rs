@@ -900,11 +900,25 @@ impl WriteValue {
 pub struct MergeAssignment {
     target: String,
     value: WriteValue,
+    default_value: bool,
 }
 
 impl MergeAssignment {
     pub(crate) fn new(target: String, value: WriteValue) -> Self {
-        Self { target, value }
+        Self { target, value, default_value: false }
+    }
+
+    /// An explicit SQL SET column = DEFAULT action. The placeholder expression
+    /// is never evaluated; the physical executor requires authoritative metadata.
+    pub(crate) fn with_default(mut self) -> Self {
+        self.default_value = true;
+        self
+    }
+
+    /// Whether this SET action evaluates an attested column DEFAULT instead of
+    /// the expression payload. The marker cannot be mistaken for SQL NULL.
+    pub fn is_default(&self) -> bool {
+        self.default_value
     }
 
     /// Return the target column or tuple representation.
