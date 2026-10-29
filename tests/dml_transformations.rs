@@ -446,11 +446,17 @@ fn joined_writes_are_normalized_without_fabricating_physical_source_rows() {
         };
         let write = query.write().expect("canonical partial write");
         assert_eq!(write.kind(), kind);
-        assert_eq!(write.joined_source().map(|source| source.name()), Some("src"));
+        assert_eq!(
+            write.joined_source().map(|source| source.name()),
+            Some("src")
+        );
         assert_eq!(query.dependencies(), &["src".to_string()]);
         let plan = sql_semantic_protocol::physical_ordered_write_state_plan(&bundle, &[]);
         assert!(
-            matches!(plan, sql_semantic_protocol::PhysicalWriteStatePlan::Residual { .. }),
+            matches!(
+                plan,
+                sql_semantic_protocol::PhysicalWriteStatePlan::Residual { .. }
+            ),
             "parsed join alone cannot prove physical state: {plan:?}"
         );
     }
