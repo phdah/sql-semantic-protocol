@@ -35,7 +35,7 @@ fn bundle(sql: &str, default: bool) -> sql_semantic_protocol::AnalysisBundle {
     let schema = RelationSchema::new(
         "target",
         ["id", "score"]
-            .iter()
+            .into_iter()
             .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
             .collect(),
     )
