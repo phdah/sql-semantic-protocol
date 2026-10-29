@@ -494,3 +494,63 @@ fn every_frozen_parser_cell_requires_a_verified_explicit_classification() {
         unverified
     );
 }
+
+#[test]
+fn audited_acceptance_inventory_has_no_unverified_or_unowned_cells() {
+    let freeze = freeze();
+    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["parent"], "TASK-81");
+    assert_eq!(freeze["owner"], "TASK-149");
+    assert_eq!(freeze["mandatory_case_count"], 12);
+    assert_eq!(freeze["conditional_case_count"], 1);
+    assert_eq!(freeze["matrix_cells"]["parser"], 169);
+    assert_eq!(freeze["matrix_cells"]["adapter"], 39);
+    assert_eq!(freeze["original_parent_ac"], serde_json::json!([1, 2, 3, 5, 6]));
+    assert_eq!(freeze["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
+
+    let fixture_ids = ["81-C149-P", "81-C149-N"];
+    let cases = freeze["cases"].as_array().unwrap();
+    let mut unique = BTreeSet::new();
+    for case in cases {
+        let id = case["id"].as_str().unwrap();
+        assert!(unique.insert(id), "{id}: duplicate fixture case");
+        let fixture_id = case["fixture_id"].as_str().unwrap();
+        assert!(fixture_ids.contains(&fixture_id), "{id}: missing fixture owner");
+        let parser = case["parser_cells"].as_object().unwrap();
+        assert_eq!(parser.len(), 13, "{id}: dialect cardinality");
+        assert!(parser.values().all(|status| status == "canonical"), "{id}");
+        let adapter = case["adapter_cells"].as_object().unwrap();
+        assert_eq!(adapter.len(), 3, "{id}: adapter cardinality");
+        let disposition = match case["proof"].as_str().unwrap() {
+            "impossible" => "verified_impossible",
+            "residual_missing_attestation" => "verified_residual",
+            "exact" | "exact_not_true" | "exact_with_attested_default" => {
+                "verified_complete_physical_state"
+            }
+            other => panic!("{id}: unreviewed proof state {other}"),
+        };
+        assert!(adapter.values().all(|status| status == disposition), "{id}");
+        if case["proof"] == "residual_missing_attestation" {
+            assert!(case["conditional_disposition"].as_str().unwrap().contains("TASK-149"));
+            continue;
+        }
+        let prestate = case["target_before"].as_array().unwrap();
+        let trues = case["sql_true_row_ids"].as_array().unwrap();
+        let not_true = case["sql_not_true_row_ids"].as_array().unwrap();
+        assert_eq!(trues.len() + not_true.len(), prestate.len(), "{id}");
+        if case["target_after"].is_array() {
+            for name in ["id", "score"] {
+                let total = case["typed_domains"][name]["frequencies"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|frequency| frequency["count"].as_u64().unwrap())
+                    .sum::<u64>();
+                assert_eq!(total, case["target_after"].as_array().unwrap().len() as u64);
+            }
+        }
+    }
+    assert_eq!(unique.len(), 13);
+    assert_eq!(freeze["conditional_review"]["owner"], "TASK-149");
+    assert_eq!(freeze["conditional_review"]["release_approved"], false);
+}
