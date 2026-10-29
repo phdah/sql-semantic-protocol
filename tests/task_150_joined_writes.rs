@@ -443,7 +443,7 @@ fn joined_write_wire_schema_and_json_preserve_canonical_source_identity() {
     assert_eq!(write["target"], "target");
     assert_eq!(
         write["joined_source"],
-        serde_json::json!({"name": "source", "alias": "s"})
+        serde_json::json!({"kind": "relation", "name": "source", "alias": "s"})
     );
     assert_eq!(
         write["returning_columns"],
