@@ -301,36 +301,51 @@ fn every_frozen_case_has_an_explicit_parser_and_canonical_disposition() {
         let sql = case["sql"].as_str().unwrap();
         for dialect in DIALECTS {
             let parser = dialect_from_name(dialect).unwrap();
-            let disposition = match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
-                Err(_) => "parser_boundary",
-                Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
-                    ProtocolStatement::Unsupported(_) => "canonical_unsupported",
-                    ProtocolStatement::Query(query) => {
-                        let write = query.write().unwrap_or_else(|| {
-                            panic!("{dialect}: parsed DML omitted as a non-write: {sql}")
-                        });
-                        assert!(matches!(
-                            write.kind(),
-                            WriteKind::Update | WriteKind::Delete
-                        ));
-                        assert!(write.joined_source().is_some(), "{dialect}: {sql}");
-                        if case["family"] == "finite_cte_update_from" {
-                            assert!(write.joined_cte_source().is_some(), "{dialect}: {sql}");
+            let disposition =
+                match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
+                    Err(_) => "parser_boundary",
+                    Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
+                        ProtocolStatement::Unsupported(_) => "canonical_unsupported",
+                        ProtocolStatement::Query(query) => {
+                            let write = query.write().unwrap_or_else(|| {
+                                panic!("{dialect}: parsed DML omitted as a non-write: {sql}")
+                            });
+                            assert!(matches!(
+                                write.kind(),
+                                WriteKind::Update | WriteKind::Delete
+                            ));
+                            assert!(write.joined_source().is_some(), "{dialect}: {sql}");
+                            if case["family"] == "finite_cte_update_from" {
+                                assert!(write.joined_cte_source().is_some(), "{dialect}: {sql}");
+                            }
+                            "parsed_canonical"
                         }
-                        "parsed_canonical"
-                    }
-                    _ => panic!("{dialect}: unknown DML representation: {sql}"),
-                },
-            };
-            observed.insert(format!("{}::{dialect}", case["id"].as_str().unwrap()), disposition.to_string());
+                        _ => panic!("{dialect}: unknown DML representation: {sql}"),
+                    },
+                };
+            observed.insert(
+                format!("{}::{dialect}", case["id"].as_str().unwrap()),
+                disposition.to_string(),
+            );
         }
     }
     assert_eq!(observed.len(), 130);
     let expected = matrix["dialect_expected"].as_object().unwrap_or_else(|| {
-        panic!("TASK150_FREEZE_PARSER_CELLS:{}", serde_json::to_string(&observed).unwrap())
+        panic!(
+            "TASK150_FREEZE_PARSER_CELLS:{}",
+            serde_json::to_string(&observed).unwrap()
+        )
     });
-    assert_eq!(expected.len(), observed.len(), "freeze must pin every parser classification");
+    assert_eq!(
+        expected.len(),
+        observed.len(),
+        "freeze must pin every parser classification"
+    );
     for (key, value) in &observed {
-        assert_eq!(expected[key].as_str(), Some(value.as_str()), "{key}: dialect boundary changed");
+        assert_eq!(
+            expected[key].as_str(),
+            Some(value.as_str()),
+            "{key}: dialect boundary changed"
+        );
     }
 }
