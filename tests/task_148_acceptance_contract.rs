@@ -49,9 +49,7 @@ fn every_original_ac_has_a_frozen_case_and_no_mandatory_cell_is_unclassified() {
             let identities = case["canonical_row_identity"][identity].as_array().unwrap();
             let expected_rows = case[population].as_array().unwrap();
             assert_eq!(identities.len(), expected_rows.len(), "{id}: {identity}");
-            for (ordinal, (entry, expected)) in
-                identities.iter().zip(expected_rows).enumerate()
-            {
+            for (ordinal, (entry, expected)) in identities.iter().zip(expected_rows).enumerate() {
                 let expected_id = format!("{identity}#{ordinal}");
                 assert_eq!(entry["id"].as_str(), Some(expected_id.as_str()));
                 assert_eq!(&entry["row"], expected, "{id}: {identity}#{ordinal}");
