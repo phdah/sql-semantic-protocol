@@ -44,4 +44,14 @@ These conditional cases have been reviewed for bounded portable child scope. **T
 
 ## Final-head CI evidence
 
-Pending final-head CI at the last implementation commit. Do not mark TASK-148 Done until all tests and both reviews pass. TASK-80 remains open for its original independent parent acceptance verification.
+The complete GitHub CI suite passed **9 of 9 checks** on the signed-off implementation head `ce584707d2cbb93988c76c190cc66e74ac02cc05`, including rustfmt, strict Clippy, Rust tests and docs with and without default features, dependency isolation, dbt Core E2E and active protocol/schema snapshots.
+
+Final review changes strengthened the NULL/NOT TRUE oracle from two counts to complete selected/rejected native DuckDB source bags, source immutability and exact terminal domain frequencies; the frozen canonical row identities are now checked against every complete physical-state bag. The accompanying formatting correction passed rustfmt. No production protocol semantics or wire contract changed.
+
+**Standards review:** All repository standards and the Fowler code-smell baseline were checked; no unresolved hard violations or material smell issues remain.
+
+**Specification review:** Six mandatory primary cases, five negative contrasts, 182 named parser statement classifications, 52 family/dialect classifications, 39 vendor modifier boundaries and equivalent direct/dbt/ODCS metadata paths are covered. Three conditional residuals retain explicit non-release dispositions.
+
+TASK-148 is signed off on the verified implementation head, pending green CI on the documentation-signoff PR head and merge. TASK-80 remains open for its independently reviewed original parent AC; TASK-91 remains a separate release gate.
+
+CI evidence: https://github.com/phdah/sql-semantic-protocol/pull/159/checks
