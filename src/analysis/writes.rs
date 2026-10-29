@@ -281,17 +281,51 @@ fn refine_write_value_domain(
         .unwrap_or(domain)
 }
 
+fn normalize_mutation_returning(
+    returning: Option<&[SelectItem]>,
+    kind: &str,
+) -> Result<Vec<String>, ProtocolStatement> {
+    let Some(items) = returning else {
+        return Ok(Vec::new());
+    };
+    if items.is_empty() {
+        return Err(unsupported_write_statement(
+            kind, "unproved_mutation_returning",
+            "RETURNING requires at least one direct target column",
+        ));
+    }
+    let mut columns = Vec::new();
+    let mut seen = BTreeSet::new();
+    for item in items {
+        match item {
+            SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
+                if !seen.insert(identifier.value.clone()) {
+                    return Err(unsupported_write_statement(
+                        kind, "unproved_mutation_returning",
+                        "duplicate RETURNING column identities require positional evidence",
+                    ));
+                }
+                columns.push(identifier.value.clone());
+            }
+            _ => return Err(unsupported_write_statement(
+                kind, "unproved_mutation_returning",
+                "only unqualified direct target columns are proven for RETURNING",
+            )),
+        }
+    }
+    Ok(columns)
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
     has_from: bool,
     selection: Option<&Expr>,
-    has_returning: bool,
+    returning: Option<&[SelectItem]>,
     has_conflict_modifier: bool,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     if has_from
-        || has_returning
         || has_conflict_modifier
         || !table.joins.is_empty()
         || assignments.is_empty()
@@ -311,6 +345,10 @@ pub(super) fn analyze_update(
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let returning_columns = match normalize_mutation_returning(returning, "update") {
+        Ok(columns) => columns,
+        Err(unsupported) => return unsupported,
+    };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -347,24 +385,36 @@ pub(super) fn analyze_update(
     let assignments = assignments
         .iter()
         .map(|assignment| {
-            let expression =
-                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics);
-            let domain = derive_expression_domain_with_column_domains(
-                &expression,
-                &domains,
-                std::slice::from_ref(&target_source),
-            );
-            let domain = refine_write_value_domain(
-                &expression,
-                domain,
-                &domains,
-                std::slice::from_ref(&target_source),
-                metadata,
-            );
-            MergeAssignment::new(
+            let is_default = matches!(&assignment.value,
+                Expr::Identifier(identifier) if identifier.value.eq_ignore_ascii_case("DEFAULT"));
+            // SQL DEFAULT is not the identifier of a physical source column.
+            // The marker is evaluated only against authoritative target metadata.
+            let expression = if is_default {
+                Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null))
+            } else {
+                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics)
+            };
+            let domain = if is_default {
+                ValueDomain::Unbounded
+            } else {
+                let derived = derive_expression_domain_with_column_domains(
+                    &expression,
+                    &domains,
+                    std::slice::from_ref(&target_source),
+                );
+                refine_write_value_domain(
+                    &expression,
+                    derived,
+                    &domains,
+                    std::slice::from_ref(&target_source),
+                    metadata,
+                )
+            };
+            let assignment = MergeAssignment::new(
                 assignment.target.to_string(),
                 WriteValue::new(expression, domain),
-            )
+            );
+            if is_default { assignment.with_default() } else { assignment }
         })
         .collect();
     sort_diagnostics(&mut diagnostics);
@@ -392,7 +442,7 @@ pub(super) fn analyze_update(
             predicate,
             assignments,
             domains,
-        ))),
+        ).with_returning_columns(returning_columns))),
     )
 }
 
@@ -402,7 +452,6 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     if !delete.tables.is_empty()
         || delete.using.is_some()
-        || delete.returning.is_some()
         || !delete.order_by.is_empty()
         || delete.limit.is_some()
         || tables.len() != 1
@@ -423,6 +472,10 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref(), "delete") {
+        Ok(columns) => columns,
+        Err(unsupported) => return unsupported,
+    };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -474,7 +527,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             target_alias,
             predicate,
             domains,
-        ))),
+        ).with_returning_columns(returning_columns))),
     )
 }
 
