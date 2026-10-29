@@ -1,0 +1,379 @@
+{
+  "task": "TASK-75",
+  "version": 1,
+  "purpose": "Independent original-parent acceptance mapping over merged TASK-129..132 frozen physical and native SQL oracles; children own concrete source and terminal bags",
+  "source_of_truth": {
+    "TASK-129": {
+      "freeze": "docs/task-129-acceptance-freeze.json",
+      "version": 2,
+      "fixture_ids": [
+        "75-C129-P",
+        "75-C129-N"
+      ],
+      "mandatory_case_ids": [
+        "75-C129-P-correlated-exists",
+        "75-C129-N-correlated-not-exists",
+        "75-C129-P-uncorrelated-exists",
+        "75-C129-N-uncorrelated-not-exists",
+        "75-C129-P-empty-inner-not-exists",
+        "75-C129-N-empty-inner-exists"
+      ],
+      "conditional_case_ids": [
+        "75-C129-conditional-unsupported-correlated-filter",
+        "75-C129-conditional-native-vendor-session"
+      ],
+      "acceptance_audit": "docs/task-129-acceptance-audit.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/140"
+    },
+    "TASK-130": {
+      "freeze": "docs/task-130-acceptance-freeze.json",
+      "version": 2,
+      "fixture_ids": [
+        "75-C130-P",
+        "75-C130-N"
+      ],
+      "mandatory_case_ids": [
+        "75-C130-P-uncorrelated-in",
+        "75-C130-N-uncorrelated-not-in",
+        "75-C130-N-no-null-candidate",
+        "75-C130-N-empty-inner",
+        "75-C130-P-correlated-in",
+        "75-C130-N-correlated-not-in",
+        "75-C130-P-tuple-in-null-duplicates",
+        "75-C130-N-tuple-not-in-null-duplicates",
+        "75-C130-P-tuple-no-null",
+        "75-C130-N-tuple-no-null",
+        "75-C130-P-tuple-empty",
+        "75-C130-N-tuple-empty",
+        "75-C130-P-tuple-correlated",
+        "75-C130-N-tuple-correlated",
+        "75-C130-N-tuple-definite-mismatch-with-null"
+      ],
+      "conditional_case_ids": [
+        "75-C130-vendor-session",
+        "75-C130-noninteger-tuple",
+        "75-C130-native-duckdb-tuple-null"
+      ],
+      "acceptance_audit": "docs/task-130-acceptance-audit.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/141"
+    },
+    "TASK-131": {
+      "freeze": "docs/task-131-acceptance-freeze.json",
+      "version": 5,
+      "fixture_ids": [
+        "75-C131-P",
+        "75-C131-N"
+      ],
+      "mandatory_case_ids": [
+        "75-C131-P1",
+        "75-C131-P2",
+        "75-C131-N1",
+        "75-C131-N2",
+        "75-C131-P3",
+        "75-C131-P4",
+        "75-C131-P5",
+        "75-C131-N3",
+        "75-C131-N4",
+        "75-C131-N5",
+        "75-C131-P6",
+        "75-C131-P7"
+      ],
+      "conditional_case_ids": [
+        "75-C131-N6",
+        "75-C131-N7",
+        "75-C131-N8"
+      ],
+      "acceptance_audit": "docs/task-131-acceptance-audit.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/142"
+    },
+    "TASK-132": {
+      "freeze": "docs/task-132-acceptance-freeze.json",
+      "version": 2,
+      "fixture_ids": [
+        "75-C132-P",
+        "75-C132-N"
+      ],
+      "mandatory_case_ids": [
+        "75-C132-P-direct_composite",
+        "75-C132-N-direct_composite",
+        "75-C132-P-joined_composite",
+        "75-C132-N-joined_composite",
+        "75-C132-P-grouped_composite",
+        "75-C132-N-grouped_composite",
+        "75-C132-P-dbt-subquery-orders"
+      ],
+      "conditional_case_ids": [
+        "75-C132-conditional-vendor",
+        "75-C132-conditional-nested-producer"
+      ],
+      "acceptance_audit": "docs/task-132-acceptance-audit.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/143"
+    }
+  },
+  "fixture_ids": [
+    "75-C129-P",
+    "75-C129-N",
+    "75-C130-P",
+    "75-C130-N",
+    "75-C131-P",
+    "75-C131-N",
+    "75-C132-P",
+    "75-C132-N"
+  ],
+  "mandatory_case_ids": [
+    "75-C129-P-correlated-exists",
+    "75-C129-N-correlated-not-exists",
+    "75-C129-P-uncorrelated-exists",
+    "75-C129-N-uncorrelated-not-exists",
+    "75-C129-P-empty-inner-not-exists",
+    "75-C129-N-empty-inner-exists",
+    "75-C130-P-uncorrelated-in",
+    "75-C130-N-uncorrelated-not-in",
+    "75-C130-N-no-null-candidate",
+    "75-C130-N-empty-inner",
+    "75-C130-P-correlated-in",
+    "75-C130-N-correlated-not-in",
+    "75-C130-P-tuple-in-null-duplicates",
+    "75-C130-N-tuple-not-in-null-duplicates",
+    "75-C130-P-tuple-no-null",
+    "75-C130-N-tuple-no-null",
+    "75-C130-P-tuple-empty",
+    "75-C130-N-tuple-empty",
+    "75-C130-P-tuple-correlated",
+    "75-C130-N-tuple-correlated",
+    "75-C130-N-tuple-definite-mismatch-with-null",
+    "75-C131-P1",
+    "75-C131-P2",
+    "75-C131-N1",
+    "75-C131-N2",
+    "75-C131-P3",
+    "75-C131-P4",
+    "75-C131-P5",
+    "75-C131-N3",
+    "75-C131-N4",
+    "75-C131-N5",
+    "75-C131-P6",
+    "75-C131-P7",
+    "75-C132-P-direct_composite",
+    "75-C132-N-direct_composite",
+    "75-C132-P-joined_composite",
+    "75-C132-N-joined_composite",
+    "75-C132-P-grouped_composite",
+    "75-C132-N-grouped_composite",
+    "75-C132-P-dbt-subquery-orders"
+  ],
+  "conditional_case_ids": [
+    "75-C129-conditional-unsupported-correlated-filter",
+    "75-C129-conditional-native-vendor-session",
+    "75-C130-vendor-session",
+    "75-C130-noninteger-tuple",
+    "75-C130-native-duckdb-tuple-null",
+    "75-C131-N6",
+    "75-C131-N7",
+    "75-C131-N8",
+    "75-C132-conditional-vendor",
+    "75-C132-conditional-nested-producer"
+  ],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "obligation": "EXISTS/NOT EXISTS, scalar, quantified and membership, correlated/uncorrelated, nested and composite joined/grouped forms",
+      "mandatory_case_ids": [
+        "75-C129-P-correlated-exists",
+        "75-C129-N-uncorrelated-not-exists",
+        "75-C130-P-correlated-in",
+        "75-C130-N-correlated-not-in",
+        "75-C131-P1",
+        "75-C131-N1",
+        "75-C131-P7",
+        "75-C132-P-joined_composite",
+        "75-C132-P-grouped_composite"
+      ],
+      "conditional_case_ids": [
+        "75-C131-N6",
+        "75-C131-N7",
+        "75-C131-N8"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    },
+    {
+      "id": 2,
+      "obligation": "Exact full physical bag, duplicate/NULL and empty cardinality, scalar cardinality violations, TRUE/NOT TRUE and anti-membership",
+      "mandatory_case_ids": [
+        "75-C129-P-empty-inner-not-exists",
+        "75-C129-N-correlated-not-exists",
+        "75-C130-P-tuple-in-null-duplicates",
+        "75-C130-N-tuple-not-in-null-duplicates",
+        "75-C130-N-tuple-definite-mismatch-with-null",
+        "75-C131-N1",
+        "75-C131-N2",
+        "75-C132-N-joined_composite"
+      ],
+      "conditional_case_ids": [
+        "75-C130-native-duckdb-tuple-null"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    },
+    {
+      "id": 3,
+      "obligation": "Portable source/alias scope for nested JOIN/GROUP correlations; LATERAL/APPLY parser and native execution boundaries explicitly retained",
+      "mandatory_case_ids": [
+        "75-C132-P-direct_composite",
+        "75-C132-P-joined_composite",
+        "75-C132-N-grouped_composite"
+      ],
+      "conditional_case_ids": [
+        "75-C131-N6",
+        "75-C131-N7",
+        "75-C131-N8"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    },
+    {
+      "id": 4,
+      "obligation": "Typed source/terminal domains, Exact/Impossible/Residual and closed-world rejected identities without downstream reparsing",
+      "mandatory_case_ids": [
+        "75-C129-N-correlated-not-exists",
+        "75-C130-N-tuple-definite-mismatch-with-null",
+        "75-C131-P6",
+        "75-C132-P-grouped_composite",
+        "75-C132-N-direct_composite"
+      ],
+      "conditional_case_ids": [
+        "75-C129-conditional-unsupported-correlated-filter",
+        "75-C130-noninteger-tuple",
+        "75-C132-conditional-nested-producer"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    },
+    {
+      "id": 5,
+      "obligation": "Native DuckDB complete source/terminal bags, NULL/negative/duplicate fixtures and compiled subquery_orders.dbt producer graph",
+      "mandatory_case_ids": [
+        "75-C129-P-correlated-exists",
+        "75-C130-N-tuple-not-in-null-duplicates",
+        "75-C131-N1",
+        "75-C132-P-dbt-subquery-orders",
+        "75-C132-N-joined_composite"
+      ],
+      "conditional_case_ids": [
+        "75-C130-native-duckdb-tuple-null"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    },
+    {
+      "id": 6,
+      "obligation": "All 13 parser dialect identities, SQL/dbt/ODCS canonical evidence, independent differential regressions and protocol contract gates",
+      "mandatory_case_ids": [
+        "75-C129-P-correlated-exists",
+        "75-C129-N-correlated-not-exists",
+        "75-C129-P-uncorrelated-exists",
+        "75-C129-N-uncorrelated-not-exists",
+        "75-C129-P-empty-inner-not-exists",
+        "75-C129-N-empty-inner-exists",
+        "75-C130-P-uncorrelated-in",
+        "75-C130-N-uncorrelated-not-in",
+        "75-C130-N-no-null-candidate",
+        "75-C130-N-empty-inner",
+        "75-C130-P-correlated-in",
+        "75-C130-N-correlated-not-in",
+        "75-C130-P-tuple-in-null-duplicates",
+        "75-C130-N-tuple-not-in-null-duplicates",
+        "75-C130-P-tuple-no-null",
+        "75-C130-N-tuple-no-null",
+        "75-C130-P-tuple-empty",
+        "75-C130-N-tuple-empty",
+        "75-C130-P-tuple-correlated",
+        "75-C130-N-tuple-correlated",
+        "75-C130-N-tuple-definite-mismatch-with-null",
+        "75-C131-P1",
+        "75-C131-P2",
+        "75-C131-N1",
+        "75-C131-N2",
+        "75-C131-P3",
+        "75-C131-P4",
+        "75-C131-P5",
+        "75-C131-N3",
+        "75-C131-N4",
+        "75-C131-N5",
+        "75-C131-P6",
+        "75-C131-P7",
+        "75-C132-P-direct_composite",
+        "75-C132-N-direct_composite",
+        "75-C132-P-joined_composite",
+        "75-C132-N-joined_composite",
+        "75-C132-P-grouped_composite",
+        "75-C132-N-grouped_composite",
+        "75-C132-P-dbt-subquery-orders"
+      ],
+      "conditional_case_ids": [
+        "75-C129-conditional-unsupported-correlated-filter",
+        "75-C129-conditional-native-vendor-session",
+        "75-C130-vendor-session",
+        "75-C130-noninteger-tuple",
+        "75-C130-native-duckdb-tuple-null",
+        "75-C131-N6",
+        "75-C131-N7",
+        "75-C131-N8",
+        "75-C132-conditional-vendor",
+        "75-C132-conditional-nested-producer"
+      ],
+      "verification_status": "reviewed_portable_child_oracles"
+    }
+  ],
+  "portable_gate": {
+    "mandatory_cases": 40,
+    "exact_terminal_cases": 39,
+    "scalar_cardinality_violation_cases": 1,
+    "conditional_cases": 10,
+    "mandatory_parser_cells": 520,
+    "mandatory_adapter_cells": 120,
+    "parser_dialects": 13,
+    "source_adapters": 3,
+    "required_dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs_schema"
+    ],
+    "native_engine": "duckdb",
+    "other_native_engine_laws_certified": false,
+    "child_public_oracles": [
+      "tests/task_129_exists_bags.rs",
+      "tests/task_130_in_bags.rs",
+      "tests/task_131_scalar_quantified.rs",
+      "tests/task_132_composed_subqueries.rs"
+    ],
+    "child_adapter_oracles": [
+      "tests/task_129_adapter_parity.rs",
+      "tests/task_130_adapter_parity.rs",
+      "tests/task_131_adapter_parity.rs"
+    ],
+    "dbt_oracle": "tests/task_132_dbt_core_e2e.rs",
+    "parent_regression": "tests/task_75_parent_closure.rs"
+  },
+  "reviewed_boundaries": [
+    "Nested and vendor LATERAL/APPLY runtime semantics remain typed Residual without native engine evidence",
+    "Noninteger tuple comparisons and collations are not portable exactness claims",
+    "Native DuckDB tuple IN NULL semantics are not substituted for the normative portable expanded row equality proof",
+    "Vendor/session comparison, coercion and correlation laws are not certified from parsing alone"
+  ],
+  "mandatory_unverified": [],
+  "parent_signed_off": true,
+  "release_approved": false,
+  "status": "portable_parent_signoff_pending_final_pr_ci"
+}
