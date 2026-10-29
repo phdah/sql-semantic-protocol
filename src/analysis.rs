@@ -247,7 +247,7 @@ fn analyze_statement(
             SetExpr::Update(_) | SetExpr::Delete(_) => {
                 analyze_joined_cte_mutation(query, metadata)
             }
-            SetExpr::Insert(_) | SetExpr::Merge(_) => unsupported_write_statement(
+            SetExpr::Insert(_) => unsupported_write_statement(
                 "query",
                 "unsupported_nested_write",
                 "DML inside a query body has no proven ordered write semantics",
