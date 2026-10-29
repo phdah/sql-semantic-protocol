@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-150",
   "parent": "TASK-81",
-  "status": "frozen_before_implementation_unverified",
+  "status": "revised_before_final_acceptance_signoff",
   "fixture_ids": [
     "81-C150-P",
     "81-C150-N"
@@ -101,8 +101,60 @@
         2
       ],
       "owner": "TASK-150",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [
+          0
+        ],
+        "not_true_before_ordinals": [
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "20": 1,
+            "30": 1,
+            "40": 1
+          }
+        }
+      }
     },
     {
       "id": "81-C150-P-delete-using-unique",
@@ -152,8 +204,58 @@
         2
       ],
       "owner": "TASK-150",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [
+          0
+        ],
+        "not_true_before_ordinals": [
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      }
     },
     {
       "id": "81-C150-N-null-nonmatch",
@@ -206,8 +308,59 @@
         2
       ],
       "owner": "TASK-150",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [],
+        "not_true_before_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "10": 1,
+            "20": 1,
+            "30": 1
+          }
+        }
+      }
     },
     {
       "id": "81-C150-N-ambiguous-update",
@@ -244,8 +397,24 @@
       "reason": "Multiple source matches do not prove deterministic assignment choice",
       "owner": "TASK-150",
       "conditional_release_disposition": "requires native engine/version match-selection evidence",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ]
     },
     {
       "id": "81-C150-P-empty-source",
@@ -293,8 +462,57 @@
         2
       ],
       "owner": "TASK-150",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [],
+        "not_true_before_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "10": 1,
+            "20": 1,
+            "30": 1
+          }
+        }
+      }
     },
     {
       "id": "81-C150-N-cte-boundary",
@@ -327,8 +545,395 @@
       "reason": "CTE materialization and source lineage require TASK-78; no independent row insertion",
       "owner": "TASK-150",
       "conditional_release_disposition": "defer only when named TASK-78 dependency is satisfied and proved",
-      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
-      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ]
+    },
+    {
+      "id": "81-C150-P-delete-using-duplicates",
+      "fixture_id": "81-C150-P",
+      "family": "duplicate_existential_delete",
+      "sql": "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 1,
+          "score": 50
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "proof": "exact",
+      "target_true_ordinals": [
+        0,
+        1
+      ],
+      "target_not_true_ordinals": [
+        2,
+        3
+      ],
+      "owner": "TASK-150",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [
+          0,
+          1
+        ],
+        "not_true_before_ordinals": [
+          2,
+          3
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim"
+    },
+    {
+      "id": "81-C150-P-update-computed",
+      "fixture_id": "81-C150-P",
+      "family": "computed_source_assignment",
+      "sql": "UPDATE target AS t SET score = s.score + 5 FROM source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 3,
+          "score": 50
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 45
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_true_ordinals": [
+        0
+      ],
+      "target_not_true_ordinals": [
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [
+          0
+        ],
+        "not_true_before_ordinals": [
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 45,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "20": 1,
+            "30": 1,
+            "45": 1
+          }
+        }
+      },
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim"
+    },
+    {
+      "id": "81-C150-N-missing-source",
+      "fixture_id": "81-C150-N",
+      "family": "missing_complete_source",
+      "sql": "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": null,
+      "target_after": null,
+      "affected": null,
+      "proof": "residual",
+      "reason": "Complete independent physical source population is missing",
+      "owner": "TASK-150",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": null,
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
+      "conditional_release_disposition": "typed residual until stronger authoritative source/engine proof"
+    },
+    {
+      "id": "81-C150-N-null-update",
+      "fixture_id": "81-C150-N",
+      "family": "unknown_is_not_true_update",
+      "sql": "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 40
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_true_ordinals": [],
+      "target_not_true_ordinals": [
+        0,
+        1,
+        2
+      ],
+      "owner": "TASK-150",
+      "assumptions": [
+        "complete independent target/source populations",
+        "SQL three-valued equality",
+        "one matched source row per updated target required for exact assignment",
+        "deleted target occurrences distinct despite duplicate source matches",
+        "no cross-dialect native vendor execution claims"
+      ],
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [],
+        "not_true_before_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "10": 1,
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
+      "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim"
     }
   ],
   "signoff": {
