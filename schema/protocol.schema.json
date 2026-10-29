@@ -3038,7 +3038,7 @@
           }
         },
         "returning_columns": {
-          "description": "Ordered direct target columns returned for inserted rows only.",
+          "description": "Ordered direct target columns returned from inserted, updated, or deleted rows.",
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/nonEmptyString" }
@@ -3252,6 +3252,10 @@
         },
         "value": {
           "$ref": "#/$defs/writeValue"
+        },
+        "default": {
+          "const": true,
+          "description": "Explicit SET column = DEFAULT; value is a non-executable placeholder. A physical proof requires an authoritative default declaration."
         }
       }
     },
