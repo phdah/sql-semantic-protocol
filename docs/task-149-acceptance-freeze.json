@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-149",
   "parent": "TASK-81",
-  "status": "portable_semantic_evidence_verified_pending_final_head_ci",
+  "status": "reviewed_portable_child_acceptance_pending_merge",
   "fixture_ids": [
     "81-C149-P",
     "81-C149-N"
@@ -1997,6 +1997,25 @@
     "owner": "TASK-149",
     "engine": "DuckDB native oracle only; parser success is not native vendor execution",
     "disposition": "Missing scalar DEFAULT authority and unsupported/vendor-specific mutation semantics remain typed Residual or Unsupported and are not counted as mandatory exact certification; TASK-150/151 and TASK-84 own joined writes, vendor ORDER/LIMIT and transaction laws",
+    "release_approved": false
+  },
+  "acceptance_signoff": {
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mandatory_exact_verified": 11,
+    "mandatory_impossible_verified": 1,
+    "conditional_residual_reviewed": 1,
+    "dialect_parser_cells_verified": 169,
+    "adapter_cells_verified": 39,
+    "vendor_boundary_cells_verified": 65,
+    "implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40873925034",
+    "implementation_head": "fd705b0b71fd645b811c4a32f9291b81baae1b99",
+    "parent_signed_off": false,
     "release_approved": false
   }
 }
