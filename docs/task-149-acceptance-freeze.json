@@ -120,6 +120,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -128,6 +142,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            40,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 40,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 20,
           "upper": 40,
           "lower_inclusive": true,
@@ -168,7 +201,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-P-update-computed",
@@ -241,6 +281,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -249,6 +303,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            25,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 25,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -293,7 +366,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-P-update-default",
@@ -366,6 +446,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -374,6 +468,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            7,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 7,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 7,
           "upper": 30,
           "lower_inclusive": true,
@@ -414,7 +527,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-P-update-returning",
@@ -492,6 +612,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -500,6 +634,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            40,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 40,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 20,
           "upper": 40,
           "lower_inclusive": true,
@@ -540,7 +693,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-P-delete",
@@ -602,17 +762,40 @@
           "nullable": true,
           "values": [
             1,
-            2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
-          "upper": 2,
+          "upper": 1,
           "lower_inclusive": true,
           "upper_inclusive": true
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -657,7 +840,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-P-delete-returning",
@@ -728,17 +918,40 @@
           "nullable": true,
           "values": [
             1,
-            2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
-          "upper": 2,
+          "upper": 1,
           "lower_inclusive": true,
           "upper_inclusive": true
         },
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -783,7 +996,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-N-null-unknown",
@@ -855,6 +1075,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -863,6 +1097,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -898,7 +1151,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-N-delete-false",
@@ -970,6 +1230,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -978,6 +1252,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -1013,7 +1306,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-N-update-null",
@@ -1085,6 +1385,20 @@
             2,
             null
           ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
           "lower": 1,
           "upper": 2,
           "lower_inclusive": true,
@@ -1093,6 +1407,25 @@
         "score": {
           "type": "INTEGER",
           "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
           "lower": 10,
           "upper": 30,
           "lower_inclusive": true,
@@ -1128,7 +1461,14 @@
         "not_true": "Exact"
       },
       "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
-      "conditional_disposition": null
+      "conditional_disposition": null,
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     },
     {
       "id": "81-C149-N-missing-default",
@@ -1318,7 +1658,57 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "typed_domains": null
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            2,
+            null
+          ],
+          "frequencies": [
+            {
+              "value": 2,
+              "count": 3
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            11,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 11,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
+          "lower": 11,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "81-C149-N-zero-returning",
@@ -1417,7 +1807,62 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "typed_domains": null
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "frequencies": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 2
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            10,
+            20,
+            30
+          ],
+          "frequencies": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": 20,
+              "count": 2
+            },
+            {
+              "value": 30,
+              "count": 1
+            }
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "81-C149-N-duplicate-key-impossible",
@@ -1513,7 +1958,7 @@
   ],
   "release_gate": "Mandatory cells and adapter/dialect matrix must pass on final PR head before Done; TASK-81 remains open.",
   "freeze_history": "docs/task-149-acceptance-freeze-v1.json",
-  "freeze_revision_note": "Review corrects v1 missing SQL NOT TRUE identities, separates affected row images from actual RETURNING outputs, adds mandatory Impossible/empty-returning and simultaneous assignment oracles. No mandatory contract downgraded.",
+  "freeze_revision_note": "Review corrects v1 missing SQL NOT TRUE identities, separates affected row images from actual RETURNING outputs, adds mandatory Impossible/empty-returning and simultaneous assignment oracles. No mandatory contract downgraded. Typed exact per-column value frequencies are now explicitly frozen for all mandatory exact variants.",
   "mandatory_case_count": 12,
   "conditional_case_count": 1,
   "matrix_cells": {
