@@ -8,10 +8,22 @@ use serde_json::{json, Value};
 use std::collections::BTreeSet;
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-129", include_str!("../docs/task-129-acceptance-freeze.json")),
-    ("TASK-130", include_str!("../docs/task-130-acceptance-freeze.json")),
-    ("TASK-131", include_str!("../docs/task-131-acceptance-freeze.json")),
-    ("TASK-132", include_str!("../docs/task-132-acceptance-freeze.json")),
+    (
+        "TASK-129",
+        include_str!("../docs/task-129-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-130",
+        include_str!("../docs/task-130-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-131",
+        include_str!("../docs/task-131-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-132",
+        include_str!("../docs/task-132-acceptance-freeze.json"),
+    ),
 ];
 
 fn load(text: &str) -> Value {
@@ -127,7 +139,10 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                 .all(nonempty));
 
             if task == "TASK-131" && case["expected_proof"] == "Residual" {
-                assert_eq!(case["terminal_oracle"]["status"], "conditional_native_engine_only");
+                assert_eq!(
+                    case["terminal_oracle"]["status"],
+                    "conditional_native_engine_only"
+                );
                 assert!(child_conditional.insert(id.to_owned()), "{id}");
                 assert!(conditional.insert(id.to_owned()), "{id}");
                 continue;
@@ -140,7 +155,10 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                 assert!(case["truth_partition"].is_object(), "{id}");
                 if proof == "CardinalityViolation" {
                     cardinality_errors += 1;
-                    assert_eq!(case["terminal_oracle"]["status"], "runtime_cardinality_error");
+                    assert_eq!(
+                        case["terminal_oracle"]["status"],
+                        "runtime_cardinality_error"
+                    );
                 } else {
                     assert_eq!(case["terminal_oracle"]["status"], "exact");
                     assert!(case["terminal_oracle"]["rows"].is_array(), "{id}");
@@ -169,7 +187,10 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
         }
 
         if task != "TASK-131" {
-            for boundary in child["conditional"].as_array().expect("conditional inventory") {
+            for boundary in child["conditional"]
+                .as_array()
+                .expect("conditional inventory")
+            {
                 let id = boundary["id"].as_str().expect("conditional ID");
                 assert_eq!(boundary["owner"], task);
                 assert!(nonempty(&boundary["reason"]), "{id}");
@@ -208,7 +229,11 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
         assert_eq!(criterion["id"], index + 1);
         assert!(nonempty(&criterion["obligation"]));
         let required = strings(&criterion["mandatory_case_ids"]);
-        assert!(!required.is_empty(), "AC {} has no mandatory proof", index + 1);
+        assert!(
+            !required.is_empty(),
+            "AC {} has no mandatory proof",
+            index + 1
+        );
         assert!(required.is_subset(&mandatory));
         assert!(strings(&criterion["conditional_case_ids"]).is_subset(&conditional));
     }
@@ -222,8 +247,14 @@ fn coverage_registry_preserves_parent_signoff_separately_from_release() {
     assert_eq!(row["owner"], "TASK-75");
     assert_eq!(row["freeze"], "docs/task-75-acceptance-freeze.json");
     assert_eq!(row["original_ac"], json!([1, 2, 3, 4, 5, 6]));
-    assert_eq!(row["mandatory_cases"], freeze["portable_gate"]["mandatory_cases"]);
-    assert_eq!(row["conditional_cases"], freeze["portable_gate"]["conditional_cases"]);
+    assert_eq!(
+        row["mandatory_cases"],
+        freeze["portable_gate"]["mandatory_cases"]
+    );
+    assert_eq!(
+        row["conditional_cases"],
+        freeze["portable_gate"]["conditional_cases"]
+    );
     assert_eq!(row["mandatory_parser_cells"], 520);
     assert_eq!(row["mandatory_adapter_cells"], 120);
     assert_eq!(row["parent_signed_off"], true);
