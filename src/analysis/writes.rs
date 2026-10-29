@@ -283,6 +283,8 @@ fn refine_write_value_domain(
 
 fn normalize_mutation_returning(
     returning: Option<&[SelectItem]>,
+    target: &str,
+    target_alias: Option<&str>,
 ) -> Result<Vec<String>, &'static str> {
     let Some(items) = returning else {
         return Ok(Vec::new());
@@ -293,17 +295,29 @@ fn normalize_mutation_returning(
     let mut columns = Vec::new();
     let mut seen = BTreeSet::new();
     for item in items {
-        match item {
-            SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
-                if !seen.insert(identifier.value.clone()) {
-                    return Err(
-                        "duplicate RETURNING column identities require positional evidence",
-                    );
+        // A target-qualified column and its unqualified form denote the same
+        // canonical target column. Other qualifiers must not be silently
+        // interpreted as references to this target's physical row.
+        let column = match item {
+            SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => &identifier.value,
+            SelectItem::UnnamedExpr(Expr::CompoundIdentifier(path)) if path.len() >= 2 => {
+                let (qualifier, column) = path.split_at(path.len() - 1);
+                let qualifier = qualifier
+                    .iter()
+                    .map(|part| part.value.as_str())
+                    .collect::<Vec<_>>()
+                    .join(".");
+                if qualifier != target && target_alias != Some(qualifier.as_str()) {
+                    return Err("RETURNING qualifier does not identify the mutation target");
                 }
-                columns.push(identifier.value.clone());
+                &column[0].value
             }
-            _ => return Err("only unqualified direct target columns are proven for RETURNING"),
+            _ => return Err("RETURNING requires direct target columns with no expression or wildcard"),
+        };
+        if !seen.insert(column.clone()) {
+            return Err("duplicate RETURNING column identities require positional evidence");
         }
+        columns.push(column.clone());
     }
     Ok(columns)
 }
@@ -492,7 +506,7 @@ pub(super) fn analyze_update(
         .iter()
         .map(|source| source.name().to_string())
         .collect();
-    let returning_columns = match normalize_mutation_returning(returning) {
+    let returning_columns = match normalize_mutation_returning(returning, &target, target_alias.as_deref()) {
         Ok(columns) => columns,
         Err(reason) => {
             return unsupported_write_statement("update", "unproved_mutation_returning", reason)
@@ -652,7 +666,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         .iter()
         .map(|source| source.name().to_string())
         .collect();
-    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
+    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref(), &target, target_alias.as_deref()) {
         Ok(columns) => columns,
         Err(reason) => {
             return unsupported_write_statement("delete", "unproved_mutation_returning", reason)
