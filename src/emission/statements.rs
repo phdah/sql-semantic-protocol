@@ -1,6 +1,7 @@
 //! Query statements, DML effects, and MERGE write operations.
 
 use super::*;
+use crate::protocol::MergeAssignment;
 
 pub(super) fn statement_to_value(statement: &ProtocolStatement) -> Value {
     match statement {
