@@ -1,10 +1,10 @@
 ---
 id: TASK-151
 title: Classify qualified targets ORDER LIMIT RETURNING and correlations
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-29'
 labels: []
 milestone: m-3
 dependencies:
