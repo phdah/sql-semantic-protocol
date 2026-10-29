@@ -3,7 +3,11 @@ selects a single named independent source without JOINs or target self-source;
 `src/protocol/writes.rs` owns the canonical `joined_source` reference and
 conservative write state effect. `src/physical_realization/write_states/operators.rs`
 evaluates every matching source against the same target preimage and requires a
-single match for UPDATE, but existential matching for DELETE. Wire shape:
+single match for UPDATE, but existential matching for DELETE. `src/analysis.rs`
+recognizes CTE-wrapped UPDATE/DELETE as DML instead of a read-only query; the
+read-only row-local producer in `src/analysis/writes.rs` is canonically
+materialized through shared `operators.rs` CTE logic into a complete
+`PhysicalWriteTransition::intermediate_states()` bag. Wire shape:
 `src/emission/statements.rs`, `schema/protocol.schema.json` and
 `docs/protocol.md`. Public full-bag DuckDB oracle:
 `tests/task_150_joined_writes.rs`; finite pending acceptance inventory:
