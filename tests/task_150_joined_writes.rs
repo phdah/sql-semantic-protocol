@@ -2,7 +2,8 @@
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
+    physical_ordered_write_state_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
@@ -272,9 +273,11 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
         if case["proof"] == "conditional" {
             // CTE support is independently gated by producer/materialization scope.
             // Never reinterpret an unavailable named producer as a free source bag.
-            let result = std::panic::catch_unwind(|| analyze(sql));
+            let input = SqlInput::inline(sql);
+            let dialect = dialect_from_name("duckdb").unwrap();
+            let result = analyze_inputs(&[input], "duckdb", dialect.as_ref());
             match result {
-                Err(_) => {}
+                Err(_) => {} // explicit parser boundary, not a runtime proof
                 Ok(bundle) => {
                     let plan = physical_ordered_write_state_plan(
                         &bundle,
