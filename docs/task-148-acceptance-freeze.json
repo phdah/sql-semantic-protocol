@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-148",
   "parent": "TASK-80",
-  "status": "reviewed_implementation_in_progress",
+  "status": "reviewed_child_signed_off_pending_merge",
   "fixture_ids": [
     "80-C148-P",
     "80-C148-N"
@@ -1099,15 +1099,15 @@
   "parser_matrix_rule": "For each case, record parsed canonical, explicit Unsupported or parser boundary for each named dialect; do not infer execution support from parse acceptance",
   "adapter_matrix_rule": "Equal authoritative catalog schema evidence from direct SQL, dbt catalog or ODCS must produce the same physical states; no runtime dbt or native-engine execution claim",
   "signoff": {
-    "fmt": false,
-    "clippy": false,
-    "cargo_test": false,
-    "cargo_doc": false,
-    "no_default_features": false,
-    "dbt_e2e": false,
-    "protocol_schema": false,
-    "all_matrix_cells": false,
-    "final_head_ci": null,
+    "fmt": true,
+    "clippy": true,
+    "cargo_test": true,
+    "cargo_doc": true,
+    "no_default_features": true,
+    "dbt_e2e": true,
+    "protocol_schema": true,
+    "all_matrix_cells": true,
+    "final_head_ci": "ce584707d2cbb93988c76c190cc66e74ac02cc05: GitHub PR #159 checks 9/9 successful; require green merge-head checks",
     "parent_signed_off": false
   },
   "freeze_history": "docs/task-148-acceptance-freeze-v1.json",
