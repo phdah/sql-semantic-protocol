@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-149",
   "parent": "TASK-81",
-  "status": "v2_parser_evidence_recorded_adapters_pending",
+  "status": "portable_semantic_evidence_verified_pending_final_head_ci",
   "fixture_ids": [
     "81-C149-P",
     "81-C149-N"
@@ -183,9 +183,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 1",
@@ -209,7 +209,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-update-computed",
@@ -345,9 +346,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 2",
@@ -375,7 +376,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-update-default",
@@ -511,9 +513,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 1",
@@ -537,7 +539,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-update-returning",
@@ -678,9 +681,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 1",
@@ -704,7 +707,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-delete",
@@ -822,9 +826,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 2",
@@ -852,7 +856,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-delete-returning",
@@ -979,9 +984,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 2",
@@ -1009,7 +1014,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-null-unknown",
@@ -1144,9 +1150,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = NULL",
@@ -1165,7 +1171,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-delete-false",
@@ -1300,9 +1307,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 99",
@@ -1321,7 +1328,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-update-null",
@@ -1456,9 +1464,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = NULL",
@@ -1477,7 +1485,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-missing-default",
@@ -1554,16 +1563,17 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_residual",
+        "dbt_compiled_catalog": "verified_residual",
+        "odcs_schema": "verified_residual"
       },
       "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
       "selection_sql": "id = 1",
       "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
       "affected_row_images": null,
       "conditional_disposition": "TASK-149 conditional: missing authoritative scalar DEFAULT cannot be Exact",
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-P-simultaneous-assignments",
@@ -1651,9 +1661,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "conditional_disposition": null,
       "exact_directions": {
@@ -1719,7 +1729,8 @@
           "upper_inclusive": true
         }
       },
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-zero-returning",
@@ -1801,9 +1812,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_complete_physical_state",
+        "dbt_compiled_catalog": "verified_complete_physical_state",
+        "odcs_schema": "verified_complete_physical_state"
       },
       "conditional_disposition": null,
       "exact_directions": {
@@ -1874,7 +1885,8 @@
           "upper_inclusive": true
         }
       },
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     },
     {
       "id": "81-C149-N-duplicate-key-impossible",
@@ -1929,9 +1941,9 @@
         "databricks": "canonical"
       },
       "adapter_cells": {
-        "direct_sql": "pending",
-        "dbt_compiled_catalog": "pending",
-        "odcs_schema": "pending"
+        "direct_sql": "verified_impossible",
+        "dbt_compiled_catalog": "verified_impossible",
+        "odcs_schema": "verified_impossible"
       },
       "conditional_disposition": null,
       "exact_directions": {
@@ -1946,7 +1958,8 @@
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
       ],
-      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)",
+      "adapter_evidence": "CI run 40871254971 tests/task_149_dialect_adapter.rs: all thirteen direct/dbt and ODCS cases matched equivalent complete protocol plans; native execution only DuckDB"
     }
   ],
   "conditional": [
@@ -1978,5 +1991,12 @@
     "parser": 169,
     "adapter": 39
   },
-  "parser_matrix_evidence": "CI run 40870780989, test every_frozen_parser_cell_requires_a_verified_explicit_classification: 169 observed statuses, all canonical; earlier run intentionally failed against v1 pending status to record independent observation"
+  "parser_matrix_evidence": "CI run 40870780989, test every_frozen_parser_cell_requires_a_verified_explicit_classification: 169 observed statuses, all canonical; earlier run intentionally failed against v1 pending status to record independent observation",
+  "adapter_matrix_evidence": "CI run 40871254971, 6/6 adapter and vendor test cases passed, including 13 direct/dbt plus 13 direct/ODCS exact state comparisons",
+  "conditional_review": {
+    "owner": "TASK-149",
+    "engine": "DuckDB native oracle only; parser success is not native vendor execution",
+    "disposition": "Missing scalar DEFAULT authority and unsupported/vendor-specific mutation semantics remain typed Residual or Unsupported and are not counted as mandatory exact certification; TASK-150/151 and TASK-84 own joined writes, vendor ORDER/LIMIT and transaction laws",
+    "release_approved": false
+  }
 }
