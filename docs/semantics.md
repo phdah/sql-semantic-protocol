@@ -1091,6 +1091,14 @@ row-affect cardinality for DML; lifecycle kind explicitly distinguishes
 CREATE TABLE from view definitions. Normalized target and source aliases
 share one physical population.
 
+UPDATE/DELETE `RETURNING` supports direct target columns, either unqualified or
+qualified by the active target alias (or the full target name if unaliased).
+Returned columns keep canonical unqualified target identities; their exact
+bags are UPDATE postimages or DELETE preimages, preserving duplicates and NULLs.
+An unbound or shadowed qualifier, wildcard, expression or duplicate canonical
+column identity remains unsupported. This parser-independent classification
+is not a claim about the native `RETURNING` syntax of every SQL engine.
+
 Before certifying feasibility, the plan verifies complete typed schemas
 and attested enforced NOT NULL, key, accepted-values and FK constraints,
 including cross-relation FK lookup. Known key/null contradictions are
