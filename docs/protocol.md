@@ -14,9 +14,15 @@ source occurrence matches. Multiple source matches are `Residual`, even
 when a particular native engine chooses one nondeterministically. DELETE
 USING has existential semantics: one or more TRUE source matches remove a
 target row exactly once, with false/unknown matches preserving that row.
-Missing source snapshots, unproved comparison laws, target self-sources,
-multiple independent source relations and unsupported CTE scopes remain
-explicit non-exact boundaries. Source and target bags are never conflated.
+One read-only, nonrecursive CTE can serve as the joined source when its
+producer is a row-local projection/filter over one complete, independently
+attested physical source. The optional `joined_cte_source` carries its canonical
+producer; the resulting local bag is recorded in
+`PhysicalWriteTransition::intermediate_states()` and cannot be inserted as a
+free caller-supplied state. Recursion, opaque projection, shadowing and more
+complex scopes remain typed unsupported boundaries. Missing source snapshots,
+unproved comparisons, target self-sources and multiple physical joined inputs
+likewise remain non-exact. Source and target bags are never conflated.
 
 `affected_target_ordinals`, complete before/after populations and
 RETURNING preimages/postimages obey the same standalone write contract.
