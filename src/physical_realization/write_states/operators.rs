@@ -530,9 +530,6 @@ pub(super) fn mutate_rows(
                         ));
                     }
                     matched = Some(candidate);
-                    if delete {
-                        break;
-                    }
                 }
             }
             matched
