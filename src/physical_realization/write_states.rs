@@ -571,7 +571,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             return failure(Some(layer.id()), error);
         }
         let returning = if !write.returning_columns().is_empty() {
-            let schema = match operators::schema_for(bundle, target) {
+            let schema = match projection::schema_for(bundle, target) {
                 Ok(schema) => schema,
                 Err(error) => return failure(Some(layer.id()), error),
             };
