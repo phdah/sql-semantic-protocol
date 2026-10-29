@@ -4,17 +4,12 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
-const BEFORE: [(Option<i64>, i64); 4] = [
-    (Some(1), 10),
-    (Some(2), 20),
-    (None, 30),
-    (Some(2), 20),
-];
+const BEFORE: [(Option<i64>, i64); 4] = [(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)];
 
 fn state(rows: &[(Option<i64>, i64)]) -> PhysicalWriteState {
     PhysicalWriteState::new(
@@ -102,7 +97,11 @@ fn qualified_update_returning_is_exact_after_image_with_duplicates_and_unknown()
     let sql = "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id";
     let bundle = bundle(sql);
     let plan = physical_ordered_write_state_plan(&bundle, &[state(&BEFORE)]);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("qualified RETURNING should be exact: {plan:?}");
     };
     let [transition] = transitions.as_slice() else {
@@ -114,15 +113,22 @@ fn qualified_update_returning_is_exact_after_image_with_duplicates_and_unknown()
     assert_eq!(final_states, vec![transition.after().clone()]);
     assert_eq!(
         rows(transition.after()),
-        rows(&state(&[(Some(1), 40), (Some(2), 40), (None, 30), (Some(2), 40)])),
+        rows(&state(&[
+            (Some(1), 40),
+            (Some(2), 40),
+            (None, 30),
+            (Some(2), 40)
+        ])),
     );
     let returned = transition.returning().expect("RETURNING is present");
-    let returned_ids = returned.rows().iter().map(|row| {
-        match row.values().get("id").unwrap() {
+    let returned_ids = returned
+        .rows()
+        .iter()
+        .map(|row| match row.values().get("id").unwrap() {
             LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
             other => panic!("unexpected returned id: {other:?}"),
-        }
-    }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
     assert_eq!(returned_ids, vec![1, 2, 2]);
     let schema = &bundle.source_schemas()[0];
     let domains = transition.returning_exact_domains(schema).unwrap();
@@ -153,7 +159,11 @@ fn qualified_delete_returning_is_exact_before_image_for_each_duplicate() {
     let sql = "DELETE FROM target AS t WHERE t.id = 2 RETURNING t.id, t.score";
     let bundle = bundle(sql);
     let plan = physical_ordered_write_state_plan(&bundle, &[state(&BEFORE)]);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("qualified DELETE RETURNING should be exact: {plan:?}");
     };
     let [transition] = transitions.as_slice() else {
@@ -162,24 +172,39 @@ fn qualified_delete_returning_is_exact_before_image_for_each_duplicate() {
     assert_eq!(transition.affected().deleted(), 2);
     assert_eq!(transition.affected_target_ordinals(), &[1, 3]);
     assert_eq!(final_states, vec![transition.after().clone()]);
-    assert_eq!(rows(transition.after()), rows(&state(&[(Some(1), 10), (None, 30)])));
+    assert_eq!(
+        rows(transition.after()),
+        rows(&state(&[(Some(1), 10), (None, 30)]))
+    );
     let returned = transition.returning().expect("RETURNING is present");
-    let returned_rows = returned.rows().iter().map(|row| {
-        let id = match row.values().get("id").unwrap() {
-            LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
-            other => panic!("unexpected returned id: {other:?}"),
-        };
-        let score = match row.values().get("score").unwrap() {
-            LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
-            other => panic!("unexpected returned score: {other:?}"),
-        };
-        (id, score)
-    }).collect::<Vec<_>>();
+    let returned_rows = returned
+        .rows()
+        .iter()
+        .map(|row| {
+            let id = match row.values().get("id").unwrap() {
+                LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
+                other => panic!("unexpected returned id: {other:?}"),
+            };
+            let score = match row.values().get("score").unwrap() {
+                LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
+                other => panic!("unexpected returned score: {other:?}"),
+            };
+            (id, score)
+        })
+        .collect::<Vec<_>>();
     assert_eq!(returned_rows, vec![(2, 20), (2, 20)]);
-    let domains = transition.returning_exact_domains(&bundle.source_schemas()[0]).unwrap();
+    let domains = transition
+        .returning_exact_domains(&bundle.source_schemas()[0])
+        .unwrap();
     assert_eq!(domains.len(), 2);
-    assert_eq!(domains[0].values(), &[(LiteralValue::Number("2".to_string()), 2)]);
-    assert_eq!(domains[1].values(), &[(LiteralValue::Number("20".to_string()), 2)]);
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("2".to_string()), 2)]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[(LiteralValue::Number("20".to_string()), 2)]
+    );
     let native = native();
     let mut statement = native.prepare(sql).unwrap();
     let native_returning = statement
@@ -199,7 +224,10 @@ fn unbound_or_wildcard_returning_does_not_fabricate_target_columns() {
         "DELETE FROM target WHERE id = 2 RETURNING *",
     ] {
         let plan = physical_ordered_write_state_plan(&bundle(sql), &[state(&BEFORE)]);
-        assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{sql}: {plan:?}");
+        assert!(
+            matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+            "{sql}: {plan:?}"
+        );
     }
 }
 
@@ -207,5 +235,8 @@ fn unbound_or_wildcard_returning_does_not_fabricate_target_columns() {
 fn alias_and_unqualified_returning_collision_is_rejected() {
     let sql = "UPDATE target AS t SET score = 40 RETURNING t.id, id";
     let plan = physical_ordered_write_state_plan(&bundle(sql), &[state(&BEFORE)]);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
