@@ -123,6 +123,7 @@ pub struct WriteOperation {
     target_columns: Vec<String>,
     default_values: bool,
     insert_cte_source: Option<Box<InsertCteSource>>,
+    joined_source: Option<SourceRelation>,
     insert_conflict: Option<InsertConflictPolicy>,
     returning_columns: Vec<String>,
     match_condition: Option<Predicate>,
@@ -142,6 +143,7 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            joined_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -161,6 +163,7 @@ impl WriteOperation {
             target_columns,
             default_values: false,
             insert_cte_source: None,
+            joined_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -192,6 +195,7 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            joined_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: Some(match_condition),
@@ -217,6 +221,7 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            joined_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -241,6 +246,7 @@ impl WriteOperation {
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
+            joined_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -288,6 +294,17 @@ impl WriteOperation {
 
     pub(crate) fn with_insert_cte_source(mut self, source: InsertCteSource) -> Self {
         self.insert_cte_source = Some(Box::new(source));
+        self
+    }
+
+    /// Independent source relation supplying complete rows to UPDATE FROM or DELETE USING.
+    /// A populated source never authorizes invented or duplicate update matches.
+    pub fn joined_source(&self) -> Option<&SourceRelation> {
+        self.joined_source.as_ref()
+    }
+
+    pub(crate) fn with_joined_source(mut self, source: SourceRelation) -> Self {
+        self.joined_source = Some(source);
         self
     }
 
@@ -383,7 +400,10 @@ impl WriteOperation {
                 )
             }
             WriteKind::Update => {
-                if self.selection.is_some() {
+                if self.joined_source.is_some() {
+                    reasons.push(WriteUncertainty::MatchMultiplicityUnknown);
+                }
+                if self.selection.is_some() || self.joined_source.is_some() {
                     reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 }
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
@@ -401,7 +421,7 @@ impl WriteOperation {
                 )
             }
             WriteKind::Delete => {
-                let unconditional = self.selection.is_none();
+                let unconditional = self.selection.is_none() && self.joined_source.is_none();
                 if !unconditional {
                     reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 }
