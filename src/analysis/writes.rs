@@ -333,7 +333,7 @@ pub(super) fn analyze_update(
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
-            "only single-target UPDATE SET without FROM, JOIN, RETURNING, or conflict modifiers is supported",
+            "only single-target UPDATE SET without FROM, JOIN, or conflict modifiers is supported",
         );
     }
     let Some(target_source) = merge_target_relation(&table.relation) else {
@@ -460,7 +460,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         return unsupported_write_statement(
             "delete",
             "unsupported_delete_form",
-            "only single-target DELETE FROM without USING, JOIN, RETURNING, ORDER BY, or LIMIT is supported",
+            "only single-target DELETE FROM without USING, JOIN, ORDER BY, or LIMIT is supported",
         );
     }
     let Some(target_source) = merge_target_relation(&tables[0].relation) else {
