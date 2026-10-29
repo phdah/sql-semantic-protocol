@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-150",
   "parent": "TASK-81",
-  "status": "revised_before_final_acceptance_signoff",
+  "status": "mandatory_cte_exactness_added_pending_ci",
   "fixture_ids": [
     "81-C150-P",
     "81-C150-N"
@@ -517,7 +517,7 @@
     {
       "id": "81-C150-N-cte-boundary",
       "fixture_id": "81-C150-N",
-      "family": "cte_source",
+      "family": "finite_cte_update_from",
       "sql": "WITH picked AS (SELECT * FROM source WHERE id = 1) UPDATE target SET score = picked.score FROM picked WHERE target.id = picked.id",
       "target_before": [
         {
@@ -539,12 +539,26 @@
           "score": 40
         }
       ],
-      "target_after": null,
-      "affected": null,
-      "proof": "conditional",
-      "reason": "CTE materialization and source lineage require TASK-78; no independent row insertion",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "proof": "exact",
       "owner": "TASK-150",
-      "conditional_release_disposition": "defer only when named TASK-78 dependency is satisfied and proved",
       "parser_boundary": "explicit per-dialect parsed/canonical-unsupported/parser-boundary classifications, independent from native vendor laws",
       "adapter_boundary": "direct SQL/dbt catalog/ODCS equivalent source and target evidence, no native vendor claim",
       "assumptions": [
@@ -561,7 +575,62 @@
         "target_before#0",
         "target_before#1",
         "target_before#2"
-      ]
+      ],
+      "target_true_ordinals": [
+        0
+      ],
+      "target_not_true_ordinals": [
+        1,
+        2
+      ],
+      "intermediate": [
+        {
+          "name": "picked",
+          "rows": [
+            {
+              "id": 1,
+              "score": 40
+            }
+          ]
+        }
+      ],
+      "row_identity_contract": {
+        "selected_before_ordinals": [
+          0
+        ],
+        "not_true_before_ordinals": [
+          1,
+          2
+        ]
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact_frequencies": {
+            "20": 1,
+            "30": 1,
+            "40": 1
+          }
+        }
+      }
     },
     {
       "id": "81-C150-P-delete-using-duplicates",
