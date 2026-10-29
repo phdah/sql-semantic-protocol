@@ -505,7 +505,10 @@ fn audited_acceptance_inventory_has_no_unverified_or_unowned_cells() {
     assert_eq!(freeze["conditional_case_count"], 1);
     assert_eq!(freeze["matrix_cells"]["parser"], 169);
     assert_eq!(freeze["matrix_cells"]["adapter"], 39);
-    assert_eq!(freeze["original_parent_ac"], serde_json::json!([1, 2, 3, 5, 6]));
+    assert_eq!(
+        freeze["original_parent_ac"],
+        serde_json::json!([1, 2, 3, 5, 6])
+    );
     assert_eq!(freeze["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
 
     let fixture_ids = ["81-C149-P", "81-C149-N"];
@@ -515,7 +518,10 @@ fn audited_acceptance_inventory_has_no_unverified_or_unowned_cells() {
         let id = case["id"].as_str().unwrap();
         assert!(unique.insert(id), "{id}: duplicate fixture case");
         let fixture_id = case["fixture_id"].as_str().unwrap();
-        assert!(fixture_ids.contains(&fixture_id), "{id}: missing fixture owner");
+        assert!(
+            fixture_ids.contains(&fixture_id),
+            "{id}: missing fixture owner"
+        );
         let parser = case["parser_cells"].as_object().unwrap();
         assert_eq!(parser.len(), 13, "{id}: dialect cardinality");
         assert!(parser.values().all(|status| status == "canonical"), "{id}");
@@ -531,7 +537,10 @@ fn audited_acceptance_inventory_has_no_unverified_or_unowned_cells() {
         };
         assert!(adapter.values().all(|status| status == disposition), "{id}");
         if case["proof"] == "residual_missing_attestation" {
-            assert!(case["conditional_disposition"].as_str().unwrap().contains("TASK-149"));
+            assert!(case["conditional_disposition"]
+                .as_str()
+                .unwrap()
+                .contains("TASK-149"));
             continue;
         }
         let prestate = case["target_before"].as_array().unwrap();
