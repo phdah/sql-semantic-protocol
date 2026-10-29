@@ -381,3 +381,40 @@ fn zero_matched_rows_cannot_hide_invalid_update_target_or_unattested_default() {
         .execute_batch("UPDATE target SET missing = 1 WHERE id = NULL")
         .is_err());
 }
+
+#[test]
+fn missing_complete_target_or_unproved_transaction_cannot_be_exact() {
+    let sql = "UPDATE target SET score = 40 WHERE id = 1";
+    assert!(matches!(
+        physical_ordered_write_state_plan(&bundle(sql, false), &[]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "target",
+        ["id", "score"]
+            .into_iter()
+            .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
+            .collect(),
+    )
+    .unwrap()])
+    .unwrap();
+    let statements = [
+        SqlInput::inline("BEGIN TRANSACTION"),
+        SqlInput::inline(sql),
+        SqlInput::inline("COMMIT"),
+    ];
+    let names = ["begin", "update", "commit"];
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = statements
+        .iter()
+        .zip(names)
+        .map(|(source, name)| ConfiguredSqlInput::new(name, source, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let transactional = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let plan = physical_ordered_write_state_plan(
+        &transactional,
+        &[state(&[(Some(1), 10)])],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+}
