@@ -307,7 +307,7 @@ fn normalize_mutation_returning(
                     .map(|part| part.value.as_str())
                     .collect::<Vec<_>>()
                     .join(".");
-                if qualifier != target && target_alias != Some(qualifier.as_str()) {
+                if qualifier != target_alias.unwrap_or(target) {
                     return Err("RETURNING qualifier does not identify the mutation target");
                 }
                 &column[0].value
