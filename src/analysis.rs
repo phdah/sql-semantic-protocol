@@ -244,9 +244,7 @@ fn analyze_statement(
 ) -> ProtocolStatement {
     match statement {
         SqlStatement::Query(query) => match query.body.as_ref() {
-            SetExpr::Update(_) | SetExpr::Delete(_) => {
-                analyze_joined_cte_mutation(query, metadata)
-            }
+            SetExpr::Update(_) | SetExpr::Delete(_) => analyze_joined_cte_mutation(query, metadata),
             SetExpr::Insert(_) => unsupported_write_statement(
                 "query",
                 "unsupported_nested_write",
