@@ -1,5 +1,30 @@
 # SQL Semantic Protocol contract
 
+## Joined UPDATE FROM / DELETE USING physical effects (TASK-150)
+
+A normalized UPDATE or DELETE may carry optional `write.joined_source` with the independent
+relation name and alias. Its presence requires a complete, caller-attested physical
+source population as well as a complete target population. `query.sources` and
+`query.dependencies` identify that same source; it is **not** a freely
+constructed intermediate table. The executor evaluates the target/source
+WHERE predicate with SQL three-valued logic on the unchanged target preimage.
+
+An UPDATE changes each selected target occurrence once only if **exactly one**
+source occurrence matches. Multiple source matches are `Residual`, even
+when a particular native engine chooses one nondeterministically. DELETE
+USING has existential semantics: one or more TRUE source matches remove a
+target row exactly once, with false/unknown matches preserving that row.
+Missing source snapshots, unproved comparison laws, target self-sources,
+multiple independent source relations and unsupported CTE scopes remain
+explicit non-exact boundaries. Source and target bags are never conflated.
+
+`affected_target_ordinals`, complete before/after populations and
+RETURNING preimages/postimages obey the same standalone write contract.
+Exact value frequencies and bounds are computed from the resulting complete
+bag. This is a bounded TASK-150 child, **not** TASK-81 parent signoff or
+native vendor law certification.
+
+
 ## Single-target UPDATE/DELETE physical effects (TASK-149)
 
 Canonical UPDATE and DELETE operations retain the target's complete physical
