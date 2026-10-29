@@ -283,17 +283,12 @@ fn refine_write_value_domain(
 
 fn normalize_mutation_returning(
     returning: Option<&[SelectItem]>,
-    kind: &str,
-) -> Result<Vec<String>, ProtocolStatement> {
+) -> Result<Vec<String>, &'static str> {
     let Some(items) = returning else {
         return Ok(Vec::new());
     };
     if items.is_empty() {
-        return Err(unsupported_write_statement(
-            kind,
-            "unproved_mutation_returning",
-            "RETURNING requires at least one direct target column",
-        ));
+        return Err("RETURNING requires at least one direct target column");
     }
     let mut columns = Vec::new();
     let mut seen = BTreeSet::new();
@@ -301,21 +296,11 @@ fn normalize_mutation_returning(
         match item {
             SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
                 if !seen.insert(identifier.value.clone()) {
-                    return Err(unsupported_write_statement(
-                        kind,
-                        "unproved_mutation_returning",
-                        "duplicate RETURNING column identities require positional evidence",
-                    ));
+                    return Err("duplicate RETURNING column identities require positional evidence");
                 }
                 columns.push(identifier.value.clone());
             }
-            _ => {
-                return Err(unsupported_write_statement(
-                    kind,
-                    "unproved_mutation_returning",
-                    "only unqualified direct target columns are proven for RETURNING",
-                ))
-            }
+            _ => return Err("only unqualified direct target columns are proven for RETURNING"),
         }
     }
     Ok(columns)
@@ -346,9 +331,9 @@ pub(super) fn analyze_update(
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
-    let returning_columns = match normalize_mutation_returning(returning, "update") {
+    let returning_columns = match normalize_mutation_returning(returning) {
         Ok(columns) => columns,
-        Err(unsupported) => return unsupported,
+        Err(reason) => return unsupported_write_statement("update", "unproved_mutation_returning", reason),
     };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
@@ -478,9 +463,9 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
     let returning_columns =
-        match normalize_mutation_returning(delete.returning.as_deref(), "delete") {
+        match normalize_mutation_returning(delete.returning.as_deref()) {
             Ok(columns) => columns,
-            Err(unsupported) => return unsupported,
+            Err(reason) => return unsupported_write_statement("delete", "unproved_mutation_returning", reason),
         };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
