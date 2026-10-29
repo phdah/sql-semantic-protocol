@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-150",
   "parent": "TASK-81",
-  "status": "verified_bounded_child_pending_merge",
+  "status": "verified_bounded_child_done_pending_merge",
   "fixture_ids": [
     "81-C150-P",
     "81-C150-N"
@@ -1019,7 +1019,7 @@
     "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581",
     "ci_commit": "11565f78586ef486ad8c14a66e4993ea406b5ee0",
     "last_review": "2026-10-29",
-    "merge_gate": "All original TASK-81 parent criteria remain separate; TASK-150 remains In Progress until PR #162 merges"
+    "merge_gate": "TASK-150 is Done in PR #162 after verified acceptance and CI; TASK-151 is blocked until PR #162 merges; original TASK-81 parent criteria remain separate"
   },
   "dialect_expected": {
     "81-C150-N-ambiguous-update::ansi": "parsed_canonical",

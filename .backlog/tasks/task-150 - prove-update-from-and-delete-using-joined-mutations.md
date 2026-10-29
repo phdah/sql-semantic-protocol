@@ -1,7 +1,7 @@
 ---
 id: TASK-150
 title: Prove UPDATE FROM and DELETE USING joined mutations
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-29'
@@ -30,7 +30,7 @@ type: feature
 - **Typed conditional boundary:** No multiple-match rewrite without unique identity and engine match assumption. Owner: TASK-150.
 - **Original TASK-81 criteria:** #1, #2, #3, #5, #6.
 
-Frozen contract: [docs/task-150-acceptance-freeze.json](../../docs/task-150-acceptance-freeze.json). All five acceptance criteria verified on the implementation head at [CI run 40916998581](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581). The child is `In Progress` until PR #162 merges, as required by `AGENTS.md`.
+Frozen contract: [docs/task-150-acceptance-freeze.json](../../docs/task-150-acceptance-freeze.json). All five acceptance criteria are verified, the final two-axis review is complete, and [all nine CI checks passed](https://github.com/phdah/sql-semantic-protocol/actions/runs/40918021539) at `c8efe1e`. TASK-150 is `Done` in this PR so the merged branch preserves its completed status. PR #162 merging remains a separate dependency gate for TASK-151.
 
 ## Acceptance Criteria
 
@@ -49,5 +49,5 @@ Next: [TASK-151](task-151%20-%20classify-qualified-targets-order-limit-returning
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-The bounded v3 freeze covers 8 Exact and 2 conditional Residual complete-bag cases, plus one independent enforced-key Impossible contrast, 130 frozen parser dialect cells, and 30 equivalent direct/dbt/ODCS adapter cells. Full physical, typed-domain, CTE intermediate and native DuckDB oracles are in `tests/task_150_{joined_writes,dialect_adapter}.rs`. All five child AC are independently reviewed and verified on [implementation CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581) at `11565f78586e`; see [acceptance audit](../../docs/task-150-acceptance-audit.md). Final signoff-only metadata head must also pass checks. Parent TASK-81 remains separately gated; do not mark this child Done before merge.
+The bounded v3 freeze covers 8 Exact and 2 conditional Residual complete-bag cases, plus one independent enforced-key Impossible contrast, 130 frozen parser dialect cells, and 30 equivalent direct/dbt/ODCS adapter cells. Full physical, typed-domain, CTE intermediate and native DuckDB oracles are in `tests/task_150_{joined_writes,dialect_adapter}.rs`. All five child AC are independently reviewed and verified on [implementation CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581) at `11565f78586e`; see [acceptance audit](../../docs/task-150-acceptance-audit.md). Final signoff metadata head `c8efe1e` passed [all nine CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/40918021539). This child is Done; the PR must still merge before TASK-151 becomes eligible. Parent TASK-81 remains independently gated.
 <!-- SECTION:NOTES:END -->

@@ -33,9 +33,9 @@ acceptance and single-v3 release gate. The predecessor TASK-149 is merged.
 | --- | --- | --- |
 | #1 | Versioned v3 matrix, typed positive/NOT TRUE bag identities, explicit boundaries | Verified on the frozen v3 inventory and CI |
 | #2 | Canonical joined-source/CTE write model, complete physical transition, fail-closed ambiguity and key validation | Verified; native executable oracle and full-row domains |
-| #3 | Complete native source, CTE intermediate, target after, NULL/duplicate/impossible/rejected contrast | Implemented, CI review pending |
-| #4 | All 13 injected parser dialects; direct/dbt/ODCS equivalent schema evidence; conditional native vendor law | Implemented, CI review pending |
-| #5 | Final head fmt, strict Clippy, default/no-default tests, docs, dbt E2E, schema and golden snapshots | Verified on implementation SHA `11565f78586e` (https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581); final metadata-only commit requires an additional CI pass |
+| #3 | Complete native source, CTE intermediate, target after, NULL/duplicate/impossible/rejected contrast | Verified; native DuckDB and full-bag oracles passed final-head CI |
+| #4 | All 13 injected parser dialects; direct/dbt/ODCS equivalent schema evidence; conditional native vendor law | Verified; 130 parser cells and 30 adapter cells passed final-head CI |
+| #5 | Final head fmt, strict Clippy, default/no-default tests, docs, dbt E2E, schema and golden snapshots | Verified on final signoff SHA `c8efe1e` ([nine green jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/40918021539)) |
 
 ## Two-axis review (Matt Pocock code-review)
 
@@ -57,4 +57,4 @@ are intentionally not closed.
 
 **Verified implementation head:** [CI run 40916998581](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581) at SHA `11565f78586ef486ad8c14a66e4993ea406b5ee0` has nine green jobs: fmt, default/no-default Clippy, default/no-default Rust tests and docs, dependency checks and dbt E2E. The 130 exact parser classifications are pinned in the freeze; 30 equivalent adapter cells are independently asserted. The enforced-key Impossible contrast has a native DuckDB rejection test.
 
-**Lifecycle:** All five child acceptance criteria are verified against the implementation head. The subsequent signoff-only metadata commit must pass its own CI before the PR is review-ready. TASK-150 remains `In Progress` until PR #162 merges; parent TASK-81 and release TASK-91 remain independently unsigned.
+**Lifecycle:** All five child acceptance criteria and the independent two-axis code review are verified. Final signoff-head `c8efe1e` passed all nine CI jobs. TASK-150 is marked `Done` **in PR #162** so the merged branch carries the correct task state; PR merge remains the separate integration prerequisite for starting TASK-151. Parent TASK-81 and release TASK-91 remain independently unsigned.

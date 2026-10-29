@@ -2,7 +2,7 @@
   "task_150_joined_mutations_acceptance": {
     "owner": "TASK-150",
     "parent": "TASK-81",
-    "status": "verified_bounded_child_pending_merge",
+    "status": "verified_bounded_child_done_pending_merge",
     "freeze": "docs/task-150-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -35,7 +35,7 @@
     ],
     "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581",
     "implementation_ci_sha": "11565f78586ef486ad8c14a66e4993ea406b5ee0",
-    "final_metadata_ci_gate": "Signoff-only PR head must also pass required CI before merge",
+    "final_metadata_ci_gate": "Signoff head c8efe1e passed nine jobs; updated PR head must also pass required CI before merge",
     "native_vendor_execution_certified": false,
     "parent_signed_off": false,
     "release_approved": false
