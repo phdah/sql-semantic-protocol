@@ -319,17 +319,26 @@ fn mutation_wire_default_is_not_null_and_returning_keeps_target_identity() {
     assert_eq!(write["returning_columns"], serde_json::Value::Null);
 
     for (sql, kind) in [
-        ("UPDATE target SET score=5 WHERE id=1 RETURNING id,score","update"),
-        ("DELETE FROM target WHERE id=1 RETURNING id,score","delete"),
+        (
+            "UPDATE target SET score=5 WHERE id=1 RETURNING id,score",
+            "update",
+        ),
+        ("DELETE FROM target WHERE id=1 RETURNING id,score", "delete"),
     ] {
-        let document: serde_json::Value = serde_json::from_str(
-            &sql_semantic_protocol::to_bundle_json(&bundle(sql, false))
-        ).unwrap();
+        let document: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&bundle(sql, false)))
+                .unwrap();
         let write = &document["inputs"][0]["statements"][0]["write"];
         assert_eq!(write["kind"], kind);
-        assert_eq!(write["target"],"target");
-        assert_eq!(write["returning_columns"], serde_json::json!(["id","score"]));
-        assert!(write["assignments"].as_array().unwrap().iter()
+        assert_eq!(write["target"], "target");
+        assert_eq!(
+            write["returning_columns"],
+            serde_json::json!(["id", "score"])
+        );
+        assert!(write["assignments"]
+            .as_array()
+            .unwrap()
+            .iter()
             .all(|assignment| assignment.get("default").is_none()));
     }
 }
@@ -337,13 +346,17 @@ fn mutation_wire_default_is_not_null_and_returning_keeps_target_identity() {
 #[test]
 fn quoted_default_identifier_is_not_rewritten_into_a_keyword() {
     let sql = "UPDATE target SET score = \"DEFAULT\" WHERE id = 1";
-    let b = bundle(sql,false);
-    let doc: serde_json::Value=serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&b)
-    ).unwrap();
-    let assignment=&doc["inputs"][0]["statements"][0]["write"]["assignments"][0];
-    assert!(assignment.get("default").is_none(),
-        "a quoted source column named DEFAULT cannot invoke target DEFAULT");
-    let plan=physical_ordered_write_state_plan(&b,&[state(&[(Some(1),10)])]);
-    assert!(matches!(plan,PhysicalWriteStatePlan::Residual {..}),"{plan:?}");
+    let b = bundle(sql, false);
+    let doc: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).unwrap();
+    let assignment = &doc["inputs"][0]["statements"][0]["write"]["assignments"][0];
+    assert!(
+        assignment.get("default").is_none(),
+        "a quoted source column named DEFAULT cannot invoke target DEFAULT"
+    );
+    let plan = physical_ordered_write_state_plan(&b, &[state(&[(Some(1), 10)])]);
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
