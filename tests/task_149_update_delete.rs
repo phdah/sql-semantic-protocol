@@ -369,9 +369,15 @@ fn zero_matched_rows_cannot_hide_invalid_update_target_or_unattested_default() {
         "UPDATE target SET score = DEFAULT WHERE id = NULL",
         "UPDATE target SET score = 1, score = 2 WHERE id = NULL",
     ] {
-        let plan = physical_ordered_write_state_plan(&bundle(sql, false), std::slice::from_ref(&before));
-        assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }),"{sql}: {plan:?}");
+        let plan =
+            physical_ordered_write_state_plan(&bundle(sql, false), std::slice::from_ref(&before));
+        assert!(
+            matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+            "{sql}: {plan:?}"
+        );
     }
-    let db=duckdb();
-    assert!(db.execute_batch("UPDATE target SET missing = 1 WHERE id = NULL").is_err());
+    let db = duckdb();
+    assert!(db
+        .execute_batch("UPDATE target SET missing = 1 WHERE id = NULL")
+        .is_err());
 }
