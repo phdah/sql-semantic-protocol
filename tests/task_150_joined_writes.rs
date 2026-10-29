@@ -209,3 +209,37 @@ fn missing_source_population_is_residual_not_an_empty_source() {
         "{plan:?}"
     );
 }
+
+
+#[test]
+fn duplicate_delete_using_matches_remove_each_target_occurrence_once() {
+    exact(
+        &[(Some(1), 10), (Some(1), 10), (Some(2), 20), (None, 30)],
+        &[(Some(1), 40), (Some(1), 50)],
+        "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+        0,
+        2,
+    );
+}
+
+#[test]
+fn joined_update_computed_value_uses_the_matching_source_row() {
+    exact(
+        &[(Some(1), 10), (Some(2), 20), (None, 30)],
+        &[(Some(1), 40), (Some(3), 50)],
+        "UPDATE target AS t SET score = s.score + 5 FROM source AS s WHERE t.id = s.id",
+        1,
+        0,
+    );
+}
+
+#[test]
+fn joined_null_equality_never_selects_a_target() {
+    exact(
+        &[(Some(1), 10), (None, 30)],
+        &[(None, 40)],
+        "DELETE FROM target AS t USING source AS s WHERE t.id = s.id",
+        0,
+        0,
+    );
+}
