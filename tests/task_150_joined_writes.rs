@@ -243,13 +243,19 @@ fn joined_null_equality_never_selects_a_target() {
     );
 }
 
-
 /// Parse the frozen independent source and target bags without consulting production
 /// analysis to construct expected rows, bounds, or selected row identities.
 fn frozen_rows(json: &serde_json::Value) -> Vec<(Option<i64>, i64)> {
-    json.as_array().expect("frozen row bag").iter().map(|row| {
-        (row["id"].as_i64(), row["score"].as_i64().expect("frozen integer score"))
-    }).collect()
+    json.as_array()
+        .expect("frozen row bag")
+        .iter()
+        .map(|row| {
+            (
+                row["id"].as_i64(),
+                row["score"].as_i64().expect("frozen integer score"),
+            )
+        })
+        .collect()
 }
 
 #[test]
@@ -268,18 +274,26 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
             // Never reinterpret an unavailable named producer as a free source bag.
             let result = std::panic::catch_unwind(|| analyze(sql));
             match result {
-                Err(_) => {},
+                Err(_) => {}
                 Ok(bundle) => {
                     let plan = physical_ordered_write_state_plan(
                         &bundle,
-                        &[state("target", &target_before), state("source", &[(Some(1), 40)])],
+                        &[
+                            state("target", &target_before),
+                            state("source", &[(Some(1), 40)]),
+                        ],
                     );
-                    assert!(!matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{id}: must not invent CTE source rows");
+                    assert!(
+                        !matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+                        "{id}: must not invent CTE source rows"
+                    );
                 }
             }
             continue;
         }
-        let source = case["source"].as_array().map(|_| frozen_rows(&case["source"]));
+        let source = case["source"]
+            .as_array()
+            .map(|_| frozen_rows(&case["source"]));
         let mut states = vec![state("target", &target_before)];
         if let Some(source) = &source {
             states.push(state("source", source));
@@ -287,10 +301,17 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
         let bundle = analyze(sql);
         let plan = physical_ordered_write_state_plan(&bundle, &states);
         if case["proof"] == "residual" {
-            assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{id}: {plan:?}");
+            assert!(
+                matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+                "{id}: {plan:?}"
+            );
             continue;
         }
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = plan
+        else {
             panic!("{id}: frozen exact case must be physically feasible: {plan:?}");
         };
         assert_eq!(transitions.len(), 1, "{id}");
@@ -298,24 +319,71 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
         let expected = frozen_rows(&case["target_after"]);
         let mut expected_sorted = expected.clone();
         expected_sorted.sort();
-        assert_eq!(rows(transition.before()), rows(&state("target", &target_before)), "{id}");
+        assert_eq!(
+            rows(transition.before()),
+            rows(&state("target", &target_before)),
+            "{id}"
+        );
         assert_eq!(rows(transition.after()), expected_sorted, "{id}");
-        assert_eq!(transition.affected().updated(), case["affected"]["updated"].as_u64().unwrap(), "{id}");
-        assert_eq!(transition.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap(), "{id}");
-        let selected: Vec<usize> = case["target_true_ordinals"].as_array().unwrap().iter()
-            .map(|value| value.as_u64().unwrap() as usize).collect();
+        assert_eq!(
+            transition.affected().updated(),
+            case["affected"]["updated"].as_u64().unwrap(),
+            "{id}"
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            case["affected"]["deleted"].as_u64().unwrap(),
+            "{id}"
+        );
+        let selected: Vec<usize> = case["target_true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_u64().unwrap() as usize)
+            .collect();
         assert_eq!(transition.affected_target_ordinals(), selected, "{id}");
         let not_true: Vec<usize> = (0..target_before.len())
-            .filter(|index| !selected.contains(index)).collect();
-        let frozen_not_true: Vec<usize> = case["target_not_true_ordinals"].as_array().unwrap().iter()
-            .map(|value| value.as_u64().unwrap() as usize).collect();
+            .filter(|index| !selected.contains(index))
+            .collect();
+        let frozen_not_true: Vec<usize> = case["target_not_true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_u64().unwrap() as usize)
+            .collect();
         assert_eq!(not_true, frozen_not_true, "{id}");
-        assert_eq!(rows(final_states.iter().find(|s| s.relation() == "target").unwrap()), expected_sorted, "{id}");
+        assert_eq!(
+            rows(
+                final_states
+                    .iter()
+                    .find(|s| s.relation() == "target")
+                    .unwrap()
+            ),
+            expected_sorted,
+            "{id}"
+        );
         let source = source.expect("exact joined write has a complete source");
-        assert_eq!(rows(final_states.iter().find(|s| s.relation() == "source").unwrap()), rows(&state("source", &source)), "{id}");
-        assert_eq!(rows(transition.after()), native(&target_before, &source, sql), "{id}");
+        assert_eq!(
+            rows(
+                final_states
+                    .iter()
+                    .find(|s| s.relation() == "source")
+                    .unwrap()
+            ),
+            rows(&state("source", &source)),
+            "{id}"
+        );
+        assert_eq!(
+            rows(transition.after()),
+            native(&target_before, &source, sql),
+            "{id}"
+        );
 
-        let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == "target")
+            .unwrap();
         for domain in transition.after().exact_domains(schema).unwrap() {
             let mut observed = BTreeMap::<String, u64>::new();
             for (literal, count) in domain.values() {
@@ -327,16 +395,43 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
                 observed.insert(value, *count);
             }
             let contract = &case["domain_contract"][domain.column()];
-            assert!(contract.is_object(), "{id}: missing frozen domain {}", domain.column());
+            assert!(
+                contract.is_object(),
+                "{id}: missing frozen domain {}",
+                domain.column()
+            );
             let expected: BTreeMap<String, u64> = contract["exact_frequencies"]
-                .as_object().unwrap().iter()
-                .map(|(value, count)| (value.clone(), count.as_u64().unwrap())).collect();
-            assert_eq!(observed, expected, "{id}: typed frequency domain {}", domain.column());
-            let integers: Vec<i64> = observed.keys().filter(|x| *x != "NULL")
-                .map(|x| x.parse::<i64>().unwrap()).collect();
-            assert_eq!(integers.iter().min().copied(), contract["lower"].as_i64(), "{id}");
-            assert_eq!(integers.iter().max().copied(), contract["upper"].as_i64(), "{id}");
-            assert_eq!(observed.contains_key("NULL"), contract["nullable"].as_bool().unwrap(), "{id}");
+                .as_object()
+                .unwrap()
+                .iter()
+                .map(|(value, count)| (value.clone(), count.as_u64().unwrap()))
+                .collect();
+            assert_eq!(
+                observed,
+                expected,
+                "{id}: typed frequency domain {}",
+                domain.column()
+            );
+            let integers: Vec<i64> = observed
+                .keys()
+                .filter(|x| *x != "NULL")
+                .map(|x| x.parse::<i64>().unwrap())
+                .collect();
+            assert_eq!(
+                integers.iter().min().copied(),
+                contract["lower"].as_i64(),
+                "{id}"
+            );
+            assert_eq!(
+                integers.iter().max().copied(),
+                contract["upper"].as_i64(),
+                "{id}"
+            );
+            assert_eq!(
+                observed.contains_key("NULL"),
+                contract["nullable"].as_bool().unwrap(),
+                "{id}"
+            );
             assert_eq!(contract["lower_inclusive"], true, "{id}");
             assert_eq!(contract["upper_inclusive"], true, "{id}");
         }
