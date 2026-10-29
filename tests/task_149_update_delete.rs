@@ -412,9 +412,9 @@ fn missing_complete_target_or_unproved_transaction_cannot_be_exact() {
         .map(|(source, name)| ConfiguredSqlInput::new(name, source, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
     let transactional = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
-    let plan = physical_ordered_write_state_plan(
-        &transactional,
-        &[state(&[(Some(1), 10)])],
+    let plan = physical_ordered_write_state_plan(&transactional, &[state(&[(Some(1), 10)])]);
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
 }
