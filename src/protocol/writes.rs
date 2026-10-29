@@ -93,6 +93,34 @@ impl InsertCteSource {
     }
 }
 
+/// One local nonrecursive read-only CTE produced from a complete physical bag
+/// and used as the joined source of an UPDATE/DELETE. It is not a free
+/// physical relation or an independently writable state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JoinedMutationCteSource {
+    name: String,
+    producer: Box<QueryStatement>,
+}
+
+impl JoinedMutationCteSource {
+    pub(crate) fn new(name: String, producer: QueryStatement) -> Self {
+        Self {
+            name,
+            producer: Box::new(producer),
+        }
+    }
+
+    /// Local source identity scoped to this mutation.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Canonical, row-local producer over the caller-attested physical source bag.
+    pub fn producer(&self) -> &QueryStatement {
+        &self.producer
+    }
+}
+
 /// An INSERT conflict rule, restricted to an explicitly named unique key.
 ///
 /// Whether that key is actually enforced and comparable is verified against
@@ -124,6 +152,7 @@ pub struct WriteOperation {
     default_values: bool,
     insert_cte_source: Option<Box<InsertCteSource>>,
     joined_source: Option<SourceRelation>,
+    joined_cte_source: Option<Box<JoinedMutationCteSource>>,
     insert_conflict: Option<InsertConflictPolicy>,
     returning_columns: Vec<String>,
     match_condition: Option<Predicate>,
@@ -144,6 +173,7 @@ impl WriteOperation {
             default_values: false,
             insert_cte_source: None,
             joined_source: None,
+            joined_cte_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -164,6 +194,7 @@ impl WriteOperation {
             default_values: false,
             insert_cte_source: None,
             joined_source: None,
+            joined_cte_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -196,6 +227,7 @@ impl WriteOperation {
             default_values: false,
             insert_cte_source: None,
             joined_source: None,
+            joined_cte_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: Some(match_condition),
@@ -222,6 +254,7 @@ impl WriteOperation {
             default_values: false,
             insert_cte_source: None,
             joined_source: None,
+            joined_cte_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -247,6 +280,7 @@ impl WriteOperation {
             default_values: false,
             insert_cte_source: None,
             joined_source: None,
+            joined_cte_source: None,
             insert_conflict: None,
             returning_columns: Vec::new(),
             match_condition: None,
@@ -305,6 +339,16 @@ impl WriteOperation {
 
     pub(crate) fn with_joined_source(mut self, source: SourceRelation) -> Self {
         self.joined_source = Some(source);
+        self
+    }
+
+    /// Nonrecursive local producer supplying this mutation's joined source bag.
+    pub fn joined_cte_source(&self) -> Option<&JoinedMutationCteSource> {
+        self.joined_cte_source.as_deref()
+    }
+
+    pub(crate) fn with_joined_cte_source(mut self, cte: JoinedMutationCteSource) -> Self {
+        self.joined_cte_source = Some(Box::new(cte));
         self
     }
 
