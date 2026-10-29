@@ -1,10 +1,10 @@
 ---
 id: TASK-149
 title: Prove typed UPDATE and DELETE single-target effects
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-29'
 labels: []
 milestone: m-3
 dependencies:
