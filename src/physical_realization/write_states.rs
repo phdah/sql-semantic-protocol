@@ -576,7 +576,10 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 Err(error) => return failure(Some(layer.id()), error),
             };
             if write.returning_columns().iter().any(|column| {
-                !schema.columns().iter().any(|schema_column| schema_column.name() == column)
+                !schema
+                    .columns()
+                    .iter()
+                    .any(|schema_column| schema_column.name() == column)
             }) {
                 return failure(
                     Some(layer.id()),
