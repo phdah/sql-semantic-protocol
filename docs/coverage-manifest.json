@@ -1,4 +1,32 @@
 {
+  "task_75_parent_acceptance": {
+    "owner": "TASK-75",
+    "status": "portable_parent_original_ac_verified",
+    "freeze": "docs/task-75-acceptance-freeze.json",
+    "audit": "docs/task-75-acceptance-audit.md",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cases": 40,
+    "conditional_cases": 10,
+    "mandatory_parser_cells": 520,
+    "mandatory_adapter_cells": 120,
+    "merged_children": [
+      "TASK-129",
+      "TASK-130",
+      "TASK-131",
+      "TASK-132"
+    ],
+    "parent_regression": "tests/task_75_parent_closure.rs",
+    "parent_signed_off": true,
+    "release_approved": false,
+    "final_pr_ci": "pending"
+  },
   "task_148_ordered_insert_acceptance": {
     "owner": "TASK-148",
     "parent": "TASK-80",
