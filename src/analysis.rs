@@ -292,7 +292,7 @@ fn analyze_statement(
         } => analyze_update(
             table,
             assignments,
-            from.is_some(),
+            from.as_ref(),
             selection.as_ref(),
             returning.as_deref(),
             or.is_some(),
