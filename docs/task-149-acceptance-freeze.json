@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-149",
   "parent": "TASK-81",
-  "status": "audited_scope_v2_pending_execution",
+  "status": "v2_parser_evidence_recorded_adapters_pending",
   "fixture_ids": [
     "81-C149-P",
     "81-C149-N"
@@ -168,19 +168,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -208,7 +208,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-update-computed",
@@ -329,19 +330,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -373,7 +374,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-update-default",
@@ -494,19 +496,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -534,7 +536,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-update-returning",
@@ -660,19 +663,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -700,7 +703,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-delete",
@@ -803,19 +807,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -847,7 +851,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-delete-returning",
@@ -959,19 +964,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1003,7 +1008,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-null-unknown",
@@ -1123,19 +1129,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1158,7 +1164,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-delete-false",
@@ -1278,19 +1285,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1313,7 +1320,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-update-null",
@@ -1433,19 +1441,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1468,7 +1476,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-missing-default",
@@ -1530,19 +1539,19 @@
         }
       },
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1553,7 +1562,8 @@
       "selection_sql": "id = 1",
       "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
       "affected_row_images": null,
-      "conditional_disposition": "TASK-149 conditional: missing authoritative scalar DEFAULT cannot be Exact"
+      "conditional_disposition": "TASK-149 conditional: missing authoritative scalar DEFAULT cannot be Exact",
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-P-simultaneous-assignments",
@@ -1626,19 +1636,19 @@
       ],
       "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1708,7 +1718,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-zero-returning",
@@ -1775,19 +1786,19 @@
       ],
       "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1862,7 +1873,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     },
     {
       "id": "81-C149-N-duplicate-key-impossible",
@@ -1902,19 +1914,19 @@
       ],
       "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
       "parser_cells": {
-        "generic": "pending_execution",
-        "mysql": "pending_execution",
-        "postgresql": "pending_execution",
-        "hive": "pending_execution",
-        "sqlite": "pending_execution",
-        "snowflake": "pending_execution",
-        "redshift": "pending_execution",
-        "mssql": "pending_execution",
-        "clickhouse": "pending_execution",
-        "bigquery": "pending_execution",
-        "ansi": "pending_execution",
-        "duckdb": "pending_execution",
-        "databricks": "pending_execution"
+        "generic": "canonical",
+        "mysql": "canonical",
+        "postgresql": "canonical",
+        "hive": "canonical",
+        "sqlite": "canonical",
+        "snowflake": "canonical",
+        "redshift": "canonical",
+        "mssql": "canonical",
+        "clickhouse": "canonical",
+        "bigquery": "canonical",
+        "ansi": "canonical",
+        "duckdb": "canonical",
+        "databricks": "canonical"
       },
       "adapter_cells": {
         "direct_sql": "pending",
@@ -1933,7 +1945,8 @@
         "SQL three-valued WHERE truth",
         "attested enforced scalar DEFAULT values only",
         "no vendor/session-specific RETURNING execution claims"
-      ]
+      ],
+      "parser_evidence": "individually observed canonical parse in CI run 40870780989 (13/13 dialects; not native engine certification)"
     }
   ],
   "conditional": [
@@ -1964,5 +1977,6 @@
   "matrix_cells": {
     "parser": 169,
     "adapter": 39
-  }
+  },
+  "parser_matrix_evidence": "CI run 40870780989, test every_frozen_parser_cell_requires_a_verified_explicit_classification: 169 observed statuses, all canonical; earlier run intentionally failed against v1 pending status to record independent observation"
 }
