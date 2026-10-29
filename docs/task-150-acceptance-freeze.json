@@ -53,8 +53,7 @@
       "id": "81-C150-P-update-from-unique",
       "fixture_id": "81-C150-P",
       "family": "unique_update_from",
-      "sql": "UPDATE target AS t SET score = s.score WHERE t.id = s.id FROM source AS s",
-      "dialect_sql": "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id",
+      "sql": "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id",
       "target_before": [
         {
           "id": 1,
@@ -101,7 +100,9 @@
         1,
         2
       ],
-      "owner": "TASK-150"
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     },
     {
       "id": "81-C150-P-delete-using-unique",
@@ -150,7 +151,9 @@
         1,
         2
       ],
-      "owner": "TASK-150"
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     },
     {
       "id": "81-C150-N-null-nonmatch",
@@ -202,7 +205,9 @@
         1,
         2
       ],
-      "owner": "TASK-150"
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     },
     {
       "id": "81-C150-N-ambiguous-update",
@@ -238,7 +243,9 @@
       "proof": "residual",
       "reason": "Multiple source matches do not prove deterministic assignment choice",
       "owner": "TASK-150",
-      "conditional_release_disposition": "requires native engine/version match-selection evidence"
+      "conditional_release_disposition": "requires native engine/version match-selection evidence",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     },
     {
       "id": "81-C150-P-empty-source",
@@ -285,7 +292,9 @@
         1,
         2
       ],
-      "owner": "TASK-150"
+      "owner": "TASK-150",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     },
     {
       "id": "81-C150-N-cte-boundary",
@@ -317,7 +326,9 @@
       "proof": "conditional",
       "reason": "CTE materialization and source lineage require TASK-78; no independent row insertion",
       "owner": "TASK-150",
-      "conditional_release_disposition": "defer only when named TASK-78 dependency is satisfied and proved"
+      "conditional_release_disposition": "defer only when named TASK-78 dependency is satisfied and proved",
+      "parser_boundary": "parser matrix to be independently observed on each listed dialect",
+      "adapter_boundary": "equivalent attested relation schemas, not vendor-native runtime certification"
     }
   ],
   "signoff": {
