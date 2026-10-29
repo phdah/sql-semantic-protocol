@@ -2,8 +2,7 @@
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_ordered_write_state_plan,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
@@ -319,12 +318,14 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
             assert_eq!(stages.len(), 1, "{id}");
             assert_eq!(stages[0].relation(), "picked", "{id}");
             assert_eq!(rows(&stages[0]), vec![(Some(1), 40)], "{id}");
-            let wire: serde_json::Value = serde_json::from_str(
-                &sql_semantic_protocol::to_bundle_json(&bundle)
-            ).unwrap();
+            let wire: serde_json::Value =
+                serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&bundle)).unwrap();
             let local = &wire["inputs"][0]["statements"][0]["write"]["joined_cte_source"];
             assert_eq!(local["name"], "picked");
-            assert_eq!(local["producer"]["dependencies"], serde_json::json!(["source"]));
+            assert_eq!(
+                local["producer"]["dependencies"],
+                serde_json::json!(["source"])
+            );
         }
         let selected: Vec<usize> = case["target_true_ordinals"]
             .as_array()
