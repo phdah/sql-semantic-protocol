@@ -77,9 +77,15 @@ fn physical_source_bags(case: &Value, id: &str) {
         .or_else(|| case.get("raw_seed_bags"))
         .expect("physical source bags");
     let sources = sources.as_object().expect("physical relation inventory");
-    assert!(!sources.is_empty(), "{id}: missing physical input relations");
+    assert!(
+        !sources.is_empty(),
+        "{id}: missing physical input relations"
+    );
     for (relation, rows) in sources {
-        assert!(rows.is_array(), "{id}: {relation} must be a complete row bag");
+        assert!(
+            rows.is_array(),
+            "{id}: {relation} must be a complete row bag"
+        );
     }
 }
 
@@ -134,7 +140,7 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
         );
         let actual_fixtures = strings(&child["fixture_ids"]);
         assert_eq!(strings(&record["fixture_ids"]), actual_fixtures);
-        fixtures.extend(actual_fixtures);
+        fixtures.extend(actual_fixtures.iter().cloned());
 
         let mut child_mandatory = BTreeSet::new();
         let mut child_conditional = BTreeSet::new();
@@ -192,9 +198,15 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                     case["terminal_oracle"]["status"],
                     "conditional_native_engine_only"
                 );
-                assert_eq!(case["expect"]["owner"], task, "{id}: missing conditional owner");
+                assert_eq!(
+                    case["expect"]["owner"], task,
+                    "{id}: missing conditional owner"
+                );
                 assert_eq!(case["expect"]["type"], "conditional", "{id}");
-                assert!(nonempty(&case["expect"]["reason"]), "{id}: no conditional reason");
+                assert!(
+                    nonempty(&case["expect"]["reason"]),
+                    "{id}: no conditional reason"
+                );
                 assert!(
                     nonempty(&case["release_disposition"]),
                     "{id}: missing reviewed release disposition"
@@ -221,7 +233,10 @@ fn every_original_criterion_cites_frozen_verified_child_cases() {
                 }
             } else {
                 if task == "TASK-129" {
-                    assert_eq!(case["duckdb_source_and_terminal_oracle"], "verified", "{id}");
+                    assert_eq!(
+                        case["duckdb_source_and_terminal_oracle"], "verified",
+                        "{id}"
+                    );
                 } else if task == "TASK-130" {
                     assert!(
                         matches!(
