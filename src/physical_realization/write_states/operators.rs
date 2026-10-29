@@ -475,7 +475,6 @@ pub(super) fn mutate_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
-    delete: bool,
     affected_rows: &mut Vec<PhysicalWriteRow>,
     affected_target_ordinals: &mut Vec<usize>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
@@ -483,6 +482,7 @@ pub(super) fn mutate_rows(
     let write = query
         .write()
         .ok_or_else(|| residual("missing mutation write"))?;
+    let delete = write.kind() == WriteKind::Delete;
     if !delete {
         validate_update_assignments(bundle, target, write.target_alias(), write.assignments())?;
     }
