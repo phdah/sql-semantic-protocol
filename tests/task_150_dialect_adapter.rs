@@ -296,15 +296,15 @@ fn every_frozen_case_has_equivalent_odcs_physical_proof() {
 fn every_frozen_case_has_an_explicit_parser_and_canonical_disposition() {
     let matrix: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-150-acceptance-freeze.json")).unwrap();
-    let mut cells = 0;
+    let mut observed = BTreeMap::<String, String>::new();
     for case in matrix["cases"].as_array().unwrap() {
         let sql = case["sql"].as_str().unwrap();
         for dialect in DIALECTS {
             let parser = dialect_from_name(dialect).unwrap();
-            match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
-                Err(_) => {} // a parser boundary, no native execution claim
+            let disposition = match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
+                Err(_) => "parser_boundary",
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
-                    ProtocolStatement::Unsupported(_) => {} // canonical unsupported boundary
+                    ProtocolStatement::Unsupported(_) => "canonical_unsupported",
                     ProtocolStatement::Query(query) => {
                         let write = query.write().unwrap_or_else(|| {
                             panic!("{dialect}: parsed DML omitted as a non-write: {sql}")
@@ -317,12 +317,20 @@ fn every_frozen_case_has_an_explicit_parser_and_canonical_disposition() {
                         if case["family"] == "finite_cte_update_from" {
                             assert!(write.joined_cte_source().is_some(), "{dialect}: {sql}");
                         }
+                        "parsed_canonical"
                     }
                     _ => panic!("{dialect}: unknown DML representation: {sql}"),
                 },
-            }
-            cells += 1;
+            };
+            observed.insert(format!("{}::{dialect}", case["id"].as_str().unwrap()), disposition.to_string());
         }
     }
-    assert_eq!(cells, 130);
+    assert_eq!(observed.len(), 130);
+    let expected = matrix["dialect_expected"].as_object().unwrap_or_else(|| {
+        panic!("TASK150_FREEZE_PARSER_CELLS:{}", serde_json::to_string(&observed).unwrap())
+    });
+    assert_eq!(expected.len(), observed.len(), "freeze must pin every parser classification");
+    for (key, value) in &observed {
+        assert_eq!(expected[key].as_str(), Some(value.as_str()), "{key}: dialect boundary changed");
+    }
 }
