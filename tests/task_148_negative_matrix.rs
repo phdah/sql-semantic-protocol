@@ -74,10 +74,8 @@ fn bundle(sql: &[&str], primary_key: bool) -> sql_semantic_protocol::AnalysisBun
     bundle
 }
 
-fn native_bag(db: &Connection) -> Vec<Row> {
-    let mut stmt = db
-        .prepare("SELECT id,score FROM target ORDER BY id,score NULLS FIRST")
-        .unwrap();
+fn query_bag(db: &Connection, sql: &str) -> Vec<Row> {
+    let mut stmt = db.prepare(sql).unwrap();
     stmt.query_map([], |r| {
         Ok((r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?))
     })
@@ -86,13 +84,17 @@ fn native_bag(db: &Connection) -> Vec<Row> {
     .collect()
 }
 
+fn native_bag(db: &Connection) -> Vec<Row> {
+    query_bag(db, "SELECT id,score FROM target ORDER BY id,score NULLS FIRST")
+}
+
 #[test]
 fn null_predicate_is_not_true_and_never_reaches_target() {
     let sql = "INSERT INTO target(id,score) SELECT id,score FROM source WHERE score > 10";
     let source = state("source", &[(1, Some(10)), (2, None), (3, Some(30))]);
     let prior = state("target", &[(0, Some(0))]);
-    let plan =
-        physical_ordered_write_state_plan(&bundle(&[sql], false), &[source.clone(), prior.clone()]);
+    let analysis = bundle(&[sql], false);
+    let plan = physical_ordered_write_state_plan(&analysis, &[source.clone(), prior.clone()]);
     let PhysicalWriteStatePlan::Feasible {
         transitions,
         final_states,
@@ -111,6 +113,26 @@ fn null_predicate_is_not_true_and_never_reaches_target() {
         final_states.iter().find(|s| s.relation() == "source"),
         Some(&source)
     );
+    let schema = analysis
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
+    let domains = transitions[0].after().exact_domains(schema).unwrap();
+    assert_eq!(
+        domains[0].values(),
+        &[
+            (LiteralValue::Number("0".into()), 1),
+            (LiteralValue::Number("3".into()), 1),
+        ]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[
+            (LiteralValue::Number("0".into()), 1),
+            (LiteralValue::Number("30".into()), 1),
+        ]
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -120,24 +142,31 @@ fn null_predicate_is_not_true_and_never_reaches_target() {
         INSERT INTO target VALUES (0,0);",
     )
     .unwrap();
+    let initial_source = vec![(1, Some(10)), (2, None), (3, Some(30))];
     assert_eq!(
-        db.query_row::<i64, _, _>("SELECT COUNT(*) FROM source WHERE score > 10", [], |row| {
-            row.get(0)
-        })
-        .unwrap(),
-        1
+        query_bag(&db, "SELECT id,score FROM source ORDER BY id"),
+        initial_source
     );
     assert_eq!(
-        db.query_row::<i64, _, _>(
-            "SELECT COUNT(*) FROM source WHERE (score > 10) IS NOT TRUE",
-            [],
-            |row| row.get(0)
-        )
-        .unwrap(),
-        2
+        query_bag(
+            &db,
+            "SELECT id,score FROM source WHERE score > 10 ORDER BY id"
+        ),
+        vec![(3, Some(30))]
+    );
+    assert_eq!(
+        query_bag(
+            &db,
+            "SELECT id,score FROM source WHERE (score > 10) IS NOT TRUE ORDER BY id"
+        ),
+        vec![(1, Some(10)), (2, None)]
     );
     db.execute_batch(sql).unwrap();
     assert_eq!(native_bag(&db), vec![(0, Some(0)), (3, Some(30))]);
+    assert_eq!(
+        query_bag(&db, "SELECT id,score FROM source ORDER BY id"),
+        initial_source
+    );
 }
 
 #[test]
