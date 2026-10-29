@@ -281,25 +281,47 @@ fn refine_write_value_domain(
         .unwrap_or(domain)
 }
 
+fn normalize_mutation_returning(
+    returning: Option<&[SelectItem]>,
+) -> Result<Vec<String>, &'static str> {
+    let Some(items) = returning else {
+        return Ok(Vec::new());
+    };
+    if items.is_empty() {
+        return Err("RETURNING requires at least one direct target column");
+    }
+    let mut columns = Vec::new();
+    let mut seen = BTreeSet::new();
+    for item in items {
+        match item {
+            SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
+                if !seen.insert(identifier.value.clone()) {
+                    return Err(
+                        "duplicate RETURNING column identities require positional evidence",
+                    );
+                }
+                columns.push(identifier.value.clone());
+            }
+            _ => return Err("only unqualified direct target columns are proven for RETURNING"),
+        }
+    }
+    Ok(columns)
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
     has_from: bool,
     selection: Option<&Expr>,
-    has_returning: bool,
+    returning: Option<&[SelectItem]>,
     has_conflict_modifier: bool,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
-    if has_from
-        || has_returning
-        || has_conflict_modifier
-        || !table.joins.is_empty()
-        || assignments.is_empty()
-    {
+    if has_from || has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
-            "only single-target UPDATE SET without FROM, JOIN, RETURNING, or conflict modifiers is supported",
+            "only single-target UPDATE SET without FROM, JOIN, or conflict modifiers is supported",
         );
     }
     let Some(target_source) = merge_target_relation(&table.relation) else {
@@ -311,6 +333,12 @@ pub(super) fn analyze_update(
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let returning_columns = match normalize_mutation_returning(returning) {
+        Ok(columns) => columns,
+        Err(reason) => {
+            return unsupported_write_statement("update", "unproved_mutation_returning", reason)
+        }
+    };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -347,24 +375,44 @@ pub(super) fn analyze_update(
     let assignments = assignments
         .iter()
         .map(|assignment| {
-            let expression =
-                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics);
-            let domain = derive_expression_domain_with_column_domains(
-                &expression,
-                &domains,
-                std::slice::from_ref(&target_source),
-            );
-            let domain = refine_write_value_domain(
-                &expression,
-                domain,
-                &domains,
-                std::slice::from_ref(&target_source),
-                metadata,
-            );
-            MergeAssignment::new(
+            let is_default = matches!(&assignment.value,
+                Expr::Identifier(identifier) if identifier.quote_style.is_none()
+                    && identifier.value.eq_ignore_ascii_case("DEFAULT"));
+            // SQL DEFAULT is not the identifier of a physical source column.
+            // The marker is evaluated only against authoritative target metadata.
+            let expression = if is_default {
+                Expression::Literal(LiteralExpression::new(
+                    LiteralType::Null,
+                    LiteralValue::Null,
+                ))
+            } else {
+                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics)
+            };
+            let domain = if is_default {
+                ValueDomain::Unbounded
+            } else {
+                let derived = derive_expression_domain_with_column_domains(
+                    &expression,
+                    &domains,
+                    std::slice::from_ref(&target_source),
+                );
+                refine_write_value_domain(
+                    &expression,
+                    derived,
+                    &domains,
+                    std::slice::from_ref(&target_source),
+                    metadata,
+                )
+            };
+            let assignment = MergeAssignment::new(
                 assignment.target.to_string(),
                 WriteValue::new(expression, domain),
-            )
+            );
+            if is_default {
+                assignment.with_default()
+            } else {
+                assignment
+            }
         })
         .collect();
     sort_diagnostics(&mut diagnostics);
@@ -386,13 +434,10 @@ pub(super) fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::update(
-            target,
-            target_alias,
-            predicate,
-            assignments,
-            domains,
-        ))),
+        .with_write(Some(
+            WriteOperation::update(target, target_alias, predicate, assignments, domains)
+                .with_returning_columns(returning_columns),
+        )),
     )
 }
 
@@ -402,7 +447,6 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     if !delete.tables.is_empty()
         || delete.using.is_some()
-        || delete.returning.is_some()
         || !delete.order_by.is_empty()
         || delete.limit.is_some()
         || tables.len() != 1
@@ -411,7 +455,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         return unsupported_write_statement(
             "delete",
             "unsupported_delete_form",
-            "only single-target DELETE FROM without USING, JOIN, RETURNING, ORDER BY, or LIMIT is supported",
+            "only single-target DELETE FROM without USING, JOIN, ORDER BY, or LIMIT is supported",
         );
     }
     let Some(target_source) = merge_target_relation(&tables[0].relation) else {
@@ -423,6 +467,12 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
+        Ok(columns) => columns,
+        Err(reason) => {
+            return unsupported_write_statement("delete", "unproved_mutation_returning", reason)
+        }
+    };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -469,12 +519,10 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(
-            target,
-            target_alias,
-            predicate,
-            domains,
-        ))),
+        .with_write(Some(
+            WriteOperation::delete(target, target_alias, predicate, domains)
+                .with_returning_columns(returning_columns),
+        )),
     )
 }
 

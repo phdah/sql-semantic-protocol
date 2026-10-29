@@ -338,6 +338,65 @@ pub(super) fn append_rows(
     Ok((next, WriteRowCounts::new(inserted, 0, 0)))
 }
 
+/// Check write-time schema obligations before WHERE filters away all rows.
+/// SQL validates target names and DEFAULT declarations even for a zero-row write.
+fn validate_update_assignments(
+    bundle: &AnalysisBundle,
+    target: &str,
+    alias: Option<&str>,
+    assignments: &[crate::protocol::MergeAssignment],
+) -> StateResult<()> {
+    let schema = schema_for(bundle, target)?;
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == target)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    let mut seen = BTreeSet::new();
+    for assignment in assignments {
+        let column = if let Some((qualifier, column)) = assignment.target().rsplit_once('.') {
+            if qualifier != target && alias != Some(qualifier) {
+                return Err(residual("UPDATE has an unresolved target assignment alias"));
+            }
+            column
+        } else {
+            assignment.target()
+        };
+        if !seen.insert(column) || !schema.columns().iter().any(|item| item.name() == column) {
+            return Err(residual("unknown or overlapping UPDATE assignment"));
+        }
+        if sources.iter().any(|source| {
+            source.column() == column
+                && source.kind() != crate::column_sources::ColumnValueKind::Default
+        }) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "UPDATE explicitly assigns a generated or identity column",
+            ));
+        }
+        if assignment.is_default() {
+            let source = sources
+                .iter()
+                .find(|source| {
+                    source.column() == column
+                        && source.kind() == crate::column_sources::ColumnValueKind::Default
+                })
+                .ok_or_else(|| residual("UPDATE DEFAULT requires declared target default"))?;
+            if !super::generated::authoritative(source) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "UPDATE DEFAULT lacks authoritative execution evidence",
+                ));
+            }
+            if source.value().is_none() {
+                return Err(residual("opaque UPDATE DEFAULT cannot be evaluated"));
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Apply an UPDATE atomically, then recompute attested generated columns.
 ///
 /// SQL does not permit assigning an ALWAYS-generated column directly. Preserve
@@ -357,24 +416,43 @@ pub(super) fn apply_target_update(
         .find(|set| set.relation() == target)
         .map(|set| set.column_value_sources())
         .unwrap_or(&[]);
+    validate_update_assignments(bundle, target, context.target_alias, assignments)?;
+    let mut normal = Vec::new();
+    let mut defaults = Vec::new();
     for assignment in assignments {
         let column = assignment
             .target()
             .rsplit('.')
             .next()
             .unwrap_or(assignment.target());
-        if sources.iter().any(|source| {
-            source.column() == column
-                && source.kind() != crate::column_sources::ColumnValueKind::Default
-        }) {
-            return Err(residual_gap(
-                PhysicalWriteStateGap::UnprovedConstraint,
-                "UPDATE explicitly assigns a generated or identity column",
-            ));
+        if assignment.is_default() {
+            defaults.push(column);
+        } else {
+            normal.push(assignment.clone());
         }
     }
     let schema = schema_for(bundle, target)?;
-    let mut next = apply_assignments(before, assignments, context, aliases)?;
+    let mut next = apply_assignments(before, &normal, context, aliases)?;
+    for column in defaults {
+        let source = sources
+            .iter()
+            .find(|source| {
+                source.column() == column
+                    && source.kind() == crate::column_sources::ColumnValueKind::Default
+            })
+            .ok_or_else(|| residual("UPDATE DEFAULT requires declared target default"))?;
+        if !super::generated::authoritative(source) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "UPDATE DEFAULT lacks authoritative execution evidence",
+            ));
+        }
+        let value = source
+            .value()
+            .ok_or_else(|| residual("opaque UPDATE DEFAULT cannot be evaluated"))?;
+        next.values
+            .insert(column.to_string(), super::generated::scalar_literal(value));
+    }
     for source in sources {
         if source.kind() == crate::column_sources::ColumnValueKind::Generated {
             next.values.remove(source.column());
@@ -387,18 +465,22 @@ pub(super) fn apply_target_update(
 pub(super) fn mutate_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
-    _states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
     delete: bool,
+    affected_rows: &mut Vec<PhysicalWriteRow>,
+    affected_target_ordinals: &mut Vec<usize>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
         .write()
         .ok_or_else(|| residual("missing mutation write"))?;
+    if !delete {
+        validate_update_assignments(bundle, target, write.target_alias(), write.assignments())?;
+    }
     let mut kept = Vec::new();
     let mut affected = 0_u64;
-    for row in &before.rows {
+    for (ordinal, row) in before.rows.iter().enumerate() {
         let context = Context {
             target: Some((target, row)),
             target_alias: write.target_alias(),
@@ -411,15 +493,15 @@ pub(super) fn mutate_rows(
         affected = affected
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
-        if !delete {
-            kept.push(apply_target_update(
-                bundle,
-                target,
-                row,
-                write.assignments(),
-                &context,
-                &[],
-            )?);
+        affected_target_ordinals.push(ordinal);
+        if delete {
+            // DELETE RETURNING observes the removed preimage, including duplicates.
+            affected_rows.push(row.clone());
+        } else {
+            let updated =
+                apply_target_update(bundle, target, row, write.assignments(), &context, &[])?;
+            affected_rows.push(updated.clone());
+            kept.push(updated);
         }
     }
     let counts = if delete {

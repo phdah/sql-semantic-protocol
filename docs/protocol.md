@@ -1,5 +1,28 @@
 # SQL Semantic Protocol contract
 
+## Single-target UPDATE/DELETE physical effects (TASK-149)
+
+Canonical UPDATE and DELETE operations retain the target's complete physical
+before/after bags, including duplicate rows and SQL TRUE/FALSE/UNKNOWN selection.
+`PhysicalWriteTransition::affected_target_ordinals()` exposes the zero-based
+prestate row occurrences selected by each UPDATE/DELETE, so distinct duplicate
+rows remain independently identifiable; ordinals are relative to that
+transition's complete `before()` snapshot, never an inferred output position.
+The physical executor uses the original row for all SET expressions; UPDATE
+RETURNING projects the updated row, while DELETE RETURNING projects the removed
+preimage. Only direct, distinct, unqualified target columns are represented by
+`returning_columns`; opaque vendor projections remain unsupported.
+
+An UPDATE assignment with `"default": true` means an explicit SQL `SET
+column = DEFAULT`, not `NULL`. Its `value` field is a non-executable placeholder
+and must not be interpreted as a computed literal. Exact execution requires an
+authoritatively attested target-column scalar default and complete schema
+evidence, otherwise the physical state is Residual. All other assignments
+omit the optional marker. Full poststate and RETURNING domains are derived from
+the actual physical population; they are not parser-only or source insertion
+claims. This is bounded TASK-149 evidence, not TASK-81 parent signoff.
+
+
 ## Targeted INSERT conflict and RETURNING evidence (TASK-147)
 
 A normalized INSERT can optionally carry `insert_conflict` with `action:

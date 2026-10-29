@@ -294,7 +294,7 @@ fn analyze_statement(
             assignments,
             from.is_some(),
             selection.as_ref(),
-            returning.is_some(),
+            returning.as_deref(),
             or.is_some(),
             metadata,
         ),

@@ -1,6 +1,7 @@
 //! Query statements, DML effects, and MERGE write operations.
 
 use super::*;
+use crate::protocol::MergeAssignment;
 
 pub(super) fn statement_to_value(statement: &ProtocolStatement) -> Value {
     match statement {
@@ -190,10 +191,7 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
             .collect::<Vec<_>>(),
         "selection": write.selection().map_or(Value::Null, predicate_to_value),
         "selection_domains": write.selection_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
-        "assignments": write.assignments().iter().map(|assignment| json!({
-            "target": assignment.target(),
-            "value": write_value_to_value(assignment.value())
-        })).collect::<Vec<_>>(),
+        "assignments": write.assignments().iter().map(merge_assignment_to_value).collect::<Vec<_>>(),
         "state_effect": state_effect
     });
     if let Some(conflict) = write.insert_conflict() {
@@ -236,13 +234,7 @@ pub(super) fn merge_action_to_value(action: &MergeAction) -> Value {
         }),
         MergeAction::Update { assignments } => json!({
             "kind": "update",
-            "assignments": assignments
-                .iter()
-                .map(|assignment| json!({
-                    "target": assignment.target(),
-                    "value": write_value_to_value(assignment.value())
-                }))
-                .collect::<Vec<_>>()
+            "assignments": assignments.iter().map(merge_assignment_to_value).collect::<Vec<_>>()
         }),
         MergeAction::Delete => json!({ "kind": "delete" }),
         MergeAction::Unsupported(semantic) => json!({
@@ -250,6 +242,17 @@ pub(super) fn merge_action_to_value(action: &MergeAction) -> Value {
             "semantic": unsupported_semantic_to_value(semantic)
         }),
     }
+}
+
+fn merge_assignment_to_value(assignment: &MergeAssignment) -> Value {
+    let mut value = json!({
+        "target": assignment.target(),
+        "value": write_value_to_value(assignment.value())
+    });
+    if assignment.is_default() {
+        value["default"] = json!(true);
+    }
+    value
 }
 
 pub(super) fn write_value_to_value(value: &WriteValue) -> Value {

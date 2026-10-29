@@ -1,4 +1,37 @@
 {
+  "task_149_update_delete_acceptance": {
+    "owner": "TASK-149",
+    "parent": "TASK-81",
+    "status": "verified_bounded_child_pending_merge",
+    "fixture_ids": [
+      "81-C149-P",
+      "81-C149-N"
+    ],
+    "freeze": "docs/task-149-acceptance-freeze.json",
+    "oracle": "tests/task_149_update_delete.rs",
+    "mandatory_cells_verified": true,
+    "parent_signed_off": false,
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mandatory_exact_verified": 11,
+    "mandatory_impossible_verified": 1,
+    "conditional_residual_reviewed": 1,
+    "dialect_parser_cells_verified": 169,
+    "adapter_cells_verified": 39,
+    "vendor_boundary_cells_verified": 65,
+    "audit": "docs/task-149-acceptance-audit.md",
+    "physical_oracle": "tests/task_149_frozen_matrix.rs",
+    "adapter_oracle": "tests/task_149_dialect_adapter.rs",
+    "freeze_history": "docs/task-149-acceptance-freeze-v1.json",
+    "implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40873925034",
+    "implementation_head": "fd705b0b71fd645b811c4a32f9291b81baae1b99",
+    "release_approved": false
+  },
   "task_75_parent_acceptance": {
     "owner": "TASK-75",
     "status": "portable_parent_original_ac_verified",

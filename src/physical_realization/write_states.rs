@@ -196,6 +196,7 @@ pub struct PhysicalWriteTransition {
     before: PhysicalWriteState,
     after: PhysicalWriteState,
     affected: WriteRowCounts,
+    affected_target_ordinals: Vec<usize>,
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
     returning_columns: Vec<String>,
@@ -223,13 +224,20 @@ impl PhysicalWriteTransition {
         self.affected
     }
 
+    /// Zero-based physical row-occurrence ordinals in this statement's
+    /// complete target prestate selected by UPDATE/DELETE, including duplicates.
+    /// Empty for other write kinds. These are prestate, never output ordinals.
+    pub fn affected_target_ordinals(&self) -> &[usize] {
+        &self.affected_target_ordinals
+    }
+
     /// Complete local CTE materializations used for this write, never caller-supplied
     /// independent physical populations. Row order preserves source multiplicity.
     pub fn intermediate_states(&self) -> &[PhysicalWriteState] {
         &self.intermediate_states
     }
 
-    /// Complete INSERT RETURNING projection with only rows actually inserted.
+    /// Complete RETURNING projection of actual inserted/updated/deleted rows.
     /// None means the SQL statement has no supported RETURNING clause.
     pub fn returning(&self) -> Option<&PhysicalWriteState> {
         self.returning.as_ref()
@@ -492,6 +500,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let target = write.target();
         let before = states.get(target).cloned();
         let mut intermediate_states = Vec::new();
+        let mut mutation_returning_rows = Vec::new();
+        let mut affected_target_ordinals = Vec::new();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Append => append_rows(
@@ -503,10 +513,24 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 &mut identity_sequences,
                 &mut intermediate_states,
             ),
-            WriteKind::Update => {
-                mutate_rows(bundle, query, &states, target, before.as_ref(), false)
-            }
-            WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
+            WriteKind::Update => mutate_rows(
+                bundle,
+                query,
+                target,
+                before.as_ref(),
+                false,
+                &mut mutation_returning_rows,
+                &mut affected_target_ordinals,
+            ),
+            WriteKind::Delete => mutate_rows(
+                bundle,
+                query,
+                target,
+                before.as_ref(),
+                true,
+                &mut mutation_returning_rows,
+                &mut affected_target_ordinals,
+            ),
             WriteKind::ConditionalMutation => merge_rows(
                 bundle,
                 query,
@@ -555,15 +579,40 @@ pub fn physical_ordered_write_state_plan_with_identities(
         if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
-        let returning = if kind == WriteKind::Append && !write.returning_columns().is_empty() {
+        let returning = if !write.returning_columns().is_empty() {
+            let schema = match projection::schema_for(bundle, target) {
+                Ok(schema) => schema,
+                Err(error) => return failure(Some(layer.id()), error),
+            };
+            if write.returning_columns().iter().any(|column| {
+                !schema
+                    .columns()
+                    .iter()
+                    .any(|schema_column| schema_column.name() == column)
+            }) {
+                return failure(
+                    Some(layer.id()),
+                    residual("RETURNING column is not declared in the complete target schema"),
+                );
+            }
+            let affected_rows: Vec<&PhysicalWriteRow> = match kind {
+                WriteKind::Append => after.rows.iter().skip(before.rows.len()).collect(),
+                WriteKind::Update | WriteKind::Delete => mutation_returning_rows.iter().collect(),
+                WriteKind::Definition | WriteKind::ConditionalMutation => {
+                    return failure(
+                        Some(layer.id()),
+                        residual("RETURNING is not implemented for this write kind"),
+                    );
+                }
+            };
             let mut rows = Vec::new();
-            for row in after.rows.iter().skip(before.rows.len()) {
+            for row in affected_rows {
                 let mut values = BTreeMap::new();
                 for column in write.returning_columns() {
                     let Some(value) = row.values.get(column) else {
                         return failure(
                             Some(layer.id()),
-                            residual("INSERT RETURNING column missing from complete target schema"),
+                            residual("RETURNING column missing from complete target row"),
                         );
                     };
                     values.insert(column.clone(), value.clone());
@@ -583,6 +632,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             before,
             after,
             affected: counts,
+            affected_target_ordinals,
             intermediate_states,
             returning,
             returning_columns: write.returning_columns().to_vec(),

@@ -1,0 +1,1105 @@
+{
+  "version": 1,
+  "owner": "TASK-149",
+  "parent": "TASK-81",
+  "status": "frozen_before_semantic_edits_unverified",
+  "fixture_ids": [
+    "81-C149-P",
+    "81-C149-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "comparison_assumptions": [
+    "complete supplied target population",
+    "typed signed INTEGER equality/arithmetic",
+    "SQL three-valued WHERE truth",
+    "attested enforced scalar DEFAULT values only",
+    "no vendor/session-specific RETURNING execution claims"
+  ],
+  "cases": [
+    {
+      "id": "81-C149-P-update-literal",
+      "fixture_id": "81-C149-P",
+      "family": "update_literal",
+      "sql": "UPDATE target SET score = 40 WHERE id = 1",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "returning": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "proof": "exact",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#0"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-P-update-computed",
+      "fixture_id": "81-C149-P",
+      "family": "update_computed",
+      "sql": "UPDATE target SET score = score + 5 WHERE id = 2",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 25
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 25
+        }
+      ],
+      "affected": {
+        "updated": 2,
+        "deleted": 0
+      },
+      "returning": [
+        {
+          "id": 2,
+          "score": 25
+        },
+        {
+          "id": 2,
+          "score": 25
+        }
+      ],
+      "proof": "exact",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#1",
+        "target_before#3"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-P-update-default",
+      "fixture_id": "81-C149-P",
+      "family": "update_default",
+      "sql": "UPDATE target SET score = DEFAULT WHERE id = 1",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "returning": [
+        {
+          "id": 1,
+          "score": 7
+        }
+      ],
+      "proof": "exact_with_attested_default",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#0"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 7,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-P-update-returning",
+      "fixture_id": "81-C149-P",
+      "family": "update_returning",
+      "sql": "UPDATE target SET score = 40 WHERE id = 1 RETURNING id,score",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "returning": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "proof": "exact",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#0"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-P-delete",
+      "fixture_id": "81-C149-P",
+      "family": "delete",
+      "sql": "DELETE FROM target WHERE id = 2",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "returning": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "proof": "exact",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#1",
+        "target_before#3"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-P-delete-returning",
+      "fixture_id": "81-C149-P",
+      "family": "delete_returning",
+      "sql": "DELETE FROM target WHERE id = 2 RETURNING id,score",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "returning": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "proof": "exact",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [
+        "target_before#1",
+        "target_before#3"
+      ],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-N-null-unknown",
+      "fixture_id": "81-C149-N",
+      "family": "null_unknown",
+      "sql": "DELETE FROM target WHERE id = NULL",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "returning": [],
+      "proof": "exact_not_true",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-N-delete-false",
+      "fixture_id": "81-C149-N",
+      "family": "false",
+      "sql": "DELETE FROM target WHERE id = 99",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "returning": [],
+      "proof": "exact_not_true",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-N-update-null",
+      "fixture_id": "81-C149-N",
+      "family": "null_unknown_update",
+      "sql": "UPDATE target SET score = 99 WHERE id = NULL",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "returning": [],
+      "proof": "exact_not_true",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": [],
+      "sql_not_true_row_ids": [],
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    },
+    {
+      "id": "81-C149-N-missing-default",
+      "fixture_id": "81-C149-N",
+      "family": "unattested_default",
+      "sql": "UPDATE target SET score = DEFAULT WHERE id = 1",
+      "source": [],
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "affected": null,
+      "returning": null,
+      "proof": "residual_missing_attestation",
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "sql_true_row_ids": null,
+      "sql_not_true_row_ids": null,
+      "typed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "values": [
+            1,
+            2,
+            null
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+    }
+  ],
+  "conditional": [
+    {
+      "id": "81-C149-N-unattested-default",
+      "owner": "TASK-149",
+      "classification": "residual",
+      "disposition": "requires independently attested default expression/value; no inferred server default"
+    },
+    {
+      "id": "81-C149-C-vendor-returning",
+      "owner": "TASK-149",
+      "classification": "conditional",
+      "disposition": "parser acceptance does not certify dialect native RETURNING laws"
+    },
+    {
+      "id": "81-C149-C-computed-casts",
+      "owner": "TASK-149",
+      "classification": "conditional",
+      "disposition": "unproved coercion, overflow and opaque expressions retain residual"
+    }
+  ],
+  "release_gate": "Mandatory cells and adapter/dialect matrix must pass on final PR head before Done; TASK-81 remains open."
+}
