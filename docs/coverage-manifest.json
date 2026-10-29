@@ -1,8 +1,22 @@
 {
+  "task_150_joined_mutations_acceptance": {
+    "owner": "TASK-150",
+    "parent": "TASK-81",
+    "status": "bounded_implementation_ci_unverified",
+    "freeze": "docs/task-150-acceptance-freeze.json",
+    "fixture_ids": ["81-C150-P", "81-C150-N"],
+    "native_oracle": "tests/task_150_joined_writes.rs",
+    "parser_cells_verified": 0,
+    "adapter_cells_verified": 0,
+    "mandatory_cases_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_149_update_delete_acceptance": {
     "owner": "TASK-149",
     "parent": "TASK-81",
-    "status": "verified_bounded_child_pending_merge",
+    "status": "verified_bounded_child_merged",
     "fixture_ids": [
       "81-C149-P",
       "81-C149-N"
