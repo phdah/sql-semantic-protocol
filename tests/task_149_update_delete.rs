@@ -7,7 +7,7 @@ use sql_semantic_protocol::{
     ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
     ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -246,4 +246,52 @@ fn unattested_default_cannot_be_constructed() {
         matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
         "{plan:?}"
     );
+}
+
+#[test]
+fn mutation_enforced_key_collision_is_impossible_and_native_engine_rejects() {
+    let sql = "UPDATE target SET id = 2 WHERE id = 1";
+    let mut b = bundle(sql, false);
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task149-pk").unwrap(),
+        ConstraintEnforcement::Enforced,
+    )];
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+        ).unwrap()
+    ]);
+    let initial = state(&[(Some(1),10),(Some(2),20)]);
+    let plan = physical_ordered_write_state_plan(&b, &[initial]);
+    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
+         INSERT INTO target VALUES (1,10),(2,20);"
+    ).unwrap();
+    assert!(db.execute_batch(sql).is_err(), "duplicate PK must fail");
+    assert_eq!(native_rows(&db), vec![(Some(1),10),(Some(2),20)]);
+}
+
+#[test]
+fn zero_selected_rows_produce_empty_but_typed_returning_population() {
+    let sql = "DELETE FROM target WHERE id = NULL RETURNING id,score";
+    let (transition, after) = run(sql, false);
+    assert_eq!(transition.affected().deleted(), 0);
+    assert!(transition.returning().unwrap().rows().is_empty());
+    let bundle = bundle(sql, false);
+    let schema = bundle.source_schemas().iter().find(|s| s.relation() == "target").unwrap();
+    let domains = transition.returning_exact_domains(schema).unwrap();
+    assert_eq!(domains.len(), 2);
+    assert!(domains.iter().all(|domain| domain.values().is_empty()));
+    let db = duckdb();
+    let native = {
+        let mut statement = db.prepare(sql).unwrap();
+        statement.query_map([], |r| r.get::<_, Option<i64>>(0))
+            .unwrap().collect::<Result<Vec<_>,_>>().unwrap()
+    };
+    assert!(native.is_empty());
+    assert_eq!(sorted(after), sorted(native_rows(&db)));
 }
