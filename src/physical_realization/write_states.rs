@@ -196,6 +196,7 @@ pub struct PhysicalWriteTransition {
     before: PhysicalWriteState,
     after: PhysicalWriteState,
     affected: WriteRowCounts,
+    affected_target_ordinals: Vec<usize>,
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
     returning_columns: Vec<String>,
@@ -221,6 +222,13 @@ impl PhysicalWriteTransition {
     /// Exact logical action counts, not estimated source-row counts.
     pub fn affected(&self) -> WriteRowCounts {
         self.affected
+    }
+
+    /// Zero-based physical row-occurrence ordinals in this statement's
+    /// complete target prestate selected by UPDATE/DELETE, including duplicates.
+    /// Empty for other write kinds. These are prestate, never output ordinals.
+    pub fn affected_target_ordinals(&self) -> &[usize] {
+        &self.affected_target_ordinals
     }
 
     /// Complete local CTE materializations used for this write, never caller-supplied
@@ -493,6 +501,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let before = states.get(target).cloned();
         let mut intermediate_states = Vec::new();
         let mut mutation_returning_rows = Vec::new();
+        let mut affected_target_ordinals = Vec::new();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Append => append_rows(
@@ -512,6 +521,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 before.as_ref(),
                 false,
                 &mut mutation_returning_rows,
+                &mut affected_target_ordinals,
             ),
             WriteKind::Delete => mutate_rows(
                 bundle,
@@ -521,6 +531,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 before.as_ref(),
                 true,
                 &mut mutation_returning_rows,
+                &mut affected_target_ordinals,
             ),
             WriteKind::ConditionalMutation => merge_rows(
                 bundle,
@@ -623,6 +634,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             before,
             after,
             affected: counts,
+            affected_target_ordinals,
             intermediate_states,
             returning,
             returning_columns: write.returning_columns().to_vec(),
