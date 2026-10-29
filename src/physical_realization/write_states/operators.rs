@@ -390,9 +390,12 @@ pub(super) fn apply_target_update(
     let schema = schema_for(bundle, target)?;
     let mut next = apply_assignments(before, &normal, context, aliases)?;
     for column in defaults {
-        let source = sources.iter()
-            .find(|source| source.column() == column
-                && source.kind() == crate::column_sources::ColumnValueKind::Default)
+        let source = sources
+            .iter()
+            .find(|source| {
+                source.column() == column
+                    && source.kind() == crate::column_sources::ColumnValueKind::Default
+            })
             .ok_or_else(|| residual("UPDATE DEFAULT requires declared target default"))?;
         if !super::generated::authoritative(source) {
             return Err(residual_gap(
@@ -400,9 +403,11 @@ pub(super) fn apply_target_update(
                 "UPDATE DEFAULT lacks authoritative execution evidence",
             ));
         }
-        let value = source.value()
+        let value = source
+            .value()
             .ok_or_else(|| residual("opaque UPDATE DEFAULT cannot be evaluated"))?;
-        next.values.insert(column.to_string(), super::generated::scalar_literal(value));
+        next.values
+            .insert(column.to_string(), super::generated::scalar_literal(value));
     }
     for source in sources {
         if source.kind() == crate::column_sources::ColumnValueKind::Generated {
@@ -445,14 +450,8 @@ pub(super) fn mutate_rows(
             // DELETE RETURNING observes the removed preimage, including duplicates.
             affected_rows.push(row.clone());
         } else {
-            let updated = apply_target_update(
-                bundle,
-                target,
-                row,
-                write.assignments(),
-                &context,
-                &[],
-            )?;
+            let updated =
+                apply_target_update(bundle, target, row, write.assignments(), &context, &[])?;
             affected_rows.push(updated.clone());
             kept.push(updated);
         }
