@@ -1,4 +1,51 @@
 {
+  "task_148_ordered_insert_acceptance": {
+    "owner": "TASK-148",
+    "parent": "TASK-80",
+    "status": "in_progress_ci_unverified",
+    "task": ".backlog/tasks/task-148 - certify-ordered-insert-scripts-and-adapter-parity.md",
+    "freeze": "docs/task-148-acceptance-freeze.json",
+    "fixture_ids": [
+      "80-C148-P",
+      "80-C148-N"
+    ],
+    "mandatory_cases": 11,
+    "conditional_cases": 3,
+    "physical_oracle": "tests/task_148_ordered_insert.rs",
+    "parser_and_adapter_oracle": "tests/task_148_adapter_dialect.rs",
+    "adapter_sources": [
+      "direct_sql",
+      "dbt_compiled_catalog",
+      "odcs_schema"
+    ],
+    "dialects_required": 13,
+    "child_ac_verified": [],
+    "parent_signed_off": false,
+    "release_approved": false,
+    "final_head_ci": null,
+    "audit": "docs/task-148-acceptance-audit.md",
+    "freeze_history": "docs/task-148-acceptance-freeze-v1.json",
+    "negative_oracle": "tests/task_148_negative_matrix.rs",
+    "dialect_case_cells": 78,
+    "dialect_statement_cells": 182,
+    "portable_family_dialect_cells": 52,
+    "vendor_modifier_dialect_cells": 39,
+    "adapter_parity_cases": [
+      "ordered SELECT+VALUES",
+      "ordered CTE+VALUES",
+      "ordered DEFAULT+VALUES",
+      "duplicate PK impossible",
+      "missing source residual"
+    ],
+    "original_parent_ac_mapped": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
   "task_147_insert_conflict_acceptance": {
     "owner": "TASK-147",
     "parent": "TASK-80",

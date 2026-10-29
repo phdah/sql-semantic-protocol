@@ -1,3 +1,5 @@
+TASK-148 ordered INSERT certification: `src/physical_realization/write_states.rs` executes canonical write layers against one evolving complete relation map; `src/physical_realization/write_states/operators.rs` implements VALUES/DEFAULT/SELECT/CTE append and maintains local intermediate source bags; `src/physical_realization/write_states/projection.rs` evaluates row-local source predicates. Independent DuckDB execution and typed full-target/CTE/source truth oracles are in `tests/task_148_ordered_insert.rs` and `tests/task_148_negative_matrix.rs`. All 13 parser dialects plus direct SQL/dbt catalog/ODCS equivalent evidence are checked in `tests/task_148_adapter_dialect.rs`. `docs/task-148-acceptance-freeze.json` is the versioned bounded contract and `docs/task-148-acceptance-audit.md` is the signoff audit. TASK-80 parent acceptance remains separately gated.
+
 TASK-147 targeted conflict/RETURNING: `src/analysis/writes.rs` converts explicit
 ON CONFLICT key columns/DO NOTHING and simple RETURNING columns into the
 parser-independent `src/protocol/writes.rs` contract. The optional wire

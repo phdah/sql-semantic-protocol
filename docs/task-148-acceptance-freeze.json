@@ -1,0 +1,1448 @@
+{
+  "version": 2,
+  "owner": "TASK-148",
+  "parent": "TASK-80",
+  "status": "reviewed_child_signed_off_pending_merge",
+  "fixture_ids": [
+    "80-C148-P",
+    "80-C148-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dependencies": [
+    "TASK-147"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "canonical_source_identity": "Source rows use source#ordinal, target before target_before#ordinal; local CTE intermediate rows are not independent physical states",
+  "comparison_assumptions": [
+    "exact signed INTEGER comparison",
+    "complete supplied source and target bags",
+    "no implicit native vendor/session semantics"
+  ],
+  "oracle": {
+    "engine": "DuckDB",
+    "source": "full source snapshots",
+    "intermediate": "full filtered CTE materializations",
+    "target": "before and after every write plus full final bag",
+    "read": "SELECT count and CTAS from prior INSERT state",
+    "negative": "PK contradiction and unsupported transaction"
+  },
+  "cases": [
+    {
+      "id": "80-C148-P-values-then-read-ctas",
+      "fixture_id": "80-C148-P",
+      "family": "VALUES",
+      "classification": "mandatory_exact",
+      "statements": [
+        "INSERT INTO target(id,score) VALUES (1,10),(2,20)",
+        "SELECT COUNT(*) FROM target",
+        "CREATE TABLE report AS SELECT id,score FROM target WHERE id > 0"
+      ],
+      "source": [],
+      "prestate": [],
+      "intermediate": [],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "report_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": [
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        }
+      ],
+      "typed_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            1,
+            2
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            10,
+            20
+          ]
+        }
+      },
+      "proof": "Exact",
+      "observation": "SELECT COUNT(*)=2, independently executed in DuckDB",
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical",
+          "canonical"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [],
+        "target_before": [],
+        "target_after": [
+          {
+            "id": "target_after#0",
+            "row": {
+              "id": 1,
+              "score": 10
+            }
+          },
+          {
+            "id": "target_after#1",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          }
+        ],
+        "report_after": [
+          {
+            "id": "report_after#0",
+            "row": {
+              "id": 1,
+              "score": 10
+            }
+          },
+          {
+            "id": "report_after#1",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          }
+        ]
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "full target-after and all intermediate source rows",
+      "not_true_proof": "no outcome certified",
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    },
+    {
+      "id": "80-C148-P-select-reorder-ctas",
+      "fixture_id": "80-C148-P",
+      "family": "SELECT",
+      "classification": "mandatory_exact",
+      "statements": [
+        "INSERT INTO target(score,id) SELECT score,id FROM source WHERE id > 1",
+        "CREATE TABLE report AS SELECT id,score FROM target WHERE id > 0"
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prestate": [
+        {
+          "id": 0,
+          "score": 0
+        }
+      ],
+      "intermediate": [],
+      "target_after": [
+        {
+          "id": 0,
+          "score": 0
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "report_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "affected": [
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        }
+      ],
+      "typed_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 0,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            0,
+            2,
+            3
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 0,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            0,
+            20,
+            30
+          ]
+        }
+      },
+      "proof": "Exact",
+      "sql_true_source_ids": [
+        "source#1",
+        "source#2"
+      ],
+      "sql_not_true_source_ids": [
+        "source#0"
+      ],
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [
+          {
+            "id": "source#0",
+            "row": {
+              "id": 1,
+              "score": 10
+            }
+          },
+          {
+            "id": "source#1",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "source#2",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ],
+        "target_before": [
+          {
+            "id": "target_before#0",
+            "row": {
+              "id": 0,
+              "score": 0
+            }
+          }
+        ],
+        "target_after": [
+          {
+            "id": "target_after#0",
+            "row": {
+              "id": 0,
+              "score": 0
+            }
+          },
+          {
+            "id": "target_after#1",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "target_after#2",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ],
+        "report_after": [
+          {
+            "id": "report_after#0",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "report_after#1",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ]
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "full target-after and all intermediate source rows",
+      "not_true_proof": [
+        "source#0"
+      ],
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    },
+    {
+      "id": "80-C148-P-cte-then-ctas",
+      "fixture_id": "80-C148-P",
+      "family": "CTE_SELECT",
+      "classification": "mandatory_exact",
+      "statements": [
+        "INSERT INTO target(id,score) WITH filtered AS (SELECT id,score FROM source WHERE id > 1) SELECT id,score FROM filtered",
+        "CREATE TABLE report AS SELECT id,score FROM target WHERE id > 0"
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "prestate": [],
+      "intermediate": [
+        {
+          "relation": "filtered",
+          "rows": [
+            {
+              "id": 2,
+              "score": 20
+            },
+            {
+              "id": 3,
+              "score": 30
+            }
+          ]
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "report_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "affected": [
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        }
+      ],
+      "typed_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            2,
+            3
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            20,
+            30
+          ]
+        }
+      },
+      "proof": "Exact",
+      "sql_true_source_ids": [
+        "source#1",
+        "source#2"
+      ],
+      "sql_not_true_source_ids": [
+        "source#0"
+      ],
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [
+          {
+            "id": "source#0",
+            "row": {
+              "id": 1,
+              "score": 10
+            }
+          },
+          {
+            "id": "source#1",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "source#2",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ],
+        "target_before": [],
+        "target_after": [
+          {
+            "id": "target_after#0",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "target_after#1",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ],
+        "report_after": [
+          {
+            "id": "report_after#0",
+            "row": {
+              "id": 2,
+              "score": 20
+            }
+          },
+          {
+            "id": "report_after#1",
+            "row": {
+              "id": 3,
+              "score": 30
+            }
+          }
+        ]
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "full target-after and all intermediate source rows",
+      "not_true_proof": [
+        "source#0"
+      ],
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    },
+    {
+      "id": "80-C148-P-default-then-ctas",
+      "fixture_id": "80-C148-P",
+      "family": "DEFAULT_VALUES",
+      "classification": "mandatory_exact",
+      "statements": [
+        "INSERT INTO target DEFAULT VALUES",
+        "CREATE TABLE report AS SELECT id,score FROM target WHERE id > 0"
+      ],
+      "source": [],
+      "prestate": [],
+      "intermediate": [],
+      "target_after": [
+        {
+          "id": 5,
+          "score": 7
+        }
+      ],
+      "report_after": [
+        {
+          "id": 5,
+          "score": 7
+        }
+      ],
+      "affected": [
+        {
+          "inserted": 1,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 1,
+          "updated": 0,
+          "deleted": 0
+        }
+      ],
+      "typed_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 5,
+          "upper": 5,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            5
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 7,
+          "upper": 7,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "values": [
+            7
+          ]
+        }
+      },
+      "required_evidence": "enforced scalar defaults target(id)=5,target(score)=7",
+      "proof": "Exact",
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [],
+        "target_before": [],
+        "target_after": [
+          {
+            "id": "target_after#0",
+            "row": {
+              "id": 5,
+              "score": 7
+            }
+          }
+        ],
+        "report_after": [
+          {
+            "id": "report_after#0",
+            "row": {
+              "id": 5,
+              "score": 7
+            }
+          }
+        ]
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "full target-after and all intermediate source rows",
+      "not_true_proof": "no outcome certified",
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    },
+    {
+      "id": "80-C148-N-duplicate-pk",
+      "fixture_id": "80-C148-N",
+      "family": "VALUES",
+      "classification": "mandatory_impossible",
+      "statements": [
+        "INSERT INTO target(id,score) VALUES (1,10)",
+        "INSERT INTO target(id,score) VALUES (1,20)"
+      ],
+      "source": [],
+      "prestate": [],
+      "intermediate": [],
+      "target_after": [],
+      "report_after": [],
+      "affected": [],
+      "required_evidence": "enforced target(id) PRIMARY KEY with SQL integer equality and non-null ids",
+      "proof": "Impossible",
+      "sql_true_source_ids": [
+        "values#0",
+        "values#1"
+      ],
+      "sql_not_true_source_ids": [
+        "second insert cannot commit"
+      ],
+      "typed_domain": "No feasible terminal bag under enforced PK",
+      "parser_cells": {
+        "generic": [
+          "canonical",
+          "canonical"
+        ],
+        "mysql": [
+          "canonical",
+          "canonical"
+        ],
+        "postgresql": [
+          "canonical",
+          "canonical"
+        ],
+        "hive": [
+          "canonical",
+          "canonical"
+        ],
+        "sqlite": [
+          "canonical",
+          "canonical"
+        ],
+        "snowflake": [
+          "canonical",
+          "canonical"
+        ],
+        "redshift": [
+          "canonical",
+          "canonical"
+        ],
+        "mssql": [
+          "canonical",
+          "canonical"
+        ],
+        "clickhouse": [
+          "canonical",
+          "canonical"
+        ],
+        "bigquery": [
+          "canonical",
+          "canonical"
+        ],
+        "ansi": [
+          "canonical",
+          "canonical"
+        ],
+        "duckdb": [
+          "canonical",
+          "canonical"
+        ],
+        "databricks": [
+          "canonical",
+          "canonical"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [],
+        "target_before": [],
+        "target_after": [],
+        "report_after": []
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "not applicable",
+      "not_true_proof": [
+        "second insert cannot commit"
+      ],
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    },
+    {
+      "id": "80-C148-N-unproved-transaction",
+      "fixture_id": "80-C148-N",
+      "family": "VALUES",
+      "classification": "mandatory_residual",
+      "statements": [
+        "BEGIN TRANSACTION",
+        "INSERT INTO target(id,score) VALUES (1,10)",
+        "COMMIT"
+      ],
+      "source": [],
+      "prestate": [],
+      "intermediate": [],
+      "target_after": [],
+      "report_after": [],
+      "affected": [],
+      "proof": "Residual",
+      "gap": "UnsupportedStatement",
+      "typed_domain": "unknown due to unproved transaction/rollback",
+      "parser_cells": {
+        "generic": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "mysql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "postgresql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "hive": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "sqlite": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "snowflake": [
+          "parser_boundary",
+          "canonical",
+          "unsupported"
+        ],
+        "redshift": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "mssql": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "clickhouse": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "bigquery": [
+          "parser_boundary",
+          "canonical",
+          "unsupported"
+        ],
+        "ansi": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "duckdb": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ],
+        "databricks": [
+          "unsupported",
+          "canonical",
+          "unsupported"
+        ]
+      },
+      "canonical_row_identity": {
+        "source": [],
+        "target_before": [],
+        "target_after": [],
+        "report_after": []
+      },
+      "comparison_assumptions": [
+        "closed-world exact integer comparison",
+        "complete source and before-state",
+        "local CTE stages not independent physical inputs"
+      ],
+      "adapter_evidence": "SQL text analyzed against equivalent source/target INTEGER schemas from direct, dbt catalog or ODCS; adapter metadata never asserts execution",
+      "positive_proof": "not applicable",
+      "not_true_proof": "no outcome certified",
+      "oracle": "tests/task_148_ordered_insert.rs and independent DuckDB full physical-bag SQL execution"
+    }
+  ],
+  "conditional_cases": [
+    {
+      "id": "80-C148-C-vendor-overwrite",
+      "owner": "TASK-148",
+      "classification": "conditional_residual",
+      "disposition": "Do not certify until engine-verified partition replacement scope and session law exist",
+      "reviewed_boundary": "portable proof only; no vendor/session engine attestation",
+      "reviewer_disposition": "explicit residual not a mandatory exact omission",
+      "release_approved": false,
+      "parser_outcomes": "see per-case matrix plus independent vendor syntax tests"
+    },
+    {
+      "id": "80-C148-C-dbtscripts",
+      "owner": "TASK-148",
+      "classification": "conditional_residual",
+      "disposition": "dbt model compilation/warehouse schema evidence does not attest ordered execution of model DML",
+      "reviewed_boundary": "portable proof only; no vendor/session engine attestation",
+      "reviewer_disposition": "explicit residual not a mandatory exact omission",
+      "release_approved": false,
+      "parser_outcomes": "see per-case matrix plus independent vendor syntax tests"
+    },
+    {
+      "id": "80-C148-C-native-engines",
+      "owner": "TASK-148",
+      "classification": "conditional_residual",
+      "disposition": "parser acceptance is not native backend execution evidence",
+      "reviewed_boundary": "portable proof only; no vendor/session engine attestation",
+      "reviewer_disposition": "explicit residual not a mandatory exact omission",
+      "release_approved": false,
+      "parser_outcomes": "see per-case matrix plus independent vendor syntax tests"
+    }
+  ],
+  "parser_matrix_rule": "For each case, record parsed canonical, explicit Unsupported or parser boundary for each named dialect; do not infer execution support from parse acceptance",
+  "adapter_matrix_rule": "Equal authoritative catalog schema evidence from direct SQL, dbt catalog or ODCS must produce the same physical states; no runtime dbt or native-engine execution claim",
+  "signoff": {
+    "fmt": true,
+    "clippy": true,
+    "cargo_test": true,
+    "cargo_doc": true,
+    "no_default_features": true,
+    "dbt_e2e": true,
+    "protocol_schema": true,
+    "all_matrix_cells": true,
+    "final_head_ci": "ce584707d2cbb93988c76c190cc66e74ac02cc05: GitHub PR #159 checks 9/9 successful; require green merge-head checks",
+    "parent_signed_off": false
+  },
+  "freeze_history": "docs/task-148-acceptance-freeze-v1.json",
+  "acceptance_revision_reason": "V1 lacked executable per-cell parser expectations, original parent mapping, and NULL/duplicate/rejected contrasts required by unchanged TASK-148 AC; v2 expands evidence without narrowing mandatory scope.",
+  "original_parent_ac_map": {
+    "1": [
+      "80-C148-P-values-then-read-ctas",
+      "80-C148-P-default-then-ctas",
+      "80-C148-P-select-reorder-ctas",
+      "80-C148-P-cte-then-ctas"
+    ],
+    "2": [
+      "80-C148-P-cte-then-ctas",
+      "80-C148-P-select-reorder-ctas",
+      "80-C148-N-duplicate-pk"
+    ],
+    "3": [
+      "80-C148-P-values-then-read-ctas",
+      "80-C148-P-cte-then-ctas",
+      "80-C148-C-native-engines"
+    ],
+    "4": [
+      "80-C148-N-duplicate-pk",
+      "80-C148-C-vendor-overwrite"
+    ],
+    "5": [
+      "80-C148-N-unproved-transaction",
+      "80-C148-C-dbtscripts"
+    ],
+    "6": [
+      "80-C148-P-values-then-read-ctas",
+      "80-C148-C-native-engines"
+    ]
+  },
+  "negative_contrasts": [
+    {
+      "id": "80-C148-N-null-not-true",
+      "fixture_id": "80-C148-N",
+      "classification": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE score > 10",
+      "source": [
+        {
+          "source_id": "source#0",
+          "id": 1,
+          "score": 10,
+          "proof": "NOT_TRUE"
+        },
+        {
+          "source_id": "source#1",
+          "id": 2,
+          "score": null,
+          "proof": "UNKNOWN_NOT_TRUE"
+        },
+        {
+          "source_id": "source#2",
+          "id": 3,
+          "score": 30,
+          "proof": "TRUE"
+        }
+      ],
+      "prestate": [
+        {
+          "id": 0,
+          "score": 0
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 0,
+          "score": 0
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "expected_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "expected_terminal_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            0,
+            3
+          ],
+          "bounds": [
+            0,
+            3
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": [
+            0,
+            30
+          ],
+          "bounds": [
+            0,
+            30
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        }
+      },
+      "oracle": "tests/task_148_negative_matrix.rs:null_predicate_is_not_true_and_never_reaches_target",
+      "native": "DuckDB"
+    },
+    {
+      "id": "80-C148-P-duplicate-bag",
+      "fixture_id": "80-C148-P",
+      "classification": "mandatory_exact",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE",
+      "source": [
+        {
+          "source_id": "source#0",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "source_id": "source#1",
+          "id": 1,
+          "score": 10
+        },
+        {
+          "source_id": "source#2",
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "prestate": [],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "expected_affected": {
+        "inserted": 3,
+        "updated": 0,
+        "deleted": 0
+      },
+      "expected_terminal_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": {
+            "1": 2,
+            "2": 1
+          },
+          "bounds": [
+            1,
+            2
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": {
+            "10": 2,
+            "20": 1
+          },
+          "bounds": [
+            10,
+            20
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        }
+      },
+      "oracle": "tests/task_148_negative_matrix.rs:duplicate_source_rows_remain_distinct_in_final_bag_and_exact_domain",
+      "native": "DuckDB"
+    },
+    {
+      "id": "80-C148-N-intra-statement-key-collision",
+      "fixture_id": "80-C148-N",
+      "classification": "mandatory_impossible",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE",
+      "source": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 1,
+          "score": 20
+        }
+      ],
+      "prestate": [],
+      "expected_poststate": [],
+      "proof": "Impossible",
+      "expected_affected": "no commit",
+      "constraint": "enforced INTEGER PRIMARY KEY target(id)",
+      "oracle": "tests/task_148_negative_matrix.rs:intra_statement_duplicate_primary_key_is_impossible_without_partial_commit",
+      "native": "DuckDB"
+    },
+    {
+      "id": "80-C148-N-missing-source",
+      "fixture_id": "80-C148-N",
+      "classification": "mandatory_residual",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE",
+      "source": "missing complete population",
+      "prestate": [],
+      "expected_poststate": "unproved",
+      "proof": "Residual",
+      "gap": "MissingPopulation",
+      "oracle": "tests/task_148_negative_matrix.rs:unreadable_source_population_is_residual_not_inferred_from_target"
+    },
+    {
+      "id": "80-C148-P-read-after-write",
+      "fixture_id": "80-C148-P",
+      "classification": "mandatory_exact",
+      "statements": [
+        "INSERT INTO target(id,score) VALUES (1,10),(2,20)",
+        "INSERT INTO target(id,score) SELECT id,score FROM target WHERE id > 1"
+      ],
+      "source": "same physical target after preceding INSERT",
+      "prestate": [],
+      "intermediate_prestate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "expected_poststate": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": [
+        2,
+        1
+      ],
+      "expected_terminal_domain": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": {
+            "1": 1,
+            "2": 2
+          },
+          "bounds": [
+            1,
+            2
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "values": {
+            "10": 1,
+            "20": 2
+          },
+          "bounds": [
+            10,
+            20
+          ],
+          "inclusive": [
+            true,
+            true
+          ]
+        }
+      },
+      "proof": "Exact",
+      "oracle": "tests/task_148_negative_matrix.rs:later_insert_select_reads_target_written_by_prior_statement",
+      "native": "DuckDB"
+    }
+  ],
+  "parser_cells_spec": {
+    "matrix": "each frozen main case, 13 dialects, each SQL statement independently",
+    "classification_values": [
+      "canonical",
+      "unsupported",
+      "parser_boundary"
+    ],
+    "engine_boundary": "sqlparser result cannot prove native engine behavior",
+    "evidence": "tests/task_148_adapter_dialect.rs",
+    "verified_parser_cells": 78,
+    "verified_statement_cells": 182,
+    "discovered_from": "CI Rust no-default-features execution on 2026-10-28 at commit 0f1f6f9a062c3602c04e7c3a1f3bca2d8b00731b; pinned expected classifications now enforced independently"
+  },
+  "adapter_cells_spec": {
+    "cases": [
+      "VALUES",
+      "SELECT",
+      "CTE_SELECT",
+      "DEFAULT_VALUES"
+    ],
+    "adapters": [
+      "direct_sql",
+      "dbt_compiled_catalog",
+      "odcs_schema"
+    ],
+    "negative": "unattested source and PK constraints remain fail-closed",
+    "evidence": "tests/task_148_adapter_dialect.rs"
+  }
+}
