@@ -229,7 +229,7 @@ impl PhysicalWriteTransition {
         &self.intermediate_states
     }
 
-    /// Complete INSERT RETURNING projection with only rows actually inserted.
+    /// Complete RETURNING projection of actual inserted/updated/deleted rows.
     /// None means the SQL statement has no supported RETURNING clause.
     pub fn returning(&self) -> Option<&PhysicalWriteState> {
         self.returning.as_ref()
@@ -492,6 +492,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let target = write.target();
         let before = states.get(target).cloned();
         let mut intermediate_states = Vec::new();
+        let mut mutation_returning_rows = Vec::new();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Append => append_rows(
@@ -503,10 +504,24 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 &mut identity_sequences,
                 &mut intermediate_states,
             ),
-            WriteKind::Update => {
-                mutate_rows(bundle, query, &states, target, before.as_ref(), false)
-            }
-            WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
+            WriteKind::Update => mutate_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                false,
+                &mut mutation_returning_rows,
+            ),
+            WriteKind::Delete => mutate_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                true,
+                &mut mutation_returning_rows,
+            ),
             WriteKind::ConditionalMutation => merge_rows(
                 bundle,
                 query,
@@ -555,15 +570,37 @@ pub fn physical_ordered_write_state_plan_with_identities(
         if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
-        let returning = if kind == WriteKind::Append && !write.returning_columns().is_empty() {
+        let returning = if !write.returning_columns().is_empty() {
+            let schema = match operators::schema_for(bundle, target) {
+                Ok(schema) => schema,
+                Err(error) => return failure(Some(layer.id()), error),
+            };
+            if write.returning_columns().iter().any(|column| {
+                !schema.columns().iter().any(|schema_column| schema_column.name() == column)
+            }) {
+                return failure(
+                    Some(layer.id()),
+                    residual("RETURNING column is not declared in the complete target schema"),
+                );
+            }
+            let affected_rows: Vec<&PhysicalWriteRow> = match kind {
+                WriteKind::Append => after.rows.iter().skip(before.rows.len()).collect(),
+                WriteKind::Update | WriteKind::Delete => mutation_returning_rows.iter().collect(),
+                WriteKind::Definition | WriteKind::ConditionalMutation => {
+                    return failure(
+                        Some(layer.id()),
+                        residual("RETURNING is not implemented for this write kind"),
+                    );
+                }
+            };
             let mut rows = Vec::new();
-            for row in after.rows.iter().skip(before.rows.len()) {
+            for row in affected_rows {
                 let mut values = BTreeMap::new();
                 for column in write.returning_columns() {
                     let Some(value) = row.values.get(column) else {
                         return failure(
                             Some(layer.id()),
-                            residual("INSERT RETURNING column missing from complete target schema"),
+                            residual("RETURNING column missing from complete target row"),
                         );
                     };
                     values.insert(column.clone(), value.clone());
