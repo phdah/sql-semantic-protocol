@@ -519,8 +519,11 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 &states,
                 target,
                 before.as_ref(),
-                &mut mutation_returning_rows,
-                &mut affected_target_ordinals,
+                operators::MutationTracking {
+                    affected_rows: &mut mutation_returning_rows,
+                    affected_target_ordinals: &mut affected_target_ordinals,
+                    intermediate_states: &mut intermediate_states,
+                },
             ),
             WriteKind::ConditionalMutation => merge_rows(
                 bundle,
