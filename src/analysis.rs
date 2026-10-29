@@ -243,9 +243,17 @@ fn analyze_statement(
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => {
-            ProtocolStatement::Query(analyze_query(query, None, metadata))
-        }
+        SqlStatement::Query(query) => match query.body.as_ref() {
+            SetExpr::Update(_) | SetExpr::Delete(_) => {
+                analyze_joined_cte_mutation(query, metadata)
+            }
+            SetExpr::Insert(_) | SetExpr::Merge(_) => unsupported_write_statement(
+                "query",
+                "unsupported_nested_write",
+                "DML inside a query body has no proven ordered write semantics",
+            ),
+            _ => ProtocolStatement::Query(analyze_query(query, None, metadata)),
+        },
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
                 if create_table.if_not_exists {
