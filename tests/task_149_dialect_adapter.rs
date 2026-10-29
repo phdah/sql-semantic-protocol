@@ -238,7 +238,9 @@ fn frozen_cells() -> serde_json::Value {
 
 fn adapted_sql(case: &serde_json::Value) -> String {
     // These frozen single-target forms have no other relations to rename.
-    case["sql"].as_str().unwrap()
+    case["sql"]
+        .as_str()
+        .unwrap()
         .replace("target", TARGET)
         .replace("score", "amount")
 }
@@ -246,54 +248,64 @@ fn adapted_sql(case: &serde_json::Value) -> String {
 fn frozen_initial(case: &serde_json::Value) -> PhysicalWriteState {
     PhysicalWriteState::new(
         TARGET,
-        case["target_before"].as_array().unwrap().iter().map(|row| {
-            let id = row["id"].as_i64()
-                .map_or(LiteralValue::Null, |id| LiteralValue::Number(id.to_string()));
-            let amount = LiteralValue::Number(row["score"].as_i64().unwrap().to_string());
-            PhysicalWriteRow::new(BTreeMap::from([
-                ("id".into(), id), ("amount".into(), amount)
-            ])).unwrap()
-        }).collect(),
-    ).unwrap()
+        case["target_before"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                let id = row["id"].as_i64().map_or(LiteralValue::Null, |id| {
+                    LiteralValue::Number(id.to_string())
+                });
+                let amount = LiteralValue::Number(row["score"].as_i64().unwrap().to_string());
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".into(), id),
+                    ("amount".into(), amount),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
-fn frozen_plan(
-    catalog: &RelationCatalog,
-    case: &serde_json::Value,
-) -> PhysicalWriteStatePlan {
+fn frozen_plan(catalog: &RelationCatalog, case: &serde_json::Value) -> PhysicalWriteStatePlan {
     use sql_semantic_protocol::{
-        ColumnValueKind, ColumnValueSource, ConstraintEnforcement,
-        ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-        ConstraintValue, RelationConstraint, RelationConstraintSet,
+        ColumnValueKind, ColumnValueSource, ConstraintEnforcement, ConstraintEvidence,
+        ConstraintProvenance, ConstraintSourceKind, ConstraintValue, RelationConstraint,
+        RelationConstraintSet,
     };
     let sql_text = adapted_sql(case);
     let sql = SqlInput::inline(&sql_text);
     let dialect = dialect_from_name("postgresql").unwrap();
     let configured = ConfiguredSqlInput::new(
-        "task149-freeze-parity", &sql, "postgresql", dialect.as_ref()
+        "task149-freeze-parity",
+        &sql,
+        "postgresql",
+        dialect.as_ref(),
     );
     let mut bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let evidence = vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(
-            ConstraintSourceKind::ExternalMetadata, "task149-parity"
-        ).unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task149-parity")
+            .unwrap(),
         ConstraintEnforcement::Enforced,
     )];
     if case["family"] == "update_default" {
         let default = ColumnValueSource::new(
-            "amount", ColumnValueKind::Default,
-            Some(ConstraintValue::Integer(7)), evidence.clone()
-        ).unwrap();
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new(TARGET, vec![]).unwrap()
-                .with_column_value_sources(vec![default])
-        ]);
+            "amount",
+            ColumnValueKind::Default,
+            Some(ConstraintValue::Integer(7)),
+            evidence.clone(),
+        )
+        .unwrap();
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(TARGET, vec![])
+            .unwrap()
+            .with_column_value_sources(vec![default])]);
     } else if case["family"] == "enforced_primary_key_conflict" {
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new(TARGET, vec![
-                RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()
-            ]).unwrap()
-        ]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            TARGET,
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+        )
+        .unwrap()]);
     }
     physical_ordered_write_state_plan(&bundle, &[frozen_initial(case)])
 }
@@ -306,16 +318,22 @@ fn all_frozen_mutation_cases_have_identical_direct_and_dbt_schema_evidence() {
     for case in freeze["cases"].as_array().unwrap() {
         let direct = frozen_plan(&direct_catalog(), case);
         let dbt = frozen_plan(&dbt_catalog(), case);
-        assert_eq!(direct, dbt, "{}",case["id"]);
+        assert_eq!(direct, dbt, "{}", case["id"]);
         match case["proof"].as_str().unwrap() {
             "impossible" => assert!(
-                matches!(direct, PhysicalWriteStatePlan::Impossible { .. }),"{}",case["id"]
+                matches!(direct, PhysicalWriteStatePlan::Impossible { .. }),
+                "{}",
+                case["id"]
             ),
             "residual_missing_attestation" => assert!(
-                matches!(direct, PhysicalWriteStatePlan::Residual { .. }),"{}",case["id"]
+                matches!(direct, PhysicalWriteStatePlan::Residual { .. }),
+                "{}",
+                case["id"]
             ),
             _ => assert!(
-                matches!(direct, PhysicalWriteStatePlan::Feasible { .. }),"{}",case["id"]
+                matches!(direct, PhysicalWriteStatePlan::Feasible { .. }),
+                "{}",
+                case["id"]
             ),
         }
         count += 1;
@@ -356,7 +374,10 @@ fn vendor_mutation_forms_cannot_be_misclassified_as_single_target_exact() {
             let result = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref());
             if let Ok(bundle) = result {
                 assert!(
-                    matches!(bundle.inputs()[0].statements()[0],ProtocolStatement::Unsupported(_)),
+                    matches!(
+                        bundle.inputs()[0].statements()[0],
+                        ProtocolStatement::Unsupported(_)
+                    ),
                     "{dialect}: cannot certify unproved mutation form: {sql}",
                 );
             }
