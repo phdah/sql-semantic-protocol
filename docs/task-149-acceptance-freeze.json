@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-149",
   "parent": "TASK-81",
-  "status": "frozen_before_semantic_edits_unverified",
+  "status": "audited_scope_v2_pending_execution",
   "fixture_ids": [
     "81-C149-P",
     "81-C149-N"
@@ -95,12 +95,7 @@
         "updated": 1,
         "deleted": 0
       },
-      "returning": [
-        {
-          "id": 1,
-          "score": 40
-        }
-      ],
+      "returning": null,
       "proof": "exact",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -111,7 +106,11 @@
       "sql_true_row_ids": [
         "target_before#0"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -155,7 +154,21 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 1",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-P-update-computed",
@@ -203,16 +216,7 @@
         "updated": 2,
         "deleted": 0
       },
-      "returning": [
-        {
-          "id": 2,
-          "score": 25
-        },
-        {
-          "id": 2,
-          "score": 25
-        }
-      ],
+      "returning": null,
       "proof": "exact",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -224,7 +228,10 @@
         "target_before#1",
         "target_before#3"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#2"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -268,7 +275,25 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 2",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 2,
+          "score": 25
+        },
+        {
+          "id": 2,
+          "score": 25
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-P-update-default",
@@ -316,12 +341,7 @@
         "updated": 1,
         "deleted": 0
       },
-      "returning": [
-        {
-          "id": 1,
-          "score": 7
-        }
-      ],
+      "returning": null,
       "proof": "exact_with_attested_default",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -332,7 +352,11 @@
       "sql_true_row_ids": [
         "target_before#0"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -376,7 +400,21 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 1",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 1,
+          "score": 7
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-P-update-returning",
@@ -440,7 +478,11 @@
       "sql_true_row_ids": [
         "target_before#0"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -484,7 +526,21 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 1",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 1,
+          "score": 40
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-P-delete",
@@ -524,16 +580,7 @@
         "updated": 0,
         "deleted": 2
       },
-      "returning": [
-        {
-          "id": 2,
-          "score": 20
-        },
-        {
-          "id": 2,
-          "score": 20
-        }
-      ],
+      "returning": null,
       "proof": "exact",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -545,7 +592,10 @@
         "target_before#1",
         "target_before#3"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#2"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -589,7 +639,25 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 2",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-P-delete-returning",
@@ -650,7 +718,10 @@
         "target_before#1",
         "target_before#3"
       ],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#2"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -694,7 +765,25 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 2",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-N-null-unknown",
@@ -742,7 +831,7 @@
         "updated": 0,
         "deleted": 0
       },
-      "returning": [],
+      "returning": null,
       "proof": "exact_not_true",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -751,7 +840,12 @@
         "target_before#3"
       ],
       "sql_true_row_ids": [],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -795,7 +889,16 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = NULL",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-N-delete-false",
@@ -843,7 +946,7 @@
         "updated": 0,
         "deleted": 0
       },
-      "returning": [],
+      "returning": null,
       "proof": "exact_not_true",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -852,7 +955,12 @@
         "target_before#3"
       ],
       "sql_true_row_ids": [],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -896,7 +1004,16 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 99",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-N-update-null",
@@ -944,7 +1061,7 @@
         "updated": 0,
         "deleted": 0
       },
-      "returning": [],
+      "returning": null,
       "proof": "exact_not_true",
       "canonical_target_row_ids": [
         "target_before#0",
@@ -953,7 +1070,12 @@
         "target_before#3"
       ],
       "sql_true_row_ids": [],
-      "sql_not_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
       "typed_domains": {
         "id": {
           "type": "INTEGER",
@@ -997,7 +1119,16 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = NULL",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": [],
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full before bag, SQL TRUE/IS NOT TRUE rowid, full after bag, affected counts, RETURNING when present",
+      "conditional_disposition": null
     },
     {
       "id": "81-C149-N-missing-default",
@@ -1078,7 +1209,286 @@
         "dbt_compiled_catalog": "pending",
         "odcs_schema": "pending"
       },
-      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan"
+      "oracle": "independent DuckDB complete target + RETURNING bag and physical protocol plan",
+      "selection_sql": "id = 1",
+      "canonical_source_identity": "target is the sole complete physical source; each target_before#ordinal is one physical row occurrence, duplicates included",
+      "affected_row_images": null,
+      "conditional_disposition": "TASK-149 conditional: missing authoritative scalar DEFAULT cannot be Exact"
+    },
+    {
+      "id": "81-C149-P-simultaneous-assignments",
+      "fixture_id": "81-C149-P",
+      "family": "simultaneous_assignment",
+      "sql": "UPDATE target SET score = score + id, id = id + 1 WHERE id = 1",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "selection_sql": "id = 1",
+      "target_after": [
+        {
+          "id": 2,
+          "score": 11
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 1,
+        "deleted": 0
+      },
+      "returning": null,
+      "affected_row_images": [
+        {
+          "id": 2,
+          "score": 11
+        }
+      ],
+      "proof": "exact",
+      "sql_true_row_ids": [
+        "target_before#0"
+      ],
+      "sql_not_true_row_ids": [
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "source": [],
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "conditional_disposition": null,
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full target and SQL TRUE/NOT TRUE evidence",
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ],
+      "typed_domains": null
+    },
+    {
+      "id": "81-C149-N-zero-returning",
+      "fixture_id": "81-C149-N",
+      "family": "empty_returning",
+      "sql": "DELETE FROM target WHERE id = NULL RETURNING id,score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "selection_sql": "id = NULL",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 0
+      },
+      "returning": [],
+      "affected_row_images": [],
+      "proof": "exact",
+      "sql_true_row_ids": [],
+      "sql_not_true_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "source": [],
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "conditional_disposition": null,
+      "exact_directions": {
+        "selected": "Exact",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full target and SQL TRUE/NOT TRUE evidence",
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ],
+      "typed_domains": null
+    },
+    {
+      "id": "81-C149-N-duplicate-key-impossible",
+      "fixture_id": "81-C149-N",
+      "family": "enforced_primary_key_conflict",
+      "sql": "UPDATE target SET id = 2 WHERE id = 1",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "selection_sql": "id = 1",
+      "target_after": null,
+      "affected": null,
+      "returning": null,
+      "affected_row_images": null,
+      "proof": "impossible",
+      "sql_true_row_ids": [
+        "target_before#0"
+      ],
+      "sql_not_true_row_ids": [
+        "target_before#1"
+      ],
+      "schema_constraints": [
+        "enforced_primary_key_id"
+      ],
+      "typed_domains": null,
+      "source": [],
+      "canonical_target_row_ids": [
+        "target_before#0",
+        "target_before#1"
+      ],
+      "canonical_source_identity": "entire closed target bag; canonical ordinal occurrence identities",
+      "parser_cells": {
+        "generic": "pending_execution",
+        "mysql": "pending_execution",
+        "postgresql": "pending_execution",
+        "hive": "pending_execution",
+        "sqlite": "pending_execution",
+        "snowflake": "pending_execution",
+        "redshift": "pending_execution",
+        "mssql": "pending_execution",
+        "clickhouse": "pending_execution",
+        "bigquery": "pending_execution",
+        "ansi": "pending_execution",
+        "duckdb": "pending_execution",
+        "databricks": "pending_execution"
+      },
+      "adapter_cells": {
+        "direct_sql": "pending",
+        "dbt_compiled_catalog": "pending",
+        "odcs_schema": "pending"
+      },
+      "conditional_disposition": null,
+      "exact_directions": {
+        "selected": "Impossible",
+        "not_true": "Exact"
+      },
+      "execution_oracle": "independent DuckDB full target and SQL TRUE/NOT TRUE evidence",
+      "comparison_assumptions": [
+        "complete supplied target population",
+        "typed signed INTEGER equality/arithmetic",
+        "SQL three-valued WHERE truth",
+        "attested enforced scalar DEFAULT values only",
+        "no vendor/session-specific RETURNING execution claims"
+      ]
     }
   ],
   "conditional": [
@@ -1101,5 +1511,13 @@
       "disposition": "unproved coercion, overflow and opaque expressions retain residual"
     }
   ],
-  "release_gate": "Mandatory cells and adapter/dialect matrix must pass on final PR head before Done; TASK-81 remains open."
+  "release_gate": "Mandatory cells and adapter/dialect matrix must pass on final PR head before Done; TASK-81 remains open.",
+  "freeze_history": "docs/task-149-acceptance-freeze-v1.json",
+  "freeze_revision_note": "Review corrects v1 missing SQL NOT TRUE identities, separates affected row images from actual RETURNING outputs, adds mandatory Impossible/empty-returning and simultaneous assignment oracles. No mandatory contract downgraded.",
+  "mandatory_case_count": 12,
+  "conditional_case_count": 1,
+  "matrix_cells": {
+    "parser": 169,
+    "adapter": 39
+  }
 }
