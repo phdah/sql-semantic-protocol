@@ -429,7 +429,6 @@ fn every_frozen_exact_and_negative_cell_preserves_complete_bags_and_domains() {
     }
 }
 
-
 #[test]
 fn joined_write_wire_schema_and_json_preserve_canonical_source_identity() {
     let statement = "UPDATE target AS t SET score = s.score FROM source AS s WHERE t.id = s.id RETURNING id,score";
@@ -441,22 +440,37 @@ fn joined_write_wire_schema_and_json_preserve_canonical_source_identity() {
     let write = &query["write"];
     assert_eq!(write["kind"], "update");
     assert_eq!(write["target"], "target");
-    assert_eq!(write["joined_source"], serde_json::json!({"name": "source", "alias": "s"}));
-    assert_eq!(write["returning_columns"], serde_json::json!(["id","score"]));
+    assert_eq!(
+        write["joined_source"],
+        serde_json::json!({"name": "source", "alias": "s"})
+    );
+    assert_eq!(
+        write["returning_columns"],
+        serde_json::json!(["id", "score"])
+    );
     assert_eq!(query["sources"][0], write["joined_source"]);
     assert_eq!(query["dependencies"], serde_json::json!(["source"]));
 
-    let schema: serde_json::Value = serde_json::from_str(
-        include_str!("../schema/protocol.schema.json")
-    ).unwrap();
-    assert_eq!(schema["$defs"]["writeOperation"]["additionalProperties"], false);
-    assert!(schema["$defs"]["writeOperation"]["properties"]["joined_source"]["$ref"]
-        .as_str().unwrap().ends_with("/sourceRelation"));
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    assert_eq!(
+        schema["$defs"]["writeOperation"]["additionalProperties"],
+        false
+    );
+    assert!(
+        schema["$defs"]["writeOperation"]["properties"]["joined_source"]["$ref"]
+            .as_str()
+            .unwrap()
+            .ends_with("/sourceRelation")
+    );
     // The optional field must not be inserted into unaffected single-target writes.
-    let old: serde_json::Value = serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&analyze("UPDATE target SET score = 4 WHERE id = 1"))
-    ).unwrap();
-    assert!(old["inputs"][0]["statements"][0]["write"].get("joined_source").is_none());
+    let old: serde_json::Value = serde_json::from_str(&sql_semantic_protocol::to_bundle_json(
+        &analyze("UPDATE target SET score = 4 WHERE id = 1"),
+    ))
+    .unwrap();
+    assert!(old["inputs"][0]["statements"][0]["write"]
+        .get("joined_source")
+        .is_none());
 }
 
 #[test]
@@ -466,26 +480,52 @@ fn joined_mutation_reads_only_the_preceding_ordered_source_state() {
     let bundle = analyze(sql);
     let plan = physical_ordered_write_state_plan(
         &bundle,
-        &[state("target", &[(Some(1),10),(Some(2),20)]),state("source",&[])],
+        &[
+            state("target", &[(Some(1), 10), (Some(2), 20)]),
+            state("source", &[]),
+        ],
     );
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
         panic!("sequential source write must be proved: {plan:?}");
     };
     assert_eq!(transitions.len(), 2);
     assert_eq!(transitions[0].affected().inserted(), 1);
     assert_eq!(transitions[1].affected().updated(), 1);
-    assert_eq!(rows(final_states.iter().find(|s| s.relation() == "target").unwrap()),
-        vec![(Some(1),40),(Some(2),20)]);
-    assert_eq!(rows(final_states.iter().find(|s| s.relation() == "source").unwrap()),
-        vec![(Some(1),40)]);
+    assert_eq!(
+        rows(
+            final_states
+                .iter()
+                .find(|s| s.relation() == "target")
+                .unwrap()
+        ),
+        vec![(Some(1), 40), (Some(2), 20)]
+    );
+    assert_eq!(
+        rows(
+            final_states
+                .iter()
+                .find(|s| s.relation() == "source")
+                .unwrap()
+        ),
+        vec![(Some(1), 40)]
+    );
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE target(id INTEGER,score INTEGER); CREATE TABLE source(id INTEGER,score INTEGER);
         INSERT INTO target VALUES (1,10),(2,20);").unwrap();
     db.execute_batch(sql).unwrap();
-    let mut stmt = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
-    let native = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?,r.get::<_, i64>(1)?)))
-        .unwrap().map(Result::unwrap).collect::<Vec<_>>();
-    assert_eq!(native, vec![(1,40),(2,20)]);
+    let mut stmt = db
+        .prepare("SELECT id,score FROM target ORDER BY id")
+        .unwrap();
+    let native = stmt
+        .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
+    assert_eq!(native, vec![(1, 40), (2, 20)]);
 }
 
 #[test]
@@ -497,22 +537,35 @@ fn enforced_target_primary_key_collision_from_joined_update_is_impossible() {
     let sql = "UPDATE target AS t SET id = s.id FROM source AS s WHERE t.score = s.score";
     let mut bundle = analyze(sql);
     let evidence = vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata,"task150").unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task150").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
     bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
         "target",
         vec![RelationConstraint::primary_key(vec!["id".to_string()], evidence).unwrap()],
-    ).unwrap()]);
-    let plan = physical_ordered_write_state_plan(&bundle,&[
-        state("target",&[(Some(1),10),(Some(2),20)]),
-        state("source",&[(Some(2),10)]),
-    ]);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+    )
+    .unwrap()]);
+    let plan = physical_ordered_write_state_plan(
+        &bundle,
+        &[
+            state("target", &[(Some(1), 10), (Some(2), 20)]),
+            state("source", &[(Some(2), 10)]),
+        ],
+    );
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "{plan:?}"
+    );
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE target(id INTEGER PRIMARY KEY,score INTEGER);
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY,score INTEGER);
          CREATE TABLE source(id INTEGER,score INTEGER);
          INSERT INTO target VALUES (1,10),(2,20);
-         INSERT INTO source VALUES (2,10);").unwrap();
-    assert!(db.execute_batch(sql).is_err(),"native engine must reject enforced key collision");
+         INSERT INTO source VALUES (2,10);",
+    )
+    .unwrap();
+    assert!(
+        db.execute_batch(sql).is_err(),
+        "native engine must reject enforced key collision"
+    );
 }
