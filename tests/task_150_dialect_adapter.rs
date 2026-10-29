@@ -220,23 +220,22 @@ fn ambiguous_update_source_is_residual_for_direct_and_dbt() {
     }
 }
 
-
 /// Original mandatory and negative source/target oracles must not depend on
 /// whether authoritative schema facts came from direct SQL, dbt or ODCS.
 fn case_rows(rows: &serde_json::Value) -> Vec<(Option<i64>, i64)> {
-    rows.as_array().unwrap().iter().map(|r| {
-        (r["id"].as_i64(), r["score"].as_i64().unwrap())
-    }).collect()
+    rows.as_array()
+        .unwrap()
+        .iter()
+        .map(|r| (r["id"].as_i64(), r["score"].as_i64().unwrap()))
+        .collect()
 }
 
-fn frozen_plan(
-    case: &serde_json::Value,
-    catalog: &RelationCatalog,
-) -> PhysicalWriteStatePlan {
+fn frozen_plan(case: &serde_json::Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let statement = sql(case["sql"].as_str().unwrap());
     let input = SqlInput::inline(&statement);
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = ConfiguredSqlInput::new("task150-frozen", &input, "postgresql", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("task150-frozen", &input, "postgresql", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let mut states = vec![state(TARGET, &case_rows(&case["target_before"]))];
     if case["source"].is_array() {
@@ -255,11 +254,23 @@ fn every_frozen_case_has_equivalent_direct_and_dbt_physical_proof() {
     for case in matrix["cases"].as_array().unwrap() {
         let direct = frozen_plan(case, &direct_catalog());
         let dbt = frozen_plan(case, &dbt_catalog());
-        assert_eq!(direct, dbt, "{}: source adapter changed physical proof", case["id"]);
+        assert_eq!(
+            direct, dbt,
+            "{}: source adapter changed physical proof",
+            case["id"]
+        );
         if case["proof"] == "residual" {
-            assert!(matches!(direct, PhysicalWriteStatePlan::Residual { .. }), "{}", case["id"]);
+            assert!(
+                matches!(direct, PhysicalWriteStatePlan::Residual { .. }),
+                "{}",
+                case["id"]
+            );
         } else {
-            assert!(matches!(direct, PhysicalWriteStatePlan::Feasible { .. }), "{}", case["id"]);
+            assert!(
+                matches!(direct, PhysicalWriteStatePlan::Feasible { .. }),
+                "{}",
+                case["id"]
+            );
         }
         checked += 1;
     }
@@ -291,19 +302,22 @@ fn every_frozen_case_has_an_explicit_parser_and_canonical_disposition() {
         for dialect in DIALECTS {
             let parser = dialect_from_name(dialect).unwrap();
             match analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()) {
-                Err(_) => {}, // a parser boundary, no native execution claim
+                Err(_) => {} // a parser boundary, no native execution claim
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
-                    ProtocolStatement::Unsupported(_) => {}, // canonical unsupported boundary
+                    ProtocolStatement::Unsupported(_) => {} // canonical unsupported boundary
                     ProtocolStatement::Query(query) => {
                         let write = query.write().unwrap_or_else(|| {
                             panic!("{dialect}: parsed DML omitted as a non-write: {sql}")
                         });
-                        assert!(matches!(write.kind(), WriteKind::Update | WriteKind::Delete));
+                        assert!(matches!(
+                            write.kind(),
+                            WriteKind::Update | WriteKind::Delete
+                        ));
                         assert!(write.joined_source().is_some(), "{dialect}: {sql}");
                         if case["family"] == "finite_cte_update_from" {
                             assert!(write.joined_cte_source().is_some(), "{dialect}: {sql}");
                         }
-                    },
+                    }
                     _ => panic!("{dialect}: unknown DML representation: {sql}"),
                 },
             }
