@@ -296,7 +296,9 @@ fn normalize_mutation_returning(
         match item {
             SelectItem::UnnamedExpr(Expr::Identifier(identifier)) => {
                 if !seen.insert(identifier.value.clone()) {
-                    return Err("duplicate RETURNING column identities require positional evidence");
+                    return Err(
+                        "duplicate RETURNING column identities require positional evidence",
+                    );
                 }
                 columns.push(identifier.value.clone());
             }
@@ -333,7 +335,9 @@ pub(super) fn analyze_update(
     let target_alias = target_source.alias().map(str::to_string);
     let returning_columns = match normalize_mutation_returning(returning) {
         Ok(columns) => columns,
-        Err(reason) => return unsupported_write_statement("update", "unproved_mutation_returning", reason),
+        Err(reason) => {
+            return unsupported_write_statement("update", "unproved_mutation_returning", reason)
+        }
     };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
@@ -462,11 +466,12 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
-    let returning_columns =
-        match normalize_mutation_returning(delete.returning.as_deref()) {
-            Ok(columns) => columns,
-            Err(reason) => return unsupported_write_statement("delete", "unproved_mutation_returning", reason),
-        };
+    let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
+        Ok(columns) => columns,
+        Err(reason) => {
+            return unsupported_write_statement("delete", "unproved_mutation_returning", reason)
+        }
+    };
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
