@@ -542,9 +542,8 @@ pub(super) fn mutate_rows(
         let context = Context {
             target: Some((target, row)),
             target_alias: write.target_alias(),
-            source: matched_source.and_then(|matched| {
-                joined.map(|(source, _)| (source.name(), matched))
-            }),
+            source: matched_source
+                .and_then(|matched| joined.map(|(source, _)| (source.name(), matched))),
         };
         let matches = if joined.is_some() {
             matched_source.is_some()
