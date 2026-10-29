@@ -40,6 +40,23 @@ fn every_original_ac_has_a_frozen_case_and_no_mandatory_cell_is_unclassified() {
         assert!(!case["adapter_evidence"].as_str().unwrap().is_empty());
         assert!(case["canonical_row_identity"]["target_before"].is_array());
         assert!(case["canonical_row_identity"]["target_after"].is_array());
+        for (identity, population) in [
+            ("source", "source"),
+            ("target_before", "prestate"),
+            ("target_after", "target_after"),
+            ("report_after", "report_after"),
+        ] {
+            let identities = case["canonical_row_identity"][identity].as_array().unwrap();
+            let expected_rows = case[population].as_array().unwrap();
+            assert_eq!(identities.len(), expected_rows.len(), "{id}: {identity}");
+            for (ordinal, (entry, expected)) in
+                identities.iter().zip(expected_rows).enumerate()
+            {
+                let expected_id = format!("{identity}#{ordinal}");
+                assert_eq!(entry["id"].as_str(), Some(expected_id.as_str()));
+                assert_eq!(&entry["row"], expected, "{id}: {identity}#{ordinal}");
+            }
+        }
         let statements = case["statements"].as_array().unwrap();
         assert!(!statements.is_empty());
         for dialect in f["dialects"].as_array().unwrap() {
