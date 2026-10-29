@@ -156,6 +156,46 @@ fn complete_insert_row(
     Ok(PhysicalWriteRow { values })
 }
 
+/// Materialize one local CTE from its complete original physical inputs.
+fn materialize_local_cte(
+    bundle: &AnalysisBundle,
+    name: &str,
+    producer: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
+) -> StateResult<PhysicalWriteState> {
+    if states.contains_key(name) {
+        return Err(residual(
+            "local CTE shadows an existing physical relation identity",
+        ));
+    }
+    let columns = producer
+        .output()
+        .columns()
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
+    if columns.is_empty() || columns.iter().collect::<BTreeSet<_>>().len() != columns.len() {
+        return Err(residual(
+            "local CTE producer columns are not uniquely named",
+        ));
+    }
+    let rows = evaluate_simple_select(bundle, producer, states)?
+        .into_iter()
+        .map(|values| {
+            if values.len() != columns.len() {
+                return Err(residual("local CTE producer output arity is unproved"));
+            }
+            Ok(PhysicalWriteRow {
+                values: columns.iter().cloned().zip(values).collect(),
+            })
+        })
+        .collect::<StateResult<Vec<_>>>()?;
+    Ok(PhysicalWriteState {
+        relation: name.to_string(),
+        rows,
+    })
+}
+
 pub(super) fn append_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
@@ -191,41 +231,8 @@ pub(super) fn append_rows(
     let produced = if write.default_values() {
         vec![Vec::new()]
     } else if let Some(cte) = write.insert_cte_source() {
-        if states.contains_key(cte.name()) {
-            return Err(residual(
-                "INSERT CTE shadows an existing physical relation identity",
-            ));
-        }
-        let cte_columns = cte
-            .producer()
-            .output()
-            .columns()
-            .iter()
-            .map(|column| column.name().to_string())
-            .collect::<Vec<_>>();
-        if cte_columns.is_empty()
-            || cte_columns.iter().collect::<BTreeSet<_>>().len() != cte_columns.len()
-        {
-            return Err(residual(
-                "INSERT CTE producer columns are not uniquely named",
-            ));
-        }
-        let cte_rows = evaluate_simple_select(bundle, cte.producer(), states)?
-            .into_iter()
-            .map(|values| {
-                if values.len() != cte_columns.len() {
-                    return Err(residual("INSERT CTE producer output arity is unproved"));
-                }
-                Ok(PhysicalWriteRow {
-                    values: cte_columns.iter().cloned().zip(values).collect(),
-                })
-            })
-            .collect::<StateResult<Vec<_>>>()?;
+        let intermediate = materialize_local_cte(bundle, cte.name(), cte.producer(), states)?;
         let mut local_states = states.clone();
-        let intermediate = PhysicalWriteState {
-            relation: cte.name().to_string(),
-            rows: cte_rows,
-        };
         local_states.insert(cte.name().to_string(), intermediate.clone());
         let result = evaluate_simple_select(bundle, cte.consumer(), &local_states)?;
         intermediate_states.push(intermediate);
