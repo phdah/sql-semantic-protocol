@@ -308,20 +308,38 @@ fn normalize_mutation_returning(
     Ok(columns)
 }
 
+/// Extract one named physical source; do not flatten unrelated JOIN inputs.
+fn named_mutation_source(tables: &[TableWithJoins]) -> Option<SourceRelation> {
+    let [source] = tables else {
+        return None;
+    };
+    if !source.joins.is_empty() {
+        return None;
+    }
+    merge_target_relation(&source.relation)
+}
+
+/// Shared target/source identities must be proved as a self-join in separate scope.
+fn disjoint_mutation_sources(target: &SourceRelation, source: &SourceRelation) -> bool {
+    let target_names = [target.name(), target.alias().unwrap_or(target.name())];
+    let source_names = [source.name(), source.alias().unwrap_or(source.name())];
+    !target_names.iter().any(|name| source_names.contains(name))
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
-    has_from: bool,
+    from: Option<&sqlparser::ast::UpdateTableFromKind>,
     selection: Option<&Expr>,
     returning: Option<&[SelectItem]>,
     has_conflict_modifier: bool,
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
-    if has_from || has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
+    if has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
-            "only single-target UPDATE SET without FROM, JOIN, or conflict modifiers is supported",
+            "UPDATE requires one named target, assignments, and no target JOIN or conflict modifier",
         );
     }
     let Some(target_source) = merge_target_relation(&table.relation) else {
@@ -333,6 +351,34 @@ pub(super) fn analyze_update(
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let joined_source = match from {
+        None => None,
+        Some(sqlparser::ast::UpdateTableFromKind::AfterSet(tables))
+        | Some(sqlparser::ast::UpdateTableFromKind::BeforeSet(tables)) => {
+            named_mutation_source(tables)
+        }
+    };
+    if from.is_some() && joined_source.is_none() {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_from",
+            "UPDATE FROM requires exactly one named independent source without joins",
+        );
+    }
+    if joined_source
+        .as_ref()
+        .is_some_and(|source| !disjoint_mutation_sources(&target_source, source))
+    {
+        return unsupported_write_statement(
+            "update",
+            "unproved_update_self_source",
+            "UPDATE FROM cannot reuse or shadow the physical target without a joint alias proof",
+        );
+    }
+    let mut domain_sources = vec![target_source.clone()];
+    domain_sources.extend(joined_source.iter().cloned());
+    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let dependencies = query_sources.iter().map(|source| source.name().to_string()).collect();
     let returning_columns = match normalize_mutation_returning(returning) {
         Ok(columns) => columns,
         Err(reason) => {
@@ -370,7 +416,7 @@ pub(super) fn analyze_update(
     let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
-        std::slice::from_ref(&target_source),
+        &domain_sources,
     );
     let assignments = assignments
         .iter()
@@ -394,13 +440,13 @@ pub(super) fn analyze_update(
                 let derived = derive_expression_domain_with_column_domains(
                     &expression,
                     &domains,
-                    std::slice::from_ref(&target_source),
+                    &domain_sources,
                 );
                 refine_write_value_domain(
                     &expression,
                     derived,
                     &domains,
-                    std::slice::from_ref(&target_source),
+                    &domain_sources,
                     metadata,
                 )
             };
@@ -418,8 +464,8 @@ pub(super) fn analyze_update(
     sort_diagnostics(&mut diagnostics);
     ProtocolStatement::Query(
         QueryStatement::new(
-            Vec::new(),
-            Vec::new(),
+            query_sources,
+            dependencies,
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
@@ -434,10 +480,14 @@ pub(super) fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(
-            WriteOperation::update(target, target_alias, predicate, assignments, domains)
-                .with_returning_columns(returning_columns),
-        )),
+        .with_write(Some({
+            let mut write = WriteOperation::update(target, target_alias, predicate, assignments, domains)
+                .with_returning_columns(returning_columns);
+            if let Some(source) = joined_source {
+                write = write.with_joined_source(source);
+            }
+            write
+        })),
     )
 }
 
@@ -446,7 +496,6 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         SqlFromTable::WithFromKeyword(tables) | SqlFromTable::WithoutKeyword(tables) => tables,
     };
     if !delete.tables.is_empty()
-        || delete.using.is_some()
         || !delete.order_by.is_empty()
         || delete.limit.is_some()
         || tables.len() != 1
@@ -455,7 +504,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         return unsupported_write_statement(
             "delete",
             "unsupported_delete_form",
-            "only single-target DELETE FROM without USING, JOIN, ORDER BY, or LIMIT is supported",
+            "DELETE requires one named target without target JOIN, ORDER BY, or LIMIT",
         );
     }
     let Some(target_source) = merge_target_relation(&tables[0].relation) else {
@@ -467,6 +516,28 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
+    let joined_source = delete.using.as_ref().and_then(|tables| named_mutation_source(tables));
+    if delete.using.is_some() && joined_source.is_none() {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_using",
+            "DELETE USING requires exactly one named independent source without joins",
+        );
+    }
+    if joined_source
+        .as_ref()
+        .is_some_and(|source| !disjoint_mutation_sources(&target_source, source))
+    {
+        return unsupported_write_statement(
+            "delete",
+            "unproved_delete_self_source",
+            "DELETE USING cannot reuse or shadow the physical target without a joint alias proof",
+        );
+    }
+    let mut domain_sources = vec![target_source];
+    domain_sources.extend(joined_source.iter().cloned());
+    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let dependencies = query_sources.iter().map(|source| source.name().to_string()).collect();
     let returning_columns = match normalize_mutation_returning(delete.returning.as_deref()) {
         Ok(columns) => columns,
         Err(reason) => {
@@ -498,13 +569,13 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         .map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
-        &[target_source],
+        &domain_sources,
     );
     sort_diagnostics(&mut diagnostics);
     ProtocolStatement::Query(
         QueryStatement::new(
-            Vec::new(),
-            Vec::new(),
+            query_sources,
+            dependencies,
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
@@ -519,10 +590,14 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(
-            WriteOperation::delete(target, target_alias, predicate, domains)
-                .with_returning_columns(returning_columns),
-        )),
+        .with_write(Some({
+            let mut write = WriteOperation::delete(target, target_alias, predicate, domains)
+                .with_returning_columns(returning_columns);
+            if let Some(source) = joined_source {
+                write = write.with_joined_source(source);
+            }
+            write
+        })),
     )
 }
 
