@@ -1,10 +1,10 @@
 ---
 id: TASK-150
 title: Prove UPDATE FROM and DELETE USING joined mutations
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-29'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,8 @@ type: feature
 - **Numerical/row-state oracle:** target keys [1,2], source key [1] => exactly one modified/deleted target; duplicate matching source is residual or error per law.
 - **Typed conditional boundary:** No multiple-match rewrite without unique identity and engine match assumption. Owner: TASK-150.
 - **Original TASK-81 criteria:** #1, #2, #3, #5, #6.
+
+Frozen contract: [docs/task-150-acceptance-freeze.json](../../docs/task-150-acceptance-freeze.json). Implementation and CI verification pending.
 
 ## Acceptance Criteria
 
