@@ -187,8 +187,16 @@ fn all_thirteen_parser_dialects_record_an_explicit_joined_write_boundary() {
                     ProtocolStatement::Query(query) => {
                         let write = query.write().expect("no silently dropped write");
                         assert_eq!(write.kind(), expected_kind, "{dialect}: {sql}");
-                        assert_eq!(write.joined_source().map(|source| source.name()), Some("source"), "{dialect}: {sql}");
-                        assert_eq!(query.dependencies(), &["source".to_string()], "{dialect}: {sql}");
+                        assert_eq!(
+                            write.joined_source().map(|source| source.name()),
+                            Some("source"),
+                            "{dialect}: {sql}"
+                        );
+                        assert_eq!(
+                            query.dependencies(),
+                            &["source".to_string()],
+                            "{dialect}: {sql}"
+                        );
                     }
                     _ => panic!("{dialect}: unrecognized protocol statement for {sql}"),
                 },
