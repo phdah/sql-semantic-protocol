@@ -1,4 +1,14 @@
 {
+  "task_149_update_delete_acceptance": {
+    "owner": "TASK-149",
+    "parent": "TASK-81",
+    "status": "implementation_in_progress",
+    "fixture_ids": ["81-C149-P", "81-C149-N"],
+    "freeze": "docs/task-149-acceptance-freeze.json",
+    "oracle": "tests/task_149_update_delete.rs",
+    "mandatory_cells_verified": false,
+    "parent_signed_off": false
+  },
   "task_75_parent_acceptance": {
     "owner": "TASK-75",
     "status": "portable_parent_original_ac_verified",
