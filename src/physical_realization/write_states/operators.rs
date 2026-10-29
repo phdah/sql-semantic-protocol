@@ -347,9 +347,12 @@ fn validate_update_assignments(
     assignments: &[crate::protocol::MergeAssignment],
 ) -> StateResult<()> {
     let schema = schema_for(bundle, target)?;
-    let sources = bundle.relation_constraints().iter()
+    let sources = bundle
+        .relation_constraints()
+        .iter()
         .find(|set| set.relation() == target)
-        .map(|set| set.column_value_sources()).unwrap_or(&[]);
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
     let mut seen = BTreeSet::new();
     for assignment in assignments {
         let column = if let Some((qualifier, column)) = assignment.target().rsplit_once('.') {
@@ -363,17 +366,22 @@ fn validate_update_assignments(
         if !seen.insert(column) || !schema.columns().iter().any(|item| item.name() == column) {
             return Err(residual("unknown or overlapping UPDATE assignment"));
         }
-        if sources.iter().any(|source| source.column() == column
-            && source.kind() != crate::column_sources::ColumnValueKind::Default) {
+        if sources.iter().any(|source| {
+            source.column() == column
+                && source.kind() != crate::column_sources::ColumnValueKind::Default
+        }) {
             return Err(residual_gap(
                 PhysicalWriteStateGap::UnprovedConstraint,
                 "UPDATE explicitly assigns a generated or identity column",
             ));
         }
         if assignment.is_default() {
-            let source = sources.iter()
-                .find(|source| source.column() == column &&
-                    source.kind() == crate::column_sources::ColumnValueKind::Default)
+            let source = sources
+                .iter()
+                .find(|source| {
+                    source.column() == column
+                        && source.kind() == crate::column_sources::ColumnValueKind::Default
+                })
                 .ok_or_else(|| residual("UPDATE DEFAULT requires declared target default"))?;
             if !super::generated::authoritative(source) {
                 return Err(residual_gap(
@@ -412,7 +420,11 @@ pub(super) fn apply_target_update(
     let mut normal = Vec::new();
     let mut defaults = Vec::new();
     for assignment in assignments {
-        let column = assignment.target().rsplit('.').next().unwrap_or(assignment.target());
+        let column = assignment
+            .target()
+            .rsplit('.')
+            .next()
+            .unwrap_or(assignment.target());
         if assignment.is_default() {
             defaults.push(column);
         } else {
