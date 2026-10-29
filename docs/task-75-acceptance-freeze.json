@@ -356,14 +356,15 @@
       "tests/task_129_exists_bags.rs",
       "tests/task_130_in_bags.rs",
       "tests/task_131_scalar_quantified.rs",
-      "tests/task_132_composed_subqueries.rs"
+      "tests/task_132_composite_correlations.rs"
     ],
     "child_adapter_oracles": [
       "tests/task_129_adapter_parity.rs",
       "tests/task_130_adapter_parity.rs",
-      "tests/task_131_adapter_parity.rs"
+      "tests/task_131_adapter_parity.rs",
+      "tests/task_132_adapter_parity.rs"
     ],
-    "dbt_oracle": "tests/task_132_dbt_core_e2e.rs",
+    "dbt_oracle": "tests/protocol_conformance_dbt_e2e.rs",
     "parent_regression": "tests/task_75_parent_closure.rs"
   },
   "reviewed_boundaries": [
