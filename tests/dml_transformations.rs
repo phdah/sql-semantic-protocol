@@ -428,26 +428,51 @@ fn merge_retains_ordered_matched_and_unmatched_effects_without_finalstate_proof(
 }
 
 #[test]
-fn unsupported_multi_relation_writes_remain_explicit() {
-    let cases = [
+fn joined_writes_are_normalized_without_fabricating_physical_source_rows() {
+    for (sql, kind) in [
         (
             "UPDATE target SET score = src.score FROM src WHERE target.id = src.id",
-            "update",
+            WriteKind::Update,
         ),
         (
             "DELETE FROM target USING src WHERE target.id = src.id",
-            "delete",
+            WriteKind::Delete,
         ),
-    ];
-    for (sql, kind) in cases {
+    ] {
         let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &GenericDialect {})
             .expect("parser-supported DML");
+        let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+            panic!("joined write must have canonical source identity: {sql}");
+        };
+        let write = query.write().expect("canonical partial write");
+        assert_eq!(write.kind(), kind);
+        assert_eq!(write.joined_source().map(|source| source.name()), Some("src"));
+        assert_eq!(query.dependencies(), &["src".to_string()]);
+        let plan = sql_semantic_protocol::physical_ordered_write_state_plan(&bundle, &[]);
         assert!(
-            bundle.layers().is_empty(),
-            "multi-table mutation must not become a known effect: {sql}"
+            matches!(plan, sql_semantic_protocol::PhysicalWriteStatePlan::Residual { .. }),
+            "parsed join alone cannot prove physical state: {plan:?}"
         );
+    }
+}
+
+#[test]
+fn unproved_multiple_joined_write_sources_remain_explicit() {
+    for (sql, kind) in [
+        (
+            "UPDATE target SET score = src.score FROM src, extra WHERE target.id = src.id",
+            "update",
+        ),
+        (
+            "DELETE FROM target USING src, extra WHERE target.id = src.id",
+            "delete",
+        ),
+    ] {
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &GenericDialect {})
+            .expect("parser-supported DML");
+        assert!(bundle.layers().is_empty());
         let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0] else {
-            panic!("unproven write must be unsupported: {sql}");
+            panic!("unproved multiple sources must fail closed: {sql}");
         };
         assert_eq!(statement.category(), kind);
     }
