@@ -249,31 +249,37 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
         // disprove its own independently frozen negative counterexample.
         let first_row = &case["terminal_bag"][0];
         let selected = expected_row(first_row, &names);
-        assert!(matches!(
-            physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&selected)),
-            PhysicalCteProof::Exact(_)
-        ), "{id}: known terminal tuple must be Exact");
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&selected)),
+                PhysicalCteProof::Exact(_)
+            ),
+            "{id}: known terminal tuple must be Exact"
+        );
         let negative = match id {
             "78-C141-P-REUSE" => BTreeMap::from([
                 ("ak".to_string(), LiteralValue::Number("1".to_string())),
                 ("bk".to_string(), LiteralValue::Number("2".to_string())),
             ]),
-            "78-C141-P-CHAIN" => BTreeMap::from([
-                ("k".to_string(), LiteralValue::Number("3".to_string())),
-            ]),
-            "78-C141-P-SHADOW" => BTreeMap::from([
-                ("k".to_string(), LiteralValue::Number("100".to_string())),
-            ]),
+            "78-C141-P-CHAIN" => {
+                BTreeMap::from([("k".to_string(), LiteralValue::Number("3".to_string()))])
+            }
+            "78-C141-P-SHADOW" => {
+                BTreeMap::from([("k".to_string(), LiteralValue::Number("100".to_string()))])
+            }
             "78-C141-N-NULL-DUP" => BTreeMap::from([
                 ("ak".to_string(), LiteralValue::Null),
                 ("bk".to_string(), LiteralValue::Null),
             ]),
             other => panic!("unreviewed mandatory CTE fixture: {other}"),
         };
-        assert!(matches!(
-            physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&negative)),
-            PhysicalCteProof::Impossible { .. }
-        ), "{id}: frozen absent terminal tuple must be Impossible");
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&negative)),
+                PhysicalCteProof::Impossible { .. }
+            ),
+            "{id}: frozen absent terminal tuple must be Impossible"
+        );
         if id == "78-C141-N-NULL-DUP" {
             assert_eq!(proof.rejected["terminal"].len(), 11);
             assert_eq!(proof.false_pairs["terminal"].len(), 4);
@@ -476,12 +482,10 @@ fn forward_cte_sibling_does_not_borrow_identically_named_physical_table() {
 
 #[test]
 fn task_141_frozen_proof_matrix_maps_every_mandatory_and_conditional_cell() {
-    let baseline: Value = serde_json::from_str(
-        include_str!("../docs/task-141-acceptance-freeze.json")
-    ).unwrap();
-    let matrix: Value = serde_json::from_str(
-        include_str!("../docs/task-141-proof-matrix.json")
-    ).unwrap();
+    let baseline: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let matrix: Value =
+        serde_json::from_str(include_str!("../docs/task-141-proof-matrix.json")).unwrap();
     assert_eq!(matrix["version"], 2);
     assert_eq!(matrix["owner"], "TASK-141");
     assert_eq!(matrix["parent"], "TASK-78");
@@ -489,40 +493,83 @@ fn task_141_frozen_proof_matrix_maps_every_mandatory_and_conditional_cell() {
     assert_eq!(mandatory.len(), 4);
     for case in mandatory {
         let id = case["id"].as_str().unwrap();
-        let original = baseline["cases"].as_array().unwrap().iter()
-            .find(|entry| entry["id"] == id).unwrap();
+        let original = baseline["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .unwrap();
         assert_eq!(original["classification"], "mandatory_exact", "{id}");
         assert_eq!(case["expected_proof"], "Exact", "{id}");
-        assert_eq!(case["expected_terminal_bag"], original["terminal_bag"], "{id}");
-        assert_eq!(case["expected_terminal_domains"], original["terminal_domains"], "{id}");
-        assert_eq!(case["expected_source_bags"], original["initial_bags"], "{id}");
-        assert_eq!(case["expected_producer_bags"], original["producer_bags"], "{id}");
+        assert_eq!(
+            case["expected_terminal_bag"], original["terminal_bag"],
+            "{id}"
+        );
+        assert_eq!(
+            case["expected_terminal_domains"], original["terminal_domains"],
+            "{id}"
+        );
+        assert_eq!(
+            case["expected_source_bags"], original["initial_bags"],
+            "{id}"
+        );
+        assert_eq!(
+            case["expected_producer_bags"], original["producer_bags"],
+            "{id}"
+        );
         let dialects = case["dialect_cells"].as_array().unwrap();
         assert_eq!(dialects.len(), DIALECTS.len(), "{id}: every parser name");
         for expected in DIALECTS {
-            assert!(dialects.iter().any(|cell| cell["dialect"] == *expected
-                && cell["canonical_physical"] == "Exact"), "{id}/{expected}: required physical proof");
+            assert!(
+                dialects
+                    .iter()
+                    .any(|cell| cell["dialect"] == *expected
+                        && cell["canonical_physical"] == "Exact"),
+                "{id}/{expected}: required physical proof"
+            );
         }
         let adapters = case["adapter_cells"].as_array().unwrap();
         assert_eq!(adapters.len(), 3, "{id}: all evidence adapters");
-        for expected in ["direct_sql", "dbt_compiled_manifest_catalog", "odcs_equivalent_schema"] {
-            assert!(adapters.iter().any(|cell| cell["adapter"] == expected),
-                "{id}: absent adapter {expected}");
+        for expected in [
+            "direct_sql",
+            "dbt_compiled_manifest_catalog",
+            "odcs_equivalent_schema",
+        ] {
+            assert!(
+                adapters.iter().any(|cell| cell["adapter"] == expected),
+                "{id}: absent adapter {expected}"
+            );
         }
     }
     let conditional = matrix["conditional"].as_array().unwrap();
     assert_eq!(conditional.len(), 3);
     for case in conditional {
         let id = case["id"].as_str().unwrap();
-        let original = baseline["cases"].as_array().unwrap().iter()
-            .find(|entry| entry["id"] == id).unwrap();
+        let original = baseline["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .unwrap();
         assert_eq!(original["classification"], "conditional", "{id}");
         assert_eq!(case["owner"], "TASK-141", "{id}: release-review owner");
-        assert!(case["release_disposition"].as_str().is_some_and(|text| !text.is_empty()));
-        assert_eq!(case["dialect_cells"].as_array().unwrap().len(), DIALECTS.len(), "{id}");
+        assert!(case["release_disposition"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty()));
+        assert_eq!(
+            case["dialect_cells"].as_array().unwrap().len(),
+            DIALECTS.len(),
+            "{id}"
+        );
     }
-    assert_eq!(matrix["verification"]["physical_dialect_cells"], 4 * DIALECTS.len());
+    assert_eq!(
+        matrix["verification"]["physical_dialect_cells"],
+        4 * DIALECTS.len()
+    );
     assert_eq!(matrix["verification"]["adapter_cells"], 12);
-    assert_eq!(matrix["verification"]["conditional_cells"], 3 * DIALECTS.len());
+    assert_eq!(
+        matrix["verification"]["conditional_cells"],
+        3 * DIALECTS.len()
+    );
     assert_eq!(matrix["verification"]["parent_done"], false);
 }
