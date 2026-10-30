@@ -536,9 +536,39 @@ pub(super) fn mutate_rows(
         })?;
         Some((source, source_rows))
     } else {
-        if !query.sources().is_empty() {
+        None
+    };
+    // A correlated EXISTS is an independent read-only source, not a
+    // relational join or a synthetic producer. All negative membership
+    // proofs inspect the same complete source bag for every target preimage.
+    let correlated = if joined.is_none() && !query.sources().is_empty() {
+        let [source] = query.sources() else {
             return Err(residual("mutation has unaccounted physical sources"));
+        };
+        let Some(Predicate::Exists(exists)) = write.selection() else {
+            return Err(residual("mutation source lacks canonical EXISTS owner"));
+        };
+        let nested = exists.subquery();
+        if nested.sources() != query.sources()
+            || !nested.row_shape_preserves_candidates()
+            || !nested.joins().is_empty()
+            || !nested.diagnostics().is_empty()
+            || nested.predicates().where_predicate().is_none()
+            || nested.correlations().is_empty()
+            || nested.correlations().iter().any(|column| column.relation() != target)
+            || source.name() == target
+        {
+            return Err(residual("correlated mutation has unproved producer shape"));
         }
+        schema_for(bundle, source.name())?;
+        let population = states.get(source.name()).ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::MissingPopulation,
+                "correlated mutation needs complete independent source population",
+            )
+        })?;
+        Some((source, nested, exists.negated(), population))
+    } else {
         None
     };
     let aliases: Vec<&str> = joined.map_or_else(Vec::new, |(source, _)| {
@@ -578,6 +608,21 @@ pub(super) fn mutate_rows(
         };
         let matches = if joined.is_some() {
             matched_source.is_some()
+        } else if let Some((source, nested, negated, population)) = correlated {
+            let aliases = [source.alias().unwrap_or(source.name()), source.name()];
+            let mut has_match = false;
+            for candidate in &population.rows {
+                let inner_context = Context {
+                    target: Some((target, row)),
+                    target_alias: write.target_alias(),
+                    source: Some((source.name(), candidate)),
+                };
+                if selected(nested.predicates().where_predicate(), &inner_context, &aliases)? {
+                    has_match = true;
+                    break;
+                }
+            }
+            has_match != negated
         } else {
             selected(write.selection(), &context, &[])?
         };
