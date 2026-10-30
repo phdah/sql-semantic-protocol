@@ -3,7 +3,7 @@
 //! Only a parser-independent CteProgram is consumed. All input bags are complete
 //! caller-attested physical populations, never independent CTE inserts.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan};
 use super::*;
@@ -276,14 +276,25 @@ pub fn physical_finite_cte_bag_plan(
     let Some(program) = query.cte_program() else {
         return residual("CTE shape lacks a certified canonical producer program");
     };
-    if walker.sources.len() != snapshots.len() {
-        return residual("CTE proof requires every physical source and no extra populations");
+    // Include leaves of shadowed but still independently evaluated CTEs.
+    // The terminal dependency graph deliberately excludes these unused
+    // producers, but their own complete physical bags remain required.
+    let stage_ids = program.stages().iter()
+        .map(|stage| stage.id().to_string())
+        .collect::<BTreeSet<_>>();
+    let source_names = program.stages().iter()
+        .flat_map(|stage| stage.inputs())
+        .filter(|input| !stage_ids.contains(input.relation()))
+        .map(|input| input.relation().to_string())
+        .collect::<BTreeSet<_>>();
+    if source_names.len() != snapshots.len() {
+        return residual("CTE proof requires every lexical physical leaf, including unused producers");
     }
     let mut bags = BagMap::new();
     let mut types = BTreeMap::new();
     let mut source_bags = BTreeMap::new();
     for state in snapshots {
-        if !walker.sources.contains(state.relation()) || bags.contains_key(state.relation()) {
+        if !source_names.contains(state.relation()) || bags.contains_key(state.relation()) {
             return residual("physical source is absent from canonical dependency graph");
         }
         let Some(schema) = bundle
@@ -352,9 +363,20 @@ pub fn physical_finite_cte_bag_plan(
             };
         }
     }
+    let mut nodes = walker.nodes;
+    for source in source_names.iter().filter(|source| !walker.sources.contains(*source)) {
+        nodes.insert(0, PhysicalPlanNode {
+            id: PhysicalPlanRef::Source(source.clone()),
+            inputs: Vec::new(),
+            produced_relations: Vec::new(),
+            write_kind: None,
+            operator_witnesses: Vec::new(),
+            pending_producers: Vec::new(),
+        });
+    }
     PhysicalCteProof::Exact(Box::new(PhysicalCteExact {
-        nodes: walker.nodes,
-        sources: walker.sources.into_iter().collect(),
+        nodes,
+        sources: source_names.into_iter().collect(),
         source_bags,
         stage_bags,
         rejected,
