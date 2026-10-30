@@ -13,10 +13,22 @@ use sql_semantic_protocol::{
 use std::collections::{BTreeMap, BTreeSet};
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-133", include_str!("../docs/task-133-acceptance-freeze.json")),
-    ("TASK-134", include_str!("../docs/task-134-acceptance-freeze.json")),
-    ("TASK-135", include_str!("../docs/task-135-acceptance-freeze.json")),
-    ("TASK-136", include_str!("../docs/task-136-acceptance-freeze.json")),
+    (
+        "TASK-133",
+        include_str!("../docs/task-133-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-134",
+        include_str!("../docs/task-134-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-135",
+        include_str!("../docs/task-135-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-136",
+        include_str!("../docs/task-136-acceptance-freeze.json"),
+    ),
 ];
 
 fn parent() -> Value {
@@ -47,16 +59,22 @@ fn cases(child: &Value) -> Vec<&Value> {
 }
 
 fn has_array(case: &Value, keys: &[&str]) -> bool {
-    keys.iter().any(|key| case.get(*key).is_some_and(Value::is_array))
+    keys.iter()
+        .any(|key| case.get(*key).is_some_and(Value::is_array))
 }
 
 fn has_domain(case: &Value) -> bool {
-    ["typed_output_domain", "terminal_domains", "terminal_domain", "domain"]
-        .iter()
-        .any(|key| {
-            case.get(*key)
-                .is_some_and(|value| value.is_object() || value.is_array())
-        })
+    [
+        "typed_output_domain",
+        "terminal_domains",
+        "terminal_domain",
+        "domain",
+    ]
+    .iter()
+    .any(|key| {
+        case.get(*key)
+            .is_some_and(|value| value.is_object() || value.is_array())
+    })
 }
 
 #[test]
@@ -91,12 +109,18 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
 
         let exact = ids(&record["mandatory_case_ids"]);
         let residual = ids(&record["conditional_case_ids"]);
-        assert!(exact.is_disjoint(&residual), "{name}: double-classified case");
+        assert!(
+            exact.is_disjoint(&residual),
+            "{name}: double-classified case"
+        );
         let mut observed = BTreeSet::new();
         for case in cases(&child) {
             let id = case["id"].as_str().expect("stable variant ID");
             assert!(observed.insert(id.to_owned()), "{name}: duplicate {id}");
-            assert!(!case["sql"].as_str().unwrap_or("").is_empty(), "{id}: SQL absent");
+            assert!(
+                !case["sql"].as_str().unwrap_or("").is_empty(),
+                "{id}: SQL absent"
+            );
             assert!(
                 has_array(case, &["source_bag", "source"]),
                 "{id}: complete physical input not frozen"
@@ -108,25 +132,58 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
                 );
                 assert!(has_domain(case), "{id}: typed terminal domain not frozen");
                 assert!(
-                    has_array(case, &["selected_source_ids", "selected_ids", "left_selected", "selected"]),
+                    has_array(
+                        case,
+                        &[
+                            "selected_source_ids",
+                            "selected_ids",
+                            "left_selected",
+                            "selected"
+                        ]
+                    ),
                     "{id}: positive source identity not frozen"
                 );
                 assert!(
-                    has_array(case, &["rejected_source_ids", "rejected_ids", "left_page_rejected", "rejected"]),
+                    has_array(
+                        case,
+                        &[
+                            "rejected_source_ids",
+                            "rejected_ids",
+                            "left_page_rejected",
+                            "rejected"
+                        ]
+                    ),
                     "{id}: negative source identity not frozen"
                 );
                 assert!(mandatory.insert(id.to_owned()), "duplicated exact {id}");
             } else {
-                assert!(residual.contains(id), "{id}: unclassified parent obligation");
-                assert!(!case["reason"].as_str().unwrap_or("").is_empty(), "{id}: missing residual reason");
-                assert!(!case["owner"].as_str().unwrap_or("").is_empty(), "{id}: missing residual owner");
                 assert!(
-                    case.get("disposition").or_else(|| case.get("release_disposition")).is_some(),
+                    residual.contains(id),
+                    "{id}: unclassified parent obligation"
+                );
+                assert!(
+                    !case["reason"].as_str().unwrap_or("").is_empty(),
+                    "{id}: missing residual reason"
+                );
+                assert!(
+                    !case["owner"].as_str().unwrap_or("").is_empty(),
+                    "{id}: missing residual owner"
+                );
+                assert!(
+                    case.get("disposition")
+                        .or_else(|| case.get("release_disposition"))
+                        .is_some(),
                     "{id}: unreviewed conditional disposition"
                 );
-                assert!(conditional.insert(id.to_owned()), "duplicated residual {id}");
+                assert!(
+                    conditional.insert(id.to_owned()),
+                    "duplicated residual {id}"
+                );
             }
-            if let Some(cells) = case.get("parser_cells").or_else(|| case.get("dialect_cells")) {
+            if let Some(cells) = case
+                .get("parser_cells")
+                .or_else(|| case.get("dialect_cells"))
+            {
                 if let Some(map) = cells.as_object() {
                     assert_eq!(
                         map.keys().cloned().collect::<BTreeSet<_>>(),
@@ -141,7 +198,11 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
                 }
             }
         }
-        assert_eq!(observed, exact.union(&residual).cloned().collect(), "{name}");
+        assert_eq!(
+            observed,
+            exact.union(&residual).cloned().collect(),
+            "{name}"
+        );
     }
 
     assert_eq!(mandatory, ids(&parent["mandatory_case_ids"]));
@@ -161,7 +222,11 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
         assert_eq!(criterion["id"], offset + 1);
         let exact_refs = ids(&criterion["mandatory_case_ids"]);
         let residual_refs = ids(&criterion["conditional_case_ids"]);
-        assert!(!exact_refs.is_empty(), "AC {} lacks executable evidence", offset + 1);
+        assert!(
+            !exact_refs.is_empty(),
+            "AC {} lacks executable evidence",
+            offset + 1
+        );
         assert!(exact_refs.is_subset(&mandatory));
         assert!(residual_refs.is_subset(&conditional));
         covered_mandatory.extend(exact_refs);
@@ -171,26 +236,33 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
     assert_eq!(covered_conditional, conditional);
 }
 
-fn public_proof(sql: &str, keys: &[i64]) -> (sql_semantic_protocol::AnalysisBundle, PhysicalWriteState) {
+fn public_proof(
+    sql: &str,
+    keys: &[i64],
+) -> (sql_semantic_protocol::AnalysisBundle, PhysicalWriteState) {
     let parser = dialect_from_name("duckdb").expect("supported DuckDB dialect");
     let sql_input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("parent-page", &sql_input, "duckdb", parser.as_ref())];
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "s",
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-        )
-        .unwrap(),
-    ])
+    let configured = [ConfiguredSqlInput::new(
+        "parent-page",
+        &sql_input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "s",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
     .unwrap();
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let state = PhysicalWriteState::new(
         "s",
         keys.iter()
             .map(|key| {
-                PhysicalWriteRow::new(BTreeMap::from([
-                    ("k".to_string(), LiteralValue::Number(key.to_string())),
-                ]))
+                PhysicalWriteRow::new(BTreeMap::from([(
+                    "k".to_string(),
+                    LiteralValue::Number(key.to_string()),
+                )]))
                 .unwrap()
             })
             .collect(),
@@ -201,15 +273,21 @@ fn public_proof(sql: &str, keys: &[i64]) -> (sql_semantic_protocol::AnalysisBund
 
 fn native_bag(sql: &str, keys: &[i64]) -> Vec<i64> {
     let connection = Connection::open_in_memory().expect("DuckDB native execution");
-    connection.execute_batch("CREATE TABLE s (k INTEGER)").unwrap();
+    connection
+        .execute_batch("CREATE TABLE s (k INTEGER)")
+        .unwrap();
     for key in keys {
         connection
             .execute_batch(&format!("INSERT INTO s VALUES ({key})"))
             .unwrap();
     }
-    let count: i64 = connection.query_row("SELECT COUNT(*) FROM s", [], |row| row.get(0)).unwrap();
+    let count: i64 = connection
+        .query_row("SELECT COUNT(*) FROM s", [], |row| row.get(0))
+        .unwrap();
     assert_eq!(count as usize, keys.len(), "complete physical source");
-    connection.prepare(sql).unwrap()
+    connection
+        .prepare(sql)
+        .unwrap()
         .query_map([], |row| row.get::<_, i64>(0))
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
@@ -223,7 +301,9 @@ fn independent_direct_and_nested_page_bags_match_native_execution() {
     assert_eq!(native_bag(direct, &keys), vec![2, 3]);
     let (bundle, state) = public_proof(direct, &keys);
     let layer = bundle.layers().last().unwrap().id();
-    let PhysicalFinitePageProof::Exact(exact) = physical_finite_page_bag_plan(&bundle, layer, &[state]) else {
+    let PhysicalFinitePageProof::Exact(exact) =
+        physical_finite_page_bag_plan(&bundle, layer, &[state])
+    else {
         panic!("TASK-133 parent direct page must be exact");
     };
     assert_eq!(exact.rows.len(), 5);
@@ -237,7 +317,8 @@ SELECT k FROM page ORDER BY k LIMIT 1 OFFSET 2";
     let (bundle, state) = public_proof(nested, &keys);
     let layer = bundle.layers().last().unwrap().id();
     let PhysicalComposedPageProof::Exact(exact) =
-        physical_finite_composed_page_plan(&bundle, layer, &[state]) else {
+        physical_finite_composed_page_plan(&bundle, layer, &[state])
+    else {
         panic!("TASK-135 parent composed page must be exact");
     };
     assert_eq!(exact.source_row_ids.len(), 5);
