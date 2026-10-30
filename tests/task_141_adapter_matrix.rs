@@ -4,7 +4,7 @@
 
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
-    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_manifest,
+    analyze_inputs, dialect_from_name, parse_dbt_manifest,
     AnalysisBundle, ProtocolStatement, QueryStatement, SqlInput,
 };
 
@@ -47,8 +47,38 @@ fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> Analy
         "sources": sources
     });
     let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    // Catalog evidence covers all physical leaves, even those contributing
+    // only to an unused, shadowed outer CTE.
+    let mut catalog_sources = Map::new();
+    for name in initial_bags.as_object().unwrap().keys() {
+        let id = format!("source.demo.{name}");
+        catalog_sources.insert(id.clone(), json!({
+            "unique_id": id,
+            "metadata": {
+                "type": "BASE TABLE", "database": "main",
+                "schema": "raw", "name": name
+            },
+            "columns": {
+                "k": {"name": "k", "type": "INTEGER", "index": 1}
+            },
+            "stats": {}
+        }));
+    }
+    let catalog = json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version": "1.11.8"
+        },
+        "nodes": {},
+        "sources": catalog_sources,
+        "errors": null
+    });
+    let parsed_catalog =
+        sql_semantic_protocol::parse_dbt_catalog(&catalog.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref()).unwrap()
+    sql_semantic_protocol::analyze_dbt_artifacts(
+        &parsed, &parsed_catalog, "duckdb", dialect.as_ref()
+    ).unwrap()
 }
 
 fn model_query(bundle: &AnalysisBundle) -> &QueryStatement {
