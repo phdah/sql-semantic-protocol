@@ -516,7 +516,7 @@ fn named_two_row_returning_oracle_matches_native_before_and_after() {
     let sql = "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id";
     let before = state(&[(Some(1), 10), (Some(2), 20), (None, 30)]);
     let bundle = bundle(sql);
-    let plan = physical_ordered_write_state_plan(&bundle, &[before.clone()]);
+    let plan = physical_ordered_write_state_plan(&bundle, std::slice::from_ref(&before));
     let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
         panic!("named two-row oracle must be exact: {plan:?}");
     };
