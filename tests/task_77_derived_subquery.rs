@@ -84,8 +84,19 @@ fn derived_array_subquery_preserves_complete_native_null_duplicate_and_impossibl
 #[test]
 fn derived_finite_subquery_is_canonical_for_each_parser_accepted_dialect() {
     let dialects = [
-        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-        "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ];
     let mut accepted = 0;
     for dialect in dialects {
@@ -96,11 +107,16 @@ fn derived_finite_subquery_is_canonical_for_each_parser_accepted_dialect() {
                 assert_eq!(exact.source_row_ids, ["unnest:1", "unnest:2", "unnest:3"]);
                 assert_eq!(exact.terminal_domains["v"].admits_null(), Some(true));
             }
-            Some(other) => panic!("{dialect}: parsed finite derived table lost exactness: {other:?}"),
+            Some(other) => {
+                panic!("{dialect}: parsed finite derived table lost exactness: {other:?}")
+            }
             None => {} // Explicit parser boundary, not silently called Exact.
         }
     }
-    assert!(accepted > 0, "at least one exposed parser must accept the frozen SQL");
+    assert!(
+        accepted > 0,
+        "at least one exposed parser must accept the frozen SQL"
+    );
 }
 
 #[test]
