@@ -192,16 +192,27 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
             assert_eq!(exact_case, exact.contains(id), "{id}: classification drift");
 
             if exact_case {
-                assert!(
-                    full_terminal(case).is_some_and(Value::is_array),
-                    "{id}: missing complete terminal bag"
-                );
-                assert!(
-                    case.get("source")
-                        .or_else(|| case.get("source_rows"))
-                        .is_some_and(Value::is_array),
-                    "{id}: missing physical source bag"
-                );
+                let complete_source = case
+                    .get("source")
+                    .or_else(|| case.get("source_rows"))
+                    .is_some_and(Value::is_array);
+                let complete_terminal = full_terminal(case).is_some_and(Value::is_array);
+                if !complete_source || !complete_terminal {
+                    let target_id = freeze["domain_cross_references"][id]
+                        .as_str()
+                        .expect("only reviewed TASK-140 source/terminal references");
+                    assert_eq!(name, "TASK-140", "{id}: only canonical peer bags may be reused");
+                    assert_eq!(case["source"].as_str(), Some(target_id));
+                    assert_eq!(case["terminal"].as_str(), Some(target_id));
+                    let target = case_list(&child, name)
+                        .iter()
+                        .find(|peer| peer["id"] == target_id)
+                        .expect("referenced peer must remain in frozen child inventory");
+                    assert!(target["source"].is_array(), "{id}: referenced source not complete");
+                    assert!(target["terminal"].is_array(), "{id}: referenced terminal not complete");
+                    assert!(domain(target).is_some_and(Value::is_object),
+                        "{id}: referenced source has no typed domain");
+                }
                 if !domain(case).is_some_and(Value::is_object) {
                     assert!(
                         freeze["domain_cross_references"][id].is_string(),
