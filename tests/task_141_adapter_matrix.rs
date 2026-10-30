@@ -238,6 +238,11 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
             "{id}: ODCS producer stages"
         );
         assert_eq!(odcs.rejected, direct.rejected, "{id}: ODCS NOT TRUE");
+        assert_eq!(odcs.false_pairs, direct.false_pairs, "{id}: ODCS FALSE");
+        assert_eq!(odcs.unknown_pairs, direct.unknown_pairs, "{id}: ODCS UNKNOWN");
+        assert_eq!(odcs.terminal, direct.terminal, "{id}: ODCS complete terminal bag");
+        assert_eq!(odcs.nodes, direct.nodes, "{id}: ODCS typed source instance DAG");
+        assert_eq!(odcs.sources, direct.sources, "{id}: ODCS physical leaves");
         assert_eq!(
             odcs.terminal_domains, direct.terminal_domains,
             "{id}: ODCS domains"
@@ -349,6 +354,8 @@ fn frozen_cte_physical_bags_match_direct_and_dbt_adapters() {
             "{id}: source row identity"
         );
         assert_eq!(direct.stage_bags, dbt.stage_bags, "{id}: CTE producer bags");
+        assert_eq!(direct.nodes, dbt.nodes, "{id}: typed producer and instance graph");
+        assert_eq!(direct.sources, dbt.sources, "{id}: physical leaf identities");
         assert_eq!(direct.rejected, dbt.rejected, "{id}: SQL NOT TRUE");
         assert_eq!(direct.false_pairs, dbt.false_pairs, "{id}: SQL FALSE");
         assert_eq!(direct.unknown_pairs, dbt.unknown_pairs, "{id}: SQL UNKNOWN");
