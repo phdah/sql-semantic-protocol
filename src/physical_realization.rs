@@ -515,7 +515,10 @@ pub use aggregate_joins::{
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,
 };
-pub use cte_bags::{physical_finite_cte_bag_plan, PhysicalCteExact, PhysicalCteInput, PhysicalCteNode, PhysicalCteProof, PhysicalCteRef};
+pub use cte_bags::{
+    physical_finite_cte_bag_plan, PhysicalCteExact, PhysicalCteInput, PhysicalCteNode,
+    PhysicalCteProof, PhysicalCteRef,
+};
 pub(crate) use distributions::{
     physical_distribution_conflict, physical_distribution_plan,
     physical_inverted_set_distribution_plan,
