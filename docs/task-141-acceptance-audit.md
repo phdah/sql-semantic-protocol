@@ -20,7 +20,7 @@ The implementation maintains declaration-ordered ordinary CTE bindings, reserves
 
 ## Follow-up author review (not independent signoff)
 
-A standards/spec pass identified two situations that could falsely certify a
+A standards/spec pass identified several situations that could falsely certify a
 complete CTE bag when SQL execution has unproved source or binding semantics:
 
 - An `ORDER BY` identifier that does not resolve to a projected output label
@@ -38,3 +38,26 @@ complete CTE bag when SQL execution has unproved source or binding semantics:
 These are soundness fixes within the existing mandatory Exact claims, not new
 mandatory acceptance variants. They do not replace a separate independent
 review of frozen cases, conditional dispositions and the original parent ACs.
+
+## Second-pass semantic soundness audit
+
+The bounded CTE lowering now treats unquoted names consistently within its
+own lexical graph, including case-insensitive local lookup and duplicate WITH
+declaration detection. Quoted CTE declarations, quoted source/column references,
+and quoted output aliases are explicitly excluded from an Exact physical proof
+until dialect-specific name-binding rules are attested. An otherwise valid SQL
+text may conservatively return Residual; it cannot borrow a physical table with
+the same spelling as a different scoped CTE.
+
+Public API regressions cover quoted local source identity, case-differing
+unquoted references with a competing physical table, duplicate WITH names,
+and quoted output aliases interacting with ORDER BY. A dialect-specific CTE
+FROM extension also cannot silently become a plain projection. The immutable
+v1 fixture expectations and four mandatory Exact cases are not weakened by
+these safeguards.
+
+The standards/spec review by the implementer is **not independent approval**.
+For final TASK-141 signoff, an independent reviewer must inspect all four
+mandatory complete-bag cases, 56 dialect proof cells, 12 adapter cells and 42
+conditional parser/residual cells, verify the mapped TASK-78 AC #1/#3/#4/#5/#6
+without closing TASK-78, and confirm green CI on the final PR head.
