@@ -136,14 +136,21 @@ fn equal(left: &LiteralValue, right: &LiteralValue) -> Result<Option<bool>, &'st
 }
 
 type BagMap = BTreeMap<String, Vec<PhysicalProducerRow>>;
-type Rejected = Vec<Vec<String>>;
-type StageExecution = (Vec<PhysicalProducerRow>, Rejected, Rejected, Rejected);
+
+/// One fully evaluated lexical producer, keeping each candidate direction distinct.
+struct StageExecution {
+    selected: Vec<PhysicalProducerRow>,
+    rejected: Vec<Vec<String>>,
+    false_pairs: Vec<Vec<String>>,
+    unknown_pairs: Vec<Vec<String>>,
+    output_types: BTreeMap<String, bool>,
+}
 
 fn stage(
     program: &CteStage,
     bags: &BagMap,
     types: &BTreeMap<String, BTreeMap<String, bool>>,
-) -> Result<(StageExecution, BTreeMap<String, bool>), &'static str> {
+) -> Result<StageExecution, &'static str> {
     let [first, others @ ..] = program.inputs() else {
         return Err("CTE needs a physical or lexical input");
     };
@@ -268,10 +275,13 @@ fn stage(
             });
         }
     }
-    Ok((
-        (selected, rejected, false_pairs, unknown_pairs),
+    Ok(StageExecution {
+        selected,
+        rejected,
+        false_pairs,
+        unknown_pairs,
         output_types,
-    ))
+    })
 }
 
 /// Evaluate every producer from complete, schema-validated physical leaves.
@@ -382,11 +392,16 @@ pub fn physical_finite_cte_bag_plan(
         if bags.contains_key(producer.id()) {
             return residual("CTE lexical producer collides with existing physical identity");
         }
-        let ((rows, failures, falses, unknowns), output_types) =
-            match stage(producer, &bags, &types) {
-                Ok(value) => value,
-                Err(reason) => return residual(format!("{}: {reason}", producer.id())),
-            };
+        let StageExecution {
+            selected: rows,
+            rejected: failures,
+            false_pairs: falses,
+            unknown_pairs: unknowns,
+            output_types,
+        } = match stage(producer, &bags, &types) {
+            Ok(value) => value,
+            Err(reason) => return residual(format!("{}: {reason}", producer.id())),
+        };
         bags.insert(producer.id().to_string(), rows.clone());
         types.insert(producer.id().to_string(), output_types);
         stage_bags.insert(producer.id().to_string(), rows);
