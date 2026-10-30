@@ -259,7 +259,7 @@ fn direct_dbt_and_odcs_equivalent_schema_evidence_keep_the_same_state_proof() {
     assert_eq!(transitions[2].after(), &state(&[(1, 15)]));
     assert_eq!(
         final_states.as_slice(),
-        &[state_for(SOURCE, &[(1, 0), (2, 0)]), state(&[(1, 15)])]
+        &[state(&[(1, 15)]), state_for(SOURCE, &[(1, 0), (2, 0)])]
     );
     assert_eq!(direct, plan(&dbt_catalog()), "dbt catalog parity");
     #[cfg(feature = "odcs")]
