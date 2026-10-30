@@ -42,6 +42,13 @@ pub(super) fn diagnose_local_query_predicates(
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
+        // Predicate diagnostics must use the same recursive shadowing rule
+        // as relation and output analysis, never an inherited producer.
+        if with.recursive {
+            for cte in &with.cte_tables {
+                local_outputs.remove(&cte.alias.name.to_string());
+            }
+        }
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
             let output = analyze_query_output(
