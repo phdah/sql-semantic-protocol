@@ -81,8 +81,16 @@ fn frozen_cte_source_instances_match_direct_and_compiled_dbt() {
         let compiled = compiled_dbt(sql, &case["initial_bags"]);
         let direct = model_query(&direct);
         let compiled = model_query(&compiled);
-        assert_eq!(compiled.dependencies(), direct.dependencies(), "{id}: physical dependencies");
-        assert_eq!(compiled.sources(), direct.sources(), "{id}: distinct source instances");
+        assert_eq!(
+            compiled.dependencies(),
+            direct.dependencies(),
+            "{id}: physical dependencies"
+        );
+        assert_eq!(
+            compiled.sources(),
+            direct.sources(),
+            "{id}: distinct source instances"
+        );
         assert_eq!(
             compiled
                 .output()
