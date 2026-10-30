@@ -271,7 +271,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, frozen: &
 #[test]
 fn every_frozen_sequential_write_obeys_complete_native_oracle() {
     let freeze = freeze();
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 7);
     for case in cases {
@@ -433,7 +433,7 @@ fn frozen_task_152_inventory_preserves_every_child_and_parent_signoff_cell() {
     let freeze = freeze();
     assert_eq!(freeze["owner"], "TASK-152");
     assert_eq!(freeze["parent"], "TASK-81");
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     assert_eq!(
         freeze["fixture_ids"],
         serde_json::json!(["81-C152-P", "81-C152-N"])
