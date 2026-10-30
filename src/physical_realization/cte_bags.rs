@@ -169,7 +169,7 @@ fn stage(
             let mut scope = vec![(first, outer)];
             let mut source_ids = outer.source_row_ids.clone();
             if let (Some((input, _)), Some(row)) = (&right, inner) {
-                scope.push((input, row));
+                scope.push((*input, row));
                 source_ids.extend(row.source_row_ids.iter().cloned());
             }
             if let Some((a, b)) = program.equality() {
