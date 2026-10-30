@@ -13594,5 +13594,63 @@
     "final_code_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597",
     "final_code_ci_sha": "8a5095a91ea2664d2983421c7ba4ecef5ea1036c",
     "final_metadata_ci_gate": "Final metadata-only PR head must pass all required CI before merge"
+  },
+  "task_152_ordered_mutation_acceptance": {
+    "owner": "TASK-152",
+    "parent": "TASK-81",
+    "status": "verified_bounded_child_done_pending_merge",
+    "freeze": "docs/task-152-acceptance-freeze.json",
+    "freeze_version": 4,
+    "fixture_ids": [
+      "81-C152-P",
+      "81-C152-N"
+    ],
+    "native_oracle": "tests/task_152_ordered_mutations.rs",
+    "dialect_adapter_oracle": "tests/task_152_dialect_adapter.rs",
+    "mandatory_verified": true,
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "freeze_history": [
+      "docs/task-152-acceptance-freeze-v1.json",
+      "docs/task-152-acceptance-freeze-v2.json",
+      "docs/task-152-acceptance-freeze-v3.json"
+    ],
+    "parser_cells_required": 39,
+    "vendor_boundary_parser_cells_required": 26,
+    "adapter_paths_required": 3,
+    "mandatory_exact_cases": 3,
+    "mandatory_impossible_cases": 2,
+    "mandatory_missing_source_residual_cases": 1,
+    "conditional_fk_residual_cases": 1,
+    "reviewed": true,
+    "mandatory_exact_verified": 3,
+    "mandatory_impossible_verified": 2,
+    "mandatory_residual_verified": 1,
+    "conditional_foreign_key_residual_reviewed": 1,
+    "vendor_boundaries_reviewed": 2,
+    "parser_cells_verified": 39,
+    "vendor_boundary_parser_cells_verified": 26,
+    "adapter_paths_verified": 3,
+    "native_duckdb_cases_verified": 6,
+    "verified_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac_covered": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486",
+    "implementation_ci_sha": "554e860e7a4139ddb4949fdb75204a66b96ca5a6",
+    "final_metadata_ci_gate": "Signoff commit must pass CI before merge",
+    "native_vendor_execution_certified": false
   }
 }
