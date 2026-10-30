@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-152",
   "parent": "TASK-81",
-  "status": "reviewed_v3_evidence_pending_final_head_ci",
+  "status": "reviewed_v4_evidence_pending_final_head_ci",
   "fixture_ids": [
     "81-C152-P",
     "81-C152-N"
@@ -2140,7 +2140,8 @@
   },
   "freeze_history": [
     "docs/task-152-acceptance-freeze-v1.json",
-    "docs/task-152-acceptance-freeze-v2.json"
+    "docs/task-152-acceptance-freeze-v2.json",
+    "docs/task-152-acceptance-freeze-v3.json"
   ],
   "reviewed_revision": "v1 wrongly expected portable Impossible for an absent FK. The canonical state interpreter properly refuses to infer immediate enforcement/absence under unproved deferral. DuckDB-native immediate enforcement is separately executable.",
   "vendor_boundary_fixtures": [
@@ -2154,34 +2155,7 @@
       "owner": "TASK-152",
       "missing": "dialect-specific native execution semantics and physical partition/order law not attested",
       "release_disposition": "reviewed; preserve unsupported/parser boundary until TASK-88 and TASK-91 native evidence",
-      "independent_source": "docs/task-151-acceptance-freeze.json v3, parser cases indexes 5 and 7",
-      "expected_parser_status": {
-        "generic": "canonical_unsupported",
-        "mysql": "canonical_unsupported",
-        "postgresql": "parser_boundary",
-        "hive": "parser_boundary",
-        "sqlite": "parser_boundary",
-        "snowflake": "canonical_unsupported",
-        "redshift": "parser_boundary",
-        "mssql": "parser_boundary",
-        "clickhouse": "parser_boundary",
-        "bigquery": "parser_boundary",
-        "ansi": "parser_boundary",
-        "duckdb": "parser_boundary",
-        "databricks": "parser_boundary"
-      }
-    },
-    {
-      "id": "81-C152-N-partition-update",
-      "fixture_id": "81-C152-N",
-      "family": "vendor_partition_update",
-      "sql": "UPDATE target PARTITION (p1) SET score = 40 WHERE id = 2",
-      "classification": "conditional_residual",
-      "expected_proof": "Residual",
-      "owner": "TASK-152",
-      "missing": "dialect-specific native execution semantics and physical partition/order law not attested",
-      "release_disposition": "reviewed; preserve unsupported/parser boundary until TASK-88 and TASK-91 native evidence",
-      "independent_source": "docs/task-151-acceptance-freeze.json v3, parser cases indexes 5 and 7",
+      "independent_source": "docs/task-151-acceptance-freeze.json v3, executable TASK-151 dialect test CASES[4]",
       "expected_parser_status": {
         "generic": "canonical_unsupported",
         "mysql": "canonical_unsupported",
@@ -2197,6 +2171,34 @@
         "duckdb": "canonical_unsupported",
         "databricks": "canonical_unsupported"
       }
+    },
+    {
+      "id": "81-C152-N-partition-update",
+      "fixture_id": "81-C152-N",
+      "family": "vendor_partition_update",
+      "sql": "UPDATE target PARTITION (p1) SET score = 40 WHERE id = 2",
+      "classification": "conditional_residual",
+      "expected_proof": "Residual",
+      "owner": "TASK-152",
+      "missing": "dialect-specific native execution semantics and physical partition/order law not attested",
+      "release_disposition": "reviewed; preserve unsupported/parser boundary until TASK-88 and TASK-91 native evidence",
+      "independent_source": "docs/task-151-acceptance-freeze.json v3, executable TASK-151 dialect test CASES[5]",
+      "expected_parser_status": {
+        "generic": "canonical_unsupported",
+        "mysql": "canonical_unsupported",
+        "postgresql": "parser_boundary",
+        "hive": "parser_boundary",
+        "sqlite": "parser_boundary",
+        "snowflake": "canonical_unsupported",
+        "redshift": "parser_boundary",
+        "mssql": "parser_boundary",
+        "clickhouse": "parser_boundary",
+        "bigquery": "parser_boundary",
+        "ansi": "parser_boundary",
+        "duckdb": "parser_boundary",
+        "databricks": "parser_boundary"
+      }
     }
-  ]
+  ],
+  "reviewed_revision_4": "TASK-151 dialect_expected keys follow its CASES test array (ordered LIMIT=4 and PARTITION=5), not its prose case inventory indexes."
 }
