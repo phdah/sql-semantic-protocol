@@ -167,7 +167,7 @@ pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
     physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
-    physical_finite_chain_bag_plan, physical_finite_composed_page_membership_plan,
+    physical_finite_chain_bag_plan, physical_finite_cte_bag_plan, physical_finite_composed_page_membership_plan,
     physical_finite_composed_page_plan, physical_finite_exists_bag_plan,
     physical_finite_in_bag_plan, physical_finite_join_aggregate_plan,
     physical_finite_joined_exists_bag_plan, physical_finite_page_bag_plan,
@@ -183,7 +183,7 @@ pub use physical_realization::{
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
     physical_typed_ordered_write_plan, physical_typed_value_plan,
     physical_unconditional_delete_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
-    PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalExistsColumnDomain,
+    PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact, PhysicalCteProof, PhysicalExistsColumnDomain,
     PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
     PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteExistsExact,
     PhysicalFiniteExistsProof, PhysicalFiniteInExact, PhysicalFiniteInProof,
@@ -209,6 +209,7 @@ pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
+    CteColumnRef, CteInput, CteProgram, CteProjection, CteStage,
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, Diagnostic, DiagnosticArea,
     DiagnosticSeverity, ExistsPredicate, Expression, FiniteColumnType, FiniteTable,
