@@ -4,7 +4,7 @@
     "parent": "TASK-81",
     "status": "implementation_in_progress",
     "freeze": "docs/task-151-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "fixture_ids": [
       "81-C151-P",
       "81-C151-N"
@@ -15,15 +15,16 @@
     "adapter_dialect_oracles_verified": false,
     "child_signed_off": false,
     "parent_signed_off": false,
-    "freeze_history": "docs/task-151-acceptance-freeze-v1.json",
+    "freeze_history": "docs/task-151-acceptance-freeze-v2.json",
     "native_oracle": "tests/task_151_qualified_returning.rs",
     "dialect_adapter_oracle": "tests/task_151_dialect_adapter.rs",
-    "mandatory_exact_frozen": 4,
+    "mandatory_exact_frozen": 5,
     "mandatory_negative_frozen": 2,
     "conditional_vendor_frozen": 2,
     "parser_cells_required": 104,
-    "adapter_cases_required": 8,
-    "native_vendor_execution_certified": false
+    "adapter_cases_required": 9,
+    "native_vendor_execution_certified": false,
+    "full_coverage_unverified": true
   },
   "task_150_joined_mutations_acceptance": {
     "owner": "TASK-150",
