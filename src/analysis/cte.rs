@@ -20,12 +20,22 @@ fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<Ct
         name,
         alias,
         args: None,
+        with_hints,
+        version: None,
+        with_ordinality: false,
+        partitions,
+        json_path: None,
         sample: None,
-        ..
+        index_hints,
     } = factor
     else {
         return None;
     };
+    // A physical snapshot of the whole table cannot prove a restricted
+    // partition, a hinted scan, or another engine-specific table source.
+    if !with_hints.is_empty() || !partitions.is_empty() || !index_hints.is_empty() {
+        return None;
+    }
     let name = name.to_string();
     let canonical = lexical.get(&name).cloned().unwrap_or_else(|| name.clone());
     let instance = alias
