@@ -190,7 +190,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
@@ -198,7 +198,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "odcs_equivalent_schema",
@@ -206,7 +206,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         }
       ]
     },
@@ -438,7 +438,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
@@ -446,7 +446,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "odcs_equivalent_schema",
@@ -454,7 +454,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         }
       ]
     },
@@ -653,7 +653,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
@@ -661,7 +661,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "odcs_equivalent_schema",
@@ -669,7 +669,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         }
       ]
     },
@@ -852,7 +852,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
@@ -860,7 +860,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         },
         {
           "adapter": "odcs_equivalent_schema",
@@ -868,7 +868,7 @@
           "producer_bags": "same_complete_bags",
           "terminal_bag": "same_exact_bag",
           "type_and_null_bounds": "same_exact_domains",
-          "status": "requires_CI_verification"
+          "status": "verified_ci_41141094151"
         }
       ]
     }
@@ -1162,12 +1162,19 @@
     "5": "Final head CI, independent review, signed acceptance audit"
   },
   "verification": {
-    "status": "pending_final_CI_and_independent_review",
+    "status": "implementation_verified_pending_independent_review",
     "mandatory_cells": 4,
     "physical_dialect_cells": 56,
     "adapter_cells": 12,
     "conditional_cells": 42,
     "native_engine": "duckdb_only",
+    "ci_code_head": "bd541cfea112449bd85bf7a5380b8f933f168e02",
+    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41141094151",
+    "mandatory_oracles_verified_by_ci": true,
+    "dialect_matrix_verified_by_ci": true,
+    "adapter_matrix_verified_by_ci": true,
+    "conditional_parser_matrix_verified_by_ci": true,
+    "independent_review_verified": false,
     "child_done": false,
     "parent_done": false
   }
