@@ -42,17 +42,28 @@ impl CteStage {
         projections: Vec<CteProjection>,
         equality: Option<(CteColumnRef, CteColumnRef)>,
     ) -> Self {
-        Self { id, inputs, projections, equality }
+        Self {
+            id,
+            inputs,
+            projections,
+            equality,
+        }
     }
 
     /// Stable lexical stage identity, even when names are shadowed.
-    pub fn id(&self) -> &str { &self.id }
+    pub fn id(&self) -> &str {
+        &self.id
+    }
 
     /// Source instances. Multiple instances may reference the same producer.
-    pub fn inputs(&self) -> &[CteInput] { &self.inputs }
+    pub fn inputs(&self) -> &[CteInput] {
+        &self.inputs
+    }
 
     /// Ordered direct-column copies with their output labels.
-    pub fn projections(&self) -> &[CteProjection] { &self.projections }
+    pub fn projections(&self) -> &[CteProjection] {
+        &self.projections
+    }
 
     /// Optional typed input-column equality, evaluated with SQL three-valued truth.
     pub fn equality(&self) -> Option<(&CteColumnRef, &CteColumnRef)> {
@@ -73,10 +84,14 @@ impl CteInput {
     }
 
     /// Canonical source or lexical producer identity.
-    pub fn relation(&self) -> &str { &self.relation }
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
 
     /// Local SQL instance identity.
-    pub fn alias(&self) -> &str { &self.alias }
+    pub fn alias(&self) -> &str {
+        &self.alias
+    }
 }
 
 /// Unambiguous single-column reference inside one stage.
@@ -92,10 +107,14 @@ impl CteColumnRef {
     }
 
     /// Explicit SQL instance qualifier, if supplied.
-    pub fn relation(&self) -> Option<&str> { self.relation.as_deref() }
+    pub fn relation(&self) -> Option<&str> {
+        self.relation.as_deref()
+    }
 
     /// Input column label.
-    pub fn column(&self) -> &str { &self.column }
+    pub fn column(&self) -> &str {
+        &self.column
+    }
 }
 
 /// Direct projection into the downstream producer bag.
@@ -111,8 +130,12 @@ impl CteProjection {
     }
 
     /// Output column label.
-    pub fn name(&self) -> &str { &self.name }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 
     /// Exact originating input-column expression.
-    pub fn source(&self) -> &CteColumnRef { &self.source }
+    pub fn source(&self) -> &CteColumnRef {
+        &self.source
+    }
 }
