@@ -162,7 +162,20 @@ fn lower(
             if !cte.alias.columns.is_empty() {
                 return None;
             }
+            let later_siblings = with.cte_tables.iter().skip(index + 1)
+                .map(|future| future.alias.name.value.clone())
+                .collect::<BTreeSet<_>>();
+            let start = stages.len();
             lower(&cte.query, local_id.clone(), &lexical, stages)?;
+            // Whether a forward name means an external table or a later
+            // CTE is an engine/binder rule. No complete source snapshot
+            // can certify the unproven binding.
+            if stages[start..].iter().any(|stage| stage.inputs().iter().any(|input| {
+                later_siblings.contains(input.relation())
+                    && !lexical.contains_key(input.relation())
+            })) {
+                return None;
+            }
             lexical.insert(name, local_id);
         }
     }
