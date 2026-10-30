@@ -91,11 +91,16 @@ fn select_stage(
     let equality = match from.joins.as_slice() {
         [] => None,
         [join] => {
-            let JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+            let (JoinOperator::Join(JoinConstraint::On(Expr::BinaryOp {
                 left,
                 op: SqlBinaryOperator::Eq,
                 right,
-            })) = &join.join_operator
+            }))
+            | JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+                left,
+                op: SqlBinaryOperator::Eq,
+                right,
+            }))) = &join.join_operator
             else {
                 return None;
             };
