@@ -235,10 +235,7 @@ fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         )
         .unwrap(),
     ]);
-    physical_ordered_write_state_plan(
-        &bundle,
-        &[state(&[]), state_for(SOURCE, &[(1, 0), (2, 0)])],
-    )
+    physical_ordered_write_state_plan(&bundle, &[state(&[]), state_for(SOURCE, &[(1, 0), (2, 0)])])
 }
 
 #[test]
