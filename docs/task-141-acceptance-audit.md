@@ -31,6 +31,9 @@ complete CTE bag when SQL execution has unproved source or binding semantics:
   hints, indexes or a JSON path. These are not interchangeable with one
   complete unmodified source bag. The lowering now requires an ordinary table
   factor, with a MySQL partition-selection regression test.
+- A table alias may have positional column renames. Ignoring those aliases
+  would borrow physical schema names that SQL no longer exposes. Exact proof
+  now excludes that shape, with a public-API regression.
 
 These are soundness fixes within the existing mandatory Exact claims, not new
 mandatory acceptance variants. They do not replace a separate independent
