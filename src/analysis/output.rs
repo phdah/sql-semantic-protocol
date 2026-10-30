@@ -85,7 +85,7 @@ pub(super) fn analyze_query_output_with_outer_scope(
         // column or value-domain evidence for an unresolved recursive term.
         if with.recursive {
             for cte in &with.cte_tables {
-                local_outputs.remove(&cte.alias.name.to_string());
+                local_outputs.insert(cte.alias.name.to_string(), Output::new(Vec::new()));
             }
         }
         for cte in &with.cte_tables {
