@@ -594,6 +594,57 @@ fn every_conditional_cte_variant_has_explicit_parser_or_residual_disposition() {
 }
 
 #[test]
+fn conditional_cte_parser_results_match_the_explicit_release_matrix() {
+    use sqlparser::parser::Parser;
+
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let matrix: Value =
+        serde_json::from_str(include_str!("../docs/task-141-proof-matrix.json")).unwrap();
+    let mut checked = 0;
+    let mut mismatches = Vec::new();
+    for case in matrix["conditional"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let sql = freeze["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|fixture| fixture["id"] == id)
+            .unwrap()["sql"]
+            .as_str()
+            .unwrap();
+        let cells = case["dialect_cells"].as_array().unwrap();
+        assert_eq!(cells.len(), DIALECTS.len(), "{id}: parser matrix size");
+        for name in DIALECTS {
+            let matches = cells
+                .iter()
+                .filter(|cell| cell["dialect"] == *name)
+                .collect::<Vec<_>>();
+            let [cell] = matches.as_slice() else {
+                panic!("{id}/{name}: missing or duplicated parser matrix cell");
+            };
+            let dialect = dialect_from_name(name).unwrap();
+            let actual = if Parser::parse_sql(dialect.as_ref(), sql).is_ok() {
+                "parsed"
+            } else {
+                "parser_rejected"
+            };
+            let expected = cell["parser"].as_str().unwrap();
+            if actual != expected {
+                mismatches.push(format!("{id}/{name}: expected {expected}, observed {actual}"));
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 3 * DIALECTS.len());
+    assert!(
+        mismatches.is_empty(),
+        "TASK-141 conditional parser outcomes differ from review matrix:\n{}",
+        mismatches.join("\n")
+    );
+}
+
+#[test]
 fn forward_cte_sibling_does_not_borrow_identically_named_physical_table() {
     let sql = "WITH early AS (SELECT k FROM later), later AS (SELECT k FROM s) \
                SELECT k FROM early";
