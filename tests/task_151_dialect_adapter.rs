@@ -9,8 +9,19 @@ use sql_semantic_protocol::{
 use std::collections::BTreeMap;
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 const TARGET: &str = "warehouse.analytics.stg_orders";
 const SOURCE: &str = "warehouse.raw.orders";
@@ -35,12 +46,20 @@ fn direct_catalog() -> RelationCatalog {
                 .map(|column| {
                     SchemaColumn::from_sql_type(
                         column,
-                        if name == TARGET && column == "id" { "BIGINT" } else { "INTEGER" },
+                        if name == TARGET && column == "id" {
+                            "BIGINT"
+                        } else {
+                            "INTEGER"
+                        },
                         "postgresql",
-                    ).unwrap()
-                }).collect(),
-        ).unwrap()
-    })).unwrap()
+                    )
+                    .unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
+    }))
+    .unwrap()
 }
 
 fn dbt_catalog() -> RelationCatalog {
@@ -81,21 +100,38 @@ schema:
 "#,
         "postgresql",
         &known,
-    ).unwrap();
+    )
+    .unwrap();
     RelationCatalog::from_schemas(contract.source_schemas()).unwrap()
 }
 
 fn sql(input: &str) -> String {
-    input.replace("target", TARGET).replace("source", SOURCE).replace("score", "amount")
+    input
+        .replace("target", TARGET)
+        .replace("source", SOURCE)
+        .replace("score", "amount")
 }
 
 fn state(relation: &str, rows: &[(Option<i64>, i64)]) -> PhysicalWriteState {
-    PhysicalWriteState::new(relation, rows.iter().map(|(id, amount)| {
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))),
-            ("amount".to_string(), LiteralValue::Number(amount.to_string())),
-        ])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        relation,
+        rows.iter()
+            .map(|(id, amount)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "id".to_string(),
+                        id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
+                    ),
+                    (
+                        "amount".to_string(),
+                        LiteralValue::Number(amount.to_string()),
+                    ),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn plan(input: &str, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
@@ -104,7 +140,10 @@ fn plan(input: &str, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let configured = ConfiguredSqlInput::new("task151", &query, "postgresql", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let rows = [
-        state(TARGET, &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)]),
+        state(
+            TARGET,
+            &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)],
+        ),
         state(SOURCE, &[(Some(2), 7), (Some(2), 8), (None, 9)]),
     ];
     physical_ordered_write_state_plan(&bundle, &rows)
@@ -115,10 +154,17 @@ fn source_independent_catalogs_agree_on_exact_write_effects() {
     for case in &CASES[..4] {
         let direct = plan(case, &direct_catalog());
         let dbt = plan(case, &dbt_catalog());
-        assert!(matches!(direct, PhysicalWriteStatePlan::Feasible { .. }), "{case}: {direct:?}");
+        assert!(
+            matches!(direct, PhysicalWriteStatePlan::Feasible { .. }),
+            "{case}: {direct:?}"
+        );
         assert_eq!(direct, dbt, "{case}: dbt source metadata changes proof");
         #[cfg(feature = "odcs")]
-        assert_eq!(direct, plan(case, &odcs_catalog()), "{case}: ODCS changes proof");
+        assert_eq!(
+            direct,
+            plan(case, &odcs_catalog()),
+            "{case}: ODCS changes proof"
+        );
     }
 }
 
@@ -163,11 +209,15 @@ fn ambiguous_or_missing_source_does_not_become_an_empty_source() {
     let sql = CASES[2];
     let query = SqlInput::inline(&sql(sql));
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = ConfiguredSqlInput::new("task151-missing", &query, "postgresql", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("task151-missing", &query, "postgresql", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], &direct_catalog()).unwrap();
     let plan = physical_ordered_write_state_plan(
         &bundle,
         &[state(TARGET, &[(Some(1), 10), (Some(2), 20)])],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
