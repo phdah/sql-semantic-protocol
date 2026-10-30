@@ -580,9 +580,9 @@ pub(super) fn analyze_update(
         if let Some(selection) = selection {
             collect_expression_dependencies(
                 selection,
-            &BTreeSet::new(),
-            &mut diagnostics,
-            &mut derived_index,
+                &BTreeSet::new(),
+                &mut diagnostics,
+                &mut derived_index,
                 &mut nonlocal_dependencies,
             );
         }
@@ -593,9 +593,8 @@ pub(super) fn analyze_update(
             &BTreeSet::new(),
             &mut diagnostics,
             &mut derived_index,
-                &mut nonlocal_dependencies,
-            );
-        }
+            &mut nonlocal_dependencies,
+        );
     }
     if !nonlocal_dependencies.is_empty() {
         return unsupported_write_statement(
@@ -763,12 +762,13 @@ pub(super) fn analyze_delete(
     if correlated.is_none() {
         if let Some(selection) = &delete.selection {
             collect_expression_dependencies(
-            selection,
-            &BTreeSet::new(),
-            &mut diagnostics,
-            &mut derived_index,
-            &mut nonlocal_dependencies,
-        );
+                selection,
+                &BTreeSet::new(),
+                &mut diagnostics,
+                &mut derived_index,
+                &mut nonlocal_dependencies,
+            );
+        }
     }
     if !nonlocal_dependencies.is_empty() {
         return unsupported_write_statement(
