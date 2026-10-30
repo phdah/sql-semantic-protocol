@@ -263,11 +263,7 @@ pub fn physical_finite_cte_bag_plan(
         PhysicalWriteStatePlan::Residual { reason, .. } => return residual(reason),
         PhysicalWriteStatePlan::Feasible { .. } => {}
     }
-    let mut walker = Walker::new(bundle);
-    if let Err(gap) = walker.visit(target_layer_id) {
-        return residual(gap.as_str());
-    }
-    let Some(layer) = walker.layers.get(target_layer_id).copied() else {
+    let Some(layer) = bundle.layers().iter().find(|layer| layer.id() == target_layer_id) else {
         return residual("missing canonical CTE terminal layer");
     };
     let Some(query) = query_for(bundle, layer) else {
@@ -287,6 +283,9 @@ pub fn physical_finite_cte_bag_plan(
         .filter(|input| !stage_ids.contains(input.relation()))
         .map(|input| input.relation().to_string())
         .collect::<BTreeSet<_>>();
+    if !query.dependencies().iter().all(|name| source_names.contains(name)) {
+        return residual("CTE lexical leaves disagree with canonical physical dependencies");
+    }
     if source_names.len() != snapshots.len() {
         return residual("CTE proof requires every lexical physical leaf, including unused producers");
     }
@@ -376,11 +375,32 @@ pub fn physical_finite_cte_bag_plan(
             };
         }
     }
-    let mut nodes = walker.nodes;
-    for source in source_names.iter().filter(|source| !walker.sources.contains(*source)) {
-        nodes.insert(0, PhysicalPlanNode {
-            id: PhysicalPlanRef::Source(source.clone()),
-            inputs: Vec::new(),
+    let mut nodes = source_names.iter().map(|name| PhysicalPlanNode {
+        id: PhysicalPlanRef::Source(name.clone()),
+        inputs: Vec::new(),
+        produced_relations: Vec::new(),
+        write_kind: None,
+        operator_witnesses: Vec::new(),
+        pending_producers: Vec::new(),
+    }).collect::<Vec<_>>();
+    for producer in program.stages() {
+        let stage_ref = |id: &str| {
+            if id == program.terminal() {
+                PhysicalPlanRef::Layer(target_layer_id.to_string())
+            } else {
+                PhysicalPlanRef::Layer(format!("{target_layer_id}/{id}"))
+            }
+        };
+        let inputs = producer.inputs().iter().map(|input| {
+            if stage_ids.contains(input.relation()) {
+                stage_ref(input.relation())
+            } else {
+                PhysicalPlanRef::Source(input.relation().to_string())
+            }
+        }).collect();
+        nodes.push(PhysicalPlanNode {
+            id: stage_ref(producer.id()),
+            inputs,
             produced_relations: Vec::new(),
             write_kind: None,
             operator_witnesses: Vec::new(),
