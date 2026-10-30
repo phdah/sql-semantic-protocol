@@ -4,7 +4,7 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_finite_table_plan, LiteralValue,
-    PhysicalFiniteTableProof, SqlInput, ValueDomain,
+    PhysicalFiniteTableProof, SetMode, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 
@@ -69,10 +69,15 @@ fn derived_array_subquery_preserves_complete_native_null_duplicate_and_impossibl
     original.sort();
     assert_eq!(original, native);
     assert_eq!(exact.terminal_domains["v"].admits_null(), Some(true));
-    assert!(!matches!(
-        exact.terminal_domains["v"],
-        ValueDomain::Unknown(_)
-    ));
+    let ValueDomain::Set(domain) = &exact.terminal_domains["v"] else {
+        panic!("exact source-free derived subquery must have finite set domain");
+    };
+    assert_eq!(domain.mode(), SetMode::Include);
+    assert_eq!(domain.values().len(), 2, "integer and SQL NULL");
+    assert!(domain.values().iter().any(|value| value.value() == &LiteralValue::Null));
+    assert!(domain.values().iter().any(|value| {
+        value.value() == &LiteralValue::Number("1".to_string())
+    }));
 
     let missing = BTreeMap::from([("v".into(), LiteralValue::Number("3".into()))]);
     assert!(matches!(
