@@ -107,8 +107,12 @@ fn derived_finite_subquery_preserves_child_frozen_parser_boundaries() {
     let mut boundary = 0;
     for dialect in dialects {
         let name = dialect.as_str().expect("dialect name");
-        match (array["parser_cells"][name].as_str().expect("child parser disposition"),
-            proof(DERIVED, name, None)) {
+        match (
+            array["parser_cells"][name]
+                .as_str()
+                .expect("child parser disposition"),
+            proof(DERIVED, name, None),
+        ) {
             ("exact", Some(PhysicalFiniteTableProof::Exact(result))) => {
                 exact += 1;
                 assert_eq!(result.row_ids, ["star:1", "star:2", "star:3"]);
