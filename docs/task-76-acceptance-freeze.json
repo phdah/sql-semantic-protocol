@@ -1,0 +1,497 @@
+{
+  "version": 1,
+  "task": "TASK-76",
+  "status": "independent_parent_review_pending_final_pr_head_ci",
+  "parent_signed_off": false,
+  "release_approved": false,
+  "requirement": "Independently verify original TASK-76 acceptance criteria; child signoff does not imply parent closure",
+  "source_of_truth": {
+    "TASK-133": {
+      "freeze": "docs/task-133-acceptance-freeze.json",
+      "version": 3,
+      "fixture_ids": [
+        "76-C133-P",
+        "76-C133-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        5,
+        6
+      ],
+      "mandatory_case_ids": [
+        "76-C133-N-empty",
+        "76-C133-N-offset-past",
+        "76-C133-N-zero",
+        "76-C133-P-alias",
+        "76-C133-P-desc",
+        "76-C133-P-explicit-nulls",
+        "76-C133-P-fetch",
+        "76-C133-P-limit-offset",
+        "76-C133-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C133-N-nulls",
+        "76-C133-N-producer",
+        "76-C133-N-ties",
+        "76-C133-N-underordered"
+      ],
+      "reviewed_audit": "docs/task-133-acceptance-audit.md"
+    },
+    "TASK-134": {
+      "freeze": "docs/task-134-acceptance-freeze.json",
+      "version": 1,
+      "fixture_ids": [
+        "76-C134-P",
+        "76-C134-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "mandatory_case_ids": [
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties"
+      ],
+      "conditional_case_ids": [
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify"
+      ],
+      "reviewed_audit": "docs/task-134-acceptance-audit.md"
+    },
+    "TASK-135": {
+      "freeze": "docs/task-135-acceptance-freeze.json",
+      "version": 2,
+      "fixture_ids": [
+        "76-C135-P",
+        "76-C135-N"
+      ],
+      "original_parent_ac": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "mandatory_case_ids": [
+        "76-C135-N-empty",
+        "76-C135-N-null-duplicates",
+        "76-C135-N-set-zero",
+        "76-C135-P-cte-nested",
+        "76-C135-P-renamed-producer",
+        "76-C135-P-set-branch"
+      ],
+      "conditional_case_ids": [
+        "76-C135-R-implicit-null",
+        "76-C135-R-peer-order",
+        "76-C135-R-unresolved-producer"
+      ],
+      "reviewed_audit": "docs/task-135-acceptance-audit.md"
+    },
+    "TASK-136": {
+      "freeze": "docs/task-136-acceptance-freeze.json",
+      "version": 3,
+      "fixture_ids": [
+        "76-C136-P",
+        "76-C136-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "mandatory_case_ids": [
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "reviewed_audit": "docs/task-136-acceptance-audit.md"
+    }
+  },
+  "fixture_ids": [
+    "76-C133-N",
+    "76-C133-P",
+    "76-C134-N",
+    "76-C134-P",
+    "76-C135-N",
+    "76-C135-P",
+    "76-C136-N",
+    "76-C136-P"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled",
+    "odcs"
+  ],
+  "mandatory_case_ids": [
+    "76-C133-N-empty",
+    "76-C133-N-offset-past",
+    "76-C133-N-zero",
+    "76-C133-P-alias",
+    "76-C133-P-desc",
+    "76-C133-P-explicit-nulls",
+    "76-C133-P-fetch",
+    "76-C133-P-limit-offset",
+    "76-C133-P-top",
+    "76-C134-N-absent",
+    "76-C134-N-with-ties-zero",
+    "76-C134-P-distinct",
+    "76-C134-P-distinct-on",
+    "76-C134-P-explicit-nulls",
+    "76-C134-P-with-ties",
+    "76-C135-N-empty",
+    "76-C135-N-null-duplicates",
+    "76-C135-N-set-zero",
+    "76-C135-P-cte-nested",
+    "76-C135-P-renamed-producer",
+    "76-C135-P-set-branch",
+    "76-C136-N-offset-empty",
+    "76-C136-P-fetch",
+    "76-C136-P-limit",
+    "76-C136-P-null-last",
+    "76-C136-P-top"
+  ],
+  "conditional_case_ids": [
+    "76-C133-N-nulls",
+    "76-C133-N-producer",
+    "76-C133-N-ties",
+    "76-C133-N-underordered",
+    "76-C134-N-distinct-on-tie",
+    "76-C134-N-implicit-null",
+    "76-C134-N-qualify",
+    "76-C135-R-implicit-null",
+    "76-C135-R-peer-order",
+    "76-C135-R-unresolved-producer",
+    "76-C136-N-implicit-null",
+    "76-C136-N-sample",
+    "76-C136-N-sample-seeded",
+    "76-C136-N-seeded",
+    "76-C136-N-tie",
+    "76-C136-P-system"
+  ],
+  "total_mandatory_exact_cases": 26,
+  "total_reviewed_conditional_cases": 16,
+  "mandatory_unverified": [],
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Normalize ordered pagination, DISTINCT, WITH TIES, QUALIFY placement, and dialect variants",
+      "mandatory_case_ids": [
+        "76-C133-N-empty",
+        "76-C133-N-offset-past",
+        "76-C133-N-zero",
+        "76-C133-P-alias",
+        "76-C133-P-desc",
+        "76-C133-P-explicit-nulls",
+        "76-C133-P-fetch",
+        "76-C133-P-limit-offset",
+        "76-C133-P-top",
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C133-N-nulls",
+        "76-C133-N-producer",
+        "76-C133-N-ties",
+        "76-C133-N-underordered",
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-133",
+        "TASK-134",
+        "TASK-136"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Prove exact ranks, ties, offsets, selected and rejected identities",
+      "mandatory_case_ids": [
+        "76-C133-N-empty",
+        "76-C133-N-offset-past",
+        "76-C133-N-zero",
+        "76-C133-P-alias",
+        "76-C133-P-desc",
+        "76-C133-P-explicit-nulls",
+        "76-C133-P-fetch",
+        "76-C133-P-limit-offset",
+        "76-C133-P-top",
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties",
+        "76-C135-N-empty",
+        "76-C135-N-null-duplicates",
+        "76-C135-N-set-zero",
+        "76-C135-P-cte-nested",
+        "76-C135-P-renamed-producer",
+        "76-C135-P-set-branch",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C133-N-nulls",
+        "76-C133-N-producer",
+        "76-C133-N-ties",
+        "76-C133-N-underordered",
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify",
+        "76-C135-R-implicit-null",
+        "76-C135-R-peer-order",
+        "76-C135-R-unresolved-producer",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-133",
+        "TASK-134",
+        "TASK-135",
+        "TASK-136"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Classify deterministic and stochastic sampling with explicit seed and Residual boundaries",
+      "mandatory_case_ids": [
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-134",
+        "TASK-136"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Compose CTE and set-branch pagination with zero and impossible outputs",
+      "mandatory_case_ids": [
+        "76-C135-N-empty",
+        "76-C135-N-null-duplicates",
+        "76-C135-N-set-zero",
+        "76-C135-P-cte-nested",
+        "76-C135-P-renamed-producer",
+        "76-C135-P-set-branch",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C135-R-implicit-null",
+        "76-C135-R-peer-order",
+        "76-C135-R-unresolved-producer",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-135",
+        "TASK-136"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Execute complete native oracle bags and explicit no-overclaim regressions",
+      "mandatory_case_ids": [
+        "76-C133-N-empty",
+        "76-C133-N-offset-past",
+        "76-C133-N-zero",
+        "76-C133-P-alias",
+        "76-C133-P-desc",
+        "76-C133-P-explicit-nulls",
+        "76-C133-P-fetch",
+        "76-C133-P-limit-offset",
+        "76-C133-P-top",
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties",
+        "76-C135-N-empty",
+        "76-C135-N-null-duplicates",
+        "76-C135-N-set-zero",
+        "76-C135-P-cte-nested",
+        "76-C135-P-renamed-producer",
+        "76-C135-P-set-branch",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C133-N-nulls",
+        "76-C133-N-producer",
+        "76-C133-N-ties",
+        "76-C133-N-underordered",
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify",
+        "76-C135-R-implicit-null",
+        "76-C135-R-peer-order",
+        "76-C135-R-unresolved-producer",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-133",
+        "TASK-134",
+        "TASK-135",
+        "TASK-136"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Verify all parser dialects, adapters, source/output domains, schema and CI",
+      "mandatory_case_ids": [
+        "76-C133-N-empty",
+        "76-C133-N-offset-past",
+        "76-C133-N-zero",
+        "76-C133-P-alias",
+        "76-C133-P-desc",
+        "76-C133-P-explicit-nulls",
+        "76-C133-P-fetch",
+        "76-C133-P-limit-offset",
+        "76-C133-P-top",
+        "76-C134-N-absent",
+        "76-C134-N-with-ties-zero",
+        "76-C134-P-distinct",
+        "76-C134-P-distinct-on",
+        "76-C134-P-explicit-nulls",
+        "76-C134-P-with-ties",
+        "76-C135-N-empty",
+        "76-C135-N-null-duplicates",
+        "76-C135-N-set-zero",
+        "76-C135-P-cte-nested",
+        "76-C135-P-renamed-producer",
+        "76-C135-P-set-branch",
+        "76-C136-N-offset-empty",
+        "76-C136-P-fetch",
+        "76-C136-P-limit",
+        "76-C136-P-null-last",
+        "76-C136-P-top"
+      ],
+      "conditional_case_ids": [
+        "76-C133-N-nulls",
+        "76-C133-N-producer",
+        "76-C133-N-ties",
+        "76-C133-N-underordered",
+        "76-C134-N-distinct-on-tie",
+        "76-C134-N-implicit-null",
+        "76-C134-N-qualify",
+        "76-C135-R-implicit-null",
+        "76-C135-R-peer-order",
+        "76-C135-R-unresolved-producer",
+        "76-C136-N-implicit-null",
+        "76-C136-N-sample",
+        "76-C136-N-sample-seeded",
+        "76-C136-N-seeded",
+        "76-C136-N-tie",
+        "76-C136-P-system"
+      ],
+      "children": [
+        "TASK-133",
+        "TASK-134",
+        "TASK-135",
+        "TASK-136"
+      ]
+    }
+  ],
+  "review_boundary": {
+    "native_executable_engine": "duckdb",
+    "other_dialect_execution": "parser-only or separately attributed native oracle",
+    "conditional_runtime_laws": "Residual with owner and reviewed disposition",
+    "release_gate": "TASK-91 independent",
+    "final_ci": "required before task Done"
+  }
+}
