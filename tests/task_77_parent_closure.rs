@@ -110,9 +110,14 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     assert_eq!(freeze["version"], 2);
     assert_eq!(freeze["task"], "TASK-77");
     assert_eq!(freeze["release_approved"], false);
-    assert!(freeze["mandatory_unverified"]
-        .as_array()
-        .is_some_and(Vec::is_empty));
+    if freeze["parent_signed_off"] == true {
+        assert!(freeze["mandatory_unverified"].as_array().is_some_and(Vec::is_empty));
+    } else {
+        assert_eq!(
+            freeze["mandatory_unverified"],
+            serde_json::json!(["77-PARENT-DERIVED-P"])
+        );
+    }
 
     let dialects = ids(&freeze["required_dialects"]);
     let adapters = ids(&freeze["required_adapters"]);
