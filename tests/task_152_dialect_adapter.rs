@@ -89,7 +89,7 @@ fn frozen_shared_write_syntax_classifies_all_thirteen_dialects() {
 #[test]
 fn frozen_vendor_mutation_boundaries_fail_closed_on_every_parser_path() {
     let freeze = expected();
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     let cases = freeze["vendor_boundary_fixtures"].as_array().unwrap();
     assert_eq!(cases.len(), 2);
     let mut classified = 0;
