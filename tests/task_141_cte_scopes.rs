@@ -159,3 +159,28 @@ fn recursive_local_name_does_not_borrow_inherited_producer_semantics() {
         "unproven recursive source requires an explicit residual diagnostic"
     );
 }
+
+#[test]
+fn recursive_shadow_does_not_inherit_outer_output_domain() {
+    // The recursive self-reference is not the already-complete outer CTE.
+    // Without a recursive producer proof it cannot inherit its scalar domain.
+    let outer = analyzed_query("SELECT 999 AS k");
+    let inner = analyzed_query(
+        "WITH shared AS (SELECT 999 AS k), \
+         chosen AS (WITH RECURSIVE shared(k) AS (SELECT k FROM shared) \
+         SELECT k FROM shared) SELECT k FROM chosen",
+    );
+    let outer_domain = outer.output().columns()[0].domain();
+    let inner_domain = inner.output().columns()[0].domain();
+    assert_ne!(
+        inner_domain, outer_domain,
+        "recursive self-reference borrowed a same-named outer producer domain"
+    );
+    assert!(
+        inner
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "unresolved_local_relation_analysis"),
+        "recursive physical producer must remain an explicit residual"
+    );
+}
