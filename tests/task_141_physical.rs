@@ -631,7 +631,9 @@ fn conditional_cte_parser_results_match_the_explicit_release_matrix() {
             };
             let expected = cell["parser"].as_str().unwrap();
             if actual != expected {
-                mismatches.push(format!("{id}/{name}: expected {expected}, observed {actual}"));
+                mismatches.push(format!(
+                    "{id}/{name}: expected {expected}, observed {actual}"
+                ));
             }
             checked += 1;
         }
