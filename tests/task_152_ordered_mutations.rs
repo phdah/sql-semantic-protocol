@@ -36,11 +36,7 @@ fn row(value: &Value) -> PhysicalWriteRow {
 }
 
 fn state(relation: &str, rows: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        relation,
-        rows.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(relation, rows.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn enforced() -> Vec<ConstraintEvidence> {
@@ -59,7 +55,7 @@ fn catalog() -> RelationCatalog {
     let target = RelationSchema::new(
         "target",
         ["id", "parent_id", "score"]
-            .iter()
+            .into_iter()
             .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
             .collect(),
     )
@@ -142,9 +138,7 @@ fn read_native(db: &Connection) -> PhysicalWriteState {
                 ("id".into(), LiteralValue::Number(id.to_string())),
                 (
                     "parent_id".into(),
-                    parent_id.map_or(LiteralValue::Null, |n| {
-                        LiteralValue::Number(n.to_string())
-                    }),
+                    parent_id.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
                 ),
                 ("score".into(), LiteralValue::Number(score.to_string())),
             ]))
@@ -286,10 +280,13 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
         let plan = physical_ordered_write_state_plan(&bundle, &initial(case));
         if case["expected_failure"] == "Residual" {
             assert!(
-                matches!(plan, PhysicalWriteStatePlan::Residual {
-                    gap: PhysicalWriteStateGap::MissingPopulation,
-                    ..
-                }),
+                matches!(
+                    plan,
+                    PhysicalWriteStatePlan::Residual {
+                        gap: PhysicalWriteStateGap::MissingPopulation,
+                        ..
+                    }
+                ),
                 "{id}: missing referenced relation must not become empty: {plan:?}"
             );
             continue;
@@ -321,15 +318,36 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
                 .unwrap();
             for (index, transition) in transitions.iter().enumerate() {
                 let step = &case["steps"][index];
-                assert_eq!(transition.before(), &state("target", &step["before"]), "{id}: before #{index}");
-                assert_eq!(transition.after(), &state("target", &step["after"]), "{id}: after #{index}");
-                assert_eq!(transition.affected().inserted(), step["affected"]["inserted"].as_u64().unwrap());
-                assert_eq!(transition.affected().updated(), step["affected"]["updated"].as_u64().unwrap());
-                assert_eq!(transition.affected().deleted(), step["affected"]["deleted"].as_u64().unwrap());
+                assert_eq!(
+                    transition.before(),
+                    &state("target", &step["before"]),
+                    "{id}: before #{index}"
+                );
+                assert_eq!(
+                    transition.after(),
+                    &state("target", &step["after"]),
+                    "{id}: after #{index}"
+                );
+                assert_eq!(
+                    transition.affected().inserted(),
+                    step["affected"]["inserted"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    transition.affected().updated(),
+                    step["affected"]["updated"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    transition.affected().deleted(),
+                    step["affected"]["deleted"].as_u64().unwrap()
+                );
                 assert_domains(transition.before(), schema, &step["before_domains"]);
                 assert_domains(transition.after(), schema, &step["after_domains"]);
                 if index > 0 {
-                    assert_eq!(transition.before(), transitions[index - 1].after(), "{id}: preserve prior committed image");
+                    assert_eq!(
+                        transition.before(),
+                        transitions[index - 1].after(),
+                        "{id}: preserve prior committed image"
+                    );
                 }
                 if step["sql"].as_str().unwrap().starts_with("UPDATE ")
                     || step["sql"].as_str().unwrap().starts_with("DELETE ")
@@ -340,7 +358,11 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
                         .iter()
                         .map(|n| usize::try_from(n.as_u64().unwrap()).unwrap())
                         .collect::<Vec<_>>();
-                    assert_eq!(transition.affected_target_ordinals(), expected, "{id}: selected occurrences");
+                    assert_eq!(
+                        transition.affected_target_ordinals(),
+                        expected,
+                        "{id}: selected occurrences"
+                    );
                 }
             }
             assert_eq!(
@@ -351,12 +373,18 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
                 &state("target", &case["expected_final"])
             );
             assert_domains(
-                final_states.iter().find(|state| state.relation() == "target").unwrap(),
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "target")
+                    .unwrap(),
                 schema,
                 &case["expected_final_domains"],
             );
             assert_eq!(
-                final_states.iter().find(|state| state.relation() == "parent").unwrap(),
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "parent")
+                    .unwrap(),
                 &state("parent", &case["assumed_parent"]),
                 "{id}: referenced physical source may not be mutated"
             );
@@ -371,7 +399,10 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
             assert_native_truth(&db, step);
             let sql = step["sql"].as_str().unwrap();
             if case["failed_step"].as_u64() == Some(index as u64) {
-                assert!(db.execute_batch(sql).is_err(), "{id}: native constraint rejects {sql}");
+                assert!(
+                    db.execute_batch(sql).is_err(),
+                    "{id}: native constraint rejects {sql}"
+                );
                 assert_eq!(
                     read_native(&db),
                     state("target", &case["expected_native_target_after_failure"]),
