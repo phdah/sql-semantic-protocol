@@ -6,11 +6,17 @@ use crate::protocol::{CteColumnRef, CteInput, CteProgram, CteProjection, CteStag
 
 fn column(expression: &Expr) -> Option<CteColumnRef> {
     match expression {
-        Expr::Identifier(name) => Some(CteColumnRef::new(None, name.value.clone())),
-        Expr::CompoundIdentifier(names) if names.len() == 2 => Some(CteColumnRef::new(
-            Some(names[0].value.clone()),
-            names[1].value.clone(),
-        )),
+        Expr::Identifier(name) if name.quote_style.is_none() => {
+            Some(CteColumnRef::new(None, name.value.clone()))
+        }
+        Expr::CompoundIdentifier(names)
+            if names.len() == 2 && names.iter().all(|name| name.quote_style.is_none()) =>
+        {
+            Some(CteColumnRef::new(
+                Some(names[0].value.to_ascii_lowercase()),
+                names[1].value.clone(),
+            ))
+        }
         _ => None,
     }
 }
@@ -36,17 +42,32 @@ fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<Ct
     if !with_hints.is_empty()
         || !partitions.is_empty()
         || !index_hints.is_empty()
-        || alias
-            .as_ref()
-            .is_some_and(|alias| !alias.columns.is_empty())
+        || alias.as_ref().is_some_and(|alias| {
+            !alias.columns.is_empty() || alias.name.quote_style.is_some()
+        })
+        || name
+            .0
+            .iter()
+            .any(|part| part.as_ident().is_none_or(|ident| ident.quote_style.is_some()))
     {
         return None;
     }
-    let name = name.to_string();
-    let canonical = lexical.get(&name).cloned().unwrap_or_else(|| name.clone());
-    let instance = alias
-        .as_ref()
-        .map_or(name, |alias| alias.name.value.clone());
+    // Local WITH aliases are single unqualified identifiers. Preserve the
+    // external physical relation name, but resolve unquoted lexical names
+    // case-insensitively. Quoted names require dialect-specific binding rules.
+    let source_name = name.to_string();
+    let canonical = if name.0.len() == 1 {
+        lexical
+            .get(&source_name.to_ascii_lowercase())
+            .cloned()
+            .unwrap_or_else(|| source_name.clone())
+    } else {
+        source_name.clone()
+    };
+    let instance = alias.as_ref().map_or_else(
+        || source_name.to_ascii_lowercase(),
+        |alias| alias.name.value.to_ascii_lowercase(),
+    );
     Some(CteInput::new(canonical, instance))
 }
 
@@ -175,10 +196,20 @@ fn lower(
         if with.recursive {
             return None;
         }
+        let mut defined_here = BTreeSet::new();
         for (index, cte) in with.cte_tables.iter().enumerate() {
+            // Quoted names have dialect-specific case and shadowing rules.
+            // Duplicate unquoted CTE names cannot establish a unique binding.
+            if cte.alias.name.quote_style.is_some() {
+                return None;
+            }
+            let name = cte.alias.name.value.clone();
+            let scope_name = name.to_ascii_lowercase();
+            if !defined_here.insert(scope_name.clone()) {
+                return None;
+            }
             // Do not bind this CTE before lowering its definition. A forward
             // reference resolves as external evidence, not a later sibling.
-            let name = cte.alias.name.value.clone();
             let local_id = format!("{id}/cte:{index}:{name}");
             // Positional column aliases are not a proven direct projection.
             if !cte.alias.columns.is_empty() {
@@ -188,7 +219,7 @@ fn lower(
                 .cte_tables
                 .iter()
                 .skip(index + 1)
-                .map(|future| future.alias.name.value.clone())
+                .map(|future| future.alias.name.value.to_ascii_lowercase())
                 .collect::<BTreeSet<_>>();
             let start = stages.len();
             lower(&cte.query, local_id.clone(), &lexical, stages)?;
@@ -197,13 +228,13 @@ fn lower(
             // can certify the unproven binding.
             if stages[start..].iter().any(|stage| {
                 stage.inputs().iter().any(|input| {
-                    later_siblings.contains(input.relation())
-                        && !lexical.contains_key(input.relation())
+                    later_siblings.contains(&input.relation().to_ascii_lowercase())
+                        && !lexical.contains_key(&input.relation().to_ascii_lowercase())
                 })
             }) {
                 return None;
             }
-            lexical.insert(name, local_id);
+            lexical.insert(scope_name, local_id);
         }
     }
     stages.push(select_stage(query, id, &lexical)?);
