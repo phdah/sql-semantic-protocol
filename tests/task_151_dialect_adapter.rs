@@ -327,11 +327,11 @@ fn shared_canonical_write_semantics_hold_for_every_dialect_that_parses_them() {
                         assert_eq!(query.sources().len(), 1, "{dialect}: {case}");
                     }
                     let initial = [
-                        state(
+                        raw_state(
                             "target",
                             &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)],
                         ),
-                        state("source", &[(Some(2), 7), (Some(2), 8), (None, 9)]),
+                        raw_state("source", &[(Some(2), 7), (Some(2), 8), (None, 9)]),
                     ];
                     let plan = physical_ordered_write_state_plan(&bundle, &initial);
                     assert!(
