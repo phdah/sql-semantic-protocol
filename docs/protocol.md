@@ -1239,12 +1239,18 @@ key/conflict, branch multiplicity and/or predicate verification. Duplicate
 primary/unique keys must be checked against the target's current rows, not
 inferred from SELECT lineage or a catalog alone.
 
-The supported standalone UPDATE/DELETE subset is one named target without
-partition selection, FROM/USING/JOIN, RETURNING, conflict modifiers, ORDER BY
-or LIMIT. Partition-scoped mutations are rejected rather than being treated
-as whole-table mutations (particularly important for unconditional DELETE's
-empty-poststate claim). Unsupported forms remain statement-level Unsupported
-with an actionable diagnostic.
+The bounded UPDATE/DELETE subset has one named, unpartitioned target.
+Row-local assignments, direct target-column RETURNING, one independent
+UPDATE FROM / DELETE USING source, and one complete correlated EXISTS /
+NOT EXISTS read source can be represented through canonical write predicates
+and dependencies. These effects are exact only with the complete typed
+target and source snapshots, unambiguous matching and enforced constraints.
+UPDATE FROM with several matching source rows is Residual; DELETE USING has
+existential matching. Qualified RETURNING resolves to the active target alias,
+not an arbitrary relation. Partition-scoped mutations and unproved native
+ORDER BY/LIMIT actions are rejected or retained as typed residual boundaries,
+never treated as whole-table writes. Unsupported forms remain statement-level
+Unsupported with an actionable diagnostic.
 INSERT SELECT with write-changing modifiers is likewise unsupported. MERGE
 branches that could not be normalized retain their explicit unsupported
 actions. No newly recognized DML source claims complete produced-relation
