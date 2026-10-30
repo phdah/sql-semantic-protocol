@@ -1,0 +1,562 @@
+{
+  "version": 1,
+  "owner": "TASK-141",
+  "parent": "TASK-78",
+  "status": "frozen_pending_implementation",
+  "fixture_ids": [
+    "78-C141-P",
+    "78-C141-N"
+  ],
+  "principle": "Mandatory exact bags are expected outcomes, not implementation certification. Do not mark Done without executable full physical proof and all required evidence.",
+  "original_parent_ac_coverage": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "acceptance_criteria_map": {
+    "1": "This versioned task-specific inventory and explicit boundaries",
+    "2": "Mandatory exact cases and full source/producer/terminal bags must be certified",
+    "3": "Public physical-plan and independent DuckDB oracles must agree on every bag and typed domain",
+    "4": "All exposed dialect paths and direct/dbt/ODCS representations must be classified",
+    "5": "Final head CI, independent review, signed acceptance audit"
+  },
+  "dialects": [
+    {
+      "name": "generic",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "mysql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "postgresql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "postgres",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "hive",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "sqlite",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "snowflake",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "redshift",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "mssql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "clickhouse",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "bigquery",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "ansi",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "duckdb",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "oracle_required",
+      "owner": "TASK-141"
+    },
+    {
+      "name": "databricks",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-141"
+    }
+  ],
+  "adapters": [
+    {
+      "source": "sql",
+      "status": "requires_executable_matrix"
+    },
+    {
+      "source": "dbt_manifest",
+      "status": "requires_compiled_sql_oracle"
+    },
+    {
+      "source": "odcs",
+      "status": "schema_evidence_only_when_representable"
+    }
+  ],
+  "cases": [
+    {
+      "id": "78-C141-P-REUSE",
+      "fixture_family": "78-C141-P",
+      "variant": "ordinary WITH shared alias self-join",
+      "sql": "WITH shared AS (SELECT k FROM s) SELECT a.k AS ak, b.k AS bk FROM shared a JOIN shared b ON a.k = b.k ORDER BY ak, bk",
+      "classification": "mandatory_exact",
+      "initial_bags": {
+        "s": [
+          {
+            "id": "s#0",
+            "k": 1
+          },
+          {
+            "id": "s#1",
+            "k": 2
+          }
+        ]
+      },
+      "producer_bags": {
+        "shared": [
+          {
+            "source_ids": [
+              "s#0"
+            ],
+            "k": 1
+          },
+          {
+            "source_ids": [
+              "s#1"
+            ],
+            "k": 2
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "s#0",
+            "s#0"
+          ],
+          "ak": 1,
+          "bk": 1
+        },
+        {
+          "source_ids": [
+            "s#1",
+            "s#1"
+          ],
+          "ak": 2,
+          "bk": 2
+        }
+      ],
+      "terminal_domains": {
+        "ak": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "bk": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "exact matching pairs reference the same closed physical s bag twice",
+      "not_true_proof": "cross-key pairs (1,2) and (2,1) are FALSE; no independent producer rows",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB complete s and terminal multiset"
+    },
+    {
+      "id": "78-C141-N-NULL-DUP",
+      "fixture_family": "78-C141-N",
+      "variant": "duplicate physical rows, SQL UNKNOWN, impossible absent tuple",
+      "sql": "WITH shared AS (SELECT k FROM s) SELECT a.k AS ak, b.k AS bk FROM shared a JOIN shared b ON a.k = b.k ORDER BY ak, bk",
+      "classification": "mandatory_exact",
+      "initial_bags": {
+        "s": [
+          {
+            "id": "s#0",
+            "k": 1
+          },
+          {
+            "id": "s#1",
+            "k": 2
+          },
+          {
+            "id": "s#2",
+            "k": 2
+          },
+          {
+            "id": "s#3",
+            "k": null
+          }
+        ]
+      },
+      "producer_bags": {
+        "shared": [
+          {
+            "source_ids": [
+              "s#0"
+            ],
+            "k": 1
+          },
+          {
+            "source_ids": [
+              "s#1"
+            ],
+            "k": 2
+          },
+          {
+            "source_ids": [
+              "s#2"
+            ],
+            "k": 2
+          },
+          {
+            "source_ids": [
+              "s#3"
+            ],
+            "k": null
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "s#0",
+            "s#0"
+          ],
+          "ak": 1,
+          "bk": 1
+        },
+        {
+          "source_ids": [
+            "s#1",
+            "s#1"
+          ],
+          "ak": 2,
+          "bk": 2
+        },
+        {
+          "source_ids": [
+            "s#1",
+            "s#2"
+          ],
+          "ak": 2,
+          "bk": 2
+        },
+        {
+          "source_ids": [
+            "s#2",
+            "s#1"
+          ],
+          "ak": 2,
+          "bk": 2
+        },
+        {
+          "source_ids": [
+            "s#2",
+            "s#2"
+          ],
+          "ak": 2,
+          "bk": 2
+        }
+      ],
+      "terminal_domains": {
+        "ak": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "bk": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "5 Exact pairs; duplicate identities remain independent occurrences within one source bag",
+      "not_true_proof": "NULL = NULL is UNKNOWN, four NULL pairings are NOT TRUE; requested (NULL,NULL) and (1,2) are Impossible in the complete terminal bag",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB complete s and terminal multiset"
+    },
+    {
+      "id": "78-C141-P-SHADOW",
+      "fixture_family": "78-C141-P",
+      "variant": "nested shadowing of an outer CTE",
+      "sql": "WITH shared AS (SELECT k FROM outer_src), chosen AS (WITH shared AS (SELECT k FROM inner_src) SELECT k FROM shared) SELECT k FROM chosen ORDER BY k",
+      "classification": "mandatory_exact",
+      "initial_bags": {
+        "outer_src": [
+          {
+            "id": "outer_src#0",
+            "k": 100
+          }
+        ],
+        "inner_src": [
+          {
+            "id": "inner_src#0",
+            "k": 2
+          },
+          {
+            "id": "inner_src#1",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "outer/shared": [
+          {
+            "source_ids": [
+              "outer_src#0"
+            ],
+            "k": 100
+          }
+        ],
+        "chosen/shared": [
+          {
+            "source_ids": [
+              "inner_src#0"
+            ],
+            "k": 2
+          },
+          {
+            "source_ids": [
+              "inner_src#1"
+            ],
+            "k": 3
+          }
+        ],
+        "chosen": [
+          {
+            "source_ids": [
+              "inner_src#0"
+            ],
+            "k": 2
+          },
+          {
+            "source_ids": [
+              "inner_src#1"
+            ],
+            "k": 3
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "inner_src#0"
+          ],
+          "k": 2
+        },
+        {
+          "source_ids": [
+            "inner_src#1"
+          ],
+          "k": 3
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 3,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "the inner lexical shared binding shadows outer shared and never borrows outer_src rows",
+      "not_true_proof": "outer_src#0 never contributes a terminal row",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB full source and terminal output"
+    },
+    {
+      "id": "78-C141-P-CHAIN",
+      "fixture_family": "78-C141-P",
+      "variant": "nested chained producer references",
+      "sql": "WITH first AS (SELECT k FROM s), second AS (SELECT k FROM first) SELECT k FROM second ORDER BY k",
+      "classification": "mandatory_exact",
+      "initial_bags": {
+        "s": [
+          {
+            "id": "s#0",
+            "k": 1
+          },
+          {
+            "id": "s#1",
+            "k": 2
+          }
+        ]
+      },
+      "producer_bags": {
+        "first": [
+          {
+            "source_ids": [
+              "s#0"
+            ],
+            "k": 1
+          },
+          {
+            "source_ids": [
+              "s#1"
+            ],
+            "k": 2
+          }
+        ],
+        "second": [
+          {
+            "source_ids": [
+              "s#0"
+            ],
+            "k": 1
+          },
+          {
+            "source_ids": [
+              "s#1"
+            ],
+            "k": 2
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "s#0"
+          ],
+          "k": 1
+        },
+        {
+          "source_ids": [
+            "s#1"
+          ],
+          "k": 2
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "sequential local definitions preserve a single physical bag and source IDs",
+      "not_true_proof": "requested k=3 is Impossible in the full terminal bag",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB complete s and terminal bag"
+    },
+    {
+      "id": "78-C141-N-FORWARD",
+      "fixture_family": "78-C141-N",
+      "variant": "nonrecursive forward CTE reference must not borrow a later declaration",
+      "sql": "WITH early AS (SELECT k FROM later), later AS (SELECT k FROM s) SELECT k FROM early",
+      "classification": "conditional",
+      "conditional_owner": "TASK-141",
+      "release_disposition": "No vendor claim; resolve earlier reference to external later or return an explicit unresolved relation on dialects rejecting forward names; must never redirect to s silently",
+      "expected_physical": "Residual until external relation evidence",
+      "parser_status": "conditional per parser and binder",
+      "native_oracle": "engine binder outcome classified without asserting portable successful execution"
+    },
+    {
+      "id": "78-C141-N-RECURSIVE-SHADOW",
+      "fixture_family": "78-C141-N",
+      "variant": "recursive self-binding shadows inherited ordinary CTE",
+      "sql": "WITH shared AS (SELECT k FROM s), chosen AS (WITH RECURSIVE shared(k) AS (SELECT 1 UNION ALL SELECT k + 1 FROM shared WHERE k < 3) SELECT k FROM shared) SELECT k FROM chosen",
+      "classification": "conditional",
+      "conditional_owner": "TASK-142",
+      "release_disposition": "Recursive termination not certified by TASK-141; preserve explicit unresolved local source rather than borrow outer shared or s",
+      "expected_physical": "Residual",
+      "parser_status": "conditional per parser",
+      "native_oracle": "DuckDB [1,2,3] baseline for next child, no TASK-141 physical certification"
+    },
+    {
+      "id": "78-C141-N-MATERIALIZATION",
+      "fixture_family": "78-C141-N",
+      "variant": "view versus stored materialization",
+      "sql": "CREATE TABLE copy AS SELECT k FROM s; SELECT k FROM copy",
+      "classification": "conditional",
+      "conditional_owner": "TASK-144",
+      "release_disposition": "DDL materialization requires separate physical state graph and schema/write laws; no equivalence claim to inline CTE without evidence",
+      "expected_physical": "Residual",
+      "parser_status": "conditional per dialect",
+      "native_oracle": "deferred to independent TASK-144 ordered-state oracle"
+    }
+  ],
+  "verification": {
+    "mandatory_exact_cells": 4,
+    "mandatory_verified": 0,
+    "conditional_reviewed": 0,
+    "physical_oracles_verified": false,
+    "native_duckdb_verified": false,
+    "adapter_matrix_verified": false,
+    "dialect_matrix_verified": false,
+    "ci_verified": false,
+    "independent_review_verified": false,
+    "child_done": false,
+    "parent_done": false
+  }
+}
