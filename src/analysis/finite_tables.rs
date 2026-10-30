@@ -665,9 +665,7 @@ fn derived_star_select(select: &Select, dialect_name: &str) -> Option<FiniteTabl
         return None;
     }
 
-    let contributors = (0..source.rows().len())
-        .map(|index| vec![index])
-        .collect();
+    let contributors = (0..source.rows().len()).map(|index| vec![index]).collect();
     FiniteTable::new(
         FiniteTableKind::Star,
         source.columns().to_vec(),

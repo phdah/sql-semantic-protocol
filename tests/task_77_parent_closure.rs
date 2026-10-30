@@ -111,7 +111,9 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     assert_eq!(freeze["task"], "TASK-77");
     assert_eq!(freeze["release_approved"], false);
     if freeze["parent_signed_off"] == true {
-        assert!(freeze["mandatory_unverified"].as_array().is_some_and(Vec::is_empty));
+        assert!(freeze["mandatory_unverified"]
+            .as_array()
+            .is_some_and(Vec::is_empty));
     } else {
         assert_eq!(
             freeze["mandatory_unverified"],
@@ -293,13 +295,21 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
 
     assert_eq!(fixtures, ids(&freeze["fixture_ids"]));
     assert_eq!(mandatory.len(), 24, "child-owned mandatory matrix drift");
-    assert_eq!(conditional.len(), 10, "child-owned conditional matrix drift");
+    assert_eq!(
+        conditional.len(),
+        10,
+        "child-owned conditional matrix drift"
+    );
 
     // The parent owns newly identified original-AC obligations. Child freezes
     // remain immutable, and new parent cases cannot be passed by checklist.
     let extensions = &freeze["parent_extensions"];
-    let new_exact = extensions["mandatory"].as_array().expect("parent exact cases");
-    let new_conditional = extensions["conditional"].as_array().expect("parent residuals");
+    let new_exact = extensions["mandatory"]
+        .as_array()
+        .expect("parent exact cases");
+    let new_conditional = extensions["conditional"]
+        .as_array()
+        .expect("parent residuals");
     assert_eq!(new_exact.len(), 1);
     assert_eq!(new_conditional.len(), 1);
     let derived = &new_exact[0];
@@ -307,11 +317,16 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     assert_eq!(derived["owner"], "TASK-77");
     assert_eq!(derived["classification"], "mandatory");
     assert!(derived["sql"].as_str().is_some_and(|sql| !sql.is_empty()));
-    assert!(derived["source_bag"].as_array().is_some_and(|bag| bag.len() == 3));
-    assert!(derived["terminal_bag"].as_array().is_some_and(|bag| bag.len() == 3));
-    assert_eq!(ids(&derived["source_row_ids"]), ids(&serde_json::json!([
-        "unnest:1", "unnest:2", "unnest:3"
-    ])));
+    assert!(derived["source_bag"]
+        .as_array()
+        .is_some_and(|bag| bag.len() == 3));
+    assert!(derived["terminal_bag"]
+        .as_array()
+        .is_some_and(|bag| bag.len() == 3));
+    assert_eq!(
+        ids(&derived["source_row_ids"]),
+        ids(&serde_json::json!(["unnest:1", "unnest:2", "unnest:3"]))
+    );
     assert_eq!(derived["terminal_domains"]["v"]["nullable"], true);
     assert_eq!(derived["terminal_domains"]["v"]["lower"]["inclusive"], true);
     assert_eq!(derived["terminal_domains"]["v"]["upper"]["inclusive"], true);
@@ -327,8 +342,11 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     assert_eq!(lateral["negative_proof"], "Residual");
     assert_eq!(lateral["release_disposition"]["owner"], "TASK-77");
     assert!(lateral["release_disposition"]["reason"]
-        .as_str().is_some_and(|reason| !reason.is_empty()));
-    assert!(lateral["reason"].as_str().is_some_and(|reason| !reason.is_empty()));
+        .as_str()
+        .is_some_and(|reason| !reason.is_empty()));
+    assert!(lateral["reason"]
+        .as_str()
+        .is_some_and(|reason| !reason.is_empty()));
 
     let mut required_exact = mandatory;
     let mut required_conditional = conditional;
@@ -350,13 +368,24 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
         assert_eq!(ac["id"], index + 1);
         let exact = ids(&ac["mandatory_case_ids"]);
         let residual = ids(&ac["conditional_case_ids"]);
-        assert!(!exact.is_empty(), "AC {} has no mandatory evidence", index + 1);
-        assert!(exact.is_subset(&required_exact), "AC {} invents proof", index + 1);
+        assert!(
+            !exact.is_empty(),
+            "AC {} has no mandatory evidence",
+            index + 1
+        );
+        assert!(
+            exact.is_subset(&required_exact),
+            "AC {} invents proof",
+            index + 1
+        );
         assert!(
             residual.is_subset(&required_conditional),
-            "AC {} invents boundary", index + 1
+            "AC {} invents boundary",
+            index + 1
         );
-        assert!(ac["evidence"].as_array().is_some_and(|list| !list.is_empty()));
+        assert!(ac["evidence"]
+            .as_array()
+            .is_some_and(|list| !list.is_empty()));
         covered_mandatory.extend(exact);
         covered_conditional.extend(residual);
     }
@@ -374,7 +403,9 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     ] {
         assert!(
             ids(&criteria[ac]["mandatory_case_ids"]).contains(id),
-            "AC {} lacks required {}", ac + 1, id
+            "AC {} lacks required {}",
+            ac + 1,
+            id
         );
     }
     assert!(ids(&criteria[0]["conditional_case_ids"]).contains("77-C139-N-json-table"));
