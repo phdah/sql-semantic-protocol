@@ -148,7 +148,7 @@ fn select_stage(
                     ref_column,
                 ))
             }
-            SelectItem::ExprWithAlias { expr, alias } => {
+            SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
                 Some(CteProjection::new(alias.value.clone(), column(expr)?))
             }
             _ => None,
@@ -211,8 +211,9 @@ fn lower(
             // Do not bind this CTE before lowering its definition. A forward
             // reference resolves as external evidence, not a later sibling.
             let local_id = format!("{id}/cte:{index}:{name}");
-            // Positional column aliases are not a proven direct projection.
-            if !cte.alias.columns.is_empty() {
+            // Positional renames and dialect-specific CTE FROM extensions
+            // are not covered by this direct-projection physical proof.
+            if !cte.alias.columns.is_empty() || cte.from.is_some() {
                 return None;
             }
             let later_siblings = with
