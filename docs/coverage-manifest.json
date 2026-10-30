@@ -13600,7 +13600,7 @@
     "parent": "TASK-81",
     "status": "frozen_pending_verification",
     "freeze": "docs/task-152-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "81-C152-P",
       "81-C152-N"
@@ -13610,6 +13610,7 @@
     "mandatory_verified": false,
     "child_signed_off": false,
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "freeze_history": "docs/task-152-acceptance-freeze-v1.json"
   }
 }
