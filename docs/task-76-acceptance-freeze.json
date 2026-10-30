@@ -1,8 +1,8 @@
 {
   "version": 2,
   "task": "TASK-76",
-  "status": "independent_parent_review_pending_final_pr_head_ci",
-  "parent_signed_off": false,
+  "status": "portable_parent_original_ac1_to_ac6_verified",
+  "parent_signed_off": true,
   "release_approved": false,
   "requirement": "Independently verify original TASK-76 acceptance criteria; child signoff does not imply parent closure",
   "source_of_truth": {
@@ -466,5 +466,36 @@
     "release_gate": "TASK-91 independent",
     "final_ci": "required before task Done",
     "original_ac_evidence": "Requirement-specific case IDs and executable tests; stochastic AC #3 has four reviewed conditional sample laws and no invented Exact cases."
+  },
+  "verified_original_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41073526769",
+  "signoff": {
+    "all_mandatory_exact_verified": 26,
+    "all_conditional_reviewed": 16,
+    "original_acceptance_criteria_verified": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-133",
+      "TASK-134",
+      "TASK-135",
+      "TASK-136"
+    ],
+    "independent_native_oracles": "tests/task_76_parent_closure.rs",
+    "implementation_ci_green": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41073526769",
+    "final_pr_head_ci": "required_before_merge",
+    "release_authorized": false
   }
 }
