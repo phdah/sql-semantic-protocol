@@ -279,29 +279,37 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
         let bundle = analysis(case);
         let plan = physical_ordered_write_state_plan(&bundle, &initial(case));
         if case["expected_failure"] == "Residual" {
-            assert!(
-                matches!(
-                    plan,
-                    PhysicalWriteStatePlan::Residual {
-                        gap: PhysicalWriteStateGap::MissingPopulation,
-                        ..
-                    }
-                ),
-                "{id}: missing referenced relation must not become empty: {plan:?}"
+            let PhysicalWriteStatePlan::Residual { gap, .. } = &plan else {
+                panic!("{id}: missing portable proof must be Residual: {plan:?}");
+            };
+            assert_eq!(
+                format!("{gap:?}"),
+                case["expected_gap"].as_str().unwrap(),
+                "{id}: typed missing proof"
             );
-            continue;
+            if case["assumed_parent"].is_null() {
+                continue; // Native source population cannot be invented.
+            }
         }
         let db = native(case);
-        let parent: i64 = db
-            .query_row("SELECT id FROM parent", [], |r| r.get(0))
-            .unwrap();
-        assert_eq!(parent, 7, "{id}: complete parent-source bag");
+        let parent_rows = {
+            let mut statement = db.prepare("SELECT id FROM parent ORDER BY id").unwrap();
+            statement
+                .query_map([], |r| r.get::<_, i64>(0))
+                .unwrap()
+                .map(Result::unwrap)
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(parent_rows, vec![7], "{id}: complete parent-source bag");
 
         if case["expected_failure"] == "Impossible" {
             assert!(
                 matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
                 "{id}: required contradiction: {plan:?}"
             );
+        } else if case["expected_failure"] == "Residual" {
+            // The native engine can reject a missing reference under immediate
+            // enforcement while the portable state proof remains Residual.
         } else {
             let PhysicalWriteStatePlan::Feasible {
                 transitions,
