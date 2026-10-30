@@ -341,6 +341,25 @@ fn unsupported_cte_projection_and_incomplete_source_evidence_are_residual() {
 }
 
 #[test]
+fn unresolved_cte_order_by_column_cannot_receive_an_exact_proof() {
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    for sql in [
+        "WITH shared AS (SELECT k FROM s) SELECT k FROM shared ORDER BY missing",
+        "WITH shared AS (SELECT k FROM s) SELECT k AS output FROM shared ORDER BY missing",
+    ] {
+        let (bundle, snapshots) = case_bundle(sql, &input);
+        let layer = bundle.layers().last().unwrap();
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+                PhysicalCteProof::Residual { .. }
+            ),
+            "{sql}: unresolved ORDER BY must not receive a physical proof"
+        );
+    }
+}
+
+#[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
