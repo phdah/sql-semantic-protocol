@@ -196,7 +196,11 @@ fn every_mandatory_frozen_cte_case_is_analyzed_across_exposed_dialects() {
         }
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
-        let expected_source = if id.ends_with("SHADOW") { "inner_src" } else { "s" };
+        let expected_source = if id.ends_with("SHADOW") {
+            "inner_src"
+        } else {
+            "s"
+        };
         for dialect_name in DIALECTS {
             let dialect = dialect_from_name(dialect_name).unwrap();
             let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
