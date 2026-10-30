@@ -328,6 +328,8 @@ fn frozen_cte_physical_bags_match_direct_and_dbt_adapters() {
         let direct = attested_direct(sql, &case["initial_bags"]);
         let dbt = compiled_dbt(sql, &case["initial_bags"], consumed_source);
         let states = complete_states(&case["initial_bags"]);
+        assert!(model_query(&direct).cte_program().is_some(), "{id}: direct SQL lacks the canonical CTE program");
+        assert!(model_query(&dbt).cte_program().is_some(), "{id}: dbt compiled model lacks the canonical CTE program");
         let direct = physical_bags(&direct, &states);
         let dbt = physical_bags(&dbt, &states);
         assert_eq!(
