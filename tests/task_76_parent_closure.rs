@@ -228,18 +228,19 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
                         .as_array()
                         .expect("typed adapter matrix")
                         .iter()
-                        .map(|cell| {
-                            match cell["source"].as_str().expect("adapter") {
-                                "compiled_dbt" => "dbt_compiled".to_owned(),
-                                other => other.to_owned(),
-                            }
+                        .map(|cell| match cell["source"].as_str().expect("adapter") {
+                            "compiled_dbt" => "dbt_compiled".to_owned(),
+                            other => other.to_owned(),
                         })
                         .collect::<BTreeSet<_>>()
                 };
                 assert_eq!(observed, adapters, "{id}: incomplete adapter matrix");
             } else if exact.contains(id) {
                 assert_eq!(name, "TASK-135", "{id}: missing adapter evidence");
-                assert_eq!(case["adapter_status"], "direct_sql_dbt_compiled_odcs_exact", "{id}");
+                assert_eq!(
+                    case["adapter_status"], "direct_sql_dbt_compiled_odcs_exact",
+                    "{id}"
+                );
             } else {
                 assert_eq!(name, "TASK-135", "{id}: missing adapter evidence");
                 assert_eq!(ids(&child["adapter_matrix"]["sources"]), adapters);
