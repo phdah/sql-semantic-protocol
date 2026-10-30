@@ -202,7 +202,11 @@ fn reused_cte_classifies_every_false_and_unknown_physical_pair() {
         .unwrap()
         .collect::<duckdb::Result<Vec<_>>>()
         .unwrap();
-    assert_eq!(pairs.len(), 16, "four physical rows produce 16 candidate pairs");
+    assert_eq!(
+        pairs.len(),
+        16,
+        "four physical rows produce 16 candidate pairs"
+    );
     let by_truth = |truth: &str| {
         pairs
             .iter()
