@@ -13699,5 +13699,40 @@
     "parent_signed_off": true,
     "release_approved": false,
     "remaining_gate": "Final metadata PR-head CI required before merge; TASK-91 remains separate release authorization"
+  },
+  "task_77_parent_acceptance": {
+    "owner": "TASK-77",
+    "status": "pending_parent_ci",
+    "task": ".backlog/tasks/task-77 - model-advanced-table-relations.md",
+    "freeze": "docs/task-77-acceptance-freeze.json",
+    "audit": "docs/task-77-acceptance-audit.md",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-137",
+      "TASK-138",
+      "TASK-139",
+      "TASK-140"
+    ],
+    "mandatory_cases": 24,
+    "conditional_cases": 10,
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled_sql_catalog",
+      "odcs_equivalent_schema"
+    ],
+    "public_guard": "tests/task_77_parent_closure.rs",
+    "native_engine_verified": "duckdb",
+    "native_vendor_runtime_certified": false,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "remaining_gate": "TASK-91 separately; final PR-head CI required"
   }
 }
