@@ -86,6 +86,52 @@ fn frozen_shared_write_syntax_classifies_all_thirteen_dialects() {
     assert_eq!(actual.values().map(Vec::len).sum::<usize>(), 39);
 }
 
+#[test]
+fn frozen_vendor_mutation_boundaries_fail_closed_on_every_parser_path() {
+    let freeze = expected();
+    assert_eq!(freeze["version"], 3);
+    let cases = freeze["vendor_boundary_fixtures"].as_array().unwrap();
+    assert_eq!(cases.len(), 2);
+    let mut classified = 0;
+    for case in cases {
+        assert_eq!(case["owner"], "TASK-152");
+        assert_eq!(case["expected_proof"], "Residual");
+        assert_eq!(case["classification"], "conditional_residual");
+        assert!(case["missing"].as_str().is_some_and(|s| !s.is_empty()));
+        assert!(case["release_disposition"]
+            .as_str()
+            .is_some_and(|s| s.contains("reviewed")));
+        let sql = case["sql"].as_str().unwrap();
+        for dialect in DIALECTS {
+            let engine = dialect_from_name(dialect).unwrap();
+            let disposition = match analyze_inputs(
+                &[SqlInput::inline(sql)],
+                dialect,
+                engine.as_ref(),
+            ) {
+                Err(_) => "parser_boundary",
+                Ok(bundle) => match bundle.inputs()[0].statements().first().unwrap() {
+                    ProtocolStatement::Unsupported(_) => "canonical_unsupported",
+                    ProtocolStatement::Query(query) if query.write().is_none() => {
+                        "canonical_unsupported"
+                    }
+                    ProtocolStatement::Query(_) => {
+                        panic!("{dialect}: unproved vendor write must never be accepted: {sql}");
+                    }
+                    _ => "canonical_unsupported",
+                },
+            };
+            assert_eq!(
+                Some(disposition),
+                case["expected_parser_status"][dialect].as_str(),
+                "{dialect}: {sql} changed its frozen canonical boundary"
+            );
+            classified += 1;
+        }
+    }
+    assert_eq!(classified, 26);
+}
+
 fn direct_catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(&[TARGET, SOURCE].map(|relation| {
         RelationSchema::new(
