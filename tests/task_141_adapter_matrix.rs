@@ -76,7 +76,11 @@ fn frozen_cte_source_instances_match_direct_and_compiled_dbt() {
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
         let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
-        let consumed_source = if id.ends_with("SHADOW") { "inner_src" } else { "s" };
+        let consumed_source = if id.ends_with("SHADOW") {
+            "inner_src"
+        } else {
+            "s"
+        };
         let compiled = compiled_dbt(sql, &case["initial_bags"], consumed_source);
         let direct = model_query(&direct);
         let compiled = model_query(&compiled);
