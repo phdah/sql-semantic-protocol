@@ -271,7 +271,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, frozen: &
 #[test]
 fn every_frozen_sequential_write_obeys_complete_native_oracle() {
     let freeze = freeze();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 7);
     for case in cases {
