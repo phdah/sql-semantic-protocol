@@ -3,7 +3,7 @@
 //! Only a parser-independent CteProgram is consumed. All input bags are complete
 //! caller-attested physical populations, never independent CTE inserts.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan};
 use super::*;
