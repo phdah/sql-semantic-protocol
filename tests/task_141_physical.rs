@@ -28,7 +28,15 @@ fn case_bundle(
     sql: &str,
     input: &Value,
 ) -> (sql_semantic_protocol::AnalysisBundle, Vec<PhysicalWriteState>) {
-    let dialect = dialect_from_name("duckdb").unwrap();
+    case_bundle_with_dialect(sql, input, "duckdb")
+}
+
+fn case_bundle_with_dialect(
+    sql: &str,
+    input: &Value,
+    dialect_name: &str,
+) -> (sql_semantic_protocol::AnalysisBundle, Vec<PhysicalWriteState>) {
+    let dialect = dialect_from_name(dialect_name).unwrap();
     let mut schemas = Vec::new();
     let mut snapshots = Vec::new();
     for (name, rows) in input.as_object().unwrap() {
@@ -48,7 +56,7 @@ fn case_bundle(
     }
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("cte", &input, "duckdb", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new("cte", &input, dialect_name, dialect.as_ref())];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     (bundle, snapshots)
 }
@@ -170,4 +178,48 @@ fn unsupported_cte_projection_and_incomplete_source_evidence_are_residual() {
         physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None),
         PhysicalCteProof::Residual { .. }
     ));
+}
+
+#[test]
+fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
+    const DIALECTS: &[&str] = &[
+        "generic", "mysql", "postgresql", "postgres", "hive", "sqlite",
+        "snowflake", "redshift", "mssql", "clickhouse", "bigquery",
+        "ansi", "duckdb", "databricks"
+    ];
+    let freeze: Value = serde_json::from_str(
+        include_str!("../docs/task-141-acceptance-freeze.json")
+    ).unwrap();
+    let mut cells = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "mandatory_exact" { continue; }
+        let sql = case["sql"].as_str().unwrap();
+        let id = case["id"].as_str().unwrap();
+        let (baseline, states) = case_bundle(sql, &case["initial_bags"]);
+        let expected = match physical_finite_cte_bag_plan(
+            &baseline,
+            baseline.layers().last().unwrap().id(),
+            &states,
+            None
+        ) {
+            PhysicalCteProof::Exact(result) => result,
+            other => panic!("{id}: canonical baseline not Exact: {other:?}"),
+        };
+        for dialect in DIALECTS {
+            let (bundle, states) =
+                case_bundle_with_dialect(sql, &case["initial_bags"], dialect);
+            let result = physical_finite_cte_bag_plan(
+                &bundle, bundle.layers().last().unwrap().id(), &states, None
+            );
+            let PhysicalCteProof::Exact(proved) = result else {
+                panic!("{id}/{dialect}: no complete physical CTE proof: {result:?}");
+            };
+            assert_eq!(proved.source_bags, expected.source_bags, "{id}/{dialect}");
+            assert_eq!(proved.stage_bags, expected.stage_bags, "{id}/{dialect}");
+            assert_eq!(proved.rejected, expected.rejected, "{id}/{dialect}");
+            assert_eq!(proved.terminal_domains, expected.terminal_domains, "{id}/{dialect}");
+            cells += 1;
+        }
+    }
+    assert_eq!(cells, 4 * DIALECTS.len());
 }
