@@ -97,8 +97,8 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
                 .map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>();
             (expected_row(row, &names), ids)
         }).collect::<Vec<_>>();
-        actual.sort();
-        expected.sort();
+        actual.sort_by(|left, right| left.1.cmp(&right.1));
+        expected.sort_by(|left, right| left.1.cmp(&right.1));
         assert_eq!(actual, expected, "{id}: terminal exact values, IDs and multiplicity");
 
         for (name, domain) in case["terminal_domains"].as_object().unwrap() {
