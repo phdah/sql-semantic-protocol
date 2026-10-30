@@ -245,6 +245,35 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
                 );
             }
         }
+        // Every mandatory fixture must prove one positive membership and
+        // disprove its own independently frozen negative counterexample.
+        let first_row = &case["terminal_bag"][0];
+        let selected = expected_row(first_row, &names);
+        assert!(matches!(
+            physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&selected)),
+            PhysicalCteProof::Exact(_)
+        ), "{id}: known terminal tuple must be Exact");
+        let negative = match id {
+            "78-C141-P-REUSE" => BTreeMap::from([
+                ("ak".to_string(), LiteralValue::Number("1".to_string())),
+                ("bk".to_string(), LiteralValue::Number("2".to_string())),
+            ]),
+            "78-C141-P-CHAIN" => BTreeMap::from([
+                ("k".to_string(), LiteralValue::Number("3".to_string())),
+            ]),
+            "78-C141-P-SHADOW" => BTreeMap::from([
+                ("k".to_string(), LiteralValue::Number("100".to_string())),
+            ]),
+            "78-C141-N-NULL-DUP" => BTreeMap::from([
+                ("ak".to_string(), LiteralValue::Null),
+                ("bk".to_string(), LiteralValue::Null),
+            ]),
+            other => panic!("unreviewed mandatory CTE fixture: {other}"),
+        };
+        assert!(matches!(
+            physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&negative)),
+            PhysicalCteProof::Impossible { .. }
+        ), "{id}: frozen absent terminal tuple must be Impossible");
         if id == "78-C141-N-NULL-DUP" {
             assert_eq!(proof.rejected["terminal"].len(), 11);
             assert_eq!(proof.false_pairs["terminal"].len(), 4);
