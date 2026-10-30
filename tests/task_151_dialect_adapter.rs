@@ -245,10 +245,14 @@ fn ambiguous_or_missing_source_does_not_become_an_empty_source() {
 fn classified_plan(input: &str, catalog: &RelationCatalog) -> Option<PhysicalWriteStatePlan> {
     let query = SqlInput::inline(sql(input));
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = ConfiguredSqlInput::new("task151-classify", &query, "postgresql", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("task151-classify", &query, "postgresql", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).ok()?;
     let rows = [
-        state(TARGET, &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)]),
+        state(
+            TARGET,
+            &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)],
+        ),
         state(SOURCE, &[(Some(2), 7), (Some(2), 8), (None, 9)]),
     ];
     Some(physical_ordered_write_state_plan(&bundle, &rows))
@@ -258,9 +262,17 @@ fn classified_plan(input: &str, catalog: &RelationCatalog) -> Option<PhysicalWri
 fn every_frozen_variant_has_source_independent_adapter_disposition() {
     for case in CASES {
         let direct = classified_plan(case, &direct_catalog());
-        assert_eq!(direct, classified_plan(case, &dbt_catalog()), "{case}: dbt parity");
+        assert_eq!(
+            direct,
+            classified_plan(case, &dbt_catalog()),
+            "{case}: dbt parity"
+        );
         #[cfg(feature = "odcs")]
-        assert_eq!(direct, classified_plan(case, &odcs_catalog()), "{case}: ODCS parity");
+        assert_eq!(
+            direct,
+            classified_plan(case, &odcs_catalog()),
+            "{case}: ODCS parity"
+        );
     }
 }
 
@@ -286,26 +298,30 @@ fn shared_canonical_write_semantics_hold_for_every_dialect_that_parses_them() {
         let parser = dialect_from_name(dialect).unwrap();
         for (index, case) in CASES[..4].iter().enumerate() {
             let input = SqlInput::inline(*case);
-            let configured = ConfiguredSqlInput::new(
-                "task151-dialects",
-                &input,
-                dialect,
-                parser.as_ref(),
-            );
+            let configured =
+                ConfiguredSqlInput::new("task151-dialects", &input, dialect, parser.as_ref());
             let Ok(bundle) = analyze_configured_inputs_with_catalog(&[configured], &catalog) else {
                 cells += 1;
                 continue;
             };
             match &bundle.inputs()[0].statements()[0] {
-                ProtocolStatement::Unsupported(_) => {},
+                ProtocolStatement::Unsupported(_) => {}
                 ProtocolStatement::Query(query) => {
-                    let write = query.write().expect("a parsed DML statement cannot disappear");
-                    assert!(matches!(write.kind(), WriteKind::Update | WriteKind::Delete));
+                    let write = query
+                        .write()
+                        .expect("a parsed DML statement cannot disappear");
+                    assert!(matches!(
+                        write.kind(),
+                        WriteKind::Update | WriteKind::Delete
+                    ));
                     if index == 2 || index == 3 {
                         assert_eq!(query.sources().len(), 1, "{dialect}: {case}");
                     }
                     let initial = [
-                        state("target", &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)]),
+                        state(
+                            "target",
+                            &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)],
+                        ),
                         state("source", &[(Some(2), 7), (Some(2), 8), (None, 9)]),
                     ];
                     let plan = physical_ordered_write_state_plan(&bundle, &initial);
@@ -313,7 +329,7 @@ fn shared_canonical_write_semantics_hold_for_every_dialect_that_parses_them() {
                         matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
                         "{dialect}: {case}: {plan:?}"
                     );
-                },
+                }
                 _ => panic!("{dialect}: parsed DML lost canonical statement identity"),
             }
             cells += 1;
