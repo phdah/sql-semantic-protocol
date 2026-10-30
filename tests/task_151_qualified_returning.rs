@@ -375,7 +375,7 @@ fn frozen_state(relation: &str, input: &serde_json::Value) -> PhysicalWriteState
 fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-151-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["owner"], "TASK-151");
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
@@ -473,7 +473,7 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
             assert!(transition.returning().is_none(), "{}", case["id"]);
         }
     }
-    assert_eq!(checked, 4);
+    assert_eq!(checked, 5);
 }
 
 #[test]
@@ -509,4 +509,41 @@ fn correlated_update_enforced_key_collision_is_impossible_and_native_rejects() {
         .unwrap();
     assert!(native.execute_batch(sql).is_err());
     assert_eq!(native_target_rows(&native), rows(&before));
+}
+
+#[test]
+fn named_two_row_returning_oracle_matches_native_before_and_after() {
+    let sql = "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id";
+    let before = state(&[(Some(1), 10), (Some(2), 20), (None, 30)]);
+    let bundle = bundle(sql);
+    let plan = physical_ordered_write_state_plan(&bundle, &[before.clone()]);
+    let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
+        panic!("named two-row oracle must be exact: {plan:?}");
+    };
+    let [transition] = transitions.as_slice() else { panic!("one mutation"); };
+    assert_eq!(transition.before(), &before);
+    assert_eq!(transition.affected().updated(), 2);
+    assert_eq!(transition.affected_target_ordinals(), &[0, 1]);
+    assert_eq!(
+        rows(transition.after()),
+        rows(&state(&[(Some(1), 40), (Some(2), 40), (None, 30)]))
+    );
+    let returned = transition.returning().unwrap();
+    let ids = returned.rows().iter().map(|row| match row.values().get("id").unwrap() {
+        LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
+        other => panic!("unexpected RETURNING key {other:?}"),
+    }).collect::<Vec<_>>();
+    assert_eq!(ids, vec![1, 2]);
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target (id INTEGER, score INTEGER);
+         INSERT INTO target VALUES (1,10),(2,20),(NULL,30);"
+    ).unwrap();
+    let mut stmt = db.prepare(sql).unwrap();
+    let native_ids = stmt.query_map([], |row| row.get::<_, i64>(0)).unwrap()
+        .map(Result::unwrap).collect::<Vec<_>>();
+    drop(stmt);
+    assert_eq!(native_ids, vec![1, 2]);
+    assert_eq!(rows(transition.after()), native_target_rows(&db));
 }
