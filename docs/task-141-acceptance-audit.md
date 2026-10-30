@@ -11,12 +11,12 @@ The implementation maintains declaration-ordered ordinary CTE bindings, reserves
 | AC | Evidence available on this PR | Remaining mandatory evidence |
 | --- | --- | --- |
 | #1 | Frozen v1 source/producer/terminal bags plus v2 56-cell dialect, 12-cell adapter, and conditional release matrix | Independent review of every mandatory and conditional cell |
-| #2 | Typed `CteProgram` and `physical_finite_cte_bag_plan` now implement source-complete lexical DAG, row identity, TRUE/FALSE/UNKNOWN, Exact/Impossible/Residual and typed domains | Final-head proof tests and independent review of all unsupported boundaries |
-| #3 | Independent DuckDB source/terminal oracles and public `tests/task_141_physical.rs` assert all four producer bags, identifiers, complete terminal values and counterexamples | Final-head Rust test verification |
-| #4 | 14 dialect-name proof equivalence, direct SQL/dbt catalog/ODCS source complete parity and 42 explicit conditional parser/residual classifications added | Confirm all matrix paths green on final CI head and review native-engine limitations |
-| #5 | CI suite runs fmt, strict Clippy, full/default/no-default tests, docs and real dbt E2E | All checks green on final SHA, independent review of each mandatory cell, original parent-AC signoff and approved conditional dispositions |
+| #2 | Typed `CteProgram` and `physical_finite_cte_bag_plan` now implement source-complete lexical DAG, row identity, TRUE/FALSE/UNKNOWN, Exact/Impossible/Residual and typed domains | Independent review of all unsupported boundaries |
+| #3 | Independent DuckDB source/terminal oracles and public `tests/task_141_physical.rs` assert all four producer bags, identifiers, complete terminal values and counterexamples | Independent review of complete bag oracle equivalence |
+| #4 | 14 dialect-name proof equivalence, direct SQL/dbt catalog/ODCS source complete parity and 42 explicit conditional parser/residual classifications added | Independent review of parser/session boundary disposition and native-engine limitations |
+| #5 | CI suite runs fmt, strict Clippy, full/default/no-default tests, docs and real dbt E2E | Final PR-head CI and independent review of each mandatory/conditional cell and original parent-AC mapping |
 
-**No mandatory case is signed off yet.** The bounded implementation and tests are committed but final-head CI and independent review are pending. The task stays In Progress, PR stays draft and TASK-78 must remain open.
+**The bounded mandatory implementation is CI-verified but not independently signed off.** AC #1 through #4 are checked in the task. AC #5, including independent review and the final PR-head merge gate, is open. TASK-141 stays In Progress and TASK-78 stays open.
 
 ## Follow-up author review (not independent signoff)
 
@@ -61,3 +61,26 @@ For final TASK-141 signoff, an independent reviewer must inspect all four
 mandatory complete-bag cases, 56 dialect proof cells, 12 adapter cells and 42
 conditional parser/residual cells, verify the mapped TASK-78 AC #1/#3/#4/#5/#6
 without closing TASK-78, and confirm green CI on the final PR head.
+
+## CI and matrix evidence
+
+The reviewed implementation at `bd541cfea112449bd85bf7a5380b8f933f168e02`
+passed [all nine CI checks](https://github.com/phdah/sql-semantic-protocol/actions/runs/41141094151):
+format, strict lint, default and no-default feature tests, documentation,
+dependency boundary, and dbt E2E. The frozen physical checks construct each
+mandatory complete bag and assert exact source IDs, producer lineage,
+TRUE/FALSE/UNKNOWN, requested Impossible counterexamples and inclusive
+integer/NULL domains. Direct, compiled-dbt and equivalent ODCS adapters are
+compared against the same physical construction.
+
+All 42 conditional dialect matrix cells now record the exact `parsed`
+outcome, verified by calling sqlparser directly with each exposed dialect.
+This is **parser** evidence, not a claim of native execution for 13 dialect
+names without such an oracle. Only the DuckDB engine has independent
+executed source/terminal oracles. Conditional physical proof remains Residual
+where source/session/materialization/recursive laws are unproved. The v1
+acceptance freeze is intentionally left immutable; the v2 proof matrix and
+coverage manifest hold live CI/signoff state.
+
+A reviewer independent of this implementation is still required before
+checking AC #5, marking TASK-141 Done or treating the PR as merge-ready.
