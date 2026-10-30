@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-151",
   "parent": "TASK-81",
   "status": "implementation_in_progress",
@@ -49,7 +49,7 @@
     "RETURNING UPDATE postimages and DELETE preimages",
     "native vendor/session DML effects not inferred from parsing"
   ],
-  "matrix_completeness": "incomplete: mandatory correlated target condition and 13-dialect/3-adapter parity oracles are not yet verified; this child may not be marked Done",
+  "matrix_completeness": "pending observed 104-cell parser freeze, full native oracle and final CI review; no premature Done",
   "cases": [
     {
       "id": "81-C151-P-update-qualified-returning",
@@ -128,6 +128,33 @@
           "frequencies": {
             "1": 1,
             "2": 2
+          }
+        }
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 30,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1,
+            "40": 3
           }
         }
       }
@@ -210,6 +237,33 @@
           "upper_inclusive": true,
           "frequencies": {
             "20": 2
+          }
+        }
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1
           }
         }
       }
@@ -302,11 +356,11 @@
       "owner": "TASK-151"
     },
     {
-      "id": "81-C151-N-correlated-target",
-      "fixture_id": "81-C151-N",
-      "category": "mandatory_pending",
-      "family": "correlated_target_condition",
-      "sql": "DELETE FROM target AS t WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)",
+      "id": "81-C151-P-correlated-exists-update",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "correlated_exists_update",
+      "sql": "UPDATE target AS t SET score = 99 WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id) RETURNING t.id",
       "target_before": [
         {
           "id": 1,
@@ -327,13 +381,211 @@
       ],
       "source": [
         {
+          "id": 2,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 8
+        },
+        {
+          "id": null,
+          "score": 9
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 99
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 99
+        }
+      ],
+      "returning": [
+        {
+          "id": 2
+        },
+        {
           "id": 2
         }
       ],
-      "target_after": null,
-      "proof": "unverified",
-      "boundary": "correlated row identity and complete physical subquery evaluation must be proved before exact result",
-      "owner": "TASK-151"
+      "target_true_ordinals": [
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        0,
+        2
+      ],
+      "affected": {
+        "updated": 2,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1",
+        "source_before#2"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1,
+            "99": 2
+          }
+        }
+      },
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        }
+      },
+      "owner": "TASK-151",
+      "conditional_boundary": "source snapshot and schema must be independently attested"
+    },
+    {
+      "id": "81-C151-N-correlated-not-exists-delete",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_exact",
+      "family": "correlated_not_exists_delete",
+      "sql": "DELETE FROM target AS t WHERE NOT EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 2,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 8
+        },
+        {
+          "id": null,
+          "score": 9
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "returning": [],
+      "target_true_ordinals": [
+        0,
+        2
+      ],
+      "target_not_true_ordinals": [
+        1,
+        3
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "proof": "exact",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1",
+        "source_before#2"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 2
+          }
+        }
+      },
+      "owner": "TASK-151",
+      "conditional_boundary": "NOT EXISTS requires a complete source bag to prove no TRUE match"
     },
     {
       "id": "81-C151-N-partition-target",
@@ -364,5 +616,11 @@
       "boundary": "partition mapping, membership, and vendor write law require authoritative metadata; no physical bag fabricated",
       "owner": "TASK-151"
     }
-  ]
+  ],
+  "previous_version": "docs/task-151-acceptance-freeze-v1.json",
+  "mandatory_exact_cases": 4,
+  "mandatory_negative_cases": 2,
+  "conditional_vendor_cases": 2,
+  "conditional_release_disposition": "TASK-151 retains vendor ORDER/LIMIT/partition semantics as typed Residual or parser boundary until named native engine/version laws and complete partition metadata are supplied. These are not Exact.",
+  "adapter_parity_expectation": "direct SQL, dbt catalog and ODCS schema evidence must give identical canonical physical proofs where schemas are equivalent"
 }
