@@ -148,6 +148,12 @@ fn read_native(db: &Connection) -> PhysicalWriteState {
     PhysicalWriteState::new("target", rows).unwrap()
 }
 
+fn read_native_parent(db: &Connection) -> Vec<i64> {
+    let mut statement = db.prepare("SELECT id FROM parent ORDER BY id").unwrap();
+    let rows = statement.query_map([], |r| r.get::<_, i64>(0)).unwrap();
+    rows.map(Result::unwrap).collect()
+}
+
 fn native(case: &Value) -> Connection {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -156,10 +162,16 @@ fn native(case: &Value) -> Connection {
              id INTEGER PRIMARY KEY,
              parent_id INTEGER REFERENCES parent(id),
              score INTEGER CHECK(score >= 0)
-         );
-         INSERT INTO parent VALUES (7);",
+         );",
     )
     .unwrap();
+    for row in case["assumed_parent"].as_array().unwrap() {
+        db.execute(
+            "INSERT INTO parent(id) VALUES (?1)",
+            params![row["id"].as_i64().unwrap()],
+        )
+        .unwrap();
+    }
     for row in case["target_before"].as_array().unwrap() {
         db.execute(
             "INSERT INTO target(id,parent_id,score) VALUES (?1,?2,?3)",
@@ -277,6 +289,11 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
     for case in cases {
         let id = case["id"].as_str().unwrap();
         let bundle = analysis(case);
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == "target")
+            .unwrap();
         let plan = physical_ordered_write_state_plan(&bundle, &initial(case));
         if case["expected_failure"] == "Residual" {
             let PhysicalWriteStatePlan::Residual { gap, .. } = &plan else {
@@ -292,15 +309,19 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
             }
         }
         let db = native(case);
-        let parent_rows = {
-            let mut statement = db.prepare("SELECT id FROM parent ORDER BY id").unwrap();
-            statement
-                .query_map([], |r| r.get::<_, i64>(0))
-                .unwrap()
-                .map(Result::unwrap)
-                .collect::<Vec<_>>()
-        };
-        assert_eq!(parent_rows, vec![7], "{id}: complete parent-source bag");
+        let mut expected_parent = case["assumed_parent"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| row["id"].as_i64().unwrap())
+            .collect::<Vec<_>>();
+        expected_parent.sort_unstable();
+        assert_eq!(
+            read_native_parent(&db),
+            expected_parent,
+            "{id}: initial complete parent-source bag"
+        );
+        assert_domains(&read_native(&db), schema, &case["target_before_domains"]);
 
         if case["expected_failure"] == "Impossible" {
             assert!(
@@ -319,11 +340,6 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
                 panic!("{id}: all three writes must be feasible: {plan:?}");
             };
             assert_eq!(transitions.len(), case["steps"].as_array().unwrap().len());
-            let schema = bundle
-                .source_schemas()
-                .iter()
-                .find(|schema| schema.relation() == "target")
-                .unwrap();
             for (index, transition) in transitions.iter().enumerate() {
                 let step = &case["steps"][index];
                 assert_eq!(
@@ -399,10 +415,17 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
         }
 
         for (index, step) in case["steps"].as_array().unwrap().iter().enumerate() {
+            let before = read_native(&db);
             assert_eq!(
-                read_native(&db),
+                before,
                 state("target", &step["before"]),
                 "{id}: independent complete prestate #{index}"
+            );
+            assert_domains(&before, schema, &step["before_domains"]);
+            assert_eq!(
+                read_native_parent(&db),
+                expected_parent,
+                "{id}: referenced source changed before step #{index}"
             );
             assert_native_truth(&db, step);
             let sql = step["sql"].as_str().unwrap();
@@ -411,18 +434,33 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
                     db.execute_batch(sql).is_err(),
                     "{id}: native constraint rejects {sql}"
                 );
+                let after_failure = read_native(&db);
                 assert_eq!(
-                    read_native(&db),
+                    after_failure,
                     state("target", &case["expected_native_target_after_failure"]),
                     "{id}: failed statement preserves whole target bag"
+                );
+                assert_eq!(after_failure, before, "{id}: rejected write is atomic");
+                assert_domains(&after_failure, schema, &step["before_domains"]);
+                assert_eq!(
+                    read_native_parent(&db),
+                    expected_parent,
+                    "{id}: referenced source changed after rejected step #{index}"
                 );
                 break;
             }
             db.execute_batch(sql).unwrap();
+            let after = read_native(&db);
             assert_eq!(
-                read_native(&db),
+                after,
                 state("target", &step["after"]),
                 "{id}: independent DuckDB complete poststate #{index}"
+            );
+            assert_domains(&after, schema, &step["after_domains"]);
+            assert_eq!(
+                read_native_parent(&db),
+                expected_parent,
+                "{id}: referenced source changed after step #{index}"
             );
         }
     }
