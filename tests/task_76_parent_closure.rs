@@ -290,7 +290,9 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
             );
         }
         assert!(
-            criterion["evidence"].as_array().is_some_and(|tests| !tests.is_empty()),
+            criterion["evidence"]
+                .as_array()
+                .is_some_and(|tests| !tests.is_empty()),
             "AC {} lacks independent executable test references",
             offset + 1
         );
