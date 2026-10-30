@@ -135,7 +135,7 @@ fn state(relation: &str, rows: &[(Option<i64>, i64)]) -> PhysicalWriteState {
 }
 
 fn plan(input: &str, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
-    let query = SqlInput::inline(&sql(input));
+    let query = SqlInput::inline(sql(input));
     let dialect = dialect_from_name("postgresql").unwrap();
     let configured = ConfiguredSqlInput::new("task151", &query, "postgresql", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
@@ -220,7 +220,7 @@ fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
 #[test]
 fn ambiguous_or_missing_source_does_not_become_an_empty_source() {
     let case_sql = CASES[2];
-    let query = SqlInput::inline(&sql(case_sql));
+    let query = SqlInput::inline(sql(case_sql));
     let dialect = dialect_from_name("postgresql").unwrap();
     let configured =
         ConfiguredSqlInput::new("task151-missing", &query, "postgresql", dialect.as_ref());
