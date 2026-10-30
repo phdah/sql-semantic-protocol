@@ -176,3 +176,69 @@ fn every_mandatory_cte_freeze_case_matches_independent_complete_duckdb_bags() {
         ]
     );
 }
+
+#[test]
+fn reused_cte_classifies_every_false_and_unknown_physical_pair() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE s(id VARCHAR, k BIGINT); \
+         INSERT INTO s VALUES ('s#0', 1), ('s#1', 2), ('s#2', 2), ('s#3', NULL);",
+    )
+    .unwrap();
+    let sql = "WITH shared AS (SELECT id, k FROM s) \
+               SELECT a.id, b.id, \
+                 CASE WHEN a.k = b.k THEN 'TRUE' \
+                      WHEN NOT (a.k = b.k) THEN 'FALSE' ELSE 'UNKNOWN' END \
+               FROM shared a CROSS JOIN shared b ORDER BY a.id, b.id";
+    let mut stmt = db.prepare(sql).unwrap();
+    let pairs = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
+    assert_eq!(pairs.len(), 16, "four physical rows produce 16 candidate pairs");
+    let by_truth = |truth: &str| {
+        pairs
+            .iter()
+            .filter(|(_, _, observed)| observed == truth)
+            .map(|(left, right, _)| [left.as_str(), right.as_str()])
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        by_truth("TRUE"),
+        [
+            ["s#0", "s#0"],
+            ["s#1", "s#1"],
+            ["s#1", "s#2"],
+            ["s#2", "s#1"],
+            ["s#2", "s#2"]
+        ]
+    );
+    assert_eq!(
+        by_truth("FALSE"),
+        [
+            ["s#0", "s#1"],
+            ["s#0", "s#2"],
+            ["s#1", "s#0"],
+            ["s#2", "s#0"]
+        ]
+    );
+    assert_eq!(
+        by_truth("UNKNOWN"),
+        [
+            ["s#0", "s#3"],
+            ["s#1", "s#3"],
+            ["s#2", "s#3"],
+            ["s#3", "s#0"],
+            ["s#3", "s#1"],
+            ["s#3", "s#2"],
+            ["s#3", "s#3"]
+        ]
+    );
+}
