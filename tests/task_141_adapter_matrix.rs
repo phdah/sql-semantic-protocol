@@ -184,3 +184,78 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
     }
     assert_eq!(checked, 4);
 }
+
+fn complete_states(input: &Value) -> Vec<sql_semantic_protocol::PhysicalWriteState> {
+    input.as_object().unwrap().iter().map(|(name, rows)| {
+        let rows = rows.as_array().unwrap().iter().map(|row| {
+            let value = match row["k"].as_i64() {
+                Some(n) => sql_semantic_protocol::LiteralValue::Number(n.to_string()),
+                None => sql_semantic_protocol::LiteralValue::Null,
+            };
+            sql_semantic_protocol::PhysicalWriteRow::new(
+                std::collections::BTreeMap::from([("k".to_string(), value)])
+            ).unwrap()
+        }).collect();
+        sql_semantic_protocol::PhysicalWriteState::new(name.clone(), rows).unwrap()
+    }).collect()
+}
+
+fn attested_direct(
+    sql: &str,
+    inputs: &Value,
+) -> sql_semantic_protocol::AnalysisBundle {
+    use sql_semantic_protocol::{
+        analyze_configured_inputs_with_catalog, ConfiguredSqlInput,
+        RelationCatalog, RelationSchema, SchemaColumn,
+    };
+    let schemas = inputs.as_object().unwrap().keys().map(|name| {
+        RelationSchema::new(
+            name.clone(),
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()]
+        ).unwrap()
+    }).collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new("task141", &input, "duckdb", dialect.as_ref())];
+    analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap()
+}
+
+fn physical_bags(
+    bundle: &AnalysisBundle,
+    states: &[sql_semantic_protocol::PhysicalWriteState],
+) -> sql_semantic_protocol::PhysicalCteExact {
+    use sql_semantic_protocol::{physical_finite_cte_bag_plan, PhysicalCteProof};
+    let layer = bundle.layers().last().unwrap();
+    let PhysicalCteProof::Exact(value) =
+        physical_finite_cte_bag_plan(bundle, layer.id(), states, None)
+    else { panic!("adapter lacks source-complete CTE physical proof"); };
+    *value
+}
+
+#[test]
+fn frozen_cte_physical_bags_match_direct_and_dbt_adapters() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let mut verified = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "mandatory_exact" { continue; }
+        let sql = case["sql"].as_str().unwrap();
+        let id = case["id"].as_str().unwrap();
+        let consumed_source = if id.ends_with("SHADOW") { "inner_src" } else { "s" };
+        let direct = attested_direct(sql, &case["initial_bags"]);
+        let dbt = compiled_dbt(sql, &case["initial_bags"], consumed_source);
+        let states = complete_states(&case["initial_bags"]);
+        let direct = physical_bags(&direct, &states);
+        let dbt = physical_bags(&dbt, &states);
+        assert_eq!(direct.source_bags, dbt.source_bags, "{id}: source row identity");
+        assert_eq!(direct.stage_bags, dbt.stage_bags, "{id}: CTE producer bags");
+        assert_eq!(direct.rejected, dbt.rejected, "{id}: SQL NOT TRUE");
+        assert_eq!(direct.false_pairs, dbt.false_pairs, "{id}: SQL FALSE");
+        assert_eq!(direct.unknown_pairs, dbt.unknown_pairs, "{id}: SQL UNKNOWN");
+        assert_eq!(direct.terminal, dbt.terminal, "{id}: terminal bag");
+        assert_eq!(direct.terminal_domains, dbt.terminal_domains, "{id}: typed bounds");
+        verified += 1;
+    }
+    assert_eq!(verified, 4);
+}
