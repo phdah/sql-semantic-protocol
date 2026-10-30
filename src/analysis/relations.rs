@@ -46,7 +46,7 @@ pub(super) fn diagnose_local_query_predicates(
         // as relation and output analysis, never an inherited producer.
         if with.recursive {
             for cte in &with.cte_tables {
-                local_outputs.remove(&cte.alias.name.to_string());
+                local_outputs.insert(cte.alias.name.to_string(), Output::new(Vec::new()));
             }
         }
         for cte in &with.cte_tables {
