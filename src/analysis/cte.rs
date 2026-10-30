@@ -42,13 +42,13 @@ fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<Ct
     if !with_hints.is_empty()
         || !partitions.is_empty()
         || !index_hints.is_empty()
-        || alias.as_ref().is_some_and(|alias| {
-            !alias.columns.is_empty() || alias.name.quote_style.is_some()
+        || alias
+            .as_ref()
+            .is_some_and(|alias| !alias.columns.is_empty() || alias.name.quote_style.is_some())
+        || name.0.iter().any(|part| {
+            part.as_ident()
+                .is_none_or(|ident| ident.quote_style.is_some())
         })
-        || name
-            .0
-            .iter()
-            .any(|part| part.as_ident().is_none_or(|ident| ident.quote_style.is_some()))
     {
         return None;
     }
