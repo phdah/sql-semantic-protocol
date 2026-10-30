@@ -555,7 +555,10 @@ pub(super) fn mutate_rows(
             || !nested.diagnostics().is_empty()
             || nested.predicates().where_predicate().is_none()
             || nested.correlations().is_empty()
-            || nested.correlations().iter().any(|column| column.relation() != target)
+            || nested
+                .correlations()
+                .iter()
+                .any(|column| column.relation() != target)
             || source.name() == target
         {
             return Err(residual("correlated mutation has unproved producer shape"));
@@ -617,7 +620,11 @@ pub(super) fn mutate_rows(
                     target_alias: write.target_alias(),
                     source: Some((source.name(), candidate)),
                 };
-                if selected(nested.predicates().where_predicate(), &inner_context, &aliases)? {
+                if selected(
+                    nested.predicates().where_predicate(),
+                    &inner_context,
+                    &aliases,
+                )? {
                     has_match = true;
                     break;
                 }
