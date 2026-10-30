@@ -1,3 +1,15 @@
+TASK-141 lexical and physical CTE source identity:
+`src/analysis/cte.rs` lowers a bounded ordinary WITH/JOIN syntax subset into
+parser-independent `CteProgram` stages in `src/protocol/cte.rs`.
+`src/physical_realization/cte_bags.rs` evaluates one complete attested physical
+bag per source and CTE producer, retaining distinct SQL aliases, typed producer
+graph identities, FALSE/UNKNOWN rejections and exact terminal domains.
+`tests/task_141_physical.rs` checks the canonical full physical bags;
+`tests/task_141_frozen_oracles.rs` checks independent DuckDB values and
+occurrence IDs; `tests/task_141_adapter_matrix.rs` covers dbt/ODCS parity.
+The frozen cases and review gates are in `docs/task-141-proof-matrix.json`
+and `docs/task-141-acceptance-audit.md`. TASK-78 remains a separate parent.
+
 TASK-152 ordered INSERT/UPDATE/DELETE state certification:
 `tests/task_152_ordered_mutations.rs` proves complete pre/post state bags,
 per-statement affected ordinals and counts, typed NULL/frequency bounds,
