@@ -209,9 +209,16 @@ fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
     let frozen: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-151-acceptance-freeze.json")).unwrap();
     let expected = frozen["dialect_expected"].as_object().unwrap_or_else(|| {
-        panic!("TASK151_FREEZE_PARSER_CELLS:{}", serde_json::to_string(&observed).unwrap())
+        panic!(
+            "TASK151_FREEZE_PARSER_CELLS:{}",
+            serde_json::to_string(&observed).unwrap()
+        )
     });
-    assert_eq!(expected.len(), observed.len(), "all 104 dialect cells must be frozen");
+    assert_eq!(
+        expected.len(),
+        observed.len(),
+        "all 104 dialect cells must be frozen"
+    );
     for (key, value) in observed {
         assert_eq!(expected[&key].as_str(), Some(value.as_str()), "{key}");
     }
