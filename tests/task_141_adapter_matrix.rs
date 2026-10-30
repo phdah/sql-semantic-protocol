@@ -294,10 +294,10 @@ fn physical_bags(
 ) -> sql_semantic_protocol::PhysicalCteExact {
     use sql_semantic_protocol::{physical_finite_cte_bag_plan, PhysicalCteProof};
     let layer = bundle.layers().last().unwrap();
-    let PhysicalCteProof::Exact(value) =
-        physical_finite_cte_bag_plan(bundle, layer.id(), states, None)
+    let result = physical_finite_cte_bag_plan(bundle, layer.id(), states, None);
+    let PhysicalCteProof::Exact(value) = result
     else {
-        panic!("adapter lacks source-complete CTE physical proof");
+        panic!("adapter lacks source-complete CTE physical proof: {result:?}");
     };
     *value
 }
