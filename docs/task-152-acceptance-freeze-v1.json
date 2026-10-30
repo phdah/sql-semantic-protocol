@@ -1,0 +1,2123 @@
+{
+  "version": 1,
+  "owner": "TASK-152",
+  "parent": "TASK-81",
+  "status": "frozen_pending_executable_verification",
+  "fixture_ids": [
+    "81-C152-P",
+    "81-C152-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "scope": [
+    "sequential three-write preimage/postimage proofs",
+    "enforced PK/CHECK/FK",
+    "nullable FK and SQL UNKNOWN",
+    "missing complete referenced bag Residual",
+    "direct SQL/dbt compiled catalog/ODCS equivalent schema facts",
+    "13 parser dialects and independent DuckDB execution"
+  ],
+  "comparison_assumptions": [
+    "complete initial target and referenced parent populations",
+    "signed INTEGER comparisons; SQL three-valued equality",
+    "authoritative explicitly Enforced PK/FK/CHECK evidence",
+    "statement ordered mutation, no implicit transaction rollback across committed previous statements",
+    "no native vendor/session or deferred-constraint certification from parser equivalence"
+  ],
+  "schema": {
+    "parent": {
+      "id": "INTEGER PRIMARY KEY"
+    },
+    "target": {
+      "id": "INTEGER PRIMARY KEY",
+      "parent_id": "INTEGER NULL REFERENCES parent(id)",
+      "score": "INTEGER CHECK (score >= 0)"
+    }
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_sql": [
+    "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+    "UPDATE target SET score = score + 5 WHERE id = 1",
+    "DELETE FROM target WHERE id = 2"
+  ],
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical"
+    ]
+  },
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "adapter_evidence": "Equivalent catalog types and explicitly supplied identical enforced constraints are compared at the canonical state-plan seam; dbt and ODCS alone do not attest runtime enforcement",
+  "oracles": {
+    "engine": "DuckDB",
+    "physical": "complete target, parent, and every intermediate write bag",
+    "truth": "independent TRUE and IS NOT TRUE rowid identity for UPDATE/DELETE",
+    "source": "single referenced parent complete bag, no additional implicit rows",
+    "positive": "three exact transitions and surviving updated row",
+    "negative": "NULL nonmembership; PK/FK/CHECK impossibility; missing population residual"
+  },
+  "cases": [
+    {
+      "id": "81-C152-P-three-writes",
+      "fixture_id": "81-C152-P",
+      "family": "sequential_insert_update_delete",
+      "classification": "mandatory_exact",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "UPDATE target SET score = score + 5 WHERE id = 1",
+          "before": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [
+            0
+          ],
+          "not_true_prestate_ordinals": [
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 15,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "15": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "DELETE FROM target WHERE id = 2",
+          "before": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 1
+          },
+          "selected_prestate_ordinals": [
+            1
+          ],
+          "not_true_prestate_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 15,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "15": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 15,
+              "upper": 15,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "15": 1
+              }
+            }
+          }
+        }
+      ],
+      "expected_final": [
+        {
+          "id": 1,
+          "parent_id": 7,
+          "score": 15
+        }
+      ],
+      "proof": "Exact",
+      "row_identity_rule": "Physical source row occurrences are independent; every transition's before bag is the previous committed after bag",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      },
+      "expected_final_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 7,
+          "upper": 7,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "7": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 15,
+          "upper": 15,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "15": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C152-P-nullable-fk-untouched",
+      "fixture_id": "81-C152-P",
+      "family": "nullable_foreign_key_and_untouched_identity",
+      "classification": "mandatory_exact",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [
+        {
+          "id": 99,
+          "parent_id": null,
+          "score": 5
+        }
+      ],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+          "before": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            }
+          ],
+          "after": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 99,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 5,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2,
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1,
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "UPDATE target SET score = score + 5 WHERE id = 1",
+          "before": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [
+            1
+          ],
+          "not_true_prestate_ordinals": [
+            0,
+            2
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2,
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1,
+                "10": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2,
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1,
+                "15": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "DELETE FROM target WHERE id = 2",
+          "before": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 99,
+              "parent_id": null,
+              "score": 5
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 15
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 1
+          },
+          "selected_prestate_ordinals": [
+            2
+          ],
+          "not_true_prestate_ordinals": [
+            0,
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2,
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1,
+                "15": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 99,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "99": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 1,
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 15,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1,
+                "15": 1
+              }
+            }
+          }
+        }
+      ],
+      "expected_final": [
+        {
+          "id": 99,
+          "parent_id": null,
+          "score": 5
+        },
+        {
+          "id": 1,
+          "parent_id": 7,
+          "score": 15
+        }
+      ],
+      "proof": "Exact",
+      "row_identity_rule": "Physical source row occurrences are independent; every transition's before bag is the previous committed after bag",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 99,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "99": 1
+          }
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 5,
+          "upper": 5,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "5": 1
+          }
+        }
+      },
+      "expected_final_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "99": 1
+          }
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": 7,
+          "upper": 7,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "7": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 5,
+          "upper": 15,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "5": 1,
+            "15": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C152-N-sql-unknown",
+      "fixture_id": "81-C152-N",
+      "family": "null_predicate_is_not_true",
+      "classification": "mandatory_exact",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "UPDATE target SET score = 999 WHERE id = NULL",
+          "before": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [
+            0,
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "DELETE FROM target WHERE id = 2",
+          "before": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 1
+          },
+          "selected_prestate_ordinals": [
+            1
+          ],
+          "not_true_prestate_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1
+              }
+            }
+          }
+        }
+      ],
+      "expected_final": [
+        {
+          "id": 1,
+          "parent_id": 7,
+          "score": 10
+        }
+      ],
+      "proof": "Exact",
+      "row_identity_rule": "Physical source row occurrences are independent; every transition's before bag is the previous committed after bag",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      },
+      "expected_final_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 7,
+          "upper": 7,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "7": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C152-N-check-on-update",
+      "fixture_id": "81-C152-N",
+      "family": "enforced_check_update_contradiction",
+      "classification": "mandatory_impossible",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "UPDATE target SET score = -5 WHERE id = 1",
+          "before": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": -5
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [
+            0
+          ],
+          "not_true_prestate_ordinals": [
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": -5,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "20": 1,
+                "-5": 1
+              }
+            }
+          }
+        }
+      ],
+      "failed_step": 1,
+      "expected_failure": "Impossible",
+      "expected_native_target_after_failure": [
+        {
+          "id": 1,
+          "parent_id": 7,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "parent_id": 7,
+          "score": 20
+        }
+      ],
+      "comparison_assumption": "enforced score >= 0",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      }
+    },
+    {
+      "id": "81-C152-N-fk-insert",
+      "fixture_id": "81-C152-N",
+      "family": "enforced_fk_insert_contradiction",
+      "classification": "mandatory_impossible",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,9,10)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 9,
+              "score": 10
+            }
+          ],
+          "affected": {
+            "inserted": 1,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 9,
+              "upper": 9,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "9": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1
+              }
+            }
+          }
+        }
+      ],
+      "failed_step": 0,
+      "expected_failure": "Impossible",
+      "expected_native_target_after_failure": [],
+      "comparison_assumption": "enforced FK target.parent_id -> parent.id; complete parent bag is [7]",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      }
+    },
+    {
+      "id": "81-C152-N-pk-insert",
+      "fixture_id": "81-C152-N",
+      "family": "enforced_pk_insert_contradiction",
+      "classification": "mandatory_impossible",
+      "assumed_parent": [
+        {
+          "id": 7
+        }
+      ],
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(1,7,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 2
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        }
+      ],
+      "failed_step": 0,
+      "expected_failure": "Impossible",
+      "expected_native_target_after_failure": [],
+      "comparison_assumption": "enforced target.id PRIMARY KEY",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      }
+    },
+    {
+      "id": "81-C152-N-missing-reference",
+      "fixture_id": "81-C152-N",
+      "family": "missing_complete_fk_reference",
+      "classification": "mandatory_residual",
+      "assumed_parent": null,
+      "target_before": [],
+      "steps": [
+        {
+          "sql": "INSERT INTO target (id,parent_id,score) VALUES (1,7,10),(2,7,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "parent_id": 7,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "parent_id": 7,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "selected_prestate_ordinals": [],
+          "not_true_prestate_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {}
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "parent_id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 7,
+              "upper": 7,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "7": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        }
+      ],
+      "expected_failure": "Residual",
+      "expected_gap": "MissingPopulation",
+      "comparison_assumption": "unknown is not empty; no reference table is invented",
+      "target_before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "parent_id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      }
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "family": "vendor_transaction_atomicity",
+      "owner": "TASK-152",
+      "proof": "Residual",
+      "missing": "engine-specific BEGIN/ROLLBACK/commit failure semantics across multiple statements",
+      "release_disposition": "pending TASK-84 and TASK-91 native review"
+    },
+    {
+      "family": "deferred_constraint_checks",
+      "owner": "TASK-152",
+      "proof": "Residual",
+      "missing": "session FK/CHECK deferral and commit-time enforcement",
+      "release_disposition": "pending TASK-84/TASK-88/TASK-91 native review"
+    },
+    {
+      "family": "noninteger_comparison_or_collation",
+      "owner": "TASK-152",
+      "proof": "Residual",
+      "missing": "attested engine-specific coercion/collation law",
+      "release_disposition": "pending TASK-88 native review"
+    }
+  ],
+  "acceptance_map": {
+    "1": [
+      "schema",
+      "cases",
+      "dialect_expected",
+      "conditional_boundaries"
+    ],
+    "2": [
+      "cases",
+      "comparison_assumptions"
+    ],
+    "3": [
+      "oracles",
+      "cases"
+    ],
+    "4": [
+      "dialect_expected",
+      "adapters",
+      "conditional_boundaries"
+    ],
+    "5": [
+      "pending_required_ci",
+      "pending_independent_review"
+    ]
+  },
+  "required_ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo doc --no-deps",
+    "cargo test --no-default-features",
+    "make dbt-e2e",
+    "active protocol/schema snapshots"
+  ],
+  "signoff": {
+    "mandatory_verified": false,
+    "parser_cells_verified": 0,
+    "adapter_cells_verified": 0,
+    "reviewed": false,
+    "final_head_ci": null
+  }
+}
