@@ -520,7 +520,9 @@ fn named_two_row_returning_oracle_matches_native_before_and_after() {
     let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
         panic!("named two-row oracle must be exact: {plan:?}");
     };
-    let [transition] = transitions.as_slice() else { panic!("one mutation"); };
+    let [transition] = transitions.as_slice() else {
+        panic!("one mutation");
+    };
     assert_eq!(transition.before(), &before);
     assert_eq!(transition.affected().updated(), 2);
     assert_eq!(transition.affected_target_ordinals(), &[0, 1]);
@@ -529,20 +531,28 @@ fn named_two_row_returning_oracle_matches_native_before_and_after() {
         rows(&state(&[(Some(1), 40), (Some(2), 40), (None, 30)]))
     );
     let returned = transition.returning().unwrap();
-    let ids = returned.rows().iter().map(|row| match row.values().get("id").unwrap() {
-        LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
-        other => panic!("unexpected RETURNING key {other:?}"),
-    }).collect::<Vec<_>>();
+    let ids = returned
+        .rows()
+        .iter()
+        .map(|row| match row.values().get("id").unwrap() {
+            LiteralValue::Number(value) => value.parse::<i64>().unwrap(),
+            other => panic!("unexpected RETURNING key {other:?}"),
+        })
+        .collect::<Vec<_>>();
     assert_eq!(ids, vec![1, 2]);
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE target (id INTEGER, score INTEGER);
-         INSERT INTO target VALUES (1,10),(2,20),(NULL,30);"
-    ).unwrap();
+         INSERT INTO target VALUES (1,10),(2,20),(NULL,30);",
+    )
+    .unwrap();
     let mut stmt = db.prepare(sql).unwrap();
-    let native_ids = stmt.query_map([], |row| row.get::<_, i64>(0)).unwrap()
-        .map(Result::unwrap).collect::<Vec<_>>();
+    let native_ids = stmt
+        .query_map([], |row| row.get::<_, i64>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     drop(stmt);
     assert_eq!(native_ids, vec![1, 2]);
     assert_eq!(rows(transition.after()), native_target_rows(&db));
