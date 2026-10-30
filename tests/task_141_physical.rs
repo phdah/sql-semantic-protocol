@@ -362,6 +362,23 @@ fn unresolved_cte_order_by_column_cannot_receive_an_exact_proof() {
 }
 
 #[test]
+fn partition_selected_cte_scan_is_not_a_complete_source_proof() {
+    // MySQL partition selection is not equivalent to the attested full s bag.
+    // Treating a TableFactor with partitions as a plain table is unsound.
+    let sql = "WITH shared AS (SELECT k FROM s PARTITION (p0)) SELECT k FROM shared";
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle_with_dialect(sql, &input, "mysql");
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "partition-restricted CTE cannot claim whole-source Exact"
+    );
+}
+
+#[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
