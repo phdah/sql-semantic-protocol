@@ -184,3 +184,37 @@ fn recursive_shadow_does_not_inherit_outer_output_domain() {
         "recursive physical producer must remain an explicit residual"
     );
 }
+
+#[test]
+fn every_mandatory_frozen_cte_case_is_analyzed_across_exposed_dialects() {
+    let freeze: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let mut checked = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "mandatory_exact" {
+            continue;
+        }
+        let id = case["id"].as_str().unwrap();
+        let sql = case["sql"].as_str().unwrap();
+        let expected_source = if id.ends_with("SHADOW") { "inner_src" } else { "s" };
+        for dialect_name in DIALECTS {
+            let dialect = dialect_from_name(dialect_name).unwrap();
+            let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
+                .unwrap_or_else(|error| panic!("{id}/{dialect_name}: {error}"));
+            let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+                panic!("{id}/{dialect_name}: missing analyzed query");
+            };
+            assert_eq!(
+                query.dependencies(),
+                [expected_source],
+                "{id}/{dialect_name}: lexical physical source"
+            );
+            assert!(
+                query.output().columns().len() > 0,
+                "{id}/{dialect_name}: missing output columns"
+            );
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 4 * DIALECTS.len());
+}
