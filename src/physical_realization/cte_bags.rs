@@ -438,19 +438,29 @@ pub fn physical_finite_cte_bag_plan(
             };
         }
     }
-    let mut nodes = source_names.iter().map(|name| PhysicalCteNode {
-        id: PhysicalCteRef::Source(name.clone()),
-        inputs: Vec::new(),
-    }).collect::<Vec<_>>();
+    let mut nodes = source_names
+        .iter()
+        .map(|name| PhysicalCteNode {
+            id: PhysicalCteRef::Source(name.clone()),
+            inputs: Vec::new(),
+        })
+        .collect::<Vec<_>>();
     for producer in program.stages() {
-        let inputs = producer.inputs().iter().map(|input| {
-            let reference = if stage_ids.contains(input.relation()) {
-                PhysicalCteRef::Producer(input.relation().to_string())
-            } else {
-                PhysicalCteRef::Source(input.relation().to_string())
-            };
-            PhysicalCteInput { alias: input.alias().to_string(), reference }
-        }).collect();
+        let inputs = producer
+            .inputs()
+            .iter()
+            .map(|input| {
+                let reference = if stage_ids.contains(input.relation()) {
+                    PhysicalCteRef::Producer(input.relation().to_string())
+                } else {
+                    PhysicalCteRef::Source(input.relation().to_string())
+                };
+                PhysicalCteInput {
+                    alias: input.alias().to_string(),
+                    reference,
+                }
+            })
+            .collect();
         nodes.push(PhysicalCteNode {
             id: PhysicalCteRef::Producer(producer.id().to_string()),
             inputs,
