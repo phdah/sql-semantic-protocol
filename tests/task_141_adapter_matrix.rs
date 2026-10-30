@@ -60,7 +60,7 @@ fn model_query(bundle: &AnalysisBundle) -> &QueryStatement {
         .flat_map(|input| input.statements())
         .find_map(|statement| match statement {
             ProtocolStatement::Query(query) => Some(query),
-            ProtocolStatement::Unsupported(_) => None,
+            _ => None,
         })
         .expect("compiled model query")
 }
