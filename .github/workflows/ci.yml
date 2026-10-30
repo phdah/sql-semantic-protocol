@@ -13,6 +13,11 @@ jobs:
   rust-checks:
     name: Rust / ${{ matrix.check }}
     runs-on: ubuntu-latest
+    env:
+      # Keep full locally configured debuginfo, but avoid running out of
+      # ephemeral runner disk during the complete Rust integration test suite.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +42,11 @@ jobs:
   dbt-e2e:
     name: dbt Core E2E
     runs-on: ubuntu-latest
+    env:
+      # Keep full locally configured debuginfo, but avoid running out of
+      # ephemeral runner disk during the complete Rust integration test suite.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
 
     steps:
       - name: Check out repository
@@ -64,6 +74,11 @@ jobs:
   no-default-features:
     name: Rust (no default features) / ${{ matrix.check }}
     runs-on: ubuntu-latest
+    env:
+      # Keep full locally configured debuginfo, but avoid running out of
+      # ephemeral runner disk during the complete Rust integration test suite.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     strategy:
       fail-fast: false
       matrix:
