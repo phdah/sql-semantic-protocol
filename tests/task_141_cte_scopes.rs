@@ -60,7 +60,10 @@ fn nested_cte_shadowing_keeps_the_inner_physical_source() {
     )
     .unwrap();
     assert_eq!(duckdb_rows(&db, "SELECT k FROM outer_src"), [Some(100)]);
-    assert_eq!(duckdb_rows(&db, "SELECT k FROM inner_src"), [Some(2), Some(3)]);
+    assert_eq!(
+        duckdb_rows(&db, "SELECT k FROM inner_src"),
+        [Some(2), Some(3)]
+    );
     assert_eq!(duckdb_rows(&db, sql), [Some(2), Some(3)]);
 }
 
@@ -73,7 +76,10 @@ fn reused_cte_aliases_share_one_duplicate_and_null_aware_source_bag() {
     let query = analyzed_query(sql);
     assert_eq!(query.dependencies(), ["s"]);
     assert_eq!(query.sources().len(), 2);
-    assert!(query.sources().iter().all(|source| source.name() == "shared"));
+    assert!(query
+        .sources()
+        .iter()
+        .all(|source| source.name() == "shared"));
     assert_eq!(query.sources()[0].alias(), Some("a"));
     assert_eq!(query.sources()[1].alias(), Some("b"));
 
@@ -87,10 +93,7 @@ fn reused_cte_aliases_share_one_duplicate_and_null_aware_source_bag() {
     let mut statement = db.prepare(sql).unwrap();
     let rows = statement
         .query_map([], |row| {
-            Ok((
-                row.get::<_, Option<i64>>(0)?,
-                row.get::<_, Option<i64>>(1)?,
-            ))
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?))
         })
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
