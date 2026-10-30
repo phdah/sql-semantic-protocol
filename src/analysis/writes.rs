@@ -936,7 +936,8 @@ pub(super) fn merge_target_relation(table: &TableFactor) -> Option<SourceRelatio
             // alias. A write with that ambiguous alias cannot safely claim
             // to target the whole physical relation.
             && !alias.as_ref().is_some_and(|alias|
-                alias.name.value.eq_ignore_ascii_case("partition")) => {
+                alias.name.value.eq_ignore_ascii_case("partition")) =>
+        {
             Some(SourceRelation::new(
                 name.to_string(),
                 alias.as_ref().map(|alias| alias.name.to_string()),
