@@ -315,6 +315,8 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     let derived = &new_exact[0];
     assert_eq!(derived["id"], "77-PARENT-DERIVED-P");
     assert_eq!(derived["owner"], "TASK-77");
+    assert_eq!(cells(&derived["parser_cells"], "dialect"), dialects);
+    assert_eq!(cells(&derived["adapter_cells"], "source"), adapters);
     assert_eq!(derived["classification"], "mandatory");
     assert!(derived["sql"].as_str().is_some_and(|sql| !sql.is_empty()));
     assert!(derived["source_bag"]
@@ -337,6 +339,8 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     let lateral = &new_conditional[0];
     assert_eq!(lateral["id"], "77-PARENT-LATERAL-R");
     assert_eq!(lateral["owner"], "TASK-77");
+    assert_eq!(cells(&lateral["parser_cells"], "dialect"), dialects);
+    assert_eq!(cells(&lateral["adapter_cells"], "source"), adapters);
     assert_eq!(lateral["classification"], "conditional");
     assert_eq!(lateral["positive_proof"], "Residual");
     assert_eq!(lateral["negative_proof"], "Residual");

@@ -558,7 +558,88 @@
           "dbt_compiled_sql_catalog": "Exact for compiled SQL",
           "odcs_equivalent_schema": "schema-only cannot attest literal array rows"
         },
-        "oracle_test": "tests/task_77_derived_subquery.rs"
+        "oracle_test": "tests/task_77_derived_subquery.rs",
+        "parser_cells": [
+          {
+            "dialect": "generic",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mysql",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "postgresql",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "hive",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "sqlite",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "snowflake",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "redshift",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mssql",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "clickhouse",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "bigquery",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "ansi",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "duckdb",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "databricks",
+            "classification": "exact_when_parser_accepts_shared_sql",
+            "boundary": "parser_rejection_if_unavailable"
+          }
+        ],
+        "adapter_cells": [
+          {
+            "source": "direct_sql",
+            "classification": "exact"
+          },
+          {
+            "source": "dbt_compiled_sql_catalog",
+            "classification": "exact_for_compiled_equivalent_sql"
+          },
+          {
+            "source": "odcs_equivalent_schema",
+            "classification": "no_literal_source_evidence"
+          }
+        ]
       }
     ],
     "conditional": [
@@ -577,7 +658,88 @@
         },
         "positive_proof": "Residual",
         "negative_proof": "Residual",
-        "oracle_test": "tests/task_77_derived_subquery.rs"
+        "oracle_test": "tests/task_77_derived_subquery.rs",
+        "parser_cells": [
+          {
+            "dialect": "generic",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mysql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "postgresql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "hive",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "sqlite",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "snowflake",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "redshift",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mssql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "clickhouse",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "bigquery",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "ansi",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "duckdb",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "databricks",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          }
+        ],
+        "adapter_cells": [
+          {
+            "source": "direct_sql",
+            "classification": "residual"
+          },
+          {
+            "source": "dbt_compiled_sql_catalog",
+            "classification": "residual_if_compiled_equivalent"
+          },
+          {
+            "source": "odcs_equivalent_schema",
+            "classification": "insufficient_correlation_bag_evidence"
+          }
+        ]
       }
     ]
   }

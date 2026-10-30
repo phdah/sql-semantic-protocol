@@ -82,6 +82,28 @@ fn derived_array_subquery_preserves_complete_native_null_duplicate_and_impossibl
 }
 
 #[test]
+fn derived_finite_subquery_is_canonical_for_each_parser_accepted_dialect() {
+    let dialects = [
+        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
+        "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    ];
+    let mut accepted = 0;
+    for dialect in dialects {
+        match proof(DERIVED, dialect, None) {
+            Some(PhysicalFiniteTableProof::Exact(exact)) => {
+                accepted += 1;
+                assert_eq!(exact.row_ids, ["star:1", "star:2", "star:3"]);
+                assert_eq!(exact.source_row_ids, ["unnest:1", "unnest:2", "unnest:3"]);
+                assert_eq!(exact.terminal_domains["v"].admits_null(), Some(true));
+            }
+            Some(other) => panic!("{dialect}: parsed finite derived table lost exactness: {other:?}"),
+            None => {} // Explicit parser boundary, not silently called Exact.
+        }
+    }
+    assert!(accepted > 0, "at least one exposed parser must accept the frozen SQL");
+}
+
+#[test]
 fn subquery_filter_without_closed_source_proof_is_residual() {
     let sql = "SELECT * FROM (SELECT * FROM UNNEST([1,2]) AS t(v) WHERE v > 1) AS q";
     assert!(!matches!(
