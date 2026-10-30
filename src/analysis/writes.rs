@@ -496,7 +496,8 @@ fn bounded_mutation_exists(
     {
         return None;
     }
-    Some((predicate, source.clone()))
+    let independent_source = source.clone();
+    Some((predicate, independent_source))
 }
 
 pub(super) fn analyze_update(
