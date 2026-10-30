@@ -42,8 +42,8 @@ fn expected() -> serde_json::Value {
 #[test]
 fn frozen_shared_write_syntax_classifies_all_thirteen_dialects() {
     let freeze = expected();
-    assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
-    assert_eq!(freeze["parser_sql"].as_array().unwrap().len(), 3);
+    assert_eq!(freeze["dialects"], serde_json::json!(DIALECTS));
+    assert_eq!(freeze["parser_sql"], serde_json::json!(SCRIPT));
     let kinds = [WriteKind::Append, WriteKind::Update, WriteKind::Delete];
     let mut actual = BTreeMap::<String, Vec<String>>::new();
     for dialect in DIALECTS {
