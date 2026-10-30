@@ -87,7 +87,7 @@ pub struct QueryStatement {
     cte_program: Option<Box<CteProgram>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
-    diagnostics: Box<Vec<Diagnostic>>,
+    diagnostics: Box<[Diagnostic]>,
 }
 
 impl QueryStatement {
@@ -128,7 +128,7 @@ impl QueryStatement {
             cte_program: None,
             produced_relation: None,
             write: None,
-            diagnostics: Box::new(diagnostics),
+            diagnostics: diagnostics.into_boxed_slice(),
         }
     }
 
