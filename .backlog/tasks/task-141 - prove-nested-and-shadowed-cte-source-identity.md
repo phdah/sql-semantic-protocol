@@ -1,10 +1,10 @@
 ---
 id: TASK-141
 title: Prove nested and shadowed CTE source identity
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-30'
 labels: []
 milestone: m-3
 dependencies:
