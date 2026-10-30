@@ -12,11 +12,38 @@ use super::*;
 use crate::data_type::DataType;
 use crate::protocol::{CteColumnRef, CteInput, CteStage, LiteralValue};
 
+/// Typed node reference in one complete lexical CTE execution graph.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum PhysicalCteRef {
+    /// A complete, caller-attested physical relation.
+    Source(String),
+    /// One lexical CTE definition or the terminal SELECT.
+    Producer(String),
+}
+
+/// One SQL source instance binding to an existing physical or local producer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalCteInput {
+    /// Local SQL alias; distinct even when multiple aliases share one producer.
+    pub alias: String,
+    /// Canonical input identity, not an independently insertable CTE table.
+    pub reference: PhysicalCteRef,
+}
+
+/// One producer-first physical or lexical node of the CTE execution.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalCteNode {
+    /// Identity of the physical source or lexical producer.
+    pub id: PhysicalCteRef,
+    /// SQL input instances, which can share one producer.
+    pub inputs: Vec<PhysicalCteInput>,
+}
+
 /// Exact proof of each physical leaf, lexical producer and final SQL bag.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalCteExact {
-    /// Reference-based physical source graph; local CTE stages are in stage_bags.
-    pub nodes: Vec<PhysicalPlanNode>,
+    /// Producer-first graph with distinct physical leaves, stages and SQL aliases.
+    pub nodes: Vec<PhysicalCteNode>,
     /// Distinct physical leaves, never one insert target per CTE reference.
     pub sources: Vec<String>,
     /// Complete initial source rows with occurrence identities.
@@ -411,43 +438,22 @@ pub fn physical_finite_cte_bag_plan(
             };
         }
     }
-    let mut nodes = source_names
-        .iter()
-        .map(|name| PhysicalPlanNode {
-            id: PhysicalPlanRef::Source(name.clone()),
-            inputs: Vec::new(),
-            produced_relations: Vec::new(),
-            write_kind: None,
-            operator_witnesses: Vec::new(),
-            pending_producers: Vec::new(),
-        })
-        .collect::<Vec<_>>();
+    let mut nodes = source_names.iter().map(|name| PhysicalCteNode {
+        id: PhysicalCteRef::Source(name.clone()),
+        inputs: Vec::new(),
+    }).collect::<Vec<_>>();
     for producer in program.stages() {
-        let stage_ref = |id: &str| {
-            if id == program.terminal() {
-                PhysicalPlanRef::Layer(target_layer_id.to_string())
+        let inputs = producer.inputs().iter().map(|input| {
+            let reference = if stage_ids.contains(input.relation()) {
+                PhysicalCteRef::Producer(input.relation().to_string())
             } else {
-                PhysicalPlanRef::Layer(format!("{target_layer_id}/{id}"))
-            }
-        };
-        let inputs = producer
-            .inputs()
-            .iter()
-            .map(|input| {
-                if stage_ids.contains(input.relation()) {
-                    stage_ref(input.relation())
-                } else {
-                    PhysicalPlanRef::Source(input.relation().to_string())
-                }
-            })
-            .collect();
-        nodes.push(PhysicalPlanNode {
-            id: stage_ref(producer.id()),
+                PhysicalCteRef::Source(input.relation().to_string())
+            };
+            PhysicalCteInput { alias: input.alias().to_string(), reference }
+        }).collect();
+        nodes.push(PhysicalCteNode {
+            id: PhysicalCteRef::Producer(producer.id().to_string()),
             inputs,
-            produced_relations: Vec::new(),
-            write_kind: None,
-            operator_witnesses: Vec::new(),
-            pending_producers: Vec::new(),
         });
     }
     PhysicalCteProof::Exact(Box::new(PhysicalCteExact {
