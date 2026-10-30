@@ -605,6 +605,73 @@ fn named_values_source(factor: &TableFactor) -> Option<FiniteTable> {
     )
 }
 
+// Only a plain, noncorrelated derived SELECT over a previously certified
+// source-free table is an exact nested source. Keep the complete inner bag
+// canonical and do not flatten it into fabricated independent physical rows.
+fn derived_star_select(select: &Select, dialect_name: &str) -> Option<FiniteTable> {
+    use super::star_projection::{plan_star_modification, StarModification};
+
+    if !ordinary_select_shape(select) {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    if !from.joins.is_empty() {
+        return None;
+    }
+    let TableFactor::Derived {
+        lateral: false,
+        subquery,
+        alias: Some(alias),
+        ..
+    } = &from.relation
+    else {
+        return None;
+    };
+    // Positional aliases require a separate verified column-identity mapping.
+    if !alias.columns.is_empty() {
+        return None;
+    }
+    let [item] = select.projection.as_slice() else {
+        return None;
+    };
+    let source = source_free_finite_query(subquery, None, dialect_name)?
+        .finite_table()?
+        .clone();
+    // The public physical plan only certifies one complete producer hop.
+    // Do not silently erase deeper source or JOIN pair provenance.
+    if source.source().is_some() || source.joined_sources().is_some() {
+        return None;
+    }
+    let options = match item {
+        SelectItem::Wildcard(options) => options,
+        SelectItem::QualifiedWildcard(qualifier, options)
+            if qualifier.to_string() == alias.name.value =>
+        {
+            options
+        }
+        _ => return None,
+    };
+    if !matches!(
+        plan_star_modification(options, source.columns()).ok()?,
+        StarModification::Identity
+    ) {
+        return None;
+    }
+
+    let contributors = (0..source.rows().len())
+        .map(|index| vec![index])
+        .collect();
+    FiniteTable::new(
+        FiniteTableKind::Star,
+        source.columns().to_vec(),
+        source.column_types().to_vec(),
+        source.rows().to_vec(),
+    )?
+    .with_source(source, contributors)
+}
+
 fn star_select(select: &Select) -> Option<FiniteTable> {
     use super::star_projection::{plan_star_modification, StarModification};
 
@@ -932,6 +999,7 @@ pub(super) fn source_free_finite_query(
     let table = match query.body.as_ref() {
         SetExpr::Values(values) => values_table(values),
         SetExpr::Select(select) => grouped_select(select, dialect_name)
+            .or_else(|| derived_star_select(select, dialect_name))
             .or_else(|| star_select(select))
             .or_else(|| pivot_select(select))
             .or_else(|| unpivot_select(select))
