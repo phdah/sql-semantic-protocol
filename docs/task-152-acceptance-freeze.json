@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-152",
   "parent": "TASK-81",
-  "status": "frozen_pending_executable_verification",
+  "status": "frozen_v2_pending_executable_verification",
   "fixture_ids": [
     "81-C152-P",
     "81-C152-N"
@@ -1664,7 +1664,7 @@
       "id": "81-C152-N-fk-insert",
       "fixture_id": "81-C152-N",
       "family": "enforced_fk_insert_contradiction",
-      "classification": "mandatory_impossible",
+      "classification": "conditional_residual",
       "assumed_parent": [
         {
           "id": 7
@@ -1756,7 +1756,7 @@
         }
       ],
       "failed_step": 0,
-      "expected_failure": "Impossible",
+      "expected_failure": "Residual",
       "expected_native_target_after_failure": [],
       "comparison_assumption": "enforced FK target.parent_id -> parent.id; complete parent bag is [7]",
       "target_before_domains": {
@@ -1787,7 +1787,11 @@
           "upper_inclusive": false,
           "frequencies": {}
         }
-      }
+      },
+      "expected_gap": "UnprovedOperation",
+      "native_expected_failure": "Impossible_under_DuckDB_immediate_fk",
+      "conditional_owner": "TASK-152",
+      "release_disposition": "pending TASK-84/TASK-88 native FK deferrability review"
     },
     {
       "id": "81-C152-N-pk-insert",
@@ -2077,6 +2081,13 @@
       "proof": "Residual",
       "missing": "attested engine-specific coercion/collation law",
       "release_disposition": "pending TASK-88 native review"
+    },
+    {
+      "family": "foreign_key_missing_referenced_tuple",
+      "owner": "TASK-152",
+      "proof": "Residual",
+      "missing": "portable enforcement timing or deferral law; native DuckDB rejects independently",
+      "release_disposition": "pending TASK-84/TASK-88/TASK-91 native evidence"
     }
   ],
   "acceptance_map": {
@@ -2119,5 +2130,7 @@
     "adapter_cells_verified": 0,
     "reviewed": false,
     "final_head_ci": null
-  }
+  },
+  "freeze_history": "docs/task-152-acceptance-freeze-v1.json",
+  "reviewed_revision": "v1 wrongly expected portable Impossible for an absent FK. The canonical state interpreter properly refuses to infer immediate enforcement/absence under unproved deferral. DuckDB-native immediate enforcement is separately executable."
 }
