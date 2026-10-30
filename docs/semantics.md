@@ -214,6 +214,10 @@ An absent, well-typed terminal tuple is `Impossible` only after full
 evaluation; unsupported projections, missing/ambiguous schema evidence,
 recursion, forward-binding engine rules, materialized writes, computed
 ORDER BY expressions and other unproved operator shapes remain `Residual`.
+For exact CTE bag proof, each ORDER BY key must resolve to an unqualified
+projected output label. Missing names and keys requiring unproved SQL
+name-resolution rules remain `Residual` rather than certifying a query
+that may fail at execution.
 Only DuckDB has an independent executed engine oracle; the other exposed
 dialect paths establish parser and canonical semantic parity, not native
 engine execution. See [the frozen TASK-141 matrix](task-141-proof-matrix.json).
