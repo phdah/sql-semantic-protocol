@@ -7,28 +7,30 @@ use crate::protocol::{CteColumnRef, CteInput, CteProgram, CteProjection, CteStag
 fn column(expression: &Expr) -> Option<CteColumnRef> {
     match expression {
         Expr::Identifier(name) => Some(CteColumnRef::new(None, name.value.clone())),
-        Expr::CompoundIdentifier(names) if names.len() == 2 => {
-            Some(CteColumnRef::new(
-                Some(names[0].value.clone()),
-                names[1].value.clone(),
-            ))
-        }
+        Expr::CompoundIdentifier(names) if names.len() == 2 => Some(CteColumnRef::new(
+            Some(names[0].value.clone()),
+            names[1].value.clone(),
+        )),
         _ => None,
     }
 }
 
-fn source(
-    factor: &TableFactor,
-    lexical: &BTreeMap<String, String>,
-) -> Option<CteInput> {
+fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<CteInput> {
     let TableFactor::Table {
-        name, alias, args: None, sample: None, ..
-    } = factor else {
+        name,
+        alias,
+        args: None,
+        sample: None,
+        ..
+    } = factor
+    else {
         return None;
     };
     let name = name.to_string();
     let canonical = lexical.get(&name).cloned().unwrap_or_else(|| name.clone());
-    let instance = alias.as_ref().map_or(name, |alias| alias.name.value.clone());
+    let instance = alias
+        .as_ref()
+        .map_or(name, |alias| alias.name.value.clone());
     Some(CteInput::new(canonical, instance))
 }
 
@@ -81,7 +83,8 @@ fn select_stage(
                 left,
                 op: SqlBinaryOperator::Eq,
                 right,
-            })) = &join.join_operator else {
+            })) = &join.join_operator
+            else {
                 return None;
             };
             inputs.push(source(&join.relation, lexical)?);
