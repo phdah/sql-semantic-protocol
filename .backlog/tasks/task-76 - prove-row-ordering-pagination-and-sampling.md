@@ -1,7 +1,7 @@
 ---
 id: TASK-76
 title: Handle row selection, ordering, pagination and sampling exactly
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-30'
@@ -34,12 +34,12 @@ ORDER BY/LIMIT/OFFSET/FETCH/TOP, DISTINCT ON and sampling can invalidate seeming
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Normalize LIMIT/OFFSET/FETCH WITH TIES/TOP, ORDER BY, DISTINCT/DISTINCT ON, QUALIFY placement and dialect-specific syntactic equivalents as typed row-selection semantics.
-- [ ] #2 Derive exact candidate ranks, ties, offset windows and qualifying/rejected memberships with unique-order preconditions when necessary.
-- [ ] #3 Describe deterministic versus stochastic TABLESAMPLE/SAMPLE with seed and sampling semantics; explicitly residual when exact output membership is inherently unprovable.
-- [ ] #4 Compose inner/outer row limits across CTEs, set branches and producer layers, including empty and impossible output sizes.
-- [ ] #5 Execute dialect-compatible full result tests under deterministic settings and add residual/no-overclaim cases.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Normalize LIMIT/OFFSET/FETCH WITH TIES/TOP, ORDER BY, DISTINCT/DISTINCT ON, QUALIFY placement and dialect-specific syntactic equivalents as typed row-selection semantics.
+- [x] #2 Derive exact candidate ranks, ties, offset windows and qualifying/rejected memberships with unique-order preconditions when necessary.
+- [x] #3 Describe deterministic versus stochastic TABLESAMPLE/SAMPLE with seed and sampling semantics; explicitly residual when exact output membership is inherently unprovable.
+- [x] #4 Compose inner/outer row limits across CTEs, set branches and producer layers, including empty and impossible output sizes.
+- [x] #5 Execute dialect-compatible full result tests under deterministic settings and add residual/no-overclaim cases.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -59,7 +59,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Dependency-ordered bounded child queue (2026-10-17)
 
-**TASK-76 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+**TASK-76 is a parent signoff, not one implementation PR.** Its original AC remained unchecked until the independent parent signoff below. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
 
 - **[TASK-133](task-133%20-%20prove-deterministic-order-by-limit-offset-and-top.md)** (1/4): sorted total order; LIMIT/OFFSET; FETCH FIRST; TOP variant. Fixtures `76-C133-P`, `76-C133-N`.
 - **[TASK-134](task-134%20-%20prove-ties-distinct-and-qualify-pagination-boundaries.md)** (2/4): WITH TIES; DISTINCT; DISTINCT ON; SQL NULL ordering. Fixtures `76-C134-P`, `76-C134-N`.
@@ -74,4 +74,10 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 The four child tasks TASK-133..136 are Done on `main`, but child completion alone does not sign off the original six criteria. The new [TASK-76 parent acceptance freeze](../../docs/task-76-acceptance-freeze.json) reconciles 26 mandatory Exact and 16 conditional cases; the [independent audit](../../docs/task-76-acceptance-audit.md) maps original AC #1..#6 to their canonical child oracles. `tests/task_76_parent_closure.rs` guards the entire frozen set, source/terminal contracts and public/native page behavior.
 
-**Final gate:** Do not check the original AC or mark this parent Done until final PR-head formatting, strict Clippy, all tests, docs, no-default-feature, schema/golden and dbt Core E2E are green and independent standards/spec review has no blocking gaps. Conditional native vendor and session laws remain uncertified; TASK-91 release signoff is separate.
+**Signoff:** Original AC #1..#6 are independently verified against the frozen 26 mandatory Exact and 16 reviewed conditional cases. [Implementation CI 41073526769](https://github.com/phdah/sql-semantic-protocol/actions/runs/41073526769) passed 9/9 required checks. Final metadata PR-head CI must also pass before merge. Native vendor and session laws remain conditional; TASK-91 release signoff is separate.
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-76 parent original AC #1..#6: Done for the independently certified portable scope. TASK-133..136 are Done and merged on main; 26 Exact physical source/terminal cases and 16 reviewed conditional sampling, NULL, tie and producer boundaries are preserved in the [v2 parent freeze](../../docs/task-76-acceptance-freeze.json). The [parent audit](../../docs/task-76-acceptance-audit.md) maps each original AC to its specific executable evidence, with four stochastic sampling cases intentionally Residual rather than falsely Exact. Native DuckDB, 13 parser dialect paths and direct SQL/dbt/ODCS parity are independently verified. Final PR-head CI is a pre-merge gate; TASK-91 independently controls release.
+<!-- SECTION:FINAL_SUMMARY:END -->
