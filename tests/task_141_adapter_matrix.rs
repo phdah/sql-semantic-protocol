@@ -163,7 +163,8 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
         )];
         let from_contract = analyze_configured_inputs_with_catalog(&configured, &evidence)
             .unwrap_or_else(|error| panic!("{id}: ODCS analysis: {error}"));
-        let from_sql = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
+        let from_sql =
+            analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
         let from_contract = model_query(&from_contract);
         let from_sql = model_query(&from_sql);
         assert_eq!(
