@@ -12,10 +12,22 @@ use sql_semantic_protocol::{
 };
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-137", include_str!("../docs/task-137-acceptance-freeze.json")),
-    ("TASK-138", include_str!("../docs/task-138-acceptance-freeze.json")),
-    ("TASK-139", include_str!("../docs/task-139-acceptance-freeze.json")),
-    ("TASK-140", include_str!("../docs/task-140-acceptance-freeze.json")),
+    (
+        "TASK-137",
+        include_str!("../docs/task-137-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-138",
+        include_str!("../docs/task-138-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-139",
+        include_str!("../docs/task-139-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-140",
+        include_str!("../docs/task-140-acceptance-freeze.json"),
+    ),
 ];
 
 fn parent() -> Value {
@@ -24,8 +36,12 @@ fn parent() -> Value {
 }
 
 fn ids(value: &Value) -> BTreeSet<String> {
-    value.as_array().expect("ID array").iter()
-        .map(|item| item.as_str().expect("ID").to_owned()).collect()
+    value
+        .as_array()
+        .expect("ID array")
+        .iter()
+        .map(|item| item.as_str().expect("ID").to_owned())
+        .collect()
 }
 
 fn adapter(name: &str) -> &str {
@@ -38,17 +54,38 @@ fn adapter(name: &str) -> &str {
 
 fn cells(value: &Value, field: &str) -> BTreeSet<String> {
     if let Some(map) = value.as_object() {
-        return map.keys().map(|id| if field == "dialect" { id.clone() }
-            else { adapter(id).to_owned() }).collect();
+        return map
+            .keys()
+            .map(|id| {
+                if field == "dialect" {
+                    id.clone()
+                } else {
+                    adapter(id).to_owned()
+                }
+            })
+            .collect();
     }
-    value.as_array().expect("cells").iter().map(|row| {
-        let name = row[field].as_str().expect("named cell");
-        if field == "dialect" { name.to_owned() } else { adapter(name).to_owned() }
-    }).collect()
+    value
+        .as_array()
+        .expect("cells")
+        .iter()
+        .map(|row| {
+            let name = row[field].as_str().expect("named cell");
+            if field == "dialect" {
+                name.to_owned()
+            } else {
+                adapter(name).to_owned()
+            }
+        })
+        .collect()
 }
 
 fn case_list<'a>(child: &'a Value, name: &str) -> &'a Vec<Value> {
-    let field = if name == "TASK-140" { "variants" } else { "cases" };
+    let field = if name == "TASK-140" {
+        "variants"
+    } else {
+        "cases"
+    };
     child[field].as_array().expect("finite child inventory")
 }
 
@@ -57,8 +94,14 @@ fn domain(case: &Value) -> Option<&Value> {
 }
 
 fn full_terminal(case: &Value) -> Option<&Value> {
-    ["expected", "expected_terminal_rows", "terminal_rows", "terminal"]
-        .iter().find_map(|key| case.get(*key))
+    [
+        "expected",
+        "expected_terminal_rows",
+        "terminal_rows",
+        "terminal",
+    ]
+    .iter()
+    .find_map(|key| case.get(*key))
 }
 
 #[test]
@@ -67,7 +110,9 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
     assert_eq!(freeze["version"], 1);
     assert_eq!(freeze["task"], "TASK-77");
     assert_eq!(freeze["release_approved"], false);
-    assert!(freeze["mandatory_unverified"].as_array().is_some_and(Vec::is_empty));
+    assert!(freeze["mandatory_unverified"]
+        .as_array()
+        .is_some_and(Vec::is_empty));
 
     let dialects = ids(&freeze["required_dialects"]);
     let adapters = ids(&freeze["required_adapters"]);
@@ -82,12 +127,23 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
         let child: Value = serde_json::from_str(content).expect("versioned child");
         assert_eq!(child["parent"], "TASK-77", "{name}");
         assert_eq!(ids(&child["dialects"]), dialects, "{name}: dialect drift");
-        let child_adapter = child.get("adapters").or_else(|| child.get("adapter_sources"))
+        let child_adapter = child
+            .get("adapters")
+            .or_else(|| child.get("adapter_sources"))
             .expect("child adapter inventory");
-        assert_eq!(ids(child_adapter).into_iter().map(|s| adapter(&s).to_owned())
-            .collect::<BTreeSet<_>>(), adapters, "{name}: adapter drift");
+        assert_eq!(
+            ids(child_adapter)
+                .into_iter()
+                .map(|s| adapter(&s).to_owned())
+                .collect::<BTreeSet<_>>(),
+            adapters,
+            "{name}: adapter drift"
+        );
         let reference = &freeze["source_of_truth"][name];
-        assert_eq!(reference["version"], child["version"], "{name}: version drift");
+        assert_eq!(
+            reference["version"], child["version"],
+            "{name}: version drift"
+        );
         assert_eq!(ids(&reference["fixture_ids"]), ids(&child["fixture_ids"]));
         fixtures.extend(ids(&child["fixture_ids"]));
 
@@ -98,51 +154,96 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
         for case in case_list(&child, name) {
             let id = case["id"].as_str().expect("case identity");
             assert!(seen.insert(id.to_owned()), "{name}: duplicate case {id}");
-            assert!(!case["sql"].as_str().unwrap_or("").is_empty(), "{id}: no SQL");
-            let parsers = case.get("parser_cells").or_else(|| case.get("dialect_matrix"))
+            assert!(
+                !case["sql"].as_str().unwrap_or("").is_empty(),
+                "{id}: no SQL"
+            );
+            let parsers = case
+                .get("parser_cells")
+                .or_else(|| case.get("dialect_matrix"))
                 .expect("full parser evidence");
             assert_eq!(cells(parsers, "dialect"), dialects, "{id}: parser matrix");
-            let sources = case.get("adapter_cells").or_else(|| case.get("adapter_matrix"))
+            let sources = case
+                .get("adapter_cells")
+                .or_else(|| case.get("adapter_matrix"))
                 .expect("full adapter evidence");
             let adapter_field = if sources.is_array()
-                && sources.as_array().unwrap().first()
-                    .is_some_and(|cell| cell.get("source").is_some()) {
+                && sources
+                    .as_array()
+                    .unwrap()
+                    .first()
+                    .is_some_and(|cell| cell.get("source").is_some())
+            {
                 "source"
             } else {
                 "adapter"
             };
-            assert_eq!(cells(sources, adapter_field), adapters, "{id}: adapter matrix");
+            assert_eq!(
+                cells(sources, adapter_field),
+                adapters,
+                "{id}: adapter matrix"
+            );
 
-            let exact_case = case.get("classification").or_else(|| case.get("kind"))
-                .and_then(Value::as_str) == Some("mandatory");
+            let exact_case = case
+                .get("classification")
+                .or_else(|| case.get("kind"))
+                .and_then(Value::as_str)
+                == Some("mandatory");
             assert_eq!(exact_case, exact.contains(id), "{id}: classification drift");
 
             if exact_case {
-                assert!(full_terminal(case).is_some_and(Value::is_array),
-                    "{id}: missing complete terminal bag");
-                assert!(case.get("source").or_else(|| case.get("source_rows"))
-                    .is_some_and(Value::is_array), "{id}: missing physical source bag");
+                assert!(
+                    full_terminal(case).is_some_and(Value::is_array),
+                    "{id}: missing complete terminal bag"
+                );
+                assert!(
+                    case.get("source")
+                        .or_else(|| case.get("source_rows"))
+                        .is_some_and(Value::is_array),
+                    "{id}: missing physical source bag"
+                );
                 if !domain(case).is_some_and(Value::is_object) {
-                    assert!(freeze["domain_cross_references"][id].is_string(),
-                        "{id}: missing typed domain witness");
+                    assert!(
+                        freeze["domain_cross_references"][id].is_string(),
+                        "{id}: missing typed domain witness"
+                    );
                 }
-                assert!(case.get("positive").or_else(|| case.get("positive_membership"))
-                    .or_else(|| case.get("membership_positive"))
-                    .or_else(|| case.get("source_row_ids")).is_some(),
-                    "{id}: missing positive physical evidence");
-                assert!(case.get("rejected").or_else(|| case.get("negative_membership"))
-                    .or_else(|| case.get("not_true")).is_some(),
-                    "{id}: missing NOT TRUE or impossible witness");
+                assert!(
+                    case.get("positive")
+                        .or_else(|| case.get("positive_membership"))
+                        .or_else(|| case.get("membership_positive"))
+                        .or_else(|| case.get("source_row_ids"))
+                        .is_some(),
+                    "{id}: missing positive physical evidence"
+                );
+                assert!(
+                    case.get("rejected")
+                        .or_else(|| case.get("negative_membership"))
+                        .or_else(|| case.get("not_true"))
+                        .is_some(),
+                    "{id}: missing NOT TRUE or impossible witness"
+                );
                 assert!(mandatory.insert(id.to_owned()), "duplicate mandatory {id}");
             } else {
-                assert!(residual.contains(id), "{id}: undeclared conditional boundary");
-                assert!(case.get("reason").is_some() || case.get("release_disposition").is_some(),
-                    "{id}: conditional boundary not reviewed");
-                assert!(conditional.insert(id.to_owned()), "duplicate conditional {id}");
+                assert!(
+                    residual.contains(id),
+                    "{id}: undeclared conditional boundary"
+                );
+                assert!(
+                    case.get("reason").is_some() || case.get("release_disposition").is_some(),
+                    "{id}: conditional boundary not reviewed"
+                );
+                assert!(
+                    conditional.insert(id.to_owned()),
+                    "duplicate conditional {id}"
+                );
             }
         }
-        assert_eq!(seen, exact.union(&residual).cloned().collect(),
-            "{name}: unclassified case");
+        assert_eq!(
+            seen,
+            exact.union(&residual).cloned().collect(),
+            "{name}: unclassified case"
+        );
     }
 
     assert_eq!(fixtures, ids(&freeze["fixture_ids"]));
@@ -162,33 +263,55 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
         assert_eq!(ac["id"], index + 1);
         let exact = ids(&ac["mandatory_case_ids"]);
         let residual = ids(&ac["conditional_case_ids"]);
-        assert!(!exact.is_empty(), "AC {} has no mandatory evidence", index + 1);
-        assert!(exact.is_subset(&mandatory), "AC {} invents proof", index + 1);
-        assert!(residual.is_subset(&conditional), "AC {} invents boundary", index + 1);
-        assert!(ac["evidence"].as_array().is_some_and(|list| !list.is_empty()));
+        assert!(
+            !exact.is_empty(),
+            "AC {} has no mandatory evidence",
+            index + 1
+        );
+        assert!(
+            exact.is_subset(&mandatory),
+            "AC {} invents proof",
+            index + 1
+        );
+        assert!(
+            residual.is_subset(&conditional),
+            "AC {} invents boundary",
+            index + 1
+        );
+        assert!(ac["evidence"]
+            .as_array()
+            .is_some_and(|list| !list.is_empty()));
         covered_mandatory.extend(exact);
         covered_conditional.extend(residual);
     }
     for (ac, id) in [
-        (0, "77-C137-P-values"), (0, "77-C138-P-rename"),
-        (0, "77-C138-P-pivot"), (1, "77-C137-P-ordinality"),
-        (1, "77-C137-N-null-array"), (1, "77-C138-N-unpivot"),
-        (3, "77-C140-P-GROUP"), (3, "77-C140-P-JOIN"),
+        (0, "77-C137-P-values"),
+        (0, "77-C138-P-rename"),
+        (0, "77-C138-P-pivot"),
+        (1, "77-C137-P-ordinality"),
+        (1, "77-C137-N-null-array"),
+        (1, "77-C138-N-unpivot"),
+        (3, "77-C140-P-GROUP"),
+        (3, "77-C140-P-JOIN"),
     ] {
-        assert!(ids(&criteria[ac]["mandatory_case_ids"]).contains(id),
-            "AC {} lacks required {}", ac + 1, id);
+        assert!(
+            ids(&criteria[ac]["mandatory_case_ids"]).contains(id),
+            "AC {} lacks required {}",
+            ac + 1,
+            id
+        );
     }
-    assert!(ids(&criteria[0]["conditional_case_ids"])
-        .contains("77-C139-N-json-table"));
-    assert!(ids(&criteria[2]["conditional_case_ids"])
-        .contains("77-C139-N-table-udf"));
+    assert!(ids(&criteria[0]["conditional_case_ids"]).contains("77-C139-N-json-table"));
+    assert!(ids(&criteria[2]["conditional_case_ids"]).contains("77-C139-N-table-udf"));
     assert_eq!(covered_mandatory, mandatory);
     assert_eq!(covered_conditional, conditional);
 }
 
-fn plan(sql: &str, dialect: &str, wanted: Option<&BTreeMap<String, LiteralValue>>)
-    -> PhysicalFiniteTableProof
-{
+fn plan(
+    sql: &str,
+    dialect: &str,
+    wanted: Option<&BTreeMap<String, LiteralValue>>,
+) -> PhysicalFiniteTableProof {
     let parser = dialect_from_name(dialect).expect("project dialect");
     let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref())
         .expect("public parser and analyzer");
@@ -205,9 +328,11 @@ fn grouped_fanout_preserves_exact_native_bag_and_impossible_membership() {
     let sql = "SELECT v, COUNT(*) AS n FROM UNNEST([1,1,2]) AS t(v) GROUP BY v";
     let db = Connection::open_in_memory().unwrap();
     let mut stmt = db.prepare(sql).unwrap();
-    let mut native = stmt.query_map([], |row| {
-        Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))
-    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    let mut native = stmt
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     native.sort();
     assert_eq!(native, vec![(1, 2), (2, 1)]);
 
@@ -215,21 +340,26 @@ fn grouped_fanout_preserves_exact_native_bag_and_impossible_membership() {
         panic!("finite group has complete source and terminal bags");
     };
     assert_eq!(exact.source_row_ids, ["unnest:1", "unnest:2", "unnest:3"]);
-    let mut outcome = exact.terminal.iter().map(|row| {
-        match (&row["v"], &row["n"]) {
-            (LiteralValue::Number(v), LiteralValue::Number(n)) =>
-                (v.parse::<i64>().unwrap(), n.parse::<i64>().unwrap()),
+    let mut outcome = exact
+        .terminal
+        .iter()
+        .map(|row| match (&row["v"], &row["n"]) {
+            (LiteralValue::Number(v), LiteralValue::Number(n)) => {
+                (v.parse::<i64>().unwrap(), n.parse::<i64>().unwrap())
+            }
             _ => panic!("typed integer group expected"),
-        }
-    }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
     outcome.sort();
     assert_eq!(outcome, native);
     assert_eq!(exact.terminal_domains["v"].admits_null(), Some(false));
     assert_eq!(exact.terminal_domains["n"].admits_null(), Some(false));
 
     let absent = BTreeMap::from([("v".to_owned(), number(3)), ("n".to_owned(), number(1))]);
-    assert!(matches!(plan(sql, "duckdb", Some(&absent)),
-        PhysicalFiniteTableProof::Impossible { .. }));
+    assert!(matches!(
+        plan(sql, "duckdb", Some(&absent)),
+        PhysicalFiniteTableProof::Impossible { .. }
+    ));
 }
 
 #[test]
@@ -239,9 +369,13 @@ fn star_projection_preserves_native_null_and_duplicate_physical_rows() {
     let db = Connection::open_in_memory().unwrap();
     let reference = format!("SELECT id, a FROM {source}");
     let mut stmt = db.prepare(&reference).unwrap();
-    let mut native = stmt.query_map([], |row| {
-        Ok((row.get::<_, i64>(0)?, row.get::<_, Option<i64>>(1)?))
-    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    let mut native = stmt
+        .query_map([], |row| {
+            Ok((row.get::<_, i64>(0)?, row.get::<_, Option<i64>>(1)?))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     native.sort();
     assert_eq!(native, vec![(1, None), (1, Some(10)), (2, Some(10))]);
 
@@ -249,26 +383,38 @@ fn star_projection_preserves_native_null_and_duplicate_physical_rows() {
         panic!("finite star EXCLUDE has exact proof");
     };
     assert_eq!(proof.row_ids.len(), 3);
-    let mut outcome = proof.terminal.iter().map(|row| {
-        let LiteralValue::Number(id) = &row["id"] else { panic!("integer id expected") };
-        let value = match &row["a"] {
-            LiteralValue::Number(n) => Some(n.parse::<i64>().unwrap()),
-            LiteralValue::Null => None,
-            _ => panic!("nullable integer expected"),
-        };
-        (id.parse::<i64>().unwrap(), value)
-    }).collect::<Vec<_>>();
+    let mut outcome = proof
+        .terminal
+        .iter()
+        .map(|row| {
+            let LiteralValue::Number(id) = &row["id"] else {
+                panic!("integer id expected")
+            };
+            let value = match &row["a"] {
+                LiteralValue::Number(n) => Some(n.parse::<i64>().unwrap()),
+                LiteralValue::Null => None,
+                _ => panic!("nullable integer expected"),
+            };
+            (id.parse::<i64>().unwrap(), value)
+        })
+        .collect::<Vec<_>>();
     outcome.sort();
     assert_eq!(outcome, native);
     assert_eq!(proof.terminal_domains["a"].admits_null(), Some(true));
-    assert!(!matches!(proof.terminal_domains["id"], ValueDomain::Unknown(_)));
+    assert!(!matches!(
+        proof.terminal_domains["id"],
+        ValueDomain::Unknown(_)
+    ));
 }
 
 #[test]
 fn opaque_source_does_not_become_a_false_exactness_claim() {
     assert!(matches!(
-        plan("SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v",
-            "duckdb", None),
+        plan(
+            "SELECT v, COUNT(*) AS n FROM UNNEST(opaque_array) AS t(v) GROUP BY v",
+            "duckdb",
+            None
+        ),
         PhysicalFiniteTableProof::Residual { .. }
     ));
 }
