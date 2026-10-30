@@ -13594,5 +13594,22 @@
     "final_code_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40597758597",
     "final_code_ci_sha": "8a5095a91ea2664d2983421c7ba4ecef5ea1036c",
     "final_metadata_ci_gate": "Final metadata-only PR head must pass all required CI before merge"
+  },
+  "task_152_ordered_mutation_acceptance": {
+    "owner": "TASK-152",
+    "parent": "TASK-81",
+    "status": "frozen_pending_verification",
+    "freeze": "docs/task-152-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "81-C152-P",
+      "81-C152-N"
+    ],
+    "native_oracle": "tests/task_152_ordered_mutations.rs",
+    "dialect_adapter_oracle": "tests/task_152_dialect_adapter.rs",
+    "mandatory_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
