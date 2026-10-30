@@ -23,7 +23,7 @@ pub(super) fn analyze_query_column_domains(
             for cte in &with.cte_tables {
                 let name = cte.alias.name.to_string();
                 local_relations.insert(name.clone());
-                local_outputs.remove(&name);
+                local_outputs.insert(name.clone(), Output::new(Vec::new()));
                 local_domains.remove(&name);
             }
         }
