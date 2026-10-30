@@ -13702,7 +13702,7 @@
   },
   "task_77_parent_acceptance": {
     "owner": "TASK-77",
-    "status": "pending_required_subquery_extension",
+    "status": "portable_parent_original_ac1_to_ac6_verified",
     "task": ".backlog/tasks/task-77 - model-advanced-table-relations.md",
     "freeze": "docs/task-77-acceptance-freeze.json",
     "audit": "docs/task-77-acceptance-audit.md",
@@ -13731,10 +13731,18 @@
     "public_guard": "tests/task_77_parent_closure.rs",
     "native_engine_verified": "duckdb",
     "native_vendor_runtime_certified": false,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
-    "remaining_gate": "TASK-77 derived subquery + LATERAL confirmation and final CI; TASK-91 release separately",
-    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41095085160",
-    "public_subquery_regression": "tests/task_77_derived_subquery.rs"
+    "remaining_gate": "TASK-91 release authorization; final signoff metadata CI before merge",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41114331483",
+    "public_subquery_regression": "tests/task_77_derived_subquery.rs",
+    "verified_original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
   }
 }

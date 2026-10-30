@@ -1,6 +1,6 @@
 # TASK-77 independent parent acceptance audit
 
-**Decision: reopened for the missing subquery and LATERAL criteria.** TASK-137..140 are Done and PRs #144, #145, #146 and #149 are merged on main. This independently reviews the original parent acceptance criteria, not the separate TASK-91 release gate.
+**Decision: independently signed off TASK-77 original AC #1..#6 for the frozen portable scope.** TASK-137..140 are Done and PRs #144, #145, #146 and #149 are merged on main. This independently reviews the original parent acceptance criteria, not the separate TASK-91 release gate.
 
 ## Finite authoritative evidence
 
@@ -36,6 +36,12 @@ The [parent public regression](../tests/task_77_parent_closure.rs) checks every 
 
 ## Independent follow-up findings (2026-10-30)
 
-The previous parent AC #4 mapping omitted the originally required subquery composition and the AC #1 inventory omitted an explicit LATERAL guard. Previous 9/9 CI was valid for the tested 24/10 inventory, but did not justify signing off the broader parent. v2 freezes `77-PARENT-DERIVED-P` and `77-PARENT-LATERAL-R`. Parent signoff is withheld until both test contracts and final PR-head CI pass.
+The previous parent AC #4 mapping omitted the originally required subquery composition and the AC #1 inventory omitted an explicit LATERAL guard. Previous 9/9 CI was valid for the tested 24/10 inventory, but did not justify signing off the broader parent. v2 freezes `77-PARENT-DERIVED-P` and `77-PARENT-LATERAL-R`. Parent signoff is granted after both added regression contracts and all nine implementation-head CI checks passed. Final metadata PR-head CI remains a merge gate.
 
 **Derived-subquery dialect signoff correction:** The new parent SQL preserves the TASK-137 frozen UNNEST parser dispositions: 11/13 portable `Exact`; SQLite and MSSQL are reviewed lexical/residual boundaries because bracket notation is not a certified array constructor there. The parent test directly reconciles the child-owned 13-dialect matrix instead of assuming all parser-accepted syntax is semantically equivalent.
+
+## Final original-AC signoff
+
+**All six original criteria are verified.** AC #1 now includes the formerly omitted LATERAL boundary with stable fail-closed Residual classification. AC #4 now covers an independently exact, noncorrelated derived typed UNNEST subquery with complete source and terminal NULL/duplicate identities and exact/Impossible membership, in addition to the established joins, GROUP and compiled dbt evidence. The exact derived case is certified in 11 parser dialect paths with reviewed SQLite/MSSQL lexical boundaries. Original AC #2, #3, #5 and #6 retain the child-owned frozen evidence and parent-level regression guard. Unsupported vendor/session behavior is never asserted exact.
+
+**Verification:** [Implementation-head CI 41114331483](https://github.com/phdah/sql-semantic-protocol/actions/runs/41114331483) passed 9/9 jobs including formatting, strict Clippy, both Rust test feature configurations, docs, dependency checks and dbt Core E2E. TASK-77 is Done on this PR branch, with metadata PR-head CI before merge. TASK-91 remains the independent release gate.

@@ -1,8 +1,8 @@
 {
   "version": 2,
   "task": "TASK-77",
-  "status": "pending_required_subquery_extension",
-  "parent_signed_off": false,
+  "status": "portable_parent_original_ac1_to_ac6_verified",
+  "parent_signed_off": true,
   "release_approved": false,
   "source_of_truth": {
     "TASK-137": {
@@ -168,9 +168,7 @@
   ],
   "total_mandatory_exact_cases": 25,
   "total_reviewed_conditional_cases": 11,
-  "mandatory_unverified": [
-    "77-PARENT-DERIVED-P"
-  ],
+  "mandatory_unverified": [],
   "domain_cross_references": {
     "77-C140-N-ABSENCE": "77-C140-P-GROUP",
     "77-C140-P-JOIN-REVERSE": "77-C140-P-JOIN-NULL"
@@ -484,7 +482,7 @@
     }
   ],
   "execution_boundary": "Native DuckDB only; non-DuckDB engine/session assertions remain conditional",
-  "remaining_release_gate": "TASK-91, pending parent subquery/LATERAL AC closure and final CI",
+  "remaining_release_gate": "TASK-91 release authorization; final metadata PR-head CI before merge",
   "parent_extensions": {
     "mandatory": [
       {
@@ -731,5 +729,6 @@
         ]
       }
     ]
-  }
+  },
+  "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41114331483"
 }
