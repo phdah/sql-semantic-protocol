@@ -365,13 +365,23 @@ fn conditional_cte_materialization_recursion_and_forward_binding_fail_closed() {
 fn every_conditional_cte_variant_has_explicit_parser_or_residual_disposition() {
     use sql_semantic_protocol::analyze_inputs;
     const DIALECTS: &[&str] = &[
-        "generic", "mysql", "postgresql", "postgres", "hive", "sqlite",
-        "snowflake", "redshift", "mssql", "clickhouse", "bigquery",
-        "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ];
-    let freeze: Value = serde_json::from_str(
-        include_str!("../docs/task-141-acceptance-freeze.json")
-    ).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
         if case["classification"] != "conditional" {
@@ -387,16 +397,22 @@ fn every_conditional_cte_variant_has_explicit_parser_or_residual_disposition() {
             ) {
                 Ok(bundle) => {
                     if let Some(layer) = bundle.layers().last() {
-                        assert!(matches!(
-                            physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None),
-                            PhysicalCteProof::Residual { .. }
-                        ), "{id}/{dialect_name}: conditional CTE cannot be certified Exact");
+                        assert!(
+                            matches!(
+                                physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None),
+                                PhysicalCteProof::Residual { .. }
+                            ),
+                            "{id}/{dialect_name}: conditional CTE cannot be certified Exact"
+                        );
                     }
                     // A parsed statement without an analyzable transformation
                     // layer is also explicitly unsupported, never Exact.
                 }
                 Err(error) => {
-                    assert!(!error.to_string().is_empty(), "{id}/{dialect_name}: parser boundary");
+                    assert!(
+                        !error.to_string().is_empty(),
+                        "{id}/{dialect_name}: parser boundary"
+                    );
                 }
             }
             checked += 1;
