@@ -218,7 +218,7 @@ fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
             vec![
                 RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
                 RelationConstraint::foreign_key(
-                    vec!["id".into()],
+                    vec!["amount".into()],
                     SOURCE,
                     vec!["id".into()],
                     evidence(),
@@ -235,7 +235,7 @@ fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         )
         .unwrap(),
     ]);
-    physical_ordered_write_state_plan(&bundle, &[state(&[]), state_for(SOURCE, &[(1, 0), (2, 0)])])
+    physical_ordered_write_state_plan(&bundle, &[state(&[]), state_for(SOURCE, &[(10, 0), (15, 0), (20, 0)])])
 }
 
 #[test]
@@ -256,7 +256,7 @@ fn direct_dbt_and_odcs_equivalent_schema_evidence_keep_the_same_state_proof() {
     assert_eq!(transitions[2].after(), &state(&[(1, 15)]));
     assert_eq!(
         final_states.as_slice(),
-        &[state(&[(1, 15)]), state_for(SOURCE, &[(1, 0), (2, 0)])]
+        &[state(&[(1, 15)]), state_for(SOURCE, &[(10, 0), (15, 0), (20, 0)])]
     );
     assert_eq!(direct, plan(&dbt_catalog()), "dbt catalog parity");
     #[cfg(feature = "odcs")]
