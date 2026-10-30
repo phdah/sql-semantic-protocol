@@ -394,6 +394,67 @@ fn source_column_alias_list_cannot_borrow_original_schema_names() {
 }
 
 #[test]
+fn quoted_cte_names_do_not_borrow_unquoted_source_evidence() {
+    let sql = r#"WITH "shared" AS (SELECT k FROM s) SELECT k FROM "shared""#;
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle(sql, &input);
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "quoted lexical bindings need attested dialect-specific name resolution"
+    );
+}
+
+#[test]
+fn differently_cased_cte_reference_never_borrows_a_physical_table() {
+    let sql = "WITH shared AS (SELECT k FROM s) SELECT k FROM SHARED";
+    let input = serde_json::json!({
+        "s": [{"id":"s#0","k":1}],
+        "SHARED": [{"id":"SHARED#0","k":99}]
+    });
+    let (bundle, snapshots) = case_bundle(sql, &input);
+    let layer = bundle.layers().last().unwrap();
+    match physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None) {
+        PhysicalCteProof::Exact(result) => {
+            assert_eq!(
+                result.sources,
+                vec!["s"],
+                "unquoted local CTE reference must not resolve as physical SHARED"
+            );
+            assert_eq!(
+                result.terminal[0].values["k"],
+                LiteralValue::Number("1".to_string())
+            );
+        }
+        PhysicalCteProof::Residual { .. } => {}
+        other => panic!("unresolved lexical case must be Exact with correct sources or Residual: {other:?}"),
+    }
+}
+
+#[test]
+fn duplicate_unquoted_cte_names_cannot_receive_an_exact_proof() {
+    use sql_semantic_protocol::analyze_inputs;
+    let sql = "WITH shared AS (SELECT k FROM s), SHARED AS (SELECT k FROM s) SELECT k FROM shared";
+    let dialect = dialect_from_name("duckdb").unwrap();
+    // A parser-level duplicate binding rejection is also a safe boundary.
+    if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()) {
+        let Some(layer) = bundle.layers().last() else {
+            return;
+        };
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None),
+                PhysicalCteProof::Residual { .. }
+            ),
+            "duplicate WITH names have no canonical lexical identity"
+        );
+    }
+}
+
+#[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
