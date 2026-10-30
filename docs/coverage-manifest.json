@@ -2,7 +2,7 @@
   "task_151_qualified_write_acceptance": {
     "owner": "TASK-151",
     "parent": "TASK-81",
-    "status": "implementation_in_progress",
+    "status": "verified_bounded_child_done_pending_merge",
     "freeze": "docs/task-151-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -11,9 +11,9 @@
     ],
     "oracle": "tests/task_151_qualified_returning.rs",
     "audit": "docs/task-151-acceptance-audit.md",
-    "mandatory_cases_verified": false,
-    "adapter_dialect_oracles_verified": false,
-    "child_signed_off": false,
+    "mandatory_cases_verified": true,
+    "adapter_dialect_oracles_verified": true,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "freeze_history": "docs/task-151-acceptance-freeze-v2.json",
     "native_oracle": "tests/task_151_qualified_returning.rs",
@@ -22,9 +22,39 @@
     "mandatory_negative_frozen": 2,
     "conditional_vendor_frozen": 2,
     "parser_cells_required": 104,
-    "adapter_cases_required": 9,
+    "adapter_cases_required": 8,
     "native_vendor_execution_certified": false,
-    "full_coverage_unverified": true
+    "full_coverage_unverified": false,
+    "mandatory_exact_verified": 5,
+    "mandatory_negative_verified": 2,
+    "conditional_residual_reviewed": 2,
+    "independent_impossible_oracles_verified": 1,
+    "parser_cells_verified": 104,
+    "parser_classification_counts": {
+      "parsed_canonical": 52,
+      "canonical_unsupported": 42,
+      "parser_boundary": 10
+    },
+    "adapter_cells_verified": 24,
+    "verified_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac_covered": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530",
+    "implementation_ci_sha": "e7df77c338b3cf25c85ce78e1d882bce9d206b73",
+    "final_metadata_ci_gate": "Final task-status/documentation commit requires CI before merge",
+    "release_approved": false
   },
   "task_150_joined_mutations_acceptance": {
     "owner": "TASK-150",

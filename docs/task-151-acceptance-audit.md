@@ -1,51 +1,27 @@
 # TASK-151 bounded acceptance audit
 
-**Owner:** TASK-151, child 3/4 of TASK-81. Parent acceptance and TASK-152
-remain independently gated by completed, merged child work.
+**Child:** TASK-151, 3/4 of TASK-81. **Status:** Done in PR #163, pending merge. Parent TASK-81 remains independently unsigned.
 
-## Inventory and full physical source proof
+## Spec review
 
-- Frozen v2: [the task-specific matrix](task-151-acceptance-freeze.json)
-  holds 4 required exact cases, 2 mandatory rejection cases and
-  2 conditional vendor cases. The preimplementation v1 is retained.
-- Exact cases prove qualified UPDATE/DELETE RETURNING and correlated
-  EXISTS/NOT EXISTS with a single complete independent physical source.
-  Selected and NOT TRUE target prestate ordinals, full target before/after,
-  unchanged source, affected counts, duplicate and NULL frequency domains
-  are checked against independent expected values.
-- A correlated key UPDATE with enforced primary-key collision must be
-  Impossible, with a native DuckDB failure and preserved target prestate.
-  Missing source population is Residual, never an implicitly empty source.
-- Direct SQL, dbt catalog and ODCS schema (when the feature is enabled)
-  carry equivalent evidence into the same parser-independent protocol.
-  Parser dispositions across 13 dialect identities are pinned independently
-  of native vendor semantics once final matrix extraction has been reviewed.
-- Conditional release ownership: TASK-151 retains vendor write ORDER/LIMIT
-  and partition-qualified mutation as typed Residual/parser boundary where
-  native engine version, total order, partition identity and execution law
-  are not attested. These are **not** Exact or deferred mandatory gaps.
+The immutable [v3 inventory](task-151-acceptance-freeze.json), with historical v1/v2 retained, has **5 mandatory Exact, 2 mandatory negative, and 2 reviewed conditional vendor** cases, mapped to all five child ACs and parent AC #1..#6. Exact cases verify: qualified UPDATE/DELETE RETURNING, the specified two-key UPDATE returning `[1,2]`, duplicates, NULL/nonmembers, and one-source correlated EXISTS/NOT EXISTS over complete source/target bags. Every exact case fixes pre/post row identities, affected ordinals, typed NULL frequencies, lower/upper numeric bounds and inclusivity. An enforced-key collision is Impossible with independent DuckDB rejection; missing source stays Residual, never empty by assumption.
 
-## Standards review (preliminary)
+Vendor DELETE ORDER/LIMIT and partition-qualified UPDATE remain **explicitly Unsupported, typed Residual or parser boundary**, with TASK-151 responsible for native engine/version laws and partition metadata. These are reviewed *conditional* cells, not omitted mandatory exact proofs. The alias-as-PARTITION parser trap was fixed so it cannot claim unpartitioned whole-table mutation.
 
-- Canonical AST conversion stays in `src/analysis/writes.rs`; read-only
-  correlated source dependencies and query predicates stay in the existing
-  protocol. Physical state construction in
-  `src/physical_realization/write_states/operators.rs` does not reparse SQL.
-- The previous alias-shadowing overclaim is corrected; RETURNING uses the
-  active target alias. No new dependency, lint allow, or active JSON shape.
-- No claim is made beyond the bounded one-source row-local EXISTS/NOT EXISTS
-  semantics or the corresponding DuckDB oracle.
+All **104** frozen parser classifications match 13 named dialects x 8 distinct SQL shapes: **52 canonical**, **42 unsupported**, **10 parser boundary**. Direct SQL, dbt catalog and ODCS equivalent schema evidence agree over 24 adapter-case paths; parser support is never treated as evidence of native vendor execution.
 
-## Specification signoff gates
+## Independent physical oracles
 
-- **AC1:** v2 frozen with typed outcomes; pin and verify every parser disposition.
-- **AC2:** implementation against complete source/target bag, with fail-closed vendor
-  classification; validate exact and impossible through CI.
-- **AC3:** full DuckDB before/after/RETURNING, NULL, duplicates, source/target
-  identity, enforced primary-key error.
-- **AC4:** 13 dialect parser statuses plus direct/dbt/ODCS evidence parity.
-- **AC5:** fmt, strict Clippy, all-target Rust tests/docs, no-default-features,
-  dbt E2E and protocol/schema snapshots on final head.
+`tests/task_151_qualified_returning.rs` verifies full DuckDB target AND source snapshots, unchanged source, before/after bags, RETURNING postimages/preimages, duplicate/NULL frequencies, selected/rejected row ordinals, interval endpoints, missing source and enforced-key Impossible. `tests/task_151_dialect_adapter.rs` covers the dialect and adapter matrix. Active protocol JSON/schema snapshots preserve the existing wire shape.
 
-TASK-151 remains **In Progress** until those gates are green and independently
-reviewed; TASK-81 remains open and TASK-152 cannot start yet.
+## Matt code-review: Standards axis
+
+A separate postimplementation Standards pass reviewed the diff against AGENTS.md, CONTRIBUTING.md, the canonical code map and Fowler smell baseline. The AST is confined to `src/analysis/writes.rs`, public normalized predicates retain exact source references, and physical evaluation uses the same complete bag in `src/physical_realization/write_states/operators.rs`. No new dependency, lint suppression, dialect-name dispatch, speculative output or public JSON schema change. Corrections during review included RETURNING alias shadowing, PARTITION ambiguity, and full native source/domain oracles. No further actionable defect found.
+
+## Matt code-review: Spec axis
+
+All finite mandatory cases, negative contrasts and adapter-parity cells are verified; vendor-only unknowns retain owned conditional boundaries. No parent TASK-81 signoff or TASK-152 ordered-script certification is implied. All nine jobs of [implementation CI run 41022690530](https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530) passed at `e7df77c338b3cf25c85ce78e1d882bce9d206b73`: fmt, strict Clippy, default/no-default Rust tests/docs/dependencies and dbt Core E2E.
+
+## Merge gate
+
+TASK-151 is Done on the PR branch, pending merge to main. The final status-only commit must pass its own CI. TASK-152 remains blocked until this completed state is merged.

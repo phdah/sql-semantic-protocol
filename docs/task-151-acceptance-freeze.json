@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-151",
   "parent": "TASK-81",
-  "status": "implementation_in_progress",
+  "status": "verified_bounded_child_done_pending_merge",
   "fixture_ids": [
     "81-C151-P",
     "81-C151-N"
@@ -49,7 +49,7 @@
     "RETURNING UPDATE postimages and DELETE preimages",
     "native vendor/session DML effects not inferred from parsing"
   ],
-  "matrix_completeness": "complete frozen 104-cell parser outcome inventory; final native test and signoff CI pending",
+  "matrix_completeness": "5 mandatory Exact, 2 mandatory negative, 2 reviewed vendor conditional and all 104 dialect cells verified",
   "cases": [
     {
       "id": "81-C151-P-returning-two-rows",
@@ -842,5 +842,7 @@
     "7::redshift": "canonical_unsupported",
     "7::snowflake": "canonical_unsupported",
     "7::sqlite": "canonical_unsupported"
-  }
+  },
+  "verified_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530",
+  "verified_ci_sha": "e7df77c338b3cf25c85ce78e1d882bce9d206b73"
 }
