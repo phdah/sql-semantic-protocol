@@ -241,3 +241,25 @@ fn ambiguous_or_missing_source_does_not_become_an_empty_source() {
         "{plan:?}"
     );
 }
+
+fn classified_plan(input: &str, catalog: &RelationCatalog) -> Option<PhysicalWriteStatePlan> {
+    let query = SqlInput::inline(sql(input));
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = ConfiguredSqlInput::new("task151-classify", &query, "postgresql", dialect.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).ok()?;
+    let rows = [
+        state(TARGET, &[(Some(1), 10), (Some(2), 20), (None, 30), (Some(2), 20)]),
+        state(SOURCE, &[(Some(2), 7), (Some(2), 8), (None, 9)]),
+    ];
+    Some(physical_ordered_write_state_plan(&bundle, &rows))
+}
+
+#[test]
+fn every_frozen_variant_has_source_independent_adapter_disposition() {
+    for case in CASES {
+        let direct = classified_plan(case, &direct_catalog());
+        assert_eq!(direct, classified_plan(case, &dbt_catalog()), "{case}: dbt parity");
+        #[cfg(feature = "odcs")]
+        assert_eq!(direct, classified_plan(case, &odcs_catalog()), "{case}: ODCS parity");
+    }
+}
