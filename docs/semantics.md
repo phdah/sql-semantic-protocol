@@ -214,8 +214,12 @@ An absent, well-typed terminal tuple is `Impossible` only after full
 evaluation; unsupported projections, missing/ambiguous schema evidence,
 recursion, forward-binding engine rules, materialized writes, computed
 ORDER BY expressions, partition-limited or hinted table scans, time-travel
-sources, table-source positional column aliases, and other unproved operator
-shapes remain `Residual`.
+sources, table-source positional column aliases, dialect-specific CTE FROM
+extensions, and other unproved operator shapes remain `Residual`.
+CTE lexical lookup folds unquoted identifiers to ASCII lowercase, rejects
+duplicate unquoted CTE definitions, and does not certify quoted CTE names,
+quoted source/column names or quoted output aliases without a proven
+dialect-specific binding law.
 For exact CTE bag proof, each ORDER BY key must resolve to an unqualified
 projected output label. Missing names and keys requiring unproved SQL
 name-resolution rules remain `Residual` rather than certifying a query
