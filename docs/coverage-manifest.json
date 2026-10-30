@@ -346,7 +346,7 @@
       "76-C136-P",
       "76-C136-N"
     ],
-    "status": "verified_child_acceptance_pending_merge",
+    "status": "verified_bounded_child_done_merged",
     "mandatory_cases": 5,
     "conditional_cases": 6,
     "dialect_cells_required": 143,
@@ -358,7 +358,7 @@
       4,
       5
     ],
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "verified": true,
     "mandatory_cases_verified": 5,
@@ -371,7 +371,8 @@
     "native_duckdb_oracle": "tests/task_136_frozen_matrix.rs",
     "dbt_e2e_oracle": "tests/task_136_dbt_core_e2e.rs",
     "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40361928399",
-    "ci_head": "82d9842d8d77be813ca7f44e680d07a05dac0702"
+    "ci_head": "82d9842d8d77be813ca7f44e680d07a05dac0702",
+    "child_done": true
   },
   "task_140_fanout_acceptance": {
     "owner": "TASK-140",
@@ -416,13 +417,13 @@
   "task_133_pagination_acceptance": {
     "owner": "TASK-133",
     "parent": "TASK-76",
-    "status": "verified_bounded_child_pending_merge",
+    "status": "verified_bounded_child_done_merged",
     "freeze": "docs/task-133-acceptance-freeze.json",
     "fixture_ids": [
       "76-C133-P",
       "76-C133-N"
     ],
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "version": 3,
     "task": ".backlog/tasks/task-133 - prove-deterministic-order-by-limit-offset-and-top.md",
@@ -449,7 +450,8 @@
     "top_native_oracle": "duckdb_semantic_equivalent_only_mssql_native_unexecuted",
     "real_dbt_oracle": "tests/task_133_dbt_core_e2e.rs",
     "ci_verified": "https://github.com/phdah/sql-semantic-protocol/actions/runs/40212402845",
-    "final_metadata_ci_pending": true
+    "final_metadata_ci_pending": false,
+    "child_done": true
   },
   "task_139_generator_acceptance": {
     "owner": "TASK-139",
@@ -13342,7 +13344,7 @@
   "task_134_pagination_acceptance": {
     "owner": "TASK-134",
     "parent": "TASK-76",
-    "status": "verified_bounded_child_pending_merge",
+    "status": "verified_bounded_child_done_merged",
     "freeze": "docs/task-134-acceptance-freeze.json",
     "fixture_ids": [
       "76-C134-P",
@@ -13353,7 +13355,7 @@
     "mandatory_exact_verified": 6,
     "all_parser_cells_verified": true,
     "all_adapter_cells_verified": true,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "conditional_residual_reviewed": 3,
     "parser_cells_certified": 117,
@@ -13378,12 +13380,13 @@
       4,
       5
     ],
-    "merge_gate": "final PR head CI must also pass after signoff metadata commit"
+    "merge_gate": "final PR head CI must also pass after signoff metadata commit",
+    "child_done": true
   },
   "task_135_composed_pagination_acceptance": {
     "owner": "TASK-135",
     "parent": "TASK-76",
-    "status": "verified_bounded_child_pending_merge",
+    "status": "verified_bounded_child_done_merged",
     "freeze": "docs/task-135-acceptance-freeze.json",
     "audit": "docs/task-135-acceptance-audit.md",
     "fixture_ids": [
@@ -13409,7 +13412,7 @@
     ],
     "ci_signoff_pending": false,
     "child_done": true,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "mandatory_exact_verified": 6,
     "conditional_residual_reviewed": 3,
@@ -13652,5 +13655,49 @@
     "implementation_ci_sha": "554e860e7a4139ddb4949fdb75204a66b96ca5a6",
     "final_metadata_ci_gate": "Signoff commit must pass CI before merge",
     "native_vendor_execution_certified": false
+  },
+  "task_76_parent_acceptance": {
+    "owner": "TASK-76",
+    "status": "portable_parent_original_ac1_to_ac6_verified",
+    "task": ".backlog/tasks/task-76 - prove-row-ordering-pagination-and-sampling.md",
+    "freeze": "docs/task-76-acceptance-freeze.json",
+    "audit": "docs/task-76-acceptance-audit.md",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "verified_original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-133",
+      "TASK-134",
+      "TASK-135",
+      "TASK-136"
+    ],
+    "mandatory_cases": 26,
+    "conditional_cases": 16,
+    "required_dialects": 13,
+    "required_adapters": [
+      "direct_sql",
+      "dbt_compiled",
+      "odcs"
+    ],
+    "public_guard": "tests/task_76_parent_closure.rs",
+    "sampling_boundary": "four engine-conditional sampling laws retained as Residual; no stochastic Exact claim",
+    "native_engine_verified": "duckdb",
+    "native_vendor_runtime_certified": false,
+    "parent_signed_off": true,
+    "release_approved": false,
+    "remaining_gate": "Final metadata PR-head CI required before merge; TASK-91 remains separate release authorization"
   }
 }
