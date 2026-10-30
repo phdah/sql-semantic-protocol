@@ -5,7 +5,7 @@
 ## Frozen specification and test seams
 
 The versioned [TASK-152 frozen cases](task-152-acceptance-freeze.json)
-with retained [v1](task-152-acceptance-freeze-v1.json) fix stable
+with retained [v1](task-152-acceptance-freeze-v1.json), [v2](task-152-acceptance-freeze-v2.json), and [v3](task-152-acceptance-freeze-v3.json) fix stable
 `81-C152-P` and `81-C152-N` identities, complete target and parent
 prestates, every committed intermediate state, distinct row occurrence
 identity, typed numeric NULL/frequency/bounds, affected counts and
@@ -38,7 +38,7 @@ only previous committed statements persist in the oracle. No
 transactional rollback across multiple statements is inferred.
 
 `tests/task_152_dialect_adapter.rs` freezes 39 parser classifications
-(13 exposed dialects x 3 common DML statements). For equivalent
+(13 exposed dialects x 3 common DML statements) plus 26 explicit vendor boundaries (13 x 2). The vendor boundary inventory reuses the executable TASK-151 dialect oracle indices: CASES[4] for ordered DELETE and CASES[5] for partition-qualified UPDATE. The v3 index mismatch was corrected in v4, retaining previous freezes as review history. All these vendor shapes must remain parser-boundary or canonical-unsupported, never portable Exact. For equivalent
 schema metadata, independent direct SQL, compiled dbt catalog and ODCS
 paths must yield identical physical-source and terminal-state results
 under the same explicitly attested PK/FK/CHECK facts. Adapter
