@@ -104,11 +104,19 @@ fn every_mandatory_cte_freeze_case_matches_independent_complete_duckdb_bags() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|entry| columns.iter().map(|col| entry[*col].as_i64()).collect::<Vec<_>>())
+            .map(|entry| {
+                columns
+                    .iter()
+                    .map(|col| entry[*col].as_i64())
+                    .collect::<Vec<_>>()
+            })
             .collect::<Vec<_>>();
         actual.sort();
         expected.sort();
-        assert_eq!(actual, expected, "{id}: full terminal bag, including multiplicity");
+        assert_eq!(
+            actual, expected,
+            "{id}: full terminal bag, including multiplicity"
+        );
 
         for (index, name) in columns.iter().enumerate() {
             let domain = &case["terminal_domains"][*name];
@@ -151,7 +159,10 @@ fn every_mandatory_cte_freeze_case_matches_independent_complete_duckdb_bags() {
             })
             .collect::<Vec<_>>();
         expected_ids.sort();
-        assert_eq!(observed_ids, expected_ids, "{id}: complete contributor identities");
+        assert_eq!(
+            observed_ids, expected_ids,
+            "{id}: complete contributor identities"
+        );
         verified.push(id);
     }
     verified.sort();
