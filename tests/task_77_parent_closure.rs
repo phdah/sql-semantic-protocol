@@ -266,8 +266,12 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
                 } else {
                     let disposition = &case["release_disposition"];
                     assert_eq!(disposition["owner"], name);
-                    assert!(disposition["reason"].as_str().is_some_and(|v| !v.is_empty()));
-                    assert!(disposition["status"].as_str().is_some_and(|v| !v.is_empty()));
+                    assert!(disposition["reason"]
+                        .as_str()
+                        .is_some_and(|v| !v.is_empty()));
+                    assert!(disposition["status"]
+                        .as_str()
+                        .is_some_and(|v| !v.is_empty()));
                 }
                 assert!(
                     conditional.insert(id.to_owned()),
