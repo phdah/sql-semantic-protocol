@@ -81,7 +81,7 @@ fn has_domain(case: &Value) -> bool {
 fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
     let parent = parent();
     assert_eq!(parent["task"], "TASK-76");
-    assert_eq!(parent["version"], 1);
+    assert_eq!(parent["version"], 2);
     assert_eq!(parent["release_approved"], false);
     assert!(parent["mandatory_unverified"]
         .as_array()
@@ -270,15 +270,51 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
         assert_eq!(criterion["id"], offset + 1);
         let exact_refs = ids(&criterion["mandatory_case_ids"]);
         let residual_refs = ids(&criterion["conditional_case_ids"]);
+        if offset == 2 {
+            // Sampling intentionally has only typed, engine-conditional Residuals.
+            assert!(exact_refs.is_empty(), "stochastic sampling cannot be Exact");
+            assert_eq!(
+                residual_refs,
+                ids(&serde_json::json!([
+                    "76-C136-P-system",
+                    "76-C136-N-seeded",
+                    "76-C136-N-sample",
+                    "76-C136-N-sample-seeded"
+                ]))
+            );
+        } else {
+            assert!(
+                !exact_refs.is_empty(),
+                "AC {} lacks executable evidence",
+                offset + 1
+            );
+        }
         assert!(
-            !exact_refs.is_empty(),
-            "AC {} lacks executable evidence",
+            criterion["evidence"].as_array().is_some_and(|tests| !tests.is_empty()),
+            "AC {} lacks independent executable test references",
             offset + 1
         );
         assert!(exact_refs.is_subset(&mandatory));
         assert!(residual_refs.is_subset(&conditional));
         covered_mandatory.extend(exact_refs);
         covered_conditional.extend(residual_refs);
+    }
+    for (criterion, required) in [
+        (0, "76-C134-P-distinct-on"),
+        (0, "76-C134-P-with-ties"),
+        (0, "76-C133-P-top"),
+        (1, "76-C134-P-with-ties"),
+        (1, "76-C133-N-offset-past"),
+        (3, "76-C135-P-cte-nested"),
+        (3, "76-C135-P-set-branch"),
+        (3, "76-C135-N-set-zero"),
+    ] {
+        assert!(
+            ids(&criteria[criterion]["mandatory_case_ids"]).contains(required),
+            "AC {} lacks {} evidence",
+            criterion + 1,
+            required
+        );
     }
     assert_eq!(covered_mandatory, mandatory);
     assert_eq!(covered_conditional, conditional);
