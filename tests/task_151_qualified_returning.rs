@@ -481,9 +481,24 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
                 .values()
                 .iter()
                 .any(|(value, _)| *value == LiteralValue::Null);
-            assert_eq!(expected["nullable"].as_bool(), Some(has_null), "{}", case["id"]);
-            assert_eq!(numbers.iter().min().copied(), expected["lower"].as_i64(), "{}", case["id"]);
-            assert_eq!(numbers.iter().max().copied(), expected["upper"].as_i64(), "{}", case["id"]);
+            assert_eq!(
+                expected["nullable"].as_bool(),
+                Some(has_null),
+                "{}",
+                case["id"]
+            );
+            assert_eq!(
+                numbers.iter().min().copied(),
+                expected["lower"].as_i64(),
+                "{}",
+                case["id"]
+            );
+            assert_eq!(
+                numbers.iter().max().copied(),
+                expected["upper"].as_i64(),
+                "{}",
+                case["id"]
+            );
             assert_eq!(expected["lower_inclusive"], true);
             assert_eq!(expected["upper_inclusive"], true);
         }
