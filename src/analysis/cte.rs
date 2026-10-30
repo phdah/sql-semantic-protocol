@@ -33,7 +33,11 @@ fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<Ct
     };
     // A physical snapshot of the whole table cannot prove a restricted
     // partition, a hinted scan, or another engine-specific table source.
-    if !with_hints.is_empty() || !partitions.is_empty() || !index_hints.is_empty() {
+    if !with_hints.is_empty()
+        || !partitions.is_empty()
+        || !index_hints.is_empty()
+        || alias.as_ref().is_some_and(|alias| !alias.columns.is_empty())
+    {
         return None;
     }
     let name = name.to_string();
