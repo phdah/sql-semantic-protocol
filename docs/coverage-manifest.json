@@ -13600,7 +13600,7 @@
     "parent": "TASK-81",
     "status": "frozen_pending_verification",
     "freeze": "docs/task-152-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 4,
     "fixture_ids": [
       "81-C152-P",
       "81-C152-N"
@@ -13611,6 +13611,17 @@
     "child_signed_off": false,
     "parent_signed_off": false,
     "release_approved": false,
-    "freeze_history": "docs/task-152-acceptance-freeze-v1.json"
+    "freeze_history": [
+      "docs/task-152-acceptance-freeze-v1.json",
+      "docs/task-152-acceptance-freeze-v2.json",
+      "docs/task-152-acceptance-freeze-v3.json"
+    ],
+    "parser_cells_required": 39,
+    "vendor_boundary_parser_cells_required": 26,
+    "adapter_paths_required": 3,
+    "mandatory_exact_cases": 3,
+    "mandatory_impossible_cases": 2,
+    "mandatory_missing_source_residual_cases": 1,
+    "conditional_fk_residual_cases": 1
   }
 }
