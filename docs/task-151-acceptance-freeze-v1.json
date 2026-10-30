@@ -1,0 +1,368 @@
+{
+  "version": 1,
+  "owner": "TASK-151",
+  "parent": "TASK-81",
+  "status": "implementation_in_progress",
+  "fixture_ids": [
+    "81-C151-P",
+    "81-C151-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "source_identity": "target_before#ordinal; no synthetic target rows",
+  "comparison_assumptions": [
+    "SQL three-valued comparison and filtering",
+    "complete target prestate, including duplicate rows",
+    "RETURNING UPDATE postimages and DELETE preimages",
+    "native vendor/session DML effects not inferred from parsing"
+  ],
+  "matrix_completeness": "incomplete: mandatory correlated target condition and 13-dialect/3-adapter parity oracles are not yet verified; this child may not be marked Done",
+  "cases": [
+    {
+      "id": "81-C151-P-update-qualified-returning",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "qualified_target_returning",
+      "sql": "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 40
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 40
+        }
+      ],
+      "returning": [
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 2
+        }
+      ],
+      "target_true_ordinals": [
+        0,
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        2
+      ],
+      "affected": {
+        "updated": 3,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C151-P-delete-qualified-returning",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "qualified_target_returning",
+      "sql": "DELETE FROM target AS t WHERE t.id = 2 RETURNING t.id, t.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "returning": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_true_ordinals": [
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        0,
+        2
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "proof": "exact",
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C151-N-returning-other-alias",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_negative",
+      "family": "unbound_returning_reference",
+      "sql": "UPDATE target AS t SET score = 40 RETURNING source.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "unbound RETURNING source alias must not be silently evaluated against target columns",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-N-returning-star",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_negative",
+      "family": "unproved_returning_shape",
+      "sql": "DELETE FROM target WHERE id = 2 RETURNING *",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "wildcard RETURNING needs an independently attested positional target schema and output shape",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-P-ordered-limit",
+      "fixture_id": "81-C151-P",
+      "category": "conditional_vendor",
+      "family": "write_order_limit",
+      "sql": "DELETE FROM target ORDER BY id LIMIT 1",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "vendor write ORDER/LIMIT and NULL ordering cannot be inferred from parser acceptance; require native dialect/version and deterministic total order evidence",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-N-correlated-target",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_pending",
+      "family": "correlated_target_condition",
+      "sql": "DELETE FROM target AS t WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 2
+        }
+      ],
+      "target_after": null,
+      "proof": "unverified",
+      "boundary": "correlated row identity and complete physical subquery evaluation must be proved before exact result",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-N-partition-target",
+      "fixture_id": "81-C151-N",
+      "category": "conditional_vendor",
+      "family": "partition_qualified_mutation",
+      "sql": "UPDATE target PARTITION (p1) SET score = 40 WHERE id = 2",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "partition mapping, membership, and vendor write law require authoritative metadata; no physical bag fabricated",
+      "owner": "TASK-151"
+    }
+  ]
+}

@@ -1,0 +1,625 @@
+{
+  "version": 2,
+  "owner": "TASK-151",
+  "parent": "TASK-81",
+  "status": "implementation_in_progress",
+  "fixture_ids": [
+    "81-C151-P",
+    "81-C151-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "source_identity": "target_before#ordinal; no synthetic target rows",
+  "comparison_assumptions": [
+    "SQL three-valued comparison and filtering",
+    "complete target prestate, including duplicate rows",
+    "RETURNING UPDATE postimages and DELETE preimages",
+    "native vendor/session DML effects not inferred from parsing"
+  ],
+  "matrix_completeness": "pending observed 104-cell parser freeze, full native oracle and final CI review; no premature Done",
+  "cases": [
+    {
+      "id": "81-C151-P-update-qualified-returning",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "qualified_target_returning",
+      "sql": "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 40
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 40
+        }
+      ],
+      "returning": [
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 2
+        }
+      ],
+      "target_true_ordinals": [
+        0,
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        2
+      ],
+      "affected": {
+        "updated": 3,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2
+          }
+        }
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 30,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1,
+            "40": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C151-P-delete-qualified-returning",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "qualified_target_returning",
+      "sql": "DELETE FROM target AS t WHERE t.id = 2 RETURNING t.id, t.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "returning": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_true_ordinals": [
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        0,
+        2
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "proof": "exact",
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 2
+          }
+        }
+      },
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "81-C151-N-returning-other-alias",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_negative",
+      "family": "unbound_returning_reference",
+      "sql": "UPDATE target AS t SET score = 40 RETURNING source.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "unbound RETURNING source alias must not be silently evaluated against target columns",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-N-returning-star",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_negative",
+      "family": "unproved_returning_shape",
+      "sql": "DELETE FROM target WHERE id = 2 RETURNING *",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "wildcard RETURNING needs an independently attested positional target schema and output shape",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-P-ordered-limit",
+      "fixture_id": "81-C151-P",
+      "category": "conditional_vendor",
+      "family": "write_order_limit",
+      "sql": "DELETE FROM target ORDER BY id LIMIT 1",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "vendor write ORDER/LIMIT and NULL ordering cannot be inferred from parser acceptance; require native dialect/version and deterministic total order evidence",
+      "owner": "TASK-151"
+    },
+    {
+      "id": "81-C151-P-correlated-exists-update",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "correlated_exists_update",
+      "sql": "UPDATE target AS t SET score = 99 WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id) RETURNING t.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 2,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 8
+        },
+        {
+          "id": null,
+          "score": 9
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 99
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 99
+        }
+      ],
+      "returning": [
+        {
+          "id": 2
+        },
+        {
+          "id": 2
+        }
+      ],
+      "target_true_ordinals": [
+        1,
+        3
+      ],
+      "target_not_true_ordinals": [
+        0,
+        2
+      ],
+      "affected": {
+        "updated": 2,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1",
+        "source_before#2"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 2,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 10,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1,
+            "99": 2
+          }
+        }
+      },
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        }
+      },
+      "owner": "TASK-151",
+      "conditional_boundary": "source snapshot and schema must be independently attested"
+    },
+    {
+      "id": "81-C151-N-correlated-not-exists-delete",
+      "fixture_id": "81-C151-N",
+      "category": "mandatory_exact",
+      "family": "correlated_not_exists_delete",
+      "sql": "DELETE FROM target AS t WHERE NOT EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 2,
+          "score": 7
+        },
+        {
+          "id": 2,
+          "score": 8
+        },
+        {
+          "id": null,
+          "score": 9
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "returning": [],
+      "target_true_ordinals": [
+        0,
+        2
+      ],
+      "target_not_true_ordinals": [
+        1,
+        3
+      ],
+      "affected": {
+        "updated": 0,
+        "deleted": 2
+      },
+      "proof": "exact",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1",
+        "source_before#2"
+      ],
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2",
+        "target_before#3"
+      ],
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 2
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 2
+          }
+        }
+      },
+      "owner": "TASK-151",
+      "conditional_boundary": "NOT EXISTS requires a complete source bag to prove no TRUE match"
+    },
+    {
+      "id": "81-C151-N-partition-target",
+      "fixture_id": "81-C151-N",
+      "category": "conditional_vendor",
+      "family": "partition_qualified_mutation",
+      "sql": "UPDATE target PARTITION (p1) SET score = 40 WHERE id = 2",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_after": null,
+      "proof": "residual",
+      "boundary": "partition mapping, membership, and vendor write law require authoritative metadata; no physical bag fabricated",
+      "owner": "TASK-151"
+    }
+  ],
+  "previous_version": "docs/task-151-acceptance-freeze-v1.json",
+  "mandatory_exact_cases": 4,
+  "mandatory_negative_cases": 2,
+  "conditional_vendor_cases": 2,
+  "conditional_release_disposition": "TASK-151 retains vendor ORDER/LIMIT/partition semantics as typed Residual or parser boundary until named native engine/version laws and complete partition metadata are supplied. These are not Exact.",
+  "adapter_parity_expectation": "direct SQL, dbt catalog and ODCS schema evidence must give identical canonical physical proofs where schemas are equivalent"
+}

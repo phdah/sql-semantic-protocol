@@ -321,7 +321,7 @@ fn analyze_statement(
             or.is_some(),
             metadata,
         ),
-        SqlStatement::Delete(delete) => analyze_delete(delete),
+        SqlStatement::Delete(delete) => analyze_delete(delete, metadata),
         SqlStatement::Merge {
             table,
             source,

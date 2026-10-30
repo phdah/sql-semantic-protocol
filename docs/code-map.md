@@ -1,3 +1,16 @@
+TASK-151 bounded correlated UPDATE/DELETE:
+`src/analysis/writes.rs` normalizes one complete independent EXISTS/NOT EXISTS
+read source with the active target alias in lexical scope; 
+`src/physical_realization/write_states/operators.rs` evaluates the canonical
+subquery predicate per target occurrence using the same closed read-only bag.
+The existing `WriteOperation::returning_columns` carries target-qualified
+column identity. Oracle and frozen per-dialect/evidence-source certification:
+`tests/task_151_qualified_returning.rs`,
+`tests/task_151_dialect_adapter.rs` and 
+`docs/task-151-acceptance-freeze.json`. Vendor ORDER/LIMIT and
+partition-qualified mutation semantics are explicit residual boundaries,
+not silently evaluated as unqualified writes. TASK-81 remains separate.
+
 TASK-150 bounded joined UPDATE FROM / DELETE USING: `src/analysis/writes.rs`
 selects a single named independent source without JOINs or target self-source;
 `src/protocol/writes.rs` owns the canonical `joined_source` reference and

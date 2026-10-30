@@ -1091,6 +1091,26 @@ row-affect cardinality for DML; lifecycle kind explicitly distinguishes
 CREATE TABLE from view definitions. Normalized target and source aliases
 share one physical population.
 
+UPDATE/DELETE `RETURNING` supports direct target columns, either unqualified or
+qualified by the active target alias (or the full target name if unaliased).
+Returned columns keep canonical unqualified target identities; their exact
+bags are UPDATE postimages or DELETE preimages, preserving duplicates and NULLs.
+An unbound or shadowed qualifier, wildcard, expression or duplicate canonical
+column identity remains unsupported. This parser-independent classification
+is not a claim about the native `RETURNING` syntax of every SQL engine.
+
+For a bounded UPDATE/DELETE WHERE EXISTS or NOT EXISTS with a single
+nonrecursive, row-preserving nested SELECT, the nested relation is an explicit
+physical source dependency. Exact effects require complete source and target
+bags and authoritative typed schemas. Each target preimage is compared with
+all inner candidates under SQL three-valued truth, preserving duplicates and
+nonmatching NULL rows. NOT EXISTS uses exhaustive negative membership over
+the full inner bag; source absence is never interpreted as an empty table.
+No native vendor semantics are inferred from parser acceptance.
+Direct DELETE ORDER BY/LIMIT, unresolved partition target membership,
+complex/cyclic correlated producers, and implicit write ordering remain
+residual or parser-boundary claims until separately attested.
+
 Before certifying feasibility, the plan verifies complete typed schemas
 and attested enforced NOT NULL, key, accepted-values and FK constraints,
 including cross-relation FK lookup. Known key/null contradictions are

@@ -901,7 +901,13 @@
           "fixture_ids": [
             "81-C151-P",
             "81-C151-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_done_pending_merge",
+          "freeze": "docs/task-151-acceptance-freeze.json",
+          "signoff_audit": "docs/task-151-acceptance-audit.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/163",
+          "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530",
+          "dependency_gate": "TASK-152 blocked until TASK-151 Done and PR #163 merged into main; TASK-81 original acceptance unsigned"
         },
         {
           "title": "Compose INSERT UPDATE DELETE and certify TASK-81 states",
@@ -1636,5 +1642,5 @@
     }
   ],
   "next_unallocated_child_id": 189,
-  "updated": "2026-10-20"
+  "updated": "2026-10-30"
 }
