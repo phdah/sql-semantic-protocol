@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "task": "TASK-76",
   "status": "independent_parent_review_pending_final_pr_head_ci",
   "parent_signed_off": false,
@@ -212,135 +212,100 @@
       "id": 1,
       "description": "Normalize ordered pagination, DISTINCT, WITH TIES, QUALIFY placement, and dialect variants",
       "mandatory_case_ids": [
-        "76-C133-N-empty",
-        "76-C133-N-offset-past",
-        "76-C133-N-zero",
         "76-C133-P-alias",
         "76-C133-P-desc",
         "76-C133-P-explicit-nulls",
         "76-C133-P-fetch",
         "76-C133-P-limit-offset",
         "76-C133-P-top",
-        "76-C134-N-absent",
-        "76-C134-N-with-ties-zero",
         "76-C134-P-distinct",
         "76-C134-P-distinct-on",
         "76-C134-P-explicit-nulls",
         "76-C134-P-with-ties",
-        "76-C136-N-offset-empty",
         "76-C136-P-fetch",
-        "76-C136-P-limit",
         "76-C136-P-null-last",
         "76-C136-P-top"
       ],
       "conditional_case_ids": [
-        "76-C133-N-nulls",
-        "76-C133-N-producer",
-        "76-C133-N-ties",
-        "76-C133-N-underordered",
-        "76-C134-N-distinct-on-tie",
         "76-C134-N-implicit-null",
         "76-C134-N-qualify",
         "76-C136-N-implicit-null",
         "76-C136-N-sample",
         "76-C136-N-sample-seeded",
         "76-C136-N-seeded",
-        "76-C136-N-tie",
         "76-C136-P-system"
       ],
       "children": [
         "TASK-133",
         "TASK-134",
         "TASK-136"
+      ],
+      "evidence": [
+        "tests/task_133_frozen_matrix.rs",
+        "tests/task_134_frozen_matrix.rs",
+        "tests/task_136_dialect_matrix.rs",
+        "tests/task_136_sampling.rs"
       ]
     },
     {
       "id": 2,
       "description": "Prove exact ranks, ties, offsets, selected and rejected identities",
       "mandatory_case_ids": [
-        "76-C133-N-empty",
         "76-C133-N-offset-past",
         "76-C133-N-zero",
-        "76-C133-P-alias",
-        "76-C133-P-desc",
         "76-C133-P-explicit-nulls",
-        "76-C133-P-fetch",
         "76-C133-P-limit-offset",
         "76-C133-P-top",
         "76-C134-N-absent",
-        "76-C134-N-with-ties-zero",
         "76-C134-P-distinct",
         "76-C134-P-distinct-on",
-        "76-C134-P-explicit-nulls",
         "76-C134-P-with-ties",
         "76-C135-N-empty",
         "76-C135-N-null-duplicates",
-        "76-C135-N-set-zero",
         "76-C135-P-cte-nested",
-        "76-C135-P-renamed-producer",
         "76-C135-P-set-branch",
         "76-C136-N-offset-empty",
-        "76-C136-P-fetch",
-        "76-C136-P-limit",
-        "76-C136-P-null-last",
-        "76-C136-P-top"
+        "76-C136-P-null-last"
       ],
       "conditional_case_ids": [
-        "76-C133-N-nulls",
-        "76-C133-N-producer",
         "76-C133-N-ties",
         "76-C133-N-underordered",
         "76-C134-N-distinct-on-tie",
-        "76-C134-N-implicit-null",
-        "76-C134-N-qualify",
-        "76-C135-R-implicit-null",
         "76-C135-R-peer-order",
-        "76-C135-R-unresolved-producer",
-        "76-C136-N-implicit-null",
-        "76-C136-N-sample",
-        "76-C136-N-sample-seeded",
-        "76-C136-N-seeded",
-        "76-C136-N-tie",
-        "76-C136-P-system"
+        "76-C136-N-tie"
       ],
       "children": [
         "TASK-133",
         "TASK-134",
         "TASK-135",
         "TASK-136"
+      ],
+      "evidence": [
+        "tests/task_133_page_bags.rs",
+        "tests/task_134_frozen_matrix.rs",
+        "tests/task_135_nested_pages.rs",
+        "tests/task_135_set_branch_pages.rs"
       ]
     },
     {
       "id": 3,
       "description": "Classify deterministic and stochastic sampling with explicit seed and Residual boundaries",
-      "mandatory_case_ids": [
-        "76-C134-N-absent",
-        "76-C134-N-with-ties-zero",
-        "76-C134-P-distinct",
-        "76-C134-P-distinct-on",
-        "76-C134-P-explicit-nulls",
-        "76-C134-P-with-ties",
-        "76-C136-N-offset-empty",
-        "76-C136-P-fetch",
-        "76-C136-P-limit",
-        "76-C136-P-null-last",
-        "76-C136-P-top"
-      ],
+      "mandatory_case_ids": [],
       "conditional_case_ids": [
-        "76-C134-N-distinct-on-tie",
-        "76-C134-N-implicit-null",
-        "76-C134-N-qualify",
-        "76-C136-N-implicit-null",
         "76-C136-N-sample",
         "76-C136-N-sample-seeded",
         "76-C136-N-seeded",
-        "76-C136-N-tie",
         "76-C136-P-system"
       ],
       "children": [
-        "TASK-134",
         "TASK-136"
-      ]
+      ],
+      "evidence": [
+        "tests/task_136_sampling.rs",
+        "tests/task_136_dialect_matrix.rs",
+        "tests/task_136_adapter_parity.rs"
+      ],
+      "reason": "Stochastic sampling cannot certify exact physical membership without an attested engine-specific algorithm; source facts and seed are still normalized and asserted."
     },
     {
       "id": 4,
@@ -351,27 +316,20 @@
         "76-C135-N-set-zero",
         "76-C135-P-cte-nested",
         "76-C135-P-renamed-producer",
-        "76-C135-P-set-branch",
-        "76-C136-N-offset-empty",
-        "76-C136-P-fetch",
-        "76-C136-P-limit",
-        "76-C136-P-null-last",
-        "76-C136-P-top"
+        "76-C135-P-set-branch"
       ],
       "conditional_case_ids": [
         "76-C135-R-implicit-null",
         "76-C135-R-peer-order",
-        "76-C135-R-unresolved-producer",
-        "76-C136-N-implicit-null",
-        "76-C136-N-sample",
-        "76-C136-N-sample-seeded",
-        "76-C136-N-seeded",
-        "76-C136-N-tie",
-        "76-C136-P-system"
+        "76-C135-R-unresolved-producer"
       ],
       "children": [
-        "TASK-135",
-        "TASK-136"
+        "TASK-135"
+      ],
+      "evidence": [
+        "tests/task_135_nested_pages.rs",
+        "tests/task_135_set_branch_pages.rs",
+        "tests/task_135_dbt_core_e2e.rs"
       ]
     },
     {
@@ -428,6 +386,13 @@
         "TASK-134",
         "TASK-135",
         "TASK-136"
+      ],
+      "evidence": [
+        "tests/task_133_frozen_matrix.rs",
+        "tests/task_134_frozen_matrix.rs",
+        "tests/task_135_nested_pages.rs",
+        "tests/task_135_set_branch_pages.rs",
+        "tests/task_136_frozen_matrix.rs"
       ]
     },
     {
@@ -484,6 +449,13 @@
         "TASK-134",
         "TASK-135",
         "TASK-136"
+      ],
+      "evidence": [
+        "tests/task_133_frozen_matrix.rs",
+        "tests/task_134_frozen_matrix.rs",
+        "tests/task_135_dialect_matrix.rs",
+        "tests/task_136_dialect_matrix.rs",
+        "tests/task_136_adapter_parity.rs"
       ]
     }
   ],
@@ -492,6 +464,7 @@
     "other_dialect_execution": "parser-only or separately attributed native oracle",
     "conditional_runtime_laws": "Residual with owner and reviewed disposition",
     "release_gate": "TASK-91 independent",
-    "final_ci": "required before task Done"
+    "final_ci": "required before task Done",
+    "original_ac_evidence": "Requirement-specific case IDs and executable tests; stochastic AC #3 has four reviewed conditional sample laws and no invented Exact cases."
   }
 }
