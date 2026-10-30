@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-151",
   "parent": "TASK-81",
   "status": "implementation_in_progress",
@@ -49,8 +49,111 @@
     "RETURNING UPDATE postimages and DELETE preimages",
     "native vendor/session DML effects not inferred from parsing"
   ],
-  "matrix_completeness": "pending observed 104-cell parser freeze, full native oracle and final CI review; no premature Done",
+  "matrix_completeness": "pending frozen 104-cell parser disposition and final native CI review",
   "cases": [
+    {
+      "id": "81-C151-P-returning-two-rows",
+      "fixture_id": "81-C151-P",
+      "category": "mandatory_exact",
+      "family": "qualified_target_returning",
+      "sql": "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 40
+        },
+        {
+          "id": 2,
+          "score": 40
+        },
+        {
+          "id": null,
+          "score": 30
+        }
+      ],
+      "returning": [
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        }
+      ],
+      "target_true_ordinals": [
+        0,
+        1
+      ],
+      "target_not_true_ordinals": [
+        2
+      ],
+      "affected": {
+        "updated": 2,
+        "deleted": 0
+      },
+      "proof": "exact",
+      "target_row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "domain_contract": {
+        "id": {
+          "type": "integer",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 30,
+          "upper": 40,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1,
+            "40": 2
+          }
+        }
+      },
+      "returning_domains": {
+        "id": {
+          "type": "integer",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        }
+      },
+      "owner": "TASK-151",
+      "oracle": "Independent three-row DuckDB UPDATE with RETURNING [1,2]"
+    },
     {
       "id": "81-C151-P-update-qualified-returning",
       "fixture_id": "81-C151-P",
@@ -616,8 +719,8 @@
       "owner": "TASK-151"
     }
   ],
-  "previous_version": "docs/task-151-acceptance-freeze-v1.json",
-  "mandatory_exact_cases": 4,
+  "previous_version": "docs/task-151-acceptance-freeze-v2.json",
+  "mandatory_exact_cases": 5,
   "mandatory_negative_cases": 2,
   "conditional_vendor_cases": 2,
   "conditional_release_disposition": "TASK-151 retains vendor ORDER/LIMIT/partition semantics as typed Residual or parser boundary until named native engine/version laws and complete partition metadata are supplied. These are not Exact.",
