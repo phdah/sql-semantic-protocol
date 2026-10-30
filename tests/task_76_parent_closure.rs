@@ -213,7 +213,12 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
                 assert_eq!(observed, dialects, "{id}: incomplete parser matrix");
             } else {
                 assert_eq!(name, "TASK-135", "{id}: missing parser evidence");
-                assert_eq!(case["dialect_status"], "13_parsed_and_exact", "{id}");
+                if exact.contains(id) {
+                    assert_eq!(case["dialect_status"], "13_parsed_and_exact", "{id}");
+                } else {
+                    assert_eq!(case["status"], "Residual", "{id}");
+                    assert_eq!(ids(&child["dialect_matrix"]["dialects"]), dialects);
+                }
             }
             if let Some(cells) = case.get("adapter_cells") {
                 let observed = if let Some(map) = cells.as_object() {
@@ -232,9 +237,12 @@ fn parent_inventory_reconciles_all_child_cases_and_every_original_criterion() {
                         .collect::<BTreeSet<_>>()
                 };
                 assert_eq!(observed, adapters, "{id}: incomplete adapter matrix");
-            } else if case["classification"] == "mandatory" {
+            } else if exact.contains(id) {
                 assert_eq!(name, "TASK-135", "{id}: missing adapter evidence");
                 assert_eq!(case["adapter_status"], "direct_sql_dbt_compiled_odcs_exact", "{id}");
+            } else {
+                assert_eq!(name, "TASK-135", "{id}: missing adapter evidence");
+                assert_eq!(ids(&child["adapter_matrix"]["sources"]), adapters);
             }
         }
         assert_eq!(
