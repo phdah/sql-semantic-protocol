@@ -52,18 +52,17 @@ fn frozen_shared_write_syntax_classifies_all_thirteen_dialects() {
             .iter()
             .zip(kinds)
             .map(|(sql, kind)| {
-                match analyze_inputs(
-                    &[SqlInput::inline(*sql)],
-                    dialect,
-                    engine.as_ref(),
-                ) {
+                match analyze_inputs(&[SqlInput::inline(*sql)], dialect, engine.as_ref()) {
                     Err(_) => "parser_boundary",
                     Ok(bundle) => match bundle.inputs()[0].statements().first().unwrap() {
                         ProtocolStatement::Unsupported(_) => "canonical_unsupported",
-                        ProtocolStatement::Query(query) if query.write().is_some_and(|w| w.kind() == kind) => {
+                        ProtocolStatement::Query(query)
+                            if query.write().is_some_and(|w| w.kind() == kind) =>
+                        {
                             "parsed_canonical"
                         }
                         ProtocolStatement::Query(_) => "canonical_unsupported",
+                        _ => "canonical_unsupported",
                     },
                 }
                 .to_string()
@@ -71,7 +70,11 @@ fn frozen_shared_write_syntax_classifies_all_thirteen_dialects() {
             .collect::<Vec<_>>();
         actual.insert(dialect.to_string(), classifications.clone());
         let frozen = freeze["dialect_expected"][dialect].as_array().unwrap();
-        assert_eq!(frozen.len(), classifications.len(), "{dialect}: all statements classified");
+        assert_eq!(
+            frozen.len(),
+            classifications.len(),
+            "{dialect}: all statements classified"
+        );
         for (index, (classification, expected)) in classifications.iter().zip(frozen).enumerate() {
             assert_eq!(
                 Some(classification.as_str()),
@@ -88,11 +91,11 @@ fn direct_catalog() -> RelationCatalog {
         RelationSchema::new(
             relation,
             ["id", "amount"]
-                .iter()
+                .into_iter()
                 .map(|column| {
                     SchemaColumn::from_sql_type(
                         column,
-                        if relation == TARGET && *column == "id" {
+                        if relation == TARGET && column == "id" {
                             "BIGINT"
                         } else {
                             "INTEGER"
@@ -154,7 +157,8 @@ schema:
 
 fn evidence() -> Vec<ConstraintEvidence> {
     vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task152-parity").unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task152-parity")
+            .unwrap(),
         ConstraintEnforcement::Enforced,
     )]
 }
@@ -188,10 +192,7 @@ fn script() -> [String; 3] {
 
 fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let script = script();
-    let sqls = script
-        .iter()
-        .map(SqlInput::inline)
-        .collect::<Vec<_>>();
+    let sqls = script.iter().map(SqlInput::inline).collect::<Vec<_>>();
     let ids = (0..sqls.len())
         .map(|n| format!("task152-parity-{n}"))
         .collect::<Vec<_>>();
@@ -202,22 +203,20 @@ fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         .map(|(input, id)| ConfiguredSqlInput::new(id, input, "postgresql", dialect.as_ref()))
         .collect::<Vec<_>>();
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            TARGET,
-            vec![
-                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
-                RelationConstraint::check_comparison(
-                    "amount",
-                    CheckCompareOperator::Gte,
-                    ConstraintValue::Integer(0),
-                    evidence(),
-                )
-                .unwrap(),
-            ],
-        )
-        .unwrap(),
-    ]);
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        TARGET,
+        vec![
+            RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+            RelationConstraint::check_comparison(
+                "amount",
+                CheckCompareOperator::Gte,
+                ConstraintValue::Integer(0),
+                evidence(),
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap()]);
     physical_ordered_write_state_plan(&bundle, &[state(&[])])
 }
 
