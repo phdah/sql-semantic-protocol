@@ -356,7 +356,20 @@ pub fn physical_finite_cte_bag_plan(
         {
             return residual("requested CTE tuple lacks supported typed integer columns");
         }
-        if !terminal.iter().any(|row| &row.values == wanted) {
+        // SQL integer membership compares numeric values, not their literal
+        // spellings. NULL matches NULL for tuple membership (IS NOT DISTINCT
+        // FROM), even though a SQL JOIN equality treats NULL as UNKNOWN.
+        let present = terminal.iter().any(|row| {
+            row.values.iter().all(|(name, actual)| match (actual, wanted.get(name)) {
+                (LiteralValue::Null, Some(LiteralValue::Null)) => true,
+                (LiteralValue::Number(a), Some(LiteralValue::Number(b))) => {
+                    a.parse::<i128>().ok().zip(b.parse::<i128>().ok())
+                        .is_some_and(|(a, b)| a == b)
+                }
+                _ => false,
+            })
+        });
+        if !present {
             return PhysicalCteProof::Impossible {
                 reason: "requested tuple is absent from complete physical CTE terminal bag"
                     .to_string(),
