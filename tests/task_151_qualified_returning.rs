@@ -358,3 +358,95 @@ fn correlated_source_is_mandatory_not_an_implicitly_empty_relation() {
         "{plan:?}"
     );
 }
+
+fn frozen_state(relation: &str, input: &serde_json::Value) -> PhysicalWriteState {
+    let rows = input.as_array().expect("frozen complete row bag");
+    PhysicalWriteState::new(relation, rows.iter().map(|row| {
+        let mut values = BTreeMap::new();
+        for (column, value) in row.as_object().unwrap() {
+            let typed = if value.is_null() {
+                LiteralValue::Null
+            } else {
+                LiteralValue::Number(value.as_i64().expect("frozen integer").to_string())
+            };
+            values.insert(column.clone(), typed);
+        }
+        PhysicalWriteRow::new(values).unwrap()
+    }).collect()).unwrap()
+}
+
+#[test]
+fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
+    let freeze: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-151-acceptance-freeze.json")).unwrap();
+    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["owner"], "TASK-151");
+    let mut checked = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["proof"] != "exact" {
+            continue;
+        }
+        checked += 1;
+        let sql = case["sql"].as_str().unwrap();
+        let bundle = bundle(sql);
+        let before = frozen_state("target", &case["target_before"]);
+        let mut states = vec![before.clone()];
+        let source = if case["source"].is_array() {
+            let source = frozen_state("source", &case["source"]);
+            states.push(source.clone());
+            Some(source)
+        } else {
+            None
+        };
+        let plan = physical_ordered_write_state_plan(&bundle, &states);
+        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+            panic!("{}: required exact witness: {plan:?}", case["id"]);
+        };
+        assert_eq!(transitions.len(), 1, "{}", case["id"]);
+        let transition = &transitions[0];
+        assert_eq!(transition.before(), &before, "{}", case["id"]);
+        let expected = frozen_state("target", &case["target_after"]);
+        assert_eq!(transition.after(), &expected, "{}", case["id"]);
+        assert!(final_states.contains(&expected), "{}", case["id"]);
+        if let Some(source) = source {
+            assert!(final_states.contains(&source), "{}", case["id"]);
+        }
+        assert_eq!(transition.affected().updated(), case["affected"]["updated"].as_u64().unwrap());
+        assert_eq!(transition.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap());
+        let selected = case["target_true_ordinals"].as_array().unwrap().iter().map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>();
+        assert_eq!(transition.affected_target_ordinals(), selected.as_slice(), "{}", case["id"]);
+        let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
+        let domains = transition.after().exact_domains(schema).unwrap();
+        for column in domains {
+            let expected = &case["domain_contract"][column.column()];
+            let frequencies = expected["frequencies"].as_object().unwrap();
+            let mut actual = BTreeMap::new();
+            for (value, count) in column.values() {
+                let key = match value {
+                    LiteralValue::Null => "NULL".to_string(),
+                    LiteralValue::Number(value) => value.clone(),
+                    other => panic!("unproved frozen type: {other:?}"),
+                };
+                actual.insert(key, *count);
+            }
+            assert_eq!(actual.len(), frequencies.len(), "{}", case["id"]);
+            for (value, count) in actual {
+                assert_eq!(Some(count), frequencies[&value].as_u64(), "{}", case["id"]);
+            }
+            assert_eq!(expected["lower_inclusive"], true);
+            assert_eq!(expected["upper_inclusive"], true);
+        }
+        if !case["returning"].as_array().unwrap().is_empty() {
+            let returning = transition.returning().expect("required RETURNING bag");
+            let expected_returning = frozen_state("target", &case["returning"]);
+            assert_eq!(returning.rows(), expected_returning.rows(), "{}", case["id"]);
+            assert_eq!(
+                transition.returning_exact_domains(schema).unwrap().len(),
+                case["returning"][0].as_object().unwrap().len()
+            );
+        } else {
+            assert!(transition.returning().is_none(), "{}", case["id"]);
+        }
+    }
+    assert_eq!(checked, 4);
+}
