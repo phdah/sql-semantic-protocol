@@ -426,3 +426,21 @@ fn every_conditional_cte_variant_has_explicit_parser_or_residual_disposition() {
     }
     assert_eq!(checked, 3 * DIALECTS.len());
 }
+
+#[test]
+fn forward_cte_sibling_does_not_borrow_identically_named_physical_table() {
+    let sql = "WITH early AS (SELECT k FROM later), later AS (SELECT k FROM s) \
+               SELECT k FROM early";
+    // Even when a physical table named 'later' exists, the engine's forward
+    // binding law is conditional and cannot authorize an Exact CTE proof.
+    let input = serde_json::json!({
+        "later": [{"id": "later#0", "k": 42}],
+        "s": [{"id": "s#0", "k": 1}]
+    });
+    let (bundle, snapshots) = case_bundle(sql, &input);
+    let layer = bundle.layers().last().unwrap();
+    assert!(matches!(
+        physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+        PhysicalCteProof::Residual { .. }
+    ));
+}
