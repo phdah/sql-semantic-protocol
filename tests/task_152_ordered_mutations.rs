@@ -434,12 +434,19 @@ fn frozen_task_152_inventory_preserves_every_child_and_parent_signoff_cell() {
     assert_eq!(freeze["owner"], "TASK-152");
     assert_eq!(freeze["parent"], "TASK-81");
     assert_eq!(freeze["version"], 3);
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["81-C152-P", "81-C152-N"]));
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["81-C152-P", "81-C152-N"])
+    );
     assert_eq!(freeze["child_ac"], serde_json::json!([1, 2, 3, 4, 5]));
-    assert_eq!(freeze["original_parent_ac"], serde_json::json!([1, 2, 3, 4, 5, 6]));
-    assert_eq!(freeze["adapters"], serde_json::json!([
-        "direct_sql", "dbt_compiled_catalog", "odcs_schema"
-    ]));
+    assert_eq!(
+        freeze["original_parent_ac"],
+        serde_json::json!([1, 2, 3, 4, 5, 6])
+    );
+    assert_eq!(
+        freeze["adapters"],
+        serde_json::json!(["direct_sql", "dbt_compiled_catalog", "odcs_schema"])
+    );
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(freeze["parser_sql"].as_array().unwrap().len(), 3);
     let mut observed = BTreeMap::<String, usize>::new();
@@ -450,8 +457,14 @@ fn frozen_task_152_inventory_preserves_every_child_and_parent_signoff_cell() {
         assert!(case["fixture_id"] == "81-C152-P" || case["fixture_id"] == "81-C152-N");
         let kind = case["classification"].as_str().unwrap();
         *observed.entry(kind.to_string()).or_default() += 1;
-        assert!(case["target_before"].is_array(), "{id}: missing complete prestate");
-        assert!(case["target_before_domains"].is_object(), "{id}: missing prestate domains");
+        assert!(
+            case["target_before"].is_array(),
+            "{id}: missing complete prestate"
+        );
+        assert!(
+            case["target_before_domains"].is_object(),
+            "{id}: missing prestate domains"
+        );
         assert!(case["assumed_parent"].is_array() || case["expected_gap"] == "MissingPopulation");
         for step in case["steps"].as_array().unwrap() {
             assert!(step["sql"].as_str().is_some_and(|sql| !sql.is_empty()));
@@ -493,13 +506,23 @@ fn frozen_task_152_inventory_preserves_every_child_and_parent_signoff_cell() {
         assert_eq!(boundary["owner"], "TASK-152");
         assert_eq!(boundary["classification"], "conditional_residual");
         assert_eq!(boundary["expected_proof"], "Residual");
-        assert!(boundary["release_disposition"].as_str().is_some_and(|s| !s.is_empty()));
-        assert_eq!(boundary["expected_parser_status"].as_object().unwrap().len(), 13);
+        assert!(boundary["release_disposition"]
+            .as_str()
+            .is_some_and(|s| !s.is_empty()));
+        assert_eq!(
+            boundary["expected_parser_status"]
+                .as_object()
+                .unwrap()
+                .len(),
+            13
+        );
     }
     for boundary in freeze["conditional_boundaries"].as_array().unwrap() {
         assert_eq!(boundary["owner"], "TASK-152");
         assert_eq!(boundary["proof"], "Residual");
         assert!(boundary["missing"].as_str().is_some_and(|s| !s.is_empty()));
-        assert!(boundary["release_disposition"].as_str().is_some_and(|s| !s.is_empty()));
+        assert!(boundary["release_disposition"]
+            .as_str()
+            .is_some_and(|s| !s.is_empty()));
     }
 }
