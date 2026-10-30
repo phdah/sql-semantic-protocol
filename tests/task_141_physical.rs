@@ -19,9 +19,10 @@ fn literal(value: &Value) -> LiteralValue {
 }
 
 fn expected_row(row: &Value, columns: &[String]) -> BTreeMap<String, LiteralValue> {
-    columns.iter().map(|name| {
-        (name.clone(), literal(&row[name]))
-    }).collect()
+    columns
+        .iter()
+        .map(|name| (name.clone(), literal(&row[name])))
+        .collect()
 }
 
 fn case_bundle(
@@ -47,11 +48,15 @@ fn case_bundle_with_dialect(
             )
             .unwrap(),
         );
-        let rows = rows.as_array().unwrap().iter().map(|row| {
-            PhysicalWriteRow::new(
-                BTreeMap::from([("k".to_string(), literal(&row["k"]))])
-            ).unwrap()
-        }).collect();
+        let rows = rows
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), literal(&row["k"]))]))
+                    .unwrap()
+            })
+            .collect();
         snapshots.push(PhysicalWriteState::new(name.clone(), rows).unwrap());
     }
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
@@ -63,27 +68,44 @@ fn case_bundle_with_dialect(
 
 #[test]
 fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
-    let freeze: Value = serde_json::from_str(
-        include_str!("../docs/task-141-acceptance-freeze.json")
-    ).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut proved = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" { continue; }
+        if case["classification"] != "mandatory_exact" {
+            continue;
+        }
         let id = case["id"].as_str().unwrap();
-        let (bundle, snapshots) =
-            case_bundle(case["sql"].as_str().unwrap(), &case["initial_bags"]);
+        let (bundle, snapshots) = case_bundle(case["sql"].as_str().unwrap(), &case["initial_bags"]);
         let target = bundle.layers().last().unwrap();
         let PhysicalCteProof::Exact(proof) =
             physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, None)
-        else { panic!("{id}: canonical CTE source-complete proof missing"); };
+        else {
+            panic!("{id}: canonical CTE source-complete proof missing");
+        };
 
-        assert_eq!(proof.sources.len(), snapshots.len(), "{id}: one shared source graph");
+        assert_eq!(
+            proof.sources.len(),
+            snapshots.len(),
+            "{id}: one shared source graph"
+        );
         for (name, rows) in case["initial_bags"].as_object().unwrap() {
             let observed = &proof.source_bags[name];
-            assert_eq!(observed.len(), rows.as_array().unwrap().len(), "{id}: source bag");
+            assert_eq!(
+                observed.len(),
+                rows.as_array().unwrap().len(),
+                "{id}: source bag"
+            );
             for (index, row) in rows.as_array().unwrap().iter().enumerate() {
-                assert_eq!(observed[index].values["k"], literal(&row["k"]), "{id}: source value");
-                assert_eq!(observed[index].source_row_ids, vec![row["id"].as_str().unwrap()]);
+                assert_eq!(
+                    observed[index].values["k"],
+                    literal(&row["k"]),
+                    "{id}: source value"
+                );
+                assert_eq!(
+                    observed[index].source_row_ids,
+                    vec![row["id"].as_str().unwrap()]
+                );
             }
         }
 
@@ -103,23 +125,34 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
 
         for (name, domain) in case["terminal_domains"].as_object().unwrap() {
             let observed = &proof.terminal_domains[name];
-            assert_eq!(observed.null_allowed, domain["nullable"].as_bool().unwrap(), "{id}/{name}: NULL");
+            assert_eq!(
+                observed.null_allowed,
+                domain["nullable"].as_bool().unwrap(),
+                "{id}/{name}: NULL"
+            );
             let bound = Some((
                 domain["lower"]["value"].as_i64().unwrap() as i128,
                 domain["upper"]["value"].as_i64().unwrap() as i128,
             ));
-            assert_eq!(observed.integer_bounds, bound, "{id}/{name}: inclusive bounds");
+            assert_eq!(
+                observed.integer_bounds, bound,
+                "{id}/{name}: inclusive bounds"
+            );
             assert_eq!(domain["lower"]["inclusive"], true);
             assert_eq!(domain["upper"]["inclusive"], true);
         }
 
         let stages = if id.ends_with("SHADOW") {
-            vec![("outer/shared", "terminal/cte:0:shared"),
-                 ("chosen/shared", "terminal/cte:1:chosen/cte:0:shared"),
-                 ("chosen", "terminal/cte:1:chosen")]
+            vec![
+                ("outer/shared", "terminal/cte:0:shared"),
+                ("chosen/shared", "terminal/cte:1:chosen/cte:0:shared"),
+                ("chosen", "terminal/cte:1:chosen"),
+            ]
         } else if id.ends_with("CHAIN") {
-            vec![("first", "terminal/cte:0:first"),
-                 ("second", "terminal/cte:1:second")]
+            vec![
+                ("first", "terminal/cte:0:first"),
+                ("second", "terminal/cte:1:second"),
+            ]
         } else {
             vec![("shared", "terminal/cte:0:shared")]
         };
@@ -128,11 +161,19 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
             let rows = case["producer_bags"][label].as_array().unwrap();
             assert_eq!(observed.len(), rows.len(), "{id}/{label}: producer count");
             for (n, row) in rows.iter().enumerate() {
-                assert_eq!(observed[n].values["k"], literal(&row["k"]), "{id}/{label}: value");
+                assert_eq!(
+                    observed[n].values["k"],
+                    literal(&row["k"]),
+                    "{id}/{label}: value"
+                );
                 assert_eq!(
                     observed[n].source_row_ids,
-                    row["source_ids"].as_array().unwrap().iter()
-                        .map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>(),
+                    row["source_ids"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|id| id.as_str().unwrap().to_string())
+                        .collect::<Vec<_>>(),
                     "{id}/{label}: physical provenance"
                 );
             }
@@ -144,21 +185,38 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
             assert_eq!(proof.terminal.len(), 5);
             for (a, b) in [
                 (LiteralValue::Null, LiteralValue::Null),
-                (LiteralValue::Number("1".into()), LiteralValue::Number("2".into()))
+                (
+                    LiteralValue::Number("1".into()),
+                    LiteralValue::Number("2".into()),
+                ),
             ] {
                 let wanted = BTreeMap::from([("ak".to_string(), a), ("bk".to_string(), b)]);
-                assert!(matches!(
-                    physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&wanted)),
-                    PhysicalCteProof::Impossible { .. }
-                ), "{id}: terminal counterexample");
+                assert!(
+                    matches!(
+                        physical_finite_cte_bag_plan(
+                            &bundle,
+                            target.id(),
+                            &snapshots,
+                            Some(&wanted)
+                        ),
+                        PhysicalCteProof::Impossible { .. }
+                    ),
+                    "{id}: terminal counterexample"
+                );
             }
         }
         proved.push(id);
     }
     proved.sort();
-    assert_eq!(proved, vec![
-        "78-C141-N-NULL-DUP", "78-C141-P-CHAIN", "78-C141-P-REUSE", "78-C141-P-SHADOW"
-    ]);
+    assert_eq!(
+        proved,
+        vec![
+            "78-C141-N-NULL-DUP",
+            "78-C141-P-CHAIN",
+            "78-C141-P-REUSE",
+            "78-C141-P-SHADOW"
+        ]
+    );
 }
 
 #[test]
