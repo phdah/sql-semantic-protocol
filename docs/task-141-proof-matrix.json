@@ -883,85 +883,85 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "mysql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "postgresql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "postgres",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "hive",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "sqlite",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "snowflake",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "redshift",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "mssql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "clickhouse",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "bigquery",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "ansi",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "duckdb",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "duckdb_conditional_probe",
           "proof": "Residual until external relation evidence"
         },
         {
           "dialect": "databricks",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual until external relation evidence"
         }
@@ -976,85 +976,85 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "mysql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "postgresql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "postgres",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "hive",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "sqlite",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "snowflake",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "redshift",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "mssql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "clickhouse",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "bigquery",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "ansi",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "duckdb",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "duckdb_conditional_probe",
           "proof": "Residual"
         },
         {
           "dialect": "databricks",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         }
@@ -1069,85 +1069,85 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "mysql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "postgresql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "postgres",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "hive",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "sqlite",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "snowflake",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "redshift",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "mssql",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "clickhouse",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "bigquery",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "ansi",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         },
         {
           "dialect": "duckdb",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "duckdb_conditional_probe",
           "proof": "Residual"
         },
         {
           "dialect": "databricks",
-          "parser": "conditional_verified_boundary_required",
+          "parser": "parsed",
           "native_engine": "not_attested",
           "proof": "Residual"
         }
