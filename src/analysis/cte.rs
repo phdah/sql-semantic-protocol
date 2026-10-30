@@ -36,7 +36,9 @@ fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<Ct
     if !with_hints.is_empty()
         || !partitions.is_empty()
         || !index_hints.is_empty()
-        || alias.as_ref().is_some_and(|alias| !alias.columns.is_empty())
+        || alias
+            .as_ref()
+            .is_some_and(|alias| !alias.columns.is_empty())
     {
         return None;
     }
