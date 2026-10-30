@@ -1,4 +1,23 @@
 {
+  "task_141_cte_scope_acceptance": {
+    "owner": "TASK-141",
+    "parent": "TASK-78",
+    "status": "implementation_partial_pending_review",
+    "freeze": "docs/task-141-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "78-C141-P",
+      "78-C141-N"
+    ],
+    "sql_oracles": "tests/task_141_cte_scopes.rs",
+    "lexical_scope_regression_tested_by_ci": false,
+    "full_physical_proof_verified": false,
+    "native_duckdb_oracles_verified": false,
+    "adapter_parity_verified": false,
+    "acceptance_criteria_completed": [],
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_151_qualified_write_acceptance": {
     "owner": "TASK-151",
     "parent": "TASK-81",
