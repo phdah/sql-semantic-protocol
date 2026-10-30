@@ -1,3 +1,18 @@
+TASK-152 ordered INSERT/UPDATE/DELETE state certification:
+`tests/task_152_ordered_mutations.rs` proves complete pre/post state bags,
+per-statement affected ordinals and counts, typed NULL/frequency bounds,
+three-valued TRUE/NOT TRUE partitions, enforced PK/CHECK contradictions,
+the FK deferral residual boundary and native DuckDB outcomes.
+`tests/task_152_dialect_adapter.rs` owns the 39 canonical parser-dialect
+cells and cross-source SQL/dbt/ODCS typed-schema parity (including enforced
+FK references to a complete shared physical source). The immutable
+`docs/task-152-acceptance-freeze.json` is linked from
+`docs/coverage-manifest.json`, with v1 retained for audit; the independent
+review is in `docs/task-152-acceptance-audit.md`. Existing canonical
+`src/physical_realization/write_states.rs` and its `constraints.rs`
+submodule own the interpreter; no SQL reparsing or public wire change.
+TASK-81 remains a separate parent signoff.
+
 TASK-151 bounded correlated UPDATE/DELETE:
 `src/analysis/writes.rs` normalizes one complete independent EXISTS/NOT EXISTS
 read source with the active target alias in lexical scope; 
