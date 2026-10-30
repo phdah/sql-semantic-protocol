@@ -219,6 +219,8 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
         );
         let direct = attested_direct(sql, &case["initial_bags"]);
         let states = complete_states(&case["initial_bags"]);
+        assert!(model_query(&direct).cte_program().is_some(), "{id}: direct SQL has no CTE program");
+        assert!(model_query(&dbt).cte_program().is_some(), "{id}: dbt compiled SQL has no CTE program");
         let direct = physical_bags(&direct, &states);
         let odcs = physical_bags(&from_contract_bundle, &states);
         assert_eq!(
