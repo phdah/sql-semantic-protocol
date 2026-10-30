@@ -39,18 +39,6 @@ fn select_stage(
     id: String,
     lexical: &BTreeMap<String, String>,
 ) -> Option<CteStage> {
-    // Sorting never alters a bag, but computed/volatile ORDER BY expressions
-    // can fail at execution and cannot be silently certified.
-    if query.order_by.as_ref().is_some_and(|order| {
-        order.interpolate.is_some()
-            || !matches!(
-                &order.kind,
-                sqlparser::ast::OrderByKind::Expressions(keys)
-                    if keys.iter().all(|key| column(&key.expr).is_some())
-            )
-    }) {
-        return None;
-    }
     if query.limit_clause.is_some()
         || query.fetch.is_some()
         || !query.locks.is_empty()
@@ -137,6 +125,24 @@ fn select_stage(
             .len()
             != projections.len()
     {
+        return None;
+    }
+    // Sorting does not alter a bag, but its keys must be executable.
+    // Restrict this bounded proof to resolved output labels. A bare source
+    // column not projected by SELECT (or a misspelled label) may be legal or
+    // invalid depending on query shape; neither can be certified here.
+    if query.order_by.as_ref().is_some_and(|order| {
+        order.interpolate.is_some()
+            || !matches!(
+                &order.kind,
+                sqlparser::ast::OrderByKind::Expressions(keys)
+                    if keys.iter().all(|key| matches!(
+                        &key.expr,
+                        Expr::Identifier(name)
+                            if projections.iter().any(|projection| projection.name() == name.value)
+                    ))
+            )
+    }) {
         return None;
     }
     Some(CteStage::new(id, inputs, projections, equality))
