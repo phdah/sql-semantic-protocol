@@ -110,3 +110,73 @@ fn frozen_cte_source_instances_match_direct_and_compiled_dbt() {
     }
     assert_eq!(cases, 4);
 }
+
+#[cfg(feature = "odcs")]
+#[test]
+fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
+    use sql_semantic_protocol::{
+        analyze_configured_inputs_with_catalog, parse_odcs_yaml, ConfiguredSqlInput,
+        RelationCatalog,
+    };
+
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let mut checked = 0;
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "mandatory_exact" {
+            continue;
+        }
+        let id = case["id"].as_str().unwrap();
+        let sql = case["sql"].as_str().unwrap();
+        let source_names = case["initial_bags"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+        let catalog = RelationCatalog::new(&source_names).unwrap();
+        let mut contract = concat!(
+            "apiVersion: v3.2.0\n",
+            "kind: DataContract\n",
+            "id: task141\n",
+            "name: CTE source schema\n",
+            "version: 1.0.0\n",
+            "status: active\n",
+            "schema:\n"
+        )
+        .to_string();
+        for name in &source_names {
+            contract.push_str(&format!(
+                "  - name: {name}\n    physicalName: {name}\n    properties:\n      - name: k\n        physicalType: INTEGER\n"
+            ));
+        }
+        let parsed = parse_odcs_yaml(&contract, "duckdb", &catalog)
+            .unwrap_or_else(|error| panic!("{id}: ODCS contract: {error}"));
+        let evidence = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
+        let source = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task141",
+            &source,
+            "duckdb",
+            dialect.as_ref(),
+        )];
+        let from_contract = analyze_configured_inputs_with_catalog(&configured, &evidence)
+            .unwrap_or_else(|error| panic!("{id}: ODCS analysis: {error}"));
+        let from_sql = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
+        let from_contract = model_query(&from_contract);
+        let from_sql = model_query(&from_sql);
+        assert_eq!(
+            from_contract.dependencies(),
+            from_sql.dependencies(),
+            "{id}: ODCS source schema cannot change CTE source identity"
+        );
+        assert_eq!(
+            from_contract.sources(),
+            from_sql.sources(),
+            "{id}: ODCS source schema cannot create or hide a local instance"
+        );
+        checked += 1;
+    }
+    assert_eq!(checked, 4);
+}
