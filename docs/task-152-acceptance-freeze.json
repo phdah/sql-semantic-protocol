@@ -2,7 +2,7 @@
   "version": 4,
   "owner": "TASK-152",
   "parent": "TASK-81",
-  "status": "reviewed_v4_evidence_pending_final_head_ci",
+  "status": "verified_bounded_child_done_pending_merge",
   "fixture_ids": [
     "81-C152-P",
     "81-C152-N"
@@ -2125,18 +2125,41 @@
     "active protocol/schema snapshots"
   ],
   "signoff": {
-    "mandatory_verified": false,
-    "parser_cells_verified": 0,
-    "adapter_cells_verified": 0,
-    "reviewed": false,
-    "final_head_ci": null,
-    "mandatory_exact_cases": 3,
-    "mandatory_impossible_cases": 2,
-    "mandatory_residual_cases": 1,
-    "conditional_cases": 5,
-    "parser_cells_required": 39,
-    "vendor_parser_cells_required": 26,
-    "adapter_paths_required": 3
+    "mandatory_verified": true,
+    "mandatory_exact_cases_verified": 3,
+    "mandatory_impossible_cases_verified": 2,
+    "mandatory_missing_source_residual_cases_verified": 1,
+    "conditional_foreign_key_residual_cases_reviewed": 1,
+    "vendor_boundary_cases_reviewed": 2,
+    "parser_cells_verified": 39,
+    "vendor_parser_cells_verified": 26,
+    "adapter_paths_verified": 3,
+    "independent_native_duckdb_cases_verified": 6,
+    "non_executable_missing_population_cases_verified": 1,
+    "child_ac_verified": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac_covered": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "reviewed": true,
+    "standards_review_passed": true,
+    "spec_review_passed": true,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486",
+    "implementation_ci_sha": "554e860e7a4139ddb4949fdb75204a66b96ca5a6",
+    "final_metadata_ci_gate": "Final signoff commit requires successful GitHub CI before PR merge",
+    "native_vendor_execution_certified": false,
+    "parent_signed_off": false,
+    "release_approved": false
   },
   "freeze_history": [
     "docs/task-152-acceptance-freeze-v1.json",

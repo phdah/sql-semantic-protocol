@@ -1,6 +1,6 @@
 # TASK-152 bounded acceptance audit
 
-**Child:** TASK-152, 4/4 of TASK-81. **Status:** implementation under verification in PR #164. Parent TASK-81 remains independently unsigned.
+**Child:** TASK-152, 4/4 of TASK-81. **Status:** Done in PR #164, pending merge and final metadata-head CI. Parent TASK-81 remains independently unsigned.
 
 ## Frozen specification and test seams
 
@@ -74,3 +74,29 @@ acceptance boxes. Green CI alone is insufficient; review every frozen
 case against actual native source and terminal bags. TASK-81 remains
 open pending independent original-AC signoff and TASK-91 remains a
 separate publication gate.
+
+## Independent final signoff (2026-10-30)
+
+The bounded v4 inventory passed an independent standards and specification
+cross-check against the exact public/native tests. Child AC #1 requires the
+versioned 7-case source/target matrix and 65 parser classifications; #2
+requires three physical Exact scripts, enforced PK/CHECK Impossible, nullable
+FK and deliberate FK deferral Residual; #3 requires six native DuckDB full-bag
+cases with rejected/UNKNOWN state transitions and the seventh explicitly
+unmaterializable missing-reference case; #4 requires 39 common syntax and
+26 negative vendor parser classifications plus direct/dbt/ODCS parity; and
+#5 requires the reviewed audit, task status and nine-job implementation CI.
+
+All nine jobs in [implementation CI run 41051488486](https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486)
+passed on `554e860e7a4139ddb4949fdb75204a66b96ca5a6`. The last
+source-code patch was complete at that SHA, and subsequent modifications
+only update acceptance evidence and task status. No release approval or
+native multi-engine runtime certification follows from this child signoff.
+The metadata-head CI is independently required before PR merge.
+
+**Standards finding:** no outstanding hard violation under AGENTS.md or
+CONTRIBUTING.md. The test-only implementation uses public Rust APIs and
+separates parser classifications from native DuckDB materialization.
+**Spec finding:** no outstanding mandatory fixture after the v4 mapping
+correction; the foreign-key deferral and vendor/runtime laws remain explicit
+reviewed conditional Residual boundaries, not deferred mandatory Exact cases.
