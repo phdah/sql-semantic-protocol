@@ -345,7 +345,7 @@ fn unresolved_cte_order_by_column_cannot_receive_an_exact_proof() {
     let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
     for sql in [
         "WITH shared AS (SELECT k FROM s) SELECT k FROM shared ORDER BY missing",
-        "WITH shared AS (SELECT k FROM s) SELECT k AS output FROM shared ORDER BY missing",
+        "WITH shared AS (SELECT k FROM s) SELECT k AS projected_k FROM shared ORDER BY missing",
     ] {
         for dialect in DIALECTS {
             let (bundle, snapshots) = case_bundle_with_dialect(sql, &input, dialect);
