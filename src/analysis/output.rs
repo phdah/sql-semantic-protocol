@@ -80,6 +80,14 @@ pub(super) fn analyze_query_output_with_outer_scope(
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
+        // Recursive CTE names bind in this scope, including inside their own
+        // definitions. An inherited same-named producer must not provide
+        // column or value-domain evidence for an unresolved recursive term.
+        if with.recursive {
+            for cte in &with.cte_tables {
+                local_outputs.remove(&cte.alias.name.to_string());
+            }
+        }
         for cte in &with.cte_tables {
             let mut cte_diagnostics = Vec::new();
             let output = analyze_query_output_with_outer_scope(
