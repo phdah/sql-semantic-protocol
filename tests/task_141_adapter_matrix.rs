@@ -4,8 +4,8 @@
 
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, parse_dbt_manifest,
-    AnalysisBundle, ProtocolStatement, QueryStatement, SqlInput,
+    analyze_inputs, dialect_from_name, parse_dbt_manifest, AnalysisBundle, ProtocolStatement,
+    QueryStatement, SqlInput,
 };
 
 fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> AnalysisBundle {
@@ -52,17 +52,20 @@ fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> Analy
     let mut catalog_sources = Map::new();
     for name in initial_bags.as_object().unwrap().keys() {
         let id = format!("source.demo.{name}");
-        catalog_sources.insert(id.clone(), json!({
-            "unique_id": id,
-            "metadata": {
-                "type": "BASE TABLE", "database": "main",
-                "schema": "raw", "name": name
-            },
-            "columns": {
-                "k": {"name": "k", "type": "INTEGER", "index": 1}
-            },
-            "stats": {}
-        }));
+        catalog_sources.insert(
+            id.clone(),
+            json!({
+                "unique_id": id,
+                "metadata": {
+                    "type": "BASE TABLE", "database": "main",
+                    "schema": "raw", "name": name
+                },
+                "columns": {
+                    "k": {"name": "k", "type": "INTEGER", "index": 1}
+                },
+                "stats": {}
+            }),
+        );
     }
     let catalog = json!({
         "metadata": {
@@ -73,12 +76,15 @@ fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> Analy
         "sources": catalog_sources,
         "errors": null
     });
-    let parsed_catalog =
-        sql_semantic_protocol::parse_dbt_catalog(&catalog.to_string()).unwrap();
+    let parsed_catalog = sql_semantic_protocol::parse_dbt_catalog(&catalog.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     sql_semantic_protocol::analyze_dbt_artifacts(
-        &parsed, &parsed_catalog, "duckdb", dialect.as_ref()
-    ).unwrap()
+        &parsed,
+        &parsed_catalog,
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .unwrap()
 }
 
 fn model_query(bundle: &AnalysisBundle) -> &QueryStatement {
@@ -295,8 +301,7 @@ fn physical_bags(
     use sql_semantic_protocol::{physical_finite_cte_bag_plan, PhysicalCteProof};
     let layer = bundle.layers().last().unwrap();
     let result = physical_finite_cte_bag_plan(bundle, layer.id(), states, None);
-    let PhysicalCteProof::Exact(value) = result
-    else {
+    let PhysicalCteProof::Exact(value) = result else {
         panic!("adapter lacks source-complete CTE physical proof: {result:?}");
     };
     *value
