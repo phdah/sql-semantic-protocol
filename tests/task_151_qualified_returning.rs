@@ -134,7 +134,7 @@ fn qualified_update_returning_is_exact_after_image_with_duplicates_and_unknown()
         })
         .collect::<Vec<_>>();
     assert_eq!(returned_ids, vec![1, 2, 2]);
-    let schema = &bundle.source_schemas()[0];
+    let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
     let domains = transition.returning_exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 1);
     assert_eq!(domains[0].column(), "id");
@@ -198,7 +198,7 @@ fn qualified_delete_returning_is_exact_before_image_for_each_duplicate() {
         .collect::<Vec<_>>();
     assert_eq!(returned_rows, vec![(2, 20), (2, 20)]);
     let domains = transition
-        .returning_exact_domains(&bundle.source_schemas()[0])
+        .returning_exact_domains(bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap())
         .unwrap();
     assert_eq!(domains.len(), 2);
     assert_eq!(
@@ -293,7 +293,7 @@ fn correlated_exists_update_uses_complete_read_only_bag_and_returns_postimages()
     let returning = transition.returning().unwrap();
     assert_eq!(returning.rows().len(), 2);
     let domains = transition
-        .returning_exact_domains(&bundle.source_schemas()[0])
+        .returning_exact_domains(bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap())
         .unwrap();
     assert_eq!(
         domains[0].values(),
