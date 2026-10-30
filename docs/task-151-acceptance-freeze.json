@@ -245,12 +245,11 @@
           "type": "integer",
           "nullable": true,
           "lower": 1,
-          "upper": 2,
+          "upper": 1,
           "lower_inclusive": true,
           "upper_inclusive": true,
           "frequencies": {
             "1": 1,
-            "2": 2,
             "NULL": 1
           }
         },
