@@ -440,13 +440,13 @@ fn duplicate_unquoted_cte_names_cannot_receive_an_exact_proof() {
     let sql = "WITH shared AS (SELECT k FROM s), SHARED AS (SELECT k FROM s) SELECT k FROM shared";
     let dialect = dialect_from_name("duckdb").unwrap();
     // A parser-level duplicate binding rejection is also a safe boundary.
-    if let Ok(bundle) = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()) {
-        let Some(layer) = bundle.layers().last() else {
-            return;
-        };
+    if analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).is_ok() {
+        let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+        let (bundle, snapshots) = case_bundle(sql, &input);
+        let layer = bundle.layers().last().unwrap();
         assert!(
             matches!(
-                physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None),
+                physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
                 PhysicalCteProof::Residual { .. }
             ),
             "duplicate WITH names have no canonical lexical identity"
