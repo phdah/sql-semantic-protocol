@@ -192,6 +192,32 @@ CTEs and derived tables are local semantic scopes rather than physical dependenc
 
 Table-producing sources whose output schema cannot yet be modeled safely, including unresolved table functions and UNNEST-like factors, remain explicit `unsupported_table_factor` diagnostics rather than being omitted or assigned invented columns.
 
+### Bounded complete physical CTE bags (TASK-141)
+
+`QueryStatement::cte_program()` retains a parser-independent, producer-first
+lexical DAG for ordinary WITH declarations with direct-column projections,
+chained/nested CTEs and one integer INNER JOIN equality. Each local producer
+has a distinct scope identity; two SQL aliases of one CTE reference the same
+complete bag rather than two independently insertable tables. Earlier
+declarations cannot borrow later ordinary CTEs. Recursive scopes reserve their
+own names but have no complete termination proof.
+
+`physical_finite_cte_bag_plan` accepts only complete physical leaf snapshots
+and validated typed source schemas. It constructs every frozen producer bag,
+source row occurrence, SQL FALSE/UNKNOWN rejected pair, terminal multiset and
+exact integer/NULL domain without executing or reparsing SQL. Shadowed, unused
+producers retain their own physical rows and identifiers, even when they do
+not contribute to the terminal result. Integer membership compares values
+numerically; tuple NULL membership is null-safe, unlike SQL JOIN equality.
+
+An absent, well-typed terminal tuple is `Impossible` only after full
+evaluation; unsupported projections, missing/ambiguous schema evidence,
+recursion, forward-binding engine rules, materialized writes, computed
+ORDER BY expressions and other unproved operator shapes remain `Residual`.
+Only DuckDB has an independent executed engine oracle; the other exposed
+dialect paths establish parser and canonical semantic parity, not native
+engine execution. See [the frozen TASK-141 matrix](task-141-proof-matrix.json).
+
 ## Typed source schemas
 
 Consumers that need declared source datatypes can supply typed relation schemas through
