@@ -10,10 +10,10 @@ The implementation maintains declaration-ordered ordinary CTE bindings, reserves
 
 | AC | Evidence available on this PR | Remaining mandatory evidence |
 | --- | --- | --- |
-| #1 | Versioned fixture identifiers and typed expected SQL bags in the acceptance freeze | Complete frozen dialect/adapter/physical operator cells and independently reviewed boundaries |
-| #2 | Lexical relation, output and domain fixes, including nested shadowing and repeated local aliases | Canonical source-complete CTE producer DAG evaluator with exact source/producer/terminal row identities; sound Exact, Impossible and Residual decisions, not SQL-engine-only success |
-| #3 | DuckDB SQL source/terminal multiset, identity, domain and three-valued counterexample tests for all four mandatory variants | Compare those independent snapshots to actual public physical-plan results, including every producer bag and rejected/Impossible identity |
-| #4 | 14 exposed dialect-name parser paths; direct SQL and dbt compiled identity regressions; equivalent ODCS source schema parity checks | Full typed value-domain and physical proof parity by adapter; documented parser/engine/session disposition on each frozen cell |
+| #1 | Frozen v1 source/producer/terminal bags plus v2 56-cell dialect, 12-cell adapter, and conditional release matrix | Independent review of every mandatory and conditional cell |
+| #2 | Typed `CteProgram` and `physical_finite_cte_bag_plan` now implement source-complete lexical DAG, row identity, TRUE/FALSE/UNKNOWN, Exact/Impossible/Residual and typed domains | Final-head proof tests and independent review of all unsupported boundaries |
+| #3 | Independent DuckDB source/terminal oracles and public `tests/task_141_physical.rs` assert all four producer bags, identifiers, complete terminal values and counterexamples | Final-head Rust test verification |
+| #4 | 14 dialect-name proof equivalence, direct SQL/dbt catalog/ODCS source complete parity and 42 explicit conditional parser/residual classifications added | Confirm all matrix paths green on final CI head and review native-engine limitations |
 | #5 | CI suite runs fmt, strict Clippy, full/default/no-default tests, docs and real dbt E2E | All checks green on final SHA, independent review of each mandatory cell, original parent-AC signoff and approved conditional dispositions |
 
-**No mandatory case is signed off.** The task stays In Progress and PR stays draft until the physical evaluator, adapter proof matrix and independent release-gate review are complete. TASK-78 must remain open.
+**No mandatory case is signed off yet.** The bounded implementation and tests are committed but final-head CI and independent review are pending. The task stays In Progress, PR stays draft and TASK-78 must remain open.
