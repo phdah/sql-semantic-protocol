@@ -281,10 +281,15 @@ pub fn physical_finite_cte_bag_plan(
     let Some(final_stage) = program.stages().last() else {
         return residual("empty CTE producer program");
     };
-    let projected = final_stage.projections().iter()
+    let projected = final_stage
+        .projections()
+        .iter()
         .map(|column| column.name())
         .collect::<Vec<_>>();
-    let analyzed = query.output().columns().iter()
+    let analyzed = query
+        .output()
+        .columns()
+        .iter()
         .map(|column| column.name())
         .collect::<Vec<_>>();
     if final_stage.id() != program.terminal() || projected != analyzed {
