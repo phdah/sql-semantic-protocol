@@ -1099,6 +1099,18 @@ An unbound or shadowed qualifier, wildcard, expression or duplicate canonical
 column identity remains unsupported. This parser-independent classification
 is not a claim about the native `RETURNING` syntax of every SQL engine.
 
+For a bounded UPDATE/DELETE WHERE EXISTS or NOT EXISTS with a single
+nonrecursive, row-preserving nested SELECT, the nested relation is an explicit
+physical source dependency. Exact effects require complete source and target
+bags and authoritative typed schemas. Each target preimage is compared with
+all inner candidates under SQL three-valued truth, preserving duplicates and
+nonmatching NULL rows. NOT EXISTS uses exhaustive negative membership over
+the full inner bag; source absence is never interpreted as an empty table.
+No native vendor semantics are inferred from parser acceptance.
+Direct DELETE ORDER BY/LIMIT, unresolved partition target membership,
+complex/cyclic correlated producers, and implicit write ordering remain
+residual or parser-boundary claims until separately attested.
+
 Before certifying feasibility, the plan verifies complete typed schemas
 and attested enforced NOT NULL, key, accepted-values and FK constraints,
 including cross-relation FK lookup. Known key/null contradictions are
