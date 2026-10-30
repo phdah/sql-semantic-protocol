@@ -639,9 +639,14 @@ fn derived_star_select(select: &Select, dialect_name: &str) -> Option<FiniteTabl
     let source = source_free_finite_query(subquery, None, dialect_name)?
         .finite_table()?
         .clone();
+    // This narrow exact law requires UNNEST with explicitly attested
+    // element/alias types. VALUES implicit derived column names and vendor
+    // EXPLODE naming differ across dialects: never fabricate their identities.
     // The public physical plan only certifies one complete producer hop.
-    // Do not silently erase deeper source or JOIN pair provenance.
-    if source.source().is_some() || source.joined_sources().is_some() {
+    if source.kind() != FiniteTableKind::Unnest
+        || source.source().is_some()
+        || source.joined_sources().is_some()
+    {
         return None;
     }
     let options = match item {
