@@ -8,20 +8,20 @@ use sql_semantic_protocol::{
     AnalysisBundle, ProtocolStatement, QueryStatement, SqlInput,
 };
 
-fn compiled_dbt(sql: &str, initial_bags: &Value) -> AnalysisBundle {
+fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> AnalysisBundle {
     let mut sources = Map::new();
     let mut dependencies = Vec::new();
     for name in initial_bags.as_object().unwrap().keys() {
         let unique_id = format!("source.demo.{name}");
-        dependencies.push(unique_id.clone());
+        if name == consumed_source {
+            dependencies.push(unique_id.clone());
+        }
         sources.insert(
             unique_id.clone(),
             json!({
                 "unique_id": unique_id,
                 "resource_type": "source",
                 "relation_name": name,
-                "database": "main",
-                "schema": "raw",
                 "name": name,
                 "columns": {"k": {"name": "k", "data_type": "INTEGER"}}
             }),
@@ -37,8 +37,6 @@ fn compiled_dbt(sql: &str, initial_bags: &Value) -> AnalysisBundle {
             "unique_id": "model.demo.task141",
             "resource_type": "model",
             "relation_name": "main.task141",
-            "database": "main",
-            "schema": "main",
             "name": "task141",
             "original_file_path": "models/task141.sql",
             "language": "sql",
@@ -78,7 +76,8 @@ fn frozen_cte_source_instances_match_direct_and_compiled_dbt() {
         let id = case["id"].as_str().unwrap();
         let sql = case["sql"].as_str().unwrap();
         let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
-        let compiled = compiled_dbt(sql, &case["initial_bags"]);
+        let consumed_source = if id.ends_with("SHADOW") { "inner_src" } else { "s" };
+        let compiled = compiled_dbt(sql, &case["initial_bags"], consumed_source);
         let direct = model_query(&direct);
         let compiled = model_query(&compiled);
         assert_eq!(
