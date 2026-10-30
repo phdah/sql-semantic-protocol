@@ -5,8 +5,9 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
-    RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -139,7 +140,11 @@ fn qualified_update_returning_is_exact_after_image_with_duplicates_and_unknown()
         })
         .collect::<Vec<_>>();
     assert_eq!(returned_ids, vec![1, 2, 2]);
-    let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "target")
+        .unwrap();
     let domains = transition.returning_exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 1);
     assert_eq!(domains[0].column(), "id");
@@ -203,7 +208,13 @@ fn qualified_delete_returning_is_exact_before_image_for_each_duplicate() {
         .collect::<Vec<_>>();
     assert_eq!(returned_rows, vec![(2, 20), (2, 20)]);
     let domains = transition
-        .returning_exact_domains(bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap())
+        .returning_exact_domains(
+            bundle
+                .source_schemas()
+                .iter()
+                .find(|schema| schema.relation() == "target")
+                .unwrap(),
+        )
         .unwrap();
     assert_eq!(domains.len(), 2);
     assert_eq!(
@@ -282,7 +293,13 @@ fn correlated_exists_update_uses_complete_read_only_bag_and_returns_postimages()
     let returning = transition.returning().unwrap();
     assert_eq!(returning.rows().len(), 2);
     let domains = transition
-        .returning_exact_domains(bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap())
+        .returning_exact_domains(
+            bundle
+                .source_schemas()
+                .iter()
+                .find(|schema| schema.relation() == "target")
+                .unwrap(),
+        )
         .unwrap();
     assert_eq!(
         domains[0].values(),
@@ -334,18 +351,24 @@ fn correlated_source_is_mandatory_not_an_implicitly_empty_relation() {
 
 fn frozen_state(relation: &str, input: &serde_json::Value) -> PhysicalWriteState {
     let rows = input.as_array().expect("frozen complete row bag");
-    PhysicalWriteState::new(relation, rows.iter().map(|row| {
-        let mut values = BTreeMap::new();
-        for (column, value) in row.as_object().unwrap() {
-            let typed = if value.is_null() {
-                LiteralValue::Null
-            } else {
-                LiteralValue::Number(value.as_i64().expect("frozen integer").to_string())
-            };
-            values.insert(column.clone(), typed);
-        }
-        PhysicalWriteRow::new(values).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        relation,
+        rows.iter()
+            .map(|row| {
+                let mut values = BTreeMap::new();
+                for (column, value) in row.as_object().unwrap() {
+                    let typed = if value.is_null() {
+                        LiteralValue::Null
+                    } else {
+                        LiteralValue::Number(value.as_i64().expect("frozen integer").to_string())
+                    };
+                    values.insert(column.clone(), typed);
+                }
+                PhysicalWriteRow::new(values).unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 #[test]
@@ -372,7 +395,11 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
             None
         };
         let plan = physical_ordered_write_state_plan(&bundle, &states);
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = plan
+        else {
             panic!("{}: required exact witness: {plan:?}", case["id"]);
         };
         assert_eq!(transitions.len(), 1, "{}", case["id"]);
@@ -384,11 +411,31 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
         if let Some(source) = source {
             assert!(final_states.contains(&source), "{}", case["id"]);
         }
-        assert_eq!(transition.affected().updated(), case["affected"]["updated"].as_u64().unwrap());
-        assert_eq!(transition.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap());
-        let selected = case["target_true_ordinals"].as_array().unwrap().iter().map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>();
-        assert_eq!(transition.affected_target_ordinals(), selected.as_slice(), "{}", case["id"]);
-        let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == "target").unwrap();
+        assert_eq!(
+            transition.affected().updated(),
+            case["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            case["affected"]["deleted"].as_u64().unwrap()
+        );
+        let selected = case["target_true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_u64().unwrap() as usize)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            transition.affected_target_ordinals(),
+            selected.as_slice(),
+            "{}",
+            case["id"]
+        );
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == "target")
+            .unwrap();
         let domains = transition.after().exact_domains(schema).unwrap();
         for column in domains {
             let expected = &case["domain_contract"][column.column()];
@@ -412,7 +459,12 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
         if !case["returning"].as_array().unwrap().is_empty() {
             let returning = transition.returning().expect("required RETURNING bag");
             let expected_returning = frozen_state("target", &case["returning"]);
-            assert_eq!(returning.rows(), expected_returning.rows(), "{}", case["id"]);
+            assert_eq!(
+                returning.rows(),
+                expected_returning.rows(),
+                "{}",
+                case["id"]
+            );
             assert_eq!(
                 transition.returning_exact_domains(schema).unwrap().len(),
                 case["returning"][0].as_object().unwrap().len()
@@ -426,30 +478,35 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
 
 #[test]
 fn correlated_update_enforced_key_collision_is_impossible_and_native_rejects() {
-    let sql = "UPDATE target AS t SET id = 2 WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)";
+    let sql =
+        "UPDATE target AS t SET id = 2 WHERE EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)";
     let mut analyzed = bundle(sql);
     let evidence = vec![ConstraintEvidence::new(
         ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task151-pk").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
-    analyzed.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "target",
-            vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
-        ).unwrap()
-    ]);
+    analyzed.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence).unwrap()],
+    )
+    .unwrap()]);
     let before = state(&[(Some(1), 10), (Some(2), 20)]);
     let source = source_state(&[(Some(1), 7)]);
     let plan = physical_ordered_write_state_plan(&analyzed, &[before.clone(), source]);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "{plan:?}"
+    );
 
     let native = Connection::open_in_memory().unwrap();
-    native.execute_batch(
-        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
+    native
+        .execute_batch(
+            "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
          CREATE TABLE source(id INTEGER, score INTEGER);
          INSERT INTO target VALUES (1,10),(2,20);
-         INSERT INTO source VALUES (1,7);"
-    ).unwrap();
+         INSERT INTO source VALUES (1,7);",
+        )
+        .unwrap();
     assert!(native.execute_batch(sql).is_err());
     assert_eq!(native_target_rows(&native), rows(&before));
 }
