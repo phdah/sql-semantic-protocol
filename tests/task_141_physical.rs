@@ -430,7 +430,9 @@ fn differently_cased_cte_reference_never_borrows_a_physical_table() {
             );
         }
         PhysicalCteProof::Residual { .. } => {}
-        other => panic!("unresolved lexical case must be Exact with correct sources or Residual: {other:?}"),
+        other => panic!(
+            "unresolved lexical case must be Exact with correct sources or Residual: {other:?}"
+        ),
     }
 }
 
