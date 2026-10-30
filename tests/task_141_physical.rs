@@ -3,6 +3,9 @@
 
 use std::collections::BTreeMap;
 
+mod common;
+use common::DIALECTS;
+
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
@@ -269,22 +272,6 @@ fn unsupported_cte_projection_and_incomplete_source_evidence_are_residual() {
 
 #[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
-    const DIALECTS: &[&str] = &[
-        "generic",
-        "mysql",
-        "postgresql",
-        "postgres",
-        "hive",
-        "sqlite",
-        "snowflake",
-        "redshift",
-        "mssql",
-        "clickhouse",
-        "bigquery",
-        "ansi",
-        "duckdb",
-        "databricks",
-    ];
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut cells = 0;
@@ -364,22 +351,6 @@ fn conditional_cte_materialization_recursion_and_forward_binding_fail_closed() {
 #[test]
 fn every_conditional_cte_variant_has_explicit_parser_or_residual_disposition() {
     use sql_semantic_protocol::analyze_inputs;
-    const DIALECTS: &[&str] = &[
-        "generic",
-        "mysql",
-        "postgresql",
-        "postgres",
-        "hive",
-        "sqlite",
-        "snowflake",
-        "redshift",
-        "mssql",
-        "clickhouse",
-        "bigquery",
-        "ansi",
-        "duckdb",
-        "databricks",
-    ];
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut checked = 0;
