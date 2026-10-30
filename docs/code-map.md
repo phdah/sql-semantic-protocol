@@ -7,7 +7,7 @@ the FK deferral residual boundary and native DuckDB outcomes.
 cells and cross-source SQL/dbt/ODCS typed-schema parity (including enforced
 FK references to a complete shared physical source). The immutable
 `docs/task-152-acceptance-freeze.json` is linked from
-`docs/coverage-manifest.json`, with v1 retained for audit; the independent
+`docs/coverage-manifest.json`, with historical v1-v3 retained for audit; the independent
 review is in `docs/task-152-acceptance-audit.md`. Existing canonical
 `src/physical_realization/write_states.rs` and its `constraints.rs`
 submodule own the interpreter; no SQL reparsing or public wire change.
