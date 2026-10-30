@@ -1,10 +1,10 @@
 ---
 id: TASK-76
 title: Handle row selection, ordering, pagination and sampling exactly
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-30'
 labels: []
 milestone: m-3
 dependencies: 
@@ -69,3 +69,9 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-133, TASK-134, TASK-136; #2 -> TASK-133, TASK-134, TASK-135, TASK-136; #3 -> TASK-134, TASK-136; #4 -> TASK-135, TASK-136; #5 -> TASK-133, TASK-134, TASK-135, TASK-136; #6 -> TASK-133, TASK-134, TASK-135, TASK-136.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent closure review (2026-10-30)
+
+The four child tasks TASK-133..136 are Done on `main`, but child completion alone does not sign off the original six criteria. The new [TASK-76 parent acceptance freeze](../../docs/task-76-acceptance-freeze.json) reconciles 26 mandatory Exact and 16 conditional cases; the [independent audit](../../docs/task-76-acceptance-audit.md) maps original AC #1..#6 to their canonical child oracles. `tests/task_76_parent_closure.rs` guards the entire frozen set, source/terminal contracts and public/native page behavior.
+
+**Final gate:** Do not check the original AC or mark this parent Done until final PR-head formatting, strict Clippy, all tests, docs, no-default-feature, schema/golden and dbt Core E2E are green and independent standards/spec review has no blocking gaps. Conditional native vendor and session laws remain uncertified; TASK-91 release signoff is separate.
