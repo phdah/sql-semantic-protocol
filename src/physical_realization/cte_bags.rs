@@ -278,6 +278,18 @@ pub fn physical_finite_cte_bag_plan(
     let Some(program) = query.cte_program() else {
         return residual("CTE shape lacks a certified canonical producer program");
     };
+    let Some(final_stage) = program.stages().last() else {
+        return residual("empty CTE producer program");
+    };
+    let projected = final_stage.projections().iter()
+        .map(|column| column.name())
+        .collect::<Vec<_>>();
+    let analyzed = query.output().columns().iter()
+        .map(|column| column.name())
+        .collect::<Vec<_>>();
+    if final_stage.id() != program.terminal() || projected != analyzed {
+        return residual("CTE terminal projection differs from canonical output columns");
+    }
     // Include leaves of shadowed but still independently evaluated CTEs.
     // The terminal dependency graph deliberately excludes these unused
     // producers, but their own complete physical bags remain required.
