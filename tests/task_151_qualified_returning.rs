@@ -102,6 +102,19 @@ fn native_target_rows(db: &Connection) -> Vec<(Option<i64>, i64)> {
     bag
 }
 
+fn native_source_rows(db: &Connection) -> Vec<(Option<i64>, i64)> {
+    let mut query = db.prepare("SELECT id,score FROM source").unwrap();
+    let mut bag = query
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
+        })
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
+    bag.sort();
+    bag
+}
+
 #[test]
 fn qualified_update_returning_is_exact_after_image_with_duplicates_and_unknown() {
     let sql = "UPDATE target AS t SET score = 40 WHERE t.id <= 2 RETURNING t.id";
@@ -317,6 +330,7 @@ fn correlated_exists_update_uses_complete_read_only_bag_and_returns_postimages()
     drop(stmt);
     assert_eq!(actual, vec![2, 2]);
     assert_eq!(rows(transition.after()), native_target_rows(&native));
+    assert_eq!(native_source_rows(&native), rows(&source));
 }
 
 #[test]
@@ -324,7 +338,7 @@ fn correlated_not_exists_excludes_duplicates_and_sql_unknown_without_inventing_r
     let sql =
         "DELETE FROM target AS t WHERE NOT EXISTS (SELECT 1 FROM source AS s WHERE s.id = t.id)";
     let source = source_state(&[(Some(2), 7), (Some(2), 8), (None, 9)]);
-    let plan = physical_ordered_write_state_plan(&bundle(sql), &[state(&BEFORE), source]);
+    let plan = physical_ordered_write_state_plan(&bundle(sql), &[state(&BEFORE), source.clone()]);
     let PhysicalWriteStatePlan::Feasible { transitions, .. } = plan else {
         panic!("complete NOT EXISTS is independently provable: {plan:?}");
     };
@@ -337,6 +351,7 @@ fn correlated_not_exists_excludes_duplicates_and_sql_unknown_without_inventing_r
     let native = native();
     native.execute_batch(sql).unwrap();
     assert_eq!(rows(transitions[0].after()), native_target_rows(&native));
+    assert_eq!(native_source_rows(&native), rows(&source));
 }
 
 #[test]
@@ -453,6 +468,22 @@ fn frozen_exact_cases_have_complete_prestate_poststate_and_typed_domains() {
             for (value, count) in actual {
                 assert_eq!(Some(count), frequencies[&value].as_u64(), "{}", case["id"]);
             }
+            let numbers = column
+                .values()
+                .iter()
+                .filter_map(|(value, _)| match value {
+                    LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
+                    LiteralValue::Null => None,
+                    other => panic!("unexpected domain value {other:?}"),
+                })
+                .collect::<Vec<_>>();
+            let has_null = column
+                .values()
+                .iter()
+                .any(|(value, _)| *value == LiteralValue::Null);
+            assert_eq!(expected["nullable"].as_bool(), Some(has_null), "{}", case["id"]);
+            assert_eq!(numbers.iter().min().copied(), expected["lower"].as_i64(), "{}", case["id"]);
+            assert_eq!(numbers.iter().max().copied(), expected["upper"].as_i64(), "{}", case["id"]);
             assert_eq!(expected["lower_inclusive"], true);
             assert_eq!(expected["upper_inclusive"], true);
         }
@@ -492,7 +523,7 @@ fn correlated_update_enforced_key_collision_is_impossible_and_native_rejects() {
     .unwrap()]);
     let before = state(&[(Some(1), 10), (Some(2), 20)]);
     let source = source_state(&[(Some(1), 7)]);
-    let plan = physical_ordered_write_state_plan(&analyzed, &[before.clone(), source]);
+    let plan = physical_ordered_write_state_plan(&analyzed, &[before.clone(), source.clone()]);
     assert!(
         matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
         "{plan:?}"
@@ -509,6 +540,7 @@ fn correlated_update_enforced_key_collision_is_impossible_and_native_rejects() {
         .unwrap();
     assert!(native.execute_batch(sql).is_err());
     assert_eq!(native_target_rows(&native), rows(&before));
+    assert_eq!(native_source_rows(&native), rows(&source));
 }
 
 #[test]
