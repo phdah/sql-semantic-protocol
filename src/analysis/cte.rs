@@ -39,6 +39,18 @@ fn select_stage(
     id: String,
     lexical: &BTreeMap<String, String>,
 ) -> Option<CteStage> {
+    // Sorting never alters a bag, but computed/volatile ORDER BY expressions
+    // can fail at execution and cannot be silently certified.
+    if query.order_by.as_ref().is_some_and(|order| {
+        order.interpolate.is_some()
+            || !matches!(
+                &order.kind,
+                sqlparser::ast::OrderByKind::Expressions(keys)
+                    if keys.iter().all(|key| column(&key.expr).is_some())
+            )
+    }) {
+        return None;
+    }
     if query.limit_clause.is_some()
         || query.fetch.is_some()
         || !query.locks.is_empty()
