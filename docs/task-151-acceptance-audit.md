@@ -1,32 +1,51 @@
-# TASK-151 implementation audit (in progress)
+# TASK-151 bounded acceptance audit
 
-Task: [TASK-151](../.backlog/tasks/task-151%20-%20classify-qualified-targets-order-limit-returning-and-correlations.md)  
-Parent: TASK-81 (independent signoff required)
+**Owner:** TASK-151, child 3/4 of TASK-81. Parent acceptance and TASK-152
+remain independently gated by completed, merged child work.
 
-## Implemented / bounded
+## Inventory and full physical source proof
 
-- Canonicalize direct, target-qualified `UPDATE/DELETE ... RETURNING` identifiers to the existing target-column identity, using the explicit target alias, or the full target name when unaliased.
-- Reject an unmatched or alias-shadowed qualifier, wildcard or expression projection, and alias/unqualified duplicate identity instead of constructing fabricated columns.
-- Preserve exact UPDATE postimages, DELETE preimages, duplicate occurrences, SQL UNKNOWN nonselection, affected ordinals and typed exact returned-frequency domains through the existing physical write model.
-- Bounded, preimplementation acceptance variants and fixed identities `81-C151-P` and `81-C151-N` are in [freeze v1](task-151-acceptance-freeze.json).
+- Frozen v2: [the task-specific matrix](task-151-acceptance-freeze.json)
+  holds 4 required exact cases, 2 mandatory rejection cases and
+  2 conditional vendor cases. The preimplementation v1 is retained.
+- Exact cases prove qualified UPDATE/DELETE RETURNING and correlated
+  EXISTS/NOT EXISTS with a single complete independent physical source.
+  Selected and NOT TRUE target prestate ordinals, full target before/after,
+  unchanged source, affected counts, duplicate and NULL frequency domains
+  are checked against independent expected values.
+- A correlated key UPDATE with enforced primary-key collision must be
+  Impossible, with a native DuckDB failure and preserved target prestate.
+  Missing source population is Residual, never an implicitly empty source.
+- Direct SQL, dbt catalog and ODCS schema (when the feature is enabled)
+  carry equivalent evidence into the same parser-independent protocol.
+  Parser dispositions across 13 dialect identities are pinned independently
+  of native vendor semantics once final matrix extraction has been reviewed.
+- Conditional release ownership: TASK-151 retains vendor write ORDER/LIMIT
+  and partition-qualified mutation as typed Residual/parser boundary where
+  native engine version, total order, partition identity and execution law
+  are not attested. These are **not** Exact or deferred mandatory gaps.
 
-## Standards review (interim two-axis review)
+## Standards review (preliminary)
 
-- The interim Standards axis found and fixed a potential alias-shadowing overclaim: an aliased target no longer accepts a reference using its shadowed table name. The freeze's unbound-reference family includes this negative regression. Final independent review remains pending.
-- Reuses the existing canonical `WriteOperation::returning_columns` contract and physical evaluator, without new parser-dependent public types, runtime dialect gating or dependency changes.
-- No active JSON wire shape change; the output columns retain canonical target names.
-- Native DuckDB oracle and negative integration tests are in `tests/task_151_qualified_returning.rs`.
+- Canonical AST conversion stays in `src/analysis/writes.rs`; read-only
+  correlated source dependencies and query predicates stay in the existing
+  protocol. Physical state construction in
+  `src/physical_realization/write_states/operators.rs` does not reparse SQL.
+- The previous alias-shadowing overclaim is corrected; RETURNING uses the
+  active target alias. No new dependency, lint allow, or active JSON shape.
+- No claim is made beyond the bounded one-source row-local EXISTS/NOT EXISTS
+  semantics or the corresponding DuckDB oracle.
 
-## Specification / remaining gates
+## Specification signoff gates
 
-This is **not** complete TASK-151 acceptance. Do not mark the child Done or unblock TASK-152.
+- **AC1:** v2 frozen with typed outcomes; pin and verify every parser disposition.
+- **AC2:** implementation against complete source/target bag, with fail-closed vendor
+  classification; validate exact and impossible through CI.
+- **AC3:** full DuckDB before/after/RETURNING, NULL, duplicates, source/target
+  identity, enforced primary-key error.
+- **AC4:** 13 dialect parser statuses plus direct/dbt/ODCS evidence parity.
+- **AC5:** fmt, strict Clippy, all-target Rust tests/docs, no-default-features,
+  dbt E2E and protocol/schema snapshots on final head.
 
-- AC #1: full typed 13-dialect x 3-adapter acceptance cells and exact matrix ownership remain to be frozen and reviewed.
-- AC #2/#3: correlated target predicates, vendor ORDER/LIMIT with deterministic native law, and partition-scoped mutations need independent complete pre/post and rejection witnesses. Cases remain explicitly residual/unverified.
-- AC #4: per-dialect parser, dbt compiled catalog and ODCS equivalent evidence paths remain unverified.
-- AC #5: full implementation CI and independent final standards/spec review are required before signoff.
-- Parent TASK-81 and the release gate retain independent closure obligations.
-
-## Verification
-
-Pending GitHub Actions PR checks. No unexecuted local Rust or DuckDB test is claimed green.
+TASK-151 remains **In Progress** until those gates are green and independently
+reviewed; TASK-81 remains open and TASK-152 cannot start yet.
