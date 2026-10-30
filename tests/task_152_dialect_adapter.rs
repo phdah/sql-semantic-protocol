@@ -163,9 +163,9 @@ fn evidence() -> Vec<ConstraintEvidence> {
     )]
 }
 
-fn state(rows: &[(i64, i64)]) -> PhysicalWriteState {
+fn state_for(relation: &str, rows: &[(i64, i64)]) -> PhysicalWriteState {
     PhysicalWriteState::new(
-        TARGET,
+        relation,
         rows.iter()
             .map(|(id, amount)| {
                 PhysicalWriteRow::new(BTreeMap::from([
@@ -180,6 +180,10 @@ fn state(rows: &[(i64, i64)]) -> PhysicalWriteState {
             .collect(),
     )
     .unwrap()
+}
+
+fn state(rows: &[(i64, i64)]) -> PhysicalWriteState {
+    state_for(TARGET, rows)
 }
 
 fn script() -> [String; 3] {
@@ -203,21 +207,38 @@ fn plan(catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         .map(|(input, id)| ConfiguredSqlInput::new(id, input, "postgresql", dialect.as_ref()))
         .collect::<Vec<_>>();
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
-    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
-        TARGET,
-        vec![
-            RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
-            RelationConstraint::check_comparison(
-                "amount",
-                CheckCompareOperator::Gte,
-                ConstraintValue::Integer(0),
-                evidence(),
-            )
-            .unwrap(),
-        ],
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            SOURCE,
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+        )
+        .unwrap(),
+        RelationConstraintSet::new(
+            TARGET,
+            vec![
+                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                RelationConstraint::foreign_key(
+                    vec!["id".into()],
+                    SOURCE,
+                    vec!["id".into()],
+                    evidence(),
+                )
+                .unwrap(),
+                RelationConstraint::check_comparison(
+                    "amount",
+                    CheckCompareOperator::Gte,
+                    ConstraintValue::Integer(0),
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+    ]);
+    physical_ordered_write_state_plan(
+        &bundle,
+        &[state(&[]), state_for(SOURCE, &[(1, 0), (2, 0)])],
     )
-    .unwrap()]);
-    physical_ordered_write_state_plan(&bundle, &[state(&[])])
 }
 
 #[test]
@@ -236,7 +257,10 @@ fn direct_dbt_and_odcs_equivalent_schema_evidence_keep_the_same_state_proof() {
     assert_eq!(transitions[1].after(), &state(&[(1, 15), (2, 20)]));
     assert_eq!(transitions[2].before(), transitions[1].after());
     assert_eq!(transitions[2].after(), &state(&[(1, 15)]));
-    assert_eq!(final_states.as_slice(), &[state(&[(1, 15)])]);
+    assert_eq!(
+        final_states.as_slice(),
+        &[state_for(SOURCE, &[(1, 0), (2, 0)]), state(&[(1, 15)])]
+    );
     assert_eq!(direct, plan(&dbt_catalog()), "dbt catalog parity");
     #[cfg(feature = "odcs")]
     assert_eq!(direct, plan(&odcs_catalog()), "ODCS schema parity");
