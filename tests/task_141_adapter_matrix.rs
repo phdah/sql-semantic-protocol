@@ -168,6 +168,7 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
             .unwrap_or_else(|error| panic!("{id}: ODCS analysis: {error}"));
         let from_sql =
             analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
+        let from_contract_bundle = from_contract.clone();
         let from_contract = model_query(&from_contract);
         let from_sql = model_query(&from_sql);
         assert_eq!(
@@ -180,6 +181,14 @@ fn equivalent_odcs_source_schema_preserves_frozen_cte_source_identities() {
             from_sql.sources(),
             "{id}: ODCS source schema cannot create or hide a local instance"
         );
+        let direct = attested_direct(sql, &case["initial_bags"]);
+        let states = complete_states(&case["initial_bags"]);
+        let direct = physical_bags(&direct, &states);
+        let odcs = physical_bags(&from_contract_bundle, &states);
+        assert_eq!(odcs.source_bags, direct.source_bags, "{id}: ODCS physical leaves");
+        assert_eq!(odcs.stage_bags, direct.stage_bags, "{id}: ODCS producer stages");
+        assert_eq!(odcs.rejected, direct.rejected, "{id}: ODCS NOT TRUE");
+        assert_eq!(odcs.terminal_domains, direct.terminal_domains, "{id}: ODCS domains");
         checked += 1;
     }
     assert_eq!(checked, 4);
