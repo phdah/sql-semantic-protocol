@@ -5,7 +5,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::write_states::{physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan};
+use super::write_states::{
+    physical_closed_world_schema_plan, PhysicalWriteState, PhysicalWriteStatePlan,
+};
 use super::*;
 use crate::data_type::DataType;
 use crate::protocol::{CteColumnRef, CteInput, CteStage, LiteralValue};
@@ -263,7 +265,11 @@ pub fn physical_finite_cte_bag_plan(
         PhysicalWriteStatePlan::Residual { reason, .. } => return residual(reason),
         PhysicalWriteStatePlan::Feasible { .. } => {}
     }
-    let Some(layer) = bundle.layers().iter().find(|layer| layer.id() == target_layer_id) else {
+    let Some(layer) = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == target_layer_id)
+    else {
         return residual("missing canonical CTE terminal layer");
     };
     let Some(query) = query_for(bundle, layer) else {
@@ -275,19 +281,29 @@ pub fn physical_finite_cte_bag_plan(
     // Include leaves of shadowed but still independently evaluated CTEs.
     // The terminal dependency graph deliberately excludes these unused
     // producers, but their own complete physical bags remain required.
-    let stage_ids = program.stages().iter()
+    let stage_ids = program
+        .stages()
+        .iter()
         .map(|stage| stage.id().to_string())
         .collect::<BTreeSet<_>>();
-    let source_names = program.stages().iter()
+    let source_names = program
+        .stages()
+        .iter()
         .flat_map(|stage| stage.inputs())
         .filter(|input| !stage_ids.contains(input.relation()))
         .map(|input| input.relation().to_string())
         .collect::<BTreeSet<_>>();
-    if !query.dependencies().iter().all(|name| source_names.contains(name)) {
+    if !query
+        .dependencies()
+        .iter()
+        .all(|name| source_names.contains(name))
+    {
         return residual("CTE lexical leaves disagree with canonical physical dependencies");
     }
     if source_names.len() != snapshots.len() {
-        return residual("CTE proof requires every lexical physical leaf, including unused producers");
+        return residual(
+            "CTE proof requires every lexical physical leaf, including unused producers",
+        );
     }
     let mut bags = BagMap::new();
     let mut types = BTreeMap::new();
@@ -359,14 +375,17 @@ pub fn physical_finite_cte_bag_plan(
         // spellings. NULL matches NULL for tuple membership (IS NOT DISTINCT
         // FROM), even though a SQL JOIN equality treats NULL as UNKNOWN.
         let present = terminal.iter().any(|row| {
-            row.values.iter().all(|(name, actual)| match (actual, wanted.get(name)) {
-                (LiteralValue::Null, Some(LiteralValue::Null)) => true,
-                (LiteralValue::Number(a), Some(LiteralValue::Number(b))) => {
-                    a.parse::<i128>().ok().zip(b.parse::<i128>().ok())
-                        .is_some_and(|(a, b)| a == b)
-                }
-                _ => false,
-            })
+            row.values
+                .iter()
+                .all(|(name, actual)| match (actual, wanted.get(name)) {
+                    (LiteralValue::Null, Some(LiteralValue::Null)) => true,
+                    (LiteralValue::Number(a), Some(LiteralValue::Number(b))) => a
+                        .parse::<i128>()
+                        .ok()
+                        .zip(b.parse::<i128>().ok())
+                        .is_some_and(|(a, b)| a == b),
+                    _ => false,
+                })
         });
         if !present {
             return PhysicalCteProof::Impossible {
@@ -375,14 +394,17 @@ pub fn physical_finite_cte_bag_plan(
             };
         }
     }
-    let mut nodes = source_names.iter().map(|name| PhysicalPlanNode {
-        id: PhysicalPlanRef::Source(name.clone()),
-        inputs: Vec::new(),
-        produced_relations: Vec::new(),
-        write_kind: None,
-        operator_witnesses: Vec::new(),
-        pending_producers: Vec::new(),
-    }).collect::<Vec<_>>();
+    let mut nodes = source_names
+        .iter()
+        .map(|name| PhysicalPlanNode {
+            id: PhysicalPlanRef::Source(name.clone()),
+            inputs: Vec::new(),
+            produced_relations: Vec::new(),
+            write_kind: None,
+            operator_witnesses: Vec::new(),
+            pending_producers: Vec::new(),
+        })
+        .collect::<Vec<_>>();
     for producer in program.stages() {
         let stage_ref = |id: &str| {
             if id == program.terminal() {
@@ -391,13 +413,17 @@ pub fn physical_finite_cte_bag_plan(
                 PhysicalPlanRef::Layer(format!("{target_layer_id}/{id}"))
             }
         };
-        let inputs = producer.inputs().iter().map(|input| {
-            if stage_ids.contains(input.relation()) {
-                stage_ref(input.relation())
-            } else {
-                PhysicalPlanRef::Source(input.relation().to_string())
-            }
-        }).collect();
+        let inputs = producer
+            .inputs()
+            .iter()
+            .map(|input| {
+                if stage_ids.contains(input.relation()) {
+                    stage_ref(input.relation())
+                } else {
+                    PhysicalPlanRef::Source(input.relation().to_string())
+                }
+            })
+            .collect();
         nodes.push(PhysicalPlanNode {
             id: stage_ref(producer.id()),
             inputs,
