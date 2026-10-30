@@ -562,68 +562,57 @@
         "parser_cells": [
           {
             "dialect": "generic",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "mysql",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "postgresql",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "hive",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "sqlite",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "lexical_boundary",
+            "boundary": "bracketed array expression parsed as dialect-specific identifier/expression, not an attested literal array"
           },
           {
             "dialect": "snowflake",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "redshift",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "mssql",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "lexical_boundary",
+            "boundary": "bracketed array expression parsed as dialect-specific identifier/expression, not an attested literal array"
           },
           {
             "dialect": "clickhouse",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "bigquery",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "ansi",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "duckdb",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           },
           {
             "dialect": "databricks",
-            "classification": "exact_when_parser_accepts_shared_sql",
-            "boundary": "parser_rejection_if_unavailable"
+            "classification": "exact"
           }
         ],
         "adapter_cells": [

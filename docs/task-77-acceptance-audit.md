@@ -37,3 +37,5 @@ The [parent public regression](../tests/task_77_parent_closure.rs) checks every 
 ## Independent follow-up findings (2026-10-30)
 
 The previous parent AC #4 mapping omitted the originally required subquery composition and the AC #1 inventory omitted an explicit LATERAL guard. Previous 9/9 CI was valid for the tested 24/10 inventory, but did not justify signing off the broader parent. v2 freezes `77-PARENT-DERIVED-P` and `77-PARENT-LATERAL-R`. Parent signoff is withheld until both test contracts and final PR-head CI pass.
+
+**Derived-subquery dialect signoff correction:** The new parent SQL preserves the TASK-137 frozen UNNEST parser dispositions: 11/13 portable `Exact`; SQLite and MSSQL are reviewed lexical/residual boundaries because bracket notation is not a certified array constructor there. The parent test directly reconciles the child-owned 13-dialect matrix instead of assuming all parser-accepted syntax is semantically equivalent.

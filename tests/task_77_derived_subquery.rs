@@ -74,10 +74,14 @@ fn derived_array_subquery_preserves_complete_native_null_duplicate_and_impossibl
     };
     assert_eq!(domain.mode(), SetMode::Include);
     assert_eq!(domain.values().len(), 2, "integer and SQL NULL");
-    assert!(domain.values().iter().any(|value| value.value() == &LiteralValue::Null));
-    assert!(domain.values().iter().any(|value| {
-        value.value() == &LiteralValue::Number("1".to_string())
-    }));
+    assert!(domain
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Null));
+    assert!(domain
+        .values()
+        .iter()
+        .any(|value| { value.value() == &LiteralValue::Number("1".to_string()) }));
 
     let missing = BTreeMap::from([("v".into(), LiteralValue::Number("3".into()))]);
     assert!(matches!(
@@ -87,41 +91,40 @@ fn derived_array_subquery_preserves_complete_native_null_duplicate_and_impossibl
 }
 
 #[test]
-fn derived_finite_subquery_is_canonical_for_each_parser_accepted_dialect() {
-    let dialects = [
-        "generic",
-        "mysql",
-        "postgresql",
-        "hive",
-        "sqlite",
-        "snowflake",
-        "redshift",
-        "mssql",
-        "clickhouse",
-        "bigquery",
-        "ansi",
-        "duckdb",
-        "databricks",
-    ];
-    let mut accepted = 0;
+fn derived_finite_subquery_preserves_child_frozen_parser_boundaries() {
+    let child: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-137-acceptance-freeze.json"))
+            .expect("canonical child array parser matrix");
+    let array = child["cases"]
+        .as_array()
+        .expect("child cases")
+        .iter()
+        .find(|case| case["id"] == "77-C137-P-unnest")
+        .expect("frozen UNNEST obligation");
+    let dialects = child["dialects"].as_array().expect("13 dialects");
+    assert_eq!(dialects.len(), 13);
+    let mut exact = 0;
+    let mut boundary = 0;
     for dialect in dialects {
-        match proof(DERIVED, dialect, None) {
-            Some(PhysicalFiniteTableProof::Exact(exact)) => {
-                accepted += 1;
-                assert_eq!(exact.row_ids, ["star:1", "star:2", "star:3"]);
-                assert_eq!(exact.source_row_ids, ["unnest:1", "unnest:2", "unnest:3"]);
-                assert_eq!(exact.terminal_domains["v"].admits_null(), Some(true));
+        let name = dialect.as_str().expect("dialect name");
+        match (array["parser_cells"][name].as_str().expect("child parser disposition"),
+            proof(DERIVED, name, None)) {
+            ("exact", Some(PhysicalFiniteTableProof::Exact(result))) => {
+                exact += 1;
+                assert_eq!(result.row_ids, ["star:1", "star:2", "star:3"]);
+                assert_eq!(result.source_row_ids, ["unnest:1", "unnest:2", "unnest:3"]);
+                assert_eq!(result.terminal_domains["v"].admits_null(), Some(true));
             }
-            Some(other) => {
-                panic!("{dialect}: parsed finite derived table lost exactness: {other:?}")
+            ("lexical_boundary", None | Some(PhysicalFiniteTableProof::Residual { .. })) => {
+                boundary += 1;
             }
-            None => {} // Explicit parser boundary, not silently called Exact.
+            (expected, actual) => {
+                panic!("{name}: derived UNNEST proof does not match child {expected}: {actual:?}")
+            }
         }
     }
-    assert!(
-        accepted > 0,
-        "at least one exposed parser must accept the frozen SQL"
-    );
+    assert_eq!(exact, 11, "all eleven portable parser identities");
+    assert_eq!(boundary, 2, "SQLite and MSSQL lexical boundaries");
 }
 
 #[test]
