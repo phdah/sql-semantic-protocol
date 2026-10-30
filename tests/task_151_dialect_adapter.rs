@@ -170,15 +170,18 @@ fn source_independent_catalogs_agree_on_exact_write_effects() {
 
 #[test]
 fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
-    let mut cells = 0;
+    let mut observed = BTreeMap::<String, String>::new();
     for dialect in DIALECTS {
         let engine = dialect_from_name(dialect).unwrap();
         for (index, case) in CASES.iter().enumerate() {
-            let result = analyze_inputs(&[SqlInput::inline(*case)], dialect, engine.as_ref());
-            match result {
-                Err(_) => {}
+            let disposition = match analyze_inputs(
+                &[SqlInput::inline(*case)],
+                dialect,
+                engine.as_ref(),
+            ) {
+                Err(_) => "parser_boundary",
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
-                    ProtocolStatement::Unsupported(_) => {}
+                    ProtocolStatement::Unsupported(_) => "canonical_unsupported",
                     ProtocolStatement::Query(query) => {
                         let write = query.write().unwrap_or_else(|| {
                             panic!("{dialect}: {case} parsed but lost write identity")
@@ -187,21 +190,31 @@ fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
                             matches!(write.kind(), WriteKind::Update | WriteKind::Delete),
                             "{dialect}: {case}"
                         );
-                        if index == 4 || index == 5 || index >= 6 {
+                        if index >= 4 {
                             panic!("{dialect}: unproved vendor or RETURNING shape claimed exact: {case}");
                         }
                         if index == 2 || index == 3 {
                             assert_eq!(query.sources().len(), 1, "{dialect}: {case}");
                             assert_eq!(query.dependencies(), &["source".to_string()]);
                         }
+                        "parsed_canonical"
                     }
                     _ => panic!("{dialect}: {case} parsed as unrecognized statement"),
                 },
-            }
-            cells += 1;
+            };
+            observed.insert(format!("{index}::{dialect}"), disposition.to_string());
         }
     }
-    assert_eq!(cells, 104);
+    assert_eq!(observed.len(), 104);
+    let frozen: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-151-acceptance-freeze.json")).unwrap();
+    let expected = frozen["dialect_expected"].as_object().unwrap_or_else(|| {
+        panic!("TASK151_FREEZE_PARSER_CELLS:{}", serde_json::to_string(&observed).unwrap())
+    });
+    assert_eq!(expected.len(), observed.len(), "all 104 dialect cells must be frozen");
+    for (key, value) in observed {
+        assert_eq!(expected[&key].as_str(), Some(value.as_str()), "{key}");
+    }
 }
 
 #[test]
