@@ -185,7 +185,7 @@ pub use physical_realization::{
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
     physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
     PhysicalAggregateTruth, PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact,
-    PhysicalCteProof, PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact,
+    PhysicalCteInput, PhysicalCteNode, PhysicalCteProof, PhysicalCteRef, PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact,
     PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
     PhysicalFiniteChainProof, PhysicalFiniteExistsExact, PhysicalFiniteExistsProof,
     PhysicalFiniteInExact, PhysicalFiniteInProof, PhysicalFinitePageExact, PhysicalFinitePageProof,
