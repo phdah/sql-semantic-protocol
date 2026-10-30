@@ -28,7 +28,10 @@ fn expected_row(row: &Value, columns: &[String]) -> BTreeMap<String, LiteralValu
 fn case_bundle(
     sql: &str,
     input: &Value,
-) -> (sql_semantic_protocol::AnalysisBundle, Vec<PhysicalWriteState>) {
+) -> (
+    sql_semantic_protocol::AnalysisBundle,
+    Vec<PhysicalWriteState>,
+) {
     case_bundle_with_dialect(sql, input, "duckdb")
 }
 
@@ -36,7 +39,10 @@ fn case_bundle_with_dialect(
     sql: &str,
     input: &Value,
     dialect_name: &str,
-) -> (sql_semantic_protocol::AnalysisBundle, Vec<PhysicalWriteState>) {
+) -> (
+    sql_semantic_protocol::AnalysisBundle,
+    Vec<PhysicalWriteState>,
+) {
     let dialect = dialect_from_name(dialect_name).unwrap();
     let mut schemas = Vec::new();
     let mut snapshots = Vec::new();
@@ -61,7 +67,12 @@ fn case_bundle_with_dialect(
     }
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("cte", &input, dialect_name, dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "cte",
+        &input,
+        dialect_name,
+        dialect.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     (bundle, snapshots)
 }
@@ -109,19 +120,37 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
             }
         }
 
-        let names = case["terminal_domains"].as_object().unwrap()
-            .keys().cloned().collect::<Vec<_>>();
-        let mut actual = proof.terminal.iter().map(|row| {
-            (row.values.clone(), row.source_row_ids.clone())
-        }).collect::<Vec<_>>();
-        let mut expected = case["terminal_bag"].as_array().unwrap().iter().map(|row| {
-            let ids = row["source_ids"].as_array().unwrap().iter()
-                .map(|id| id.as_str().unwrap().to_string()).collect::<Vec<_>>();
-            (expected_row(row, &names), ids)
-        }).collect::<Vec<_>>();
+        let names = case["terminal_domains"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut actual = proof
+            .terminal
+            .iter()
+            .map(|row| (row.values.clone(), row.source_row_ids.clone()))
+            .collect::<Vec<_>>();
+        let mut expected = case["terminal_bag"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                let ids = row["source_ids"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|id| id.as_str().unwrap().to_string())
+                    .collect::<Vec<_>>();
+                (expected_row(row, &names), ids)
+            })
+            .collect::<Vec<_>>();
         actual.sort_by(|left, right| left.1.cmp(&right.1));
         expected.sort_by(|left, right| left.1.cmp(&right.1));
-        assert_eq!(actual, expected, "{id}: terminal exact values, IDs and multiplicity");
+        assert_eq!(
+            actual, expected,
+            "{id}: terminal exact values, IDs and multiplicity"
+        );
 
         for (name, domain) in case["terminal_domains"].as_object().unwrap() {
             let observed = &proof.terminal_domains[name];
@@ -241,16 +270,28 @@ fn unsupported_cte_projection_and_incomplete_source_evidence_are_residual() {
 #[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     const DIALECTS: &[&str] = &[
-        "generic", "mysql", "postgresql", "postgres", "hive", "sqlite",
-        "snowflake", "redshift", "mssql", "clickhouse", "bigquery",
-        "ansi", "duckdb", "databricks"
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ];
-    let freeze: Value = serde_json::from_str(
-        include_str!("../docs/task-141-acceptance-freeze.json")
-    ).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut cells = 0;
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" { continue; }
+        if case["classification"] != "mandatory_exact" {
+            continue;
+        }
         let sql = case["sql"].as_str().unwrap();
         let id = case["id"].as_str().unwrap();
         let (baseline, states) = case_bundle(sql, &case["initial_bags"]);
@@ -258,16 +299,18 @@ fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
             &baseline,
             baseline.layers().last().unwrap().id(),
             &states,
-            None
+            None,
         ) {
             PhysicalCteProof::Exact(result) => result,
             other => panic!("{id}: canonical baseline not Exact: {other:?}"),
         };
         for dialect in DIALECTS {
-            let (bundle, states) =
-                case_bundle_with_dialect(sql, &case["initial_bags"], dialect);
+            let (bundle, states) = case_bundle_with_dialect(sql, &case["initial_bags"], dialect);
             let result = physical_finite_cte_bag_plan(
-                &bundle, bundle.layers().last().unwrap().id(), &states, None
+                &bundle,
+                bundle.layers().last().unwrap().id(),
+                &states,
+                None,
             );
             let PhysicalCteProof::Exact(proved) = result else {
                 panic!("{id}/{dialect}: no complete physical CTE proof: {result:?}");
@@ -275,7 +318,10 @@ fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
             assert_eq!(proved.source_bags, expected.source_bags, "{id}/{dialect}");
             assert_eq!(proved.stage_bags, expected.stage_bags, "{id}/{dialect}");
             assert_eq!(proved.rejected, expected.rejected, "{id}/{dialect}");
-            assert_eq!(proved.terminal_domains, expected.terminal_domains, "{id}/{dialect}");
+            assert_eq!(
+                proved.terminal_domains, expected.terminal_domains,
+                "{id}/{dialect}"
+            );
             cells += 1;
         }
     }
@@ -290,19 +336,27 @@ fn conditional_cte_materialization_recursion_and_forward_binding_fail_closed() {
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
     let mut classified = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "conditional" { continue; }
+        if case["classification"] != "conditional" {
+            continue;
+        }
         let sql = case["sql"].as_str().unwrap();
         let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
         let layer = bundle.layers().last().unwrap();
         let proof = physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None);
-        assert!(matches!(proof, PhysicalCteProof::Residual { .. }),
-            "{}: conditional source law must never become Exact", case["id"]);
+        assert!(
+            matches!(proof, PhysicalCteProof::Residual { .. }),
+            "{}: conditional source law must never become Exact",
+            case["id"]
+        );
         classified.push(case["id"].as_str().unwrap());
     }
     classified.sort();
-    assert_eq!(classified, [
-        "78-C141-N-FORWARD",
-        "78-C141-N-MATERIALIZATION",
-        "78-C141-N-RECURSIVE-SHADOW",
-    ]);
+    assert_eq!(
+        classified,
+        [
+            "78-C141-N-FORWARD",
+            "78-C141-N-MATERIALIZATION",
+            "78-C141-N-RECURSIVE-SHADOW",
+        ]
+    );
 }
