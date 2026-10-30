@@ -427,3 +427,79 @@ fn every_frozen_sequential_write_obeys_complete_native_oracle() {
         }
     }
 }
+
+#[test]
+fn frozen_task_152_inventory_preserves_every_child_and_parent_signoff_cell() {
+    let freeze = freeze();
+    assert_eq!(freeze["owner"], "TASK-152");
+    assert_eq!(freeze["parent"], "TASK-81");
+    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["fixture_ids"], serde_json::json!(["81-C152-P", "81-C152-N"]));
+    assert_eq!(freeze["child_ac"], serde_json::json!([1, 2, 3, 4, 5]));
+    assert_eq!(freeze["original_parent_ac"], serde_json::json!([1, 2, 3, 4, 5, 6]));
+    assert_eq!(freeze["adapters"], serde_json::json!([
+        "direct_sql", "dbt_compiled_catalog", "odcs_schema"
+    ]));
+    assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
+    assert_eq!(freeze["parser_sql"].as_array().unwrap().len(), 3);
+    let mut observed = BTreeMap::<String, usize>::new();
+    let mut ids = std::collections::BTreeSet::<String>::new();
+    for case in freeze["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        assert!(ids.insert(id.to_string()), "{id}: duplicate frozen case");
+        assert!(case["fixture_id"] == "81-C152-P" || case["fixture_id"] == "81-C152-N");
+        let kind = case["classification"].as_str().unwrap();
+        *observed.entry(kind.to_string()).or_default() += 1;
+        assert!(case["target_before"].is_array(), "{id}: missing complete prestate");
+        assert!(case["target_before_domains"].is_object(), "{id}: missing prestate domains");
+        assert!(case["assumed_parent"].is_array() || case["expected_gap"] == "MissingPopulation");
+        for step in case["steps"].as_array().unwrap() {
+            assert!(step["sql"].as_str().is_some_and(|sql| !sql.is_empty()));
+            for field in ["before", "after"] {
+                assert!(step[field].is_array(), "{id}: missing complete {field} bag");
+                let domains = &step[format!("{field}_domains")];
+                for column in ["id", "parent_id", "score"] {
+                    assert_eq!(domains[column]["type"], "INTEGER");
+                    assert!(domains[column]["frequencies"].is_object());
+                    assert!(domains[column]["nullable"].is_boolean());
+                    assert!(domains[column]["lower_inclusive"].is_boolean());
+                    assert!(domains[column]["upper_inclusive"].is_boolean());
+                }
+            }
+            for key in ["inserted", "updated", "deleted"] {
+                assert!(step["affected"][key].is_u64(), "{id}: missing {key} count");
+            }
+            assert!(step["selected_prestate_ordinals"].is_array());
+            assert!(step["not_true_prestate_ordinals"].is_array());
+        }
+        match kind {
+            "mandatory_exact" => assert!(case["expected_final"].is_array()),
+            "mandatory_impossible" => assert_eq!(case["expected_failure"], "Impossible"),
+            "mandatory_residual" | "conditional_residual" => {
+                assert_eq!(case["expected_failure"], "Residual");
+                assert!(case["expected_gap"].as_str().is_some_and(|s| !s.is_empty()));
+            }
+            other => panic!("unreviewed mandatory classification {other}"),
+        }
+    }
+    assert_eq!(observed.get("mandatory_exact"), Some(&3));
+    assert_eq!(observed.get("mandatory_impossible"), Some(&2));
+    assert_eq!(observed.get("mandatory_residual"), Some(&1));
+    assert_eq!(observed.get("conditional_residual"), Some(&1));
+    assert_eq!(ids.len(), 7);
+    let vendor = freeze["vendor_boundary_fixtures"].as_array().unwrap();
+    assert_eq!(vendor.len(), 2);
+    for boundary in vendor {
+        assert_eq!(boundary["owner"], "TASK-152");
+        assert_eq!(boundary["classification"], "conditional_residual");
+        assert_eq!(boundary["expected_proof"], "Residual");
+        assert!(boundary["release_disposition"].as_str().is_some_and(|s| !s.is_empty()));
+        assert_eq!(boundary["expected_parser_status"].as_object().unwrap().len(), 13);
+    }
+    for boundary in freeze["conditional_boundaries"].as_array().unwrap() {
+        assert_eq!(boundary["owner"], "TASK-152");
+        assert_eq!(boundary["proof"], "Residual");
+        assert!(boundary["missing"].as_str().is_some_and(|s| !s.is_empty()));
+        assert!(boundary["release_disposition"].as_str().is_some_and(|s| !s.is_empty()));
+    }
+}
