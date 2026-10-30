@@ -454,6 +454,51 @@ fn disjoint_mutation_sources(target: &SourceRelation, source: &SourceRelation) -
     !target_names.iter().any(|name| source_names.contains(name))
 }
 
+/// A bounded correlated EXISTS/NOT EXISTS reads one complete, independent
+/// physical relation. This does not translate the subquery into UPDATE FROM:
+/// each target row evaluates the nested WHERE against the same source bag.
+fn bounded_mutation_exists(
+    selection: &Expr,
+    target: &SourceRelation,
+    metadata: &AnalysisMetadata<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<(Predicate, SourceRelation)> {
+    if !matches!(selection, Expr::Exists { .. }) {
+        return None;
+    }
+    let active_qualifier = target.alias().unwrap_or(target.name());
+    let scope = [OutputRelation {
+        qualifiers: vec![active_qualifier.to_string()],
+        source: OutputRelationSource::Physical {
+            relation: target.name().to_string(),
+            columns: metadata.schema_columns(target.name()),
+        },
+    }];
+    let predicate =
+        analyze_predicate_with_windows(selection, &[], &BTreeMap::new(), &scope, diagnostics);
+    let Predicate::Exists(exists) = &predicate else {
+        return None;
+    };
+    let nested = exists.subquery();
+    let [source] = nested.sources() else {
+        return None;
+    };
+    if !nested.row_shape_preserves_candidates()
+        || !nested.joins().is_empty()
+        || !nested.diagnostics().is_empty()
+        || nested.predicates().where_predicate().is_none()
+        || nested.correlations().is_empty()
+        || nested
+            .correlations()
+            .iter()
+            .any(|column| column.relation() != target.name())
+        || !disjoint_mutation_sources(target, source)
+    {
+        return None;
+    }
+    Some((predicate, source.clone()))
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
@@ -503,9 +548,21 @@ pub(super) fn analyze_update(
             "UPDATE FROM cannot reuse or shadow the physical target without a joint alias proof",
         );
     }
+    let mut diagnostics = Vec::new();
+    let correlated = if from.is_none() {
+        selection.and_then(|selection| {
+            bounded_mutation_exists(selection, &target_source, metadata, &mut diagnostics)
+        })
+    } else {
+        None
+    };
     let mut domain_sources = vec![target_source.clone()];
     domain_sources.extend(joined_source.iter().cloned());
-    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let query_sources: Vec<SourceRelation> = joined_source
+        .iter()
+        .cloned()
+        .chain(correlated.as_ref().map(|(_, source)| source.clone()))
+        .collect();
     let dependencies = query_sources
         .iter()
         .map(|source| source.name().to_string())
@@ -517,17 +574,18 @@ pub(super) fn analyze_update(
                 return unsupported_write_statement("update", "unproved_mutation_returning", reason)
             }
         };
-    let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
-    if let Some(selection) = selection {
-        collect_expression_dependencies(
-            selection,
+    if correlated.is_none() {
+        if let Some(selection) = selection {
+            collect_expression_dependencies(
+                selection,
             &BTreeSet::new(),
             &mut diagnostics,
             &mut derived_index,
-            &mut nonlocal_dependencies,
-        );
+                &mut nonlocal_dependencies,
+            );
+        }
     }
     for assignment in assignments {
         collect_expression_dependencies(
@@ -535,8 +593,9 @@ pub(super) fn analyze_update(
             &BTreeSet::new(),
             &mut diagnostics,
             &mut derived_index,
-            &mut nonlocal_dependencies,
-        );
+                &mut nonlocal_dependencies,
+            );
+        }
     }
     if !nonlocal_dependencies.is_empty() {
         return unsupported_write_statement(
@@ -545,7 +604,10 @@ pub(super) fn analyze_update(
             "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved",
         );
     }
-    let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
+    let predicate = correlated
+        .as_ref()
+        .map(|(predicate, _)| predicate.clone())
+        .or_else(|| selection.map(|selection| analyze_predicate(selection, &mut diagnostics)));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
         &domain_sources,
@@ -618,7 +680,10 @@ pub(super) fn analyze_update(
     )
 }
 
-pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
+pub(super) fn analyze_delete(
+    delete: &SqlDelete,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
     let tables = match &delete.from {
         SqlFromTable::WithFromKeyword(tables) | SqlFromTable::WithoutKeyword(tables) => tables,
     };
@@ -664,9 +729,21 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             "DELETE USING cannot reuse or shadow the physical target without a joint alias proof",
         );
     }
+    let mut diagnostics = Vec::new();
+    let correlated = if delete.using.is_none() {
+        delete.selection.as_ref().and_then(|selection| {
+            bounded_mutation_exists(selection, &target_source, metadata, &mut diagnostics)
+        })
+    } else {
+        None
+    };
     let mut domain_sources = vec![target_source];
     domain_sources.extend(joined_source.iter().cloned());
-    let query_sources: Vec<SourceRelation> = joined_source.iter().cloned().collect();
+    let query_sources: Vec<SourceRelation> = joined_source
+        .iter()
+        .cloned()
+        .chain(correlated.as_ref().map(|(_, source)| source.clone()))
+        .collect();
     let dependencies = query_sources
         .iter()
         .map(|source| source.name().to_string())
@@ -681,11 +758,11 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             return unsupported_write_statement("delete", "unproved_mutation_returning", reason)
         }
     };
-    let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
-    if let Some(selection) = &delete.selection {
-        collect_expression_dependencies(
+    if correlated.is_none() {
+        if let Some(selection) = &delete.selection {
+            collect_expression_dependencies(
             selection,
             &BTreeSet::new(),
             &mut diagnostics,
@@ -700,10 +777,15 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             "DELETE subqueries require source-row and correlation semantics that cannot yet be proved",
         );
     }
-    let predicate = delete
-        .selection
+    let predicate = correlated
         .as_ref()
-        .map(|selection| analyze_predicate(selection, &mut diagnostics));
+        .map(|(predicate, _)| predicate.clone())
+        .or_else(|| {
+            delete
+                .selection
+                .as_ref()
+                .map(|selection| analyze_predicate(selection, &mut diagnostics))
+        });
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
         &domain_sources,
