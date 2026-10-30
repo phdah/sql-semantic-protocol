@@ -2,8 +2,11 @@
 //! Exact physical-plan certification of repeated producers remains a separate
 //! acceptance gate; parser/lineage and a DuckDB output are not that proof.
 
+mod common;
+
+use common::DIALECTS;
 use duckdb::Connection;
-use sql_semantic_protocol::{analyze_sql, ProtocolStatement, QueryStatement};
+use sql_semantic_protocol::{analyze_sql, dialect_from_name, ProtocolStatement, QueryStatement};
 use sqlparser::dialect::GenericDialect;
 
 fn analyzed_query(sql: &str) -> QueryStatement {
@@ -104,4 +107,24 @@ fn reused_cte_aliases_share_one_duplicate_and_null_aware_source_bag() {
     );
     assert!(!rows.contains(&(None, None)));
     assert!(!rows.contains(&(Some(1), Some(2))));
+}
+
+#[test]
+fn shared_ordinary_cte_resolves_to_one_physical_relation_across_all_dialects() {
+    let sql = "WITH shared AS (SELECT k FROM s) \
+               SELECT a.k FROM shared AS a JOIN shared AS b ON a.k = b.k";
+    for name in DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        let protocol = analyze_sql(sql, name, dialect.as_ref())
+            .unwrap_or_else(|error| panic!("{name}: shared WITH syntax: {error}"));
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("{name}: expected query");
+        };
+        assert_eq!(query.dependencies(), ["s"], "{name}: physical identity");
+        assert_eq!(query.sources().len(), 2, "{name}: two SQL source instances");
+        assert_eq!(query.sources()[0].name(), "shared", "{name}");
+        assert_eq!(query.sources()[1].name(), "shared", "{name}");
+        assert_eq!(query.sources()[0].alias(), Some("a"), "{name}");
+        assert_eq!(query.sources()[1].alias(), Some("b"), "{name}");
+    }
 }
