@@ -409,6 +409,21 @@ fn quoted_cte_names_do_not_borrow_unquoted_source_evidence() {
 }
 
 #[test]
+fn quoted_output_alias_with_unquoted_sort_key_is_not_certified() {
+    let sql = r#"WITH shared AS (SELECT k FROM s) SELECT k AS "k" FROM shared ORDER BY k"#;
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle(sql, &input);
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "quoted output labels need dialect-specific case/binder proof"
+    );
+}
+
+#[test]
 fn differently_cased_cte_reference_never_borrows_a_physical_table() {
     let sql = "WITH shared AS (SELECT k FROM s) SELECT k FROM SHARED";
     let input = serde_json::json!({
