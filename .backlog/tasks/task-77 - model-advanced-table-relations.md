@@ -1,10 +1,10 @@
 ---
 id: TASK-77
 title: Cover nonstandard relational table transformations
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-30'
 labels: []
 milestone: m-3
 dependencies: 
@@ -34,12 +34,12 @@ UNNEST, EXPLODE, VALUES, table functions and PIVOT are realistic source-to-outpu
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Inventory and normalize VALUES, LATERAL/UNNEST/EXPLODE, array and JSON table expansion, PIVOT/UNPIVOT, generator/table functions and dialect-supported SELECT star variants (EXCEPT/REPLACE/RENAME).
-- [ ] #2 Model row fanout, flattening, positional ordinality, shape-dependent output types, NULL/empty arrays and pivot-generated columns with typed witness obligations.
-- [ ] #3 Support safe deterministic built-in shapes while marking opaque table functions, dynamic-schema sources or nondeterministic operators residual with stable reasons.
-- [ ] #4 Compose witnesses through joins, aggregates, subqueries and dbt models; never infer nested data types or fabricated columns.
-- [ ] #5 Add per-dialect parser fixture and executable oracle coverage for deterministic supported variants.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Inventory and normalize VALUES, LATERAL/UNNEST/EXPLODE, array and JSON table expansion, PIVOT/UNPIVOT, generator/table functions and dialect-supported SELECT star variants (EXCEPT/REPLACE/RENAME).
+- [x] #2 Model row fanout, flattening, positional ordinality, shape-dependent output types, NULL/empty arrays and pivot-generated columns with typed witness obligations.
+- [x] #3 Support safe deterministic built-in shapes while marking opaque table functions, dynamic-schema sources or nondeterministic operators residual with stable reasons.
+- [x] #4 Compose witnesses through joins, aggregates, subqueries and dbt models; never infer nested data types or fabricated columns.
+- [x] #5 Add per-dialect parser fixture and executable oracle coverage for deterministic supported variants.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -59,13 +59,27 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Dependency-ordered bounded child queue (2026-10-17)
 
-**TASK-77 is now a parent signoff, not one implementation PR.** Its original AC remain unchecked. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
+**TASK-77 is a parent signoff, not a child implementation PR.** Original AC #1..#6 are independently verified in the parent closure. Every child has its own finite variant/fixture IDs, complete source/terminal oracle and explicit conditional boundaries in `docs/backlog-child-queue-plan.json`. Select the first unfinished dependency-ready child; never add a parent dependency to a child. Do not sign off the parent merely because one PR passes CI.
 
 - **[TASK-137](task-137%20-%20prove-values-and-array-table-fanout-with-ordinality.md)** (1/4): multirow VALUES; array UNNEST/EXPLODE; NULL/empty arrays; ordinality. Fixtures `77-C137-P`, `77-C137-N`.
 - **[TASK-138](task-138%20-%20implement-star-transforms-and-fixed-schema-pivot-unpivot.md)** (2/4): SELECT * EXCEPT/REPLACE/RENAME; PIVOT and UNPIVOT fixed columns. Fixtures `77-C138-P`, `77-C138-N`.
 - **[TASK-139](task-139%20-%20classify-json-table-generators-and-vendor-functions.md)** (3/4): JSON_TABLE/FLATTEN/EXPLODE; generator/table UDF; variable shape. Fixtures `77-C139-P`, `77-C139-N`.
 - **[TASK-140](task-140%20-%20compose-table-fanout-with-joins-dbt-and-certify-task-77.md)** (4/4): VALUES/UNNEST fanout feeding join or group; dbt adapter; 13 dialects. Fixtures `77-C140-P`, `77-C140-N`.
 
-**Original acceptance mapping:** #1 -> TASK-137, TASK-138, TASK-139, TASK-140; #2 -> TASK-137, TASK-138, TASK-139, TASK-140; #3 -> TASK-137, TASK-138, TASK-139, TASK-140; #4 -> TASK-140; #5 -> TASK-137, TASK-138, TASK-139, TASK-140; #6 -> TASK-137, TASK-138, TASK-139, TASK-140.
+**Original acceptance mapping:** #1 -> TASK-137, TASK-138, TASK-139, TASK-140; #2 -> TASK-137, TASK-138, TASK-139, TASK-140; #3 -> TASK-137, TASK-138, TASK-139, TASK-140; #4 -> TASK-140 and the parent-owned derived subquery case; #5 -> TASK-137, TASK-138, TASK-139, TASK-140; #6 -> TASK-137, TASK-138, TASK-139, TASK-140.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent closure review (2026-10-30)
+
+TASK-137..140 are Done and merged on main. The [parent acceptance freeze](../../docs/task-77-acceptance-freeze.json) reconciles 25 mandatory and 11 conditional cases, while the [audit](../../docs/task-77-acceptance-audit.md) independently maps original AC #1..#6. [Public/native regression](../../tests/task_77_parent_closure.rs) and final PR-head CI are required for closure. TASK-91 release authorization remains separate.
+
+## Review correction (2026-10-30)
+
+The initial parent signoff was incomplete: original AC #4 explicitly requires subquery composition and AC #1 includes LATERAL. The initial 24/10 case matrix omitted both. The [v2 parent acceptance freeze](../../docs/task-77-acceptance-freeze.json) adds a mandatory exact source-free derived subquery (including duplicate/NULL producer identities and NOT TRUE proof), and an owned conditional correlated LATERAL fail-closed case. AC #1 and #4 passed independent regression and full implementation CI. Preserve all original child evidence; TASK-91 remains separately release-blocked.
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-77 original AC #1..#6 independently verified and Done for the frozen portable scope. Merged children TASK-137..140 contribute 24 mandatory and 10 conditional cases; the parent adds one mandatory Exact/Impossible derived UNNEST subquery preserving complete typed NULL/duplicate source and terminal bags, plus one reviewed correlated LATERAL Residual boundary. The v2 inventory therefore holds 25 mandatory and 11 conditional cases, all 13 parser dialect paths (11 exact derived UNNEST paths with explicit SQLite/MSSQL lexical boundaries) and SQL/dbt/ODCS adapter evidence. The independent native DuckDB, typed finite-domain and physical membership tests passed. Implementation CI [41114331483](https://github.com/phdah/sql-semantic-protocol/actions/runs/41114331483) passed 9/9 checks, including both Rust feature configurations, fmt, Clippy, docs and dbt Core E2E. The final signoff-metadata PR-head CI remains a merge gate, and TASK-91 release authorization is separate.
+<!-- SECTION:FINAL_SUMMARY:END -->

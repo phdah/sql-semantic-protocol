@@ -1,0 +1,734 @@
+{
+  "version": 2,
+  "task": "TASK-77",
+  "status": "portable_parent_original_ac1_to_ac6_verified",
+  "parent_signed_off": true,
+  "release_approved": false,
+  "source_of_truth": {
+    "TASK-137": {
+      "freeze": "docs/task-137-acceptance-freeze.json",
+      "version": 3,
+      "fixture_ids": [
+        "77-C137-P",
+        "77-C137-N"
+      ],
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque"
+      ],
+      "reviewed_audit": "docs/task-137-acceptance-audit.md"
+    },
+    "TASK-138": {
+      "freeze": "docs/task-138-acceptance-freeze.json",
+      "version": 6,
+      "fixture_ids": [
+        "77-C138-P",
+        "77-C138-N"
+      ],
+      "mandatory_case_ids": [
+        "77-C138-N-unpivot",
+        "77-C138-P-except",
+        "77-C138-P-exclude",
+        "77-C138-P-pivot",
+        "77-C138-P-rename",
+        "77-C138-P-replace",
+        "77-C138-P-unpivot"
+      ],
+      "conditional_case_ids": [
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot"
+      ],
+      "reviewed_audit": "docs/task-138-acceptance-audit.md"
+    },
+    "TASK-139": {
+      "freeze": "docs/task-139-acceptance-freeze.json",
+      "version": 3,
+      "fixture_ids": [
+        "77-C139-P",
+        "77-C139-N"
+      ],
+      "mandatory_case_ids": [
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select"
+      ],
+      "conditional_case_ids": [
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape"
+      ],
+      "reviewed_audit": "docs/task-139-acceptance-audit.md"
+    },
+    "TASK-140": {
+      "freeze": "docs/task-140-acceptance-freeze.json",
+      "version": 5,
+      "fixture_ids": [
+        "77-C140-P",
+        "77-C140-N"
+      ],
+      "mandatory_case_ids": [
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES"
+      ],
+      "conditional_case_ids": [
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE"
+      ],
+      "reviewed_audit": "docs/task-140-acceptance-audit.md"
+    }
+  },
+  "fixture_ids": [
+    "77-C137-N",
+    "77-C137-P",
+    "77-C138-N",
+    "77-C138-P",
+    "77-C139-N",
+    "77-C139-P",
+    "77-C140-N",
+    "77-C140-P"
+  ],
+  "required_dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "required_adapters": [
+    "direct_sql",
+    "dbt_compiled_sql_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "adapter_aliases": {
+    "compiled_dbt": "dbt_compiled_sql_catalog",
+    "odcs": "odcs_equivalent_schema"
+  },
+  "mandatory_case_ids": [
+    "77-C137-N-null-array",
+    "77-C137-N-unnest-empty",
+    "77-C137-N-values-null-duplicate",
+    "77-C137-P-explode",
+    "77-C137-P-ordinality",
+    "77-C137-P-unnest",
+    "77-C137-P-values",
+    "77-C138-N-unpivot",
+    "77-C138-P-except",
+    "77-C138-P-exclude",
+    "77-C138-P-pivot",
+    "77-C138-P-rename",
+    "77-C138-P-replace",
+    "77-C138-P-unpivot",
+    "77-C139-N-explode-duplicates-null",
+    "77-C139-P-explode-from",
+    "77-C139-P-explode-select",
+    "77-C140-N-ABSENCE",
+    "77-C140-P-EMPTY",
+    "77-C140-P-GROUP",
+    "77-C140-P-JOIN",
+    "77-C140-P-JOIN-NULL",
+    "77-C140-P-JOIN-REVERSE",
+    "77-C140-P-VALUES",
+    "77-PARENT-DERIVED-P"
+  ],
+  "conditional_case_ids": [
+    "77-C137-N-opaque",
+    "77-C138-N-missing",
+    "77-C138-N-opaque",
+    "77-C138-N-pivot",
+    "77-C139-N-flatten",
+    "77-C139-N-json-table",
+    "77-C139-N-table-udf",
+    "77-C139-N-variable-shape",
+    "77-C140-C-NON-EQUI",
+    "77-C140-C-OPAQUE",
+    "77-PARENT-LATERAL-R"
+  ],
+  "total_mandatory_exact_cases": 25,
+  "total_reviewed_conditional_cases": 11,
+  "mandatory_unverified": [],
+  "domain_cross_references": {
+    "77-C140-N-ABSENCE": "77-C140-P-GROUP",
+    "77-C140-P-JOIN-REVERSE": "77-C140-P-JOIN-NULL"
+  },
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "description": "Inventory VALUES, UNNEST, EXPLODE, star transforms, PIVOT, UNPIVOT and dynamic generator syntax",
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values",
+        "77-C138-N-unpivot",
+        "77-C138-P-except",
+        "77-C138-P-exclude",
+        "77-C138-P-pivot",
+        "77-C138-P-rename",
+        "77-C138-P-replace",
+        "77-C138-P-unpivot",
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES",
+        "77-PARENT-DERIVED-P"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque",
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot",
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape",
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE",
+        "77-PARENT-LATERAL-R"
+      ],
+      "children": [
+        "TASK-137",
+        "TASK-138",
+        "TASK-139",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_137_frozen_matrix.rs",
+        "tests/task_138_frozen_matrix.rs",
+        "tests/task_139_frozen_matrix.rs",
+        "tests/task_140_dialect_adapter_matrix.rs",
+        "tests/task_77_derived_subquery.rs"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Prove array fanout/ordinality/NULL/empty and fixed-schema output domains",
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values",
+        "77-C138-N-unpivot",
+        "77-C138-P-pivot",
+        "77-C138-P-unpivot",
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque",
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot",
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape",
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE"
+      ],
+      "children": [
+        "TASK-137",
+        "TASK-138",
+        "TASK-139",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_137_finite_tables.rs",
+        "tests/task_138_pivot_unpivot.rs",
+        "tests/task_139_generators.rs",
+        "tests/task_140_finite_group_bags.rs"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Prove deterministic output and typed fail-closed opaque or dynamic shapes",
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values",
+        "77-C138-N-unpivot",
+        "77-C138-P-except",
+        "77-C138-P-exclude",
+        "77-C138-P-pivot",
+        "77-C138-P-rename",
+        "77-C138-P-replace",
+        "77-C138-P-unpivot",
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque",
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot",
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape",
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE",
+        "77-PARENT-LATERAL-R"
+      ],
+      "children": [
+        "TASK-137",
+        "TASK-138",
+        "TASK-139",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_137_finite_tables.rs",
+        "tests/task_138_finite_star_bags.rs",
+        "tests/task_139_generators.rs",
+        "tests/task_140_finite_group_bags.rs"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Compose exact finite source and row identities through join, aggregation and compiled dbt",
+      "mandatory_case_ids": [
+        "77-C138-N-unpivot",
+        "77-C138-P-pivot",
+        "77-C138-P-unpivot",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES",
+        "77-PARENT-DERIVED-P"
+      ],
+      "conditional_case_ids": [
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE"
+      ],
+      "children": [
+        "TASK-138",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_140_finite_group_bags.rs",
+        "tests/task_140_dbt_core_e2e.rs",
+        "tests/task_77_derived_subquery.rs"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Check all 13 parser dialects and complete native DuckDB source and terminal oracles",
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values",
+        "77-C138-N-unpivot",
+        "77-C138-P-except",
+        "77-C138-P-exclude",
+        "77-C138-P-pivot",
+        "77-C138-P-rename",
+        "77-C138-P-replace",
+        "77-C138-P-unpivot",
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES",
+        "77-PARENT-DERIVED-P"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque",
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot",
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape",
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE",
+        "77-PARENT-LATERAL-R"
+      ],
+      "children": [
+        "TASK-137",
+        "TASK-138",
+        "TASK-139",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_137_frozen_matrix.rs",
+        "tests/task_138_frozen_matrix.rs",
+        "tests/task_139_frozen_matrix.rs",
+        "tests/task_140_dialect_adapter_matrix.rs",
+        "tests/task_77_parent_closure.rs"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Certify typed public and protocol semantics, negative/NULL/duplicate behavior and adapter parity",
+      "mandatory_case_ids": [
+        "77-C137-N-null-array",
+        "77-C137-N-unnest-empty",
+        "77-C137-N-values-null-duplicate",
+        "77-C137-P-explode",
+        "77-C137-P-ordinality",
+        "77-C137-P-unnest",
+        "77-C137-P-values",
+        "77-C138-N-unpivot",
+        "77-C138-P-except",
+        "77-C138-P-exclude",
+        "77-C138-P-pivot",
+        "77-C138-P-rename",
+        "77-C138-P-replace",
+        "77-C138-P-unpivot",
+        "77-C139-N-explode-duplicates-null",
+        "77-C139-P-explode-from",
+        "77-C139-P-explode-select",
+        "77-C140-N-ABSENCE",
+        "77-C140-P-EMPTY",
+        "77-C140-P-GROUP",
+        "77-C140-P-JOIN",
+        "77-C140-P-JOIN-NULL",
+        "77-C140-P-JOIN-REVERSE",
+        "77-C140-P-VALUES",
+        "77-PARENT-DERIVED-P"
+      ],
+      "conditional_case_ids": [
+        "77-C137-N-opaque",
+        "77-C138-N-missing",
+        "77-C138-N-opaque",
+        "77-C138-N-pivot",
+        "77-C139-N-flatten",
+        "77-C139-N-json-table",
+        "77-C139-N-table-udf",
+        "77-C139-N-variable-shape",
+        "77-C140-C-NON-EQUI",
+        "77-C140-C-OPAQUE",
+        "77-PARENT-LATERAL-R"
+      ],
+      "children": [
+        "TASK-137",
+        "TASK-138",
+        "TASK-139",
+        "TASK-140"
+      ],
+      "evidence": [
+        "tests/task_137_adapter_parity.rs",
+        "tests/task_138_adapter_matrix.rs",
+        "tests/task_139_adapter_matrix.rs",
+        "tests/task_140_dialect_adapter_matrix.rs",
+        "tests/task_77_parent_closure.rs"
+      ]
+    }
+  ],
+  "execution_boundary": "Native DuckDB only; non-DuckDB engine/session assertions remain conditional",
+  "remaining_release_gate": "TASK-91 release authorization; final metadata PR-head CI before merge",
+  "parent_extensions": {
+    "mandatory": [
+      {
+        "id": "77-PARENT-DERIVED-P",
+        "classification": "mandatory",
+        "sql": "SELECT * FROM (SELECT * FROM UNNEST([1, NULL, 1]) AS t(v)) AS q",
+        "source_sql": "SELECT v FROM UNNEST([1, NULL, 1]) AS t(v)",
+        "native_sql_oracle": "SELECT v FROM (SELECT * FROM UNNEST([1, NULL, 1]) AS t(v)) AS q",
+        "source_bag": [
+          {
+            "id": "unnest:1",
+            "v": 1
+          },
+          {
+            "id": "unnest:2",
+            "v": null
+          },
+          {
+            "id": "unnest:3",
+            "v": 1
+          }
+        ],
+        "terminal_bag": [
+          {
+            "v": 1
+          },
+          {
+            "v": null
+          },
+          {
+            "v": 1
+          }
+        ],
+        "producer_ids": [
+          "star:1",
+          "star:2",
+          "star:3"
+        ],
+        "source_row_ids": [
+          "unnest:1",
+          "unnest:2",
+          "unnest:3"
+        ],
+        "terminal_domains": {
+          "v": {
+            "type": "integer",
+            "nullable": true,
+            "values": [
+              1,
+              null
+            ],
+            "lower": {
+              "value": 1,
+              "inclusive": true
+            },
+            "upper": {
+              "value": 1,
+              "inclusive": true
+            }
+          }
+        },
+        "positive_proof": "Exact",
+        "negative_membership": {
+          "v": 3,
+          "proof": "Impossible"
+        },
+        "owner": "TASK-77",
+        "parser_policy": "portable source-free derived projection; any SQL parser-accepted AST with equivalent semantics must be canonical",
+        "adapter_policy": {
+          "direct_sql": "Exact",
+          "dbt_compiled_sql_catalog": "Exact for compiled SQL",
+          "odcs_equivalent_schema": "schema-only cannot attest literal array rows"
+        },
+        "oracle_test": "tests/task_77_derived_subquery.rs",
+        "parser_cells": [
+          {
+            "dialect": "generic",
+            "classification": "exact"
+          },
+          {
+            "dialect": "mysql",
+            "classification": "exact"
+          },
+          {
+            "dialect": "postgresql",
+            "classification": "exact"
+          },
+          {
+            "dialect": "hive",
+            "classification": "exact"
+          },
+          {
+            "dialect": "sqlite",
+            "classification": "lexical_boundary",
+            "boundary": "bracketed array expression parsed as dialect-specific identifier/expression, not an attested literal array"
+          },
+          {
+            "dialect": "snowflake",
+            "classification": "exact"
+          },
+          {
+            "dialect": "redshift",
+            "classification": "exact"
+          },
+          {
+            "dialect": "mssql",
+            "classification": "lexical_boundary",
+            "boundary": "bracketed array expression parsed as dialect-specific identifier/expression, not an attested literal array"
+          },
+          {
+            "dialect": "clickhouse",
+            "classification": "exact"
+          },
+          {
+            "dialect": "bigquery",
+            "classification": "exact"
+          },
+          {
+            "dialect": "ansi",
+            "classification": "exact"
+          },
+          {
+            "dialect": "duckdb",
+            "classification": "exact"
+          },
+          {
+            "dialect": "databricks",
+            "classification": "exact"
+          }
+        ],
+        "adapter_cells": [
+          {
+            "source": "direct_sql",
+            "classification": "exact"
+          },
+          {
+            "source": "dbt_compiled_sql_catalog",
+            "classification": "exact_for_compiled_equivalent_sql"
+          },
+          {
+            "source": "odcs_equivalent_schema",
+            "classification": "no_literal_source_evidence"
+          }
+        ]
+      }
+    ],
+    "conditional": [
+      {
+        "id": "77-PARENT-LATERAL-R",
+        "classification": "conditional",
+        "sql": "SELECT * FROM UNNEST([1,2]) AS t(v) JOIN LATERAL (SELECT t.v AS w) AS u ON TRUE",
+        "parser_policy": "parser-accepted dialects must remain Residual; parser rejection is an explicit boundary",
+        "owner": "TASK-77",
+        "reason": "LATERAL correlates with an outer row and cannot be normalized as an independent complete source-free array bag",
+        "release_disposition": {
+          "owner": "TASK-77",
+          "status": "reviewed_conditional_residual",
+          "reason": "No certified correlated finite source-row identities or fully evaluated LATERAL execution laws; do not promote to Exact",
+          "native_engine_certification": "not_claimed"
+        },
+        "positive_proof": "Residual",
+        "negative_proof": "Residual",
+        "oracle_test": "tests/task_77_derived_subquery.rs",
+        "parser_cells": [
+          {
+            "dialect": "generic",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mysql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "postgresql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "hive",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "sqlite",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "snowflake",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "redshift",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "mssql",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "clickhouse",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "bigquery",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "ansi",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "duckdb",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          },
+          {
+            "dialect": "databricks",
+            "classification": "residual_when_parser_accepts_correlated_lateral",
+            "boundary": "parser_rejection_if_unavailable"
+          }
+        ],
+        "adapter_cells": [
+          {
+            "source": "direct_sql",
+            "classification": "residual"
+          },
+          {
+            "source": "dbt_compiled_sql_catalog",
+            "classification": "residual_if_compiled_equivalent"
+          },
+          {
+            "source": "odcs_equivalent_schema",
+            "classification": "insufficient_correlation_bag_evidence"
+          }
+        ]
+      }
+    ]
+  },
+  "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41114331483"
+}
