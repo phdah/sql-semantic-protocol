@@ -174,7 +174,7 @@ fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
     for dialect in DIALECTS {
         let engine = dialect_from_name(dialect).unwrap();
         for (index, case) in CASES.iter().enumerate() {
-            let result = analyze_inputs(&[SqlInput::inline(case)], dialect, engine.as_ref());
+            let result = analyze_inputs(&[SqlInput::inline(*case)], dialect, engine.as_ref());
             match result {
                 Err(_) => {}
                 Ok(bundle) => match &bundle.inputs()[0].statements()[0] {
@@ -206,8 +206,8 @@ fn every_supported_parser_preserves_mutations_and_unsupported_boundaries() {
 
 #[test]
 fn ambiguous_or_missing_source_does_not_become_an_empty_source() {
-    let sql = CASES[2];
-    let query = SqlInput::inline(&sql(sql));
+    let case_sql = CASES[2];
+    let query = SqlInput::inline(&sql(case_sql));
     let dialect = dialect_from_name("postgresql").unwrap();
     let configured =
         ConfiguredSqlInput::new("task151-missing", &query, "postgresql", dialect.as_ref());
