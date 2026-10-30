@@ -214,7 +214,7 @@ fn every_mandatory_frozen_cte_case_is_analyzed_across_exposed_dialects() {
                 "{id}/{dialect_name}: lexical physical source"
             );
             assert!(
-                query.output().columns().len() > 0,
+                !query.output().columns().is_empty(),
                 "{id}/{dialect_name}: missing output columns"
             );
             checked += 1;
