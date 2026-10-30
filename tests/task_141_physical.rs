@@ -347,15 +347,17 @@ fn unresolved_cte_order_by_column_cannot_receive_an_exact_proof() {
         "WITH shared AS (SELECT k FROM s) SELECT k FROM shared ORDER BY missing",
         "WITH shared AS (SELECT k FROM s) SELECT k AS output FROM shared ORDER BY missing",
     ] {
-        let (bundle, snapshots) = case_bundle(sql, &input);
-        let layer = bundle.layers().last().unwrap();
-        assert!(
-            matches!(
-                physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
-                PhysicalCteProof::Residual { .. }
-            ),
-            "{sql}: unresolved ORDER BY must not receive a physical proof"
-        );
+        for dialect in DIALECTS {
+            let (bundle, snapshots) = case_bundle_with_dialect(sql, &input, dialect);
+            let layer = bundle.layers().last().unwrap();
+            assert!(
+                matches!(
+                    physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+                    PhysicalCteProof::Residual { .. }
+                ),
+                "{sql}/{dialect}: unresolved ORDER BY must not receive a physical proof"
+            );
+        }
     }
 }
 
