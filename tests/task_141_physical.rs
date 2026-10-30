@@ -1,7 +1,7 @@
 //! Full TASK-141 physical proof, checked against independent frozen bags.
 //! These assertions consume the public canonical API, not SQL AST or DuckDB rows.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 mod common;
 use common::DIALECTS;
@@ -9,7 +9,7 @@ use common::DIALECTS;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow, PhysicalWriteState,
+    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalCteRef, PhysicalWriteRow, PhysicalWriteState,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -103,6 +103,30 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
             snapshots.len(),
             "{id}: one shared source graph"
         );
+        let mut declared = BTreeSet::new();
+        assert_eq!(
+            proof.nodes.len(),
+            proof.sources.len() + proof.stage_bags.len(),
+            "{id}: every physical and lexical producer appears exactly once"
+        );
+        for node in &proof.nodes {
+            assert!(declared.insert(node.id.clone()), "{id}: duplicate canonical producer");
+            for input in &node.inputs {
+                assert!(declared.contains(&input.reference), "{id}: producer DAG must be ordered");
+            }
+        }
+        if id.ends_with("REUSE") || id.ends_with("NULL-DUP") {
+            let terminal = proof.nodes.last().unwrap();
+            assert_eq!(
+                terminal.inputs.iter().map(|input| input.alias.as_str()).collect::<Vec<_>>(),
+                ["a", "b"],
+                "{id}: distinct SQL source instances"
+            );
+            assert!(terminal.inputs.iter().all(|input| input.reference ==
+                PhysicalCteRef::Producer("terminal/cte:0:shared".to_string())),
+                "{id}: both aliases reuse the same producer rather than inserting independent CTEs"
+            );
+        }
         for (name, rows) in case["initial_bags"].as_object().unwrap() {
             let observed = &proof.source_bags[name];
             assert_eq!(
