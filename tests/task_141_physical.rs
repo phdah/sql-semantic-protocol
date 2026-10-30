@@ -379,6 +379,21 @@ fn partition_selected_cte_scan_is_not_a_complete_source_proof() {
 }
 
 #[test]
+fn source_column_alias_list_cannot_borrow_original_schema_names() {
+    let sql = "WITH shared AS (SELECT k FROM s AS renamed(x)) SELECT k FROM shared";
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle(sql, &input);
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "table alias column names must not be ignored by an Exact CTE proof"
+    );
+}
+
+#[test]
 fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
