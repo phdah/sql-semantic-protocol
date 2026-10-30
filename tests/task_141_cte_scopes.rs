@@ -131,3 +131,28 @@ fn shared_ordinary_cte_resolves_to_one_physical_relation_across_all_dialects() {
         assert_eq!(query.sources()[1].alias(), Some("b"), "{name}");
     }
 }
+
+#[test]
+fn recursive_local_name_does_not_borrow_inherited_producer_semantics() {
+    // Recursive execution and termination belong to TASK-142. This assertion
+    // only protects the binding: the inner recursive CTE must not silently
+    // borrow the complete physical bag of the same-named outer CTE.
+    let sql = "WITH shared AS (SELECT k FROM outer_src), \
+               chosen AS (WITH RECURSIVE shared(k) AS ( \
+                   SELECT 1 UNION ALL \
+                   SELECT k + 1 FROM shared WHERE k < 3 \
+               ) SELECT k FROM shared) \
+               SELECT k FROM chosen";
+    let query = analyzed_query(sql);
+    assert!(
+        !query.dependencies().iter().any(|source| source == "outer_src"),
+        "recursive binding must not borrow an inherited physical source"
+    );
+    assert!(
+        query
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "unresolved_local_relation_analysis"),
+        "unproven recursive source requires an explicit residual diagnostic"
+    );
+}
