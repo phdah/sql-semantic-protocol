@@ -145,7 +145,10 @@ fn recursive_local_name_does_not_borrow_inherited_producer_semantics() {
                SELECT k FROM chosen";
     let query = analyzed_query(sql);
     assert!(
-        !query.dependencies().iter().any(|source| source == "outer_src"),
+        !query
+            .dependencies()
+            .iter()
+            .any(|source| source == "outer_src"),
         "recursive binding must not borrow an inherited physical source"
     );
     assert!(
