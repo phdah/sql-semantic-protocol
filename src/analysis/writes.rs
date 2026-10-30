@@ -922,11 +922,19 @@ pub(super) fn merge_target_relation(table: &TableFactor) -> Option<SourceRelatio
             alias,
             args: None,
             partitions,
+            with_hints,
+            index_hints,
+            sample: None,
+            version: None,
+            json_path: None,
+            with_ordinality: false,
             ..
-        } if partitions.is_empty() => Some(SourceRelation::new(
+        } if partitions.is_empty() && with_hints.is_empty() && index_hints.is_empty() => {
+            Some(SourceRelation::new(
             name.to_string(),
             alias.as_ref().map(|alias| alias.name.to_string()),
-        )),
+            ))
+        }
         _ => None,
     }
 }
