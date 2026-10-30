@@ -277,12 +277,24 @@ fn every_frozen_variant_has_source_independent_adapter_disposition() {
 }
 
 fn raw_state(relation: &str, rows: &[(Option<i64>, i64)]) -> PhysicalWriteState {
-    PhysicalWriteState::new(relation, rows.iter().map(|(id, score)| {
-        PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), id.map_or(LiteralValue::Null, |id| LiteralValue::Number(id.to_string()))),
-            ("score".to_string(), LiteralValue::Number(score.to_string())),
-        ])).unwrap()
-    }).collect()).unwrap()
+    PhysicalWriteState::new(
+        relation,
+        rows.iter()
+            .map(|(id, score)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "id".to_string(),
+                        id.map_or(LiteralValue::Null, |id| {
+                            LiteralValue::Number(id.to_string())
+                        }),
+                    ),
+                    ("score".to_string(), LiteralValue::Number(score.to_string())),
+                ]))
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap()
 }
 
 fn raw_catalog() -> RelationCatalog {
