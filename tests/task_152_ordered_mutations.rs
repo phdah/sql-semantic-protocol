@@ -9,8 +9,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     CheckCompareOperator, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
     ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn freeze() -> Value {
