@@ -281,3 +281,28 @@ fn every_exposed_parser_dialect_builds_identical_frozen_physical_cte_bags() {
     }
     assert_eq!(cells, 4 * DIALECTS.len());
 }
+
+#[test]
+fn conditional_cte_materialization_recursion_and_forward_binding_fail_closed() {
+    use sql_semantic_protocol::{analyze_inputs, dialect_from_name};
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-141-acceptance-freeze.json")).unwrap();
+    let mut classified = Vec::new();
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "conditional" { continue; }
+        let sql = case["sql"].as_str().unwrap();
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
+        let layer = bundle.layers().last().unwrap();
+        let proof = physical_finite_cte_bag_plan(&bundle, layer.id(), &[], None);
+        assert!(matches!(proof, PhysicalCteProof::Residual { .. }),
+            "{}: conditional source law must never become Exact", case["id"]);
+        classified.push(case["id"].as_str().unwrap());
+    }
+    classified.sort();
+    assert_eq!(classified, [
+        "78-C141-N-FORWARD",
+        "78-C141-N-MATERIALIZATION",
+        "78-C141-N-RECURSIVE-SHADOW",
+    ]);
+}
