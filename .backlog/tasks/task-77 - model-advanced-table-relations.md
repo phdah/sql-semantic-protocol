@@ -1,10 +1,10 @@
 ---
 id: TASK-77
 title: Cover nonstandard relational table transformations
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-30'
 labels: []
 milestone: m-3
 dependencies: 
@@ -69,3 +69,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-137, TASK-138, TASK-139, TASK-140; #2 -> TASK-137, TASK-138, TASK-139, TASK-140; #3 -> TASK-137, TASK-138, TASK-139, TASK-140; #4 -> TASK-140; #5 -> TASK-137, TASK-138, TASK-139, TASK-140; #6 -> TASK-137, TASK-138, TASK-139, TASK-140.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent closure review (2026-10-30)
+
+TASK-137..140 are Done and merged on main. The [parent acceptance freeze](../../docs/task-77-acceptance-freeze.json) reconciles 24 mandatory and 10 conditional cases, while the [audit](../../docs/task-77-acceptance-audit.md) independently maps original AC #1..#6. [Public/native regression](../../tests/task_77_parent_closure.rs) and final PR-head CI are required for closure. TASK-91 release authorization remains separate.
