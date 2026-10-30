@@ -201,17 +201,28 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
                     let target_id = freeze["domain_cross_references"][id]
                         .as_str()
                         .expect("only reviewed TASK-140 source/terminal references");
-                    assert_eq!(name, "TASK-140", "{id}: only canonical peer bags may be reused");
+                    assert_eq!(
+                        name, "TASK-140",
+                        "{id}: only canonical peer bags may be reused"
+                    );
                     assert_eq!(case["source"].as_str(), Some(target_id));
                     assert_eq!(case["terminal"].as_str(), Some(target_id));
                     let target = case_list(&child, name)
                         .iter()
                         .find(|peer| peer["id"] == target_id)
                         .expect("referenced peer must remain in frozen child inventory");
-                    assert!(target["source"].is_array(), "{id}: referenced source not complete");
-                    assert!(target["terminal"].is_array(), "{id}: referenced terminal not complete");
-                    assert!(domain(target).is_some_and(Value::is_object),
-                        "{id}: referenced source has no typed domain");
+                    assert!(
+                        target["source"].is_array(),
+                        "{id}: referenced source not complete"
+                    );
+                    assert!(
+                        target["terminal"].is_array(),
+                        "{id}: referenced terminal not complete"
+                    );
+                    assert!(
+                        domain(target).is_some_and(Value::is_object),
+                        "{id}: referenced source has no typed domain"
+                    );
                 }
                 if !domain(case).is_some_and(Value::is_object) {
                     assert!(
@@ -240,10 +251,24 @@ fn all_four_merged_child_inventories_preserve_every_exact_and_conditional_obliga
                     residual.contains(id),
                     "{id}: undeclared conditional boundary"
                 );
-                assert!(
-                    case.get("reason").is_some() || case.get("release_disposition").is_some(),
-                    "{id}: conditional boundary not reviewed"
+                let owner = case
+                    .get("owner")
+                    .or_else(|| case.get("reviewed_conditional_owner"))
+                    .or_else(|| case.get("parser_review").and_then(|v| v.get("owner")))
+                    .or_else(|| case.get("release_disposition").and_then(|v| v.get("owner")));
+                assert_eq!(
+                    owner.and_then(Value::as_str),
+                    Some(name),
+                    "{id}: conditional boundary owner mismatch"
                 );
+                if name == "TASK-137" {
+                    assert!(case["reason"].as_str().is_some_and(|v| !v.is_empty()));
+                } else {
+                    let disposition = &case["release_disposition"];
+                    assert_eq!(disposition["owner"], name);
+                    assert!(disposition["reason"].as_str().is_some_and(|v| !v.is_empty()));
+                    assert!(disposition["status"].as_str().is_some_and(|v| !v.is_empty()));
+                }
                 assert!(
                     conditional.insert(id.to_owned()),
                     "duplicate conditional {id}"
