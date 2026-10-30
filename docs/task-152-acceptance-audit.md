@@ -88,11 +88,11 @@ unmaterializable missing-reference case; #4 requires 39 common syntax and
 #5 requires the reviewed audit, task status and nine-job implementation CI.
 
 All nine jobs in [implementation CI run 41051488486](https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486)
-passed on `554e860e7a4139ddb4949fdb75204a66b96ca5a6`. The last
-source-code patch was complete at that SHA, and subsequent modifications
-only update acceptance evidence and task status. No release approval or
-native multi-engine runtime certification follows from this child signoff.
-The metadata-head CI is independently required before PR merge.
+passed on `554e860e7a4139ddb4949fdb75204a66b96ca5a6`. The original
+signoff head also passed nine CI jobs. The follow-up review strengthened
+test evidence, so CI on the updated PR head is independently required
+before merge. No release approval or native multi-engine runtime
+certification follows from this child signoff.
 
 **Standards finding:** no outstanding hard violation under AGENTS.md or
 CONTRIBUTING.md. The test-only implementation uses public Rust APIs and
@@ -100,3 +100,18 @@ separates parser classifications from native DuckDB materialization.
 **Spec finding:** no outstanding mandatory fixture after the v4 mapping
 correction; the foreign-key deferral and vendor/runtime laws remain explicit
 reviewed conditional Residual boundaries, not deferred mandatory Exact cases.
+
+## Final review remediation (2026-10-30)
+
+An additional Standards/Spec review found that the native target-bag
+oracle checked referenced parent rows only before the sequence, and
+validated typed domains on canonical transitions but not independently
+on the native materializations. The DuckDB test now initializes parent
+rows from each frozen case and checks the complete unchanged parent bag,
+native before/after typed domains and failed-write atomicity after every
+step. The dialect test also compares the actual 13 dialect spellings and
+three SQL statements to the exact frozen inventory, not only its lengths.
+These are test-only changes; runtime semantics and protocol schema remain
+untouched. The review's remaining explicit Residual boundaries and
+separate TASK-81/TASK-91 gates are unchanged. Final merge requires all
+nine CI jobs on the latest PR head to succeed.
