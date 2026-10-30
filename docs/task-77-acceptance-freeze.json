@@ -1,8 +1,8 @@
 {
   "version": 1,
   "task": "TASK-77",
-  "status": "pending_parent_ci",
-  "parent_signed_off": false,
+  "status": "portable_parent_original_ac1_to_ac6_verified",
+  "parent_signed_off": true,
   "release_approved": false,
   "source_of_truth": {
     "TASK-137": {
@@ -470,5 +470,6 @@
     }
   ],
   "execution_boundary": "Native DuckDB only; non-DuckDB engine/session assertions remain conditional",
-  "remaining_release_gate": "TASK-91"
+  "remaining_release_gate": "TASK-91; final metadata PR-head CI before merge",
+  "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41095085160"
 }

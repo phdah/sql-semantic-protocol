@@ -1,7 +1,7 @@
 ---
 id: TASK-77
 title: Cover nonstandard relational table transformations
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-30'
@@ -34,12 +34,12 @@ UNNEST, EXPLODE, VALUES, table functions and PIVOT are realistic source-to-outpu
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Inventory and normalize VALUES, LATERAL/UNNEST/EXPLODE, array and JSON table expansion, PIVOT/UNPIVOT, generator/table functions and dialect-supported SELECT star variants (EXCEPT/REPLACE/RENAME).
-- [ ] #2 Model row fanout, flattening, positional ordinality, shape-dependent output types, NULL/empty arrays and pivot-generated columns with typed witness obligations.
-- [ ] #3 Support safe deterministic built-in shapes while marking opaque table functions, dynamic-schema sources or nondeterministic operators residual with stable reasons.
-- [ ] #4 Compose witnesses through joins, aggregates, subqueries and dbt models; never infer nested data types or fabricated columns.
-- [ ] #5 Add per-dialect parser fixture and executable oracle coverage for deterministic supported variants.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Inventory and normalize VALUES, LATERAL/UNNEST/EXPLODE, array and JSON table expansion, PIVOT/UNPIVOT, generator/table functions and dialect-supported SELECT star variants (EXCEPT/REPLACE/RENAME).
+- [x] #2 Model row fanout, flattening, positional ordinality, shape-dependent output types, NULL/empty arrays and pivot-generated columns with typed witness obligations.
+- [x] #3 Support safe deterministic built-in shapes while marking opaque table functions, dynamic-schema sources or nondeterministic operators residual with stable reasons.
+- [x] #4 Compose witnesses through joins, aggregates, subqueries and dbt models; never infer nested data types or fabricated columns.
+- [x] #5 Add per-dialect parser fixture and executable oracle coverage for deterministic supported variants.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -73,3 +73,9 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Independent parent closure review (2026-10-30)
 
 TASK-137..140 are Done and merged on main. The [parent acceptance freeze](../../docs/task-77-acceptance-freeze.json) reconciles 24 mandatory and 10 conditional cases, while the [audit](../../docs/task-77-acceptance-audit.md) independently maps original AC #1..#6. [Public/native regression](../../tests/task_77_parent_closure.rs) and final PR-head CI are required for closure. TASK-91 release authorization remains separate.
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-77 original AC #1..#6: Done for the independently certified portable scope. TASK-137..140 are Done and merged into main; the parent freeze reconciles 24 mandatory Exact/Impossible and 10 reviewed conditional cases, preserving original SQL, full physical source/terminal bags, typed domains, dialect/adapter matrices and independent DuckDB oracles. CI 41095085160 passed 9/9 checks on the full implementation head. Native vendor/session laws remain conditional; metadata PR-head CI is a merge gate and TASK-91 remains a separate release authorization.
+<!-- SECTION:FINAL_SUMMARY:END -->

@@ -1,6 +1,6 @@
 # TASK-77 independent parent acceptance audit
 
-**Decision pending final PR-head CI.** TASK-137..140 are Done and PRs #144, #145, #146 and #149 are merged on main. This independently reviews the original parent acceptance criteria, not the separate TASK-91 release gate.
+**Decision: independently signed off TASK-77 original AC #1..#6 for the frozen portable scope.** TASK-137..140 are Done and PRs #144, #145, #146 and #149 are merged on main. This independently reviews the original parent acceptance criteria, not the separate TASK-91 release gate.
 
 ## Finite authoritative evidence
 
@@ -32,4 +32,4 @@ The [parent public regression](../tests/task_77_parent_closure.rs) checks every 
 
 **Spec:** Original AC #1..#6 map explicitly to required frozen case IDs and test owners, and all conditional runtime boundaries retain owners and reviewed dispositions. The parent regression fails on classification drift, missing cases or omitted parser/adapter cells, and independently executes native DuckDB source/terminal examples.
 
-**Verification:** Final PR-head CI must pass formatting, strict Clippy, full tests, documentation, no-default-features, dbt E2E and JSON schema/golden checks before parent signoff. TASK-91 remains an independent release gate.
+**Verification:** [Implementation CI 41095085160](https://github.com/phdah/sql-semantic-protocol/actions/runs/41095085160) passed all 9 required jobs (formatting, strict Clippy, both feature configurations, documentation, schema/golden and actual dbt Core E2E) on the final implementation head. The metadata signoff commit must also pass PR-head CI before merge. TASK-91 remains an independent release gate.
