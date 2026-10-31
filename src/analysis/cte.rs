@@ -394,6 +394,62 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
     ))
 }
 
+/// Do not reuse source-derived bounds for an outer recursive projection
+/// whose explicit SQL qualifier is not bound to the actual FROM instance.
+/// This guard also applies when the bounded physical program is rejected:
+/// ordinary output analysis may still have seen the recursive seed domain.
+pub(super) fn guard_recursive_projection_qualifiers(
+    query: &SqlQuery,
+    output: Output,
+) -> Output {
+    if !query.with.as_ref().is_some_and(|with| with.recursive) {
+        return output;
+    }
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return output;
+    };
+    let [from] = select.from.as_slice() else {
+        return output;
+    };
+    let TableFactor::Table { name, alias, .. } = &from.relation else {
+        return output;
+    };
+    if select.projection.len() != output.columns().len() {
+        return output;
+    }
+    let bound_name = alias.as_ref().map_or_else(
+        || name.to_string(),
+        |alias| alias.name.value.clone(),
+    );
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .zip(&select.projection)
+            .map(|(column, projection)| {
+                let expression = match projection {
+                    SelectItem::UnnamedExpr(expr) | SelectItem::ExprWithAlias { expr, .. } => expr,
+                    _ => return column.clone(),
+                };
+                let Expr::CompoundIdentifier(parts) = expression else {
+                    return column.clone();
+                };
+                let [qualifier, _] = parts.as_slice() else {
+                    return column.clone();
+                };
+                if qualifier.quote_style.is_none()
+                    && qualifier.value.eq_ignore_ascii_case(&bound_name)
+                {
+                    return column.clone();
+                }
+                column.clone().with_domain(ValueDomain::unknown(
+                    "recursive output qualifier does not match the source instance",
+                ))
+            })
+            .collect(),
+    )
+}
+
 pub(super) fn refine_bounded_recursive_output(
     output: Output,
     program: Option<&CteProgram>,
