@@ -223,101 +223,115 @@
   "dialects": [
     {
       "name": "generic",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "mysql",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "postgresql",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "postgres",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "hive",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "sqlite",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "snowflake",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "redshift",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "mssql",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "clickhouse",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "bigquery",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "ansi",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "duckdb",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "duckdb_exact_oracle",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     },
     {
       "name": "databricks",
-      "parser_status": "executable_parser_boundary_or_canonical",
+      "parser_status": "parser_equivalent",
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
-      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
+      "proof_status": "candidate_require_ci_verification"
     }
   ],
   "adapters": [
@@ -367,6 +381,8 @@
     "native_engine_claims": [
       "DuckDB"
     ],
-    "other_engine_claims": "none"
+    "other_engine_claims": "none",
+    "parser_equivalent_expected": 28,
+    "parser_boundary_expected": 0
   }
 }
