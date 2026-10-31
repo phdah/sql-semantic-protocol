@@ -10,6 +10,7 @@ use sql_semantic_protocol::{
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::parser::Parser;
+use serde_json::Value;
 
 const SQL: [&str; 2] = [
     "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) \
@@ -80,4 +81,40 @@ fn accepted_dialect_syntax_preserves_exact_physical_source_bags() {
         accepted > 0,
         "no parser supports the shared portable CTE syntax"
     );
+}
+
+#[test]
+fn every_frozen_parser_family_matches_its_exact_dialect_boundary() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
+    let families = freeze["parser_families"].as_array().unwrap();
+    assert_eq!(families.len(), 5, "every named SQL shape must be frozen");
+    let mut observed = Vec::new();
+    let mut mismatches = Vec::new();
+    for family in families {
+        let id=family["id"].as_str().unwrap();
+        let sql=family["sql"].as_str().unwrap();
+        let cells=family["cells"].as_array().unwrap();
+        assert_eq!(cells.len(),DIALECTS.len(),"{id}: parser cell coverage");
+        for name in DIALECTS {
+            let matches=cells.iter().filter(|cell|cell["dialect"] == *name).collect::<Vec<_>>();
+            let [cell]=matches.as_slice() else {
+                panic!("{id}/{name}: missing or duplicate exact dialect cell");
+            };
+            let dialect=dialect_from_name(name).unwrap();
+            let parser=if Parser::parse_sql(dialect.as_ref(),sql).is_ok(){
+                "parsed"
+            } else {
+                "parser_rejected"
+            };
+            if cell["parser"] != parser {
+                mismatches.push(format!("{id}/{name}={parser}"));
+            }
+            observed.push((id.to_string(),name.to_string()));
+        }
+    }
+    assert_eq!(observed.len(),families.len()*DIALECTS.len());
+    assert!(mismatches.is_empty(),
+        "TASK-143 frozen parser matrix mismatches (actual statuses): {}",
+        mismatches.join(","));
 }
