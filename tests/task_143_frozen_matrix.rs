@@ -4,7 +4,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 mod common;
-use common::DIALECTS;
 
 use serde_json::Value;
 use sql_semantic_protocol::{
