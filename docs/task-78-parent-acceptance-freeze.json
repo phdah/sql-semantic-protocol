@@ -395,10 +395,10 @@
         "78-C144-P-MULTISTEP",
         "78-C144-N-MULTISTEP-NULL",
         "78-C144-N-NULL-DUP",
-        "78-C143-P-WRITE"
+        "78-C143-P-WRITE",
+        "78-C143-N-CHECK"
       ],
       "conditional_case_ids": [
-        "78-C143-N-CHECK",
         "78-C143-N-WIDTH"
       ]
     },
