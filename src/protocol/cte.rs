@@ -123,6 +123,54 @@ impl CteProgram {
     }
 }
 
+/// Parser-independent comparison for a single integer CTE filter.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CteComparisonOperator {
+    /// SQL equality, with NULL yielding UNKNOWN.
+    Equal,
+    /// Strict greater-than.
+    GreaterThan,
+    /// Inclusive greater-than.
+    GreaterOrEqual,
+    /// Strict less-than.
+    LessThan,
+    /// Inclusive less-than.
+    LessOrEqual,
+}
+
+/// One typed predicate over a source/producer column and signed integer bound.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CteFilter {
+    column: CteColumnRef,
+    operator: CteComparisonOperator,
+    bound: i128,
+}
+
+impl CteFilter {
+    pub(crate) fn new(column: CteColumnRef, operator: CteComparisonOperator, bound: i128) -> Self {
+        Self {
+            column,
+            operator,
+            bound,
+        }
+    }
+
+    /// Column identity within the SELECT's source scope.
+    pub fn column(&self) -> &CteColumnRef {
+        &self.column
+    }
+
+    /// Typed comparison used to partition TRUE from FALSE and UNKNOWN.
+    pub fn operator(&self) -> CteComparisonOperator {
+        self.operator
+    }
+
+    /// Literal integer comparison bound.
+    pub fn bound(&self) -> i128 {
+        self.bound
+    }
+}
+
 /// One normalized row-preserving projection or integer equality join.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CteStage {
@@ -130,6 +178,8 @@ pub struct CteStage {
     inputs: Vec<CteInput>,
     projections: Vec<CteProjection>,
     equality: Option<(CteColumnRef, CteColumnRef)>,
+    filter: Option<CteFilter>,
+    count_output: Option<String>,
     recursion: Option<CteRecursion>,
 }
 
@@ -139,12 +189,33 @@ impl CteStage {
         inputs: Vec<CteInput>,
         projections: Vec<CteProjection>,
         equality: Option<(CteColumnRef, CteColumnRef)>,
+        filter: Option<CteFilter>,
     ) -> Self {
         Self {
             id,
             inputs,
             projections,
             equality,
+            filter,
+            count_output: None,
+            recursion: None,
+        }
+    }
+
+    pub(crate) fn count(
+        id: String,
+        inputs: Vec<CteInput>,
+        equality: Option<(CteColumnRef, CteColumnRef)>,
+        filter: Option<CteFilter>,
+        name: String,
+    ) -> Self {
+        Self {
+            id,
+            inputs,
+            projections: Vec::new(),
+            equality,
+            filter,
+            count_output: Some(name),
             recursion: None,
         }
     }
@@ -155,6 +226,8 @@ impl CteStage {
             id,
             projections: Vec::new(),
             equality: None,
+            filter: None,
+            count_output: None,
             recursion: Some(recursion),
         }
     }
@@ -182,6 +255,16 @@ impl CteStage {
     /// Optional typed input-column equality, evaluated with SQL three-valued truth.
     pub fn equality(&self) -> Option<(&CteColumnRef, &CteColumnRef)> {
         self.equality.as_ref().map(|(a, b)| (a, b))
+    }
+
+    /// Optional row filter, applied after JOIN and before projection.
+    pub fn filter(&self) -> Option<&CteFilter> {
+        self.filter.as_ref()
+    }
+
+    /// Exact ungrouped COUNT(*) result label, if this is a count stage.
+    pub fn count_output(&self) -> Option<&str> {
+        self.count_output.as_deref()
     }
 }
 
@@ -236,11 +319,24 @@ impl CteColumnRef {
 pub struct CteProjection {
     name: String,
     source: CteColumnRef,
+    offset: i128,
 }
 
 impl CteProjection {
     pub(crate) fn new(name: String, source: CteColumnRef) -> Self {
-        Self { name, source }
+        Self {
+            name,
+            source,
+            offset: 0,
+        }
+    }
+
+    pub(crate) fn with_offset(name: String, source: CteColumnRef, offset: i128) -> Self {
+        Self {
+            name,
+            source,
+            offset,
+        }
     }
 
     /// Output column label.
@@ -251,5 +347,10 @@ impl CteProjection {
     /// Exact originating input-column expression.
     pub fn source(&self) -> &CteColumnRef {
         &self.source
+    }
+
+    /// Checked signed integer offset; zero denotes direct column projection.
+    pub fn offset(&self) -> i128 {
+        self.offset
     }
 }

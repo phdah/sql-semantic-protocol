@@ -323,7 +323,7 @@ fn all_frozen_cte_bags_are_constructed_from_one_complete_source_population() {
 
 #[test]
 fn unsupported_cte_projection_and_incomplete_source_evidence_are_residual() {
-    let sql = "WITH shared AS (SELECT k + 1 AS k FROM s) SELECT k FROM shared";
+    let sql = "WITH shared AS (SELECT k * 2 AS k FROM s) SELECT k FROM shared";
     let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
     let (bundle, snapshots) = case_bundle(sql, &input);
     let layer = bundle.layers().last().unwrap();

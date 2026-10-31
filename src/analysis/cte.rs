@@ -1,8 +1,10 @@
 //! Bounded ordinary CTE analysis: SQL AST enters here, never the physical evaluator.
-//! Unsupported row shaping, recursion or computed expressions never produce a program.
+//! Unsupported row shaping, recursion or unbounded expressions never produce a program.
 
 use super::*;
-use crate::protocol::{CteColumnRef, CteInput, CteProgram, CteProjection, CteStage};
+use crate::protocol::{
+    CteColumnRef, CteComparisonOperator, CteFilter, CteInput, CteProgram, CteProjection, CteStage,
+};
 
 fn column(expression: &Expr) -> Option<CteColumnRef> {
     match expression {
@@ -19,6 +21,84 @@ fn column(expression: &Expr) -> Option<CteColumnRef> {
         }
         _ => None,
     }
+}
+
+fn bounded_integer(expression: &Expr) -> Option<i128> {
+    let Expr::Value(value) = expression else {
+        return None;
+    };
+    let Value::Number(raw, _) = &value.value else {
+        return None;
+    };
+    let number = raw.parse::<i128>().ok()?;
+    i32::try_from(number).ok().map(i128::from)
+}
+
+fn computed_projection(expression: &Expr, name: String) -> Option<CteProjection> {
+    if let Some(source) = column(expression) {
+        return Some(CteProjection::new(name, source));
+    }
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return None;
+    };
+    let offset = bounded_integer(right)?;
+    let offset = match op {
+        SqlBinaryOperator::Plus => offset,
+        SqlBinaryOperator::Minus => -offset,
+        _ => return None,
+    };
+    Some(CteProjection::with_offset(name, column(left)?, offset))
+}
+
+fn count_star_output(item: &SelectItem) -> Option<String> {
+    let SelectItem::ExprWithAlias {
+        expr: Expr::Function(function),
+        alias,
+    } = item
+    else {
+        return None;
+    };
+    if alias.quote_style.is_some()
+        || !function.name.to_string().eq_ignore_ascii_case("count")
+        || function.over.is_some()
+        || function.filter.is_some()
+        || function.null_treatment.is_some()
+        || !function.within_group.is_empty()
+    {
+        return None;
+    }
+    let FunctionArguments::List(arguments) = &function.args else {
+        return None;
+    };
+    if !arguments.clauses.is_empty()
+        || arguments.duplicate_treatment.is_some()
+        || !matches!(
+            arguments.args.as_slice(),
+            [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)]
+        )
+    {
+        return None;
+    }
+    Some(alias.value.clone())
+}
+
+fn integer_filter(expression: &Expr) -> Option<CteFilter> {
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return None;
+    };
+    let operator = match op {
+        SqlBinaryOperator::Eq => CteComparisonOperator::Equal,
+        SqlBinaryOperator::Gt => CteComparisonOperator::GreaterThan,
+        SqlBinaryOperator::GtEq => CteComparisonOperator::GreaterOrEqual,
+        SqlBinaryOperator::Lt => CteComparisonOperator::LessThan,
+        SqlBinaryOperator::LtEq => CteComparisonOperator::LessOrEqual,
+        _ => return None,
+    };
+    Some(CteFilter::new(
+        column(left)?,
+        operator,
+        bounded_integer(right)?,
+    ))
 }
 
 fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<CteInput> {
@@ -91,7 +171,6 @@ fn select_stage(
     };
     if select.distinct.is_some()
         || select.top.is_some()
-        || select.selection.is_some()
         || select.having.is_some()
         || select.qualify.is_some()
         || select.prewhere.is_some()
@@ -142,24 +221,33 @@ fn select_stage(
     if inputs.len() == 2 && inputs[0].alias() == inputs[1].alias() {
         return None;
     }
-    let projections = select
-        .projection
-        .iter()
-        .map(|projection| match projection {
-            SelectItem::UnnamedExpr(expression) => {
-                let ref_column = column(expression)?;
-                Some(CteProjection::new(
-                    ref_column.column().to_string(),
-                    ref_column,
-                ))
-            }
-            SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
-                Some(CteProjection::new(alias.value.clone(), column(expr)?))
-            }
-            _ => None,
-        })
-        .collect::<Option<Vec<_>>>()?;
-    if projections.is_empty()
+    let filter = match &select.selection {
+        Some(expression) => Some(integer_filter(expression)?),
+        None => None,
+    };
+    let count_output = match select.projection.as_slice() {
+        [item] => count_star_output(item),
+        _ => None,
+    };
+    let projections = if count_output.is_some() {
+        Vec::new()
+    } else {
+        select
+            .projection
+            .iter()
+            .map(|item| match item {
+                SelectItem::UnnamedExpr(expression) => {
+                    let ref_column = column(expression)?;
+                    computed_projection(expression, ref_column.column().to_string())
+                }
+                SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
+                    computed_projection(expr, alias.value.clone())
+                }
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>()?
+    };
+    if (projections.is_empty() && count_output.is_none())
         || projections
             .iter()
             .map(CteProjection::name)
@@ -184,14 +272,17 @@ fn select_stage(
                             && matches!(
                                 &key.expr,
                                 Expr::Identifier(name)
-                                    if projections.iter().any(|projection| projection.name() == name.value)
+                                    if count_output.as_deref() == Some(name.value.as_str()) || projections.iter().any(|projection| projection.name() == name.value)
                             )
                     })
             )
     }) {
         return None;
     }
-    Some(CteStage::new(id, inputs, projections, equality))
+    match count_output {
+        Some(name) => Some(CteStage::count(id, inputs, equality, filter, name)),
+        None => Some(CteStage::new(id, inputs, projections, equality, filter)),
+    }
 }
 
 fn lower(

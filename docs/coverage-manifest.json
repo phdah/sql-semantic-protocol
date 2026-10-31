@@ -1,4 +1,49 @@
 {
+  "task_143_cte_producer_acceptance": {
+    "owner": "TASK-143",
+    "parent": "TASK-78",
+    "status": "child_done_with_approved_freeze_timing_exception",
+    "freeze": "docs/task-143-acceptance-freeze.json",
+    "freeze_version": 4,
+    "fixture_ids": [
+      "78-C143-P",
+      "78-C143-N"
+    ],
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "pending": [],
+    "freeze_history": [
+      "docs/task-143-acceptance-freeze-v1.json",
+      "docs/task-143-acceptance-freeze-v2.json",
+      "docs/task-143-acceptance-freeze-v3.json"
+    ],
+    "mandatory_read_cases": 3,
+    "mandatory_write_exact_cases": 2,
+    "mandatory_write_impossible_cases": 1,
+    "conditional_residual_cases": 2,
+    "read_matrix": "tests/task_143_frozen_matrix.rs",
+    "write_matrix": "tests/task_143_write.rs",
+    "dialect_matrix": "tests/task_143_dialects.rs",
+    "adapter_matrix": "tests/task_143_adapters.rs",
+    "residual_matrix": "tests/task_143_residual.rs",
+    "parser_cells": 70,
+    "parser_cells_verified": true,
+    "adapter_cells": 27,
+    "conditional_write_residual_cases": 1,
+    "acceptance_matrix": "tests/task_143_acceptance_inventory.rs",
+    "width_counterexample": "tests/task_143_write.rs",
+    "signoff": {
+      "date": "2026-10-31",
+      "decision": "maintainer_approved_one_time_preimplementation_freeze_order_exception",
+      "historical_freeze_timing_met": false,
+      "mandatory_case_requirements_waived": false,
+      "separate_standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/169#pullrequestreview-5723429198",
+      "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41205685783",
+      "final_head_ci_merge_gate": "must pass latest PR head before merge",
+      "github_review_state": "COMMENTED, not a distinct-account GitHub approval"
+    }
+  },
   "task_142_recursive_cte_acceptance": {
     "owner": "TASK-142",
     "parent": "TASK-78",

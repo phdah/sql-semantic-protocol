@@ -1,0 +1,1278 @@
+{
+  "version": 2,
+  "owner": "TASK-143",
+  "parent": "TASK-78",
+  "status": "reviewable_bounded_inventory_pending_final_evidence",
+  "fixture_ids": [
+    "78-C143-P",
+    "78-C143-N"
+  ],
+  "original_parent_ac_coverage": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "acceptance_criteria_map": {
+    "1": "v2 frozen JOIN/COUNT/WRITE cases, complete source, intermediate, terminal and typed outcome domains; conditional dialect boundaries",
+    "2": "canonical CTE filter/computed/JOIN/COUNT physical source graph; source-derived INSERT complete target states",
+    "3": "tests/task_143_frozen_matrix.rs, task_143_duckdb_oracles.rs, task_143_count.rs, task_143_write.rs",
+    "4": "tests/task_143_dialects.rs and task_143_adapters.rs; vendor semantics not asserted",
+    "5": "final head CI and independent Standards/Spec review required"
+  },
+  "dialects": [
+    {
+      "name": "generic",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "mysql",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "postgresql",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "postgres",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "hive",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "sqlite",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "snowflake",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "redshift",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "mssql",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "clickhouse",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "bigquery",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "ansi",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "duckdb",
+      "parser_status": "parsed",
+      "native_engine_status": "duckdb_full_bag_oracle",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "databricks",
+      "parser_status": "parsed",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    }
+  ],
+  "adapters": [
+    {
+      "name": "direct SQL",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "compiled dbt",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "ODCS typed metadata",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    }
+  ],
+  "cases": [
+    {
+      "id": "78-C143-P-JOIN",
+      "fixture_family": "78-C143-P",
+      "variant": "filtered computed producer reused by two JOIN consumers",
+      "classification": "mandatory_exact",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#2"
+          ],
+          "l": 13,
+          "r": 13
+        }
+      ],
+      "terminal_domains": {
+        "l": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 13,
+            "inclusive": true
+          }
+        },
+        "r": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 13,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "filtered k>1 then complete same-key join produces exactly two source-derived pairs",
+      "not_true_proof": "raw k=1 is FALSE and cannot be inserted as a producer row",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB physical and complete terminal bag"
+    },
+    {
+      "id": "78-C143-N-NULL-DUP",
+      "fixture_family": "78-C143-N",
+      "variant": "NULL UNKNOWN rejection, duplicate multiplicity and impossible tuple",
+      "classification": "mandatory_exact",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 2
+          },
+          {
+            "id": "raw#3",
+            "k": null
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#2"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#2"
+          ],
+          "l": 12,
+          "r": 12
+        }
+      ],
+      "terminal_domains": {
+        "l": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        },
+        "r": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "each duplicate physical occurrence contributes independently to four self-join results",
+      "not_true_proof": "WHERE NULL>1 is UNKNOWN, k=1 is FALSE; tuple (11,11) is Impossible",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB source and terminal full bag"
+    },
+    {
+      "id": "78-C143-P-COUNT",
+      "fixture_family": "78-C143-P",
+      "variant": "downstream COUNT after filtering",
+      "classification": "mandatory_exact",
+      "owner": "TASK-143",
+      "disposition": "implemented; CI and independent review pending",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT COUNT(*) AS total FROM stage a JOIN stage b ON a.k = b.k",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "total": 2,
+          "source_ids": [
+            "raw#1",
+            "raw#1",
+            "raw#2",
+            "raw#2"
+          ]
+        }
+      ],
+      "terminal_domains": {
+        "total": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "count exactly 2 matched pairs from one closed source bag",
+      "not_true_proof": "filtered-out raw#0 cannot contribute; absent total=3 Impossible",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB full source and COUNT terminal bag"
+    },
+    {
+      "id": "78-C143-P-WRITE",
+      "fixture_family": "78-C143-P",
+      "variant": "ordered INSERT from one filtered, computed materialized CTE",
+      "classification": "mandatory_exact",
+      "owner": "TASK-143",
+      "disposition": "implemented, final CI and review pending",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ],
+        "target": [
+          {
+            "id": "target#0",
+            "k": 99,
+            "shifted": 109
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "target#0"
+          ],
+          "k": 99,
+          "shifted": 109
+        },
+        {
+          "source_ids": [
+            "raw#1"
+          ],
+          "k": 2,
+          "shifted": 12
+        },
+        {
+          "source_ids": [
+            "raw#2"
+          ],
+          "k": 3,
+          "shifted": 13
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 99,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 109,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "only two filtered source occurrences yield new target rows; prior target remains unchanged",
+      "not_true_proof": "raw#0 excluded and no intermediate CTE insertions are permitted",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB full physical raw, stage and target pre/post snapshots"
+    },
+    {
+      "id": "78-C143-N-WRITE",
+      "fixture_family": "78-C143-N",
+      "variant": "duplicate and NULL rejected computed CTE INSERT",
+      "classification": "mandatory_exact",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 2
+          },
+          {
+            "id": "raw#3",
+            "k": null
+          }
+        ],
+        "target": []
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1"
+          ],
+          "k": 2,
+          "shifted": 12
+        },
+        {
+          "source_ids": [
+            "raw#2"
+          ],
+          "k": 2,
+          "shifted": 12
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "both duplicate source occurrences generate separate appended target rows",
+      "not_true_proof": "NULL and k=1 are NOT TRUE; neither can become a target row",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB full source and target bags",
+      "owner": "TASK-143",
+      "disposition": "implemented, CI and review pending"
+    },
+    {
+      "id": "78-C143-N-OVERFLOW",
+      "fixture_family": "78-C143-N",
+      "variant": "computed INTEGER overflow cannot claim exact materialization",
+      "classification": "conditional_residual",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 2147483640
+          }
+        ]
+      },
+      "expected_physical": "Residual",
+      "reason": "checked signed 32-bit computed offset overflows",
+      "owner": "TASK-143",
+      "release_disposition": "explicit residual until native width semantics attested"
+    },
+    {
+      "id": "78-C143-N-OPAQUE",
+      "fixture_family": "78-C143-N",
+      "variant": "opaque function cannot borrow exact source-derived proof",
+      "classification": "conditional_residual",
+      "sql": "WITH stage AS (SELECT ABS(k) AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 2
+          }
+        ]
+      },
+      "expected_physical": "Residual",
+      "reason": "unproved expression evaluation",
+      "owner": "TASK-143",
+      "release_disposition": "explicit residual until function semantics supported"
+    },
+    {
+      "id": "78-C143-N-CHECK",
+      "fixture_family": "78-C143-N",
+      "variant": "downstream INSERT CHECK rejects computed source row atomically",
+      "classification": "mandatory_impossible",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          }
+        ],
+        "target": [
+          {
+            "id": "target#0",
+            "k": 99,
+            "shifted": 109
+          }
+        ]
+      },
+      "constraints": {
+        "target": {
+          "shifted": {
+            "gte": 50,
+            "enforcement": "enforced"
+          }
+        }
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "target#0"
+          ],
+          "k": 99,
+          "shifted": 109
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 99,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 99,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 109,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 109,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "WHERE k>1 admits only raw#1 and its computed shifted 12",
+      "not_true_proof": "enforced CHECK shifted>=50 forbids 12; INSERT has no partial effects",
+      "expected_physical": "Impossible",
+      "native_oracle": "DuckDB CHECK exception and unchanged complete target bag",
+      "owner": "TASK-143",
+      "disposition": "implemented; CI/review pending"
+    }
+  ],
+  "verification": {
+    "source_oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_write.rs",
+    "native_oracle": "tests/task_143_duckdb_oracles.rs, tests/task_143_count.rs and tests/task_143_write.rs",
+    "code_head_ci": "pending",
+    "independent_review": "pending",
+    "child_done": false,
+    "parent_done": false,
+    "release_approved": false,
+    "adapters": "tests/task_143_adapters.rs",
+    "dialects": "tests/task_143_dialects.rs",
+    "parser_status_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41203657046",
+    "parser_cells_verified": 70
+  },
+  "parser_families": [
+    {
+      "id": "filtered_join",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "case_ids": [
+        "78-C143-P-JOIN",
+        "78-C143-N-NULL-DUP"
+      ],
+      "expected": "Exact",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "filtered_count",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT COUNT(*) AS total FROM stage a JOIN stage b ON a.k = b.k",
+      "case_ids": [
+        "78-C143-P-COUNT"
+      ],
+      "expected": "Exact",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "computed_insert",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "case_ids": [
+        "78-C143-P-WRITE",
+        "78-C143-N-WRITE",
+        "78-C143-N-CHECK"
+      ],
+      "expected": "Exact or Impossible under enforced target check",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "checked_overflow",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "case_ids": [
+        "78-C143-N-OVERFLOW"
+      ],
+      "expected": "Residual",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "opaque_expression",
+      "sql": "WITH stage AS (SELECT ABS(k) AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "case_ids": [
+        "78-C143-N-OPAQUE"
+      ],
+      "expected": "Residual",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "parsed",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "parsed",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    }
+  ]
+}

@@ -185,6 +185,32 @@ fn materialize_local_cte(
             if values.len() != columns.len() {
                 return Err(residual("local CTE producer output arity is unproved"));
             }
+            // A local CTE is evaluated before INSERT target coercion. In
+            // particular, INTEGER arithmetic cannot borrow a wider target's
+            // capacity to make an overflowing producer expression exact.
+            // The bounded ordinary-CTE proof permits checked signed i32
+            // arithmetic. Until an expression-width law is represented on
+            // the canonical output, refuse wider computed values here too.
+            for (column, value) in producer.output().columns().iter().zip(&values) {
+                if matches!(
+                    column.expression(),
+                    Expression::Binary(_) | Expression::Unary(_)
+                ) {
+                    match value {
+                        LiteralValue::Null => {}
+                        LiteralValue::Number(number)
+                            if number
+                                .parse::<i128>()
+                                .ok()
+                                .is_some_and(|number| i32::try_from(number).is_ok()) => {}
+                        _ => {
+                            return Err(residual(
+                                "computed local CTE expression needs a portable integer width proof",
+                            ));
+                        }
+                    }
+                }
+            }
             Ok(PhysicalWriteRow {
                 values: columns.iter().cloned().zip(values).collect(),
             })

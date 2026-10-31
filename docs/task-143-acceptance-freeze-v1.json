@@ -1,0 +1,416 @@
+{
+  "version": 1,
+  "owner": "TASK-143",
+  "parent": "TASK-78",
+  "status": "implementation_in_progress_not_signed_off",
+  "fixture_ids": [
+    "78-C143-P",
+    "78-C143-N"
+  ],
+  "original_parent_ac_coverage": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "acceptance_criteria_map": {
+    "1": "fixture variants and dialect/adapters in this inventory; remaining named variants explicitly tracked",
+    "2": "canonical filtered and computed JOIN graph plus physical proof",
+    "3": "tests/task_143_filtered_producers.rs, tests/task_143_count.rs and tests/task_143_duckdb_oracles.rs",
+    "4": "dialect/adapter work pending",
+    "5": "CI and independent review pending"
+  },
+  "dialects": [
+    {
+      "name": "generic",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "mysql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "postgresql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "postgres",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "hive",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "sqlite",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "snowflake",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "redshift",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "mssql",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "clickhouse",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "bigquery",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "ansi",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "duckdb",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "oracle_required",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "databricks",
+      "parser_status": "requires_executable_matrix",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-143"
+    }
+  ],
+  "adapters": [
+    {
+      "name": "direct SQL",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "compiled dbt",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    },
+    {
+      "name": "ODCS typed metadata",
+      "status": "pending_verification",
+      "owner": "TASK-143"
+    }
+  ],
+  "cases": [
+    {
+      "id": "78-C143-P-JOIN",
+      "fixture_family": "78-C143-P",
+      "variant": "filtered computed producer reused by two JOIN consumers",
+      "classification": "mandatory_exact",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#2"
+          ],
+          "l": 13,
+          "r": 13
+        }
+      ],
+      "terminal_domains": {
+        "l": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 13,
+            "inclusive": true
+          }
+        },
+        "r": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 13,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "filtered k>1 then complete same-key join produces exactly two source-derived pairs",
+      "not_true_proof": "raw k=1 is FALSE and cannot be inserted as a producer row",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB physical and complete terminal bag"
+    },
+    {
+      "id": "78-C143-N-NULL-DUP",
+      "fixture_family": "78-C143-N",
+      "variant": "NULL UNKNOWN rejection, duplicate multiplicity and impossible tuple",
+      "classification": "mandatory_exact",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 2
+          },
+          {
+            "id": "raw#3",
+            "k": null
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#1",
+            "raw#2"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#1"
+          ],
+          "l": 12,
+          "r": 12
+        },
+        {
+          "source_ids": [
+            "raw#2",
+            "raw#2"
+          ],
+          "l": 12,
+          "r": 12
+        }
+      ],
+      "terminal_domains": {
+        "l": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        },
+        "r": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "each duplicate physical occurrence contributes independently to four self-join results",
+      "not_true_proof": "WHERE NULL>1 is UNKNOWN, k=1 is FALSE; tuple (11,11) is Impossible",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB source and terminal full bag"
+    },
+    {
+      "id": "78-C143-P-COUNT",
+      "fixture_family": "78-C143-P",
+      "variant": "downstream COUNT after filtering",
+      "classification": "mandatory_exact",
+      "owner": "TASK-143",
+      "disposition": "implemented; CI and independent review pending",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT COUNT(*) AS total FROM stage a JOIN stage b ON a.k = b.k",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "total": 2,
+          "source_ids": [
+            "raw#1",
+            "raw#1",
+            "raw#2",
+            "raw#2"
+          ]
+        }
+      ],
+      "terminal_domains": {
+        "total": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "count exactly 2 matched pairs from one closed source bag",
+      "not_true_proof": "filtered-out raw#0 cannot contribute; absent total=3 Impossible",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB full source and COUNT terminal bag"
+    },
+    {
+      "id": "78-C143-P-WRITE",
+      "fixture_family": "78-C143-P",
+      "variant": "downstream ordered write from materialized producer",
+      "classification": "required_not_yet_implemented",
+      "owner": "TASK-143",
+      "disposition": "blocks child Done until write-source graph and native oracle are certified"
+    }
+  ],
+  "verification": {
+    "source_oracle": "tests/task_143_filtered_producers.rs",
+    "native_oracle": "tests/task_143_duckdb_oracles.rs and tests/task_143_count.rs",
+    "code_head_ci": "pending",
+    "independent_review": "pending",
+    "child_done": false,
+    "parent_done": false,
+    "release_approved": false
+  }
+}
