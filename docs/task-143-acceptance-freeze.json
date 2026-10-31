@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-143",
   "parent": "TASK-78",
-  "status": "reviewable_bounded_inventory_pending_final_evidence",
+  "status": "complete_frozen_matrix_pending_final_ci_and_independent_review",
   "fixture_ids": [
     "78-C143-P",
     "78-C143-N"
@@ -212,7 +212,30 @@
       "true_proof": "filtered k>1 then complete same-key join produces exactly two source-derived pairs",
       "not_true_proof": "raw k=1 is FALSE and cannot be inserted as a producer row",
       "expected_physical": "Exact",
-      "native_oracle": "DuckDB physical and complete terminal bag"
+      "native_oracle": "DuckDB physical and complete terminal bag",
+      "parser_family": "filtered_join",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Exact",
+          "oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_residual.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "read source/canonical parity or typed residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-N-NULL-DUP",
@@ -321,7 +344,30 @@
       "true_proof": "each duplicate physical occurrence contributes independently to four self-join results",
       "not_true_proof": "WHERE NULL>1 is UNKNOWN, k=1 is FALSE; tuple (11,11) is Impossible",
       "expected_physical": "Exact and Impossible",
-      "native_oracle": "DuckDB source and terminal full bag"
+      "native_oracle": "DuckDB source and terminal full bag",
+      "parser_family": "filtered_join",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Exact",
+          "oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_residual.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "read source/canonical parity or typed residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-P-COUNT",
@@ -393,7 +439,30 @@
       "true_proof": "count exactly 2 matched pairs from one closed source bag",
       "not_true_proof": "filtered-out raw#0 cannot contribute; absent total=3 Impossible",
       "expected_physical": "Exact and Impossible",
-      "native_oracle": "DuckDB full source and COUNT terminal bag"
+      "native_oracle": "DuckDB full source and COUNT terminal bag",
+      "parser_family": "filtered_count",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Exact",
+          "oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_residual.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "read source/canonical parity or typed residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Exact",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-P-WRITE",
@@ -496,7 +565,30 @@
       "true_proof": "only two filtered source occurrences yield new target rows; prior target remains unchanged",
       "not_true_proof": "raw#0 excluded and no intermediate CTE insertions are permitted",
       "expected_physical": "Exact",
-      "native_oracle": "DuckDB full physical raw, stage and target pre/post snapshots"
+      "native_oracle": "DuckDB full physical raw, stage and target pre/post snapshots",
+      "parser_family": "computed_insert",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Exact",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "conditional_no_native_dbt_transaction_evidence",
+          "oracle": "not a standalone dbt model write; no native transactional artifact",
+          "owner": "TASK-143",
+          "release_disposition": "dbt manifest owns compiled SELECT SQL, not independent DML transaction execution; portable write proved from SQL"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Exact",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-N-WRITE",
@@ -590,7 +682,30 @@
       "expected_physical": "Exact",
       "native_oracle": "DuckDB full source and target bags",
       "owner": "TASK-143",
-      "disposition": "implemented, CI and review pending"
+      "disposition": "implemented, CI and review pending",
+      "parser_family": "computed_insert",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Exact",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "conditional_no_native_dbt_transaction_evidence",
+          "oracle": "not a standalone dbt model write; no native transactional artifact",
+          "owner": "TASK-143",
+          "release_disposition": "dbt manifest owns compiled SELECT SQL, not independent DML transaction execution; portable write proved from SQL"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Exact",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-N-OVERFLOW",
@@ -609,7 +724,30 @@
       "expected_physical": "Residual",
       "reason": "checked signed 32-bit computed offset overflows",
       "owner": "TASK-143",
-      "release_disposition": "explicit residual until native width semantics attested"
+      "release_disposition": "explicit residual until native width semantics attested",
+      "parser_family": "checked_overflow",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Residual",
+          "oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_residual.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "Residual",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "read source/canonical parity or typed residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Residual",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-N-OPAQUE",
@@ -628,7 +766,30 @@
       "expected_physical": "Residual",
       "reason": "unproved expression evaluation",
       "owner": "TASK-143",
-      "release_disposition": "explicit residual until function semantics supported"
+      "release_disposition": "explicit residual until function semantics supported",
+      "parser_family": "opaque_expression",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Residual",
+          "oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_residual.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "Residual",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "read source/canonical parity or typed residual"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Residual",
+          "oracle": "tests/task_143_adapters.rs",
+          "owner": "TASK-143",
+          "release_disposition": "same typed canonical source semantics"
+        }
+      ]
     },
     {
       "id": "78-C143-N-CHECK",
@@ -714,7 +875,30 @@
       "expected_physical": "Impossible",
       "native_oracle": "DuckDB CHECK exception and unchanged complete target bag",
       "owner": "TASK-143",
-      "disposition": "implemented; CI/review pending"
+      "disposition": "implemented; CI/review pending",
+      "parser_family": "computed_insert",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Impossible",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "conditional_no_native_dbt_transaction_evidence",
+          "oracle": "not a standalone dbt model write; no native transactional artifact",
+          "owner": "TASK-143",
+          "release_disposition": "dbt manifest owns compiled SELECT SQL, not independent DML transaction execution; portable write proved from SQL"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "conditional_enforced_CHECK_attestation",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143",
+          "release_disposition": "ODCS supplies equivalent column types; enforced CHECK attested separately"
+        }
+      ]
     }
   ],
   "verification": {
@@ -728,7 +912,16 @@
     "adapters": "tests/task_143_adapters.rs",
     "dialects": "tests/task_143_dialects.rs",
     "parser_status_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41203657046",
-    "parser_cells_verified": 70
+    "parser_cells_verified": 70,
+    "mandatory_read": 3,
+    "mandatory_write_exact": 2,
+    "mandatory_write_impossible": 1,
+    "conditional_residual": 2,
+    "adapter_cells": 24,
+    "freeze_history": [
+      "docs/task-143-acceptance-freeze-v1.json",
+      "docs/task-143-acceptance-freeze-v2.json"
+    ]
   },
   "parser_families": [
     {
@@ -745,98 +938,126 @@
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "native_engine": "duckdb_only_where_executable",
           "owner": "TASK-143",
-          "release_disposition": "portable_execution_oracle"
+          "release_disposition": "portable_execution_oracle",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         }
       ]
     },
@@ -853,98 +1074,126 @@
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "native_engine": "duckdb_only_where_executable",
           "owner": "TASK-143",
-          "release_disposition": "portable_execution_oracle"
+          "release_disposition": "portable_execution_oracle",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         }
       ]
     },
@@ -963,98 +1212,126 @@
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "native_engine": "duckdb_only_where_executable",
           "owner": "TASK-143",
-          "release_disposition": "portable_execution_oracle"
+          "release_disposition": "portable_execution_oracle",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         }
       ]
     },
@@ -1071,98 +1348,126 @@
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "native_engine": "duckdb_only_where_executable",
           "owner": "TASK-143",
-          "release_disposition": "portable_execution_oracle"
+          "release_disposition": "portable_execution_oracle",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         }
       ]
     },
@@ -1179,98 +1484,126 @@
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "native_engine": "duckdb_only_where_executable",
           "owner": "TASK-143",
-          "release_disposition": "portable_execution_oracle"
+          "release_disposition": "portable_execution_oracle",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "native_engine": "not_attested",
           "owner": "TASK-143",
-          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+          "release_disposition": "parser_equivalence_only_no_vendor_execution",
+          "assertion": "tests/task_143_dialects.rs",
+          "parser_boundary": "sqlparser 0.58 parsed; native vendor not attested"
         }
       ]
     }
