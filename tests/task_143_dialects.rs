@@ -30,7 +30,8 @@ fn accepted_dialect_syntax_preserves_exact_physical_source_bags() {
         .into_iter()
         .map(|number| {
             PhysicalWriteRow::new(BTreeMap::from([(
-                "k".to_string(), LiteralValue::Number(number.to_string()),
+                "k".to_string(),
+                LiteralValue::Number(number.to_string()),
             )]))
             .unwrap()
         })
@@ -47,7 +48,10 @@ fn accepted_dialect_syntax_preserves_exact_physical_source_bags() {
             }
             let source = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(
-                "cte", &source, dialect_name, dialect.as_ref(),
+                "cte",
+                &source,
+                dialect_name,
+                dialect.as_ref(),
             )];
             let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
             let target = bundle.layers().last().unwrap();
@@ -58,13 +62,22 @@ fn accepted_dialect_syntax_preserves_exact_physical_source_bags() {
             };
             assert_eq!(proof.source_bags["raw"].len(), 3);
             assert_eq!(proof.stage_bags["terminal/cte:0:stage"].len(), 2);
-            assert_eq!(proof.terminal.len(), if sql.contains("COUNT(") { 1 } else { 2 });
+            assert_eq!(
+                proof.terminal.len(),
+                if sql.contains("COUNT(") { 1 } else { 2 }
+            );
             if sql.contains("COUNT(") {
-                assert_eq!(proof.terminal[0].values["total"], LiteralValue::Number("2".to_string()));
+                assert_eq!(
+                    proof.terminal[0].values["total"],
+                    LiteralValue::Number("2".to_string())
+                );
             }
             accepted += 1;
         }
     }
     assert_eq!(accepted + rejected, SQL.len() * DIALECTS.len());
-    assert!(accepted > 0, "no parser supports the shared portable CTE syntax");
+    assert!(
+        accepted > 0,
+        "no parser supports the shared portable CTE syntax"
+    );
 }
