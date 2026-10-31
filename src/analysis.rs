@@ -304,15 +304,12 @@ fn analyze_statement(
             // Materialized or temporary views, conditional creation, column
             // renaming and vendor binding/sort modifiers have distinct
             // execution or session semantics and must never become Exact.
-            if *materialized
+            let execution_unknown = *materialized
                 || *temporary
                 || *if_not_exists
                 || *with_no_schema_binding
                 || !columns.is_empty()
-                || !cluster_by.is_empty()
-            {
-                return unsupported_statement();
-            }
+                || !cluster_by.is_empty();
             let target = name.to_string();
             let mode = if *or_replace {
                 WriteDefinitionMode::ReplaceView
@@ -320,8 +317,13 @@ fn analyze_statement(
                 WriteDefinitionMode::CreateView
             };
             ProtocolStatement::Query(
-                analyze_query(query, Some(target.clone()), metadata)
-                    .with_write(Some(WriteOperation::definition(target, mode))),
+                analyze_query(query, Some(target.clone()), metadata).with_write(Some(
+                    if execution_unknown {
+                        WriteOperation::definition(target, mode).with_view_execution_unknown()
+                    } else {
+                        WriteOperation::definition(target, mode)
+                    },
+                )),
             )
         }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
