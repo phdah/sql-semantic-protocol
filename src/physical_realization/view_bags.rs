@@ -45,6 +45,17 @@ fn residual(reason: impl Into<String>) -> PhysicalViewProof {
     }
 }
 
+// The bounded view proof does not certify wider integer expression
+// evaluation or an engine-specific promotion/coercion law. Enforce this on
+// both the definition and the consumer before claiming an exact physical bag.
+fn requires_unproved_integer_width(values: &[LiteralValue]) -> bool {
+    values.iter().any(|value| match value {
+        LiteralValue::Null => false,
+        LiteralValue::Number(raw) => raw.parse::<i32>().is_err(),
+        _ => true,
+    })
+}
+
 fn query_for<'a>(
     bundle: &'a AnalysisBundle,
     layer: &crate::bundle::TransformationLayer,
@@ -178,13 +189,7 @@ pub fn physical_finite_view_read_plan(
         if values.len() != column_names.len() {
             return residual("view producer projection arity is unproved");
         }
-        // Ordinary portable integer computed expressions may not borrow a
-        // wider view declaration to make an overflowing source computation exact.
-        if values.iter().any(|value| match value {
-            LiteralValue::Null => false,
-            LiteralValue::Number(raw) => raw.parse::<i32>().is_err(),
-            _ => true,
-        }) {
+        if requires_unproved_integer_width(&values) {
             return residual("view output requires signed-32-bit portable arithmetic proof");
         }
         let row: BTreeMap<_, _> = column_names.iter().cloned().zip(values).collect();
@@ -216,6 +221,9 @@ pub fn physical_finite_view_read_plan(
     for (ordinal, values) in rows {
         if values.len() != output_columns.len() {
             return residual("view terminal projection arity is unproved");
+        }
+        if requires_unproved_integer_width(&values) {
+            return residual("view terminal requires signed-32-bit portable arithmetic proof");
         }
         let Some(producer) = view_bag.get(ordinal) else {
             return residual("view consumer has no producer occurrence");
