@@ -153,12 +153,12 @@ fn session_and_materialized_view_modifiers_never_claim_portable_exactness() {
     use sqlparser::parser::Parser;
 
     let dialect = dialect_from_name("duckdb").unwrap();
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "raw".to_string(),
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
-        ).unwrap(),
-    ]).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw".to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
     let mut accepted = 0;
     for definition in [
         "CREATE TEMP VIEW view_stage AS SELECT k, k + 10 AS shifted FROM raw WHERE k > 1",
@@ -179,8 +179,15 @@ fn session_and_materialized_view_modifiers_never_claim_portable_exactness() {
         ];
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
         let target = bundle.layers().last().unwrap();
-        let result = physical_finite_view_read_plan(&bundle, target.id(), &initial(&[Some(2)]), None);
-        assert!(matches!(result, PhysicalViewProof::Residual { .. }), "{definition}: cannot promote vendor/session semantics to portable Exact");
+        let result =
+            physical_finite_view_read_plan(&bundle, target.id(), &initial(&[Some(2)]), None);
+        assert!(
+            matches!(result, PhysicalViewProof::Residual { .. }),
+            "{definition}: cannot promote vendor/session semantics to portable Exact"
+        );
     }
-    assert!(accepted > 0, "at least one view modifier must exercise the parser-accepted boundary");
+    assert!(
+        accepted > 0,
+        "at least one view modifier must exercise the parser-accepted boundary"
+    );
 }
