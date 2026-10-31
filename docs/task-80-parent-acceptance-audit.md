@@ -7,12 +7,14 @@ are independently signed off and merged.
 
 ## Fixed evidence and original-AC crosswalk
 
-The [v1 parent inventory](task-80-parent-acceptance-freeze.json) indexes all
+The [v2 parent inventory](task-80-parent-acceptance-freeze.json) indexes all
 **32 mandatory** and **18 conditional** cases owned by the frozen TASK-145..148
 contracts. Each case retains its child-owned SQL, source/target snapshots,
 type/domain proof, rejection classification, dialect/adapter evidence and
 runtime boundary. The parent index is not new SQL logic and does not
-reclassify conditional cases as exact.
+reclassify conditional cases as exact. Version 1 is preserved at
+[the original crosswalk](task-80-parent-acceptance-freeze-v1.json). Version 2
+adds two separately executed, frozen replay oracles for original AC #4.
 
 | Child | Delivery | Main evidence | Mandatory / conditional |
 | --- | --- | --- | --- |
@@ -87,3 +89,42 @@ resolved and final CI passes, complete a separate explicit parent signoff
 decision and update task state in the PR before merge. Until then
 `TASK-80: In Progress`, `parent_signed_off=false` and
 `release_approved=false` are intentional.
+
+## Resolution of the repeatability gap (v2)
+
+`tests/task_80_parent_replay.rs` executes the two parent-owned cases from
+`docs/task-80-parent-acceptance-freeze.json` through the public canonical
+ordered-write API and independently against DuckDB:
+
+- **80-P-REPLAY-CONFLICT:** initial target `[(1,10)]`, immutable source
+  `[(1,20),(2,30)]`, two ordered `INSERT SELECT ... ON CONFLICT(id) DO NOTHING
+  RETURNING id` statements. First target is `[(1,10),(2,30)]`, with
+  `RETURNING [(2)]` and one inserted row; second target is identical, with
+  empty RETURNING and zero inserted rows. Exact typed target domains are
+  `id=[1,2]` and `score=[10,30]` inclusive, with full value frequencies.
+  This is a **bounded fixed-point proof** with fixed source, attested enforced
+  primary key, complete prestate and sequential statements, not an unconditional
+  global idempotence guarantee.
+- **80-N-REPLAY-PK:** two identical source-free ordinary INSERTs into a
+  PK-constrained initially empty target. The first commits one row; the
+  second is `Impossible` under the canonical physical state proof and
+  rejected by DuckDB, preserving the first committed row. A duplicate-key
+  error is **not** an idempotent success and does not certify transaction
+  rollback rules. Both test oracles assert the last committed typed bounds.
+
+## Disposition of mandatory negative outcomes
+
+`80-C147-N-unattested-target-key` is a *required negative safety case*,
+not a required constructive exact case. Its missing PK enforcement evidence
+means no complete poststate can be certified, so `Residual` with an
+explicit unknown target outcome is correct. `80-C147-N-null-primary-key`
+is `Impossible` under explicitly enforced PK, so a fabricated terminal
+value domain would be incorrect. Likewise the TASK-148 unproved transaction
+case retains a typed `Residual` rather than a made-up final state. These
+classifications are accepted only with their child-owned explicit parser,
+proof and runtime oracles and do not waive mandatory exact INSERT capabilities.
+
+Parent-level verification must use actual child-owned Rust/DuckDB runs, not
+these narratives or aggregate inventory counts alone. An independent
+standards/specification review and green final-head CI remain required before
+checking the original AC boxes or marking TASK-80 Done.
