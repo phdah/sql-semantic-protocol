@@ -1,10 +1,10 @@
 ---
 id: TASK-143
 title: Compose filtering/computed producers across consumers
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,10 @@ type: feature
 ## Next
 
 Next: [TASK-144](task-144%20-%20certify-raw-dbt-multistep-scopes-and-task-78-signoff.md), only after this child is Done and merged.
+
+## Implementation work in progress
+
+Bounded filter/computed-producer JOIN proof, fixed fixtures and native DuckDB
+oracles: [TASK-143 acceptance inventory](../../docs/task-143-acceptance-freeze.json)
+and [unsigned acceptance audit](../../docs/task-143-acceptance-audit.md).
+Do not mark Done until COUNT/write, dialect/adapter and final CI/review gates close.
