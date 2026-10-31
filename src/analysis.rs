@@ -291,8 +291,28 @@ fn analyze_statement(
             name,
             query,
             or_replace,
+            materialized,
+            temporary,
+            if_not_exists,
+            with_no_schema_binding,
+            columns,
+            cluster_by,
             ..
         } => {
+            // Only a persistent, ordinary logical VIEW has the same
+            // source-complete re-evaluation law as its defining SELECT.
+            // Materialized or temporary views, conditional creation, column
+            // renaming and vendor binding/sort modifiers have distinct
+            // execution or session semantics and must never become Exact.
+            if *materialized
+                || *temporary
+                || *if_not_exists
+                || *with_no_schema_binding
+                || !columns.is_empty()
+                || !cluster_by.is_empty()
+            {
+                return unsupported_statement();
+            }
             let target = name.to_string();
             let mode = if *or_replace {
                 WriteDefinitionMode::ReplaceView
