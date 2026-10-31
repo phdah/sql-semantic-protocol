@@ -13870,5 +13870,26 @@
       5,
       6
     ]
+  },
+  "task_144_multistep_cte_acceptance": {
+    "owner": "TASK-144",
+    "parent": "TASK-78",
+    "status": "preimplementation_frozen_implementation_pending",
+    "freeze": "docs/task-144-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "78-C144-P",
+      "78-C144-N"
+    ],
+    "mandatory_exact_cases": 6,
+    "conditional_residual_cases": 2,
+    "dialect_names": 14,
+    "parser_classifications_verified": false,
+    "adapter_evidence_verified": false,
+    "native_duckdb_oracles_verified": false,
+    "canonical_full_bag_proof_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false
   }
 }
