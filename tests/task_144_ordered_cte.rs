@@ -298,7 +298,7 @@ fn multistep_materialization_preserves_duplicate_occurrences_and_rejects_nulls()
 }
 
 #[test]
-fn cannot_attest_an_intermediate_target_as_an_independent_initial_source() {
+fn duplicate_initial_target_population_is_impossible() {
     let bundle = analyze();
     let read_layer = bundle.layers().last().unwrap();
     let mut states = initial(&[Some(1), Some(2), Some(3)]);
