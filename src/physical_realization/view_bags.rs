@@ -118,6 +118,9 @@ pub fn physical_finite_view_read_plan(
     let Some(view) = definition_query.write() else {
         return residual("missing canonical CREATE VIEW definition");
     };
+    if view.view_execution_unknown() {
+        return residual("view execution requires unproved materialization or session laws");
+    }
     if view.definition_mode() != Some(WriteDefinitionMode::CreateView) {
         return residual("view replacement or nonlogical materialization is not certified");
     }
