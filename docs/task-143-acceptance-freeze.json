@@ -110,18 +110,23 @@
   "adapters": [
     {
       "name": "direct SQL",
-      "status": "pending_verification",
-      "owner": "TASK-143"
+      "status": "canonical_physical_read_and_write_oracles_implemented",
+      "owner": "TASK-143",
+      "evidence": "tests/task_143_frozen_matrix.rs; tests/task_143_write.rs"
     },
     {
       "name": "compiled dbt",
-      "status": "pending_verification",
-      "owner": "TASK-143"
+      "status": "read_model_manifest_catalog_parity_verified; write_transaction_not_representable_in_model_artifact",
+      "owner": "TASK-143",
+      "evidence": "tests/task_143_adapters.rs",
+      "boundary": "dbt artifact cannot independently certify raw INSERT transactions"
     },
     {
       "name": "ODCS typed metadata",
-      "status": "pending_verification",
-      "owner": "TASK-143"
+      "status": "equivalent_read_and_write_schema_evidence_verified",
+      "owner": "TASK-143",
+      "evidence": "tests/task_143_adapters.rs; tests/task_143_write.rs",
+      "boundary": "native vendor session and CHECK enforcement not implied"
     }
   ],
   "cases": [
@@ -235,7 +240,8 @@
           "owner": "TASK-143",
           "release_disposition": "same typed canonical source semantics"
         }
-      ]
+      ],
+      "owner": "TASK-143"
     },
     {
       "id": "78-C143-N-NULL-DUP",
@@ -367,7 +373,8 @@
           "owner": "TASK-143",
           "release_disposition": "same typed canonical source semantics"
         }
-      ]
+      ],
+      "owner": "TASK-143"
     },
     {
       "id": "78-C143-P-COUNT",
@@ -992,7 +999,8 @@
       "docs/task-143-acceptance-freeze-v3.json"
     ],
     "conditional_write_residual": 1,
-    "width_counterexample": "tests/task_143_write.rs::computed_cte_overflow_never_certifies_a_wider_insert_target"
+    "width_counterexample": "tests/task_143_write.rs::computed_cte_overflow_never_certifies_a_wider_insert_target",
+    "inventory_accounting": "tests/task_143_acceptance_inventory.rs"
   },
   "parser_families": [
     {
