@@ -1,10 +1,10 @@
 ---
 id: TASK-80
 title: Prove INSERT and overwrite/source append semantics
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies: 
@@ -69,3 +69,13 @@ TASK-80 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-145, TASK-146, TASK-147, TASK-148; #2 -> TASK-145, TASK-146, TASK-147, TASK-148; #3 -> TASK-145, TASK-146, TASK-147, TASK-148; #4 -> TASK-146, TASK-148; #5 -> TASK-145, TASK-146, TASK-147, TASK-148; #6 -> TASK-145, TASK-146, TASK-147, TASK-148.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Independent parent acceptance review (2026-10-31)
+
+The four child tasks are marked Done and their delivery PRs have merged. Parent
+AC #1..#6 remain **unsigned** pending an independent, original-AC-level review.
+The versioned crosswalk is in `docs/task-80-parent-acceptance-freeze.json`,
+with an executable inventory guard in `tests/task_80_parent_closure.rs` and
+open findings in `docs/task-80-parent-acceptance-audit.md`. The 32 mandatory
+and 18 conditional child inventory cases are preserved, not silently promoted
+to parent signoff. No TASK-82 child is unblocked by this In Progress state.
