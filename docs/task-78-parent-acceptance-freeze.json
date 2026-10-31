@@ -1,0 +1,457 @@
+{
+  "task": "TASK-78",
+  "version": 1,
+  "scope": "Independent original parent acceptance crosswalk over four completed/merged child contracts; concrete values and DuckDB oracles remain owned by child freeze files",
+  "status": "parent_signed_off_final_metadata_ci_pending",
+  "parent_signed_off": true,
+  "release_approved": false,
+  "missing_mandatory_child_cases": [],
+  "merged_children": {
+    "TASK-141": {
+      "file": "docs/task-141-proof-matrix.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/167",
+      "mandatory_case_ids": [
+        "78-C141-P-REUSE",
+        "78-C141-N-NULL-DUP",
+        "78-C141-P-SHADOW",
+        "78-C141-P-CHAIN"
+      ],
+      "conditional_case_ids": [
+        "78-C141-N-FORWARD",
+        "78-C141-N-RECURSIVE-SHADOW",
+        "78-C141-N-MATERIALIZATION"
+      ],
+      "fixture_ids": [
+        "78-C141-P",
+        "78-C141-N"
+      ],
+      "independent_tests": [
+        "tests/task_141_physical.rs",
+        "tests/task_141_frozen_oracles.rs",
+        "tests/task_141_adapter_matrix.rs"
+      ]
+    },
+    "TASK-142": {
+      "file": "docs/task-142-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/168",
+      "mandatory_case_ids": [
+        "78-C142-P-ALL",
+        "78-C142-P-DISTINCT",
+        "78-C142-N-ABSENCE"
+      ],
+      "conditional_case_ids": [
+        "78-C142-N-CYCLE"
+      ],
+      "fixture_ids": [
+        "78-C142-P",
+        "78-C142-N"
+      ],
+      "independent_tests": [
+        "tests/task_142_recursive_cte.rs",
+        "tests/task_142_dialect_adapter.rs"
+      ]
+    },
+    "TASK-143": {
+      "file": "docs/task-143-acceptance-freeze.json",
+      "version": 4,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/169",
+      "mandatory_case_ids": [
+        "78-C143-P-JOIN",
+        "78-C143-N-NULL-DUP",
+        "78-C143-P-COUNT",
+        "78-C143-P-WRITE",
+        "78-C143-N-WRITE",
+        "78-C143-N-CHECK"
+      ],
+      "conditional_case_ids": [
+        "78-C143-N-OVERFLOW",
+        "78-C143-N-OPAQUE",
+        "78-C143-N-WIDTH"
+      ],
+      "fixture_ids": [
+        "78-C143-P",
+        "78-C143-N"
+      ],
+      "independent_tests": [
+        "tests/task_143_frozen_matrix.rs",
+        "tests/task_143_write.rs",
+        "tests/task_143_duckdb_oracles.rs",
+        "tests/task_143_adapters.rs"
+      ]
+    },
+    "TASK-144": {
+      "file": "docs/task-144-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/170",
+      "mandatory_case_ids": [
+        "78-C144-P-REUSED-FILTER",
+        "78-C144-P-FINITE-RECURSION",
+        "78-C144-N-NULL-DUP",
+        "78-C144-P-MULTISTEP",
+        "78-C144-N-MULTISTEP-NULL",
+        "78-C144-P-VIEW",
+        "78-C144-P-SHADOW"
+      ],
+      "conditional_case_ids": [
+        "78-C144-N-RECURSIVE-CYCLE",
+        "78-C144-N-LATERAL-SESSION"
+      ],
+      "fixture_ids": [
+        "78-C144-P",
+        "78-C144-N"
+      ],
+      "independent_tests": [
+        "tests/task_144_frozen_reads.rs",
+        "tests/task_144_ordered_cte.rs",
+        "tests/task_144_view.rs",
+        "tests/task_144_shadow_oracles.rs",
+        "tests/task_144_dialect_exactness.rs",
+        "tests/task_144_adapter_parity.rs"
+      ]
+    }
+  },
+  "fixture_ids": [
+    "78-C141-P",
+    "78-C141-N",
+    "78-C142-P",
+    "78-C142-N",
+    "78-C143-P",
+    "78-C143-N",
+    "78-C144-P",
+    "78-C144-N"
+  ],
+  "mandatory_case_ids": [
+    "78-C141-P-REUSE",
+    "78-C141-N-NULL-DUP",
+    "78-C141-P-SHADOW",
+    "78-C141-P-CHAIN",
+    "78-C142-P-ALL",
+    "78-C142-P-DISTINCT",
+    "78-C142-N-ABSENCE",
+    "78-C143-P-JOIN",
+    "78-C143-N-NULL-DUP",
+    "78-C143-P-COUNT",
+    "78-C143-P-WRITE",
+    "78-C143-N-WRITE",
+    "78-C143-N-CHECK",
+    "78-C144-P-REUSED-FILTER",
+    "78-C144-P-FINITE-RECURSION",
+    "78-C144-N-NULL-DUP",
+    "78-C144-P-MULTISTEP",
+    "78-C144-N-MULTISTEP-NULL",
+    "78-C144-P-VIEW",
+    "78-C144-P-SHADOW"
+  ],
+  "conditional_case_ids": [
+    "78-C141-N-FORWARD",
+    "78-C141-N-RECURSIVE-SHADOW",
+    "78-C141-N-MATERIALIZATION",
+    "78-C142-N-CYCLE",
+    "78-C143-N-OVERFLOW",
+    "78-C143-N-OPAQUE",
+    "78-C143-N-WIDTH",
+    "78-C144-N-RECURSIVE-CYCLE",
+    "78-C144-N-LATERAL-SESSION"
+  ],
+  "case_index": {
+    "78-C141-P-REUSE": {
+      "owner": "TASK-141",
+      "classification": "mandatory",
+      "child_classification": "Exact",
+      "fixture_id": "78-C141-P"
+    },
+    "78-C141-N-NULL-DUP": {
+      "owner": "TASK-141",
+      "classification": "mandatory",
+      "child_classification": "Exact",
+      "fixture_id": "78-C141-N"
+    },
+    "78-C141-P-SHADOW": {
+      "owner": "TASK-141",
+      "classification": "mandatory",
+      "child_classification": "Exact",
+      "fixture_id": "78-C141-P"
+    },
+    "78-C141-P-CHAIN": {
+      "owner": "TASK-141",
+      "classification": "mandatory",
+      "child_classification": "Exact",
+      "fixture_id": "78-C141-P"
+    },
+    "78-C141-N-FORWARD": {
+      "owner": "TASK-141",
+      "classification": "conditional",
+      "child_classification": "Residual until external relation evidence",
+      "fixture_id": "78-C141-N"
+    },
+    "78-C141-N-RECURSIVE-SHADOW": {
+      "owner": "TASK-141",
+      "classification": "conditional",
+      "child_classification": "Residual",
+      "fixture_id": "78-C141-N"
+    },
+    "78-C141-N-MATERIALIZATION": {
+      "owner": "TASK-141",
+      "classification": "conditional",
+      "child_classification": "Residual",
+      "fixture_id": "78-C141-N"
+    },
+    "78-C142-P-ALL": {
+      "owner": "TASK-142",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C142-P"
+    },
+    "78-C142-P-DISTINCT": {
+      "owner": "TASK-142",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C142-P"
+    },
+    "78-C142-N-ABSENCE": {
+      "owner": "TASK-142",
+      "classification": "mandatory",
+      "child_classification": "mandatory_impossible",
+      "fixture_id": "78-C142-N"
+    },
+    "78-C142-N-CYCLE": {
+      "owner": "TASK-142",
+      "classification": "conditional",
+      "child_classification": "conditional_residual",
+      "fixture_id": "78-C142-N"
+    },
+    "78-C143-P-JOIN": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C143-P"
+    },
+    "78-C143-N-NULL-DUP": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C143-P-COUNT": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C143-P"
+    },
+    "78-C143-P-WRITE": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C143-P"
+    },
+    "78-C143-N-WRITE": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C143-N-OVERFLOW": {
+      "owner": "TASK-143",
+      "classification": "conditional",
+      "child_classification": "conditional_residual",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C143-N-OPAQUE": {
+      "owner": "TASK-143",
+      "classification": "conditional",
+      "child_classification": "conditional_residual",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C143-N-CHECK": {
+      "owner": "TASK-143",
+      "classification": "mandatory",
+      "child_classification": "mandatory_impossible",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C143-N-WIDTH": {
+      "owner": "TASK-143",
+      "classification": "conditional",
+      "child_classification": "conditional_write_residual",
+      "fixture_id": "78-C143-N"
+    },
+    "78-C144-P-REUSED-FILTER": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-P"
+    },
+    "78-C144-P-FINITE-RECURSION": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-P"
+    },
+    "78-C144-N-NULL-DUP": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-N"
+    },
+    "78-C144-P-MULTISTEP": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-P"
+    },
+    "78-C144-N-MULTISTEP-NULL": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-N"
+    },
+    "78-C144-P-VIEW": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-P"
+    },
+    "78-C144-N-RECURSIVE-CYCLE": {
+      "owner": "TASK-144",
+      "classification": "conditional",
+      "child_classification": "conditional_residual",
+      "fixture_id": "78-C144-N"
+    },
+    "78-C144-N-LATERAL-SESSION": {
+      "owner": "TASK-144",
+      "classification": "conditional",
+      "child_classification": "conditional_residual",
+      "fixture_id": "78-C144-N"
+    },
+    "78-C144-P-SHADOW": {
+      "owner": "TASK-144",
+      "classification": "mandatory",
+      "child_classification": "mandatory_exact",
+      "fixture_id": "78-C144-P"
+    }
+  },
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "obligation": "Ordinary/nested/reused/shadowed CTEs, logical versus materialized views, LATERAL boundaries and multi-statement relation scoping",
+      "mandatory_case_ids": [
+        "78-C141-P-REUSE",
+        "78-C141-P-SHADOW",
+        "78-C144-P-VIEW",
+        "78-C144-P-SHADOW",
+        "78-C144-P-MULTISTEP"
+      ],
+      "conditional_case_ids": [
+        "78-C141-N-MATERIALIZATION",
+        "78-C144-N-LATERAL-SESSION"
+      ]
+    },
+    {
+      "id": 2,
+      "obligation": "Guarded recursive UNION ALL/DISTINCT and complete termination/absence proofs; explicit cycle residual",
+      "mandatory_case_ids": [
+        "78-C142-P-ALL",
+        "78-C142-P-DISTINCT",
+        "78-C142-N-ABSENCE",
+        "78-C144-P-FINITE-RECURSION"
+      ],
+      "conditional_case_ids": [
+        "78-C142-N-CYCLE",
+        "78-C144-N-RECURSIVE-CYCLE"
+      ]
+    },
+    {
+      "id": 3,
+      "obligation": "Typed upstream/downstream column mapping with computed projections, selective filters, fanout, grouping, reused physical provenance",
+      "mandatory_case_ids": [
+        "78-C143-P-JOIN",
+        "78-C143-P-COUNT",
+        "78-C143-N-NULL-DUP",
+        "78-C144-P-REUSED-FILTER"
+      ],
+      "conditional_case_ids": [
+        "78-C143-N-OPAQUE"
+      ]
+    },
+    {
+      "id": 4,
+      "obligation": "Canonical source/producer occurrence identity, no free intermediate source invention, ordered physical read/write and view semantics",
+      "mandatory_case_ids": [
+        "78-C141-P-CHAIN",
+        "78-C143-P-WRITE",
+        "78-C143-N-WRITE",
+        "78-C144-P-MULTISTEP",
+        "78-C144-P-VIEW"
+      ],
+      "conditional_case_ids": [
+        "78-C141-N-FORWARD"
+      ]
+    },
+    {
+      "id": 5,
+      "obligation": "Independent DuckDB source, producer and terminal oracles for raw multi-step scripts and compiled dbt with NULL/duplicate negative cases",
+      "mandatory_case_ids": [
+        "78-C144-P-MULTISTEP",
+        "78-C144-N-MULTISTEP-NULL",
+        "78-C144-N-NULL-DUP",
+        "78-C143-P-WRITE",
+        "78-C143-N-CHECK"
+      ],
+      "conditional_case_ids": [
+        "78-C143-N-WIDTH"
+      ]
+    },
+    {
+      "id": 6,
+      "obligation": "14 exposed dialect identities (13 canonical and postgres alias), SQL/dbt/ODCS metadata parity where equivalent facts exist, schema/differential tests and CI",
+      "mandatory_case_ids": [
+        "78-C141-P-REUSE",
+        "78-C142-P-ALL",
+        "78-C143-P-JOIN",
+        "78-C144-P-SHADOW"
+      ],
+      "conditional_case_ids": [
+        "78-C141-N-RECURSIVE-SHADOW"
+      ]
+    }
+  ],
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "canonical_evidence_sources": [
+    "direct_sql",
+    "dbt_compiled_manifest_catalog",
+    "odcs_equivalent_source_schema"
+  ],
+  "required_review": {
+    "native_execution": "DuckDB only; no native cross-vendor claims",
+    "unsupported_logic": "conditional Residual stays conditional with child owner",
+    "signoff": "original AC signed off after reviewed green implementation CI; metadata-head CI required before merge",
+    "release_gate": "TASK-91 separately gated"
+  },
+  "signoff": {
+    "date": "2026-10-31",
+    "decision": "all_six_original_ac_verified_on_frozen_20_mandatory_and_9_conditional_cases",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407",
+    "implementation_ci_sha": "fa0b009e7586f760acea6d1397475d59548c81e4",
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824",
+    "review_kind": "COMMENT_not_distinct_account_approval",
+    "native_engine_boundary": "DuckDB only",
+    "final_metadata_head_ci": "required_before_merge",
+    "release_approved": false
+  }
+}

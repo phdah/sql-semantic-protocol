@@ -1,4 +1,37 @@
 {
+  "task_78_parent_acceptance": {
+    "owner": "TASK-78",
+    "freeze": "docs/task-78-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "audit": "docs/task-78-parent-acceptance-audit.md",
+    "parent_regression": "tests/task_78_parent_closure.rs",
+    "status": "parent_signed_off_final_metadata_ci_pending",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-141",
+      "TASK-142",
+      "TASK-143",
+      "TASK-144"
+    ],
+    "mandatory_cases": 20,
+    "conditional_cases": 9,
+    "required_dialect_identities": 14,
+    "adapter_evidence_sources": 3,
+    "parent_signed_off": true,
+    "release_approved": false,
+    "independent_native_engine": "DuckDB",
+    "gate": "TASK-78 original AC signed off after reviewed green implementation CI; metadata-head CI required before merge; TASK-91 independent",
+    "signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407",
+    "review": "https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824",
+    "final_metadata_head_ci": "must pass before merge"
+  },
   "task_143_cte_producer_acceptance": {
     "owner": "TASK-143",
     "parent": "TASK-78",

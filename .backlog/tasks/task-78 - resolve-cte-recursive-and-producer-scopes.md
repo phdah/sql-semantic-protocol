@@ -1,10 +1,10 @@
 ---
 id: TASK-78
 title: Model recursive CTEs and producer/derived-scope exactness
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies: 
@@ -35,12 +35,12 @@ Named producer layers, alias scopes, WITH RECURSIVE and row-changing CTEs requir
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Cover ordinary and nested CTEs, derived tables, correlated LATERAL, views, materialized relations, reuse, shadowing and multi-statement dependency ordering.
-- [ ] #2 Handle supported recursive CTE base/recursive terms, UNION [ALL], cycle checks and termination bounds when a finite constructive proof exists; otherwise return a typed termination residual.
-- [ ] #3 Prove upstream/downstream column mapping including computed/renamed columns, fanout, aggregation, filters, limits and repeated physical dependencies.
-- [ ] #4 Preserve source and produced relation identities and producer read/write semantics; forbid treating an intermediate witness as a free source insertion.
-- [ ] #5 E2E-test multi-step dbt and raw scripts with selective row-changing intermediate models and reused sources.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Cover ordinary and nested CTEs, derived tables, correlated LATERAL, views, materialized relations, reuse, shadowing and multi-statement dependency ordering.
+- [x] #2 Handle supported recursive CTE base/recursive terms, UNION [ALL], cycle checks and termination bounds when a finite constructive proof exists; otherwise return a typed termination residual.
+- [x] #3 Prove upstream/downstream column mapping including computed/renamed columns, fanout, aggregation, filters, limits and repeated physical dependencies.
+- [x] #4 Preserve source and produced relation identities and producer read/write semantics; forbid treating an intermediate witness as a free source insertion.
+- [x] #5 E2E-test multi-step dbt and raw scripts with selective row-changing intermediate models and reused sources.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -70,3 +70,32 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-141, TASK-142, TASK-143, TASK-144; #2 -> TASK-142, TASK-144; #3 -> TASK-141, TASK-142, TASK-143, TASK-144; #4 -> TASK-141, TASK-143, TASK-144; #5 -> TASK-141, TASK-142, TASK-143, TASK-144; #6 -> TASK-141, TASK-142, TASK-143, TASK-144.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent audit (2026-10-31)
+
+TASK-141..144 are Done and their PRs #167..170 are merged on `main`.
+The task-owned independent original-AC v1 crosswalk is
+[`docs/task-78-parent-acceptance-freeze.json`](../../docs/task-78-parent-acceptance-freeze.json),
+with [audit](../../docs/task-78-parent-acceptance-audit.md) and
+[`tests/task_78_parent_closure.rs`](../../tests/task_78_parent_closure.rs).
+The crosswalk indexes 20 mandatory child proof cases and 9 reviewed conditional cases.
+All original AC #1..#6 were independently checked against the bounded child evidence, and the reviewed implementation head passed all nine CI jobs. TASK-91 remains a separate release gate.
+
+## Final Summary (2026-10-31)
+
+All four TASK-141..144 implementation PRs are Done and merged to main.
+The task-owned parent freeze covers 20 mandatory cases and 9 reviewed conditional
+Residual boundaries, with complete typed terminal/source evidence and reviewed
+13 canonical parser dialects plus the PostgreSQL alias. All six original
+parent acceptance criteria have been independently cross-checked, including
+source/producer provenance, finite recursion, typed outcome domains,
+positive/negative physical proof and SQL/dbt/ODCS evidence where equivalent.
+
+Independent implementation-head CI [run 41242073407](https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407)
+passed all nine checks including Rust tests with/without default features,
+strict lint, format, docs and dbt Core E2E. Matt's [two-axis Standards/Spec
+review](https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824)
+found no blocking findings. GitHub review is COMMENTED, not a distinct-account approval.
+
+The signoff metadata commit must itself pass final-head CI before PR #171 is
+merged. TASK-91 and unproven cross-engine execution laws remain separate.
