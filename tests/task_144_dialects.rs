@@ -106,11 +106,19 @@ fn every_frozen_variant_has_an_explicit_runtime_parser_boundary() {
                 .iter()
                 .all(|statement| Parser::parse_sql(dialect.as_ref(), statement).is_ok());
             let status = if parsed { "parsed" } else { "parser_boundary" };
-            let frozen = case["parser_cells"].as_array().unwrap().iter().filter(|cell| cell["dialect"] == *name).collect::<Vec<_>>();
+            let frozen = case["parser_cells"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|cell| cell["dialect"] == *name)
+                .collect::<Vec<_>>();
             let [cell] = frozen.as_slice() else {
                 panic!("{id}/{name}: duplicate or missing frozen parser classification");
             };
-            assert_eq!(cell["parser"], status, "{id}/{name}: reviewed parser classification differs from executable result");
+            assert_eq!(
+                cell["parser"], status,
+                "{id}/{name}: reviewed parser classification differs from executable result"
+            );
             statuses.insert(format!("{id}/{name}"), status);
             // All shared portable read cases must carry the same semantics
             // when the dialect has accepted their AST shape.
