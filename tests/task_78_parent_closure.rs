@@ -162,6 +162,20 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
                 .iter()
                 .any(|fixture| fixture.as_str() == Some(fixture_id)));
             if is_conditional {
+                assert_eq!(case["owner"], task, "{id}: missing boundary owner");
+                assert!(
+                    nonempty(&case["release_disposition"]),
+                    "{id}: missing reviewed release disposition"
+                );
+                let proof = case
+                    .get("expected_proof")
+                    .or_else(|| case.get("expected_physical"))
+                    .or_else(|| case.get("proof"))
+                    .unwrap_or(&case["true_proof"]);
+                assert!(
+                    proof.as_str().is_some_and(|s| s.contains("Residual")),
+                    "{id}: conditional case must fail closed"
+                );
                 assert!(actual_conditional.insert(id.to_owned()), "{id}: duplicate");
                 assert!(seen_conditional.insert(id.to_owned()), "{id}: duplicate");
             } else {
