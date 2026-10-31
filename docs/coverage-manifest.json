@@ -14036,6 +14036,7 @@
     "parent_signed_off": false,
     "release_approved": false,
     "remaining_gates": [
+      "original AC #4 independent bounded INSERT/MERGE script proof",
       "fresh final-head CI",
       "independent Standards/Spec review",
       "original AC #1..#6 signoff",
