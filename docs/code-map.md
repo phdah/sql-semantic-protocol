@@ -1,3 +1,5 @@
+TASK-143 finite filtered/computed CTEs: `src/analysis/cte.rs` owns SQL filter and arithmetic lowering into `src/protocol/cte.rs` typed lexical stages. `src/physical_realization/cte_bags.rs` evaluates one complete physical source bag, applies SQL three-valued filters before checked integer projections, and reuses producer bags for downstream joins. `tests/task_143_filtered_producers.rs` and `tests/task_143_duckdb_oracles.rs` own the frozen positive/negative bag oracles. `docs/task-143-acceptance-freeze.json` tracks unsigned COUNT/write/dialect/adapter obligations; parent TASK-78 remains open.
+
 TASK-141 lexical and physical CTE source identity:
 `src/analysis/cte.rs` lowers a bounded ordinary WITH/JOIN syntax subset into
 parser-independent `CteProgram` stages in `src/protocol/cte.rs`.
