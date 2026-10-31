@@ -10,7 +10,7 @@ use super::write_states::{
 };
 use super::*;
 use crate::data_type::DataType;
-use crate::protocol::{CteColumnRef, CteInput, CteStage, LiteralValue};
+use crate::protocol::{CteColumnRef, CteComparisonOperator, CteInput, CteStage, LiteralValue};
 
 /// Typed node reference in one complete lexical CTE execution graph.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -132,6 +132,54 @@ fn equal(left: &LiteralValue, right: &LiteralValue) -> Result<Option<bool>, &'st
             Ok(Some(a == b))
         }
         _ => Err("CTE equality requires attested integer comparison"),
+    }
+}
+
+fn integer(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
+    match value {
+        LiteralValue::Null => Ok(None),
+        LiteralValue::Number(raw) => raw
+            .parse::<i128>()
+            .map(Some)
+            .map_err(|_| "CTE expression requires attested integers"),
+        _ => Err("CTE expression requires attested integers"),
+    }
+}
+
+fn filter_truth(
+    value: &LiteralValue,
+    operator: CteComparisonOperator,
+    bound: i128,
+) -> Result<Option<bool>, &'static str> {
+    let Some(value) = integer(value)? else {
+        return Ok(None);
+    };
+    Ok(Some(match operator {
+        CteComparisonOperator::Equal => value == bound,
+        CteComparisonOperator::GreaterThan => value > bound,
+        CteComparisonOperator::GreaterOrEqual => value >= bound,
+        CteComparisonOperator::LessThan => value < bound,
+        CteComparisonOperator::LessOrEqual => value <= bound,
+    }))
+}
+
+fn projected_integer(
+    value: &LiteralValue,
+    offset: i128,
+) -> Result<LiteralValue, &'static str> {
+    if offset == 0 {
+        return Ok(value.clone());
+    }
+    match integer(value)? {
+        None => Ok(LiteralValue::Null),
+        Some(value) => {
+            let computed = value.checked_add(offset).ok_or("CTE integer overflow")?;
+            // On a portable INTEGER source, checked arithmetic must remain in
+            // its signed 32-bit range. Without a width proof, fail closed.
+            let computed = i32::try_from(computed)
+                .map_err(|_| "CTE computed integer exceeds portable width")?;
+            Ok(LiteralValue::Number(computed.to_string()))
+        }
     }
 }
 
@@ -264,6 +312,33 @@ fn stage(
     } else if right.is_some() {
         return Err("CTE two-input shape has no normalized equality");
     }
+    if let Some(filter) = program.filter() {
+        let candidates = program
+            .inputs()
+            .iter()
+            .filter(|input| {
+                filter
+                    .column()
+                    .relation()
+                    .is_none_or(|alias| alias == input.alias())
+                    && types
+                        .get(input.relation())
+                        .and_then(|columns| columns.get(filter.column().column()))
+                        .is_some()
+            })
+            .collect::<Vec<_>>();
+        let [input] = candidates.as_slice() else {
+            return Err("CTE filter lacks a unique typed producer");
+        };
+        if !types
+            .get(input.relation())
+            .and_then(|columns| columns.get(filter.column().column()))
+            .copied()
+            .unwrap_or(false)
+        {
+            return Err("CTE filter requires an attested integer column");
+        }
+    }
 
     let mut selected = Vec::new();
     let mut rejected = Vec::new();
@@ -296,9 +371,31 @@ fn stage(
                     }
                 }
             }
+            if let Some(filter) = program.filter() {
+                match filter_truth(
+                    value(filter.column(), &scope)?,
+                    filter.operator(),
+                    filter.bound(),
+                )? {
+                    Some(true) => {}
+                    Some(false) => {
+                        false_pairs.push(source_ids.clone());
+                        rejected.push(source_ids);
+                        continue;
+                    }
+                    None => {
+                        unknown_pairs.push(source_ids.clone());
+                        rejected.push(source_ids);
+                        continue;
+                    }
+                }
+            }
             let mut values = BTreeMap::new();
             for projection in program.projections() {
-                let column = value(projection.source(), &scope)?.clone();
+                let column = projected_integer(
+                    value(projection.source(), &scope)?,
+                    projection.offset(),
+                )?;
                 if values
                     .insert(projection.name().to_string(), column)
                     .is_some()
