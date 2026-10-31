@@ -17,7 +17,7 @@
   "acceptance_criteria_map": {
     "1": "fixture variants and dialect/adapters in this inventory; remaining named variants explicitly tracked",
     "2": "canonical filtered and computed JOIN graph plus physical proof",
-    "3": "tests/task_143_filtered_producers.rs and tests/task_143_duckdb_oracles.rs",
+    "3": "tests/task_143_filtered_producers.rs, tests/task_143_count.rs and tests/task_143_duckdb_oracles.rs",
     "4": "dialect/adapter work pending",
     "5": "CI and independent review pending"
   },
@@ -327,9 +327,73 @@
       "id": "78-C143-P-COUNT",
       "fixture_family": "78-C143-P",
       "variant": "downstream COUNT after filtering",
-      "classification": "required_not_yet_implemented",
+      "classification": "mandatory_exact",
       "owner": "TASK-143",
-      "disposition": "blocks child Done until physical COUNT and native oracle are certified"
+      "disposition": "implemented; CI and independent review pending",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT COUNT(*) AS total FROM stage a JOIN stage b ON a.k = b.k",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "total": 2,
+          "source_ids": [
+            "raw#1",
+            "raw#1",
+            "raw#2",
+            "raw#2"
+          ]
+        }
+      ],
+      "terminal_domains": {
+        "total": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "count exactly 2 matched pairs from one closed source bag",
+      "not_true_proof": "filtered-out raw#0 cannot contribute; absent total=3 Impossible",
+      "expected_physical": "Exact and Impossible",
+      "native_oracle": "DuckDB full source and COUNT terminal bag"
     },
     {
       "id": "78-C143-P-WRITE",
@@ -342,7 +406,7 @@
   ],
   "verification": {
     "source_oracle": "tests/task_143_filtered_producers.rs",
-    "native_oracle": "tests/task_143_duckdb_oracles.rs",
+    "native_oracle": "tests/task_143_duckdb_oracles.rs and tests/task_143_count.rs",
     "code_head_ci": "pending",
     "independent_review": "pending",
     "child_done": false,
