@@ -3008,6 +3008,10 @@
             }
           ]
         },
+        "view_execution_unknown": {
+          "description": "Optional true marker: materialized, temporary, conditional, or vendor view execution lacks a portable exact re-evaluation proof.",
+          "const": true
+        },
         "definition_mode": {
           "enum": [
             "create_table",
