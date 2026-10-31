@@ -135,20 +135,27 @@ fn case(raw: &[Option<i64>], prior: &[(i64, i64)], expected: &[(i64, i64)]) {
     let domains = target.exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 2);
     for column in domains {
-        let observed: BTreeMap<String, u64> = column.values().iter().map(|(literal, count)| {
-            let LiteralValue::Number(number) = literal else {
-                panic!("TASK-143 target has an unexpected NULL or noninteger exact value");
-            };
-            (number.clone(), *count)
-        }).collect();
+        let observed: BTreeMap<String, u64> = column
+            .values()
+            .iter()
+            .map(|(literal, count)| {
+                let LiteralValue::Number(number) = literal else {
+                    panic!("TASK-143 target has an unexpected NULL or noninteger exact value");
+                };
+                (number.clone(), *count)
+            })
+            .collect();
         let mut expected_counts = BTreeMap::<String, u64>::new();
         for (k, shifted) in expected {
             let number = if column.column() == "k" { k } else { shifted };
             *expected_counts.entry(number.to_string()).or_default() += 1;
         }
-        assert_eq!(observed, expected_counts,
+        assert_eq!(
+            observed,
+            expected_counts,
             "TASK-143 exact typed {} frequencies, multiplicity and inclusive point bounds",
-            column.column());
+            column.column()
+        );
     }
 
     let db = Connection::open_in_memory().unwrap();
@@ -289,16 +296,24 @@ fn rejected_computed_cte_insert_is_impossible_and_preserves_original_target() {
 #[test]
 fn equivalent_odcs_source_and_target_schemas_preserve_computed_cte_write_states() {
     use sql_semantic_protocol::parse_odcs_yaml;
-    let direct_catalog=RelationCatalog::from_schemas(&[
-        RelationSchema::new("raw".to_string(),
-            vec![SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap()]).unwrap(),
-        RelationSchema::new("target".to_string(),vec![
-            SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap(),
-            SchemaColumn::from_sql_type("shifted","INTEGER","duckdb").unwrap(),
-        ]).unwrap(),
-    ]).unwrap();
-    let known=RelationCatalog::new(&["raw","target"]).unwrap();
-    let metadata=parse_odcs_yaml(
+    let direct_catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        )
+        .unwrap(),
+        RelationSchema::new(
+            "target".to_string(),
+            vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
+            ],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    let known = RelationCatalog::new(&["raw", "target"]).unwrap();
+    let metadata = parse_odcs_yaml(
         r#"
 apiVersion: v3.2.0
 kind: DataContract
@@ -320,20 +335,33 @@ schema:
       - name: shifted
         physicalType: INTEGER
 "#,
-        "duckdb",&known,
-    ).unwrap();
-    let odcs_catalog=RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
-    let dialect=dialect_from_name("duckdb").unwrap();
-    let source=SqlInput::inline(SQL);
-    let configured=[ConfiguredSqlInput::new("task143",&source,"duckdb",dialect.as_ref())];
-    let raw=state("raw",&["k"],&[vec![Some(1)],vec![Some(2)],vec![Some(3)]]);
-    let target=state("target",&["k","shifted"],&[]);
-    let initial=[raw,target];
-    let direct=analyze_configured_inputs_with_catalog(&configured,&direct_catalog).unwrap();
-    let odcs=analyze_configured_inputs_with_catalog(&configured,&odcs_catalog).unwrap();
-    let direct=physical_ordered_write_state_plan(&direct,&initial);
-    let odcs=physical_ordered_write_state_plan(&odcs,&initial);
-    assert!(matches!(direct,PhysicalWriteStatePlan::Feasible{..}));
-    assert_eq!(odcs,direct,
-        "ODCS authoritative column types cannot change the canonical derived CTE write bag");
+        "duckdb",
+        &known,
+    )
+    .unwrap();
+    let odcs_catalog = RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let source = SqlInput::inline(SQL);
+    let configured = [ConfiguredSqlInput::new(
+        "task143",
+        &source,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let raw = state(
+        "raw",
+        &["k"],
+        &[vec![Some(1)], vec![Some(2)], vec![Some(3)]],
+    );
+    let target = state("target", &["k", "shifted"], &[]);
+    let initial = [raw, target];
+    let direct = analyze_configured_inputs_with_catalog(&configured, &direct_catalog).unwrap();
+    let odcs = analyze_configured_inputs_with_catalog(&configured, &odcs_catalog).unwrap();
+    let direct = physical_ordered_write_state_plan(&direct, &initial);
+    let odcs = physical_ordered_write_state_plan(&odcs, &initial);
+    assert!(matches!(direct, PhysicalWriteStatePlan::Feasible { .. }));
+    assert_eq!(
+        odcs, direct,
+        "ODCS authoritative column types cannot change the canonical derived CTE write bag"
+    );
 }
