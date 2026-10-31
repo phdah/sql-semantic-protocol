@@ -3,8 +3,6 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-mod common;
-
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
@@ -72,6 +70,13 @@ fn case_bundle_with_dialect(
     let configured = [ConfiguredSqlInput::new(
         "cte",
         &input,
+        dialect_name,
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    (bundle, snapshots)
+}
+
 #[test]
 fn every_mandatory_frozen_read_case_proves_complete_source_producer_and_terminal_bags() {
     let freeze: Value =
