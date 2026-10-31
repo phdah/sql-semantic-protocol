@@ -147,3 +147,40 @@ fn view_cannot_be_supplied_as_an_independent_materialized_initial_state() {
         PhysicalViewProof::Residual { .. }
     ));
 }
+
+#[test]
+fn session_and_materialized_view_modifiers_never_claim_portable_exactness() {
+    use sqlparser::parser::Parser;
+
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        ).unwrap(),
+    ]).unwrap();
+    let mut accepted = 0;
+    for definition in [
+        "CREATE TEMP VIEW view_stage AS SELECT k, k + 10 AS shifted FROM raw WHERE k > 1",
+        "CREATE MATERIALIZED VIEW view_stage AS SELECT k, k + 10 AS shifted FROM raw WHERE k > 1",
+        "CREATE OR REPLACE VIEW view_stage AS SELECT k, k + 10 AS shifted FROM raw WHERE k > 1",
+        "CREATE VIEW IF NOT EXISTS view_stage AS SELECT k, k + 10 AS shifted FROM raw WHERE k > 1",
+        "CREATE VIEW view_stage(k, shifted) AS SELECT k, k + 10 FROM raw WHERE k > 1",
+    ] {
+        if Parser::parse_sql(dialect.as_ref(), definition).is_err() {
+            continue;
+        }
+        accepted += 1;
+        let view = SqlInput::inline(definition);
+        let read = SqlInput::inline("SELECT shifted FROM view_stage");
+        let configured = [
+            ConfiguredSqlInput::new("view", &view, "duckdb", dialect.as_ref()),
+            ConfiguredSqlInput::new("terminal", &read, "duckdb", dialect.as_ref()),
+        ];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        let target = bundle.layers().last().unwrap();
+        let result = physical_finite_view_read_plan(&bundle, target.id(), &initial(&[Some(2)]), None);
+        assert!(matches!(result, PhysicalViewProof::Residual { .. }), "{definition}: cannot promote vendor/session semantics to portable Exact");
+    }
+    assert!(accepted > 0, "at least one view modifier must exercise the parser-accepted boundary");
+}
