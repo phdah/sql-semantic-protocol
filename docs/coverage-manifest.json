@@ -1,4 +1,34 @@
 {
+  "task_78_parent_acceptance": {
+    "owner": "TASK-78",
+    "freeze": "docs/task-78-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "audit": "docs/task-78-parent-acceptance-audit.md",
+    "parent_regression": "tests/task_78_parent_closure.rs",
+    "status": "parent_review_pending_final_head_ci",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-141",
+      "TASK-142",
+      "TASK-143",
+      "TASK-144"
+    ],
+    "mandatory_cases": 20,
+    "conditional_cases": 9,
+    "required_dialect_identities": 14,
+    "adapter_evidence_sources": 3,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "independent_native_engine": "DuckDB",
+    "gate": "final PR CI and independent parent review before marking Done; TASK-91 release separate"
+  },
   "task_143_cte_producer_acceptance": {
     "owner": "TASK-143",
     "parent": "TASK-78",
