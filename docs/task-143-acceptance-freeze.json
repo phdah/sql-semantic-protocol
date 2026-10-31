@@ -754,7 +754,20 @@
           "owner": "TASK-143",
           "release_disposition": "same typed canonical source semantics"
         }
-      ]
+      ],
+      "true_proof": "no Exact TRUE output bag is justified without a portable evaluation law",
+      "not_true_proof": "checked INTEGER producer computation would exceed the signed 32-bit physical width; construction is unproved, not an empty exact bag",
+      "terminal_bag": null,
+      "terminal_domains": {
+        "shifted": {
+          "type": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "proof_strength": "Residual"
+        }
+      },
+      "native_oracle": "DuckDB width overflow can throw; canonical statement must not certify a complete bag"
     },
     {
       "id": "78-C143-N-OPAQUE",
@@ -796,7 +809,20 @@
           "owner": "TASK-143",
           "release_disposition": "same typed canonical source semantics"
         }
-      ]
+      ],
+      "true_proof": "no Exact TRUE output bag is justified without a portable evaluation law",
+      "not_true_proof": "opaque ABS(k) function has no attested canonical scalar evaluation law; no exact positive/negative membership witness",
+      "terminal_bag": null,
+      "terminal_domains": {
+        "shifted": {
+          "type": "unknown",
+          "nullable": "unknown",
+          "lower": null,
+          "upper": null,
+          "proof_strength": "Residual"
+        }
+      },
+      "native_oracle": "DuckDB can execute ABS but no portable function law is attested; result remains Residual"
     },
     {
       "id": "78-C143-N-CHECK",
