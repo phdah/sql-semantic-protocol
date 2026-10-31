@@ -380,6 +380,24 @@ fn order_by_with_fill_cannot_certify_the_unmodified_cte_bag() {
 }
 
 #[test]
+fn clickhouse_global_join_requires_distributed_engine_evidence() {
+    // GLOBAL JOIN is an execution mode, not a proven local equijoin law.
+    let sql = "WITH shared AS (SELECT k FROM s) \
+               SELECT a.k AS ak FROM shared a \
+               GLOBAL INNER JOIN shared b ON a.k = b.k";
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle_with_dialect(sql, &input, "clickhouse");
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "GLOBAL JOIN cannot borrow the ordinary local CTE join proof"
+    );
+}
+
+#[test]
 fn partition_selected_cte_scan_is_not_a_complete_source_proof() {
     // MySQL partition selection is not equivalent to the attested full s bag.
     // Treating a TableFactor with partitions as a plain table is unsound.
