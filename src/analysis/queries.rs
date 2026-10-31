@@ -660,6 +660,7 @@ pub(super) fn analyze_query(
 
     let cte_program = analyze_cte_program(query);
     let output = refine_bounded_recursive_output(output, cte_program.as_ref());
+    let output = guard_recursive_projection_qualifiers(query, output);
 
     QueryStatement::new(
         relation_analysis.sources,
