@@ -284,3 +284,56 @@ fn rejected_computed_cte_insert_is_impossible_and_preserves_original_target() {
         .unwrap();
     assert_eq!(rows, vec![(99, 109)], "failed native insert must be atomic");
 }
+
+#[cfg(feature = "odcs")]
+#[test]
+fn equivalent_odcs_source_and_target_schemas_preserve_computed_cte_write_states() {
+    use sql_semantic_protocol::parse_odcs_yaml;
+    let direct_catalog=RelationCatalog::from_schemas(&[
+        RelationSchema::new("raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap()]).unwrap(),
+        RelationSchema::new("target".to_string(),vec![
+            SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap(),
+            SchemaColumn::from_sql_type("shifted","INTEGER","duckdb").unwrap(),
+        ]).unwrap(),
+    ]).unwrap();
+    let known=RelationCatalog::new(&["raw","target"]).unwrap();
+    let metadata=parse_odcs_yaml(
+        r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: task143writes
+name: Filtered computed producer and INSERT target schemas
+version: 1.0.0
+status: active
+schema:
+  - name: raw
+    physicalName: raw
+    properties:
+      - name: k
+        physicalType: INTEGER
+  - name: target
+    physicalName: target
+    properties:
+      - name: k
+        physicalType: INTEGER
+      - name: shifted
+        physicalType: INTEGER
+"#,
+        "duckdb",&known,
+    ).unwrap();
+    let odcs_catalog=RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
+    let dialect=dialect_from_name("duckdb").unwrap();
+    let source=SqlInput::inline(SQL);
+    let configured=[ConfiguredSqlInput::new("task143",&source,"duckdb",dialect.as_ref())];
+    let raw=state("raw",&["k"],&[vec![Some(1)],vec![Some(2)],vec![Some(3)]]);
+    let target=state("target",&["k","shifted"],&[]);
+    let initial=[raw,target];
+    let direct=analyze_configured_inputs_with_catalog(&configured,&direct_catalog).unwrap();
+    let odcs=analyze_configured_inputs_with_catalog(&configured,&odcs_catalog).unwrap();
+    let direct=physical_ordered_write_state_plan(&direct,&initial);
+    let odcs=physical_ordered_write_state_plan(&odcs,&initial);
+    assert!(matches!(direct,PhysicalWriteStatePlan::Feasible{..}));
+    assert_eq!(odcs,direct,
+        "ODCS authoritative column types cannot change the canonical derived CTE write bag");
+}
