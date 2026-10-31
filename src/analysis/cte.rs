@@ -391,7 +391,6 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
     ))
 }
 
-
 pub(super) fn refine_bounded_recursive_output(
     output: Output,
     program: Option<&CteProgram>,
