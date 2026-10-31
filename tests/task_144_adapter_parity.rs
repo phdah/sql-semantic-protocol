@@ -18,7 +18,12 @@ fn cases() -> Value {
 fn direct(sql: &str, catalog: &RelationCatalog) -> AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
     let source = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("adapter", &source, "duckdb", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "adapter",
+        &source,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
 
@@ -26,23 +31,42 @@ fn catalog(source: bool) -> RelationCatalog {
     if !source {
         return RelationCatalog::from_schemas(&[]).unwrap();
     }
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new("raw".to_string(), vec![
-            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()
-        ]).unwrap()
-    ]).unwrap()
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw".to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap()
 }
 
 fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
-    case["initial_bags"].as_object().unwrap().iter().map(|(name, rows)| {
-        PhysicalWriteState::new(name.clone(), rows.as_array().unwrap().iter().map(|value| {
-            let literal = value.as_i64().map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()));
-            PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), literal)])).unwrap()
-        }).collect()).unwrap()
-    }).collect()
+    case["initial_bags"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(name, rows)| {
+            PhysicalWriteState::new(
+                name.clone(),
+                rows.as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|value| {
+                        let literal = value
+                            .as_i64()
+                            .map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()));
+                        PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), literal)])).unwrap()
+                    })
+                    .collect(),
+            )
+            .unwrap()
+        })
+        .collect()
 }
 
-fn exact(bundle: &AnalysisBundle, states: &[PhysicalWriteState]) -> sql_semantic_protocol::PhysicalCteExact {
+fn exact(
+    bundle: &AnalysisBundle,
+    states: &[PhysicalWriteState],
+) -> sql_semantic_protocol::PhysicalCteExact {
     let layer = bundle.layers().last().unwrap();
     let result = physical_finite_cte_bag_plan(bundle, layer.id(), states, None);
     let PhysicalCteProof::Exact(proof) = result else {
@@ -58,8 +82,14 @@ fn compiled(sql: &str, with_source: bool) -> AnalysisBundle {
             "resource_type":"source", "relation_name":"raw", "name":"raw",
             "columns":{"k":{"name":"k","data_type":"INTEGER"}}
         }})
-    } else { json!({}) };
-    let dependencies = if with_source { vec!["source.demo.raw"] } else { Vec::new() };
+    } else {
+        json!({})
+    };
+    let dependencies = if with_source {
+        vec!["source.demo.raw"]
+    } else {
+        Vec::new()
+    };
     let manifest = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
             "dbt_version":"1.11.8","adapter_type":"duckdb"},
@@ -79,7 +109,9 @@ fn compiled(sql: &str, with_source: bool) -> AnalysisBundle {
             "columns":{"k":{"name":"k","type":"INTEGER","index":1}},
             "stats":{}
         }})
-    } else { json!({}) };
+    } else {
+        json!({})
+    };
     let dbt_catalog = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/catalog/v1.json",
             "dbt_version":"1.11.8"},
@@ -97,7 +129,10 @@ fn compiled_dbt_exactly_matches_sql_for_every_representable_frozen_read() {
     let mut checked = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
-        if !matches!(id, "78-C144-P-REUSED-FILTER" | "78-C144-N-NULL-DUP" | "78-C144-P-FINITE-RECURSION") {
+        if !matches!(
+            id,
+            "78-C144-P-REUSED-FILTER" | "78-C144-N-NULL-DUP" | "78-C144-P-FINITE-RECURSION"
+        ) {
             continue;
         }
         let with_source = !id.contains("RECURSION");
@@ -109,9 +144,14 @@ fn compiled_dbt_exactly_matches_sql_for_every_representable_frozen_read() {
         checked.push(id);
     }
     checked.sort();
-    assert_eq!(checked, [
-        "78-C144-N-NULL-DUP", "78-C144-P-FINITE-RECURSION", "78-C144-P-REUSED-FILTER"
-    ]);
+    assert_eq!(
+        checked,
+        [
+            "78-C144-N-NULL-DUP",
+            "78-C144-P-FINITE-RECURSION",
+            "78-C144-P-REUSED-FILTER"
+        ]
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -129,7 +169,8 @@ fn odcs_equivalent_source_schema_preserves_complete_task_144_bags() {
         "  - name: raw\n    physicalName: raw\n    properties:\n",
         "      - name: k\n        physicalType: INTEGER\n",
     );
-    let metadata = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["raw"]).unwrap()).unwrap();
+    let metadata =
+        parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["raw"]).unwrap()).unwrap();
     let evidence = RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
     let freeze = cases();
     let mut checked = 0;
