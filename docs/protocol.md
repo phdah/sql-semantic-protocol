@@ -1,5 +1,28 @@
 # SQL Semantic Protocol contract
 
+## TASK-144 bounded logical-view execution and multistep CTE proofs
+
+Ordinary logical CREATE VIEW remains a definition layer, not a physical
+insertion. The additive Rust `physical_finite_view_read_plan` reads one
+complete caller-attested source bag, re-evaluates its bounded row-local view
+definition and consumer, and returns exact producer/terminal values, original
+source-occurrence identities, nullable integer bounds and closed-world
+absence. It cannot accept an independently supplied view population.
+Unproved expressions and multiple sources remain typed `Residual`.
+`physical_ordered_cte_read_plan` instead executes canonical ordered writes
+and feeds the resulting post-write table as the only physical source of the
+final bounded CTE read, retaining every transition and terminal bag.
+
+Known CREATE VIEW variants needing session or engine execution laws retain
+their producer layer but optionally emit `write.view_execution_unknown: true`.
+This marker is only present for unproved materialized, temporary, conditional,
+column-renaming or vendor-specific view creation. It prevents the bounded
+physical view proof from claiming `Exact`. Absence of the marker is not a
+general native-engine execution certificate; only the documented finite
+source-local logical view subset is proven. The remaining native vendor laws
+are independently classified as unverified, never certified by parser success.
+
+
 ## Joined UPDATE FROM / DELETE USING physical effects (TASK-150)
 
 A normalized UPDATE or DELETE may carry optional `write.joined_source` with the independent
