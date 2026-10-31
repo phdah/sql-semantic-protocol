@@ -306,6 +306,9 @@ fn final_recursive_projection_qualifier_must_resolve_to_its_actual_source_alias(
     let sql = format!("{recursive} SELECT t.x FROM n AS t");
     let analyzed = sql_bundle(&sql, "duckdb");
     assert!(
+        query(&analyzed).cte_program().is_some(),
+        "properly bound qualifier must still prove"
+    );
     let proof = exact(&analyzed);
     assert_eq!(proof.terminal_domains["x"].integer_bounds, Some((1, 3)));
 }
