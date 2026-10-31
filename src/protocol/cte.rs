@@ -179,6 +179,7 @@ pub struct CteStage {
     projections: Vec<CteProjection>,
     equality: Option<(CteColumnRef, CteColumnRef)>,
     filter: Option<CteFilter>,
+    count_output: Option<String>,
     recursion: Option<CteRecursion>,
 }
 
@@ -196,6 +197,25 @@ impl CteStage {
             projections,
             equality,
             filter,
+            count_output: None,
+            recursion: None,
+        }
+    }
+
+    pub(crate) fn count(
+        id: String,
+        inputs: Vec<CteInput>,
+        equality: Option<(CteColumnRef, CteColumnRef)>,
+        filter: Option<CteFilter>,
+        name: String,
+    ) -> Self {
+        Self {
+            id,
+            inputs,
+            projections: Vec::new(),
+            equality,
+            filter,
+            count_output: Some(name),
             recursion: None,
         }
     }
@@ -207,6 +227,7 @@ impl CteStage {
             projections: Vec::new(),
             equality: None,
             filter: None,
+            count_output: None,
             recursion: Some(recursion),
         }
     }
@@ -239,6 +260,11 @@ impl CteStage {
     /// Optional row filter, applied after JOIN and before projection.
     pub fn filter(&self) -> Option<&CteFilter> {
         self.filter.as_ref()
+    }
+
+    /// Exact ungrouped COUNT(*) result label, if this is a count stage.
+    pub fn count_output(&self) -> Option<&str> {
+        self.count_output.as_deref()
     }
 }
 
