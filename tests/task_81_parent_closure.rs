@@ -6,10 +6,22 @@ use serde_json::{json, Value};
 use std::collections::BTreeSet;
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-149", include_str!("../docs/task-149-acceptance-freeze.json")),
-    ("TASK-150", include_str!("../docs/task-150-acceptance-freeze.json")),
-    ("TASK-151", include_str!("../docs/task-151-acceptance-freeze.json")),
-    ("TASK-152", include_str!("../docs/task-152-acceptance-freeze.json")),
+    (
+        "TASK-149",
+        include_str!("../docs/task-149-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-150",
+        include_str!("../docs/task-150-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-151",
+        include_str!("../docs/task-151-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-152",
+        include_str!("../docs/task-152-acceptance-freeze.json"),
+    ),
 ];
 
 fn parse(text: &str) -> Value {
@@ -27,11 +39,17 @@ fn names(value: &Value) -> BTreeSet<String> {
 }
 
 fn canonical_proof(case: &Value) -> &'static str {
-    let raw = case["proof"].as_str().or_else(|| case["classification"].as_str()).expect("proof classification");
+    let raw = case["proof"]
+        .as_str()
+        .or_else(|| case["classification"].as_str())
+        .expect("proof classification");
     match raw.to_ascii_lowercase().as_str() {
         "exact" | "exact_with_attested_default" | "exact_not_true" | "mandatory_exact" => "Exact",
         "impossible" | "mandatory_impossible" => "Impossible",
-        "residual" | "residual_missing_attestation" | "mandatory_residual" | "conditional_residual" => "Residual",
+        "residual"
+        | "residual_missing_attestation"
+        | "mandatory_residual"
+        | "conditional_residual" => "Residual",
         other => panic!("unknown frozen proof: {other}"),
     }
 }
@@ -48,7 +66,9 @@ fn typed_target_domains(case: &Value) -> bool {
 
 #[test]
 fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
-    let parent = parse(include_str!("../docs/task-81-parent-acceptance-freeze.json"));
+    let parent = parse(include_str!(
+        "../docs/task-81-parent-acceptance-freeze.json"
+    ));
     assert_eq!(parent["task"], "TASK-81");
     assert_eq!(parent["version"], 1);
     assert_eq!(parent["parent_signed_off"], false);
@@ -59,7 +79,10 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
     assert_eq!(mandatory.len(), 34);
     assert_eq!(conditional.len(), 12);
     assert!(mandatory.is_disjoint(&conditional));
-    assert_eq!(parent["case_index"].as_object().expect("case index").len(), 46);
+    assert_eq!(
+        parent["case_index"].as_object().expect("case index").len(),
+        46
+    );
 
     let mut seen = BTreeSet::new();
     let mut seen_fixtures = BTreeSet::new();
@@ -73,7 +96,9 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
         assert_eq!(child["owner"], owner);
         assert_eq!(child["parent"], "TASK-81");
         assert_eq!(record["version"], child["version"]);
-        assert!(record["merged_pr"].as_str().is_some_and(|s| s.starts_with("https://github.com/")));
+        assert!(record["merged_pr"]
+            .as_str()
+            .is_some_and(|s| s.starts_with("https://github.com/")));
         let child_fixtures = names(&child["fixture_ids"]);
         assert_eq!(child_fixtures, names(&record["fixture_ids"]));
         assert_eq!(child_fixtures.len(), 2);
@@ -126,7 +151,10 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
         }
 
         if owner == "TASK-149" {
-            for boundary in child["conditional"].as_array().expect("conditional boundaries") {
+            for boundary in child["conditional"]
+                .as_array()
+                .expect("conditional boundaries")
+            {
                 let id = boundary["id"].as_str().expect("conditional ID");
                 assert!(seen.insert(id.to_owned()), "duplicate conditional {id}");
                 let index = &parent["case_index"][id];
@@ -134,12 +162,17 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
                 assert_eq!(index["evidence"], "root_conditional");
                 assert_eq!(index["proof"], "Residual");
                 assert_eq!(boundary["owner"], owner);
-                assert!(boundary["disposition"].as_str().is_some_and(|s| !s.is_empty()));
+                assert!(boundary["disposition"]
+                    .as_str()
+                    .is_some_and(|s| !s.is_empty()));
                 residual += 1;
             }
         }
         if owner == "TASK-152" {
-            for boundary in child["conditional_boundaries"].as_array().expect("vendor boundaries") {
+            for boundary in child["conditional_boundaries"]
+                .as_array()
+                .expect("vendor boundaries")
+            {
                 let family = boundary["family"].as_str().expect("family");
                 let id = format!("81-C152-C-{family}");
                 assert!(seen.insert(id.clone()), "duplicate conditional {id}");
@@ -149,7 +182,9 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
                 assert_eq!(index["evidence"], "root_conditional_boundary");
                 assert_eq!(boundary["owner"], owner);
                 assert_eq!(boundary["proof"], "Residual");
-                assert!(boundary["release_disposition"].as_str().is_some_and(|s| !s.is_empty()));
+                assert!(boundary["release_disposition"]
+                    .as_str()
+                    .is_some_and(|s| !s.is_empty()));
                 residual += 1;
             }
         }
@@ -161,11 +196,15 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
 
 #[test]
 fn original_parent_criteria_and_manifest_are_independently_traceable() {
-    let parent = parse(include_str!("../docs/task-81-parent-acceptance-freeze.json"));
+    let parent = parse(include_str!(
+        "../docs/task-81-parent-acceptance-freeze.json"
+    ));
     let manifest = parse(include_str!("../docs/coverage-manifest.json"));
     let mandatory = names(&parent["mandatory_case_ids"]);
     let conditional = names(&parent["conditional_case_ids"]);
-    let acs = parent["original_acceptance_criteria"].as_array().expect("six parent criteria");
+    let acs = parent["original_acceptance_criteria"]
+        .as_array()
+        .expect("six parent criteria");
     assert_eq!(acs.len(), 6);
     let mut covered = BTreeSet::new();
     for (ordinal, ac) in acs.iter().enumerate() {
@@ -173,7 +212,11 @@ fn original_parent_criteria_and_manifest_are_independently_traceable() {
         assert!(ac["obligation"].as_str().is_some_and(|s| !s.is_empty()));
         let m = names(&ac["mandatory_case_ids"]);
         let c = names(&ac["conditional_case_ids"]);
-        assert!(!m.is_empty(), "AC {} must have exact or explicit negative evidence", ordinal + 1);
+        assert!(
+            !m.is_empty(),
+            "AC {} must have exact or explicit negative evidence",
+            ordinal + 1
+        );
         assert!(m.is_subset(&mandatory));
         assert!(c.is_subset(&conditional));
         covered.extend(m);
@@ -182,7 +225,10 @@ fn original_parent_criteria_and_manifest_are_independently_traceable() {
     assert_eq!(covered, mandatory.union(&conditional).cloned().collect());
     let registry = &manifest["task_81_parent_acceptance"];
     assert_eq!(registry["owner"], "TASK-81");
-    assert_eq!(registry["freeze"], "docs/task-81-parent-acceptance-freeze.json");
+    assert_eq!(
+        registry["freeze"],
+        "docs/task-81-parent-acceptance-freeze.json"
+    );
     assert_eq!(registry["original_ac"], json!([1, 2, 3, 4, 5, 6]));
     assert_eq!(registry["mandatory_cases"], 34);
     assert_eq!(registry["conditional_cases"], 12);
