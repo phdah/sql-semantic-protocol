@@ -164,7 +164,8 @@ fn select_stage(
     {
         return None;
     }
-    // Sorting does not alter a bag, but its keys must be executable.
+    // Plain sorting does not alter a bag, but WITH FILL synthesizes rows.
+    // Sorting keys must also resolve to executable output labels.
     // Restrict this bounded proof to resolved output labels. A bare source
     // column not projected by SELECT (or a misspelled label) may be legal or
     // invalid depending on query shape; neither can be certified here.
@@ -173,11 +174,14 @@ fn select_stage(
             || !matches!(
                 &order.kind,
                 sqlparser::ast::OrderByKind::Expressions(keys)
-                    if keys.iter().all(|key| matches!(
-                        &key.expr,
-                        Expr::Identifier(name)
-                            if projections.iter().any(|projection| projection.name() == name.value)
-                    ))
+                    if keys.iter().all(|key| {
+                        key.with_fill.is_none()
+                            && matches!(
+                                &key.expr,
+                                Expr::Identifier(name)
+                                    if projections.iter().any(|projection| projection.name() == name.value)
+                            )
+                    })
             )
     }) {
         return None;
