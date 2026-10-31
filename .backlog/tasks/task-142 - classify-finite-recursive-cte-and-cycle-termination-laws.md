@@ -33,22 +33,34 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
-- [ ] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
-- [ ] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
-- [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-142; no claim of native engine execution without an executable oracle.
+- [x] #1 Before semantic edits, freeze every named variant above and both IDs into an immutable task-owned fixture matrix in `docs/coverage-manifest.json`: exact SQL and parser status, canonical source/column identities, typed output domains including NULL/bound inclusivity, TRUE and NOT TRUE proof strength, expected full physical/terminal bags, dialect and adapter cells, and named conditional release disposition. No implicit exclusions or mandatory residuals.
+- [x] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
+- [x] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
+- [x] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-142; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-78 parent open.
 <!-- AC:END -->
 
-## Implementation in progress (2026-10-31)
+## Verified implementation evidence (2026-10-31)
 
-- Frozen task-owned acceptance inventory: `docs/task-142-acceptance-freeze.json`.
-- Canonical bounded recursive producer for strictly increasing integer seeds
-  and guarded UNION ALL / UNION DISTINCT steps.
-- Checked complete physical bags and negative membership, without treating
-  cyclic or oversized recursion as exact.
-- Pending: all-dialect and adapter matrix, final CI, independent review and
-  complete child signoff. TASK-143 remains blocked until this PR merges.
+- The original preimplementation matrix remains in
+  `docs/task-142-acceptance-freeze-v1.json`. Reviewed v2 adds signed-32-bit
+  bounds, all 14 exposed dialect identities, exact direct SQL/dbt outcome
+  domains, native DuckDB truth/absence, and explicit cyclic Residual scope.
+- Canonical recursive self-edge, checked finite induction, stable row identities,
+  inclusive protocol-level output domains, physical Exact/Impossible, and
+  guarded Residual all have focused public API oracles.
+- `tests/task_142_recursive_cte.rs` proves the complete positive and negative
+  bags against independent DuckDB. `tests/task_142_dialect_adapter.rs` pins
+  every parser-equivalence obligation and checks compiled dbt parity.
+  Source-free literals have no equivalent ODCS source-schema fact to adapt.
+- [Final semantic-head CI run 41191083396](https://github.com/phdah/sql-semantic-protocol/actions/runs/41191083396)
+  passed all nine jobs: formatting, strict Clippy, full and
+  no-default-features tests, both docs, dependency checks and dbt E2E.
+- **Only AC #5 remains unchecked:** Matt's independent parallel standards/spec
+  code-review signoff is not available in this session. The two-axis author
+  review in `docs/task-142-acceptance-audit.md` is explicitly not a
+  substitute. Keep the task In Progress and PR draft pending genuine
+  independent review and final PR-head CI.
 
 ## Next
 
