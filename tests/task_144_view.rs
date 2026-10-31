@@ -191,3 +191,33 @@ fn session_and_materialized_view_modifiers_never_claim_portable_exactness() {
         "at least one view modifier must exercise the parser-accepted boundary"
     );
 }
+
+#[test]
+fn view_execution_uncertainty_survives_canonical_wire_emission() {
+    use serde_json::Value;
+    use sql_semantic_protocol::to_bundle_json;
+    use sqlparser::parser::Parser;
+
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new("raw".to_string(), vec![
+            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+        ]).unwrap(),
+    ]).unwrap();
+    for (definition, expected_unknown) in [
+        ("CREATE VIEW view_stage AS SELECT k FROM raw", false),
+        ("CREATE TEMP VIEW view_stage AS SELECT k FROM raw", true),
+        ("CREATE OR REPLACE VIEW view_stage AS SELECT k FROM raw", false),
+    ] {
+        if Parser::parse_sql(dialect.as_ref(), definition).is_err() {
+            continue;
+        }
+        let source = SqlInput::inline(definition);
+        let configured = [ConfiguredSqlInput::new("view", &source, "duckdb", dialect.as_ref())];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        assert_eq!(bundle.layers().len(), 1, "DDL producer identity preserved");
+        let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+        let write = &wire["inputs"][0]["statements"][0]["query"]["write"];
+        assert_eq!(write["view_execution_unknown"], if expected_unknown { Value::Bool(true) } else { Value::Null }, "{definition}: wire uncertainty");
+    }
+}
