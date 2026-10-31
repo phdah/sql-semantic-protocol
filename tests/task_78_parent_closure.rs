@@ -188,11 +188,13 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
                 assert_eq!(identities, dialects);
             }
         } else {
-            assert_eq!(
-                strings(&child["dialects"]),
-                dialects,
-                "{task}: dialect coverage"
-            );
+            let cells = child["dialects"].as_array().expect("dialect cells");
+            let identities: BTreeSet<String> = cells
+                .iter()
+                .map(|cell| cell["name"].as_str().expect("dialect identity").to_owned())
+                .collect();
+            assert_eq!(identities.len(), cells.len(), "{task}: duplicate dialect");
+            assert_eq!(identities, dialects, "{task}: dialect coverage");
         }
     }
     assert_eq!(seen_mandatory, mandatory);
