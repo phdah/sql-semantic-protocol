@@ -83,7 +83,7 @@ fn every_mandatory_frozen_read_case_proves_complete_source_producer_and_terminal
         serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
     let mut proved=Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() {
+        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
             continue;
         }
         let id=case["id"].as_str().unwrap();
