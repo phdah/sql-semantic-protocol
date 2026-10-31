@@ -58,6 +58,23 @@ fn verify_mandatory_outcome(child: &Value, task: &str, id: &str) {
             || child["domains"].is_object(),
         "{task} {id}: no typed terminal domain"
     );
+    // Source-free recursive seeds have no ODCS source-schema counterpart.
+    // All other mandatory cells must retain three explicit adapter paths.
+    if task != "TASK-142" {
+        let cells = child["adapter_cells"].as_array().expect("adapter cells");
+        assert_eq!(cells.len(), 3, "{task} {id}: incomplete adapter coverage");
+        let sources: BTreeSet<String> = cells
+            .iter()
+            .map(|cell| cell["adapter"].as_str().expect("adapter").to_owned())
+            .collect();
+        assert_eq!(sources.len(), cells.len(), "{task} {id}: duplicate adapter");
+        for cell in cells {
+            assert!(
+                nonempty(&cell["status"]) || nonempty(&cell["classification"]),
+                "{task} {id}: unclassified adapter evidence"
+            );
+        }
+    }
     if task == "TASK-143" || task == "TASK-144" {
         assert!(nonempty(&child["true_proof"]), "{id}: missing TRUE proof");
         assert!(
