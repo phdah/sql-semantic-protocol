@@ -217,7 +217,7 @@ fn view_execution_uncertainty_survives_canonical_wire_emission() {
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
         assert_eq!(bundle.layers().len(), 1, "DDL producer identity preserved");
         let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
-        let write = &wire["inputs"][0]["statements"][0]["query"]["write"];
+        let write = &wire["inputs"][0]["statements"][0]["write"];
         assert_eq!(write["view_execution_unknown"], if expected_unknown { Value::Bool(true) } else { Value::Null }, "{definition}: wire uncertainty");
     }
 }
