@@ -291,25 +291,32 @@ fn analyze_statement(
             name,
             query,
             or_replace,
+            or_alter,
             materialized,
             temporary,
             if_not_exists,
             with_no_schema_binding,
             columns,
             cluster_by,
+            options,
+            to,
+            params,
             ..
         } => {
-            // Only a persistent, ordinary logical VIEW has the same
-            // source-complete re-evaluation law as its defining SELECT.
-            // Materialized or temporary views, conditional creation, column
-            // renaming and vendor binding/sort modifiers have distinct
-            // execution or session semantics and must never become Exact.
-            let execution_unknown = *materialized
+            // Only an unmodified persistent logical VIEW has a portable,
+            // source-complete re-evaluation law. Vendor creation options,
+            // replacement/alteration, security context and target routing
+            // require independent engine evidence even if the SELECT parses.
+            let execution_unknown = *or_alter
+                || *materialized
                 || *temporary
                 || *if_not_exists
                 || *with_no_schema_binding
                 || !columns.is_empty()
-                || !cluster_by.is_empty();
+                || !cluster_by.is_empty()
+                || !matches!(options, sqlparser::ast::CreateTableOptions::None)
+                || to.is_some()
+                || params.is_some();
             let target = name.to_string();
             let mode = if *or_replace {
                 WriteDefinitionMode::ReplaceView
