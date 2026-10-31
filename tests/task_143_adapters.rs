@@ -5,8 +5,8 @@
 
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
-    dialect_from_name, parse_dbt_manifest, AnalysisBundle, ProtocolStatement,
-    QueryStatement, SqlInput,
+    dialect_from_name, parse_dbt_manifest, AnalysisBundle, ProtocolStatement, QueryStatement,
+    SqlInput,
 };
 
 fn compiled_dbt(sql: &str, initial_bags: &Value, consumed_source: &str) -> AnalysisBundle {
@@ -174,7 +174,10 @@ fn each_frozen_task_143_read_case_has_identical_sql_and_dbt_physical_proofs() {
         serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
+        if case["classification"] != "mandatory_exact"
+            || !case["sql"].is_string()
+            || case["id"].as_str().unwrap().contains("WRITE")
+        {
             continue;
         }
         let id = case["id"].as_str().unwrap();
@@ -191,7 +194,10 @@ fn each_frozen_task_143_read_case_has_identical_sql_and_dbt_physical_proofs() {
         );
         let direct = physical_bags(&direct, &states);
         let dbt = physical_bags(&dbt, &states);
-        assert_eq!(dbt, direct, "{id}: complete physical bags, TRUE/NOT TRUE, exact domains and identities");
+        assert_eq!(
+            dbt, direct,
+            "{id}: complete physical bags, TRUE/NOT TRUE, exact domains and identities"
+        );
         checked += 1;
     }
     assert_eq!(checked, 3);
@@ -223,12 +229,20 @@ fn each_frozen_task_143_read_case_has_identical_odcs_schema_evidence() {
     let dialect = dialect_from_name("duckdb").unwrap();
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
+        if case["classification"] != "mandatory_exact"
+            || !case["sql"].is_string()
+            || case["id"].as_str().unwrap().contains("WRITE")
+        {
             continue;
         }
         let id = case["id"].as_str().unwrap();
         let source = SqlInput::inline(case["sql"].as_str().unwrap());
-        let configured = [ConfiguredSqlInput::new("task143", &source, "duckdb", dialect.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            "task143",
+            &source,
+            "duckdb",
+            dialect.as_ref(),
+        )];
         let odcs = analyze_configured_inputs_with_catalog(&configured, &evidence).unwrap();
         let direct = attested_direct(case["sql"].as_str().unwrap(), &case["initial_bags"]);
         let states = complete_states(&case["initial_bags"]);
