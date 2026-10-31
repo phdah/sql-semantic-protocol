@@ -12,13 +12,11 @@ use sql_semantic_protocol::{
 fn frozen_overflow_and_opaque_computation_never_claim_exact_cte_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "raw".to_string(),
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
-        )
-        .unwrap(),
-    ])
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw".to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
     .unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let mut verified = Vec::new();
@@ -28,7 +26,12 @@ fn frozen_overflow_and_opaque_computation_never_claim_exact_cte_bags() {
         }
         let id = case["id"].as_str().unwrap();
         let source = SqlInput::inline(case["sql"].as_str().unwrap());
-        let configured = [ConfiguredSqlInput::new("cte", &source, "duckdb", dialect.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            "cte",
+            &source,
+            "duckdb",
+            dialect.as_ref(),
+        )];
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
         let rows = case["initial_bags"]["raw"]
             .as_array()
