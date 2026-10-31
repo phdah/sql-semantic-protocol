@@ -13876,12 +13876,12 @@
     "parent": "TASK-78",
     "status": "preimplementation_frozen_implementation_pending",
     "freeze": "docs/task-144-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "78-C144-P",
       "78-C144-N"
     ],
-    "mandatory_exact_cases": 6,
+    "mandatory_exact_cases": 7,
     "conditional_residual_cases": 2,
     "dialect_names": 14,
     "parser_classifications_verified": false,
@@ -13890,6 +13890,23 @@
     "canonical_full_bag_proof_verified": false,
     "child_signed_off": false,
     "parent_signed_off": false,
-    "release_approved": false
+    "release_approved": false,
+    "parser_cells": 126,
+    "adapter_cells": 27,
+    "freeze_history": [
+      "docs/task-144-acceptance-freeze-v1.json"
+    ],
+    "read_oracles": [
+      "tests/task_144_frozen_reads.rs",
+      "tests/task_144_shadow_oracles.rs"
+    ],
+    "write_oracles": [
+      "tests/task_144_ordered_cte.rs"
+    ],
+    "view_oracles": [
+      "tests/task_144_view.rs"
+    ],
+    "dialect_matrix": "tests/task_144_dialects.rs",
+    "adapter_matrix": "tests/task_144_adapter_parity.rs"
   }
 }
