@@ -192,15 +192,21 @@ CTEs and derived tables are local semantic scopes rather than physical dependenc
 
 Table-producing sources whose output schema cannot yet be modeled safely, including unresolved table functions and UNNEST-like factors, remain explicit `unsupported_table_factor` diagnostics rather than being omitted or assigned invented columns.
 
-### Bounded complete physical CTE bags (TASK-141)
+### Bounded complete physical CTE bags (TASK-141, TASK-142, TASK-143)
 
 `QueryStatement::cte_program()` retains a parser-independent, producer-first
 lexical DAG for ordinary WITH declarations with direct-column projections,
-chained/nested CTEs and one integer INNER JOIN equality. Each local producer
-has a distinct scope identity; two SQL aliases of one CTE reference the same
-complete bag rather than two independently insertable tables. Earlier
-declarations cannot borrow later ordinary CTEs. Recursive scopes reserve their
-own names but have no complete termination proof.
+chained/nested CTEs and one integer INNER JOIN equality. For attested signed
+integer inputs, a bounded subset additionally supports a single comparison
+against an integer literal in WHERE, checked addition or subtraction of a
+literal in projected aliases, and ungrouped COUNT(*) over a filtered or joined
+producer bag. Arithmetic overflow or unsupported expressions fail closed.
+Each local producer has a distinct scope identity; two SQL aliases of one CTE
+reference the same complete bag rather than two independently insertable tables.
+Earlier declarations cannot borrow later ordinary CTEs. A separate source-free
+positive-step recursive CTE subset proves finite UNION ALL/DISTINCT sequences
+only when the checked induction terminates within the portable width and
+materialization cap; cyclic and otherwise unbounded recursion remains residual.
 
 `physical_finite_cte_bag_plan` accepts only complete physical leaf snapshots
 and validated typed source schemas. It constructs every frozen producer bag,
@@ -216,8 +222,8 @@ CTE bag proof. Both produce an explicit `Residual` instead.
 
 An absent, well-typed terminal tuple is `Impossible` only after full
 evaluation; unsupported projections, missing/ambiguous schema evidence,
-recursion, forward-binding engine rules, materialized writes, computed
-ORDER BY expressions, partition-limited or hinted table scans, time-travel
+unproved recursion, forward-binding engine rules, general multi-producer writes,
+computed ORDER BY expressions, partition-limited or hinted table scans, time-travel
 sources, table-source positional column aliases, dialect-specific CTE FROM
 extensions, and other unproved operator shapes remain `Residual`.
 CTE lexical lookup folds unquoted identifiers to ASCII lowercase, rejects
@@ -228,9 +234,18 @@ For exact CTE bag proof, each ORDER BY key must resolve to an unqualified
 projected output label. Missing names and keys requiring unproved SQL
 name-resolution rules remain `Residual` rather than certifying a query
 that may fail at execution.
-Only DuckDB has an independent executed engine oracle; the other exposed
-dialect paths establish parser and canonical semantic parity, not native
-engine execution. See [the frozen TASK-141 matrix](task-141-proof-matrix.json).
+For a single row-local filtered/computed CTE in an INSERT, the existing
+ordered-write engine can materialize one complete read-only intermediate stage
+from the original physical inputs and derive exact target pre/post bags. It
+does not permit an independent insertion into the stage. Enforced target CHECK
+contradictions are Impossible and preserve the prior target atomically. Arbitrary
+joined or recursively materialized DML remains unproved. This ordered-write
+certificate is distinct from the read-only `physical_finite_cte_bag_plan`.
+
+Only DuckDB has an independent executed engine oracle; other exposed dialect
+paths establish parser and canonical semantic parity, not native vendor/session
+execution. See the [TASK-141 matrix](task-141-proof-matrix.json) and the
+[TASK-143 matrix](task-143-acceptance-freeze.json).
 
 ## Typed source schemas
 
