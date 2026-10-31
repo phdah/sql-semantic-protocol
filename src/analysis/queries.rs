@@ -658,6 +658,9 @@ pub(super) fn analyze_query(
                 && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                     if items.is_empty() && modifiers.is_empty()));
 
+    let cte_program = analyze_cte_program(query);
+    let output = refine_bounded_recursive_output(output, cte_program.as_ref());
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -666,7 +669,7 @@ pub(super) fn analyze_query(
         output,
         diagnostics,
     )
-    .with_cte_program(analyze_cte_program(query))
+    .with_cte_program(cte_program)
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_row_shaping(row_shaping)
