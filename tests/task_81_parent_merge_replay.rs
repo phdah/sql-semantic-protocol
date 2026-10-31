@@ -66,17 +66,13 @@ fn analysis(sql: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
         .iter()
         .map(|text| SqlInput::inline(*text))
         .collect::<Vec<_>>();
+    let ids = (0..owned.len())
+        .map(|index| format!("parent81-{index}"))
+        .collect::<Vec<_>>();
     let inputs = owned
         .iter()
-        .enumerate()
-        .map(|(index, input)| {
-            ConfiguredSqlInput::new(
-                format!("parent81-{index}"),
-                input,
-                "duckdb",
-                dialect.as_ref(),
-            )
-        })
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
     let mut bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
     let attested = vec![ConstraintEvidence::new(
