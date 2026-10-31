@@ -1162,20 +1162,20 @@
     "5": "Final head CI, independent review, signed acceptance audit"
   },
   "verification": {
-    "status": "implementation_verified_pending_independent_review",
+    "status": "child_signed_off_pending_merge",
     "mandatory_cells": 4,
     "physical_dialect_cells": 56,
     "adapter_cells": 12,
     "conditional_cells": 42,
     "native_engine": "duckdb_only",
-    "ci_code_head": "bd541cfea112449bd85bf7a5380b8f933f168e02",
-    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41141094151",
+    "ci_code_head": "cb4d257db75ec36bbc89ee50171196f395a679a6",
+    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41182159741",
     "mandatory_oracles_verified_by_ci": true,
     "dialect_matrix_verified_by_ci": true,
     "adapter_matrix_verified_by_ci": true,
     "conditional_parser_matrix_verified_by_ci": true,
-    "independent_review_verified": false,
-    "child_done": false,
+    "independent_review_verified": true,
+    "child_done": true,
     "parent_done": false
   }
 }

@@ -210,6 +210,10 @@ producers retain their own physical rows and identifiers, even when they do
 not contribute to the terminal result. Integer membership compares values
 numerically; tuple NULL membership is null-safe, unlike SQL JOIN equality.
 
+ClickHouse `ORDER BY ... WITH FILL` is row-generating, and `GLOBAL JOIN`
+has unproved distributed execution semantics; neither qualifies for Exact
+CTE bag proof. Both produce an explicit `Residual` instead.
+
 An absent, well-typed terminal tuple is `Impossible` only after full
 evaluation; unsupported projections, missing/ambiguous schema evidence,
 recursion, forward-binding engine rules, materialized writes, computed
