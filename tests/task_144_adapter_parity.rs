@@ -6,8 +6,10 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan, AnalysisBundle,
-    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow, PhysicalWriteState,
+    parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan,
+    physical_finite_view_read_plan, physical_ordered_cte_read_plan, AnalysisBundle,
+    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalOrderedCteProof,
+    PhysicalViewProof, PhysicalWriteRow, PhysicalWriteState,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -238,4 +240,70 @@ fn shadowed_cte_odcs_sources_preserve_complete_dual_leaf_truth() {
         exact(&compiled_named(case["sql"].as_str().unwrap(), &["inner_src","outer_src"]), &states),
         "ODCS and compiled dbt must preserve shadowed source identity and full bag"
     );
+}
+
+fn view_script(catalog: &RelationCatalog, statements: &[Value]) -> AnalysisBundle {
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let source = statements.iter().map(|sql| SqlInput::inline(sql.as_str().unwrap()))
+        .collect::<Vec<_>>();
+    let configured = source.iter().enumerate().map(|(index, sql)| {
+        let name = if index == 0 { "view" } else { "terminal" };
+        ConfiguredSqlInput::new(name, sql, "duckdb", dialect.as_ref())
+    }).collect::<Vec<_>>();
+    analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
+}
+
+#[test]
+fn compiled_dbt_view_model_has_exactly_the_logical_views_source_derived_bag() {
+    let freeze = cases();
+    let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == "78-C144-P-VIEW").unwrap();
+    let sqls = case["sql_statements"].as_array().unwrap();
+    let source = snapshots(case);
+    let direct_bundle = view_script(&catalog(true), sqls);
+    let terminal = direct_bundle.layers().last().unwrap();
+    let PhysicalViewProof::Exact(view) = physical_finite_view_read_plan(
+        &direct_bundle, terminal.id(), &source, None
+    ) else {
+        panic!("native VIEW must be source-derived rather than independently inserted");
+    };
+    // The compiled dbt model SQL is the authoritative manifest fact; a dbt
+    // materialization configuration is not a substitute for the compiled query.
+    let dbt_sql = "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage";
+    let dbt = exact(&compiled_named(dbt_sql, &["raw"]), &source);
+    assert_eq!(dbt.sources, vec!["raw"]);
+    assert_eq!(dbt.terminal, view.view_bag, "dbt compiled view query and CREATE VIEW have identical canonical value bags and physical source ids");
+    assert_eq!(dbt.terminal_domains["shifted"].integer_bounds, Some((12,13)));
+    assert!(!dbt.terminal_domains["shifted"].null_allowed);
+}
+
+#[test]
+fn compiled_dbt_read_preserves_the_complete_raw_script_materialized_poststate() {
+    let freeze = cases();
+    for id in ["78-C144-P-MULTISTEP", "78-C144-N-MULTISTEP-NULL"] {
+        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let catalog = RelationCatalog::from_schemas(&[
+            RelationSchema::new("raw".to_string(), vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()
+            ]).unwrap(),
+            RelationSchema::new("target".to_string(), vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
+            ]).unwrap(),
+        ]).unwrap();
+        let source = case["sql_statements"].as_array().unwrap().iter()
+            .map(|sql| SqlInput::inline(sql.as_str().unwrap())).collect::<Vec<_>>();
+        let dialect = dialect_from_name("duckdb").unwrap();
+        let configured = source.iter().enumerate().map(|(index, sql)| {
+            ConfiguredSqlInput::new(if index == 0 { "insert" } else { "read" }, sql, "duckdb", dialect.as_ref())
+        }).collect::<Vec<_>>();
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        let result = physical_ordered_cte_read_plan(&bundle, bundle.layers().last().unwrap().id(), &snapshots(case), None);
+        let PhysicalOrderedCteProof::Exact(proof) = result else {
+            panic!("{id}: no original-source derived final state: {result:?}");
+        };
+        let target = proof.final_states.iter().find(|state| state.relation() == "target").unwrap();
+        let dbt_read = compiled_named(source[1].sql(), &["target"]);
+        let dbt = exact(&dbt_read, &[target.clone()]);
+        assert_eq!(dbt, *proof.read, "{id}: dbt compiled read must equal original-source constructed target/CTE/terminal bag");
+    }
 }
