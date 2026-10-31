@@ -1,4 +1,16 @@
 {
+  "task_143_cte_producer_acceptance": {
+    "owner": "TASK-143",
+    "parent": "TASK-78",
+    "status": "implementation_in_progress_not_signed_off",
+    "freeze": "docs/task-143-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["78-C143-P", "78-C143-N"],
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "pending": ["COUNT and downstream write", "dialect and adapter matrix", "independent review and final CI"]
+  },
   "task_142_recursive_cte_acceptance": {
     "owner": "TASK-142",
     "parent": "TASK-78",
