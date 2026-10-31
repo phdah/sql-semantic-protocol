@@ -146,7 +146,6 @@ struct StageExecution {
     output_types: BTreeMap<String, bool>,
 }
 
-
 fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
     let recursion = program.recursion().ok_or("not a recursive stage")?;
     // The source-free seed and strictly increasing checked step are sufficient
@@ -166,8 +165,8 @@ fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
             )]),
             source_row_ids: vec![id.clone()],
         });
-        let qualifies = next < recursion.bound()
-            || (recursion.inclusive() && next == recursion.bound());
+        let qualifies =
+            next < recursion.bound() || (recursion.inclusive() && next == recursion.bound());
         if !qualifies {
             stopped = Some(id);
             break;
