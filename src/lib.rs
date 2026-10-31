@@ -55,6 +55,7 @@
 //! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
 //! - physical_finite_cte_bag_plan evaluates complete ordinary and bounded monotone recursive CTE producer bags with explicit self-edges, closed-world absence and typed outcome domains.
 //! - physical_ordered_cte_read_plan composes ordered materialized write states with a final source-complete CTE read, without independent insertion of a produced relation.
+//! - physical_finite_view_read_plan proves bounded logical view reads without inventing an independent physical view population.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_table_plan proves exact source-free VALUES and typed array fanout, finite two-input equality joins, COUNT(*) grouping, fixed star/PIVOT/UNPIVOT complete bags, SQL NOT TRUE identities and typed domains.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
@@ -178,7 +179,8 @@ pub use physical_realization::{
     physical_finite_quantified_subquery_plan, physical_finite_quantified_where_plan,
     physical_finite_rank_bag_plan, physical_finite_scalar_subquery_plan,
     physical_finite_set_bag_plan, physical_finite_set_tree_membership_plan,
-    physical_finite_set_tree_plan, physical_finite_table_plan, physical_finite_window_bag_plan,
+    physical_finite_set_tree_plan, physical_finite_table_plan, physical_finite_view_read_plan,
+    physical_finite_window_bag_plan,
     physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
     physical_ordered_cte_read_plan, physical_ordered_write_state_plan,
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
@@ -198,7 +200,7 @@ pub use physical_realization::{
     PhysicalFiniteWindowExact, PhysicalFiniteWindowProof, PhysicalIdentitySequence,
     PhysicalInColumnDomain, PhysicalInTruth, PhysicalJoinedAggregateExact,
     PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
-    PhysicalJointSourcePlan, PhysicalOrderedCteExact, PhysicalOrderedCteProof, PhysicalPageRow,
+    PhysicalJointSourcePlan, PhysicalOrderedCteExact, PhysicalOrderedCteProof, PhysicalViewExact, PhysicalViewProof, PhysicalPageRow,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProducerDomain, PhysicalProducerExistsExact,
     PhysicalProducerExistsProof, PhysicalProducerRow, PhysicalProofGap,
     PhysicalQuantifiedColumnDomain, PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact,
