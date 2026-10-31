@@ -391,6 +391,68 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
     ))
 }
 
+
+pub(super) fn refine_bounded_recursive_output(
+    output: Output,
+    program: Option<&CteProgram>,
+) -> Output {
+    let Some(program) = program else {
+        return output;
+    };
+    let [recursive_stage, terminal] = program.stages() else {
+        return output;
+    };
+    let Some(recursion) = recursive_stage.recursion() else {
+        return output;
+    };
+    let Some(values) = recursion.finite_values() else {
+        return output;
+    };
+    if output.columns().len() != terminal.projections().len()
+        || !output
+            .columns()
+            .iter()
+            .zip(terminal.projections())
+            .all(|(column, projection)| {
+                column.name() == projection.name()
+                    && projection.source().column() == recursion.column()
+            })
+    {
+        return output;
+    }
+    let ranges = if recursion.increment() == 1 {
+        let Some(first) = values.first() else {
+            return output;
+        };
+        let Some(last) = values.last() else {
+            return output;
+        };
+        vec![ValueRange::new(
+            Some(Bound::new(integer_literal(*first), true)),
+            Some(Bound::new(integer_literal(*last), true)),
+        )]
+    } else {
+        values
+            .iter()
+            .map(|value| {
+                ValueRange::new(
+                    Some(Bound::new(integer_literal(*value), true)),
+                    Some(Bound::new(integer_literal(*value), true)),
+                )
+            })
+            .collect()
+    };
+    let domain = ValueDomain::ranges(ranges);
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| column.with_domain(domain.clone()))
+            .collect(),
+    )
+}
+
 /// Normalize one limited, nonrecursive WITH program into lexical producer facts.
 ///
 /// Retain only direct column projections and equality joins. A missing program
