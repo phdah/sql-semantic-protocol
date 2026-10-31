@@ -2,8 +2,8 @@
   "task": "TASK-78",
   "version": 1,
   "scope": "Independent original parent acceptance crosswalk over four completed/merged child contracts; concrete values and DuckDB oracles remain owned by child freeze files",
-  "status": "parent_review_pending_final_head_ci",
-  "parent_signed_off": false,
+  "status": "parent_signed_off_final_metadata_ci_pending",
+  "parent_signed_off": true,
   "release_approved": false,
   "missing_mandatory_child_cases": [],
   "merged_children": {
@@ -442,5 +442,16 @@
     "unsupported_logic": "conditional Residual stays conditional with child owner",
     "signoff": "Final parent PR CI and independent review must pass before TASK-78 Done",
     "release_gate": "TASK-91 separately gated"
+  },
+  "signoff": {
+    "date": "2026-10-31",
+    "decision": "all_six_original_ac_verified_on_frozen_20_mandatory_and_9_conditional_cases",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407",
+    "implementation_ci_sha": "fa0b009e7586f760acea6d1397475d59548c81e4",
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824",
+    "review_kind": "COMMENT_not_distinct_account_approval",
+    "native_engine_boundary": "DuckDB only",
+    "final_metadata_head_ci": "required_before_merge",
+    "release_approved": false
   }
 }

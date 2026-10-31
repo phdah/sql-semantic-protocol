@@ -5,7 +5,7 @@
     "freeze_version": 1,
     "audit": "docs/task-78-parent-acceptance-audit.md",
     "parent_regression": "tests/task_78_parent_closure.rs",
-    "status": "parent_review_pending_final_head_ci",
+    "status": "parent_signed_off_final_metadata_ci_pending",
     "original_ac": [
       1,
       2,
@@ -24,10 +24,13 @@
     "conditional_cases": 9,
     "required_dialect_identities": 14,
     "adapter_evidence_sources": 3,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "independent_native_engine": "DuckDB",
-    "gate": "final PR CI and independent parent review before marking Done; TASK-91 release separate"
+    "gate": "final PR CI and independent parent review before marking Done; TASK-91 release separate",
+    "signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407",
+    "review": "https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824",
+    "final_metadata_head_ci": "must pass before merge"
   },
   "task_143_cte_producer_acceptance": {
     "owner": "TASK-143",
