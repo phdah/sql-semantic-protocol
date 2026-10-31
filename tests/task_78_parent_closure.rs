@@ -8,10 +8,22 @@ use serde_json::{json, Value};
 use std::collections::BTreeSet;
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-141", include_str!("../docs/task-141-proof-matrix.json")),
-    ("TASK-142", include_str!("../docs/task-142-acceptance-freeze.json")),
-    ("TASK-143", include_str!("../docs/task-143-acceptance-freeze.json")),
-    ("TASK-144", include_str!("../docs/task-144-acceptance-freeze.json")),
+    (
+        "TASK-141",
+        include_str!("../docs/task-141-proof-matrix.json"),
+    ),
+    (
+        "TASK-142",
+        include_str!("../docs/task-142-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-143",
+        include_str!("../docs/task-143-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-144",
+        include_str!("../docs/task-144-acceptance-freeze.json"),
+    ),
 ];
 
 fn parse(raw: &str) -> Value {
@@ -48,9 +60,15 @@ fn verify_mandatory_outcome(child: &Value, task: &str, id: &str) {
     );
     if task == "TASK-143" || task == "TASK-144" {
         assert!(nonempty(&child["true_proof"]), "{id}: missing TRUE proof");
-        assert!(nonempty(&child["not_true_proof"]), "{id}: missing NOT TRUE proof");
+        assert!(
+            nonempty(&child["not_true_proof"]),
+            "{id}: missing NOT TRUE proof"
+        );
     } else if task == "TASK-141" {
-        assert_eq!(child["expected_proof"], "Exact", "{id}: unexpectedly nonexact");
+        assert_eq!(
+            child["expected_proof"], "Exact",
+            "{id}: unexpectedly nonexact"
+        );
     } else {
         assert!(
             child["positive"].is_object() || child["proof"] == "Impossible",
@@ -61,7 +79,9 @@ fn verify_mandatory_outcome(child: &Value, task: &str, id: &str) {
 
 #[test]
 fn every_child_case_has_an_independent_parent_inventory_entry() {
-    let parent = parse(include_str!("../docs/task-78-parent-acceptance-freeze.json"));
+    let parent = parse(include_str!(
+        "../docs/task-78-parent-acceptance-freeze.json"
+    ));
     assert_eq!(parent["task"], "TASK-78");
     assert_eq!(parent["version"], 1);
     assert_eq!(parent["release_approved"], false);
@@ -71,7 +91,10 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
     assert_eq!(mandatory.len(), 20);
     assert_eq!(conditional.len(), 9);
     assert!(mandatory.is_disjoint(&conditional));
-    assert_eq!(parent["case_index"].as_object().expect("case index").len(), 29);
+    assert_eq!(
+        parent["case_index"].as_object().expect("case index").len(),
+        29
+    );
     let dialects = strings(&parent["dialect_identities"]);
     assert_eq!(dialects.len(), 14); // 13 baseline dialects and the postgres alias.
     let adapters = strings(&parent["canonical_evidence_sources"]);
@@ -126,12 +149,18 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
             assert_eq!(index["owner"], task);
             assert_eq!(
                 index["classification"],
-                if is_conditional { "conditional" } else { "mandatory" }
+                if is_conditional {
+                    "conditional"
+                } else {
+                    "mandatory"
+                }
             );
             let fixture_id = index["fixture_id"].as_str().expect("fixture");
-            assert!(record["fixture_ids"].as_array().expect("fixtures").iter().any(
-                |fixture| fixture.as_str() == Some(fixture_id)
-            ));
+            assert!(record["fixture_ids"]
+                .as_array()
+                .expect("fixtures")
+                .iter()
+                .any(|fixture| fixture.as_str() == Some(fixture_id)));
             if is_conditional {
                 assert!(actual_conditional.insert(id.to_owned()), "{id}: duplicate");
                 assert!(seen_conditional.insert(id.to_owned()), "{id}: duplicate");
@@ -141,8 +170,14 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
                 assert!(seen_mandatory.insert(id.to_owned()), "{id}: duplicate");
             }
         }
-        assert_eq!(actual_mandatory, declared_mandatory, "{task}: missing required case");
-        assert_eq!(actual_conditional, declared_conditional, "{task}: missing boundary");
+        assert_eq!(
+            actual_mandatory, declared_mandatory,
+            "{task}: missing required case"
+        );
+        assert_eq!(
+            actual_conditional, declared_conditional,
+            "{task}: missing boundary"
+        );
         if task == "TASK-141" {
             for case in child["mandatory"].as_array().expect("mandatory") {
                 let cells = case["dialect_cells"].as_array().expect("dialect cells");
@@ -153,7 +188,11 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
                 assert_eq!(identities, dialects);
             }
         } else {
-            assert_eq!(strings(&child["dialects"]), dialects, "{task}: dialect coverage");
+            assert_eq!(
+                strings(&child["dialects"]),
+                dialects,
+                "{task}: dialect coverage"
+            );
         }
     }
     assert_eq!(seen_mandatory, mandatory);
@@ -163,7 +202,9 @@ fn every_child_case_has_an_independent_parent_inventory_entry() {
 
 #[test]
 fn original_acceptance_and_manifest_do_not_confuse_parent_with_release() {
-    let freeze = parse(include_str!("../docs/task-78-parent-acceptance-freeze.json"));
+    let freeze = parse(include_str!(
+        "../docs/task-78-parent-acceptance-freeze.json"
+    ));
     let manifest = parse(include_str!("../docs/coverage-manifest.json"));
     let criteria = freeze["original_acceptance_criteria"]
         .as_array()
@@ -176,18 +217,32 @@ fn original_acceptance_and_manifest_do_not_confuse_parent_with_release() {
         assert!(nonempty(&criterion["obligation"]));
         let required = strings(&criterion["mandatory_case_ids"]);
         assert!(!required.is_empty(), "AC {} has no mandatory oracle", i + 1);
-        assert!(required.is_subset(&mandatory), "AC {} has unknown proof", i + 1);
+        assert!(
+            required.is_subset(&mandatory),
+            "AC {} has unknown proof",
+            i + 1
+        );
         assert!(
             strings(&criterion["conditional_case_ids"]).is_subset(&conditional),
-            "AC {} has unknown residual", i + 1
+            "AC {} has unknown residual",
+            i + 1
         );
     }
     let entry = &manifest["task_78_parent_acceptance"];
     assert_eq!(entry["owner"], "TASK-78");
-    assert_eq!(entry["freeze"], "docs/task-78-parent-acceptance-freeze.json");
+    assert_eq!(
+        entry["freeze"],
+        "docs/task-78-parent-acceptance-freeze.json"
+    );
     assert_eq!(entry["original_ac"], json!([1, 2, 3, 4, 5, 6]));
-    assert_eq!(entry["mandatory_cases"].as_u64(), Some(mandatory.len() as u64));
-    assert_eq!(entry["conditional_cases"].as_u64(), Some(conditional.len() as u64));
+    assert_eq!(
+        entry["mandatory_cases"].as_u64(),
+        Some(mandatory.len() as u64)
+    );
+    assert_eq!(
+        entry["conditional_cases"].as_u64(),
+        Some(conditional.len() as u64)
+    );
     assert_eq!(entry["parent_signed_off"], freeze["parent_signed_off"]);
     assert_eq!(entry["release_approved"], false);
 }
