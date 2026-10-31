@@ -398,10 +398,7 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
 /// whose explicit SQL qualifier is not bound to the actual FROM instance.
 /// This guard also applies when the bounded physical program is rejected:
 /// ordinary output analysis may still have seen the recursive seed domain.
-pub(super) fn guard_recursive_projection_qualifiers(
-    query: &SqlQuery,
-    output: Output,
-) -> Output {
+pub(super) fn guard_recursive_projection_qualifiers(query: &SqlQuery, output: Output) -> Output {
     if !query.with.as_ref().is_some_and(|with| with.recursive) {
         return output;
     }
@@ -417,10 +414,9 @@ pub(super) fn guard_recursive_projection_qualifiers(
     if select.projection.len() != output.columns().len() {
         return output;
     }
-    let bound_name = alias.as_ref().map_or_else(
-        || name.to_string(),
-        |alias| alias.name.value.clone(),
-    );
+    let bound_name = alias
+        .as_ref()
+        .map_or_else(|| name.to_string(), |alias| alias.name.value.clone());
     Output::new(
         output
             .columns()
