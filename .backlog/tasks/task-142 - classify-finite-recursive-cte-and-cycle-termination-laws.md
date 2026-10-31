@@ -1,10 +1,10 @@
 ---
 id: TASK-142
 title: Classify finite recursive CTE and cycle/termination laws
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies:
@@ -39,6 +39,16 @@ type: feature
 - [ ] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-142; no claim of native engine execution without an executable oracle.
 - [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-78 parent open.
 <!-- AC:END -->
+
+## Implementation in progress (2026-10-31)
+
+- Frozen task-owned acceptance inventory: `docs/task-142-acceptance-freeze.json`.
+- Canonical bounded recursive producer for strictly increasing integer seeds
+  and guarded UNION ALL / UNION DISTINCT steps.
+- Checked complete physical bags and negative membership, without treating
+  cyclic or oversized recursion as exact.
+- Pending: all-dialect and adapter matrix, final CI, independent review and
+  complete child signoff. TASK-143 remains blocked until this PR merges.
 
 ## Next
 
