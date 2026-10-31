@@ -5,7 +5,7 @@
 
 use serde_json::{json, Map, Value};
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, parse_dbt_manifest, AnalysisBundle, ProtocolStatement,
+    dialect_from_name, parse_dbt_manifest, AnalysisBundle, ProtocolStatement,
     QueryStatement, SqlInput,
 };
 
