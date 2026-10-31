@@ -24,10 +24,12 @@ pub(super) fn evaluate_simple_select(
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
 ) -> StateResult<Vec<Vec<LiteralValue>>> {
-    Ok(evaluate_simple_select_with_source_ids(bundle, query, states)?
-        .into_iter()
-        .map(|(_, values)| values)
-        .collect())
+    Ok(
+        evaluate_simple_select_with_source_ids(bundle, query, states)?
+            .into_iter()
+            .map(|(_, values)| values)
+            .collect(),
+    )
 }
 
 /// Evaluate one canonical source-local SELECT while retaining each physical
