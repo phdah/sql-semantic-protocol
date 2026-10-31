@@ -366,7 +366,6 @@ schema:
     );
 }
 
-
 #[test]
 fn computed_cte_overflow_never_certifies_a_wider_insert_target() {
     // INTEGER + INTEGER uses the INTEGER expression width, even when the
@@ -419,6 +418,11 @@ fn computed_cte_overflow_never_certifies_a_wider_insert_target() {
         db.execute_batch(SQL).is_err(),
         "native DuckDB INTEGER addition must overflow before assignment to BIGINT"
     );
-    let count: i64 = db.query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0)).unwrap();
-    assert_eq!(count, 0, "native statement failure must preserve the empty target");
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(
+        count, 0,
+        "native statement failure must preserve the empty target"
+    );
 }
