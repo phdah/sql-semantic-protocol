@@ -1,4 +1,38 @@
 {
+  "task_80_parent_acceptance": {
+    "owner": "TASK-80",
+    "freeze": "docs/task-80-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "regression": "tests/task_80_parent_closure.rs",
+    "audit": "docs/task-80-parent-acceptance-audit.md",
+    "status": "pending_independent_review_and_required_ci",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-145",
+      "TASK-146",
+      "TASK-147",
+      "TASK-148"
+    ],
+    "mandatory_cases": 32,
+    "conditional_cases": 18,
+    "dialect_identities": 13,
+    "adapter_evidence_sources": 3,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "remaining_gates": [
+      "independent original AC review",
+      "reconcile mandatory negative residual and typed domain exceptions",
+      "review repeated-application/idempotence evidence for AC4",
+      "final branch CI incl dbt E2E and no-default features"
+    ]
+  },
   "task_78_parent_acceptance": {
     "owner": "TASK-78",
     "freeze": "docs/task-78-parent-acceptance-freeze.json",
