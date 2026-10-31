@@ -285,7 +285,10 @@ fn final_recursive_projection_qualifier_must_resolve_to_its_actual_source_alias(
         let sql = format!("{recursive} {final_query}");
         let analyzed = sql_bundle(&sql, "duckdb");
         let q = query(&analyzed);
-        assert!(q.cte_program().is_none(), "invalid source qualifier must not construct a canonical program: {sql}");
+        assert!(
+            q.cte_program().is_none(),
+            "invalid source qualifier must not construct a canonical program: {sql}"
+        );
         let layer = analyzed.layers().last().unwrap();
         assert!(
             matches!(
@@ -302,7 +305,7 @@ fn final_recursive_projection_qualifier_must_resolve_to_its_actual_source_alias(
 
     let sql = format!("{recursive} SELECT t.x FROM n AS t");
     let analyzed = sql_bundle(&sql, "duckdb");
-    assert!(query(&analyzed).cte_program().is_some(), "properly bound qualifier must still prove");
+    assert!(
     let proof = exact(&analyzed);
     assert_eq!(proof.terminal_domains["x"].integer_bounds, Some((1, 3)));
 }
