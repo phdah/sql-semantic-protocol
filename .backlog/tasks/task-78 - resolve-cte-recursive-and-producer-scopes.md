@@ -1,10 +1,10 @@
 ---
 id: TASK-78
 title: Model recursive CTEs and producer/derived-scope exactness
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies: 
@@ -70,3 +70,14 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 **Original acceptance mapping:** #1 -> TASK-141, TASK-142, TASK-143, TASK-144; #2 -> TASK-142, TASK-144; #3 -> TASK-141, TASK-142, TASK-143, TASK-144; #4 -> TASK-141, TASK-143, TASK-144; #5 -> TASK-141, TASK-142, TASK-143, TASK-144; #6 -> TASK-141, TASK-142, TASK-143, TASK-144.
 
 **Closure gate:** All child PRs merged, every original AC independently verified, every mandatory outcome/execution oracle green, conditional vendor/session cases owner-reviewed, adapter and 13-dialect matrix complete, final CI green. Neither parser coverage nor residual classification alone excuses a required exact variant. TASK-91 remains separately release-blocked.
+
+## Independent parent audit (2026-10-31)
+
+TASK-141..144 are Done and their PRs #167..170 are merged on `main`.
+The task-owned independent original-AC v1 crosswalk is
+[`docs/task-78-parent-acceptance-freeze.json`](../../docs/task-78-parent-acceptance-freeze.json),
+with [audit](../../docs/task-78-parent-acceptance-audit.md) and
+[`tests/task_78_parent_closure.rs`](../../tests/task_78_parent_closure.rs).
+The crosswalk indexes 20 mandatory child proof cases and 9 reviewed conditional cases.
+AC #1..#6 stay unchecked while parent-head CI and independent review remain pending.
+Do not mark TASK-78 Done or treat TASK-91 as approved until those gates pass.
