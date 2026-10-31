@@ -301,3 +301,43 @@ fn engine_specific_view_creation_options_fail_closed_in_canonical_wire_and_physi
         "expected at least two vendor view modifiers to cross the parser boundary"
     );
 }
+
+#[test]
+fn view_consumer_integer_overflow_is_not_certified_by_wider_interpreter_arithmetic() {
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw".to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    for (expression, exact) in [
+        ("shifted + 1", true),
+        ("shifted + 2147483640", false),
+    ] {
+        let definition = SqlInput::inline(
+            "CREATE VIEW view_stage AS SELECT k + 10 AS shifted FROM raw WHERE k > 1",
+        );
+        let statement = format!("SELECT {expression} AS value FROM view_stage");
+        let read = SqlInput::inline(&statement);
+        let configured = [
+            ConfiguredSqlInput::new("view", &definition, "duckdb", dialect.as_ref()),
+            ConfiguredSqlInput::new("read", &read, "duckdb", dialect.as_ref()),
+        ];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        let target = bundle.layers().last().unwrap();
+        let proof =
+            physical_finite_view_read_plan(&bundle, target.id(), &initial(&[Some(2)]), None);
+        if exact {
+            assert!(
+                matches!(proof, PhysicalViewProof::Exact(_)),
+                "{expression}: bounded arithmetic should be exact: {proof:?}"
+            );
+        } else {
+            assert!(
+                matches!(proof, PhysicalViewProof::Residual { .. }),
+                "{expression}: engine integer overflow must not be called exact: {proof:?}"
+            );
+        }
+    }
+}
