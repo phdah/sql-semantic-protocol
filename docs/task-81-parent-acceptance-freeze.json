@@ -1,0 +1,761 @@
+{
+  "task": "TASK-81",
+  "version": 1,
+  "scope": "Independent parent crosswalk; child-owned frozen SQL, physical state, domain, DuckDB and adapter oracles remain authoritative. No native vendor execution inferred from parser acceptance.",
+  "status": "independent_parent_review_pending_ci",
+  "parent_signed_off": false,
+  "release_approved": false,
+  "merged_children": {
+    "TASK-149": {
+      "file": "docs/task-149-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/161",
+      "fixture_ids": [
+        "81-C149-P",
+        "81-C149-N"
+      ],
+      "mandatory_case_ids": [
+        "81-C149-P-update-literal",
+        "81-C149-P-update-computed",
+        "81-C149-P-update-default",
+        "81-C149-P-update-returning",
+        "81-C149-P-delete",
+        "81-C149-P-delete-returning",
+        "81-C149-N-null-unknown",
+        "81-C149-N-delete-false",
+        "81-C149-N-update-null",
+        "81-C149-N-missing-default",
+        "81-C149-P-simultaneous-assignments",
+        "81-C149-N-zero-returning",
+        "81-C149-N-duplicate-key-impossible"
+      ],
+      "conditional_case_ids": [
+        "81-C149-N-unattested-default",
+        "81-C149-C-vendor-returning",
+        "81-C149-C-computed-casts"
+      ],
+      "oracle_files": [
+        "tests/task_149_acceptance_matrix.rs",
+        "tests/task_149_dialect_adapter.rs"
+      ]
+    },
+    "TASK-150": {
+      "file": "docs/task-150-acceptance-freeze.json",
+      "version": 3,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/162",
+      "fixture_ids": [
+        "81-C150-P",
+        "81-C150-N"
+      ],
+      "mandatory_case_ids": [
+        "81-C150-P-update-from-unique",
+        "81-C150-P-delete-using-unique",
+        "81-C150-N-null-nonmatch",
+        "81-C150-P-empty-source",
+        "81-C150-N-cte-boundary",
+        "81-C150-P-delete-using-duplicates",
+        "81-C150-P-update-computed",
+        "81-C150-N-null-update"
+      ],
+      "conditional_case_ids": [
+        "81-C150-N-ambiguous-update",
+        "81-C150-N-missing-source"
+      ],
+      "oracle_files": [
+        "tests/task_150_joined_writes.rs",
+        "tests/task_150_dialect_adapter.rs"
+      ]
+    },
+    "TASK-151": {
+      "file": "docs/task-151-acceptance-freeze.json",
+      "version": 3,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/163",
+      "fixture_ids": [
+        "81-C151-P",
+        "81-C151-N"
+      ],
+      "mandatory_case_ids": [
+        "81-C151-P-returning-two-rows",
+        "81-C151-P-update-qualified-returning",
+        "81-C151-P-delete-qualified-returning",
+        "81-C151-N-returning-other-alias",
+        "81-C151-N-returning-star",
+        "81-C151-P-correlated-exists-update",
+        "81-C151-N-correlated-not-exists-delete"
+      ],
+      "conditional_case_ids": [
+        "81-C151-P-ordered-limit",
+        "81-C151-N-partition-target"
+      ],
+      "oracle_files": [
+        "tests/task_151_qualified_returning.rs",
+        "tests/task_151_dialect_adapter.rs"
+      ]
+    },
+    "TASK-152": {
+      "file": "docs/task-152-acceptance-freeze.json",
+      "version": 4,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/164",
+      "fixture_ids": [
+        "81-C152-P",
+        "81-C152-N"
+      ],
+      "mandatory_case_ids": [
+        "81-C152-P-three-writes",
+        "81-C152-P-nullable-fk-untouched",
+        "81-C152-N-sql-unknown",
+        "81-C152-N-check-on-update",
+        "81-C152-N-pk-insert",
+        "81-C152-N-missing-reference"
+      ],
+      "conditional_case_ids": [
+        "81-C152-N-fk-insert",
+        "81-C152-C-vendor_transaction_atomicity",
+        "81-C152-C-deferred_constraint_checks",
+        "81-C152-C-noninteger_comparison_or_collation",
+        "81-C152-C-foreign_key_missing_referenced_tuple"
+      ],
+      "oracle_files": [
+        "tests/task_152_ordered_writes.rs",
+        "tests/task_152_adapter_dialect.rs"
+      ]
+    }
+  },
+  "fixture_ids": [
+    "81-C149-N",
+    "81-C149-P",
+    "81-C150-N",
+    "81-C150-P",
+    "81-C151-N",
+    "81-C151-P",
+    "81-C152-N",
+    "81-C152-P"
+  ],
+  "mandatory_case_ids": [
+    "81-C149-P-update-literal",
+    "81-C149-P-update-computed",
+    "81-C149-P-update-default",
+    "81-C149-P-update-returning",
+    "81-C149-P-delete",
+    "81-C149-P-delete-returning",
+    "81-C149-N-null-unknown",
+    "81-C149-N-delete-false",
+    "81-C149-N-update-null",
+    "81-C149-N-missing-default",
+    "81-C149-P-simultaneous-assignments",
+    "81-C149-N-zero-returning",
+    "81-C149-N-duplicate-key-impossible",
+    "81-C150-P-update-from-unique",
+    "81-C150-P-delete-using-unique",
+    "81-C150-N-null-nonmatch",
+    "81-C150-P-empty-source",
+    "81-C150-N-cte-boundary",
+    "81-C150-P-delete-using-duplicates",
+    "81-C150-P-update-computed",
+    "81-C150-N-null-update",
+    "81-C151-P-returning-two-rows",
+    "81-C151-P-update-qualified-returning",
+    "81-C151-P-delete-qualified-returning",
+    "81-C151-N-returning-other-alias",
+    "81-C151-N-returning-star",
+    "81-C151-P-correlated-exists-update",
+    "81-C151-N-correlated-not-exists-delete",
+    "81-C152-P-three-writes",
+    "81-C152-P-nullable-fk-untouched",
+    "81-C152-N-sql-unknown",
+    "81-C152-N-check-on-update",
+    "81-C152-N-pk-insert",
+    "81-C152-N-missing-reference"
+  ],
+  "conditional_case_ids": [
+    "81-C149-N-unattested-default",
+    "81-C149-C-vendor-returning",
+    "81-C149-C-computed-casts",
+    "81-C150-N-ambiguous-update",
+    "81-C150-N-missing-source",
+    "81-C151-P-ordered-limit",
+    "81-C151-N-partition-target",
+    "81-C152-N-fk-insert",
+    "81-C152-C-vendor_transaction_atomicity",
+    "81-C152-C-deferred_constraint_checks",
+    "81-C152-C-noninteger_comparison_or_collation",
+    "81-C152-C-foreign_key_missing_referenced_tuple"
+  ],
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_sources": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "case_index": {
+    "81-C149-P-update-literal": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-update-literal",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-update-computed": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-update-computed",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-update-default": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-update-default",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-update-returning": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-update-returning",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-delete": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-delete",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-delete-returning": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-delete-returning",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-null-unknown": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-N-null-unknown",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-delete-false": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-N-delete-false",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-update-null": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-N-update-null",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-missing-default": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C149-N-missing-default",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-P-simultaneous-assignments": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-P-simultaneous-assignments",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-zero-returning": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C149-N-zero-returning",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-duplicate-key-impossible": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "mandatory",
+      "proof": "Impossible",
+      "evidence": "case",
+      "source_key": "81-C149-N-duplicate-key-impossible",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C149-N-unattested-default": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional",
+      "source_key": "81-C149-N-unattested-default",
+      "original_classification": "residual"
+    },
+    "81-C149-C-vendor-returning": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional",
+      "source_key": "81-C149-C-vendor-returning",
+      "original_classification": "conditional"
+    },
+    "81-C149-C-computed-casts": {
+      "owner": "TASK-149",
+      "fixture_id": "81-C149-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional",
+      "source_key": "81-C149-C-computed-casts",
+      "original_classification": "conditional"
+    },
+    "81-C150-P-update-from-unique": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-P-update-from-unique",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-P-delete-using-unique": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-P-delete-using-unique",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-N-null-nonmatch": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-N-null-nonmatch",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-N-ambiguous-update": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C150-N-ambiguous-update",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-P-empty-source": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-P-empty-source",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-N-cte-boundary": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-N-cte-boundary",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-P-delete-using-duplicates": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-P-delete-using-duplicates",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-P-update-computed": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-P-update-computed",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-N-missing-source": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C150-N-missing-source",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C150-N-null-update": {
+      "owner": "TASK-150",
+      "fixture_id": "81-C150-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C150-N-null-update",
+      "original_classification": "child_frozen_case"
+    },
+    "81-C151-P-returning-two-rows": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C151-P-returning-two-rows",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C151-P-update-qualified-returning": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C151-P-update-qualified-returning",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C151-P-delete-qualified-returning": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C151-P-delete-qualified-returning",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C151-N-returning-other-alias": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-N",
+      "classification": "mandatory",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C151-N-returning-other-alias",
+      "original_classification": "mandatory_negative"
+    },
+    "81-C151-N-returning-star": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-N",
+      "classification": "mandatory",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C151-N-returning-star",
+      "original_classification": "mandatory_negative"
+    },
+    "81-C151-P-ordered-limit": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-P",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C151-P-ordered-limit",
+      "original_classification": "conditional_vendor"
+    },
+    "81-C151-P-correlated-exists-update": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C151-P-correlated-exists-update",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C151-N-correlated-not-exists-delete": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C151-N-correlated-not-exists-delete",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C151-N-partition-target": {
+      "owner": "TASK-151",
+      "fixture_id": "81-C151-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C151-N-partition-target",
+      "original_classification": "conditional_vendor"
+    },
+    "81-C152-P-three-writes": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C152-P-three-writes",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C152-P-nullable-fk-untouched": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-P",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C152-P-nullable-fk-untouched",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C152-N-sql-unknown": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "mandatory",
+      "proof": "Exact",
+      "evidence": "case",
+      "source_key": "81-C152-N-sql-unknown",
+      "original_classification": "mandatory_exact"
+    },
+    "81-C152-N-check-on-update": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "mandatory",
+      "proof": "Impossible",
+      "evidence": "case",
+      "source_key": "81-C152-N-check-on-update",
+      "original_classification": "mandatory_impossible"
+    },
+    "81-C152-N-fk-insert": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C152-N-fk-insert",
+      "original_classification": "conditional_residual"
+    },
+    "81-C152-N-pk-insert": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "mandatory",
+      "proof": "Impossible",
+      "evidence": "case",
+      "source_key": "81-C152-N-pk-insert",
+      "original_classification": "mandatory_impossible"
+    },
+    "81-C152-N-missing-reference": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "mandatory",
+      "proof": "Residual",
+      "evidence": "case",
+      "source_key": "81-C152-N-missing-reference",
+      "original_classification": "mandatory_residual"
+    },
+    "81-C152-C-vendor_transaction_atomicity": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional_boundary",
+      "source_key": "vendor_transaction_atomicity",
+      "original_classification": "vendor_boundary"
+    },
+    "81-C152-C-deferred_constraint_checks": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional_boundary",
+      "source_key": "deferred_constraint_checks",
+      "original_classification": "vendor_boundary"
+    },
+    "81-C152-C-noninteger_comparison_or_collation": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional_boundary",
+      "source_key": "noninteger_comparison_or_collation",
+      "original_classification": "vendor_boundary"
+    },
+    "81-C152-C-foreign_key_missing_referenced_tuple": {
+      "owner": "TASK-152",
+      "fixture_id": "81-C152-N",
+      "classification": "conditional",
+      "proof": "Residual",
+      "evidence": "root_conditional_boundary",
+      "source_key": "foreign_key_missing_referenced_tuple",
+      "original_classification": "vendor_boundary"
+    }
+  },
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "obligation": "UPDATE/DELETE forms, expressions, joins/CTEs, qualified targets, correlated predicates, RETURNING and vendor selection boundaries",
+      "mandatory_case_ids": [
+        "81-C149-P-update-default",
+        "81-C149-P-update-computed",
+        "81-C150-P-update-from-unique",
+        "81-C150-P-delete-using-unique",
+        "81-C150-N-cte-boundary",
+        "81-C151-P-returning-two-rows",
+        "81-C151-P-correlated-exists-update",
+        "81-C151-N-correlated-not-exists-delete"
+      ],
+      "conditional_case_ids": [
+        "81-C151-P-ordered-limit",
+        "81-C151-N-partition-target",
+        "81-C149-C-vendor-returning"
+      ]
+    },
+    {
+      "id": 2,
+      "obligation": "Target row occurrences, source match cardinality, action precedence and SQL TRUE/FALSE/UNKNOWN",
+      "mandatory_case_ids": [
+        "81-C149-N-null-unknown",
+        "81-C149-P-simultaneous-assignments",
+        "81-C150-P-delete-using-duplicates",
+        "81-C150-N-null-update",
+        "81-C152-P-three-writes"
+      ],
+      "conditional_case_ids": [
+        "81-C150-N-ambiguous-update"
+      ]
+    },
+    {
+      "id": 3,
+      "obligation": "Complete affected/untouched/pre/post target bags, constraints, typed domains and negative proof directions",
+      "mandatory_case_ids": [
+        "81-C149-N-duplicate-key-impossible",
+        "81-C149-N-delete-false",
+        "81-C150-N-null-nonmatch",
+        "81-C151-N-returning-other-alias",
+        "81-C151-N-returning-star",
+        "81-C152-N-check-on-update",
+        "81-C152-N-pk-insert",
+        "81-C152-N-missing-reference"
+      ],
+      "conditional_case_ids": [
+        "81-C149-N-unattested-default",
+        "81-C150-N-missing-source",
+        "81-C152-N-fk-insert",
+        "81-C152-C-deferred_constraint_checks"
+      ]
+    },
+    {
+      "id": 4,
+      "obligation": "Ordered INSERT/UPDATE/DELETE composition and bounded RETURNING domains, with MERGE held to its separate owner",
+      "mandatory_case_ids": [
+        "81-C152-P-three-writes",
+        "81-C152-P-nullable-fk-untouched",
+        "81-C152-N-sql-unknown",
+        "81-C151-P-update-qualified-returning",
+        "81-C151-P-delete-qualified-returning"
+      ],
+      "conditional_case_ids": [
+        "81-C152-C-vendor_transaction_atomicity"
+      ]
+    },
+    {
+      "id": 5,
+      "obligation": "Complete-bag native multi-table and correlated UPDATE/DELETE positive/negative/NULL/duplicate fixtures",
+      "mandatory_case_ids": [
+        "81-C150-P-update-from-unique",
+        "81-C150-P-delete-using-unique",
+        "81-C150-P-empty-source",
+        "81-C150-P-update-computed",
+        "81-C151-P-correlated-exists-update",
+        "81-C151-N-correlated-not-exists-delete"
+      ],
+      "conditional_case_ids": [
+        "81-C150-N-ambiguous-update",
+        "81-C152-C-noninteger_comparison_or_collation"
+      ]
+    },
+    {
+      "id": 6,
+      "obligation": "Rust/API, SQL/dbt/ODCS, dialect parser, DuckDB and protocol contract conformance with fail-closed vendor boundaries",
+      "mandatory_case_ids": [
+        "81-C149-P-update-literal",
+        "81-C149-P-update-computed",
+        "81-C149-P-update-default",
+        "81-C149-P-update-returning",
+        "81-C149-P-delete",
+        "81-C149-P-delete-returning",
+        "81-C149-N-null-unknown",
+        "81-C149-N-delete-false",
+        "81-C149-N-update-null",
+        "81-C149-N-missing-default",
+        "81-C149-P-simultaneous-assignments",
+        "81-C149-N-zero-returning",
+        "81-C149-N-duplicate-key-impossible",
+        "81-C150-P-update-from-unique",
+        "81-C150-P-delete-using-unique",
+        "81-C150-N-null-nonmatch",
+        "81-C150-P-empty-source",
+        "81-C150-N-cte-boundary",
+        "81-C150-P-delete-using-duplicates",
+        "81-C150-P-update-computed",
+        "81-C150-N-null-update",
+        "81-C151-P-returning-two-rows",
+        "81-C151-P-update-qualified-returning",
+        "81-C151-P-delete-qualified-returning",
+        "81-C151-N-returning-other-alias",
+        "81-C151-N-returning-star",
+        "81-C151-P-correlated-exists-update",
+        "81-C151-N-correlated-not-exists-delete",
+        "81-C152-P-three-writes",
+        "81-C152-P-nullable-fk-untouched",
+        "81-C152-N-sql-unknown",
+        "81-C152-N-check-on-update",
+        "81-C152-N-pk-insert",
+        "81-C152-N-missing-reference"
+      ],
+      "conditional_case_ids": [
+        "81-C149-N-unattested-default",
+        "81-C149-C-vendor-returning",
+        "81-C149-C-computed-casts",
+        "81-C150-N-ambiguous-update",
+        "81-C150-N-missing-source",
+        "81-C151-P-ordered-limit",
+        "81-C151-N-partition-target",
+        "81-C152-N-fk-insert",
+        "81-C152-C-vendor_transaction_atomicity",
+        "81-C152-C-deferred_constraint_checks",
+        "81-C152-C-noninteger_comparison_or_collation",
+        "81-C152-C-foreign_key_missing_referenced_tuple"
+      ]
+    }
+  ],
+  "runtime_boundary": "DuckDB complete-bag attestation only. Generic SQL parser identities are not native vendor engines. Deferred enforcement, dialect write ORDER/LIMIT/partition laws, multi-match UPDATE and unavailable source evidence stay Residual.",
+  "independent_review_gate": "Original six parent criteria must be independently rechecked after a successful final-head nine-job CI and Standards/Spec review; do not set Done before then."
+}

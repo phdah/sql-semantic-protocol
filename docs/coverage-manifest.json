@@ -14004,5 +14004,43 @@
     "all_nine_semantic_head_ci_passed": true,
     "code_review": "https://github.com/phdah/sql-semantic-protocol/pull/170#pullrequestreview-5723914446",
     "final_head_ci_merge_gate": "pending latest PR head after signoff metadata commit"
+  },
+  "task_81_parent_acceptance": {
+    "owner": "TASK-81",
+    "freeze": "docs/task-81-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "audit": "docs/task-81-parent-acceptance-audit.md",
+    "regression": "tests/task_81_parent_closure.rs",
+    "status": "independent_parent_review_pending_ci",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-149",
+      "TASK-150",
+      "TASK-151",
+      "TASK-152"
+    ],
+    "mandatory_cases": 34,
+    "conditional_cases": 12,
+    "exact_cases": 27,
+    "impossible_cases": 3,
+    "residual_cases": 16,
+    "dialect_identities": 13,
+    "adapter_evidence_sources": 3,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "remaining_gates": [
+      "fresh final-head CI",
+      "independent Standards/Spec review",
+      "original AC #1..#6 signoff",
+      "parent Done and merge before TASK-153",
+      "TASK-91 release authorization separate"
+    ]
   }
 }

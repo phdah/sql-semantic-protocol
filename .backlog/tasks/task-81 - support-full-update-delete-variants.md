@@ -1,10 +1,10 @@
 ---
 id: TASK-81
 title: Prove UPDATE and DELETE with joined/correlated source selection
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies: 
@@ -70,3 +70,7 @@ TASK-81 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-149, TASK-150, TASK-151, TASK-152; #2 -> TASK-149, TASK-150, TASK-151, TASK-152; #3 -> TASK-149, TASK-150, TASK-151, TASK-152; #4 -> TASK-151, TASK-152; #5 -> TASK-149, TASK-150, TASK-151, TASK-152; #6 -> TASK-149, TASK-150, TASK-151, TASK-152.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Parent acceptance review (2026-10-31)
+
+All four child tasks TASK-149..152 are Done and merged via PRs #161..164. The independent frozen parent inventory, crosswalk and regression are in [`docs/task-81-parent-acceptance-freeze.json`](../../docs/task-81-parent-acceptance-freeze.json), [`docs/task-81-parent-acceptance-audit.md`](../../docs/task-81-parent-acceptance-audit.md) and `tests/task_81_parent_closure.rs`. Original AC #1..#6 remain unchecked pending final-head CI, two-axis code review and independent signoff. TASK-153 remains blocked until TASK-81 is Done and merged. TASK-91 is a separate release gate.
