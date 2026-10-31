@@ -1,7 +1,7 @@
 ---
 id: TASK-142
 title: Classify finite recursive CTE and cycle/termination laws
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-10-31'
@@ -37,7 +37,7 @@ type: feature
 - [x] #2 Implement the exact named core and its stated numerical/data oracle in the canonical protocol and physical source model. Explicitly preserve SQL three-valued truth, multiplicity, data/row identity, computed output-domain bounds and Exact/Impossible/Residual differences; prove full physical feasibility rather than parser or lineage only.
 - [x] #3 Add public API integration tests with independent complete DuckDB source and terminal snapshots for both frozen IDs, including a NULL/duplicate/rejected or impossible counterexample. Assert entire bag, source identity and output value domain, not only row count or a generated snapshot.
 - [x] #4 Check all 13 exposed parser dialect paths for semantically shared syntax, direct SQL and dbt compiled artifacts, and ODCS when equivalent schema evidence exists. Explicitly record parser/engine/session boundaries, conditional typed residuals and owner TASK-142; no claim of native engine execution without an executable oracle.
-- [ ] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-78 parent open.
+- [x] #5 On final PR head pass `cargo fmt --check`, strict Clippy, full tests, docs, no-default-features, dbt E2E and schema/golden snapshots. Independently review every frozen mandatory cell and original AC mapping before marking this child Done and merging. Keep TASK-78 parent open.
 <!-- AC:END -->
 
 ## Verified implementation evidence (2026-10-31)
@@ -53,14 +53,16 @@ type: feature
   bags against independent DuckDB. `tests/task_142_dialect_adapter.rs` pins
   every parser-equivalence obligation and checks compiled dbt parity.
   Source-free literals have no equivalent ODCS source-schema fact to adapt.
-- [Final semantic-head CI run 41191083396](https://github.com/phdah/sql-semantic-protocol/actions/runs/41191083396)
+- [Verified semantic-head CI run 41192787862](https://github.com/phdah/sql-semantic-protocol/actions/runs/41192787862)
   passed all nine jobs: formatting, strict Clippy, full and
   no-default-features tests, both docs, dependency checks and dbt E2E.
-- **Only AC #5 remains unchecked:** Matt's independent parallel standards/spec
-  code-review signoff is not available in this session. The two-axis author
-  review in `docs/task-142-acceptance-audit.md` is explicitly not a
-  substitute. Keep the task In Progress and PR draft pending genuine
-  independent review and final PR-head CI.
+- **AC #5 independently reviewed and signed off (2026-10-31):** A separate
+  reviewer applied Matt's standards/spec code-review axes against `main`,
+  checked all mandatory frozen cells and original parent AC mappings, and
+  found no remaining blocking findings. The revised semantic head
+  `cac9f3af42853d145506c9d4ee288c887a8cb487` passed all nine checks. The review record is in
+  `docs/task-142-acceptance-audit.md`. Mark this child Done on the PR
+  branch; TASK-78 remains open. TASK-143 still waits for merge into `main`.
 
 ## Next
 

@@ -73,14 +73,13 @@ and parser-vs-engine evidence is kept distinct. No support is claimed
 for arbitrary recursive joins, vendor-specific CYCLE clauses, or
 unproved negative/overflow sequences.
 
-**Signoff gate:** A separate independent standards/spec review is still
-required by TASK-142 AC #5 and Matt's code-review workflow. This author
-review does not impersonate an independent reviewer. Final-head CI and
-independent review must both pass before TASK-142 can be marked Done.
+**Original author signoff gate (before independent review):** The author
+correctly withheld AC #5. An independent review in a separate session
+subsequently checked the standards/spec axes, as documented below.
 
 ## CI evidence and unresolved independent review gate
 
-At semantic-code head [`b7981fc827a7`](https://github.com/phdah/sql-semantic-protocol/actions/runs/41191083396), all nine required CI jobs
+At reviewed semantic-code head [`cac9f3af4285`](https://github.com/phdah/sql-semantic-protocol/actions/runs/41192787862), all nine required CI jobs
 passed, including full tests, strict Clippy, rustfmt, documentation, both
 no-default-features checks, dependency checks and dbt Core E2E. The
 all-dialect canonical proof and compiled-dbt output interval assertions were
@@ -89,9 +88,9 @@ use inclusive integer bounds `[1,3]` for the mandatory cases, and the
 negative case has independent Impossible/NOT TRUE evidence.
 
 **Author review:** requirements #1 through #4 have complete executable evidence.
-**Independent review:** pending. AC #5 is deliberately not checked;
-this file must not be treated as an independent approval. TASK-142 remains
-In Progress and TASK-143 must not begin until TASK-142 is Done and merged.
+**Independent review:** completed in a separate 2026-10-31 review session
+against `main` through `cac9f3af42853d145506c9d4ee288c887a8cb487`. AC #5 may be checked on the PR branch.
+TASK-143 must still wait until this child is merged.
 
 ## Follow-up review findings on PR #168
 
@@ -116,7 +115,44 @@ The author-level review has two distinct axes:
   bags and inclusive outcome intervals. Previously untested invalid source
   qualifiers cannot bypass the required explicit Residual boundary.
 
-A separate GitHub Copilot code-review request was made, but no submitted
-independent review has been verified. This document records a follow-up
-self-audit and the fix, not independent review signoff. TASK-142 AC #5
-remains pending until a separate review and final CI gate are established.
+The separate independent review below supersedes the author's pending-signoff
+note. No Copilot approval is claimed.
+
+## Independent final review (2026-10-31)
+
+Fixed point: `main`, compared against reviewed code head `cac9f3af42853d145506c9d4ee288c887a8cb487`.
+Method: Matt Pocock's `code-review` skill, with Standards and Spec evaluated
+as separate review axes in a new session. This is not a claim that parallel
+subagents ran or that a second GitHub account approved the PR.
+
+### Standards
+
+**0 blocking findings.** Audited `AGENTS.md`, `CONTRIBUTING.md`, the code
+map, CTE analysis, protocol and physical realization against the PR diff.
+The AST remains isolated in analysis; typed CTE recursion and stable lexical
+producer identities are explicit; the physical executor uses checked finite
+induction and returns Residual rather than truncating an uncertain bag.
+No new dependency, unsafe code, lint suppression or known protocol wire-shape
+break was introduced. The Fowler smell baseline raises no actionable
+blocker in this narrowly bounded change.
+
+### Spec
+
+**0 blocking findings.** Reviewed all three frozen mandatory cells
+(`78-C142-P-ALL`, `78-C142-P-DISTINCT`, `78-C142-N-ABSENCE`) and the
+explicit conditional cycle cell (`78-C142-N-CYCLE`) against the original
+TASK-142 acceptance criteria and TASK-78 mapped AC #1, #2, #3, #5 and #6.
+The public API oracles assert producer/terminal bags, row IDs, inclusive
+output bounds, positive Exact and absent/NULL Impossible, the typed cyclic
+Residual, SQL TRUE/FALSE/UNKNOWN, all 14 exposed parser aliases and dbt parity.
+The source-free seed gives ODCS no equivalent source facts. Neither native
+execution on untested engines nor parent TASK-78 closure is claimed.
+
+### CI and disposition
+
+All nine jobs passed on the reviewed semantic head:
+https://github.com/phdah/sql-semantic-protocol/actions/runs/41192787862.
+The follow-up edits only reconcile audit, frozen evidence state, coverage
+metadata and backlog signoff. **TASK-142 AC #1..#5: verified, Done on this PR
+branch, awaiting merge.** TASK-78 remains open. The PR's new metadata-only
+commit should be checked by CI before the merge action.
