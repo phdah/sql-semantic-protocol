@@ -2080,6 +2080,29 @@
           "native_execution": "not_attested",
           "owner": "TASK-144"
         }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "owner": "TASK-144",
+          "status": "mandatory_equivalence_pending_executable_assertions",
+          "evidence": "tests/task_144_adapter_parity.rs",
+          "release_disposition": "requires_source_complete_same_CTE_bag"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "owner": "TASK-144",
+          "status": "mandatory_equivalence_pending_executable_assertions",
+          "evidence": "tests/task_144_adapter_parity.rs",
+          "release_disposition": "requires_source_complete_same_CTE_bag"
+        },
+        {
+          "adapter": "odcs_equivalent_source_schema",
+          "owner": "TASK-144",
+          "status": "mandatory_equivalence_pending_executable_assertions",
+          "evidence": "tests/task_144_adapter_parity.rs",
+          "release_disposition": "requires_source_complete_same_CTE_bag"
+        }
       ]
     }
   ],
