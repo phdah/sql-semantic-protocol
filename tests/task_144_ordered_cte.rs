@@ -76,14 +76,14 @@ fn canonical(raw: &[Option<i64>], absent: Option<i64>) -> PhysicalOrderedCteProo
     physical_ordered_cte_read_plan(&bundle, target.id(), &initial(raw), requested.as_ref())
 }
 
-fn native(
-    raw: &[Option<i64>],
-) -> (
-    Vec<Option<i64>>,
-    Vec<(i64, i64)>,
-    Vec<(i64, i64)>,
-    Vec<(i64, i64)>,
-) {
+struct NativeBags {
+    physical: Vec<Option<i64>>,
+    stage: Vec<(i64, i64)>,
+    target: Vec<(i64, i64)>,
+    terminal: Vec<(i64, i64)>,
+}
+
+fn native(raw: &[Option<i64>]) -> NativeBags {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE raw(k INTEGER); CREATE TABLE target(k INTEGER, shifted INTEGER)",
@@ -123,7 +123,12 @@ fn native(
         .collect::<duckdb::Result<Vec<(i64, i64)>>>()
         .unwrap();
     terminal.sort();
-    (physical, stage, target, terminal)
+    NativeBags {
+        physical,
+        stage,
+        target,
+        terminal,
+    }
 }
 
 fn assert_case(id: &str, raw: &[Option<i64>], shifted: &[i64], expected_count: usize) {
@@ -136,7 +141,12 @@ fn assert_case(id: &str, raw: &[Option<i64>], shifted: &[i64], expected_count: u
         .find(|case| case["id"] == id)
         .unwrap();
     let expected_rows = case["expected_terminal"].as_array().unwrap();
-    let (physical, native_stage, native_target, native_terminal) = native(raw);
+    let NativeBags {
+        physical,
+        stage: native_stage,
+        target: native_target,
+        terminal: native_terminal,
+    } = native(raw);
     assert_eq!(physical, raw, "{id}: complete initial source");
     let expected_stage = shifted
         .iter()
