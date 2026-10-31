@@ -77,3 +77,18 @@ unproved negative/overflow sequences.
 required by TASK-142 AC #5 and Matt's code-review workflow. This author
 review does not impersonate an independent reviewer. Final-head CI and
 independent review must both pass before TASK-142 can be marked Done.
+
+## CI evidence and unresolved independent review gate
+
+At semantic-code head [`b7981fc827a7`](https://github.com/phdah/sql-semantic-protocol/actions/runs/41191083396), all nine required CI jobs
+passed, including full tests, strict Clippy, rustfmt, documentation, both
+no-default-features checks, dependency checks and dbt Core E2E. The
+all-dialect canonical proof and compiled-dbt output interval assertions were
+executed in those tests. Exact SQL, dbt and physical computed output domains
+use inclusive integer bounds `[1,3]` for the mandatory cases, and the
+negative case has independent Impossible/NOT TRUE evidence.
+
+**Author review:** requirements #1 through #4 have complete executable evidence.
+**Independent review:** pending. AC #5 is deliberately not checked;
+this file must not be treated as an independent approval. TASK-142 remains
+In Progress and TASK-143 must not begin until TASK-142 is Done and merged.
