@@ -46,10 +46,20 @@ fn every_frozen_case_has_a_complete_typed_exact_or_residual_contract() {
     for case in cases {
         let id = case["id"].as_str().unwrap();
         assert_eq!(case["owner"], "TASK-144", "{id}: owner");
-        assert_eq!(case["required_dialect_names"].as_array().unwrap()
-            .iter().map(|entry| entry.as_str().unwrap()).collect::<BTreeSet<_>>(),
-            DIALECTS.iter().copied().collect::<BTreeSet<_>>(), "{id}: all exposed dialect identities");
-        assert!(case["initial_bags"].is_object(), "{id}: initial physical bag");
+        assert_eq!(
+            case["required_dialect_names"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|entry| entry.as_str().unwrap())
+                .collect::<BTreeSet<_>>(),
+            DIALECTS.iter().copied().collect::<BTreeSet<_>>(),
+            "{id}: all exposed dialect identities"
+        );
+        assert!(
+            case["initial_bags"].is_object(),
+            "{id}: initial physical bag"
+        );
         assert!(case["true_proof"].as_str().is_some(), "{id}");
         assert!(case["not_true_proof"].as_str().is_some(), "{id}");
         assert!(case["true_tuple"].is_object());
