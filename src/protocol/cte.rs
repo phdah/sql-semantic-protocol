@@ -148,7 +148,11 @@ pub struct CteFilter {
 
 impl CteFilter {
     pub(crate) fn new(column: CteColumnRef, operator: CteComparisonOperator, bound: i128) -> Self {
-        Self { column, operator, bound }
+        Self {
+            column,
+            operator,
+            bound,
+        }
     }
 
     /// Column identity within the SELECT's source scope.
@@ -294,11 +298,19 @@ pub struct CteProjection {
 
 impl CteProjection {
     pub(crate) fn new(name: String, source: CteColumnRef) -> Self {
-        Self { name, source, offset: 0 }
+        Self {
+            name,
+            source,
+            offset: 0,
+        }
     }
 
     pub(crate) fn with_offset(name: String, source: CteColumnRef, offset: i128) -> Self {
-        Self { name, source, offset }
+        Self {
+            name,
+            source,
+            offset,
+        }
     }
 
     /// Output column label.
