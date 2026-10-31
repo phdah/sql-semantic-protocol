@@ -136,7 +136,17 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
             assert_eq!(index["owner"], task, "{id}");
             assert_eq!(index["classification"], "conditional", "{id}");
             assert!(fixtures.contains(index["fixture_id"].as_str().unwrap()), "{id}");
-            assert_eq!(case["owner"], task, "{id}: missing residual owner");
+            // TASK-146 declares one common conditional owner at the freeze root.
+            // Other child contracts attach ownership to individual cases.
+            if case["owner"].is_null() {
+                assert_eq!(
+                    child["conditional_ownership"]["owner"],
+                    task,
+                    "{id}: missing frozen residual owner"
+                );
+            } else {
+                assert_eq!(case["owner"], task, "{id}: wrong residual owner");
+            }
             assert!(
                 nonempty(&case["release_disposition"]) || nonempty(&case["disposition"]),
                 "{id}: missing reviewed disposition"
