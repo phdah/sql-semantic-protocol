@@ -13,7 +13,7 @@
   ],
   "properties": {
     "protocol_version": {
-      "const": "2.0.3"
+      "const": "3.0.0"
     },
     "inputs": {
       "type": "array",
@@ -1344,7 +1344,7 @@
             }
           }
         },
-                "row_shaping": {
+        "row_shaping": {
           "description": "Canonical direct SELECT ordering and nonnegative page bounds; a physical proof must still certify ties, NULL sorting, and complete source rows.",
           "$ref": "#/$defs/setOperation/properties/row_shaping"
         },
@@ -1352,23 +1352,41 @@
           "description": "A two-stage ordered CTE page program; inner and outer limits remain separate, and physical source columns are explicitly mapped.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["source", "projected_columns", "inner", "outer"],
+          "required": [
+            "source",
+            "projected_columns",
+            "inner",
+            "outer"
+          ],
           "properties": {
-            "source": { "type": "string" },
+            "source": {
+              "type": "string"
+            },
             "projected_columns": {
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["output", "source"],
+                "required": [
+                  "output",
+                  "source"
+                ],
                 "properties": {
-                  "output": { "type": "string" },
-                  "source": { "type": "string" }
+                  "output": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  }
                 }
               }
             },
-            "inner": { "$ref": "#/$defs/setOperation/properties/row_shaping" },
-            "outer": { "$ref": "#/$defs/setOperation/properties/row_shaping" }
+            "inner": {
+              "$ref": "#/$defs/setOperation/properties/row_shaping"
+            },
+            "outer": {
+              "$ref": "#/$defs/setOperation/properties/row_shaping"
+            }
           }
         },
         "diagnostics": {
@@ -2988,10 +3006,17 @@
           "description": "Optional physically derived local nonrecursive CTE source, never an independent caller-supplied relation.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "producer"],
+          "required": [
+            "name",
+            "producer"
+          ],
           "properties": {
-            "name": { "$ref": "#/$defs/nonEmptyString" },
-            "producer": { "$ref": "#/$defs/queryStatement" }
+            "name": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "producer": {
+              "$ref": "#/$defs/queryStatement"
+            }
           }
         },
         "joined_source": {
@@ -3040,14 +3065,21 @@
           "description": "Targeted ON CONFLICT DO NOTHING, exact only with attested enforced key evidence and complete target state.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["action", "target_columns"],
+          "required": [
+            "action",
+            "target_columns"
+          ],
           "properties": {
-            "action": { "const": "do_nothing" },
+            "action": {
+              "const": "do_nothing"
+            },
             "target_columns": {
               "type": "array",
               "minItems": 1,
               "uniqueItems": true,
-              "items": { "$ref": "#/$defs/nonEmptyString" }
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              }
             }
           }
         },
@@ -3055,17 +3087,29 @@
           "description": "Ordered direct target columns returned from inserted, updated, or deleted rows.",
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/nonEmptyString" }
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
         },
         "cte_source": {
           "description": "Closed-bag nonrecursive INSERT CTE producer and outer SELECT, normalized to canonical queries.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "producer", "consumer"],
+          "required": [
+            "name",
+            "producer",
+            "consumer"
+          ],
           "properties": {
-            "name": { "$ref": "#/$defs/nonEmptyString" },
-            "producer": { "$ref": "#/$defs/queryStatement" },
-            "consumer": { "$ref": "#/$defs/queryStatement" }
+            "name": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "producer": {
+              "$ref": "#/$defs/queryStatement"
+            },
+            "consumer": {
+              "$ref": "#/$defs/queryStatement"
+            }
           }
         },
         "match_condition": {
@@ -6778,7 +6822,10 @@
               ],
               "properties": {
                 "kind": {
-                  "enum": ["insert_query", "insert_default_values"]
+                  "enum": [
+                    "insert_query",
+                    "insert_default_values"
+                  ]
                 }
               }
             }
@@ -8557,7 +8604,7 @@
               "unknown"
             ]
           }
-       },
+        },
         "source": {
           "$ref": "#/$defs/finiteTable",
           "description": "Complete literal physical source for transformed finite output"
@@ -8565,21 +8612,35 @@
         "contributors": {
           "type": "array",
           "description": "Indices into source.rows, one nonempty array for every output row",
-          "items": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 0}}
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         },
         "joined_sources": {
           "type": "array",
           "description": "Both independent complete physical inputs to a finite equijoin",
           "minItems": 2,
           "maxItems": 2,
-          "items": {"$ref": "#/$defs/finiteTable"}
+          "items": {
+            "$ref": "#/$defs/finiteTable"
+          }
         },
         "join_pairs": {
           "type": "array",
           "description": "Ordered exhaustive non-NULL equality matches as left/right physical row indexes",
           "items": {
-            "type": "array", "minItems": 2, "maxItems": 2,
-            "items": {"type": "integer", "minimum": 0}
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         }
       }
