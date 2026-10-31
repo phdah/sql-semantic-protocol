@@ -53,7 +53,7 @@ fn verify_mandatory_outcome(child: &Value, task: &str, id: &str) {
         assert_eq!(child["expected_proof"], "Exact", "{id}: unexpectedly nonexact");
     } else {
         assert!(
-            child["positive"].is_object() || child["proof"].is_object(),
+            child["positive"].is_object() || child["proof"] == "Impossible",
             "{id}: no constructive or impossible proof"
         );
     }
