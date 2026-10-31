@@ -52,6 +52,23 @@ impl CteRecursion {
         })
     }
 
+    /// Complete finite integer sequence when all checked SQL step values fit
+    /// the portable width and materialization limit. An unsupported or
+    /// unfinished induction must not be represented as a truncated result.
+    pub(crate) fn finite_values(&self) -> Option<Vec<i128>> {
+        const MAX_ROWS: usize = 10_000;
+        let mut current = self.seed;
+        let mut values = Vec::new();
+        for _ in 0..MAX_ROWS {
+            values.push(i128::from(i32::try_from(current).ok()?));
+            if current > self.bound || (!self.inclusive && current == self.bound) {
+                return Some(values);
+            }
+            current = current.checked_add(self.increment)?;
+        }
+        None
+    }
+
     /// Output column identity shared by the base and recursive steps.
     pub fn column(&self) -> &str {
         &self.column
