@@ -195,8 +195,8 @@ pub fn physical_finite_view_read_plan(
         view_rows.push(PhysicalWriteRow::new(row).expect("unique canonical projection columns"));
     }
     let view_state = match PhysicalWriteState::new(view.target().to_string(), view_rows) {
-        Ok(state) => state,
-        Err(error) => return residual(format!("invalid view result: {error}")),
+        Some(state) => state,
+        None => return residual("invalid view result population"),
     };
     let view_states = BTreeMap::from([(view.target().to_string(), view_state)]);
     let rows = match evaluate_simple_select_with_source_ids(bundle, read_query, &view_states) {
