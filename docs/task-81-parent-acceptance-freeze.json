@@ -35,7 +35,8 @@
         "81-C149-C-computed-casts"
       ],
       "oracle_files": [
-        "tests/task_149_acceptance_matrix.rs",
+        "tests/task_149_update_delete.rs",
+        "tests/task_149_frozen_matrix.rs",
         "tests/task_149_dialect_adapter.rs"
       ]
     },
@@ -116,8 +117,8 @@
         "81-C152-C-foreign_key_missing_referenced_tuple"
       ],
       "oracle_files": [
-        "tests/task_152_ordered_writes.rs",
-        "tests/task_152_adapter_dialect.rs"
+        "tests/task_152_ordered_mutations.rs",
+        "tests/task_152_dialect_adapter.rs"
       ]
     }
   },
@@ -683,7 +684,8 @@
       ],
       "conditional_case_ids": [
         "81-C152-C-vendor_transaction_atomicity"
-      ]
+      ],
+      "pending_mandatory_evidence": "Concrete ordered INSERT/MERGE/UPDATE-or-DELETE interaction with complete pre/post bags, typed domains and source selection. TASK-152 certifies INSERT/UPDATE/DELETE only; this is not fulfilled by a TASK-82 future plan."
     },
     {
       "id": 5,
@@ -757,5 +759,9 @@
     }
   ],
   "runtime_boundary": "DuckDB complete-bag attestation only. Generic SQL parser identities are not native vendor engines. Deferred enforcement, dialect write ORDER/LIMIT/partition laws, multi-match UPDATE and unavailable source evidence stay Residual.",
-  "independent_review_gate": "Original six parent criteria must be independently rechecked after a successful final-head nine-job CI and Standards/Spec review; do not set Done before then."
+  "independent_review_gate": "Parent cannot be marked Done until original AC #4 MERGE interaction is backed by an executable bounded case; do not waive a mandatory original criterion because TASK-82 is blocked on TASK-81.",
+  "known_blockers": [
+    "TASK-81 original AC #4: independent bounded INSERT/MERGE ordered-script proof and native oracle missing in TASK-149..152 child matrix",
+    "fresh final-head CI and Standards/Spec review pending"
+  ]
 }
