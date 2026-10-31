@@ -3,6 +3,79 @@
 //! Stage identities are lexical, never a table name alone. Reusing a CTE
 //! references one producer bag through independent SQL source instances.
 
+/// UNION semantics for a certified finite recursive CTE.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CteRecursionSetMode {
+    /// Retain all generated occurrences.
+    All,
+    /// Deduplicate generated occurrences. A positive step already guarantees uniqueness.
+    Distinct,
+}
+
+/// A source-free, single-column, monotonically increasing recursive CTE.
+///
+/// The guarded step advances by a positive integer, so its reachable values
+/// are finite under a checked integer bound. No SQL AST escapes this boundary.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CteRecursion {
+    column: String,
+    seed: i128,
+    increment: i128,
+    bound: i128,
+    inclusive: bool,
+    set_mode: CteRecursionSetMode,
+}
+
+impl CteRecursion {
+    pub(crate) fn new(
+        column: String,
+        seed: i128,
+        increment: i128,
+        bound: i128,
+        inclusive: bool,
+        set_mode: CteRecursionSetMode,
+    ) -> Option<Self> {
+        (increment > 0).then_some(Self {
+            column,
+            seed,
+            increment,
+            bound,
+            inclusive,
+            set_mode,
+        })
+    }
+
+    /// Output column identity shared by the base and recursive steps.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Integer emitted by the nonrecursive seed.
+    pub fn seed(&self) -> i128 {
+        self.seed
+    }
+
+    /// Strictly positive step increment.
+    pub fn increment(&self) -> i128 {
+        self.increment
+    }
+
+    /// Comparison bound applied to each previous iteration's row.
+    pub fn bound(&self) -> i128 {
+        self.bound
+    }
+
+    /// Whether the step predicate is <= instead of <.
+    pub fn inclusive(&self) -> bool {
+        self.inclusive
+    }
+
+    /// Recursive UNION mode.
+    pub fn set_mode(&self) -> CteRecursionSetMode {
+        self.set_mode
+    }
+}
+
 /// A complete ordinary CTE program in producer-first order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CteProgram {
@@ -33,6 +106,7 @@ pub struct CteStage {
     inputs: Vec<CteInput>,
     projections: Vec<CteProjection>,
     equality: Option<(CteColumnRef, CteColumnRef)>,
+    recursion: Option<CteRecursion>,
 }
 
 impl CteStage {
@@ -47,7 +121,23 @@ impl CteStage {
             inputs,
             projections,
             equality,
+            recursion: None,
         }
+    }
+
+    pub(crate) fn recursive(id: String, recursion: CteRecursion) -> Self {
+        Self {
+            id,
+            inputs: Vec::new(),
+            projections: Vec::new(),
+            equality: None,
+            recursion: Some(recursion),
+        }
+    }
+
+    /// Certified monotone recursive operation, if this stage is recursive.
+    pub fn recursion(&self) -> Option<&CteRecursion> {
+        self.recursion.as_ref()
     }
 
     /// Stable lexical stage identity, even when names are shadowed.
