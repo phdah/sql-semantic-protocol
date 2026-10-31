@@ -174,7 +174,7 @@ fn each_frozen_task_143_read_case_has_identical_sql_and_dbt_physical_proofs() {
         serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() {
+        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
             continue;
         }
         let id = case["id"].as_str().unwrap();
@@ -223,7 +223,7 @@ fn each_frozen_task_143_read_case_has_identical_odcs_schema_evidence() {
     let dialect = dialect_from_name("duckdb").unwrap();
     let mut checked = 0;
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() {
+        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
             continue;
         }
         let id = case["id"].as_str().unwrap();
