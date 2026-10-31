@@ -35,7 +35,14 @@ impl CteRecursion {
         inclusive: bool,
         set_mode: CteRecursionSetMode,
     ) -> Option<Self> {
-        (increment > 0).then_some(Self {
+        // Recursive SQL integer literals are not a license to assume an
+        // arbitrary-precision engine. Restrict the portable certificate to
+        // the common signed 32-bit range, including the next step value.
+        (increment > 0
+            && i32::try_from(seed).is_ok()
+            && i32::try_from(increment).is_ok()
+            && i32::try_from(bound).is_ok())
+        .then_some(Self {
             column,
             seed,
             increment,
@@ -125,10 +132,10 @@ impl CteStage {
         }
     }
 
-    pub(crate) fn recursive(id: String, recursion: CteRecursion) -> Self {
+    pub(crate) fn recursive(id: String, alias: String, recursion: CteRecursion) -> Self {
         Self {
+            inputs: vec![CteInput::new(id.clone(), alias)],
             id,
-            inputs: Vec::new(),
             projections: Vec::new(),
             equality: None,
             recursion: Some(recursion),
