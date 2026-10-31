@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-144",
   "parent": "TASK-78",
-  "status": "reviewed_explicit_matrix_revision_pending_final_ci",
+  "status": "child_signed_off_reviewed_final_head_ci_pending",
   "fixture_ids": [
     "78-C144-P",
     "78-C144-N"
@@ -222,119 +222,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -421,119 +438,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "not_representable_with_named_boundary"
+          "status": "verified_named_source_nonrepresentability",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -674,119 +708,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -939,119 +990,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "not_representable_with_named_boundary"
+          "status": "verified_named_source_nonrepresentability",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -1230,119 +1298,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "not_representable_with_named_boundary"
+          "status": "verified_named_source_nonrepresentability",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -1443,119 +1528,136 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "owner": "TASK-144"
@@ -1610,119 +1712,139 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "not_representable_with_named_boundary"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ]
     },
@@ -1782,119 +1904,139 @@
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions"
+          "status": "verified_typed_residual_or_unrepresentable_boundary",
+          "release_disposition": "native_session_or_termination_law_not_certified",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs"
         }
       ],
-      "classification_evidence": "not_signed_off",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "typed_residual_boundary",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ]
     },
@@ -1985,128 +2127,142 @@
         "databricks"
       ],
       "owner": "TASK-144",
-      "classification_evidence": "tests/task_144_shadow_oracles.rs",
-      "signed_off": false,
+      "classification_evidence": "verified_executable_ci_41222021788",
+      "signed_off": true,
       "parser_cells": [
         {
           "dialect": "generic",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mysql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgresql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "postgres",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "hive",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "sqlite",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "snowflake",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "redshift",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "mssql",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "clickhouse",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "bigquery",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "ansi",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "duckdb",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
-          "native_execution": "duckdb_oracle_required",
-          "owner": "TASK-144"
+          "native_execution": "duckdb_bounded_case_oracle",
+          "owner": "TASK-144",
+          "verified": true
         },
         {
           "dialect": "databricks",
           "parser": "parsed",
           "canonical": "exact_on_parser_accepted_shared_form",
           "native_execution": "not_attested",
-          "owner": "TASK-144"
+          "owner": "TASK-144",
+          "verified": true
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions",
-          "evidence": "tests/task_144_adapter_parity.rs",
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs",
           "release_disposition": "requires_source_complete_same_CTE_bag"
         },
         {
           "adapter": "dbt_compiled_manifest_catalog",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions",
-          "evidence": "tests/task_144_adapter_parity.rs",
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs",
           "release_disposition": "requires_source_complete_same_CTE_bag"
         },
         {
           "adapter": "odcs_equivalent_source_schema",
           "owner": "TASK-144",
-          "status": "mandatory_equivalence_pending_executable_assertions",
-          "evidence": "tests/task_144_adapter_parity.rs",
+          "status": "verified_equivalent_canonical_physical_evidence",
+          "evidence": "tests/task_144_adapter_parity.rs; tests/task_144_dialect_exactness.rs",
           "release_disposition": "requires_source_complete_same_CTE_bag"
         }
       ]
@@ -2127,7 +2283,7 @@
       5,
       6
     ],
-    "status": "blocked_until_full_independent_review",
+    "status": "blocked_until_child_PR_merged_and_parent_independent_original_AC_audit",
     "release_approved": false
   },
   "reviewed_revision": {
@@ -2141,12 +2297,12 @@
     "total_cells": 126,
     "classification_rule": "each SQL statement independently parsed; parser-equivalent exact proof for portable shared forms; no native vendor claims",
     "evidence": "tests/task_144_dialects.rs",
-    "verified": false
+    "verified": true
   },
   "adapter_matrix": {
     "total_cells": 27,
     "evidence": "tests/task_144_adapter_parity.rs and task_144_view.rs",
-    "verified": false
+    "verified": true
   },
   "native_engine_oracles": {
     "engine": "DuckDB",
@@ -2156,6 +2312,17 @@
       "tests/task_144_view.rs",
       "tests/task_144_shadow_oracles.rs"
     ],
-    "verified": false
+    "verified": true
+  },
+  "signoff": {
+    "date": "2026-10-31",
+    "semantic_head": "0a05bc16d598c99bd5961f6536c6ce78b9a53e27",
+    "semantic_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41222021788",
+    "nine_semantic_head_jobs_successful": true,
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/170#pullrequestreview-5723914446",
+    "review_state": "COMMENT through owning connection; not distinct-account GitHub approval",
+    "final_signoff_head_ci_gate": "must pass after task audit/signoff metadata commit before merge",
+    "child_status": "Done on implementation PR branch",
+    "parent_status": "To Do until TASK-144 merged and original AC independently reviewed"
   }
 }
