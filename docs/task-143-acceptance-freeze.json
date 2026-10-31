@@ -629,6 +629,92 @@
       "reason": "unproved expression evaluation",
       "owner": "TASK-143",
       "release_disposition": "explicit residual until function semantics supported"
+    },
+    {
+      "id": "78-C143-N-CHECK",
+      "fixture_family": "78-C143-N",
+      "variant": "downstream INSERT CHECK rejects computed source row atomically",
+      "classification": "mandatory_impossible",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          }
+        ],
+        "target": [
+          {
+            "id": "target#0",
+            "k": 99,
+            "shifted": 109
+          }
+        ]
+      },
+      "constraints": {
+        "target": {
+          "shifted": {
+            "gte": 50,
+            "enforcement": "enforced"
+          }
+        }
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "target#0"
+          ],
+          "k": 99,
+          "shifted": 109
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 99,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 99,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 109,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 109,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "WHERE k>1 admits only raw#1 and its computed shifted 12",
+      "not_true_proof": "enforced CHECK shifted>=50 forbids 12; INSERT has no partial effects",
+      "expected_physical": "Impossible",
+      "native_oracle": "DuckDB CHECK exception and unchanged complete target bag",
+      "owner": "TASK-143",
+      "disposition": "implemented; CI/review pending"
     }
   ],
   "verification": {
