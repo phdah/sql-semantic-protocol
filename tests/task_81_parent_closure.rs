@@ -248,16 +248,26 @@ fn original_parent_criteria_and_manifest_are_independently_traceable() {
     );
     assert_eq!(registry["parent_signed_off"], true);
     assert_eq!(registry["release_approved"], false);
-    assert_eq!(registry["implementation_head_sha"], "c3fa5c2b7951b11428f8873ab029783b8d56c8f1");
-    assert!(registry["implementation_head_ci"].as_str().is_some_and(|s| s.ends_with("/41248576810")));
+    assert_eq!(
+        registry["implementation_head_sha"],
+        "c3fa5c2b7951b11428f8873ab029783b8d56c8f1"
+    );
+    assert!(registry["implementation_head_ci"]
+        .as_str()
+        .is_some_and(|s| s.ends_with("/41248576810")));
 }
 
 #[test]
 fn task_file_is_done_only_after_original_six_criteria_are_signed_off() {
     let task = include_str!("../.backlog/tasks/task-81 - support-full-update-delete-variants.md");
     assert!(task.contains("status: Done"));
-    let original = task.split_once("<!-- AC:BEGIN -->").unwrap().1
-        .split_once("<!-- AC:END -->").unwrap().0;
+    let original = task
+        .split_once("<!-- AC:BEGIN -->")
+        .unwrap()
+        .1
+        .split_once("<!-- AC:END -->")
+        .unwrap()
+        .0;
     assert_eq!(original.matches("- [x]").count(), 6);
     assert!(!original.contains("- [ ]"));
 }
