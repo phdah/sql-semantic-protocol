@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "owner": "TASK-142",
+  "parent": "TASK-78",
+  "status": "frozen_pending_implementation",
+  "fixture_ids": [
+    "78-C142-P",
+    "78-C142-N"
+  ],
+  "original_parent_ac_coverage": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "acceptance_criteria_map": {
+    "1": "Frozen finite variants and typed provenance",
+    "2": "Canonical finite induction and complete physical multiset",
+    "3": "Independent DuckDB full-bag and NOT TRUE oracles",
+    "4": "13 dialect and SQL/dbt/ODCS evidence matrix",
+    "5": "Final implementation CI plus independent review"
+  },
+  "semantics": {
+    "recursion": "single self-recursive integer column; source-free seed; positive integer step; monotone guarded recursion",
+    "evaluation": "seed once, then delta for each previous iteration; SQL UNION ALL preserves occurrences, UNION DISTINCT deduplicates",
+    "safety": "only monotone bounded steps under checked integer arithmetic; cyclic/nonterminated, unsupported ast or excessive rows are Residual"
+  },
+  "cases": [
+    {
+      "id": "78-C142-P-ALL",
+      "fixture": "78-C142-P",
+      "classification": "mandatory_exact",
+      "variant": "UNION ALL finite strictly increasing",
+      "sql": "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM n WHERE x < 3) SELECT x FROM n",
+      "sources": [],
+      "source_instances": [],
+      "producer_id": "terminal/cte:0:n",
+      "terminal_id": "terminal",
+      "canonical_column": "x",
+      "data_type": "INTEGER",
+      "seed": 1,
+      "increment": 1,
+      "exclusive_upper": 3,
+      "expected_producer_bag": [
+        1,
+        2,
+        3
+      ],
+      "expected_terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "expected_source_row_ids": [
+        "terminal/cte:0:n#0",
+        "terminal/cte:0:n#1",
+        "terminal/cte:0:n#2"
+      ],
+      "terminal_domain": {
+        "nullable": false,
+        "lower": {
+          "value": 1,
+          "inclusive": true
+        },
+        "upper": {
+          "value": 3,
+          "inclusive": true
+        }
+      },
+      "positive": {
+        "tuple": {
+          "x": 2
+        },
+        "proof": "Exact"
+      },
+      "not_true": {
+        "tuple": {
+          "x": 4
+        },
+        "proof": "Impossible"
+      },
+      "oracle": "DuckDB exact complete bag"
+    },
+    {
+      "id": "78-C142-P-DISTINCT",
+      "fixture": "78-C142-P",
+      "classification": "mandatory_exact",
+      "variant": "UNION DISTINCT monotone induction",
+      "sql": "WITH RECURSIVE n(x) AS (SELECT 1 UNION  SELECT x + 1 FROM n WHERE x < 3) SELECT x FROM n",
+      "sources": [],
+      "source_instances": [],
+      "producer_id": "terminal/cte:0:n",
+      "terminal_id": "terminal",
+      "canonical_column": "x",
+      "data_type": "INTEGER",
+      "seed": 1,
+      "increment": 1,
+      "exclusive_upper": 3,
+      "expected_producer_bag": [
+        1,
+        2,
+        3
+      ],
+      "expected_terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "expected_source_row_ids": [
+        "terminal/cte:0:n#0",
+        "terminal/cte:0:n#1",
+        "terminal/cte:0:n#2"
+      ],
+      "terminal_domain": {
+        "nullable": false,
+        "lower": {
+          "value": 1,
+          "inclusive": true
+        },
+        "upper": {
+          "value": 3,
+          "inclusive": true
+        }
+      },
+      "positive": {
+        "tuple": {
+          "x": 3
+        },
+        "proof": "Exact"
+      },
+      "not_true": {
+        "tuple": {
+          "x": 0
+        },
+        "proof": "Impossible"
+      },
+      "oracle": "DuckDB exact complete bag"
+    },
+    {
+      "id": "78-C142-N-ABSENCE",
+      "fixture": "78-C142-N",
+      "classification": "mandatory_impossible",
+      "variant": "NOT TRUE closed world under finite recursion",
+      "sql": "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM n WHERE x < 3) SELECT x FROM n",
+      "sources": [],
+      "producer_id": "terminal/cte:0:n",
+      "terminal_id": "terminal",
+      "canonical_column": "x",
+      "data_type": "INTEGER",
+      "expected_terminal_bag": [
+        1,
+        2,
+        3
+      ],
+      "wanted": {
+        "x": 5
+      },
+      "proof": "Impossible",
+      "terminal_domain": {
+        "nullable": false,
+        "lower": {
+          "value": 1,
+          "inclusive": true
+        },
+        "upper": {
+          "value": 3,
+          "inclusive": true
+        }
+      },
+      "oracle": "DuckDB anti-membership"
+    },
+    {
+      "id": "78-C142-N-CYCLE",
+      "fixture": "78-C142-N",
+      "classification": "conditional_residual",
+      "variant": "UNION ALL cyclic unguarded step",
+      "sql": "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 0 FROM n WHERE x < 3) SELECT x FROM n",
+      "sources": [],
+      "producer_id": "terminal/cte:0:n",
+      "terminal_id": "terminal",
+      "wanted": {
+        "x": 1
+      },
+      "proof": "Residual",
+      "reason": "zero-step UNION ALL has no finite termination proof",
+      "owner": "TASK-142",
+      "release_disposition": "pending_review",
+      "oracle": "No native complete bag claimed"
+    }
+  ],
+  "dialects": [
+    {
+      "name": "generic",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "mysql",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "postgresql",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "postgres",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "hive",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "sqlite",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "snowflake",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "redshift",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "mssql",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "clickhouse",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "bigquery",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "ansi",
+      "parser_status": "pending_classification",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142"
+    },
+    {
+      "name": "duckdb",
+      "parser_status": "pending_classification",
+      "native_engine_status": "native_oracle_required",
+      "owner": "TASK-142"
+    }
+  ],
+  "adapters": [
+    {
+      "source": "direct_sql",
+      "status": "pending"
+    },
+    {
+      "source": "dbt_manifest_compiled",
+      "status": "pending"
+    },
+    {
+      "source": "odcs_equivalent_metadata",
+      "status": "pending_or_not_applicable_for_source_free"
+    }
+  ],
+  "ci": {
+    "fmt": "pending",
+    "clippy": "pending",
+    "test": "pending",
+    "docs": "pending",
+    "no_default_features": "pending",
+    "dbt_e2e": "pending",
+    "golden_schema": "pending",
+    "independent_review": "pending"
+  }
+}
