@@ -86,7 +86,10 @@ fn guarded_recursive_union_proves_complete_bags_and_absence() {
             .unwrap();
         assert_eq!(
             physical,
-            expected.iter().map(|v| v.as_i64().unwrap()).collect::<Vec<_>>()
+            expected
+                .iter()
+                .map(|v| v.as_i64().unwrap())
+                .collect::<Vec<_>>()
         );
         assert!(!physical.contains(&case["not_true"]["tuple"]["x"].as_i64().unwrap()));
     }
@@ -97,8 +100,12 @@ fn guarded_recursive_union_proves_complete_bags_and_absence() {
 fn cyclic_recursive_union_all_stays_residual() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-142-acceptance-freeze.json")).unwrap();
-    let cycle = freeze["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "78-C142-N-CYCLE").unwrap();
+    let cycle = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "78-C142-N-CYCLE")
+        .unwrap();
     let bundle = bundle(cycle["sql"].as_str().unwrap(), "duckdb");
     let target = bundle.layers().last().unwrap();
     assert!(matches!(
