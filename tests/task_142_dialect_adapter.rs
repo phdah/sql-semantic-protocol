@@ -10,7 +10,7 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan, AnalysisBundle,
     ConfiguredSqlInput, CteRecursionSetMode, Error, PhysicalCteProof, PhysicalCteRef,
-    ProtocolStatement, QueryStatement, RelationCatalog, SqlInput,
+    ProtocolStatement, QueryStatement, RelationCatalog, SqlInput, ValueDomain,
 };
 
 fn sql_bundle(sql: &str, dialect_name: &str) -> AnalysisBundle {
@@ -190,6 +190,28 @@ fn canonical_source_free_recursive_stages_match_compiled_dbt_without_invented_so
         assert_eq!(dbt_query.dependencies(), direct_query.dependencies());
         assert_eq!(dbt_query.sources(), direct_query.sources());
         assert_eq!(dbt_query.cte_program(), direct_query.cte_program());
+        for analyzed in [direct_query, dbt_query] {
+            let [column] = analyzed.output().columns() else {
+                panic!("recursive output must expose one typed column");
+            };
+            let ValueDomain::Ranges(ranges) = column.domain() else {
+                panic!("finite induction must refine the canonical protocol output domain");
+            };
+            let [range] = ranges.ranges() else {
+                panic!("unit-step recursion must emit one inclusive range");
+            };
+            assert_eq!(
+                range.lower().unwrap().value().value(),
+                &sql_semantic_protocol::LiteralValue::Number("1".into())
+            );
+            assert!(range.lower().unwrap().inclusive());
+            assert_eq!(
+                range.upper().unwrap().value().value(),
+                &sql_semantic_protocol::LiteralValue::Number("3".into())
+            );
+            assert!(range.upper().unwrap().inclusive());
+        }
+
         let direct_proof = exact(&direct);
         let dbt_proof = exact(&dbt);
         assert_eq!(direct_proof.source_bags, dbt_proof.source_bags);
