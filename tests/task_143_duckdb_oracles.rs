@@ -6,7 +6,9 @@ const SQL: &str = "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k >
 SELECT a.shifted AS l, b.shifted AS r FROM stage a \
 JOIN stage b ON a.k = b.k ORDER BY l, r";
 
-fn execute(rows: &[Option<i64>]) -> (Vec<Option<i64>>, Vec<(i64, i64)>, Vec<(i64, i64)>) {
+type CompleteBags = (Vec<Option<i64>>, Vec<(i64, i64)>, Vec<(i64, i64)>);
+
+fn execute(rows: &[Option<i64>]) -> CompleteBags {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE raw (k INTEGER)").unwrap();
     for row in rows {
