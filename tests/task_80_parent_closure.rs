@@ -8,10 +8,22 @@ use serde_json::{json, Value};
 use std::collections::BTreeSet;
 
 const CHILDREN: [(&str, &str); 4] = [
-    ("TASK-145", include_str!("../docs/task-145-acceptance-freeze.json")),
-    ("TASK-146", include_str!("../docs/task-146-acceptance-freeze.json")),
-    ("TASK-147", include_str!("../docs/task-147-acceptance-freeze.json")),
-    ("TASK-148", include_str!("../docs/task-148-acceptance-freeze.json")),
+    (
+        "TASK-145",
+        include_str!("../docs/task-145-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-146",
+        include_str!("../docs/task-146-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-147",
+        include_str!("../docs/task-147-acceptance-freeze.json"),
+    ),
+    (
+        "TASK-148",
+        include_str!("../docs/task-148-acceptance-freeze.json"),
+    ),
 ];
 
 fn parse(raw: &str) -> Value {
@@ -65,9 +77,14 @@ fn cases<'a>(task: &str, child: &'a Value) -> (Vec<&'a Value>, Vec<&'a Value>) {
 }
 
 fn has_typed_domain(case: &Value) -> bool {
-    ["domain", "terminal_typed_domains", "typed_domains", "typed_domain"]
-        .iter()
-        .any(|key| case[*key].is_object())
+    [
+        "domain",
+        "terminal_typed_domains",
+        "typed_domains",
+        "typed_domain",
+    ]
+    .iter()
+    .any(|key| case[*key].is_object())
 }
 
 fn has_complete_target_bag(case: &Value) -> bool {
@@ -78,7 +95,9 @@ fn has_complete_target_bag(case: &Value) -> bool {
 
 #[test]
 fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
-    let freeze = parse(include_str!("../docs/task-80-parent-acceptance-freeze.json"));
+    let freeze = parse(include_str!(
+        "../docs/task-80-parent-acceptance-freeze.json"
+    ));
     assert_eq!(freeze["task"], "TASK-80");
     assert_eq!(freeze["version"], 1);
     assert_eq!(freeze["parent_signed_off"], false);
@@ -117,15 +136,24 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
             let index = &freeze["case_index"][id];
             assert_eq!(index["owner"], task, "{id}: wrong case owner");
             assert_eq!(index["classification"], "mandatory", "{id}");
-            assert!(fixtures.contains(index["fixture_id"].as_str().unwrap()), "{id}");
-            assert!(has_complete_target_bag(case) || case["proof"] == "Impossible"
-                || case["proof"] == "Residual", "{id}: missing complete poststate");
+            assert!(
+                fixtures.contains(index["fixture_id"].as_str().unwrap()),
+                "{id}"
+            );
+            assert!(
+                has_complete_target_bag(case)
+                    || case["proof"] == "Impossible"
+                    || case["proof"] == "Residual",
+                "{id}: missing complete poststate"
+            );
             if case["proof"] == "Exact" {
                 assert!(has_typed_domain(case), "{id}: missing typed exact output");
                 assert!(has_complete_target_bag(case), "{id}: exact needs full bag");
             } else {
-                assert!(case["proof"] == "Impossible" || case["proof"] == "Residual",
-                    "{id}: unspecified negative proof");
+                assert!(
+                    case["proof"] == "Impossible" || case["proof"] == "Residual",
+                    "{id}: unspecified negative proof"
+                );
             }
             assert!(local_mandatory.insert(id.to_owned()), "{id}: duplicate");
             assert!(found_mandatory.insert(id.to_owned()), "{id}: duplicate");
@@ -135,13 +163,15 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
             let index = &freeze["case_index"][id];
             assert_eq!(index["owner"], task, "{id}");
             assert_eq!(index["classification"], "conditional", "{id}");
-            assert!(fixtures.contains(index["fixture_id"].as_str().unwrap()), "{id}");
+            assert!(
+                fixtures.contains(index["fixture_id"].as_str().unwrap()),
+                "{id}"
+            );
             // TASK-146 declares one common conditional owner at the freeze root.
             // Other child contracts attach ownership to individual cases.
             if case["owner"].is_null() {
                 assert_eq!(
-                    child["conditional_ownership"]["owner"],
-                    task,
+                    child["conditional_ownership"]["owner"], task,
                     "{id}: missing frozen residual owner"
                 );
             } else {
@@ -151,16 +181,30 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
                 nonempty(&case["release_disposition"]) || nonempty(&case["disposition"]),
                 "{id}: missing reviewed disposition"
             );
-            assert!(case["proof"].is_null() || case["proof"] == "Residual",
-                "{id}: conditional law cannot claim native exactness");
+            assert!(
+                case["proof"].is_null() || case["proof"] == "Residual",
+                "{id}: conditional law cannot claim native exactness"
+            );
             assert!(local_conditional.insert(id.to_owned()), "{id}: duplicate");
             assert!(found_conditional.insert(id.to_owned()), "{id}: duplicate");
         }
-        assert_eq!(local_mandatory, unique_strings(&record["mandatory_case_ids"]), "{task}");
-        assert_eq!(local_conditional, unique_strings(&record["conditional_case_ids"]), "{task}");
+        assert_eq!(
+            local_mandatory,
+            unique_strings(&record["mandatory_case_ids"]),
+            "{task}"
+        );
+        assert_eq!(
+            local_conditional,
+            unique_strings(&record["conditional_case_ids"]),
+            "{task}"
+        );
 
         let dialects = unique_strings(&child["dialects"]);
-        assert_eq!(dialects, unique_strings(&freeze["dialect_identities"]), "{task}");
+        assert_eq!(
+            dialects,
+            unique_strings(&freeze["dialect_identities"]),
+            "{task}"
+        );
         assert_eq!(unique_strings(&child["adapters"]).len(), 3, "{task}");
     }
     assert_eq!(found_mandatory, expected_mandatory);
@@ -170,7 +214,9 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
 
 #[test]
 fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
-    let freeze = parse(include_str!("../docs/task-80-parent-acceptance-freeze.json"));
+    let freeze = parse(include_str!(
+        "../docs/task-80-parent-acceptance-freeze.json"
+    ));
     let manifest = parse(include_str!("../docs/coverage-manifest.json"));
     let original = freeze["original_acceptance_criteria"]
         .as_array()
@@ -189,7 +235,10 @@ fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
 
     let entry = &manifest["task_80_parent_acceptance"];
     assert_eq!(entry["owner"], "TASK-80");
-    assert_eq!(entry["freeze"], "docs/task-80-parent-acceptance-freeze.json");
+    assert_eq!(
+        entry["freeze"],
+        "docs/task-80-parent-acceptance-freeze.json"
+    );
     assert_eq!(entry["original_ac"], json!([1, 2, 3, 4, 5, 6]));
     assert_eq!(entry["mandatory_cases"], json!(mandatory.len()));
     assert_eq!(entry["conditional_cases"], json!(conditional.len()));
