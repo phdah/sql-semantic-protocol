@@ -1,0 +1,847 @@
+{
+  "task": "TASK-80",
+  "version": 2,
+  "scope": "Independent parent closure inventory over completed child contracts; executable SQL, typed domains, oracles and residual classifications remain authoritative in child freezes; v2 adds independently frozen replay oracles for original AC #4 without changing the 50 child-owned matrix cells",
+  "status": "parent_signed_off_final_metadata_ci_pending",
+  "parent_signed_off": true,
+  "release_approved": false,
+  "merged_children": {
+    "TASK-145": {
+      "file": "docs/task-145-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/155",
+      "fixture_ids": [
+        "80-C145-P",
+        "80-C145-N"
+      ],
+      "mandatory_case_ids": [
+        "80-C145-P-values-explicit",
+        "80-C145-P-implicit-order",
+        "80-C145-P-reordered",
+        "80-C145-P-duplicate-bag",
+        "80-C145-P-default-omission",
+        "80-C145-P-default-values",
+        "80-C145-P-zero-source",
+        "80-C145-N-null-value",
+        "80-C145-N-unique-violation"
+      ],
+      "conditional_case_ids": [
+        "80-C145-N-unattested-default",
+        "80-C145-N-unattested-identity",
+        "80-C145-N-cast-uncertainty"
+      ],
+      "oracles": [
+        "tests/task_145_acceptance_matrix.rs",
+        "tests/task_145_dialect_adapter.rs"
+      ]
+    },
+    "TASK-146": {
+      "file": "docs/task-146-acceptance-freeze.json",
+      "version": 3,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/157",
+      "fixture_ids": [
+        "80-C146-P",
+        "80-C146-N"
+      ],
+      "mandatory_case_ids": [
+        "80-C146-P-direct-filter",
+        "80-C146-P-direct-reorder",
+        "80-C146-P-direct-positional-swap",
+        "80-C146-P-cte-positional-swap",
+        "80-C146-P-cte-filter",
+        "80-C146-P-cte-outer-filter",
+        "80-C146-P-cte-duplicates",
+        "80-C146-N-pk-collision",
+        "80-C146-N-check",
+        "80-C146-N-null-unknown",
+        "80-C146-P-fk-safe",
+        "80-C146-P-ordered"
+      ],
+      "conditional_case_ids": [
+        "80-C146-N-missing-source",
+        "80-C146-N-recursive-cte",
+        "80-C146-N-fk-violation"
+      ],
+      "oracles": [
+        "tests/task_146_acceptance_matrix.rs",
+        "tests/task_146_dialect_adapter.rs"
+      ]
+    },
+    "TASK-147": {
+      "file": "docs/task-147-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/158",
+      "fixture_ids": [
+        "80-C147-P",
+        "80-C147-N"
+      ],
+      "mandatory_case_ids": [
+        "80-C147-P-targeted-conflict-returning",
+        "80-C147-N-duplicate-source",
+        "80-C147-N-unattested-target-key",
+        "80-C147-N-null-primary-key",
+        "80-C147-N-null-and-where-not-true"
+      ],
+      "conditional_case_ids": [
+        "80-C147-N-conditional-1",
+        "80-C147-N-conditional-2",
+        "80-C147-N-conditional-3",
+        "80-C147-N-conditional-4",
+        "80-C147-N-conditional-5",
+        "80-C147-N-conditional-6",
+        "80-C147-N-conditional-7",
+        "80-C147-N-conditional-8",
+        "80-C147-N-unordered-source-collision"
+      ],
+      "oracles": [
+        "tests/task_147_insert_conflict.rs",
+        "tests/task_147_dialect_matrix.rs"
+      ]
+    },
+    "TASK-148": {
+      "file": "docs/task-148-acceptance-freeze.json",
+      "version": 2,
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/159",
+      "fixture_ids": [
+        "80-C148-P",
+        "80-C148-N"
+      ],
+      "mandatory_case_ids": [
+        "80-C148-P-values-then-read-ctas",
+        "80-C148-P-select-reorder-ctas",
+        "80-C148-P-cte-then-ctas",
+        "80-C148-P-default-then-ctas",
+        "80-C148-N-duplicate-pk",
+        "80-C148-N-unproved-transaction"
+      ],
+      "conditional_case_ids": [
+        "80-C148-C-vendor-overwrite",
+        "80-C148-C-dbtscripts",
+        "80-C148-C-native-engines"
+      ],
+      "oracles": [
+        "tests/task_148_ordered_insert.rs",
+        "tests/task_148_negative_matrix.rs",
+        "tests/task_148_adapter_dialect.rs"
+      ]
+    }
+  },
+  "fixture_ids": [
+    "80-C145-N",
+    "80-C145-P",
+    "80-C146-N",
+    "80-C146-P",
+    "80-C147-N",
+    "80-C147-P",
+    "80-C148-N",
+    "80-C148-P"
+  ],
+  "mandatory_case_ids": [
+    "80-C145-P-values-explicit",
+    "80-C145-P-implicit-order",
+    "80-C145-P-reordered",
+    "80-C145-P-duplicate-bag",
+    "80-C145-P-default-omission",
+    "80-C145-P-default-values",
+    "80-C145-P-zero-source",
+    "80-C145-N-null-value",
+    "80-C145-N-unique-violation",
+    "80-C146-P-direct-filter",
+    "80-C146-P-direct-reorder",
+    "80-C146-P-direct-positional-swap",
+    "80-C146-P-cte-positional-swap",
+    "80-C146-P-cte-filter",
+    "80-C146-P-cte-outer-filter",
+    "80-C146-P-cte-duplicates",
+    "80-C146-N-pk-collision",
+    "80-C146-N-check",
+    "80-C146-N-null-unknown",
+    "80-C146-P-fk-safe",
+    "80-C146-P-ordered",
+    "80-C147-P-targeted-conflict-returning",
+    "80-C147-N-duplicate-source",
+    "80-C147-N-unattested-target-key",
+    "80-C147-N-null-primary-key",
+    "80-C147-N-null-and-where-not-true",
+    "80-C148-P-values-then-read-ctas",
+    "80-C148-P-select-reorder-ctas",
+    "80-C148-P-cte-then-ctas",
+    "80-C148-P-default-then-ctas",
+    "80-C148-N-duplicate-pk",
+    "80-C148-N-unproved-transaction"
+  ],
+  "conditional_case_ids": [
+    "80-C145-N-unattested-default",
+    "80-C145-N-unattested-identity",
+    "80-C145-N-cast-uncertainty",
+    "80-C146-N-missing-source",
+    "80-C146-N-recursive-cte",
+    "80-C146-N-fk-violation",
+    "80-C147-N-conditional-1",
+    "80-C147-N-conditional-2",
+    "80-C147-N-conditional-3",
+    "80-C147-N-conditional-4",
+    "80-C147-N-conditional-5",
+    "80-C147-N-conditional-6",
+    "80-C147-N-conditional-7",
+    "80-C147-N-conditional-8",
+    "80-C147-N-unordered-source-collision",
+    "80-C148-C-vendor-overwrite",
+    "80-C148-C-dbtscripts",
+    "80-C148-C-native-engines"
+  ],
+  "case_index": {
+    "80-C145-P-values-explicit": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-implicit-order": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-reordered": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-duplicate-bag": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-default-omission": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-default-values": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-P-zero-source": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-P"
+    },
+    "80-C145-N-null-value": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C145-N"
+    },
+    "80-C145-N-unique-violation": {
+      "owner": "TASK-145",
+      "classification": "mandatory",
+      "child_proof": "Impossible",
+      "fixture_id": "80-C145-N"
+    },
+    "80-C145-N-unattested-default": {
+      "owner": "TASK-145",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C145-N"
+    },
+    "80-C145-N-unattested-identity": {
+      "owner": "TASK-145",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C145-N"
+    },
+    "80-C145-N-cast-uncertainty": {
+      "owner": "TASK-145",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C145-N"
+    },
+    "80-C146-P-direct-filter": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-direct-reorder": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-direct-positional-swap": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-cte-positional-swap": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-cte-filter": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-cte-outer-filter": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-cte-duplicates": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-N-pk-collision": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Impossible",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C146-N-check": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Impossible",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C146-N-null-unknown": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C146-P-fk-safe": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-P-ordered": {
+      "owner": "TASK-146",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C146-P"
+    },
+    "80-C146-N-missing-source": {
+      "owner": "TASK-146",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C146-N-recursive-cte": {
+      "owner": "TASK-146",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C146-N-fk-violation": {
+      "owner": "TASK-146",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C146-N"
+    },
+    "80-C147-P-targeted-conflict-returning": {
+      "owner": "TASK-147",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C147-P"
+    },
+    "80-C147-N-duplicate-source": {
+      "owner": "TASK-147",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-unattested-target-key": {
+      "owner": "TASK-147",
+      "classification": "mandatory",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-null-primary-key": {
+      "owner": "TASK-147",
+      "classification": "mandatory",
+      "child_proof": "Impossible",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-null-and-where-not-true": {
+      "owner": "TASK-147",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-1": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-2": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-3": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-4": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-5": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-6": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-7": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-conditional-8": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C147-N-unordered-source-collision": {
+      "owner": "TASK-147",
+      "classification": "conditional",
+      "child_proof": "Residual",
+      "fixture_id": "80-C147-N"
+    },
+    "80-C148-P-values-then-read-ctas": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C148-P"
+    },
+    "80-C148-P-select-reorder-ctas": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C148-P"
+    },
+    "80-C148-P-cte-then-ctas": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C148-P"
+    },
+    "80-C148-P-default-then-ctas": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Exact",
+      "fixture_id": "80-C148-P"
+    },
+    "80-C148-N-duplicate-pk": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Impossible",
+      "fixture_id": "80-C148-N"
+    },
+    "80-C148-N-unproved-transaction": {
+      "owner": "TASK-148",
+      "classification": "mandatory",
+      "child_proof": "Residual",
+      "fixture_id": "80-C148-N"
+    },
+    "80-C148-C-vendor-overwrite": {
+      "owner": "TASK-148",
+      "classification": "conditional",
+      "child_proof": null,
+      "fixture_id": "80-C148-N"
+    },
+    "80-C148-C-dbtscripts": {
+      "owner": "TASK-148",
+      "classification": "conditional",
+      "child_proof": null,
+      "fixture_id": "80-C148-N"
+    },
+    "80-C148-C-native-engines": {
+      "owner": "TASK-148",
+      "classification": "conditional",
+      "child_proof": null,
+      "fixture_id": "80-C148-N"
+    }
+  },
+  "original_acceptance_criteria": [
+    {
+      "id": 1,
+      "obligation": "Normalize INSERT VALUES, SELECT, DEFAULT, column lists, omissions and conflict/overwrite/RETURNING families",
+      "mandatory_case_ids": [
+        "80-C145-P-values-explicit",
+        "80-C145-P-default-values",
+        "80-C146-P-direct-filter",
+        "80-C147-P-targeted-conflict-returning",
+        "80-C148-P-values-then-read-ctas"
+      ],
+      "conditional_case_ids": [
+        "80-C147-N-conditional-1",
+        "80-C148-C-vendor-overwrite"
+      ]
+    },
+    {
+      "id": 2,
+      "obligation": "Constrain complete target/source before/after bags, casts/defaults, keys, conflict resolution and row bindings",
+      "mandatory_case_ids": [
+        "80-C145-P-default-omission",
+        "80-C146-P-cte-filter",
+        "80-C147-P-targeted-conflict-returning",
+        "80-C148-P-cte-then-ctas"
+      ],
+      "conditional_case_ids": [
+        "80-C145-N-cast-uncertainty",
+        "80-C147-N-unordered-source-collision"
+      ]
+    },
+    {
+      "id": 3,
+      "obligation": "Prove affected and untouched/rejected rows, duplicate bags, exact cardinality and negative key effects",
+      "mandatory_case_ids": [
+        "80-C145-P-duplicate-bag",
+        "80-C145-N-unique-violation",
+        "80-C146-N-pk-collision",
+        "80-C147-N-duplicate-source",
+        "80-C148-N-duplicate-pk"
+      ],
+      "conditional_case_ids": [
+        "80-C146-N-missing-source",
+        "80-C147-N-conditional-2"
+      ]
+    },
+    {
+      "id": 4,
+      "obligation": "Compose ordered INSERT with CTEs, SELECT and DDL and avoid invented idempotence or transaction laws",
+      "mandatory_case_ids": [
+        "80-C146-P-ordered",
+        "80-C148-P-cte-then-ctas",
+        "80-C148-N-unproved-transaction"
+      ],
+      "conditional_case_ids": [
+        "80-C148-C-dbtscripts",
+        "80-C148-C-native-engines"
+      ],
+      "supplementary_parent_oracle_ids": [
+        "80-P-REPLAY-CONFLICT",
+        "80-N-REPLAY-PK"
+      ]
+    },
+    {
+      "id": 5,
+      "obligation": "Execute complete DuckDB target/source/CTE states with NULL, duplicates, enforced constraints and zero-row cases",
+      "mandatory_case_ids": [
+        "80-C145-P-zero-source",
+        "80-C145-N-null-value",
+        "80-C146-N-null-unknown",
+        "80-C146-N-check",
+        "80-C147-N-null-and-where-not-true",
+        "80-C148-P-select-reorder-ctas"
+      ],
+      "conditional_case_ids": [
+        "80-C146-N-fk-violation",
+        "80-C147-N-conditional-3"
+      ]
+    },
+    {
+      "id": 6,
+      "obligation": "Verify all 13 dialect parser boundaries, direct/dbt/ODCS parity, stable protocol/schema snapshots and CI",
+      "mandatory_case_ids": [
+        "80-C145-P-reordered",
+        "80-C146-P-fk-safe",
+        "80-C147-P-targeted-conflict-returning",
+        "80-C148-P-default-then-ctas"
+      ],
+      "conditional_case_ids": [
+        "80-C145-N-unattested-identity",
+        "80-C148-C-native-engines"
+      ]
+    }
+  ],
+  "dialect_identities": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "canonical_evidence_sources": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "known_review_gaps": [],
+  "required_review": {
+    "full_ci": "cargo fmt --check; strict clippy; cargo test; cargo doc --no-deps; no-default-features; dbt e2e; active protocol/schema snapshots",
+    "independent_review": "standards and specification axes; verify child frozen oracles and original AC coverage",
+    "native_execution": "DuckDB only",
+    "release_gate": "TASK-91 separately gated",
+    "extra_oracles": [
+      "tests/task_80_parent_replay.rs",
+      "parent v2 standalone repeatability positive and impossible negative, no new child cases"
+    ]
+  },
+  "previous_snapshot": "docs/task-80-parent-acceptance-freeze-v1.json",
+  "parent_replay_oracles": [
+    {
+      "id": "80-P-REPLAY-CONFLICT",
+      "fixture_id": "80-C147-P",
+      "child_case_id": "80-C147-P-targeted-conflict-returning",
+      "classification": "mandatory_exact",
+      "owner": "TASK-80",
+      "sql": "INSERT INTO target(id,score) SELECT id,score FROM source WHERE TRUE ON CONFLICT(id) DO NOTHING RETURNING id",
+      "executions": 2,
+      "initial_target": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "complete_source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "target_after_first": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "target_after_second": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "source_after_first": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "source_after_second": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 2,
+          "score": 30
+        }
+      ],
+      "returning_first": [
+        {
+          "id": 2
+        }
+      ],
+      "returning_second": [],
+      "first_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "second_affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "source_true_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "source_not_true_ids": [],
+      "first_inserted_ids": [
+        "source#1"
+      ],
+      "first_conflicted_ids": [
+        "source#0"
+      ],
+      "second_inserted_ids": [],
+      "second_conflicted_ids": [
+        "source#0",
+        "source#1"
+      ],
+      "typed_final_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1
+          }
+        }
+      },
+      "proof_positive": "Exact with attested PK, complete fixed source and target prestate",
+      "proof_not_true": "Exact: all repeat candidates conflict with complete post-first target",
+      "comparison_assumptions": [
+        "integer equality",
+        "Enforced PRIMARY KEY target(id)",
+        "fixed source, no triggers or concurrent writes",
+        "first-applicable conflict DO NOTHING",
+        "statements execute sequentially without transaction rollback"
+      ],
+      "dialect_boundary": "DuckDB native oracle, parser coverage inherited from TASK-147; no vendor idempotence promise",
+      "adapter_evidence": "same canonical schema may originate from SQL/dbt compiled catalog/ODCS with explicitly supplied Enforced primary key",
+      "native_oracle": "DuckDB complete source, before, first after, second after and RETURNING rows",
+      "release_disposition": "mandatory exact closed-world replay on DuckDB, not unconditional portable SQL idempotence"
+    },
+    {
+      "id": "80-N-REPLAY-PK",
+      "fixture_id": "80-C148-N",
+      "child_case_id": "80-C148-N-duplicate-pk",
+      "classification": "mandatory_impossible",
+      "owner": "TASK-80",
+      "sql": "INSERT INTO target(id,score) VALUES (1,10)",
+      "executions": 2,
+      "initial_target": [],
+      "complete_source": [],
+      "target_after_first": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "target_after_second": null,
+      "post_failure_database_state": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "first_affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "second_affected": null,
+      "source_true_ids": [],
+      "source_not_true_ids": [],
+      "typed_last_committed_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "proof_positive": "Exact first statement; no feasible complete two-write result",
+      "proof_not_true": "Impossible: repeated literal insert violates Enforced target(id) PRIMARY KEY",
+      "comparison_assumptions": [
+        "integer equality",
+        "Enforced PRIMARY KEY target(id)",
+        "complete initially empty target",
+        "two independent statements, first commit persists after second statement failure"
+      ],
+      "dialect_boundary": "DuckDB native execution; no transactional rollback implication",
+      "adapter_evidence": "equivalent schema and explicitly supplied Enforced PK independent of source adapter",
+      "native_oracle": "DuckDB complete initial and first committed target bags; second INSERT rejects and leaves first state unchanged",
+      "release_disposition": "mandatory contradiction, not a successful idempotent replay"
+    }
+  ],
+  "signoff": {
+    "date": "2026-10-31",
+    "decision": "six_original_parent_ac_verified_after_independent_child_crosswalk_and_bounded_replay_oracles",
+    "mandatory_child_cases": 32,
+    "conditional_child_cases": 18,
+    "parent_replay_oracles": 2,
+    "merged_delivery_prs": [
+      155,
+      157,
+      158,
+      159
+    ],
+    "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41246057562",
+    "implementation_head_sha": "6c6f939067ec789dfe1eb8ba643bf5a7d7c8e807",
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/172#pullrequestreview-5725132904",
+    "review_kind": "COMMENT_not_distinct_account_approval",
+    "final_metadata_head_ci": "required_before_merge",
+    "native_engine": "DuckDB",
+    "vendor_boundaries": "typed Residual or parser boundary",
+    "release_approved": false
+  }
+}

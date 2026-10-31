@@ -1,4 +1,44 @@
 {
+  "task_80_parent_acceptance": {
+    "owner": "TASK-80",
+    "freeze": "docs/task-80-parent-acceptance-freeze.json",
+    "freeze_version": 2,
+    "regression": "tests/task_80_parent_closure.rs",
+    "audit": "docs/task-80-parent-acceptance-audit.md",
+    "status": "parent_signed_off_final_metadata_ci_pending",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-145",
+      "TASK-146",
+      "TASK-147",
+      "TASK-148"
+    ],
+    "mandatory_cases": 32,
+    "conditional_cases": 18,
+    "dialect_identities": 13,
+    "adapter_evidence_sources": 3,
+    "parent_signed_off": true,
+    "release_approved": false,
+    "remaining_gates": [
+      "latest metadata-head nine-job CI must pass before merging PR #172",
+      "TASK-81 separate parent gate before TASK-153",
+      "TASK-91 separate release approval"
+    ],
+    "replay_oracles": 2,
+    "replay_test": "tests/task_80_parent_replay.rs",
+    "previous_freeze": "docs/task-80-parent-acceptance-freeze-v1.json",
+    "review": "https://github.com/phdah/sql-semantic-protocol/pull/172#pullrequestreview-5725132904",
+    "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41246057562",
+    "implementation_head_sha": "6c6f939067ec789dfe1eb8ba643bf5a7d7c8e807",
+    "final_metadata_head_ci": "must pass before merge"
+  },
   "task_78_parent_acceptance": {
     "owner": "TASK-78",
     "freeze": "docs/task-78-parent-acceptance-freeze.json",

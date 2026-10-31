@@ -1,10 +1,10 @@
 ---
 id: TASK-80
 title: Prove INSERT and overwrite/source append semantics
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-31'
 labels: []
 milestone: m-3
 dependencies: 
@@ -34,12 +34,12 @@ Simple INSERT SELECT does not cover explicit/missing columns, VALUES, INSERT OVE
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Normalize INSERT VALUES, INSERT SELECT, DEFAULT VALUES, column lists, omitted/default/generated columns, multi-row, INSERT OVERWRITE and supported dialect INSERT IGNORE/REPLACE/ON CONFLICT/UPSERT/RETURNING forms.
-- [ ] #2 Represent target prestate, source query, column bindings, cast/default evaluations, conflict resolution, overwrite scope, key checks and final-state bag effects.
-- [ ] #3 Prove matching/rejected effects and exact touched/untouched rows and output cardinality where supported; expose ambiguity/engine-specific conflict order as residual.
-- [ ] #4 Compose writes with preceding CTEs and subsequent reads/DDL; verify repeated application and idempotence only when demonstrable.
-- [ ] #5 Test full pre/post DuckDB snapshots and per-dialect parse/engine forms with NULL, duplicates, constraints and zero-row insertions.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Normalize INSERT VALUES, INSERT SELECT, DEFAULT VALUES, column lists, omitted/default/generated columns, multi-row, INSERT OVERWRITE and supported dialect INSERT IGNORE/REPLACE/ON CONFLICT/UPSERT/RETURNING forms.
+- [x] #2 Represent target prestate, source query, column bindings, cast/default evaluations, conflict resolution, overwrite scope, key checks and final-state bag effects.
+- [x] #3 Prove matching/rejected effects and exact touched/untouched rows and output cardinality where supported; expose ambiguity/engine-specific conflict order as residual.
+- [x] #4 Compose writes with preceding CTEs and subsequent reads/DDL; verify repeated application and idempotence only when demonstrable.
+- [x] #5 Test full pre/post DuckDB snapshots and per-dialect parse/engine forms with NULL, duplicates, constraints and zero-row insertions.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -69,3 +69,19 @@ TASK-80 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-145, TASK-146, TASK-147, TASK-148; #2 -> TASK-145, TASK-146, TASK-147, TASK-148; #3 -> TASK-145, TASK-146, TASK-147, TASK-148; #4 -> TASK-146, TASK-148; #5 -> TASK-145, TASK-146, TASK-147, TASK-148; #6 -> TASK-145, TASK-146, TASK-147, TASK-148.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Final Summary (2026-10-31)
+
+All six original TASK-80 acceptance criteria independently reviewed and signed off
+against the v2 parent matrix: 32 mandatory and 18 conditional child-owned cases
+from four completed, merged PRs #155, #157, #158, and #159. Two additional
+parent-owned replay oracles prove the exact bounded ON CONFLICT DO NOTHING fixed
+point and the Impossible ordinary duplicate-key repeat, including complete
+DuckDB state, RETURNING and typed-domain evidence. Native vendor/session
+behaviors remain explicit Residual boundaries and cannot be promoted to Exact.
+
+Final implementation-head CI: https://github.com/phdah/sql-semantic-protocol/actions/runs/41246057562 (9/9 successful).
+Matt code-review standards/specification COMMENT: https://github.com/phdah/sql-semantic-protocol/pull/172#pullrequestreview-5725132904.
+The integration metadata commit must independently pass CI before merge.
+TASK-81 and the TASK-91 release gate remain separately unsigned; TASK-153
+does not become ready until TASK-81 is Done and merged on main.
