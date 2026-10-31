@@ -4,13 +4,13 @@ mod common;
 use common::DIALECTS;
 use std::collections::BTreeMap;
 
+use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow, PhysicalWriteState,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::parser::Parser;
-use serde_json::Value;
 
 const SQL: [&str; 2] = [
     "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) \
@@ -92,17 +92,20 @@ fn every_frozen_parser_family_matches_its_exact_dialect_boundary() {
     let mut observed = Vec::new();
     let mut mismatches = Vec::new();
     for family in families {
-        let id=family["id"].as_str().unwrap();
-        let sql=family["sql"].as_str().unwrap();
-        let cells=family["cells"].as_array().unwrap();
-        assert_eq!(cells.len(),DIALECTS.len(),"{id}: parser cell coverage");
+        let id = family["id"].as_str().unwrap();
+        let sql = family["sql"].as_str().unwrap();
+        let cells = family["cells"].as_array().unwrap();
+        assert_eq!(cells.len(), DIALECTS.len(), "{id}: parser cell coverage");
         for name in DIALECTS {
-            let matches=cells.iter().filter(|cell|cell["dialect"] == *name).collect::<Vec<_>>();
-            let [cell]=matches.as_slice() else {
+            let matches = cells
+                .iter()
+                .filter(|cell| cell["dialect"] == *name)
+                .collect::<Vec<_>>();
+            let [cell] = matches.as_slice() else {
                 panic!("{id}/{name}: missing or duplicate exact dialect cell");
             };
-            let dialect=dialect_from_name(name).unwrap();
-            let parser=if Parser::parse_sql(dialect.as_ref(),sql).is_ok(){
+            let dialect = dialect_from_name(name).unwrap();
+            let parser = if Parser::parse_sql(dialect.as_ref(), sql).is_ok() {
                 "parsed"
             } else {
                 "parser_rejected"
@@ -110,11 +113,13 @@ fn every_frozen_parser_family_matches_its_exact_dialect_boundary() {
             if cell["parser"] != parser {
                 mismatches.push(format!("{id}/{name}={parser}"));
             }
-            observed.push((id.to_string(),name.to_string()));
+            observed.push((id.to_string(), name.to_string()));
         }
     }
-    assert_eq!(observed.len(),families.len()*DIALECTS.len());
-    assert!(mismatches.is_empty(),
+    assert_eq!(observed.len(), families.len() * DIALECTS.len());
+    assert!(
+        mismatches.is_empty(),
         "TASK-143 frozen parser matrix mismatches (actual statuses): {}",
-        mismatches.join(","));
+        mismatches.join(",")
+    );
 }
