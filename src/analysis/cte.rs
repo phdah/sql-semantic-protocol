@@ -34,7 +34,7 @@ fn bounded_integer(expression: &Expr) -> Option<i128> {
     i32::try_from(number).ok().map(i128::from)
 }
 
-fn projection(expression: &Expr, name: String) -> Option<CteProjection> {
+fn computed_projection(expression: &Expr, name: String) -> Option<CteProjection> {
     if let Some(source) = column(expression) {
         return Some(CteProjection::new(name, source));
     }
@@ -195,10 +195,10 @@ fn select_stage(
         .map(|projection| match projection {
             SelectItem::UnnamedExpr(expression) => {
                 let ref_column = column(expression)?;
-                projection(expression, ref_column.column().to_string())
+                computed_projection(expression, ref_column.column().to_string())
             }
             SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
-                projection(expr, alias.value.clone())
+                computed_projection(expr, alias.value.clone())
             }
             _ => None,
         })
