@@ -362,6 +362,24 @@ fn unresolved_cte_order_by_column_cannot_receive_an_exact_proof() {
 }
 
 #[test]
+fn order_by_with_fill_cannot_certify_the_unmodified_cte_bag() {
+    // ClickHouse WITH FILL can synthesize rows that are absent from the
+    // complete physical source. Plain ORDER BY is bag-preserving; this is not.
+    let sql = "WITH shared AS (SELECT k FROM s) \
+               SELECT k FROM shared ORDER BY k WITH FILL FROM 1 TO 4";
+    let input = serde_json::json!({"s":[{"id":"s#0","k":1}]});
+    let (bundle, snapshots) = case_bundle_with_dialect(sql, &input, "clickhouse");
+    let layer = bundle.layers().last().unwrap();
+    assert!(
+        matches!(
+            physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots, None),
+            PhysicalCteProof::Residual { .. }
+        ),
+        "WITH FILL adds rows and cannot claim the unchanged source bag as Exact"
+    );
+}
+
+#[test]
 fn partition_selected_cte_scan_is_not_a_complete_source_proof() {
     // MySQL partition selection is not equivalent to the attested full s bag.
     // Treating a TableFactor with partitions as a plain table is unsound.
