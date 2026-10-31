@@ -122,12 +122,18 @@ fn all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag(
                 .unwrap();
             match analyze_sql(sql, name, dialect.as_ref()) {
                 Err(Error::Parse(_)) => {
-                    assert_eq!(expected, "parser_boundary", "{name}: unreviewed parser boundary");
+                    assert_eq!(
+                        expected, "parser_boundary",
+                        "{name}: unreviewed parser boundary"
+                    );
                     parser_boundaries += 1;
                 }
                 Err(other) => panic!("{name}: non-parser failure: {other}"),
                 Ok(_) => {
-                    assert_eq!(expected, "parser_equivalent", "{name}: unreviewed parser support");
+                    assert_eq!(
+                        expected, "parser_equivalent",
+                        "{name}: unreviewed parser support"
+                    );
                     let bundle = sql_bundle(sql, name);
                     let program = query(&bundle)
                         .cte_program()
