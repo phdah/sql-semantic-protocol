@@ -10,7 +10,8 @@ fn execute(rows: &[Option<i64>]) -> (Vec<Option<i64>>, Vec<(i64, i64)>, Vec<(i64
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE raw (k INTEGER)").unwrap();
     for row in rows {
-        db.execute("INSERT INTO raw VALUES (?1)", params![row]).unwrap();
+        db.execute("INSERT INTO raw VALUES (?1)", params![row])
+            .unwrap();
     }
     let physical = db
         .prepare("SELECT k FROM raw ORDER BY k NULLS LAST")
