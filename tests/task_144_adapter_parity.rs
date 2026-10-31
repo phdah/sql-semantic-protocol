@@ -85,14 +85,13 @@ fn compiled_named(sql: &str, names: &[&str]) -> AnalysisBundle {
     compiled_with_dependencies(sql, names, names)
 }
 
-fn compiled_with_dependencies(
-    sql: &str,
-    names: &[&str],
-    referenced: &[&str],
-) -> AnalysisBundle {
+fn compiled_with_dependencies(sql: &str, names: &[&str], referenced: &[&str]) -> AnalysisBundle {
     let mut sources = serde_json::Map::new();
     let mut catalog_sources = serde_json::Map::new();
-    let dependencies = referenced.iter().map(|name| format!("source.demo.{name}")).collect::<Vec<_>>();
+    let dependencies = referenced
+        .iter()
+        .map(|name| format!("source.demo.{name}"))
+        .collect::<Vec<_>>();
     for name in names {
         let id = format!("source.demo.{name}");
         let mut declared = serde_json::Map::new();
@@ -244,7 +243,10 @@ fn shadowed_cte_has_same_two_source_physical_proof_in_compiled_dbt() {
     let states = snapshots(case);
     assert_eq!(
         exact(&direct(sql, &evidence), &states),
-        exact(&compiled_with_dependencies(sql, &source_names, &["inner_src"]), &states),
+        exact(
+            &compiled_with_dependencies(sql, &source_names, &["inner_src"]),
+            &states
+        ),
         "compiled dbt nested shadowing must preserve BOTH complete leaves and lexical identities"
     );
 }
@@ -280,7 +282,11 @@ fn shadowed_cte_odcs_sources_preserve_complete_dual_leaf_truth() {
     assert_eq!(
         exact(&direct(case["sql"].as_str().unwrap(), &evidence), &states),
         exact(
-            &compiled_with_dependencies(case["sql"].as_str().unwrap(), &["inner_src", "outer_src"], &["inner_src"]),
+            &compiled_with_dependencies(
+                case["sql"].as_str().unwrap(),
+                &["inner_src", "outer_src"],
+                &["inner_src"]
+            ),
             &states
         ),
         "ODCS and compiled dbt must preserve shadowed source identity and full bag"
@@ -405,17 +411,29 @@ fn compiled_dbt_read_preserves_the_complete_raw_script_materialized_poststate() 
 fn conditional_recursion_and_correlated_lateral_remain_residual_across_dbt() {
     let freeze = cases();
     for id in ["78-C144-N-RECURSIVE-CYCLE", "78-C144-N-LATERAL-SESSION"] {
-        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let case = freeze["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == id)
+            .unwrap();
         let sql = case["sql"].as_str().unwrap();
-        let source = if id.contains("LATERAL") { vec!["raw"] } else { Vec::new() };
+        let source = if id.contains("LATERAL") {
+            vec!["raw"]
+        } else {
+            Vec::new()
+        };
         let original = direct(sql, &catalog(!source.is_empty()));
         let dbt = compiled_named(sql, &source);
         for (adapter, bundle) in [("sql", original), ("dbt", dbt)] {
             let layer = bundle.layers().last().unwrap();
-            assert!(matches!(
-                physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots(case), None),
-                PhysicalCteProof::Residual { .. }
-            ), "{id}/{adapter}: cannot promote unproved runtime/session semantics to Exact");
+            assert!(
+                matches!(
+                    physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots(case), None),
+                    PhysicalCteProof::Residual { .. }
+                ),
+                "{id}/{adapter}: cannot promote unproved runtime/session semantics to Exact"
+            );
         }
     }
 }
@@ -434,20 +452,37 @@ fn odcs_preserves_view_semantics_and_the_complete_raw_insert_transition() {
         "      - name: k\n        physicalType: INTEGER\n",
         "      - name: shifted\n        physicalType: INTEGER\n"
     );
-    let parsed = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["raw","target"]).unwrap()).unwrap();
+    let parsed = parse_odcs_yaml(
+        contract,
+        "duckdb",
+        &RelationCatalog::new(&["raw", "target"]).unwrap(),
+    )
+    .unwrap();
     let metadata = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
     let direct = RelationCatalog::from_schemas(&[
-        RelationSchema::new("raw".to_string(), vec![
-            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()
-        ]).unwrap(),
-        RelationSchema::new("target".to_string(), vec![
-            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
-            SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap()
-        ]).unwrap(),
-    ]).unwrap();
+        RelationSchema::new(
+            "raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        )
+        .unwrap(),
+        RelationSchema::new(
+            "target".to_string(),
+            vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
+            ],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
     let freeze = cases();
     for id in ["78-C144-P-MULTISTEP", "78-C144-N-MULTISTEP-NULL"] {
-        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let case = freeze["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == id)
+            .unwrap();
         let sqls = case["sql_statements"].as_array().unwrap();
         let states = snapshots(case);
         let mut observed = Vec::new();
@@ -464,7 +499,12 @@ fn odcs_preserves_view_semantics_and_the_complete_raw_insert_transition() {
     }
 
     // VIEW itself is logical: only original leaf schema facts come from ODCS.
-    let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == "78-C144-P-VIEW").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "78-C144-P-VIEW")
+        .unwrap();
     let sqls = case["sql_statements"].as_array().unwrap();
     let physical = snapshots(case);
     let mut results = Vec::new();
@@ -477,5 +517,8 @@ fn odcs_preserves_view_semantics_and_the_complete_raw_insert_transition() {
         };
         results.push(*proof);
     }
-    assert_eq!(results[1], results[0], "ODCS cannot introduce independent logical VIEW rows");
+    assert_eq!(
+        results[1], results[0],
+        "ODCS cannot introduce independent logical VIEW rows"
+    );
 }
