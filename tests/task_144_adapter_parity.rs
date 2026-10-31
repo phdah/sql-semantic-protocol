@@ -82,12 +82,19 @@ fn compiled(sql: &str, with_source: bool) -> AnalysisBundle {
 }
 
 fn compiled_named(sql: &str, names: &[&str]) -> AnalysisBundle {
+    compiled_with_dependencies(sql, names, names)
+}
+
+fn compiled_with_dependencies(
+    sql: &str,
+    names: &[&str],
+    referenced: &[&str],
+) -> AnalysisBundle {
     let mut sources = serde_json::Map::new();
     let mut catalog_sources = serde_json::Map::new();
-    let mut dependencies = Vec::new();
+    let dependencies = referenced.iter().map(|name| format!("source.demo.{name}")).collect::<Vec<_>>();
     for name in names {
         let id = format!("source.demo.{name}");
-        dependencies.push(id.clone());
         let mut declared = serde_json::Map::new();
         let mut introspected = serde_json::Map::new();
         let columns = if *name == "target" {
@@ -237,7 +244,7 @@ fn shadowed_cte_has_same_two_source_physical_proof_in_compiled_dbt() {
     let states = snapshots(case);
     assert_eq!(
         exact(&direct(sql, &evidence), &states),
-        exact(&compiled_named(sql, &source_names), &states),
+        exact(&compiled_with_dependencies(sql, &source_names, &["inner_src"]), &states),
         "compiled dbt nested shadowing must preserve BOTH complete leaves and lexical identities"
     );
 }
