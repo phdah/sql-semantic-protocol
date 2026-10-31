@@ -291,8 +291,32 @@ fn analyze_statement(
             name,
             query,
             or_replace,
+            or_alter,
+            materialized,
+            temporary,
+            if_not_exists,
+            with_no_schema_binding,
+            columns,
+            cluster_by,
+            options,
+            to,
+            params,
             ..
         } => {
+            // Only an unmodified persistent logical VIEW has a portable,
+            // source-complete re-evaluation law. Vendor creation options,
+            // replacement/alteration, security context and target routing
+            // require independent engine evidence even if the SELECT parses.
+            let execution_unknown = *or_alter
+                || *materialized
+                || *temporary
+                || *if_not_exists
+                || *with_no_schema_binding
+                || !columns.is_empty()
+                || !cluster_by.is_empty()
+                || !matches!(options, sqlparser::ast::CreateTableOptions::None)
+                || to.is_some()
+                || params.is_some();
             let target = name.to_string();
             let mode = if *or_replace {
                 WriteDefinitionMode::ReplaceView
@@ -300,8 +324,13 @@ fn analyze_statement(
                 WriteDefinitionMode::CreateView
             };
             ProtocolStatement::Query(
-                analyze_query(query, Some(target.clone()), metadata)
-                    .with_write(Some(WriteOperation::definition(target, mode))),
+                analyze_query(query, Some(target.clone()), metadata).with_write(Some(
+                    if execution_unknown {
+                        WriteOperation::definition(target, mode).with_view_execution_unknown()
+                    } else {
+                        WriteOperation::definition(target, mode)
+                    },
+                )),
             )
         }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),

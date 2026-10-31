@@ -1,3 +1,29 @@
+TASK-144 logical view and independently closed CTE acceptance:
+`src/analysis.rs` retains all recognized CREATE VIEW producer layers while
+`src/protocol/writes.rs` exposes `view_execution_unknown` for unverified
+materialization, temporary/session and other DDL clauses. The optional field
+is emitted in `src/emission/statements.rs` and constrained in the active JSON
+schema. `src/physical_realization/view_bags.rs` re-evaluates only a canonical
+one-leaf logical view from the complete original physical bag without
+treating the view as a new controllable source. The shared occurrence-aware
+projection lives in `src/physical_realization/write_states/projection.rs`.
+`tests/task_144_frozen_reads.rs` owns full raw/recursive/bounded typed
+truth; `tests/task_144_shadow_oracles.rs` owns two-leaf shadowing;
+`tests/task_144_dialects.rs` pins parser identities;
+`tests/task_144_adapter_parity.rs` verifies compiled dbt/ODCS semantics;
+`tests/task_144_view.rs` checks native view/full-bag truth and residuals.
+The v1 original freeze is preserved in `docs/task-144-acceptance-freeze-v1.json`;
+the reviewed v2 matrix owns nine explicit cases and 126 dialect cells.
+
+TASK-144 ordered materialized CTE scope proof:
+`src/physical_realization/cte_scripts.rs` composes the existing complete
+ordered write-state interpreter and bounded CTE bag evaluator without an
+independently supplied post-write target. It fails closed for nonterminal
+reads and unsupported SQL/DDL. `tests/task_144_ordered_cte.rs` owns the
+independent two-step DuckDB source/producer/target/terminal and NULL/duplicate
+oracles. `docs/task-144-acceptance-freeze.json` owns the preimplementation
+fixture/dialect/adapter matrix, with other parent signoff oracles still pending.
+
 TASK-143 finite filtered/computed CTEs: `src/analysis/cte.rs` owns SQL filter and arithmetic lowering into `src/protocol/cte.rs` typed lexical stages. `src/physical_realization/cte_bags.rs` evaluates one complete physical source bag, applies SQL three-valued filters before checked integer projections, and reuses producer bags for downstream joins. `tests/task_143_frozen_matrix.rs`, `tests/task_143_filtered_producers.rs`, `tests/task_143_count.rs` and `tests/task_143_duckdb_oracles.rs` own positive/negative full-bag oracles; `tests/task_143_write.rs` proves complete ordered INSERT CTE source/target bags and atomic CHECK impossibility through existing `src/analysis/writes.rs` and `src/physical_realization/write_states/operators.rs` canonical write seams; `tests/task_143_dialects.rs`, `tests/task_143_adapters.rs`, and `tests/task_143_residual.rs` own dialect, adapter, and unsafe conditional boundary evidence. `docs/task-143-acceptance-freeze.json` is the active v4 fixture/dialect/adapter inventory (v1, v2 and v3 archived), including a widened-target overflow counterexample in `tests/task_143_write.rs`; `src/physical_realization/write_states/operators.rs` guards computed local CTE values before target coercion. `tests/task_143_acceptance_inventory.rs` enforces complete case/dialect/adapter accounting. Independent review and historical freeze-timing disposition remain outstanding; parent TASK-78 remains open.
 
 TASK-141 lexical and physical CTE source identity:
