@@ -321,7 +321,7 @@ pub enum PhysicalWriteStatePlan {
 }
 
 #[derive(Debug)]
-enum StateFailure {
+pub(super) enum StateFailure {
     Impossible(String),
     Residual(PhysicalWriteStateGap, String),
 }
@@ -687,4 +687,5 @@ pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTyp
 
 use constraints::validate_state;
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
+pub(super) use projection::evaluate_simple_select_with_source_ids;
 use type_validation::validate_column_value;
