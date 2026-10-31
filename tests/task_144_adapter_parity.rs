@@ -303,7 +303,7 @@ fn compiled_dbt_read_preserves_the_complete_raw_script_materialized_poststate() 
         };
         let target = proof.final_states.iter().find(|state| state.relation() == "target").unwrap();
         let dbt_read = compiled_named(source[1].sql(), &["target"]);
-        let dbt = exact(&dbt_read, &[target.clone()]);
+        let dbt = exact(&dbt_read, std::slice::from_ref(target));
         assert_eq!(dbt, *proof.read, "{id}: dbt compiled read must equal original-source constructed target/CTE/terminal bag");
     }
 }
