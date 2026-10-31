@@ -404,6 +404,18 @@ fn stage(
             });
         }
     }
+    if let Some(name) = program.count_output() {
+        let count = i32::try_from(selected.len()).map_err(|_| "CTE count exceeds portable width")?;
+        let contributors = selected
+            .iter()
+            .flat_map(|row| row.source_row_ids.iter().cloned())
+            .collect::<Vec<_>>();
+        selected = vec![PhysicalProducerRow {
+            values: BTreeMap::from([(name.to_string(), LiteralValue::Number(count.to_string()))]),
+            source_row_ids: contributors,
+        }];
+        output_types.insert(name.to_string(), true);
+    }
     Ok(StageExecution {
         selected,
         rejected,
@@ -447,11 +459,14 @@ pub fn physical_finite_cte_bag_plan(
     let Some(final_stage) = program.stages().last() else {
         return residual("empty CTE producer program");
     };
-    let projected = final_stage
-        .projections()
-        .iter()
-        .map(|column| column.name())
-        .collect::<Vec<_>>();
+    let projected = match final_stage.count_output() {
+        Some(count) => vec![count],
+        None => final_stage
+            .projections()
+            .iter()
+            .map(|column| column.name())
+            .collect::<Vec<_>>(),
+    };
     let analyzed = query
         .output()
         .columns()
