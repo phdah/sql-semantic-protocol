@@ -365,3 +365,60 @@ schema:
         "ODCS authoritative column types cannot change the canonical derived CTE write bag"
     );
 }
+
+
+#[test]
+fn computed_cte_overflow_never_certifies_a_wider_insert_target() {
+    // INTEGER + INTEGER uses the INTEGER expression width, even when the
+    // destination is BIGINT. The destination must not retroactively widen
+    // an intermediate producer's overflowing computation.
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "raw",
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        )
+        .unwrap(),
+        RelationSchema::new(
+            "target",
+            vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                SchemaColumn::from_sql_type("shifted", "BIGINT", "duckdb").unwrap(),
+            ],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let source = SqlInput::inline(SQL);
+    let configured = [ConfiguredSqlInput::new(
+        "task143-overflow-write",
+        &source,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let initial = [
+        state("raw", &["k"], &[vec![Some(2_147_483_640)]]),
+        state("target", &["k", "shifted"], &[]),
+    ];
+    assert!(
+        matches!(
+            physical_ordered_write_state_plan(&bundle, &initial),
+            PhysicalWriteStatePlan::Residual { .. }
+        ),
+        "an overflowed INTEGER producer cannot be exact merely because the INSERT target is BIGINT"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw(k INTEGER); CREATE TABLE target(k INTEGER, shifted BIGINT);
+         INSERT INTO raw VALUES (2147483640);",
+    )
+    .unwrap();
+    assert!(
+        db.execute_batch(SQL).is_err(),
+        "native DuckDB INTEGER addition must overflow before assignment to BIGINT"
+    );
+    let count: i64 = db.query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0)).unwrap();
+    assert_eq!(count, 0, "native statement failure must preserve the empty target");
+}
