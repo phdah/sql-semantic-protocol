@@ -1,5 +1,24 @@
 # Semantic model and behavior
 
+### TASK-144 physical multistep CTE and logical view semantics
+
+A bounded ordinary CTE is not an independently insertable physical source:
+each producer references an earlier source bag or lexical producer with
+stable identities. A finite monotone guarded recursive CTE can produce an
+exact complete integer bag, including duplicates for UNION ALL. Cyclic or
+unbounded recursion remains a typed residual.
+
+For an ordered `INSERT ... WITH stage ... SELECT`, the final CTE read uses
+the executor's constructed target after the INSERT rather than an independently
+supplied poststate. Ordinary logical VIEW is instead reevaluated from its
+complete physical leaf on each read, so each output retains original source
+occurrence IDs. Filtered-out rows, NULL UNKNOWN and duplicate multiplicity
+are checked with full source/producer/terminal DuckDB bags; typed exact
+terminal domains and proven absent row requests are distinct from parser
+acceptance. Temporary, materialized, replacement and conditional VIEW laws
+lack portable execution proof, even if parsed, and fail closed.
+
+
 ### Sampling and row-membership uncertainty (TASK-136)
 
 TABLESAMPLE/SAMPLE is a row-selection boundary. A seed can describe a repeatable request but does not establish a portable sampling algorithm or the exact physical rows chosen. The analyzer retains typed sampling method, quantity, seed syntax and physical source occurrence in the canonical query and reports sample membership as residual. Explicit full-source input bags alone do not turn stochastic samples into Exact output or Impossible rejected-membership witnesses. Named ORDER BY, LIMIT and FETCH without sampling still use their complete-bag proof paths; ties, implicit NULL order and unverified vendor execution laws remain conditional.
