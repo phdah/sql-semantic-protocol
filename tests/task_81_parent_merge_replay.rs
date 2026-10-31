@@ -279,4 +279,3 @@ fn duplicate_merge_source_matches_are_residual_not_a_selected_winner() {
         negative["expected_gap"].as_str().unwrap()
     );
 }
-
