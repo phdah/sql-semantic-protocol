@@ -13874,7 +13874,7 @@
   "task_144_multistep_cte_acceptance": {
     "owner": "TASK-144",
     "parent": "TASK-78",
-    "status": "preimplementation_frozen_implementation_pending",
+    "status": "child_signed_off_final_head_ci_merge_gate_pending",
     "freeze": "docs/task-144-acceptance-freeze.json",
     "freeze_version": 2,
     "fixture_ids": [
@@ -13884,11 +13884,11 @@
     "mandatory_exact_cases": 7,
     "conditional_residual_cases": 2,
     "dialect_names": 14,
-    "parser_classifications_verified": false,
-    "adapter_evidence_verified": false,
-    "native_duckdb_oracles_verified": false,
-    "canonical_full_bag_proof_verified": false,
-    "child_signed_off": false,
+    "parser_classifications_verified": true,
+    "adapter_evidence_verified": true,
+    "native_duckdb_oracles_verified": true,
+    "canonical_full_bag_proof_verified": true,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "release_approved": false,
     "parser_cells": 126,
@@ -13907,6 +13907,29 @@
       "tests/task_144_view.rs"
     ],
     "dialect_matrix": "tests/task_144_dialects.rs",
-    "adapter_matrix": "tests/task_144_adapter_parity.rs"
+    "adapter_matrix": "tests/task_144_adapter_parity.rs",
+    "acceptance_inventory": "tests/task_144_acceptance_inventory.rs",
+    "dialect_exactness": "tests/task_144_dialect_exactness.rs",
+    "acceptance_audit": "docs/task-144-acceptance-audit.md",
+    "ac_completed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_ac_coverage": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "semantic_head": "0a05bc16d598c99bd5961f6536c6ce78b9a53e27",
+    "semantic_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41222021788",
+    "all_nine_semantic_head_ci_passed": true,
+    "code_review": "https://github.com/phdah/sql-semantic-protocol/pull/170#pullrequestreview-5723914446",
+    "final_head_ci_merge_gate": "pending latest PR head after signoff metadata commit"
   }
 }
