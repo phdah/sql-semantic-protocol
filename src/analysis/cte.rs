@@ -62,7 +62,11 @@ fn integer_filter(expression: &Expr) -> Option<CteFilter> {
         SqlBinaryOperator::LtEq => CteComparisonOperator::LessOrEqual,
         _ => return None,
     };
-    Some(CteFilter::new(column(left)?, operator, bounded_integer(right)?))
+    Some(CteFilter::new(
+        column(left)?,
+        operator,
+        bounded_integer(right)?,
+    ))
 }
 
 fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<CteInput> {
