@@ -311,10 +311,7 @@ fn view_consumer_integer_overflow_is_not_certified_by_wider_interpreter_arithmet
     .unwrap()])
     .unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    for (expression, exact) in [
-        ("shifted + 1", true),
-        ("shifted + 2147483640", false),
-    ] {
+    for (expression, exact) in [("shifted + 1", true), ("shifted + 2147483640", false)] {
         let definition = SqlInput::inline(
             "CREATE VIEW view_stage AS SELECT k + 10 AS shifted FROM raw WHERE k > 1",
         );
