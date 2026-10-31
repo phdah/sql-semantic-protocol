@@ -1,4 +1,34 @@
 {
+  "task_81_parent_acceptance": {
+    "owner": "TASK-81",
+    "status": "parent_candidate_pending_final_ci",
+    "freeze": "docs/task-81-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "audit": "docs/task-81-parent-acceptance-audit.md",
+    "parent_regression": "tests/task_81_parent_closure.rs",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "merged_children": [
+      "TASK-149",
+      "TASK-150",
+      "TASK-151",
+      "TASK-152"
+    ],
+    "mandatory_cases": 36,
+    "conditional_cases": 10,
+    "mandatory_parser_cells": 468,
+    "mandatory_adapter_cells": 108,
+    "cross_operator_oracle": "tests/physical_write_states.rs::task_106_composed_insert_update_merge_share_one_ordered_source_state",
+    "parent_signed_off": false,
+    "release_approved": false,
+    "evidence_boundary": "13 parser identities and three adapter sources are not native vendor engine certifications"
+  },
   "task_143_cte_producer_acceptance": {
     "owner": "TASK-143",
     "parent": "TASK-78",
