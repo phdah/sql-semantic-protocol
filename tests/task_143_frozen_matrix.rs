@@ -6,8 +6,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn literal(value: &Value) -> LiteralValue {
@@ -81,84 +81,160 @@ fn case_bundle_with_dialect(
 fn every_mandatory_frozen_read_case_proves_complete_source_producer_and_terminal_bags() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
-    let mut proved=Vec::new();
+    let mut proved = Vec::new();
     for case in freeze["cases"].as_array().unwrap() {
-        if case["classification"] != "mandatory_exact" || !case["sql"].is_string() || case["id"].as_str().unwrap().contains("WRITE") {
+        if case["classification"] != "mandatory_exact"
+            || !case["sql"].is_string()
+            || case["id"].as_str().unwrap().contains("WRITE")
+        {
             continue;
         }
-        let id=case["id"].as_str().unwrap();
-        let (bundle,snapshots)=case_bundle(case["sql"].as_str().unwrap(),&case["initial_bags"]);
-        let target=bundle.layers().last().unwrap();
-        let PhysicalCteProof::Exact(exact)=
-            physical_finite_cte_bag_plan(&bundle,target.id(),&snapshots,None)
-        else {panic!("{id}: mandatory source-derived proof must be exact")};
-        assert_eq!(exact.sources,vec!["raw"]);
-        assert_eq!(exact.nodes.len(),exact.sources.len()+exact.stage_bags.len());
-        let mut known=BTreeSet::new();
+        let id = case["id"].as_str().unwrap();
+        let (bundle, snapshots) = case_bundle(case["sql"].as_str().unwrap(), &case["initial_bags"]);
+        let target = bundle.layers().last().unwrap();
+        let PhysicalCteProof::Exact(exact) =
+            physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, None)
+        else {
+            panic!("{id}: mandatory source-derived proof must be exact")
+        };
+        assert_eq!(exact.sources, vec!["raw"]);
+        assert_eq!(
+            exact.nodes.len(),
+            exact.sources.len() + exact.stage_bags.len()
+        );
+        let mut known = BTreeSet::new();
         for node in &exact.nodes {
-            assert!(known.insert(node.id.clone()),"{id}: unique graph node identity");
+            assert!(
+                known.insert(node.id.clone()),
+                "{id}: unique graph node identity"
+            );
             for source in &node.inputs {
-                assert!(known.contains(&source.reference),"{id}: producer-first graph");
+                assert!(
+                    known.contains(&source.reference),
+                    "{id}: producer-first graph"
+                );
             }
         }
-        let source=&case["initial_bags"]["raw"];
-        assert_eq!(exact.source_bags["raw"].len(),source.as_array().unwrap().len());
-        for (index,row) in source.as_array().unwrap().iter().enumerate() {
-            assert_eq!(exact.source_bags["raw"][index].values["k"],literal(&row["k"]));
-            assert_eq!(exact.source_bags["raw"][index].source_row_ids,
-                vec![row["id"].as_str().unwrap()]);
+        let source = &case["initial_bags"]["raw"];
+        assert_eq!(
+            exact.source_bags["raw"].len(),
+            source.as_array().unwrap().len()
+        );
+        for (index, row) in source.as_array().unwrap().iter().enumerate() {
+            assert_eq!(
+                exact.source_bags["raw"][index].values["k"],
+                literal(&row["k"])
+            );
+            assert_eq!(
+                exact.source_bags["raw"][index].source_row_ids,
+                vec![row["id"].as_str().unwrap()]
+            );
         }
-        let producer=&case["producer_bags"]["stage"];
-        let observed_stage=&exact.stage_bags["terminal/cte:0:stage"];
-        assert_eq!(observed_stage.len(),producer.as_array().unwrap().len());
-        for (index,row) in producer.as_array().unwrap().iter().enumerate() {
-            let observed=&observed_stage[index];
-            for name in ["k","shifted"] {
-                assert_eq!(observed.values[name],literal(&row[name]),"{id}/{name}: stage output");
+        let producer = &case["producer_bags"]["stage"];
+        let observed_stage = &exact.stage_bags["terminal/cte:0:stage"];
+        assert_eq!(observed_stage.len(), producer.as_array().unwrap().len());
+        for (index, row) in producer.as_array().unwrap().iter().enumerate() {
+            let observed = &observed_stage[index];
+            for name in ["k", "shifted"] {
+                assert_eq!(
+                    observed.values[name],
+                    literal(&row[name]),
+                    "{id}/{name}: stage output"
+                );
             }
-            assert_eq!(observed.source_row_ids,
-                row["source_ids"].as_array().unwrap()
-                    .iter().map(|id|id.as_str().unwrap().to_string()).collect::<Vec<_>>());
+            assert_eq!(
+                observed.source_row_ids,
+                row["source_ids"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|id| id.as_str().unwrap().to_string())
+                    .collect::<Vec<_>>()
+            );
         }
-        let final_names=case["terminal_domains"].as_object().unwrap().keys().cloned().collect::<Vec<_>>();
-        let mut actual=exact.terminal.iter().map(|row|(row.values.clone(),row.source_row_ids.clone())).collect::<Vec<_>>();
-        let mut expected=case["terminal_bag"].as_array().unwrap().iter().map(|row|{
-            let ids=row["source_ids"].as_array().unwrap().iter().map(|id|id.as_str().unwrap().to_string()).collect::<Vec<_>>();
-            (expected_row(row,&final_names),ids)
-        }).collect::<Vec<_>>();
+        let final_names = case["terminal_domains"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut actual = exact
+            .terminal
+            .iter()
+            .map(|row| (row.values.clone(), row.source_row_ids.clone()))
+            .collect::<Vec<_>>();
+        let mut expected = case["terminal_bag"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|row| {
+                let ids = row["source_ids"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|id| id.as_str().unwrap().to_string())
+                    .collect::<Vec<_>>();
+                (expected_row(row, &final_names), ids)
+            })
+            .collect::<Vec<_>>();
         actual.sort_by(|left, right| left.1.cmp(&right.1));
         expected.sort_by(|left, right| left.1.cmp(&right.1));
-        assert_eq!(actual,expected,"{id}: entire terminal bag including duplicate occurrence IDs");
-        for (name,domain) in case["terminal_domains"].as_object().unwrap() {
-            let observed=&exact.terminal_domains[name];
-            assert_eq!(observed.null_allowed,domain["nullable"].as_bool().unwrap());
-            assert_eq!(observed.integer_bounds,Some((
-                i128::from(domain["lower"]["value"].as_i64().unwrap()),
-                i128::from(domain["upper"]["value"].as_i64().unwrap())
-            )),"{id}/{name}: exact bounds");
-            assert_eq!(domain["lower"]["inclusive"],true);
-            assert_eq!(domain["upper"]["inclusive"],true);
+        assert_eq!(
+            actual, expected,
+            "{id}: entire terminal bag including duplicate occurrence IDs"
+        );
+        for (name, domain) in case["terminal_domains"].as_object().unwrap() {
+            let observed = &exact.terminal_domains[name];
+            assert_eq!(observed.null_allowed, domain["nullable"].as_bool().unwrap());
+            assert_eq!(
+                observed.integer_bounds,
+                Some((
+                    i128::from(domain["lower"]["value"].as_i64().unwrap()),
+                    i128::from(domain["upper"]["value"].as_i64().unwrap())
+                )),
+                "{id}/{name}: exact bounds"
+            );
+            assert_eq!(domain["lower"]["inclusive"], true);
+            assert_eq!(domain["upper"]["inclusive"], true);
         }
-        let wanted=expected_row(&case["terminal_bag"][0],&final_names);
-        assert!(matches!(
-            physical_finite_cte_bag_plan(&bundle,target.id(),&snapshots,Some(&wanted)),
-            PhysicalCteProof::Exact(_)
-        ),"{id}: positive membership");
-        let negative=final_names.into_iter().map(|name|{
-            let absent=if name=="total"{3}else{11};
-            (name,LiteralValue::Number(absent.to_string()))
-        }).collect();
-        assert!(matches!(
-            physical_finite_cte_bag_plan(&bundle,target.id(),&snapshots,Some(&negative)),
-            PhysicalCteProof::Impossible { .. }
-        ),"{id}: negative membership from the same complete bag");
-        assert_eq!(exact.false_pairs["terminal/cte:0:stage"],
-            vec![vec!["raw#0".to_string()]],"{id}: FALSE rejection");
-        let null_case=id.contains("NULL-DUP");
-        assert_eq!(exact.unknown_pairs["terminal/cte:0:stage"].len(),
-            usize::from(null_case),"{id}: UNKNOWN rejection");
+        let wanted = expected_row(&case["terminal_bag"][0], &final_names);
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&wanted)),
+                PhysicalCteProof::Exact(_)
+            ),
+            "{id}: positive membership"
+        );
+        let negative = final_names
+            .into_iter()
+            .map(|name| {
+                let absent = if name == "total" { 3 } else { 11 };
+                (name, LiteralValue::Number(absent.to_string()))
+            })
+            .collect();
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&negative)),
+                PhysicalCteProof::Impossible { .. }
+            ),
+            "{id}: negative membership from the same complete bag"
+        );
+        assert_eq!(
+            exact.false_pairs["terminal/cte:0:stage"],
+            vec![vec!["raw#0".to_string()]],
+            "{id}: FALSE rejection"
+        );
+        let null_case = id.contains("NULL-DUP");
+        assert_eq!(
+            exact.unknown_pairs["terminal/cte:0:stage"].len(),
+            usize::from(null_case),
+            "{id}: UNKNOWN rejection"
+        );
         proved.push(id.to_string());
     }
     proved.sort();
-    assert_eq!(proved,["78-C143-N-NULL-DUP","78-C143-P-COUNT","78-C143-P-JOIN"]);
+    assert_eq!(
+        proved,
+        ["78-C143-N-NULL-DUP", "78-C143-P-COUNT", "78-C143-P-JOIN"]
+    );
 }
