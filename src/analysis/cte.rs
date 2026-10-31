@@ -1,8 +1,10 @@
 //! Bounded ordinary CTE analysis: SQL AST enters here, never the physical evaluator.
-//! Unsupported row shaping, recursion or computed expressions never produce a program.
+//! Unsupported row shaping, recursion or unbounded expressions never produce a program.
 
 use super::*;
-use crate::protocol::{CteColumnRef, CteInput, CteProgram, CteProjection, CteStage};
+use crate::protocol::{
+    CteColumnRef, CteComparisonOperator, CteFilter, CteInput, CteProgram, CteProjection, CteStage,
+};
 
 fn column(expression: &Expr) -> Option<CteColumnRef> {
     match expression {
@@ -19,6 +21,48 @@ fn column(expression: &Expr) -> Option<CteColumnRef> {
         }
         _ => None,
     }
+}
+
+fn bounded_integer(expression: &Expr) -> Option<i128> {
+    let Expr::Value(value) = expression else {
+        return None;
+    };
+    let Value::Number(raw, _) = &value.value else {
+        return None;
+    };
+    let number = raw.parse::<i128>().ok()?;
+    i32::try_from(number).ok().map(i128::from)
+}
+
+fn projection(expression: &Expr, name: String) -> Option<CteProjection> {
+    if let Some(source) = column(expression) {
+        return Some(CteProjection::new(name, source));
+    }
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return None;
+    };
+    let offset = bounded_integer(right)?;
+    let offset = match op {
+        SqlBinaryOperator::Plus => offset,
+        SqlBinaryOperator::Minus => -offset,
+        _ => return None,
+    };
+    Some(CteProjection::with_offset(name, column(left)?, offset))
+}
+
+fn integer_filter(expression: &Expr) -> Option<CteFilter> {
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return None;
+    };
+    let operator = match op {
+        SqlBinaryOperator::Eq => CteComparisonOperator::Equal,
+        SqlBinaryOperator::Gt => CteComparisonOperator::GreaterThan,
+        SqlBinaryOperator::GtEq => CteComparisonOperator::GreaterOrEqual,
+        SqlBinaryOperator::Lt => CteComparisonOperator::LessThan,
+        SqlBinaryOperator::LtEq => CteComparisonOperator::LessOrEqual,
+        _ => return None,
+    };
+    Some(CteFilter::new(column(left)?, operator, bounded_integer(right)?))
 }
 
 fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<CteInput> {
@@ -91,7 +135,6 @@ fn select_stage(
     };
     if select.distinct.is_some()
         || select.top.is_some()
-        || select.selection.is_some()
         || select.having.is_some()
         || select.qualify.is_some()
         || select.prewhere.is_some()
@@ -142,19 +185,20 @@ fn select_stage(
     if inputs.len() == 2 && inputs[0].alias() == inputs[1].alias() {
         return None;
     }
+    let filter = match &select.selection {
+        Some(expression) => Some(integer_filter(expression)?),
+        None => None,
+    };
     let projections = select
         .projection
         .iter()
         .map(|projection| match projection {
             SelectItem::UnnamedExpr(expression) => {
                 let ref_column = column(expression)?;
-                Some(CteProjection::new(
-                    ref_column.column().to_string(),
-                    ref_column,
-                ))
+                projection(expression, ref_column.column().to_string())
             }
             SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
-                Some(CteProjection::new(alias.value.clone(), column(expr)?))
+                projection(expr, alias.value.clone())
             }
             _ => None,
         })
@@ -191,7 +235,7 @@ fn select_stage(
     }) {
         return None;
     }
-    Some(CteStage::new(id, inputs, projections, equality))
+    Some(CteStage::new(id, inputs, projections, equality, filter))
 }
 
 fn lower(
