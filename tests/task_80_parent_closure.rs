@@ -100,7 +100,10 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
     ));
     assert_eq!(freeze["task"], "TASK-80");
     assert_eq!(freeze["version"], 2);
-    assert_eq!(freeze["previous_snapshot"], "docs/task-80-parent-acceptance-freeze-v1.json");
+    assert_eq!(
+        freeze["previous_snapshot"],
+        "docs/task-80-parent-acceptance-freeze-v1.json"
+    );
     assert_eq!(freeze["parent_signed_off"], false);
     assert_eq!(freeze["release_approved"], false);
 
@@ -262,7 +265,10 @@ fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
         assert!(nonempty(&case["release_disposition"]));
         assert_eq!(case["executions"], 2);
         let child = case["child_case_id"].as_str().unwrap();
-        assert!(mandatory.contains(child), "{child} is not a mandatory child witness");
+        assert!(
+            mandatory.contains(child),
+            "{child} is not a mandatory child witness"
+        );
     }
 
     let entry = &manifest["task_80_parent_acceptance"];
