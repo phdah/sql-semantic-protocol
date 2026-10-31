@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-142",
   "parent": "TASK-78",
-  "status": "frozen_v2_pending_final_verification",
+  "status": "mandatory_implementation_verified_independent_review_pending",
   "fixture_ids": [
     "78-C142-P",
     "78-C142-N"
@@ -227,7 +227,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "mysql",
@@ -235,7 +235,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "postgresql",
@@ -243,7 +243,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "postgres",
@@ -251,7 +251,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "hive",
@@ -259,7 +259,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "sqlite",
@@ -267,7 +267,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "snowflake",
@@ -275,7 +275,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "redshift",
@@ -283,7 +283,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "mssql",
@@ -291,7 +291,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "clickhouse",
@@ -299,7 +299,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "bigquery",
@@ -307,7 +307,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "ansi",
@@ -315,7 +315,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "duckdb",
@@ -323,7 +323,7 @@
       "native_engine_status": "duckdb_exact_oracle",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     },
     {
       "name": "databricks",
@@ -331,7 +331,7 @@
       "native_engine_status": "not_attested",
       "owner": "TASK-142",
       "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag",
-      "proof_status": "candidate_require_ci_verification"
+      "proof_status": "verified_executable_ci"
     }
   ],
   "adapters": [
@@ -352,14 +352,16 @@
     }
   ],
   "ci": {
-    "fmt": "awaiting_final_head",
-    "clippy": "awaiting_final_head",
-    "test": "awaiting_final_head",
-    "docs": "awaiting_final_head",
-    "no_default_features": "awaiting_final_head",
-    "dbt_e2e": "awaiting_final_head",
-    "golden_schema": "awaiting_final_head",
-    "independent_review": "awaiting_review"
+    "fmt": "passed",
+    "clippy": "passed",
+    "test": "passed",
+    "docs": "passed",
+    "no_default_features": "passed",
+    "dbt_e2e": "passed",
+    "golden_schema": "passed",
+    "independent_review": "pending_separate_reviewer",
+    "implementation_code_head": "b7981fc827a79dbb5a737c9f5aeb0a65fe6af222",
+    "implementation_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41191083396"
   },
   "freeze_history": "docs/task-142-acceptance-freeze-v1.json",
   "review_note": "Version 2 adds explicit recursive self-reference, portable i32 width, direct/dbt checks, 14-dialect coverage, full negative and SQL UNKNOWN oracles. Mandatory v1 cases and outcomes are unchanged.",
