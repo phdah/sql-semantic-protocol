@@ -110,7 +110,11 @@ fn acceptance_inventory_has_no_unowned_or_unclassified_mandatory_cells() {
     );
     assert_eq!(
         manifest["task_143_cte_producer_acceptance"]["child_signed_off"],
-        false
+        true
+    );
+    assert_eq!(
+        manifest["task_143_cte_producer_acceptance"]["status"],
+        "child_done_with_approved_freeze_timing_exception"
     );
     assert_eq!(
         manifest["task_143_cte_producer_acceptance"]["parent_signed_off"],
