@@ -5,12 +5,11 @@ use std::collections::BTreeMap;
 
 use duckdb::{params, Connection};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_ordered_write_state_plan, CheckCompareOperator, ConfiguredSqlInput,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    ConstraintValue, LiteralValue,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationSchema, RelationConstraint, RelationConstraintSet, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
+    CheckCompareOperator, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const SQL: &str = "INSERT INTO target(k, shifted) WITH stage AS
@@ -200,42 +199,71 @@ fn duplicate_and_null_rejections_cannot_be_inserted_as_free_producer_rows() {
 
 #[test]
 fn rejected_computed_cte_insert_is_impossible_and_preserves_original_target() {
-    let catalog=RelationCatalog::from_schemas(&[
-        RelationSchema::new("raw".to_string(),
-            vec![SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap()]).unwrap(),
-        RelationSchema::new("target".to_string(),vec![
-            SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap(),
-            SchemaColumn::from_sql_type("shifted","INTEGER","duckdb").unwrap()
-        ]).unwrap()
-    ]).unwrap();
-    let dialect=dialect_from_name("duckdb").unwrap();
-    let source=SqlInput::inline(SQL);
-    let configured=[ConfiguredSqlInput::new("task143",&source,"duckdb",dialect.as_ref())];
-    let mut bundle=analyze_configured_inputs_with_catalog(&configured,&catalog).unwrap();
-    let evidence=vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata,"task-143").unwrap(),
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        )
+        .unwrap(),
+        RelationSchema::new(
+            "target".to_string(),
+            vec![
+                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
+            ],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let source = SqlInput::inline(SQL);
+    let configured = [ConfiguredSqlInput::new(
+        "task143",
+        &source,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-143").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
     bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
         "target",
         vec![RelationConstraint::check_comparison(
-            "shifted",CheckCompareOperator::Gte,ConstraintValue::Integer(50),evidence
-        ).unwrap()]
-    ).unwrap()]);
-    let initial=[state("raw",&["k"],&[vec![Some(1)],vec![Some(2)]]),
-        state("target",&["k","shifted"],&[vec![Some(99),Some(109)]])];
-    let plan=physical_ordered_write_state_plan(&bundle,&initial);
-    assert!(matches!(plan,PhysicalWriteStatePlan::Impossible{..}),
-        "computed CTE insert violating enforced target check must be Impossible: {plan:?}");
+            "shifted",
+            CheckCompareOperator::Gte,
+            ConstraintValue::Integer(50),
+            evidence,
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
+    let initial = [
+        state("raw", &["k"], &[vec![Some(1)], vec![Some(2)]]),
+        state("target", &["k", "shifted"], &[vec![Some(99), Some(109)]]),
+    ];
+    let plan = physical_ordered_write_state_plan(&bundle, &initial);
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "computed CTE insert violating enforced target check must be Impossible: {plan:?}"
+    );
 
-    let db=Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE raw(k INTEGER);
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw(k INTEGER);
         CREATE TABLE target(k INTEGER,shifted INTEGER CHECK(shifted >= 50));
         INSERT INTO raw VALUES(1),(2);
-        INSERT INTO target VALUES(99,109);").unwrap();
+        INSERT INTO target VALUES(99,109);",
+    )
+    .unwrap();
     assert!(db.execute_batch(SQL).is_err());
-    let rows=db.prepare("SELECT k,shifted FROM target").unwrap()
-        .query_map([],|row|Ok((row.get::<_,i64>(0)?,row.get::<_,i64>(1)?)))
-        .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
-    assert_eq!(rows,vec![(99,109)],"failed native insert must be atomic");
+    let rows = db
+        .prepare("SELECT k,shifted FROM target")
+        .unwrap()
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
+    assert_eq!(rows, vec![(99, 109)], "failed native insert must be atomic");
 }
