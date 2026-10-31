@@ -42,6 +42,13 @@ pub(super) fn diagnose_local_query_predicates(
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
+        // Predicate diagnostics must use the same recursive shadowing rule
+        // as relation and output analysis, never an inherited producer.
+        if with.recursive {
+            for cte in &with.cte_tables {
+                local_outputs.insert(cte.alias.name.to_string(), Output::new(Vec::new()));
+            }
+        }
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
             let output = analyze_query_output(
@@ -409,8 +416,19 @@ pub(super) fn analyze_query_relations_with_locals(
     let mut local_analyses = inherited_local_analyses.clone();
 
     if let Some(with) = &query.with {
-        for cte in &with.cte_tables {
-            local_relations.insert(cte.alias.name.to_string());
+        // Ordinary WITH is a declaration-ordered lexical scope. A later
+        // sibling must not conceal an external relation (or a surrounding
+        // local binding) referenced by an earlier definition.
+        //
+        // Recursive bindings are visible to their own definitions, but
+        // must not inherit the semantics of a same-named outer producer.
+        if with.recursive {
+            for cte in &with.cte_tables {
+                let name = cte.alias.name.to_string();
+                local_relations.insert(name.clone());
+                local_outputs.insert(name.clone(), Output::new(Vec::new()));
+                local_analyses.remove(&name);
+            }
         }
 
         for cte in &with.cte_tables {
@@ -453,6 +471,7 @@ pub(super) fn analyze_query_relations_with_locals(
                 name.clone(),
                 apply_output_column_aliases(output, &cte.alias),
             );
+            local_relations.insert(name.clone());
             local_analyses.insert(
                 name,
                 LocalRelationAnalysis {

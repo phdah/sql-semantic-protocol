@@ -84,9 +84,10 @@ pub struct QueryStatement {
     row_shaping: Option<Box<SetRowShaping>>,
     nested_page: Option<Box<NestedPage>>,
     finite_table: Option<Box<FiniteTable>>,
+    cte_program: Option<Box<CteProgram>>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
-    diagnostics: Vec<Diagnostic>,
+    diagnostics: Box<[Diagnostic]>,
 }
 
 impl QueryStatement {
@@ -124,9 +125,10 @@ impl QueryStatement {
             row_shaping: None,
             nested_page: None,
             finite_table: None,
+            cte_program: None,
             produced_relation: None,
             write: None,
-            diagnostics,
+            diagnostics: diagnostics.into_boxed_slice(),
         }
     }
 
@@ -310,6 +312,16 @@ impl QueryStatement {
     /// Canonical GROUP BY key and COUNT(*) alias for a certified derived producer.
     pub fn window_grouped_count_source(&self) -> Option<&WindowGroupedCountSource> {
         self.window_grouped_count_source.as_deref()
+    }
+
+    pub(crate) fn with_cte_program(mut self, program: Option<CteProgram>) -> Self {
+        self.cte_program = program.map(Box::new);
+        self
+    }
+
+    /// Parser-independent, bounded ordinary CTE producer graph.
+    pub fn cte_program(&self) -> Option<&CteProgram> {
+        self.cte_program.as_deref()
     }
 
     pub(crate) fn with_finite_table(mut self, table: Option<FiniteTable>) -> Self {

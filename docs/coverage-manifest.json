@@ -1,4 +1,40 @@
 {
+  "task_141_cte_scope_acceptance": {
+    "owner": "TASK-141",
+    "parent": "TASK-78",
+    "status": "child_signed_off_pending_merge",
+    "freeze": "docs/task-141-acceptance-freeze.json",
+    "freeze_version": 1,
+    "proof_matrix": "docs/task-141-proof-matrix.json",
+    "audit": "docs/task-141-acceptance-audit.md",
+    "fixture_ids": [
+      "78-C141-P",
+      "78-C141-N"
+    ],
+    "sql_oracles": "tests/task_141_cte_scopes.rs",
+    "physical_oracles": "tests/task_141_physical.rs",
+    "native_engine_oracles": "tests/task_141_frozen_oracles.rs",
+    "adapter_oracles": "tests/task_141_adapter_matrix.rs",
+    "ci_code_head": "cb4d257db75ec36bbc89ee50171196f395a679a6",
+    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41182159741",
+    "lexical_scope_regression_tested_by_ci": true,
+    "full_physical_proof_verified": true,
+    "native_duckdb_oracles_verified": true,
+    "adapter_parity_verified": true,
+    "dialect_matrix_verified": true,
+    "conditional_boundaries_verified": true,
+    "conditional_parser_outcomes_verified": true,
+    "acceptance_criteria_completed": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "independent_review_verified": true,
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "release_approved": false
+  },
   "task_151_qualified_write_acceptance": {
     "owner": "TASK-151",
     "parent": "TASK-81",

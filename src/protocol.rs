@@ -18,6 +18,7 @@ pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 // Keep the canonical crate::protocol API stable for all internal and external users.
 mod aggregation;
 mod conditions;
+mod cte;
 mod diagnostics;
 mod document;
 mod finite_table;
@@ -32,6 +33,7 @@ mod writes;
 
 pub use aggregation::*;
 pub use conditions::*;
+pub use cte::*;
 pub use diagnostics::*;
 pub use document::*;
 pub use finite_table::*;

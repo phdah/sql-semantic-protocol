@@ -16,6 +16,17 @@ pub(super) fn analyze_query_column_domains(
     let mut local_domains = inherited_local_domains.clone();
 
     if let Some(with) = &query.with {
+        // Reserve recursive names before deriving column restrictions. An
+        // inherited same-named CTE cannot attest the recursive term's
+        // physical columns, row membership or output domains.
+        if with.recursive {
+            for cte in &with.cte_tables {
+                let name = cte.alias.name.to_string();
+                local_relations.insert(name.clone());
+                local_outputs.insert(name.clone(), Output::new(Vec::new()));
+                local_domains.remove(&name);
+            }
+        }
         for cte in &with.cte_tables {
             let name = cte.alias.name.to_string();
             let domains = analyze_query_column_domains(

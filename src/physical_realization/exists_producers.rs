@@ -277,7 +277,10 @@ fn certified_query_shape(query: &QueryStatement) -> bool {
         }
 }
 
-fn complete_domain(rows: &[PhysicalProducerRow], column: &str) -> Option<PhysicalProducerDomain> {
+pub(super) fn complete_domain(
+    rows: &[PhysicalProducerRow],
+    column: &str,
+) -> Option<PhysicalProducerDomain> {
     let mut values = Vec::new();
     let mut numeric = Vec::new();
     let mut null_allowed = false;

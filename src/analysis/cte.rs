@@ -1,0 +1,264 @@
+//! Bounded ordinary CTE analysis: SQL AST enters here, never the physical evaluator.
+//! Unsupported row shaping, recursion or computed expressions never produce a program.
+
+use super::*;
+use crate::protocol::{CteColumnRef, CteInput, CteProgram, CteProjection, CteStage};
+
+fn column(expression: &Expr) -> Option<CteColumnRef> {
+    match expression {
+        Expr::Identifier(name) if name.quote_style.is_none() => {
+            Some(CteColumnRef::new(None, name.value.clone()))
+        }
+        Expr::CompoundIdentifier(names)
+            if names.len() == 2 && names.iter().all(|name| name.quote_style.is_none()) =>
+        {
+            Some(CteColumnRef::new(
+                Some(names[0].value.to_ascii_lowercase()),
+                names[1].value.clone(),
+            ))
+        }
+        _ => None,
+    }
+}
+
+fn source(factor: &TableFactor, lexical: &BTreeMap<String, String>) -> Option<CteInput> {
+    let TableFactor::Table {
+        name,
+        alias,
+        args: None,
+        with_hints,
+        version: None,
+        with_ordinality: false,
+        partitions,
+        json_path: None,
+        sample: None,
+        index_hints,
+    } = factor
+    else {
+        return None;
+    };
+    // A physical snapshot of the whole table cannot prove a restricted
+    // partition, a hinted scan, or another engine-specific table source.
+    if !with_hints.is_empty()
+        || !partitions.is_empty()
+        || !index_hints.is_empty()
+        || alias
+            .as_ref()
+            .is_some_and(|alias| !alias.columns.is_empty() || alias.name.quote_style.is_some())
+        || name.0.iter().any(|part| {
+            part.as_ident()
+                .is_none_or(|ident| ident.quote_style.is_some())
+        })
+    {
+        return None;
+    }
+    // Local WITH aliases are single unqualified identifiers. Preserve the
+    // external physical relation name, but resolve unquoted lexical names
+    // case-insensitively. Quoted names require dialect-specific binding rules.
+    let source_name = name.to_string();
+    let canonical = if name.0.len() == 1 {
+        lexical
+            .get(&source_name.to_ascii_lowercase())
+            .cloned()
+            .unwrap_or_else(|| source_name.clone())
+    } else {
+        source_name.clone()
+    };
+    let instance = alias.as_ref().map_or_else(
+        || source_name.to_ascii_lowercase(),
+        |alias| alias.name.value.to_ascii_lowercase(),
+    );
+    Some(CteInput::new(canonical, instance))
+}
+
+fn select_stage(
+    query: &SqlQuery,
+    id: String,
+    lexical: &BTreeMap<String, String>,
+) -> Option<CteStage> {
+    if query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || !query.locks.is_empty()
+        || query.for_clause.is_some()
+        || query.settings.is_some()
+        || query.format_clause.is_some()
+        || !query.pipe_operators.is_empty()
+    {
+        return None;
+    }
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    if select.distinct.is_some()
+        || select.top.is_some()
+        || select.selection.is_some()
+        || select.having.is_some()
+        || select.qualify.is_some()
+        || select.prewhere.is_some()
+        || select.into.is_some()
+        || select.exclude.is_some()
+        || select.connect_by.is_some()
+        || !select.lateral_views.is_empty()
+        || !select.named_window.is_empty()
+        || !select.cluster_by.is_empty()
+        || !select.distribute_by.is_empty()
+        || !select.sort_by.is_empty()
+        || select.value_table_mode.is_some()
+        || !matches!(&select.group_by, GroupByExpr::Expressions(keys, mods)
+            if keys.is_empty() && mods.is_empty())
+    {
+        return None;
+    }
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    let mut inputs = vec![source(&from.relation, lexical)?];
+    let equality = match from.joins.as_slice() {
+        [] => None,
+        [join] => {
+            // ClickHouse GLOBAL JOIN has unproved distributed execution laws.
+            // A complete local source bag cannot certify that operator.
+            if join.global {
+                return None;
+            }
+            let (JoinOperator::Join(JoinConstraint::On(Expr::BinaryOp {
+                left,
+                op: SqlBinaryOperator::Eq,
+                right,
+            }))
+            | JoinOperator::Inner(JoinConstraint::On(Expr::BinaryOp {
+                left,
+                op: SqlBinaryOperator::Eq,
+                right,
+            }))) = &join.join_operator
+            else {
+                return None;
+            };
+            inputs.push(source(&join.relation, lexical)?);
+            Some((column(left)?, column(right)?))
+        }
+        _ => return None,
+    };
+    if inputs.len() == 2 && inputs[0].alias() == inputs[1].alias() {
+        return None;
+    }
+    let projections = select
+        .projection
+        .iter()
+        .map(|projection| match projection {
+            SelectItem::UnnamedExpr(expression) => {
+                let ref_column = column(expression)?;
+                Some(CteProjection::new(
+                    ref_column.column().to_string(),
+                    ref_column,
+                ))
+            }
+            SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
+                Some(CteProjection::new(alias.value.clone(), column(expr)?))
+            }
+            _ => None,
+        })
+        .collect::<Option<Vec<_>>>()?;
+    if projections.is_empty()
+        || projections
+            .iter()
+            .map(CteProjection::name)
+            .collect::<BTreeSet<_>>()
+            .len()
+            != projections.len()
+    {
+        return None;
+    }
+    // Plain sorting does not alter a bag, but WITH FILL synthesizes rows.
+    // Sorting keys must also resolve to executable output labels.
+    // Restrict this bounded proof to resolved output labels. A bare source
+    // column not projected by SELECT (or a misspelled label) may be legal or
+    // invalid depending on query shape; neither can be certified here.
+    if query.order_by.as_ref().is_some_and(|order| {
+        order.interpolate.is_some()
+            || !matches!(
+                &order.kind,
+                sqlparser::ast::OrderByKind::Expressions(keys)
+                    if keys.iter().all(|key| {
+                        key.with_fill.is_none()
+                            && matches!(
+                                &key.expr,
+                                Expr::Identifier(name)
+                                    if projections.iter().any(|projection| projection.name() == name.value)
+                            )
+                    })
+            )
+    }) {
+        return None;
+    }
+    Some(CteStage::new(id, inputs, projections, equality))
+}
+
+fn lower(
+    query: &SqlQuery,
+    id: String,
+    inherited: &BTreeMap<String, String>,
+    stages: &mut Vec<CteStage>,
+) -> Option<()> {
+    let mut lexical = inherited.clone();
+    if let Some(with) = &query.with {
+        if with.recursive {
+            return None;
+        }
+        let mut defined_here = BTreeSet::new();
+        for (index, cte) in with.cte_tables.iter().enumerate() {
+            // Quoted names have dialect-specific case and shadowing rules.
+            // Duplicate unquoted CTE names cannot establish a unique binding.
+            if cte.alias.name.quote_style.is_some() {
+                return None;
+            }
+            let name = cte.alias.name.value.clone();
+            let scope_name = name.to_ascii_lowercase();
+            if !defined_here.insert(scope_name.clone()) {
+                return None;
+            }
+            // Do not bind this CTE before lowering its definition. A forward
+            // reference resolves as external evidence, not a later sibling.
+            let local_id = format!("{id}/cte:{index}:{name}");
+            // Positional renames and dialect-specific CTE FROM extensions
+            // are not covered by this direct-projection physical proof.
+            if !cte.alias.columns.is_empty() || cte.from.is_some() {
+                return None;
+            }
+            let later_siblings = with
+                .cte_tables
+                .iter()
+                .skip(index + 1)
+                .map(|future| future.alias.name.value.to_ascii_lowercase())
+                .collect::<BTreeSet<_>>();
+            let start = stages.len();
+            lower(&cte.query, local_id.clone(), &lexical, stages)?;
+            // Whether a forward name means an external table or a later
+            // CTE is an engine/binder rule. No complete source snapshot
+            // can certify the unproven binding.
+            if stages[start..].iter().any(|stage| {
+                stage.inputs().iter().any(|input| {
+                    later_siblings.contains(&input.relation().to_ascii_lowercase())
+                        && !lexical.contains_key(&input.relation().to_ascii_lowercase())
+                })
+            }) {
+                return None;
+            }
+            lexical.insert(scope_name, local_id);
+        }
+    }
+    stages.push(select_stage(query, id, &lexical)?);
+    Some(())
+}
+
+/// Normalize one limited, nonrecursive WITH program into lexical producer facts.
+///
+/// Retain only direct column projections and equality joins. A missing program
+/// denotes an unproven operation, never an empty or automatically exact bag.
+pub(super) fn analyze_cte_program(query: &SqlQuery) -> Option<CteProgram> {
+    query.with.as_ref()?;
+    let terminal = "terminal".to_string();
+    let mut stages = Vec::new();
+    lower(query, terminal.clone(), &BTreeMap::new(), &mut stages)?;
+    Some(CteProgram::new(stages, terminal))
+}

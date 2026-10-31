@@ -666,6 +666,7 @@ pub(super) fn analyze_query(
         output,
         diagnostics,
     )
+    .with_cte_program(analyze_cte_program(query))
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_row_shaping(row_shaping)
