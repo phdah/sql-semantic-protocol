@@ -405,7 +405,8 @@ fn stage(
         }
     }
     if let Some(name) = program.count_output() {
-        let count = i32::try_from(selected.len()).map_err(|_| "CTE count exceeds portable width")?;
+        let count =
+            i32::try_from(selected.len()).map_err(|_| "CTE count exceeds portable width")?;
         let contributors = selected
             .iter()
             .flat_map(|row| row.source_row_ids.iter().cloned())
