@@ -17,7 +17,9 @@ fn number(value: i64) -> LiteralValue {
     LiteralValue::Number(value.to_string())
 }
 
-fn analyzed(values: &[Option<i64>]) -> (
+fn analyzed(
+    values: &[Option<i64>],
+) -> (
     sql_semantic_protocol::AnalysisBundle,
     Vec<PhysicalWriteState>,
 ) {
@@ -29,7 +31,12 @@ fn analyzed(values: &[Option<i64>]) -> (
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let source = SqlInput::inline(SQL);
-    let configured = [ConfiguredSqlInput::new("cte", &source, "duckdb", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "cte",
+        &source,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let rows = values
         .iter()
@@ -65,18 +72,35 @@ fn filtering_and_computed_aliases_share_one_physical_producer_bag() {
     assert_eq!(stage[1].values["shifted"], number(13));
     assert_eq!(stage[0].source_row_ids, vec!["raw#1"]);
     assert_eq!(stage[1].source_row_ids, vec!["raw#2"]);
-    assert_eq!(exact.false_pairs["terminal/cte:0:stage"], vec![vec!["raw#0"]]);
+    assert_eq!(
+        exact.false_pairs["terminal/cte:0:stage"],
+        vec![vec!["raw#0"]]
+    );
     assert!(exact.unknown_pairs["terminal/cte:0:stage"].is_empty());
     let rows = exact
         .terminal
         .iter()
-        .map(|row| (row.values["l"].clone(), row.values["r"].clone(), row.source_row_ids.clone()))
+        .map(|row| {
+            (
+                row.values["l"].clone(),
+                row.values["r"].clone(),
+                row.source_row_ids.clone(),
+            )
+        })
         .collect::<Vec<_>>();
     assert_eq!(
         rows,
         vec![
-            (number(12), number(12), vec!["raw#1".to_string(), "raw#1".to_string()]),
-            (number(13), number(13), vec!["raw#2".to_string(), "raw#2".to_string()]),
+            (
+                number(12),
+                number(12),
+                vec!["raw#1".to_string(), "raw#1".to_string()]
+            ),
+            (
+                number(13),
+                number(13),
+                vec!["raw#2".to_string(), "raw#2".to_string()]
+            ),
         ],
     );
     assert!(!exact.terminal_domains["l"].null_allowed);
@@ -95,18 +119,24 @@ fn rejected_nulls_and_duplicate_source_occurrences_do_not_create_free_producer_r
 
     assert_eq!(exact.stage_bags["terminal/cte:0:stage"].len(), 2);
     assert_eq!(exact.terminal.len(), 4);
-    assert_eq!(exact.false_pairs["terminal/cte:0:stage"], vec![vec!["raw#0"]]);
-    assert_eq!(exact.unknown_pairs["terminal/cte:0:stage"], vec![vec!["raw#3"]]);
+    assert_eq!(
+        exact.false_pairs["terminal/cte:0:stage"],
+        vec![vec!["raw#0"]]
+    );
+    assert_eq!(
+        exact.unknown_pairs["terminal/cte:0:stage"],
+        vec![vec!["raw#3"]]
+    );
     for row in &exact.terminal {
         assert_eq!(row.values["l"], number(12));
         assert_eq!(row.values["r"], number(12));
         assert_eq!(row.source_row_ids.len(), 2);
-        assert!(row.source_row_ids.iter().all(|id| id == "raw#1" || id == "raw#2"));
+        assert!(row
+            .source_row_ids
+            .iter()
+            .all(|id| id == "raw#1" || id == "raw#2"));
     }
-    let absent = BTreeMap::from([
-        ("l".to_string(), number(11)),
-        ("r".to_string(), number(11)),
-    ]);
+    let absent = BTreeMap::from([("l".to_string(), number(11)), ("r".to_string(), number(11))]);
     assert!(matches!(
         physical_finite_cte_bag_plan(&bundle, target.id(), &snapshots, Some(&absent)),
         PhysicalCteProof::Impossible { .. }
