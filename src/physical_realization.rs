@@ -501,10 +501,10 @@ mod scalar_quantified;
 mod set_bags;
 mod set_trees;
 mod sets;
+mod view_bags;
 mod window_bags;
 mod window_composition;
 mod window_filters;
-mod view_bags;
 mod write_states;
 
 pub use aggregate_bags::{
@@ -524,7 +524,6 @@ pub use cte_bags::{
 pub use cte_scripts::{
     physical_ordered_cte_read_plan, PhysicalOrderedCteExact, PhysicalOrderedCteProof,
 };
-pub use view_bags::{physical_finite_view_read_plan, PhysicalViewExact, PhysicalViewProof};
 pub(crate) use distributions::{
     physical_distribution_conflict, physical_distribution_plan,
     physical_inverted_set_distribution_plan,
@@ -587,6 +586,7 @@ pub use set_trees::{
     PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple,
 };
+pub use view_bags::{physical_finite_view_read_plan, PhysicalViewExact, PhysicalViewProof};
 pub use window_bags::{
     physical_finite_window_bag_plan, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
 };
