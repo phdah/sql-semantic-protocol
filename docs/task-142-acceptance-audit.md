@@ -1,0 +1,158 @@
+# TASK-142 bounded recursive CTE acceptance audit
+
+Scope: TASK-142 (TASK-78 child 2/4). The frozen task matrix is
+[`v2`](task-142-acceptance-freeze.json), with the immutable
+[`preimplementation v1`](task-142-acceptance-freeze-v1.json) retained.
+No parent or release gate is closed by this child.
+
+## Exact and impossible obligations
+
+The two mandatory Exact fixtures `78-C142-P-ALL` and
+`78-C142-P-DISTINCT` use source-free integer seed 1, positive step
+`x + 1` under `x < 3`, and produce the independently fixed complete
+bag `[(1), (2), (3)]` with stable producer occurrence identities.
+The terminal bounds are inclusive `[1,3]`, with NULL excluded.
+The `78-C142-N-ABSENCE` obligation checks complete positive
+source/producer/terminal bags and Impossible membership for 5 and NULL,
+with native DuckDB `NOT EXISTS` and `x = NULL` oracles. The FALSE
+termination witness is attached to the final delta source row; unsupported
+or cycle/overflow cases return typed Residual rather than a fabricated
+finite proof. The canonical recursion node explicitly points to itself,
+not an independent physical insertion.
+
+The v2 strengthening restricts Exact claims to a portable signed
+32-bit integer sequence. The maximum constructive bag is 10,000 rows;
+unproven larger programs are Residual, not truncated Exact. For a strictly
+increasing progression, `UNION DISTINCT` and `UNION ALL` have identical
+physical occurrences, but retain distinct canonical mode labels.
+Zero-step cyclic UNION ALL remains a reviewed conditional Residual,
+owned by TASK-142. Native vendor/session recursion laws beyond the
+DuckDB executable oracle are **not certified**.
+
+## Parser and adapter parity
+
+`tests/task_142_dialect_adapter.rs` validates the two frozen SQL forms
+against all **14** names in the project's authoritative `DIALECTS`
+constant, including Databricks. Each dialect's frozen parser-equivalent
+claim must match actual parsing or fail CI; parsing success must also
+construct the same source-free canonical program, recursive self-edge,
+exact terminal bag and integer bounds. This is parser/canonical evidence,
+**not** native execution certification for each vendor.
+
+The same SQL is analyzed through direct catalog input and compiled dbt
+manifest v12/catalog v1. The test compares canonical query and complete
+physical source, stage, rejection, terminal and typed-domain evidence.
+ODCS source parity is **not applicable** to these source-free literal
+recursive seeds: no external relation or declared source-column fact
+exists for an ODCS contract to supply. No equivalent metadata evidence is
+silently omitted.
+
+## Review against standards (author pass)
+
+- `AGENTS.md`: no new dependencies, unsafe, lint allowances, or
+  parser dialect whitelist. AST normalization stays in `src/analysis/cte.rs`;
+  Rust-domain recursion in `src/protocol/cte.rs`; closed-world physical
+  execution in `src/physical_realization/cte_bags.rs`.
+- The source-free recursion node represents its self-reference as a
+  canonical typed producer edge. Unsupported SQL does not borrow the
+  nonrecursive CTE evaluator's proof.
+- The signed width and bounded step rules protect against host arithmetic
+  overclaiming SQL engine outcomes. Output domains are derived from
+  the complete final physical bag, not from independently invented rows.
+- `src/lib.rs`, `docs/code-map.md`, and `docs/semantics.md` describe
+  the new Rust API and proof boundary. There is no public JSON wire-shape
+  change, so no protocol-schema migration is required.
+
+## Review against frozen specification (author pass)
+
+The source-free seed, recursive positive step, UNION vs UNION ALL,
+finite termination, cyclic Residual, exact terminal outcomes, TRUE/NOT
+TRUE membership and conditional uncertainty are tested through public
+APIs and DuckDB. The finite source/protocol/terminal matrix is covered,
+and parser-vs-engine evidence is kept distinct. No support is claimed
+for arbitrary recursive joins, vendor-specific CYCLE clauses, or
+unproved negative/overflow sequences.
+
+**Original author signoff gate (before independent review):** The author
+correctly withheld AC #5. An independent review in a separate session
+subsequently checked the standards/spec axes, as documented below.
+
+## CI evidence and unresolved independent review gate
+
+At reviewed semantic-code head [`cac9f3af4285`](https://github.com/phdah/sql-semantic-protocol/actions/runs/41192787862), all nine required CI jobs
+passed, including full tests, strict Clippy, rustfmt, documentation, both
+no-default-features checks, dependency checks and dbt Core E2E. The
+all-dialect canonical proof and compiled-dbt output interval assertions were
+executed in those tests. Exact SQL, dbt and physical computed output domains
+use inclusive integer bounds `[1,3]` for the mandatory cases, and the
+negative case has independent Impossible/NOT TRUE evidence.
+
+**Author review:** requirements #1 through #4 have complete executable evidence.
+**Independent review:** completed in a separate 2026-10-31 review session
+against `main` through `cac9f3af42853d145506c9d4ee288c887a8cb487`. AC #5 may be checked on the PR branch.
+TASK-143 must still wait until this child is merged.
+
+## Follow-up review findings on PR #168
+
+A fresh standards/spec audit found a fail-open binding in the initial
+recursive CTE lowering: `SELECT wrong.x FROM n` (or `SELECT n.x FROM n AS t`)
+could produce a canonical recursive program and an Exact output interval,
+despite the qualifier not naming the SQL source instance. The closed-world
+physical executor already returned Residual for the invalid projection, but
+the query's protocol-level bounds could overstate confidence.
+
+**Fixed:** `src/analysis/cte.rs` now requires a qualified final projection
+to match the actual lexical terminal source alias. The public API integration
+test in `tests/task_142_dialect_adapter.rs` verifies both rejected qualifiers
+remain Residual without a synthesized interval and that a valid `t.x FROM n AS t`
+still constructs an Exact physical bag.
+
+The author-level review has two distinct axes:
+
+- **Standards:** corrected violation of `AGENTS.md` "Never over-claim"
+  and unique canonical source identity. No new unsafe, lints or dependencies.
+- **Specification:** the frozen positive and negative fixtures retain exact
+  bags and inclusive outcome intervals. Previously untested invalid source
+  qualifiers cannot bypass the required explicit Residual boundary.
+
+The separate independent review below supersedes the author's pending-signoff
+note. No Copilot approval is claimed.
+
+## Independent final review (2026-10-31)
+
+Fixed point: `main`, compared against reviewed code head `cac9f3af42853d145506c9d4ee288c887a8cb487`.
+Method: Matt Pocock's `code-review` skill, with Standards and Spec evaluated
+as separate review axes in a new session. This is not a claim that parallel
+subagents ran or that a second GitHub account approved the PR.
+
+### Standards
+
+**0 blocking findings.** Audited `AGENTS.md`, `CONTRIBUTING.md`, the code
+map, CTE analysis, protocol and physical realization against the PR diff.
+The AST remains isolated in analysis; typed CTE recursion and stable lexical
+producer identities are explicit; the physical executor uses checked finite
+induction and returns Residual rather than truncating an uncertain bag.
+No new dependency, unsafe code, lint suppression or known protocol wire-shape
+break was introduced. The Fowler smell baseline raises no actionable
+blocker in this narrowly bounded change.
+
+### Spec
+
+**0 blocking findings.** Reviewed all three frozen mandatory cells
+(`78-C142-P-ALL`, `78-C142-P-DISTINCT`, `78-C142-N-ABSENCE`) and the
+explicit conditional cycle cell (`78-C142-N-CYCLE`) against the original
+TASK-142 acceptance criteria and TASK-78 mapped AC #1, #2, #3, #5 and #6.
+The public API oracles assert producer/terminal bags, row IDs, inclusive
+output bounds, positive Exact and absent/NULL Impossible, the typed cyclic
+Residual, SQL TRUE/FALSE/UNKNOWN, all 14 exposed parser aliases and dbt parity.
+The source-free seed gives ODCS no equivalent source facts. Neither native
+execution on untested engines nor parent TASK-78 closure is claimed.
+
+### CI and disposition
+
+All nine jobs passed on the reviewed semantic head:
+https://github.com/phdah/sql-semantic-protocol/actions/runs/41192787862.
+The follow-up edits only reconcile audit, frozen evidence state, coverage
+metadata and backlog signoff. **TASK-142 AC #1..#5: verified, Done on this PR
+branch, awaiting merge.** TASK-78 remains open. The PR's new metadata-only
+commit should be checked by CI before the merge action.

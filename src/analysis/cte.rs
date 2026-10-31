@@ -251,12 +251,271 @@ fn lower(
     Some(())
 }
 
+fn recursive_integer(expr: &Expr) -> Option<i128> {
+    let Expr::Value(value) = expr else {
+        return None;
+    };
+    let sqlparser::ast::Value::Number(number, _) = &value.value else {
+        return None;
+    };
+    number.parse::<i128>().ok()
+}
+
+fn recursive_select_shape(select: &Select, sources: usize, filtered: bool) -> bool {
+    select.from.len() == sources
+        && select.selection.is_some() == filtered
+        && select.projection.len() == 1
+        && select.distinct.is_none()
+        && select.top.is_none()
+        && select.having.is_none()
+        && select.qualify.is_none()
+        && select.prewhere.is_none()
+        && select.into.is_none()
+        && select.exclude.is_none()
+        && select.connect_by.is_none()
+        && select.lateral_views.is_empty()
+        && select.named_window.is_empty()
+        && select.cluster_by.is_empty()
+        && select.distribute_by.is_empty()
+        && select.sort_by.is_empty()
+        && select.value_table_mode.is_none()
+        && matches!(&select.group_by, GroupByExpr::Expressions(keys, modifiers)
+            if keys.is_empty() && modifiers.is_empty())
+        && select.from.iter().all(|source| source.joins.is_empty())
+}
+
+fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
+    use crate::protocol::{CteRecursion, CteRecursionSetMode};
+    let with = query.with.as_ref()?;
+    let [cte] = with.cte_tables.as_slice() else {
+        return None;
+    };
+    if !with.recursive
+        || cte.alias.name.quote_style.is_some()
+        || cte.alias.columns.len() != 1
+        || cte.alias.columns[0].name.quote_style.is_some()
+        || cte.from.is_some()
+        || cte.query.with.is_some()
+        || cte.query.order_by.is_some()
+        || cte.query.limit_clause.is_some()
+        || cte.query.fetch.is_some()
+        || !cte.query.locks.is_empty()
+        || cte.query.for_clause.is_some()
+        || cte.query.settings.is_some()
+        || cte.query.format_clause.is_some()
+        || !cte.query.pipe_operators.is_empty()
+    {
+        return None;
+    }
+    let name = &cte.alias.name.value;
+    let output = &cte.alias.columns[0].name.value;
+    let SetExpr::SetOperation {
+        op: SqlSetOperator::Union,
+        set_quantifier,
+        left,
+        right,
+    } = cte.query.body.as_ref()
+    else {
+        return None;
+    };
+    let mode = match set_quantifier {
+        SqlSetQuantifier::All => CteRecursionSetMode::All,
+        SqlSetQuantifier::None | SqlSetQuantifier::Distinct => CteRecursionSetMode::Distinct,
+        _ => return None,
+    };
+    let (SetExpr::Select(base), SetExpr::Select(step)) = (left.as_ref(), right.as_ref()) else {
+        return None;
+    };
+    if !recursive_select_shape(base, 0, false) || !recursive_select_shape(step, 1, true) {
+        return None;
+    }
+    let seed = match &base.projection[0] {
+        SelectItem::UnnamedExpr(expr) | SelectItem::ExprWithAlias { expr, .. } => {
+            recursive_integer(expr)?
+        }
+        _ => return None,
+    };
+    let input = source(&step.from[0].relation, &BTreeMap::new())?;
+    if !input.relation().eq_ignore_ascii_case(name) || !input.alias().eq_ignore_ascii_case(name) {
+        return None;
+    }
+    let expr = match &step.projection[0] {
+        SelectItem::UnnamedExpr(expr) | SelectItem::ExprWithAlias { expr, .. } => expr,
+        _ => return None,
+    };
+    let Expr::BinaryOp {
+        left,
+        op: SqlBinaryOperator::Plus,
+        right,
+    } = expr
+    else {
+        return None;
+    };
+    if column(left)?.column() != output || column(left)?.relation().is_some() {
+        return None;
+    }
+    let increment = recursive_integer(right)?;
+    let Expr::BinaryOp { left, op, right } = step.selection.as_ref()? else {
+        return None;
+    };
+    if column(left)?.column() != output || column(left)?.relation().is_some() {
+        return None;
+    }
+    let inclusive = match op {
+        SqlBinaryOperator::Lt => false,
+        SqlBinaryOperator::LtEq => true,
+        _ => return None,
+    };
+    let bound = recursive_integer(right)?;
+    let recursion = CteRecursion::new(output.clone(), seed, increment, bound, inclusive, mode)?;
+    let producer = format!("terminal/cte:0:{name}");
+    let mut lexical = BTreeMap::new();
+    lexical.insert(name.to_ascii_lowercase(), producer.clone());
+    let terminal = "terminal".to_string();
+    let final_stage = select_stage(query, terminal.clone(), &lexical)?;
+    if final_stage.inputs().len() != 1
+        || final_stage.inputs()[0].relation() != producer
+        || final_stage.projections().iter().any(|projection| {
+            projection.source().column() != output
+                || projection
+                    .source()
+                    .relation()
+                    .is_some_and(|qualifier| qualifier != final_stage.inputs()[0].alias())
+        })
+    {
+        return None;
+    }
+    Some(CteProgram::new(
+        vec![
+            CteStage::recursive(producer, name.to_ascii_lowercase(), recursion),
+            final_stage,
+        ],
+        terminal,
+    ))
+}
+
+/// Do not reuse source-derived bounds for an outer recursive projection
+/// whose explicit SQL qualifier is not bound to the actual FROM instance.
+/// This guard also applies when the bounded physical program is rejected:
+/// ordinary output analysis may still have seen the recursive seed domain.
+pub(super) fn guard_recursive_projection_qualifiers(query: &SqlQuery, output: Output) -> Output {
+    if !query.with.as_ref().is_some_and(|with| with.recursive) {
+        return output;
+    }
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return output;
+    };
+    let [from] = select.from.as_slice() else {
+        return output;
+    };
+    let TableFactor::Table { name, alias, .. } = &from.relation else {
+        return output;
+    };
+    if select.projection.len() != output.columns().len() {
+        return output;
+    }
+    let bound_name = alias
+        .as_ref()
+        .map_or_else(|| name.to_string(), |alias| alias.name.value.clone());
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .zip(&select.projection)
+            .map(|(column, projection)| {
+                let expression = match projection {
+                    SelectItem::UnnamedExpr(expr) | SelectItem::ExprWithAlias { expr, .. } => expr,
+                    _ => return column.clone(),
+                };
+                let Expr::CompoundIdentifier(parts) = expression else {
+                    return column.clone();
+                };
+                let [qualifier, _] = parts.as_slice() else {
+                    return column.clone();
+                };
+                if qualifier.quote_style.is_none()
+                    && qualifier.value.eq_ignore_ascii_case(&bound_name)
+                {
+                    return column.clone();
+                }
+                column.clone().with_domain(ValueDomain::unknown(
+                    "recursive output qualifier does not match the source instance",
+                ))
+            })
+            .collect(),
+    )
+}
+
+pub(super) fn refine_bounded_recursive_output(
+    output: Output,
+    program: Option<&CteProgram>,
+) -> Output {
+    let Some(program) = program else {
+        return output;
+    };
+    let [recursive_stage, terminal] = program.stages() else {
+        return output;
+    };
+    let Some(recursion) = recursive_stage.recursion() else {
+        return output;
+    };
+    let Some(values) = recursion.finite_values() else {
+        return output;
+    };
+    if output.columns().len() != terminal.projections().len()
+        || !output
+            .columns()
+            .iter()
+            .zip(terminal.projections())
+            .all(|(column, projection)| {
+                column.name() == projection.name()
+                    && projection.source().column() == recursion.column()
+            })
+    {
+        return output;
+    }
+    let ranges = if recursion.increment() == 1 {
+        let Some(first) = values.first() else {
+            return output;
+        };
+        let Some(last) = values.last() else {
+            return output;
+        };
+        vec![ValueRange::new(
+            Some(Bound::new(integer_literal(*first), true)),
+            Some(Bound::new(integer_literal(*last), true)),
+        )]
+    } else {
+        values
+            .iter()
+            .map(|value| {
+                ValueRange::new(
+                    Some(Bound::new(integer_literal(*value), true)),
+                    Some(Bound::new(integer_literal(*value), true)),
+                )
+            })
+            .collect()
+    };
+    let domain = ValueDomain::ranges(ranges);
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| column.with_domain(domain.clone()))
+            .collect(),
+    )
+}
+
 /// Normalize one limited, nonrecursive WITH program into lexical producer facts.
 ///
 /// Retain only direct column projections and equality joins. A missing program
 /// denotes an unproven operation, never an empty or automatically exact bag.
 pub(super) fn analyze_cte_program(query: &SqlQuery) -> Option<CteProgram> {
-    query.with.as_ref()?;
+    let with = query.with.as_ref()?;
+    if with.recursive {
+        return bounded_recursive_program(query);
+    }
     let terminal = "terminal".to_string();
     let mut stages = Vec::new();
     lower(query, terminal.clone(), &BTreeMap::new(), &mut stages)?;

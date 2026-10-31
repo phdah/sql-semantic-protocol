@@ -53,7 +53,7 @@
 //! - physical_finite_exists_bag_plan proves full correlated and uncorrelated EXISTS/NOT EXISTS source bags and rejected outer identities.
 //! - physical_finite_joined_exists_bag_plan proves complete three-source nested INNER JOIN EXISTS/NOT EXISTS bags and rejected outer identities.
 //! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
-//! - physical_finite_cte_bag_plan evaluates complete lexically scoped ordinary CTE source and producer bags, NULL-aware equality and typed outcome domains.
+//! - physical_finite_cte_bag_plan evaluates complete ordinary and bounded monotone recursive CTE producer bags with explicit self-edges, closed-world absence and typed outcome domains.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_table_plan proves exact source-free VALUES and typed array fanout, finite two-input equality joins, COUNT(*) grouping, fixed star/PIVOT/UNPIVOT complete bags, SQL NOT TRUE identities and typed domains.
 //! - physical_finite_set_bag_plan proves independent two-column UNION/INTERSECT/EXCEPT physical tuple bags, including NULL and duplicates.
@@ -213,26 +213,27 @@ pub use protocol::{
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, CteColumnRef, CteInput,
-    CteProgram, CteProjection, CteStage, Diagnostic, DiagnosticArea, DiagnosticSeverity,
-    ExistsPredicate, Expression, FiniteColumnType, FiniteTable, FiniteTableKind,
-    FunctionExpression, GroupBy, GroupingExpression, InPredicate, InSubqueryOperand,
-    InSubqueryPredicate, InSubqueryTuple, InsertCteSource, IsNullPredicate, Join, JoinExecution,
-    JoinKind, JoinedMutationCteSource, LikePrefixPredicate, LineageSource, LiteralExpression,
-    LiteralType, LiteralValue, LogicalPredicate, MergeAction, MergeAssignment, MergeClause,
-    MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
-    ProtocolSource, ProtocolStatement, QuantifiedSubqueryPredicate, QueryStatement, RangesDomain,
-    RelationRef, ResidualCondition, ResidualConditionReason, SamplingMethod, SamplingQuantity,
-    SamplingSeed, SamplingSeedSyntax, SamplingSyntax, SamplingUnit, ScalarSubqueryExpression,
-    SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SetWitnessBoundary, SetWitnessCase, SetWitnessDirection, SetWitnessObligation,
-    SignedIntegerCastExpression, SignedIntegerCastKind, SourceRelation, SubqueryQuantifier,
-    SubquerySemantics, TableSampling, UnaryExpression, UnaryOperator, UnknownDomain,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteAffectedRows, WriteCardinalityRule,
-    WriteCountError, WriteDefinitionMode, WriteEffectAction, WriteEffectBranch, WriteIdempotence,
-    WriteInitialState, WriteKind, WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect,
-    WriteUncertainty, WriteValue, PROTOCOL_VERSION,
+    CteProgram, CteProjection, CteRecursion, CteRecursionSetMode, CteStage, Diagnostic,
+    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FiniteColumnType, FiniteTable,
+    FiniteTableKind, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    InSubqueryOperand, InSubqueryPredicate, InSubqueryTuple, InsertCteSource, IsNullPredicate,
+    Join, JoinExecution, JoinKind, JoinedMutationCteSource, LikePrefixPredicate, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction, MergeAssignment,
+    MergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates,
+    Protocol, ProtocolSource, ProtocolStatement, QuantifiedSubqueryPredicate, QueryStatement,
+    RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason, SamplingMethod,
+    SamplingQuantity, SamplingSeed, SamplingSeedSyntax, SamplingSyntax, SamplingUnit,
+    ScalarSubqueryExpression, SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand,
+    SetOperation, SetOperator, SetQuantifier, SetWitnessBoundary, SetWitnessCase,
+    SetWitnessDirection, SetWitnessObligation, SignedIntegerCastExpression, SignedIntegerCastKind,
+    SourceRelation, SubqueryQuantifier, SubquerySemantics, TableSampling, UnaryExpression,
+    UnaryOperator, UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteAffectedRows,
+    WriteCardinalityRule, WriteCountError, WriteDefinitionMode, WriteEffectAction,
+    WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind, WriteOperation,
+    WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
+    PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

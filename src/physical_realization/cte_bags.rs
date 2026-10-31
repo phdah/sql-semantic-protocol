@@ -146,11 +146,48 @@ struct StageExecution {
     output_types: BTreeMap<String, bool>,
 }
 
+fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
+    let recursion = program.recursion().ok_or("not a recursive stage")?;
+    // The source-free seed and strictly increasing checked step are sufficient
+    // for a finite, iteration-by-iteration complete physical proof.
+    // Materialization is deliberately bounded; a larger finite result is
+    // Residual, never a silently truncated Exact bag.
+    let values = recursion.finite_values().ok_or(
+        "recursive induction is too large, overflows SQL integer width, or lacks a finite proof",
+    )?;
+    let selected = values
+        .iter()
+        .enumerate()
+        .map(|(ordinal, value)| PhysicalProducerRow {
+            values: BTreeMap::from([(
+                recursion.column().to_string(),
+                LiteralValue::Number(value.to_string()),
+            )]),
+            source_row_ids: vec![format!("{}#{ordinal}", program.id())],
+        })
+        .collect::<Vec<_>>();
+    let last_ordinal = values.len().checked_sub(1).ok_or("empty recursive seed")?;
+    let stopped = format!("{}#{last_ordinal}", program.id());
+    // A positive step gives strictly distinct values, so DISTINCT and ALL
+    // construct the same occurrences. The set mode remains explicitly
+    // represented on the canonical recursive producer for consumers.
+    Ok(StageExecution {
+        selected,
+        rejected: vec![vec![stopped.clone()]],
+        false_pairs: vec![vec![stopped]],
+        unknown_pairs: Vec::new(),
+        output_types: BTreeMap::from([(recursion.column().to_string(), true)]),
+    })
+}
+
 fn stage(
     program: &CteStage,
     bags: &BagMap,
     types: &BTreeMap<String, BTreeMap<String, bool>>,
 ) -> Result<StageExecution, &'static str> {
+    if program.recursion().is_some() {
+        return recursive_stage(program);
+    }
     let [first, others @ ..] = program.inputs() else {
         return Err("CTE needs a physical or lexical input");
     };

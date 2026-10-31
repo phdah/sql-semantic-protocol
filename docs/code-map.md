@@ -280,3 +280,15 @@ TASK-74 independent parent window acceptance: `docs/task-74-acceptance-freeze.js
 TASK-74 upstream filtered-window physical realization: `src/physical_realization/window_filters.rs` compiles a complete canonical WHERE predicate with attested signed-integer/null laws and evaluates SQL TRUE/FALSE/UNKNOWN for each original source identity. `src/physical_realization/window_bags.rs` constructs partitions only from WHERE-TRUE rows and retains WHERE-not-TRUE identities separately from QUALIFY-rejected identities without changing the public proof struct. `docs/task-74-filtered-qualify-freeze.json` freezes original AC #3 mandatory filtered SQL/oracle variants. `tests/task_74_filtered_qualify.rs` verifies exact complete native DuckDB bags, typed domains, physical identities, 13 dialect paths and Residual failures; `tests/task_74_filtered_adapters.rs` verifies SQL/dbt/ODCS parity.
 
 TASK-77 bounded derived subquery closure: `src/analysis/finite_tables.rs` recognizes exactly one noncorrelated, unfiltered `SELECT *` wrapper around a complete explicitly named and typed source-free UNNEST; `FiniteTableKind::Star` and `with_source` preserve the inner canonical producer bag and row-to-contributor identities, and `src/physical_realization/finite_tables.rs` certifies exact/Impossible outcomes. `tests/task_77_derived_subquery.rs` compares native DuckDB complete NULL/duplicate source and terminal bags and proves unsupported filtered/correlated LATERAL forms cannot become exact. `docs/task-77-acceptance-freeze.json` v2 owns the missing parent-original-AC subquery and LATERAL cells; TASK-91 remains independent.
+
+TASK-142 finite recursive CTE laws: `src/analysis/cte.rs` certifies bounded
+source-free integer seeds, guarded positive steps and UNION DISTINCT/ALL
+into the parser-independent `CteRecursion` and recursive `CteStage` in
+`src/protocol/cte.rs`. `src/physical_realization/cte_bags.rs` executes the
+checked finite delta and explicit producer self-reference, preserving
+physical row identities, NOT TRUE termination and inclusive typed terminal
+bounds; unproven cyclic or overflowing recursion returns `Residual`.
+`tests/task_142_recursive_cte.rs` supplies the complete DuckDB and Impossible
+oracles, and `tests/task_142_dialect_adapter.rs` owns all 14 exposed dialect
+classifications and SQL/dbt compiled-model parity. Versioned acceptance:
+`docs/task-142-acceptance-freeze.json`; original v1 remains immutable.

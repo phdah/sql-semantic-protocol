@@ -1213,3 +1213,22 @@ type coercions, unproved projection cardinality, vendor/session dialect
 defaults and null-safe quantification are explicit `Residual`. Parser acceptance
 across 13 configured dialects is not evidence of execution on those engines.
 The TASK-131 conditional inventory retains these boundaries with named owner.
+
+## Bounded monotone recursive CTEs (TASK-142)
+
+The canonical Rust CTE graph records one recursively self-referencing producer
+for a single source-free integer seed and one positive integer step. Both
+`UNION ALL` and `UNION DISTINCT` are supported when the step predicate is a
+simple `<` or `<=` bound over the previous row, and the generated integer
+sequence is strictly increasing. The finite physical proof returns all
+producer and terminal occurrences with stable identities, exact integer lower
+and upper inclusive domains, and closed-world absence classification.
+
+A portable proof only certifies signed 32-bit values and a maximum of 10,000
+materialized occurrences. Unchecked overflow, nonpositive steps, cyclic or
+unbounded programs, opaque expressions, and unsupported SQL dialect AST shapes
+remain `Residual`, never a fabricated terminating bag. Native DuckDB
+execution certifies the named core examples; other engines and session-specific
+recursive execution are not inferred from parser acceptance. Source-free seeds
+do not have an equivalent ODCS source contract to adapt, while compiled dbt
+SQL uses the same canonical recursive program as direct SQL.
