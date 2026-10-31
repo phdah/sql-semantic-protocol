@@ -194,3 +194,48 @@ fn odcs_equivalent_source_schema_preserves_complete_task_144_bags() {
     }
     assert_eq!(checked, 2);
 }
+
+#[test]
+fn shadowed_cte_has_same_two_source_physical_proof_in_compiled_dbt() {
+    let freeze = cases();
+    let case = freeze["cases"].as_array().unwrap().iter()
+        .find(|c| c["id"] == "78-C144-P-SHADOW").unwrap();
+    let source_names = ["inner_src", "outer_src"];
+    let schemas = source_names.iter().map(|name| RelationSchema::new(
+        (*name).to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    ).unwrap()).collect::<Vec<_>>();
+    let evidence = RelationCatalog::from_schemas(&schemas).unwrap();
+    let sql = case["sql"].as_str().unwrap();
+    let states = snapshots(case);
+    assert_eq!(
+        exact(&direct(sql, &evidence), &states),
+        exact(&compiled_named(sql, &source_names), &states),
+        "compiled dbt nested shadowing must preserve BOTH complete leaves and lexical identities"
+    );
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn shadowed_cte_odcs_sources_preserve_complete_dual_leaf_truth() {
+    use sql_semantic_protocol::parse_odcs_yaml;
+    let contract = concat!(
+        "apiVersion: v3.2.0\nkind: DataContract\n",
+        "id: task144-shadow\nname: Two physical leaves\n",
+        "version: 1.0.0\nstatus: active\nschema:\n",
+        "  - name: inner_src\n    physicalName: inner_src\n    properties:\n",
+        "      - name: k\n        physicalType: INTEGER\n",
+        "  - name: outer_src\n    physicalName: outer_src\n    properties:\n",
+        "      - name: k\n        physicalType: INTEGER\n"
+    );
+    let parsed = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["inner_src", "outer_src"]).unwrap()).unwrap();
+    let evidence = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
+    let case = cases()["cases"].as_array().unwrap().iter()
+        .find(|c| c["id"] == "78-C144-P-SHADOW").unwrap().clone();
+    let states = snapshots(&case);
+    assert_eq!(
+        exact(&direct(case["sql"].as_str().unwrap(), &evidence), &states),
+        exact(&compiled_named(case["sql"].as_str().unwrap(), &["inner_src","outer_src"]), &states),
+        "ODCS and compiled dbt must preserve shadowed source identity and full bag"
+    );
+}
