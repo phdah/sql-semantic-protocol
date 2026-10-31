@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-143",
   "parent": "TASK-78",
-  "status": "implementation_in_progress_not_signed_off",
+  "status": "reviewable_bounded_inventory_pending_final_evidence",
   "fixture_ids": [
     "78-C143-P",
     "78-C143-N"
@@ -15,11 +15,11 @@
     6
   ],
   "acceptance_criteria_map": {
-    "1": "fixture variants and dialect/adapters in this inventory; remaining named variants explicitly tracked",
-    "2": "canonical filtered and computed JOIN graph plus physical proof",
-    "3": "tests/task_143_filtered_producers.rs, tests/task_143_count.rs and tests/task_143_duckdb_oracles.rs",
-    "4": "dialect/adapter work pending",
-    "5": "CI and independent review pending"
+    "1": "v2 frozen JOIN/COUNT/WRITE cases, complete source, intermediate, terminal and typed outcome domains; conditional dialect boundaries",
+    "2": "canonical CTE filter/computed/JOIN/COUNT physical source graph; source-derived INSERT complete target states",
+    "3": "tests/task_143_frozen_matrix.rs, task_143_duckdb_oracles.rs, task_143_count.rs, task_143_write.rs",
+    "4": "tests/task_143_dialects.rs and task_143_adapters.rs; vendor semantics not asserted",
+    "5": "final head CI and independent Standards/Spec review required"
   },
   "dialects": [
     {
@@ -398,19 +398,248 @@
     {
       "id": "78-C143-P-WRITE",
       "fixture_family": "78-C143-P",
-      "variant": "downstream ordered write from materialized producer",
-      "classification": "required_not_yet_implemented",
+      "variant": "ordered INSERT from one filtered, computed materialized CTE",
+      "classification": "mandatory_exact",
       "owner": "TASK-143",
-      "disposition": "blocks child Done until write-source graph and native oracle are certified"
+      "disposition": "implemented, final CI and review pending",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 3
+          }
+        ],
+        "target": [
+          {
+            "id": "target#0",
+            "k": 99,
+            "shifted": 109
+          }
+        ]
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 3,
+            "shifted": 13
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "target#0"
+          ],
+          "k": 99,
+          "shifted": 109
+        },
+        {
+          "source_ids": [
+            "raw#1"
+          ],
+          "k": 2,
+          "shifted": 12
+        },
+        {
+          "source_ids": [
+            "raw#2"
+          ],
+          "k": 3,
+          "shifted": 13
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 99,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 109,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "only two filtered source occurrences yield new target rows; prior target remains unchanged",
+      "not_true_proof": "raw#0 excluded and no intermediate CTE insertions are permitted",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB full physical raw, stage and target pre/post snapshots"
+    },
+    {
+      "id": "78-C143-N-WRITE",
+      "fixture_family": "78-C143-N",
+      "variant": "duplicate and NULL rejected computed CTE INSERT",
+      "classification": "mandatory_exact",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 1
+          },
+          {
+            "id": "raw#1",
+            "k": 2
+          },
+          {
+            "id": "raw#2",
+            "k": 2
+          },
+          {
+            "id": "raw#3",
+            "k": null
+          }
+        ],
+        "target": []
+      },
+      "producer_bags": {
+        "stage": [
+          {
+            "source_ids": [
+              "raw#1"
+            ],
+            "k": 2,
+            "shifted": 12
+          },
+          {
+            "source_ids": [
+              "raw#2"
+            ],
+            "k": 2,
+            "shifted": 12
+          }
+        ]
+      },
+      "terminal_bag": [
+        {
+          "source_ids": [
+            "raw#1"
+          ],
+          "k": 2,
+          "shifted": 12
+        },
+        {
+          "source_ids": [
+            "raw#2"
+          ],
+          "k": 2,
+          "shifted": 12
+        }
+      ],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 2,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 2,
+            "inclusive": true
+          }
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": {
+            "value": 12,
+            "inclusive": true
+          },
+          "upper": {
+            "value": 12,
+            "inclusive": true
+          }
+        }
+      },
+      "true_proof": "both duplicate source occurrences generate separate appended target rows",
+      "not_true_proof": "NULL and k=1 are NOT TRUE; neither can become a target row",
+      "expected_physical": "Exact",
+      "native_oracle": "DuckDB full source and target bags",
+      "owner": "TASK-143",
+      "disposition": "implemented, CI and review pending"
+    },
+    {
+      "id": "78-C143-N-OVERFLOW",
+      "fixture_family": "78-C143-N",
+      "variant": "computed INTEGER overflow cannot claim exact materialization",
+      "classification": "conditional_residual",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 2147483640
+          }
+        ]
+      },
+      "expected_physical": "Residual",
+      "reason": "checked signed 32-bit computed offset overflows",
+      "owner": "TASK-143",
+      "release_disposition": "explicit residual until native width semantics attested"
+    },
+    {
+      "id": "78-C143-N-OPAQUE",
+      "fixture_family": "78-C143-N",
+      "variant": "opaque function cannot borrow exact source-derived proof",
+      "classification": "conditional_residual",
+      "sql": "WITH stage AS (SELECT ABS(k) AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 2
+          }
+        ]
+      },
+      "expected_physical": "Residual",
+      "reason": "unproved expression evaluation",
+      "owner": "TASK-143",
+      "release_disposition": "explicit residual until function semantics supported"
     }
   ],
   "verification": {
-    "source_oracle": "tests/task_143_filtered_producers.rs",
-    "native_oracle": "tests/task_143_duckdb_oracles.rs and tests/task_143_count.rs",
+    "source_oracle": "tests/task_143_frozen_matrix.rs and tests/task_143_write.rs",
+    "native_oracle": "tests/task_143_duckdb_oracles.rs, tests/task_143_count.rs and tests/task_143_write.rs",
     "code_head_ci": "pending",
     "independent_review": "pending",
     "child_done": false,
     "parent_done": false,
-    "release_approved": false
+    "release_approved": false,
+    "adapters": "tests/task_143_adapters.rs",
+    "dialects": "tests/task_143_dialects.rs"
   }
 }
