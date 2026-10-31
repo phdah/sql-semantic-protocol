@@ -321,7 +321,7 @@ pub enum PhysicalWriteStatePlan {
 }
 
 #[derive(Debug)]
-enum StateFailure {
+pub(super) enum StateFailure {
     Impossible(String),
     Residual(PhysicalWriteStateGap, String),
 }
