@@ -15,8 +15,9 @@ final bounded CTE read, retaining every transition and terminal bag.
 
 Known CREATE VIEW variants needing session or engine execution laws retain
 their producer layer but optionally emit `write.view_execution_unknown: true`.
-This marker is only present for unproved materialized, temporary, conditional,
-column-renaming or vendor-specific view creation. It prevents the bounded
+This marker is only present for unproved materialized, temporary, conditional
+creation/alteration, column-renaming, engine-specific view options, execution
+security contexts or explicit routing to a target relation. It prevents the bounded
 physical view proof from claiming `Exact`. Absence of the marker is not a
 general native-engine execution certificate; only the documented finite
 source-local logical view subset is proven. The remaining native vendor laws
