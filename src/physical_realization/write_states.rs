@@ -686,6 +686,6 @@ pub use typed_populations::{
 pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 
 use constraints::validate_state;
-pub(super) use projection::evaluate_simple_select_with_source_ids;
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
+pub(super) use projection::evaluate_simple_select_with_source_ids;
 use type_validation::validate_column_value;
