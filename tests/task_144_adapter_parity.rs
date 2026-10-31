@@ -8,9 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan,
     physical_finite_view_read_plan, physical_ordered_cte_read_plan, AnalysisBundle,
-    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalOrderedCteProof,
-    PhysicalViewProof, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalOrderedCteProof, PhysicalViewProof,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn cases() -> Value {
@@ -91,20 +90,36 @@ fn compiled_named(sql: &str, names: &[&str]) -> AnalysisBundle {
         dependencies.push(id.clone());
         let mut declared = serde_json::Map::new();
         let mut introspected = serde_json::Map::new();
-        let columns = if *name == "target" { vec!["k","shifted"] } else { vec!["k"] };
+        let columns = if *name == "target" {
+            vec!["k", "shifted"]
+        } else {
+            vec!["k"]
+        };
         for (index, column) in columns.iter().enumerate() {
-            declared.insert((*column).to_string(), json!({"name":column,"data_type":"INTEGER"}));
-            introspected.insert((*column).to_string(), json!({"name":column,"type":"INTEGER","index":index+1}));
+            declared.insert(
+                (*column).to_string(),
+                json!({"name":column,"data_type":"INTEGER"}),
+            );
+            introspected.insert(
+                (*column).to_string(),
+                json!({"name":column,"type":"INTEGER","index":index+1}),
+            );
         }
-        sources.insert(id.clone(), json!({
-            "unique_id":id,"resource_type":"source","relation_name":name,
-            "name":name,"columns":declared,
-        }));
-        catalog_sources.insert(id.clone(), json!({
-            "unique_id":id,
-            "metadata":{"type":"BASE TABLE","database":"main","schema":"raw","name":name},
-            "columns":introspected,"stats":{}
-        }));
+        sources.insert(
+            id.clone(),
+            json!({
+                "unique_id":id,"resource_type":"source","relation_name":name,
+                "name":name,"columns":declared,
+            }),
+        );
+        catalog_sources.insert(
+            id.clone(),
+            json!({
+                "unique_id":id,
+                "metadata":{"type":"BASE TABLE","database":"main","schema":"raw","name":name},
+                "columns":introspected,"stats":{}
+            }),
+        );
     }
     let manifest = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -200,13 +215,23 @@ fn odcs_equivalent_source_schema_preserves_complete_task_144_bags() {
 #[test]
 fn shadowed_cte_has_same_two_source_physical_proof_in_compiled_dbt() {
     let freeze = cases();
-    let case = freeze["cases"].as_array().unwrap().iter()
-        .find(|c| c["id"] == "78-C144-P-SHADOW").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "78-C144-P-SHADOW")
+        .unwrap();
     let source_names = ["inner_src", "outer_src"];
-    let schemas = source_names.iter().map(|name| RelationSchema::new(
-        (*name).to_string(),
-        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
-    ).unwrap()).collect::<Vec<_>>();
+    let schemas = source_names
+        .iter()
+        .map(|name| {
+            RelationSchema::new(
+                (*name).to_string(),
+                vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
     let evidence = RelationCatalog::from_schemas(&schemas).unwrap();
     let sql = case["sql"].as_str().unwrap();
     let states = snapshots(case);
@@ -230,40 +255,64 @@ fn shadowed_cte_odcs_sources_preserve_complete_dual_leaf_truth() {
         "  - name: outer_src\n    physicalName: outer_src\n    properties:\n",
         "      - name: k\n        physicalType: INTEGER\n"
     );
-    let parsed = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["inner_src", "outer_src"]).unwrap()).unwrap();
+    let parsed = parse_odcs_yaml(
+        contract,
+        "duckdb",
+        &RelationCatalog::new(&["inner_src", "outer_src"]).unwrap(),
+    )
+    .unwrap();
     let evidence = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
-    let case = cases()["cases"].as_array().unwrap().iter()
-        .find(|c| c["id"] == "78-C144-P-SHADOW").unwrap().clone();
+    let case = cases()["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "78-C144-P-SHADOW")
+        .unwrap()
+        .clone();
     let states = snapshots(&case);
     assert_eq!(
         exact(&direct(case["sql"].as_str().unwrap(), &evidence), &states),
-        exact(&compiled_named(case["sql"].as_str().unwrap(), &["inner_src","outer_src"]), &states),
+        exact(
+            &compiled_named(case["sql"].as_str().unwrap(), &["inner_src", "outer_src"]),
+            &states
+        ),
         "ODCS and compiled dbt must preserve shadowed source identity and full bag"
     );
 }
 
 fn view_script(catalog: &RelationCatalog, statements: &[Value]) -> AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let source = statements.iter().map(|sql| SqlInput::inline(sql.as_str().unwrap()))
+    let source = statements
+        .iter()
+        .map(|sql| SqlInput::inline(sql.as_str().unwrap()))
         .collect::<Vec<_>>();
-    let configured = source.iter().enumerate().map(|(index, sql)| {
-        let name = if index == 0 { "view" } else { "terminal" };
-        ConfiguredSqlInput::new(name, sql, "duckdb", dialect.as_ref())
-    }).collect::<Vec<_>>();
+    let configured = source
+        .iter()
+        .enumerate()
+        .map(|(index, sql)| {
+            let name = if index == 0 { "view" } else { "terminal" };
+            ConfiguredSqlInput::new(name, sql, "duckdb", dialect.as_ref())
+        })
+        .collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
 
 #[test]
 fn compiled_dbt_view_model_has_exactly_the_logical_views_source_derived_bag() {
     let freeze = cases();
-    let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == "78-C144-P-VIEW").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "78-C144-P-VIEW")
+        .unwrap();
     let sqls = case["sql_statements"].as_array().unwrap();
     let source = snapshots(case);
     let direct_bundle = view_script(&catalog(true), sqls);
     let terminal = direct_bundle.layers().last().unwrap();
-    let PhysicalViewProof::Exact(view) = physical_finite_view_read_plan(
-        &direct_bundle, terminal.id(), &source, None
-    ) else {
+    let PhysicalViewProof::Exact(view) =
+        physical_finite_view_read_plan(&direct_bundle, terminal.id(), &source, None)
+    else {
         panic!("native VIEW must be source-derived rather than independently inserted");
     };
     // The compiled dbt model SQL is the authoritative manifest fact; a dbt
@@ -272,7 +321,10 @@ fn compiled_dbt_view_model_has_exactly_the_logical_views_source_derived_bag() {
     let dbt = exact(&compiled_named(dbt_sql, &["raw"]), &source);
     assert_eq!(dbt.sources, vec!["raw"]);
     assert_eq!(dbt.terminal, view.view_bag, "dbt compiled view query and CREATE VIEW have identical canonical value bags and physical source ids");
-    assert_eq!(dbt.terminal_domains["shifted"].integer_bounds, Some((12,13)));
+    assert_eq!(
+        dbt.terminal_domains["shifted"].integer_bounds,
+        Some((12, 13))
+    );
     assert!(!dbt.terminal_domains["shifted"].null_allowed);
 }
 
@@ -280,24 +332,54 @@ fn compiled_dbt_view_model_has_exactly_the_logical_views_source_derived_bag() {
 fn compiled_dbt_read_preserves_the_complete_raw_script_materialized_poststate() {
     let freeze = cases();
     for id in ["78-C144-P-MULTISTEP", "78-C144-N-MULTISTEP-NULL"] {
-        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let case = freeze["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == id)
+            .unwrap();
         let catalog = RelationCatalog::from_schemas(&[
-            RelationSchema::new("raw".to_string(), vec![
-                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()
-            ]).unwrap(),
-            RelationSchema::new("target".to_string(), vec![
-                SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
-                SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
-            ]).unwrap(),
-        ]).unwrap();
-        let source = case["sql_statements"].as_array().unwrap().iter()
-            .map(|sql| SqlInput::inline(sql.as_str().unwrap())).collect::<Vec<_>>();
+            RelationSchema::new(
+                "raw".to_string(),
+                vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+            )
+            .unwrap(),
+            RelationSchema::new(
+                "target".to_string(),
+                vec![
+                    SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+                    SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap(),
+                ],
+            )
+            .unwrap(),
+        ])
+        .unwrap();
+        let source = case["sql_statements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|sql| SqlInput::inline(sql.as_str().unwrap()))
+            .collect::<Vec<_>>();
         let dialect = dialect_from_name("duckdb").unwrap();
-        let configured = source.iter().enumerate().map(|(index, sql)| {
-            ConfiguredSqlInput::new(if index == 0 { "insert" } else { "read" }, sql, "duckdb", dialect.as_ref())
-        }).collect::<Vec<_>>();
+        let configured = source
+            .iter()
+            .enumerate()
+            .map(|(index, sql)| {
+                ConfiguredSqlInput::new(
+                    if index == 0 { "insert" } else { "read" },
+                    sql,
+                    "duckdb",
+                    dialect.as_ref(),
+                )
+            })
+            .collect::<Vec<_>>();
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
-        let result = physical_ordered_cte_read_plan(&bundle, bundle.layers().last().unwrap().id(), &snapshots(case), None);
+        let result = physical_ordered_cte_read_plan(
+            &bundle,
+            bundle.layers().last().unwrap().id(),
+            &snapshots(case),
+            None,
+        );
         let PhysicalOrderedCteProof::Exact(proof) = result else {
             panic!("{id}: no original-source derived final state: {result:?}");
         };
