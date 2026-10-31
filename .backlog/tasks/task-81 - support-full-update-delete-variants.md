@@ -1,7 +1,7 @@
 ---
 id: TASK-81
 title: Prove UPDATE and DELETE with joined/correlated source selection
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-31'
@@ -35,12 +35,12 @@ UPDATE FROM and DELETE USING, multiple aliases and ordered predicates are not ca
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Support UPDATE SET with computed/DEFAULT expressions, UPDATE FROM, DELETE USING, joins/subqueries/CTEs, RETURNING, qualified targets and dialect-permitted ORDER/LIMIT/partition conditions.
-- [ ] #2 Represent row identity and matched source cardinality, one target row's action precedence, NULL/UNKNOWN predicate truth and cross-table mutation constraints.
-- [ ] #3 Construct exact affected/unchanged/prestate/poststate and positive/negative rows with key/FK and type checks; reject dialect ambiguous multiple-match updates rather than guess.
-- [ ] #4 Prove interaction with INSERT/MERGE in ordered scripts and output domains for RETURNING where supported.
-- [ ] #5 Test multi-table and correlated UPDATE/DELETE in engine fixtures including non-matches, duplicates, unknown comparison assumptions and constraints.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Support UPDATE SET with computed/DEFAULT expressions, UPDATE FROM, DELETE USING, joins/subqueries/CTEs, RETURNING, qualified targets and dialect-permitted ORDER/LIMIT/partition conditions.
+- [x] #2 Represent row identity and matched source cardinality, one target row's action precedence, NULL/UNKNOWN predicate truth and cross-table mutation constraints.
+- [x] #3 Construct exact affected/unchanged/prestate/poststate and positive/negative rows with key/FK and type checks; reject dialect ambiguous multiple-match updates rather than guess.
+- [x] #4 Prove interaction with INSERT/MERGE in ordered scripts and output domains for RETURNING where supported.
+- [x] #5 Test multi-table and correlated UPDATE/DELETE in engine fixtures including non-matches, duplicates, unknown comparison assumptions and constraints.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -73,4 +73,8 @@ TASK-81 is a **parent signoff**, not a single implementation PR. Preserve all or
 
 ## Parent acceptance review (2026-10-31)
 
-All four child tasks TASK-149..152 are Done and merged via PRs #161..164. The independent frozen parent inventory, crosswalk and regression are in [`docs/task-81-parent-acceptance-freeze.json`](../../docs/task-81-parent-acceptance-freeze.json), [`docs/task-81-parent-acceptance-audit.md`](../../docs/task-81-parent-acceptance-audit.md) and `tests/task_81_parent_closure.rs`. Original AC #1..#6 remain unchecked pending final-head CI, two-axis code review and independent signoff. Original AC #4 additionally lacks bounded ordered INSERT/MERGE execution evidence and cannot be signed off from TASK-152's INSERT/UPDATE/DELETE script alone. TASK-153 remains blocked until TASK-81 is Done and merged. TASK-91 is a separate release gate.
+All four child tasks TASK-149..152 are Done and merged via PRs #161..164. The independent frozen parent inventory, crosswalk and regression are in [`docs/task-81-parent-acceptance-freeze.json`](../../docs/task-81-parent-acceptance-freeze.json), [`docs/task-81-parent-acceptance-audit.md`](../../docs/task-81-parent-acceptance-audit.md) and `tests/task_81_parent_closure.rs`. Original AC #1..#6 are now independently reviewed and signed off by the v2 parent acceptance audit. The prior AC #4 gap is closed by the bounded independently executed INSERT/MERGE/UPDATE replay and NOT TRUE/ambiguous-match contrast; the general MERGE program remains separately owned by TASK-82. All nine implementation-head CI jobs passed on `c3fa5c2`; the final metadata-head CI must pass before merging PR #173. TASK-153 remains blocked until this completed parent is merged. TASK-91 is a separate release gate.
+
+## Independent parent signoff (2026-10-31)
+
+All six original acceptance criteria are independently checked against [the v2 parent freeze](../../docs/task-81-parent-acceptance-freeze.json), [the parent audit](../../docs/task-81-parent-acceptance-audit.md), the four merged child contracts, and parent-level DuckDB complete-bag positive/negative MERGE replay. The 46 child cases retain 27 Exact, 3 Impossible and 16 explicitly bounded Residual classifications; 13 parser dialect identities and equivalent direct SQL/dbt/ODCS evidence are reviewed without claiming 13 native engine runtimes. [All nine implementation-head CI jobs passed](https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810) and [Matt two-axis review COMMENT](https://github.com/phdah/sql-semantic-protocol/pull/173#pullrequestreview-5725282087) found no in-scope blockers. **Done** here means the PR branch contains completed state. Final metadata-head CI and merge are separate gates; TASK-153 cannot start before merge. TASK-91 release gate remains unsigned.

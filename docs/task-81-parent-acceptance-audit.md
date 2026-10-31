@@ -1,6 +1,6 @@
 # TASK-81 independent parent acceptance audit
 
-**Status:** Parent acceptance crosswalk frozen and review started. Original TASK-81 AC #1..#6 remain unchecked until the complete implementation-head CI and two-axis review pass. No independent release or native vendor certification is claimed.
+**Status:** All six original TASK-81 criteria signed off for the bounded portable contract after full implementation-head CI, original-criterion review, and independent DuckDB parent replay. The PR still requires green metadata-head CI and merge; this does not authorize protocol 3.0.0 or native multi-vendor claims.
 
 ## Dependency/merge gate
 
@@ -43,14 +43,18 @@ The original v1 crosswalk is [archived](task-81-parent-acceptance-freeze-v1.json
 - **Exact bounded positive:** Complete initial target `[]` and immutable source `[(1,50),(3,30)]`. INSERT yields `[(1,10),(2,20)]`; uniquely matched MERGE UPDATE key 1 and INSERT key 3 yields `[(1,50),(2,20),(3,30)]`; UPDATE RETURNING key 3 yields `[(1,50),(2,20),(3,35)]` and `[(3,35)]` with exact typed inclusive bounds. One shared target population is evolved in statement order, never injected at the intermediate stage. The test compares all canonical and independent DuckDB source/target bags and numeric domains.
 - **Negative safety:** Duplicate source keys 1 with conflicting scores 50/60 are Residual, not a fabricated chosen winner. No native multi-match law is claimed.
 
-**Gate:** The MERGE replay and nine-job CI must actually pass before parent AC #4 signoff. TASK-82 still owns general MERGE branch programs; this parent replay does not advance that separate task.
+**Evidence:** Both frozen parent replay tests passed with and without default features in [nine-job CI run 41248576810](https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810). TASK-82 still owns general MERGE branch programs; this parent replay does not advance that separate task.
 
-## Verification and pending signoff
+## Verification and independent parent signoff
 
 Child acceptance CI: [TASK-149](https://github.com/phdah/sql-semantic-protocol/actions/runs/40873925034), [TASK-150](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581), [TASK-151](https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530), [TASK-152](https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486). Each child records successful verification for its implementation head and has since merged.
 
-Required fresh PR-head checks: `cargo fmt --check`, strict Clippy, `cargo test`, Rust docs, tests/lint/docs without default features, active JSON/schema snapshots and dbt Core E2E. Independent Standards/Spec code review must verify the original six AC, not only inventory totals. Until those pass, TASK-81 stays **In Progress**, all six original AC unchecked, `parent_signed_off=false`.
+**Implementation-head verification:** [All nine CI jobs succeeded](https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810) at `c3fa5c2b7951b11428f8873ab029783b8d56c8f1`, including rustfmt, strict Clippy, complete Rust tests and docs with and without default features, dependency checks, dbt Core E2E and active protocol/schema snapshots. Logs explicitly show `tests/task_81_parent_closure.rs` and `tests/task_81_parent_merge_replay.rs` each passing 2/2 tests in both feature configurations.
+
+**Matt code-review, fixed point `main`:** [Standards and Specification COMMENT](https://github.com/phdah/sql-semantic-protocol/pull/173#pullrequestreview-5725282087). Standards: 0 hard findings; parser/analysis/emission boundaries, typed domain proofs, canonical source-independent adapter facts and immutable child freezes preserved. Spec: the original AC #4 gap was resolved by the v2 INSERT/MERGE/UPDATE replay; each original AC #1..#6 is independently traceable through the 46 child cells and two parent replay oracles. General MERGE is owned by TASK-82; vendor runtime claims remain explicit Residual, not a missing portable mandatory cell. This is a self-authored review COMMENT, not a distinct-account GitHub approval.
+
+**Signoff decision (2026-10-31):** Original TASK-81 acceptance criteria #1..#6 are satisfied for the reviewed finite portable contract and TASK-81 is **Done** in this PR. The immutable v1 crosswalk is retained; v2 expands only the parent AC #4 replay, without altering the frozen child cases. A final **metadata-head** nine-job CI run must pass before merging; a task marked Done but unmerged does **not** unblock TASK-153. No release approval follows.
 
 TASK-153 remains blocked until this parent is **Done and merged**. TASK-91 remains a separate release gate.
 
-**Skill:** Matt Pocock `implement`; frozen parent data seam reviewed using the `tdd` guidance; final `code-review` gate pending.
+**Skills:** Matt Pocock `implement` and `code-review` (Standards/Spec), using test-first verification at the frozen acceptance seam.

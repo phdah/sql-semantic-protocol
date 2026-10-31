@@ -2,8 +2,8 @@
   "task": "TASK-81",
   "version": 2,
   "scope": "Independent parent crosswalk; child-owned frozen SQL, physical state, domain, DuckDB and adapter oracles remain authoritative. No native vendor execution inferred from parser acceptance.",
-  "status": "parent_merge_replay_added_pending_executable_ci",
-  "parent_signed_off": false,
+  "status": "parent_signed_off_final_metadata_ci_pending",
+  "parent_signed_off": true,
   "release_approved": false,
   "merged_children": {
     "TASK-149": {
@@ -674,7 +674,7 @@
     },
     {
       "id": 4,
-      "obligation": "Ordered INSERT/UPDATE/DELETE composition and bounded RETURNING domains, with MERGE held to its separate owner",
+      "obligation": "Bounded INSERT/MERGE/UPDATE ordered composition, plus child INSERT/UPDATE/DELETE, with exact RETURNING domains; general MERGE scope remains TASK-82",
       "mandatory_case_ids": [
         "81-C152-P-three-writes",
         "81-C152-P-nullable-fk-untouched",
@@ -762,11 +762,8 @@
     }
   ],
   "runtime_boundary": "DuckDB complete-bag attestation only. Generic SQL parser identities are not native vendor engines. Deferred enforcement, dialect write ORDER/LIMIT/partition laws, multi-match UPDATE and unavailable source evidence stay Residual.",
-  "independent_review_gate": "All original AC #1..#6 remain unsigned until parent replay execution plus child evidence are reviewed with latest-head CI. The bounded MERGE case does not authorize general MERGE coverage or protocol 3 release.",
-  "known_blockers": [
-    "Fresh implementation-head CI and Standards/Spec review for independently frozen MERGE replay must pass before original AC #4 signoff",
-    "TASK-82 owns general MERGE semantics beyond this narrow replay, and no vendor-native behavior is inferred"
-  ],
+  "independent_review_gate": "Independent original TASK-81 AC #1..#6 signed off against merged child freezes, bounded parent v2 replay, two-axis review, and all nine successful implementation-head CI jobs. A separate green final metadata-head CI remains required before merge; TASK-91 release gate remains unsigned.",
+  "known_blockers": [],
   "previous_snapshot": "docs/task-81-parent-acceptance-freeze-v1.json",
   "parent_replay_oracles": [
     {
@@ -1084,5 +1081,9 @@
       "reason": "two candidate source rows for target key 1 cannot select deterministic winner",
       "release_disposition": "typed Residual; native engine multiple-match behavior is not inferred from parser or from another dialect; TASK-82 retains general MERGE programs"
     }
-  ]
+  ],
+  "implementation_head_sha": "c3fa5c2b7951b11428f8873ab029783b8d56c8f1",
+  "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810",
+  "review": "https://github.com/phdah/sql-semantic-protocol/pull/173#pullrequestreview-5725282087",
+  "final_metadata_head_ci": "must pass before merge"
 }

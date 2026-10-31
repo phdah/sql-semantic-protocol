@@ -14011,7 +14011,7 @@
     "freeze_version": 2,
     "audit": "docs/task-81-parent-acceptance-audit.md",
     "regression": "tests/task_81_parent_closure.rs",
-    "status": "parent_merge_replay_added_pending_ci",
+    "status": "parent_signed_off_final_metadata_ci_pending",
     "original_ac": [
       1,
       2,
@@ -14033,18 +14033,19 @@
     "residual_cases": 16,
     "dialect_identities": 13,
     "adapter_evidence_sources": 3,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
     "remaining_gates": [
-      "execute parent INSERT/MERGE/UPDATE replay and ambiguous match negative",
-      "fresh final-head CI",
-      "independent Standards/Spec review",
-      "original AC #1..#6 signoff",
-      "parent Done and merge before TASK-153",
-      "TASK-91 release authorization separate"
+      "latest final metadata-head nine-job CI must pass before merging PR #173",
+      "TASK-81 merge required before starting TASK-153",
+      "TASK-91 separate release gate"
     ],
     "previous_freeze": "docs/task-81-parent-acceptance-freeze-v1.json",
     "replay_oracles": 2,
-    "replay_test": "tests/task_81_parent_merge_replay.rs"
+    "replay_test": "tests/task_81_parent_merge_replay.rs",
+    "review": "https://github.com/phdah/sql-semantic-protocol/pull/173#pullrequestreview-5725282087",
+    "implementation_head_sha": "c3fa5c2b7951b11428f8873ab029783b8d56c8f1",
+    "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810",
+    "final_metadata_head_ci": "must pass before merge"
   }
 }
