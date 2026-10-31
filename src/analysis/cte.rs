@@ -116,6 +116,11 @@ fn select_stage(
     let equality = match from.joins.as_slice() {
         [] => None,
         [join] => {
+            // ClickHouse GLOBAL JOIN has unproved distributed execution laws.
+            // A complete local source bag cannot certify that operator.
+            if join.global {
+                return None;
+            }
             let (JoinOperator::Join(JoinConstraint::On(Expr::BinaryOp {
                 left,
                 op: SqlBinaryOperator::Eq,
