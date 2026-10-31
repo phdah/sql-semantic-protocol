@@ -111,9 +111,7 @@ pub fn physical_ordered_cte_read_plan(
                 read,
             }))
         }
-        PhysicalCteProof::Impossible { reason } => {
-            PhysicalOrderedCteProof::Impossible { reason }
-        }
+        PhysicalCteProof::Impossible { reason } => PhysicalOrderedCteProof::Impossible { reason },
         PhysicalCteProof::Residual { reason } => PhysicalOrderedCteProof::Residual { reason },
     }
 }
