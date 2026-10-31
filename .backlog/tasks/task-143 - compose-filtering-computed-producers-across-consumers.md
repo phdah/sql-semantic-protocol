@@ -46,7 +46,10 @@ Next: [TASK-144](task-144%20-%20certify-raw-dbt-multistep-scopes-and-task-78-sig
 
 ## Implementation work in progress
 
-Bounded filter/computed-producer JOIN proof, fixed fixtures and native DuckDB
-oracles: [TASK-143 acceptance inventory](../../docs/task-143-acceptance-freeze.json)
-and [unsigned acceptance audit](../../docs/task-143-acceptance-audit.md).
-Do not mark Done until COUNT/write, dialect/adapter and final CI/review gates close.
+The bounded filter/computed-producer JOIN, COUNT and ordered INSERT physical
+paths, 70 dialect parser cells, direct SQL/dbt/ODCS parity, negative
+CHECK/overflow/opaque cases, and independent DuckDB full-bag oracles are
+implemented. The active [versioned acceptance inventory](../../docs/task-143-acceptance-freeze.json)
+and [audited signoff gates](../../docs/task-143-acceptance-audit.md) track exact
+claims. Do not mark Done until final CI and independent Standards/Spec review
+are verified. TASK-78 remains open.
