@@ -251,7 +251,6 @@ fn lower(
     Some(())
 }
 
-
 fn recursive_integer(expr: &Expr) -> Option<i128> {
     let Expr::Value(value) = expr else {
         return None;
@@ -337,16 +336,19 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
         _ => return None,
     };
     let input = source(&step.from[0].relation, &BTreeMap::new())?;
-    if !input.relation().eq_ignore_ascii_case(name)
-        || !input.alias().eq_ignore_ascii_case(name)
-    {
+    if !input.relation().eq_ignore_ascii_case(name) || !input.alias().eq_ignore_ascii_case(name) {
         return None;
     }
     let expr = match &step.projection[0] {
         SelectItem::UnnamedExpr(expr) | SelectItem::ExprWithAlias { expr, .. } => expr,
         _ => return None,
     };
-    let Expr::BinaryOp { left, op: SqlBinaryOperator::Plus, right } = expr else {
+    let Expr::BinaryOp {
+        left,
+        op: SqlBinaryOperator::Plus,
+        right,
+    } = expr
+    else {
         return None;
     };
     if column(left)?.column() != output || column(left)?.relation().is_some() {
@@ -365,9 +367,7 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
         _ => return None,
     };
     let bound = recursive_integer(right)?;
-    let recursion = CteRecursion::new(
-        output.clone(), seed, increment, bound, inclusive, mode,
-    )?;
+    let recursion = CteRecursion::new(output.clone(), seed, increment, bound, inclusive, mode)?;
     let producer = format!("terminal/cte:0:{name}");
     let mut lexical = BTreeMap::new();
     lexical.insert(name.to_ascii_lowercase(), producer.clone());
@@ -375,7 +375,10 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
     let final_stage = select_stage(query, terminal.clone(), &lexical)?;
     if final_stage.inputs().len() != 1
         || final_stage.inputs()[0].relation() != producer
-        || final_stage.projections().iter().any(|column| column.source().column() != output)
+        || final_stage
+            .projections()
+            .iter()
+            .any(|column| column.source().column() != output)
     {
         return None;
     }
