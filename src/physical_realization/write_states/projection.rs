@@ -32,7 +32,7 @@ pub(super) fn evaluate_simple_select(
 
 /// Evaluate one canonical source-local SELECT while retaining each physical
 /// input row's original occurrence ordinal, even after a filtering predicate.
-pub(super) fn evaluate_simple_select_with_source_ids(
+pub(in crate::physical_realization) fn evaluate_simple_select_with_source_ids(
     _bundle: &AnalysisBundle,
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
