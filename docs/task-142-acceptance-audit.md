@@ -92,3 +92,31 @@ negative case has independent Impossible/NOT TRUE evidence.
 **Independent review:** pending. AC #5 is deliberately not checked;
 this file must not be treated as an independent approval. TASK-142 remains
 In Progress and TASK-143 must not begin until TASK-142 is Done and merged.
+
+## Follow-up review findings on PR #168
+
+A fresh standards/spec audit found a fail-open binding in the initial
+recursive CTE lowering: `SELECT wrong.x FROM n` (or `SELECT n.x FROM n AS t`)
+could produce a canonical recursive program and an Exact output interval,
+despite the qualifier not naming the SQL source instance. The closed-world
+physical executor already returned Residual for the invalid projection, but
+the query's protocol-level bounds could overstate confidence.
+
+**Fixed:** `src/analysis/cte.rs` now requires a qualified final projection
+to match the actual lexical terminal source alias. The public API integration
+test in `tests/task_142_dialect_adapter.rs` verifies both rejected qualifiers
+remain Residual without a synthesized interval and that a valid `t.x FROM n AS t`
+still constructs an Exact physical bag.
+
+The author-level review has two distinct axes:
+
+- **Standards:** corrected violation of `AGENTS.md` "Never over-claim"
+  and unique canonical source identity. No new unsafe, lints or dependencies.
+- **Specification:** the frozen positive and negative fixtures retain exact
+  bags and inclusive outcome intervals. Previously untested invalid source
+  qualifiers cannot bypass the required explicit Residual boundary.
+
+A separate GitHub Copilot code-review request was made, but no submitted
+independent review has been verified. This document records a follow-up
+self-audit and the fix, not independent review signoff. TASK-142 AC #5
+remains pending until a separate review and final CI gate are established.
