@@ -134,8 +134,12 @@ fn recursive_overflow_and_large_physical_bags_fail_closed() {
 fn frozen_negative_case_is_closed_world_impossible_in_protocol_and_duckdb() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-142-acceptance-freeze.json")).unwrap();
-    let negative = freeze["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "78-C142-N-ABSENCE").unwrap();
+    let negative = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "78-C142-N-ABSENCE")
+        .unwrap();
     let sql = negative["sql"].as_str().unwrap();
     let wanted = negative["wanted"]["x"].as_i64().unwrap();
     let bundle = bundle(sql, "duckdb");
@@ -145,13 +149,18 @@ fn frozen_negative_case_is_closed_world_impossible_in_protocol_and_duckdb() {
     else {
         panic!("mandatory negative fixture must have a complete source-free bag");
     };
-    let source_values = proof.stage_bags["terminal/cte:0:n"].iter()
-        .map(|row| row.values["x"].clone()).collect::<Vec<_>>();
-    assert_eq!(source_values, vec![
-        LiteralValue::Number("1".into()),
-        LiteralValue::Number("2".into()),
-        LiteralValue::Number("3".into())
-    ]);
+    let source_values = proof.stage_bags["terminal/cte:0:n"]
+        .iter()
+        .map(|row| row.values["x"].clone())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        source_values,
+        vec![
+            LiteralValue::Number("1".into()),
+            LiteralValue::Number("2".into()),
+            LiteralValue::Number("3".into())
+        ]
+    );
     assert_eq!(proof.terminal_domains["x"].integer_bounds, Some((1, 3)));
     assert!(matches!(
         physical_finite_cte_bag_plan(&bundle, target.id(), &[], Some(&requested(wanted))),
@@ -159,21 +168,34 @@ fn frozen_negative_case_is_closed_world_impossible_in_protocol_and_duckdb() {
     ));
     assert!(matches!(
         physical_finite_cte_bag_plan(
-            &bundle, target.id(), &[],
+            &bundle,
+            target.id(),
+            &[],
             Some(&BTreeMap::from([("x".to_string(), LiteralValue::Null)]))
         ),
         PhysicalCteProof::Impossible { .. }
     ));
 
     let db = Connection::open_in_memory().unwrap();
-    let all_rows = db.prepare(sql).unwrap()
-        .query_map([], |row| row.get::<_, i64>(0)).unwrap()
-        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    let all_rows = db
+        .prepare(sql)
+        .unwrap()
+        .query_map([], |row| row.get::<_, i64>(0))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
     assert_eq!(all_rows, vec![1, 2, 3]);
-    let absent_sql = format!("SELECT NOT EXISTS (SELECT 1 FROM ({sql}) AS finite WHERE x = {wanted})");
+    let absent_sql =
+        format!("SELECT NOT EXISTS (SELECT 1 FROM ({sql}) AS finite WHERE x = {wanted})");
     let absent: bool = db.query_row(&absent_sql, [], |row| row.get(0)).unwrap();
-    assert!(absent, "the independent SQL closed-world nonmembership oracle");
+    assert!(
+        absent,
+        "the independent SQL closed-world nonmembership oracle"
+    );
     let unknown_sql = format!("SELECT COUNT(*) FROM ({sql}) AS finite WHERE x = NULL");
     let matched_unknown: i64 = db.query_row(&unknown_sql, [], |row| row.get(0)).unwrap();
-    assert_eq!(matched_unknown, 0, "SQL UNKNOWN is NOT TRUE, not a matching row");
+    assert_eq!(
+        matched_unknown, 0,
+        "SQL UNKNOWN is NOT TRUE, not a matching row"
+    );
 }
