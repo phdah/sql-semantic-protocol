@@ -132,7 +132,24 @@ fn case(raw: &[Option<i64>], prior: &[(i64, i64)], expected: &[(i64, i64)]) {
         .iter()
         .find(|s| s.relation() == "target")
         .unwrap();
-    assert_eq!(target.exact_domains(schema).unwrap().len(), 2);
+    let domains = target.exact_domains(schema).unwrap();
+    assert_eq!(domains.len(), 2);
+    for column in domains {
+        let observed: BTreeMap<String, u64> = column.values().iter().map(|(literal, count)| {
+            let LiteralValue::Number(number) = literal else {
+                panic!("TASK-143 target has an unexpected NULL or noninteger exact value");
+            };
+            (number.clone(), *count)
+        }).collect();
+        let mut expected_counts = BTreeMap::<String, u64>::new();
+        for (k, shifted) in expected {
+            let number = if column.column() == "k" { k } else { shifted };
+            *expected_counts.entry(number.to_string()).or_default() += 1;
+        }
+        assert_eq!(observed, expected_counts,
+            "TASK-143 exact typed {} frequencies, multiplicity and inclusive point bounds",
+            column.column());
+    }
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
