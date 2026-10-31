@@ -474,6 +474,7 @@ mod aggregate_joins;
 mod composition;
 mod counts;
 mod cte_bags;
+mod cte_scripts;
 mod distributions;
 mod exists_bags;
 mod exists_joined;
@@ -518,6 +519,9 @@ pub use counts::{
 pub use cte_bags::{
     physical_finite_cte_bag_plan, PhysicalCteExact, PhysicalCteInput, PhysicalCteNode,
     PhysicalCteProof, PhysicalCteRef,
+};
+pub use cte_scripts::{
+    physical_ordered_cte_read_plan, PhysicalOrderedCteExact, PhysicalOrderedCteProof,
 };
 pub(crate) use distributions::{
     physical_distribution_conflict, physical_distribution_plan,
