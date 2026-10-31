@@ -238,3 +238,67 @@ fn view_execution_uncertainty_survives_canonical_wire_emission() {
         );
     }
 }
+
+#[test]
+fn engine_specific_view_creation_options_fail_closed_in_canonical_wire_and_physical_proof() {
+    use sqlparser::parser::Parser;
+    use sql_semantic_protocol::to_bundle_json;
+
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw".to_string(),
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
+    let variants = [
+        (
+            "mssql",
+            "CREATE OR ALTER VIEW view_stage AS SELECT k FROM raw",
+        ),
+        (
+            "postgresql",
+            "CREATE VIEW view_stage WITH (security_barrier = true) AS SELECT k FROM raw",
+        ),
+        (
+            "mysql",
+            "CREATE ALGORITHM = MERGE VIEW view_stage AS SELECT k FROM raw",
+        ),
+        (
+            "clickhouse",
+            "CREATE MATERIALIZED VIEW view_stage TO sink AS SELECT k FROM raw",
+        ),
+    ];
+    let mut accepted = 0;
+    for (dialect_name, definition) in variants {
+        let dialect = dialect_from_name(dialect_name).unwrap();
+        if Parser::parse_sql(dialect.as_ref(), definition).is_err() {
+            continue; // Explicit parser boundary, not an exactness claim.
+        }
+        accepted += 1;
+        let view = SqlInput::inline(definition);
+        let read = SqlInput::inline("SELECT k FROM view_stage");
+        let configured = [
+            ConfiguredSqlInput::new("view", &view, dialect_name, dialect.as_ref()),
+            ConfiguredSqlInput::new("read", &read, dialect_name, dialect.as_ref()),
+        ];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+        assert_eq!(
+            wire["inputs"][0]["statements"][0]["write"]["view_execution_unknown"],
+            true,
+            "{dialect_name}: {definition}"
+        );
+        let target = bundle.layers().last().unwrap();
+        assert!(
+            matches!(
+                physical_finite_view_read_plan(&bundle, target.id(), &initial(&[Some(2)]), None),
+                PhysicalViewProof::Residual { .. }
+            ),
+            "{dialect_name}: {definition} must not produce Exact"
+        );
+    }
+    assert!(
+        accepted >= 2,
+        "expected at least two vendor view modifiers to cross the parser boundary"
+    );
+}
