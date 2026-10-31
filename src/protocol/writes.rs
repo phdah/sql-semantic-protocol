@@ -147,6 +147,7 @@ pub struct WriteOperation {
     target: String,
     target_alias: Option<String>,
     definition_mode: Option<WriteDefinitionMode>,
+    view_execution_unknown: bool,
     kind: WriteKind,
     target_columns: Vec<String>,
     default_values: bool,
@@ -168,6 +169,7 @@ impl WriteOperation {
             target,
             target_alias: None,
             definition_mode: Some(mode),
+            view_execution_unknown: false,
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
             default_values: false,
@@ -189,6 +191,7 @@ impl WriteOperation {
             target,
             target_alias: None,
             definition_mode: None,
+            view_execution_unknown: false,
             kind: WriteKind::Append,
             target_columns,
             default_values: false,
@@ -222,6 +225,7 @@ impl WriteOperation {
             target,
             target_alias,
             definition_mode: None,
+            view_execution_unknown: false,
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
             default_values: false,
@@ -249,6 +253,7 @@ impl WriteOperation {
             target,
             target_alias,
             definition_mode: None,
+            view_execution_unknown: false,
             kind: WriteKind::Update,
             target_columns: Vec::new(),
             default_values: false,
@@ -275,6 +280,7 @@ impl WriteOperation {
             target,
             target_alias,
             definition_mode: None,
+            view_execution_unknown: false,
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
             default_values: false,
@@ -304,6 +310,17 @@ impl WriteOperation {
     /// Exact DDL lifecycle kind, when represented.
     pub fn definition_mode(&self) -> Option<WriteDefinitionMode> {
         self.definition_mode
+    }
+
+    /// Whether session, materialized, conditional, or vendor CREATE VIEW
+    /// semantics are not certified for complete logical re-evaluation.
+    pub fn view_execution_unknown(&self) -> bool {
+        self.view_execution_unknown
+    }
+
+    pub(crate) fn with_view_execution_unknown(mut self) -> Self {
+        self.view_execution_unknown = true;
+        self
     }
 
     /// Return how the write changes the target relation.
