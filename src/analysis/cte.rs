@@ -383,7 +383,10 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
         return None;
     }
     Some(CteProgram::new(
-        vec![CteStage::recursive(producer, name.to_ascii_lowercase(), recursion), final_stage],
+        vec![
+            CteStage::recursive(producer, name.to_ascii_lowercase(), recursion),
+            final_stage,
+        ],
         terminal,
     ))
 }
