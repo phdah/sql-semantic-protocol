@@ -163,10 +163,7 @@ fn filter_truth(
     }))
 }
 
-fn projected_integer(
-    value: &LiteralValue,
-    offset: i128,
-) -> Result<LiteralValue, &'static str> {
+fn projected_integer(value: &LiteralValue, offset: i128) -> Result<LiteralValue, &'static str> {
     if offset == 0 {
         return Ok(value.clone());
     }
@@ -392,10 +389,8 @@ fn stage(
             }
             let mut values = BTreeMap::new();
             for projection in program.projections() {
-                let column = projected_integer(
-                    value(projection.source(), &scope)?,
-                    projection.offset(),
-                )?;
+                let column =
+                    projected_integer(value(projection.source(), &scope)?, projection.offset())?;
                 if values
                     .insert(projection.name().to_string(), column)
                     .is_some()
