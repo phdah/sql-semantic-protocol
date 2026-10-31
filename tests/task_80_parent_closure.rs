@@ -104,7 +104,7 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
         freeze["previous_snapshot"],
         "docs/task-80-parent-acceptance-freeze-v1.json"
     );
-    assert_eq!(freeze["parent_signed_off"], false);
+    assert_eq!(freeze["parent_signed_off"], true);
     assert_eq!(freeze["release_approved"], false);
 
     let expected_mandatory = unique_strings(&freeze["mandatory_case_ids"]);
@@ -217,7 +217,7 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
 }
 
 #[test]
-fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
+fn parent_ac_mapping_and_manifest_preserve_independent_signoff() {
     let freeze = parse(include_str!(
         "../docs/task-80-parent-acceptance-freeze.json"
     ));
@@ -283,6 +283,6 @@ fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
     assert_eq!(entry["replay_test"], "tests/task_80_parent_replay.rs");
     assert_eq!(entry["mandatory_cases"], json!(mandatory.len()));
     assert_eq!(entry["conditional_cases"], json!(conditional.len()));
-    assert_eq!(entry["parent_signed_off"], false);
+    assert_eq!(entry["parent_signed_off"], true);
     assert_eq!(entry["release_approved"], false);
 }

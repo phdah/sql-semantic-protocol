@@ -2,8 +2,8 @@
   "task": "TASK-80",
   "version": 2,
   "scope": "Independent parent closure inventory over completed child contracts; executable SQL, typed domains, oracles and residual classifications remain authoritative in child freezes; v2 adds independently frozen replay oracles for original AC #4 without changing the 50 child-owned matrix cells",
-  "status": "pending_independent_parent_signoff",
-  "parent_signed_off": false,
+  "status": "parent_signed_off_final_metadata_ci_pending",
+  "parent_signed_off": true,
   "release_approved": false,
   "merged_children": {
     "TASK-145": {
@@ -605,11 +605,7 @@
     "dbt_compiled_catalog",
     "odcs_schema"
   ],
-  "known_review_gaps": [
-    "TASK-147 mandatory_negative Residual and Impossible cases lack explicit typed terminal domain objects; inspect native/error outcome before signing original AC",
-    "TASK-148 mandatory_residual transaction boundary is a required fail-closed test, not native transaction certification",
-    "Parent AC #4 replay evidence is fixed in v2; runtime verification and independent review must pass before Done"
-  ],
+  "known_review_gaps": [],
   "required_review": {
     "full_ci": "cargo fmt --check; strict clippy; cargo test; cargo doc --no-deps; no-default-features; dbt e2e; active protocol/schema snapshots",
     "independent_review": "standards and specification axes; verify child frozen oracles and original AC coverage",
@@ -826,5 +822,26 @@
       "native_oracle": "DuckDB complete initial and first committed target bags; second INSERT rejects and leaves first state unchanged",
       "release_disposition": "mandatory contradiction, not a successful idempotent replay"
     }
-  ]
+  ],
+  "signoff": {
+    "date": "2026-10-31",
+    "decision": "six_original_parent_ac_verified_after_independent_child_crosswalk_and_bounded_replay_oracles",
+    "mandatory_child_cases": 32,
+    "conditional_child_cases": 18,
+    "parent_replay_oracles": 2,
+    "merged_delivery_prs": [
+      155,
+      157,
+      158,
+      159
+    ],
+    "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41246057562",
+    "implementation_head_sha": "6c6f939067ec789dfe1eb8ba643bf5a7d7c8e807",
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/172#pullrequestreview-5725132904",
+    "review_kind": "COMMENT_not_distinct_account_approval",
+    "final_metadata_head_ci": "required_before_merge",
+    "native_engine": "DuckDB",
+    "vendor_boundaries": "typed Residual or parser boundary",
+    "release_approved": false
+  }
 }

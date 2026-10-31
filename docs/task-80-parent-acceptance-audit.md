@@ -1,8 +1,6 @@
 # TASK-80 independent parent acceptance audit
 
-**Status:** In Progress. This is an independent review gate for the six original
-TASK-80 acceptance criteria, not a child implementation, merge authorization or
-release approval. The TASK-82 queue stays blocked until this parent and TASK-81
+**Status:** Six original TASK-80 acceptance criteria signed off after independent parent-level review and green nine-job implementation CI. This is a parent closure, not an authorization to merge without metadata-head CI or to release protocol v3. The TASK-82 queue stays blocked until this parent and TASK-81
 are independently signed off and merged.
 
 ## Fixed evidence and original-AC crosswalk
@@ -124,7 +122,31 @@ case retains a typed `Residual` rather than a made-up final state. These
 classifications are accepted only with their child-owned explicit parser,
 proof and runtime oracles and do not waive mandatory exact INSERT capabilities.
 
-Parent-level verification must use actual child-owned Rust/DuckDB runs, not
-these narratives or aggregate inventory counts alone. An independent
-standards/specification review and green final-head CI remain required before
-checking the original AC boxes or marking TASK-80 Done.
+Parent-level verification uses actual child-owned Rust/DuckDB runs as well as
+the independent parent replay, not narratives or inventory counts alone.
+The review and green implementation-head CI have now been recorded; the
+final metadata-head CI remains required before merge.
+
+## Independent parent signoff (2026-10-31)
+
+All original AC #1..#6 have a reviewed mandatory case crosswalk and preserved
+conditional classification. Four child tasks are Done and merged. The v2
+parent replay oracles validate original AC #4 as an exact fixed point under
+Enforced primary-key evidence plus an independently rejected duplicate
+plain INSERT. The missing typed *constructive* domain in required
+nonconstructive negative cases is not guessed: unattested key outcomes remain
+unknown/Residual and impossible PK outcomes have no successful post-state.
+The TASK-148 transaction law remains Residual, not a hidden success.
+
+**Implementation CI:** [9/9 successful jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41246057562) at
+`6c6f939067ec789dfe1eb8ba643bf5a7d7c8e807`, including fmt, strict Clippy, full Rust tests, docs,
+no-default-features tests/lint/docs/dependencies, schema/golden checks and
+the real dbt Core E2E.
+
+**Standards/spec review:** [Matt code-review COMMENT](https://github.com/phdah/sql-semantic-protocol/pull/172#pullrequestreview-5725132904), no
+blocking findings; not an independent-account GitHub approval.
+
+**Decision:** Original parent AC #1..#6 are signed off and TASK-80 is Done in
+this PR. The latest metadata-head CI must pass before merge. TASK-81 remains a
+separate dependency prerequisite before TASK-153, and TASK-91 is still the
+separate single v3 release gate.
