@@ -24,85 +24,85 @@
   "dialects": [
     {
       "name": "generic",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "mysql",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "postgresql",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "postgres",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "hive",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "sqlite",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "snowflake",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "redshift",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "mssql",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "clickhouse",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "bigquery",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "ansi",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     },
     {
       "name": "duckdb",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "oracle_required",
       "owner": "TASK-143"
     },
     {
       "name": "databricks",
-      "parser_status": "requires_executable_matrix",
+      "parser_status": "see parser_families exact cell matrix",
       "native_engine_status": "not_attested",
       "owner": "TASK-143"
     }
@@ -727,5 +727,550 @@
     "release_approved": false,
     "adapters": "tests/task_143_adapters.rs",
     "dialects": "tests/task_143_dialects.rs"
-  }
+  },
+  "parser_families": [
+    {
+      "id": "filtered_join",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT a.shifted AS l, b.shifted AS r FROM stage a JOIN stage b ON a.k = b.k ORDER BY l, r",
+      "case_ids": [
+        "78-C143-P-JOIN",
+        "78-C143-N-NULL-DUP"
+      ],
+      "expected": "Exact",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "pending_oracle",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "filtered_count",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT COUNT(*) AS total FROM stage a JOIN stage b ON a.k = b.k",
+      "case_ids": [
+        "78-C143-P-COUNT"
+      ],
+      "expected": "Exact",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "pending_oracle",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "computed_insert",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "case_ids": [
+        "78-C143-P-WRITE",
+        "78-C143-N-WRITE",
+        "78-C143-N-CHECK"
+      ],
+      "expected": "Exact or Impossible under enforced target check",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "pending_oracle",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "checked_overflow",
+      "sql": "WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "case_ids": [
+        "78-C143-N-OVERFLOW"
+      ],
+      "expected": "Residual",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "pending_oracle",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    },
+    {
+      "id": "opaque_expression",
+      "sql": "WITH stage AS (SELECT ABS(k) AS shifted FROM raw WHERE k > 1) SELECT shifted FROM stage",
+      "case_ids": [
+        "78-C143-N-OPAQUE"
+      ],
+      "expected": "Residual",
+      "cells": [
+        {
+          "dialect": "generic",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "postgres",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "hive",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "ansi",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "pending_oracle",
+          "native_engine": "duckdb_only_where_executable",
+          "owner": "TASK-143",
+          "release_disposition": "portable_execution_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "pending_oracle",
+          "native_engine": "not_attested",
+          "owner": "TASK-143",
+          "release_disposition": "parser_equivalence_only_no_vendor_execution"
+        }
+      ]
+    }
+  ]
 }
