@@ -32,7 +32,7 @@ fn source_evidence(case: &Value) -> (RelationCatalog, Vec<PhysicalWriteState>) {
         };
         let schema = columns
             .iter()
-            .map(|col| SchemaColumn::from_sql_type(col, "INTEGER", "duckdb").unwrap())
+            .map(|col| SchemaColumn::from_sql_type(*col, "INTEGER", "duckdb").unwrap())
             .collect();
         schemas.push(RelationSchema::new(name.clone(), schema).unwrap());
         let rows = bag
