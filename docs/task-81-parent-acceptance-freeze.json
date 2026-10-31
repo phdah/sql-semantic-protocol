@@ -1,8 +1,8 @@
 {
   "task": "TASK-81",
-  "version": 1,
+  "version": 2,
   "scope": "Independent parent crosswalk; child-owned frozen SQL, physical state, domain, DuckDB and adapter oracles remain authoritative. No native vendor execution inferred from parser acceptance.",
-  "status": "independent_parent_review_pending_ci",
+  "status": "parent_merge_replay_added_pending_executable_ci",
   "parent_signed_off": false,
   "release_approved": false,
   "merged_children": {
@@ -685,7 +685,10 @@
       "conditional_case_ids": [
         "81-C152-C-vendor_transaction_atomicity"
       ],
-      "pending_mandatory_evidence": "Concrete ordered INSERT/MERGE/UPDATE-or-DELETE interaction with complete pre/post bags, typed domains and source selection. TASK-152 certifies INSERT/UPDATE/DELETE only; this is not fulfilled by a TASK-82 future plan."
+      "supplementary_parent_oracle_ids": [
+        "81-P-REPLAY-MERGE",
+        "81-N-REPLAY-MULTIMATCH"
+      ]
     },
     {
       "id": 5,
@@ -759,9 +762,327 @@
     }
   ],
   "runtime_boundary": "DuckDB complete-bag attestation only. Generic SQL parser identities are not native vendor engines. Deferred enforcement, dialect write ORDER/LIMIT/partition laws, multi-match UPDATE and unavailable source evidence stay Residual.",
-  "independent_review_gate": "Parent cannot be marked Done until original AC #4 MERGE interaction is backed by an executable bounded case; do not waive a mandatory original criterion because TASK-82 is blocked on TASK-81.",
+  "independent_review_gate": "All original AC #1..#6 remain unsigned until parent replay execution plus child evidence are reviewed with latest-head CI. The bounded MERGE case does not authorize general MERGE coverage or protocol 3 release.",
   "known_blockers": [
-    "TASK-81 original AC #4: independent bounded INSERT/MERGE ordered-script proof and native oracle missing in TASK-149..152 child matrix",
-    "fresh final-head CI and Standards/Spec review pending"
+    "Fresh implementation-head CI and Standards/Spec review for independently frozen MERGE replay must pass before original AC #4 signoff",
+    "TASK-82 owns general MERGE semantics beyond this narrow replay, and no vendor-native behavior is inferred"
+  ],
+  "previous_snapshot": "docs/task-81-parent-acceptance-freeze-v1.json",
+  "parent_replay_oracles": [
+    {
+      "id": "81-P-REPLAY-MERGE",
+      "owner": "TASK-81",
+      "classification": "mandatory_exact",
+      "proof": "Exact",
+      "sql_dialect": "duckdb",
+      "target_initial": [],
+      "source": [
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "schema": {
+        "target": [
+          "id INTEGER PRIMARY KEY",
+          "score INTEGER"
+        ],
+        "source": [
+          "id INTEGER PRIMARY KEY",
+          "score INTEGER"
+        ]
+      },
+      "steps": [
+        {
+          "sql": "INSERT INTO target(id,score) VALUES (1,10),(2,20)",
+          "before": [],
+          "after": [
+            {
+              "id": 1,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 2,
+            "updated": 0,
+            "deleted": 0
+          },
+          "returning": null,
+          "target_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 20,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "20": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score WHEN NOT MATCHED THEN INSERT (id,score) VALUES (source.id,source.score)",
+          "before": [
+            {
+              "id": 1,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "score": 20
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 50
+            },
+            {
+              "id": 2,
+              "score": 20
+            },
+            {
+              "id": 3,
+              "score": 30
+            }
+          ],
+          "affected": {
+            "inserted": 1,
+            "updated": 1,
+            "deleted": 0
+          },
+          "returning": null,
+          "target_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 20,
+              "upper": 50,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "20": 1,
+                "30": 1,
+                "50": 1
+              }
+            }
+          }
+        },
+        {
+          "sql": "UPDATE target SET score = score + 5 WHERE id = 3 RETURNING id,score",
+          "before": [
+            {
+              "id": 1,
+              "score": 50
+            },
+            {
+              "id": 2,
+              "score": 20
+            },
+            {
+              "id": 3,
+              "score": 30
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 50
+            },
+            {
+              "id": 2,
+              "score": 20
+            },
+            {
+              "id": 3,
+              "score": 35
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "returning": [
+            {
+              "id": 3,
+              "score": 35
+            }
+          ],
+          "selected_prestate_ordinals": [
+            2
+          ],
+          "not_true_prestate_ordinals": [
+            0,
+            1
+          ],
+          "target_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 20,
+              "upper": 50,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "20": 1,
+                "35": 1,
+                "50": 1
+              }
+            }
+          },
+          "returning_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 3,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 35,
+              "upper": 35,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "35": 1
+              }
+            }
+          }
+        }
+      ],
+      "expected_final": [
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 2,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 35
+        }
+      ],
+      "expected_final_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1,
+            "3": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 50,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "35": 1,
+            "50": 1
+          }
+        }
+      },
+      "negative_case_id": "81-N-REPLAY-MULTIMATCH",
+      "source_oracle": "complete physical source and target bags at each statement boundary",
+      "native_oracle": "DuckDB independently executes every statement and compares full target and immutable source rows, RETURNING and exact domains",
+      "release_disposition": "only this complete, typed, uniquely matched MERGE sequence can claim Exact; no general MERGE certification"
+    },
+    {
+      "id": "81-N-REPLAY-MULTIMATCH",
+      "owner": "TASK-81",
+      "classification": "mandatory_negative",
+      "proof": "Residual",
+      "sql_dialect": "duckdb",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 1,
+          "score": 60
+        }
+      ],
+      "expected_gap": "UnprovedOperation",
+      "reason": "two candidate source rows for target key 1 cannot select deterministic winner",
+      "release_disposition": "typed Residual; native engine multiple-match behavior is not inferred from parser or from another dialect; TASK-82 retains general MERGE programs"
+    }
   ]
 }

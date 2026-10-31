@@ -13,7 +13,7 @@ All four bounded child tasks are **Done and merged** on `main`:
 | TASK-151 | [#163](https://github.com/phdah/sql-semantic-protocol/pull/163) | v3 | 7 / 2 |
 | TASK-152 | [#164](https://github.com/phdah/sql-semantic-protocol/pull/164) | v4 | 6 / 5 |
 
-The [v1 independent parent freeze](task-81-parent-acceptance-freeze.json) indexes **34 mandatory** and **12 conditional** entries, including the standalone TASK-149 and TASK-152 reviewed boundary inventories. It preserves 27 Exact, 3 Impossible and 16 Residual classifications with their child-owned evidence.
+The [v2 independent parent freeze](task-81-parent-acceptance-freeze.json) indexes **34 mandatory** and **12 conditional** entries, including the standalone TASK-149 and TASK-152 reviewed boundary inventories. It preserves 27 Exact, 3 Impossible and 16 Residual classifications with their child-owned evidence.
 
 ## Original acceptance review
 
@@ -36,9 +36,14 @@ The [v1 independent parent freeze](task-81-parent-acceptance-freeze.json) indexe
 - TASK-152's native CHECK/PK failures are **Impossible** with independently preserved last committed state. FK deferral remains a reviewed engine/session boundary.
 - Production SQL semantics and protocol wire shapes remain unchanged in this parent audit.
 
-## Blocking specification finding
+## Parent-level original AC #4 replay (v2)
 
-Original TASK-81 **AC #4** explicitly requires interaction with **MERGE** in an ordered script. The frozen TASK-149..152 matrix proves an ordered INSERT/UPDATE/DELETE sequence, but does **not** contain a complete-bag INSERT/MERGE replay. This is a **mandatory parent acceptance gap**, not an acceptable vendor-only Residual, and cannot be waived by pointing at unfinished TASK-82. A separately frozen executable parent oracle (or identified existing independent equivalent) and native physical evidence are required before parent Done. The parent freeze records this blocker explicitly.
+The original v1 crosswalk is [archived](task-81-parent-acceptance-freeze-v1.json) without altering any child case. The v2 inventory independently freezes `81-P-REPLAY-MERGE` and `81-N-REPLAY-MULTIMATCH` in `tests/task_81_parent_merge_replay.rs`.
+
+- **Exact bounded positive:** Complete initial target `[]` and immutable source `[(1,50),(3,30)]`. INSERT yields `[(1,10),(2,20)]`; uniquely matched MERGE UPDATE key 1 and INSERT key 3 yields `[(1,50),(2,20),(3,30)]`; UPDATE RETURNING key 3 yields `[(1,50),(2,20),(3,35)]` and `[(3,35)]` with exact typed inclusive bounds. One shared target population is evolved in statement order, never injected at the intermediate stage. The test compares all canonical and independent DuckDB source/target bags and numeric domains.
+- **Negative safety:** Duplicate source keys 1 with conflicting scores 50/60 are Residual, not a fabricated chosen winner. No native multi-match law is claimed.
+
+**Gate:** The MERGE replay and nine-job CI must actually pass before parent AC #4 signoff. TASK-82 still owns general MERGE branch programs; this parent replay does not advance that separate task.
 
 ## Verification and pending signoff
 

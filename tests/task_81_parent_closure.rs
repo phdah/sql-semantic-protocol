@@ -70,7 +70,8 @@ fn inventory_is_complete_and_exactness_does_not_hide_residuals() {
         "../docs/task-81-parent-acceptance-freeze.json"
     ));
     assert_eq!(parent["task"], "TASK-81");
-    assert_eq!(parent["version"], 1);
+    assert_eq!(parent["version"], 2);
+    assert_eq!(parent["previous_snapshot"], "docs/task-81-parent-acceptance-freeze-v1.json");
     assert_eq!(parent["parent_signed_off"], false);
     assert_eq!(parent["release_approved"], false);
 
@@ -232,6 +233,10 @@ fn original_parent_criteria_and_manifest_are_independently_traceable() {
     assert_eq!(registry["original_ac"], json!([1, 2, 3, 4, 5, 6]));
     assert_eq!(registry["mandatory_cases"], 34);
     assert_eq!(registry["conditional_cases"], 12);
+    assert_eq!(registry["freeze_version"], 2);
+    assert_eq!(registry["replay_oracles"], 2);
+    assert_eq!(registry["replay_test"], "tests/task_81_parent_merge_replay.rs");
+    assert_eq!(parent["original_acceptance_criteria"][3]["supplementary_parent_oracle_ids"], json!(["81-P-REPLAY-MERGE", "81-N-REPLAY-MULTIMATCH"]));
     assert_eq!(registry["parent_signed_off"], false);
     assert_eq!(registry["release_approved"], false);
 }
