@@ -206,7 +206,7 @@ fn assert_case(id: &str, raw: &[Option<i64>], shifted: &[i64], expected_count: u
             )
         })
         .collect::<Vec<_>>();
-    canonical_rows.sort();
+    canonical_rows.sort_by(|left, right| left.2.cmp(&right.2));
     let mut expected_rows = expected_rows
         .iter()
         .map(|row| {
@@ -222,7 +222,7 @@ fn assert_case(id: &str, raw: &[Option<i64>], shifted: &[i64], expected_count: u
             )
         })
         .collect::<Vec<_>>();
-    expected_rows.sort();
+    expected_rows.sort_by(|left, right| left.2.cmp(&right.2));
     assert_eq!(
         canonical_rows, expected_rows,
         "{id}: complete row identities/multiplicity"
