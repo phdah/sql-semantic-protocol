@@ -152,35 +152,22 @@ fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
     // for a finite, iteration-by-iteration complete physical proof.
     // Materialization is deliberately bounded; a larger finite result is
     // Residual, never a silently truncated Exact bag.
-    const MAX_PHYSICAL_ROWS: usize = 10_000;
-    let mut selected = Vec::new();
-    let mut next = recursion.seed();
-    let mut stopped = None;
-    for ordinal in 0..MAX_PHYSICAL_ROWS {
-        // The recursive member is evaluated as a signed 32-bit SQL integer.
-        // A host i128 step may succeed where SQL would overflow: fail closed.
-        if i32::try_from(next).is_err() {
-            return Err("recursive step exceeds portable signed integer width");
-        }
-        let id = format!("{}#{ordinal}", program.id());
-        selected.push(PhysicalProducerRow {
+    let values = recursion.finite_values().ok_or(
+        "recursive induction is too large, overflows SQL integer width, or lacks a finite proof",
+    )?;
+    let selected = values
+        .iter()
+        .enumerate()
+        .map(|(ordinal, value)| PhysicalProducerRow {
             values: BTreeMap::from([(
                 recursion.column().to_string(),
-                LiteralValue::Number(next.to_string()),
+                LiteralValue::Number(value.to_string()),
             )]),
-            source_row_ids: vec![id.clone()],
-        });
-        let qualifies =
-            next < recursion.bound() || (recursion.inclusive() && next == recursion.bound());
-        if !qualifies {
-            stopped = Some(id);
-            break;
-        }
-        next = next
-            .checked_add(recursion.increment())
-            .ok_or("recursive integer step overflows typed value domain")?;
-    }
-    let stopped = stopped.ok_or("finite recursion exceeds attested physical bag limit")?;
+            source_row_ids: vec![format!("{}#{ordinal}", program.id())],
+        })
+        .collect::<Vec<_>>();
+    let last_ordinal = values.len().checked_sub(1).ok_or("empty recursive seed")?;
+    let stopped = format!("{}#{last_ordinal}", program.id());
     // A positive step gives strictly distinct values, so DISTINCT and ALL
     // construct the same occurrences. The set mode remains explicitly
     // represented on the canonical recursive producer for consumers.
