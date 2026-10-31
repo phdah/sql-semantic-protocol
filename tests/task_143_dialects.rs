@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
+    physical_ordered_write_state_plan,
     ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::parser::Parser;
@@ -122,4 +124,53 @@ fn every_frozen_parser_family_matches_its_exact_dialect_boundary() {
         "TASK-143 frozen parser matrix mismatches (actual statuses): {}",
         mismatches.join(",")
     );
+}
+
+#[test]
+fn all_parser_accepted_dialects_preserve_computed_cte_insert_states() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-143-acceptance-freeze.json")).unwrap();
+    let write=freeze["cases"].as_array().unwrap().iter()
+        .find(|c|c["id"]=="78-C143-P-WRITE").unwrap();
+    let sql=write["sql"].as_str().unwrap();
+    let catalog=RelationCatalog::from_schemas(&[
+        RelationSchema::new("raw".to_string(),
+            vec![SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap()]).unwrap(),
+        RelationSchema::new("target".to_string(),vec![
+            SchemaColumn::from_sql_type("k","INTEGER","duckdb").unwrap(),
+            SchemaColumn::from_sql_type("shifted","INTEGER","duckdb").unwrap()
+        ]).unwrap(),
+    ]).unwrap();
+    let raw=PhysicalWriteState::new("raw", [1,2,3].into_iter().map(|k|
+        PhysicalWriteRow::new(BTreeMap::from([(
+            "k".to_string(),LiteralValue::Number(k.to_string())
+        )])).unwrap()
+    ).collect()).unwrap();
+    let target=PhysicalWriteState::new("target",vec![
+        PhysicalWriteRow::new(BTreeMap::from([
+            ("k".to_string(),LiteralValue::Number("99".to_string())),
+            ("shifted".to_string(),LiteralValue::Number("109".to_string()))
+        ])).unwrap()
+    ]).unwrap();
+    let snapshots=[raw,target];
+    let mut dialects=0;
+    for name in DIALECTS {
+        let dialect=dialect_from_name(name).unwrap();
+        assert!(Parser::parse_sql(dialect.as_ref(),sql).is_ok(),"{name}: frozen parser cell");
+        let source=SqlInput::inline(sql);
+        let configured=[ConfiguredSqlInput::new("task143",&source,name,dialect.as_ref())];
+        let bundle=analyze_configured_inputs_with_catalog(&configured,&catalog).unwrap();
+        let plan=physical_ordered_write_state_plan(&bundle,&snapshots);
+        let PhysicalWriteStatePlan::Feasible{transitions,final_states}=plan else {
+            panic!("TASK-143 {name}: source-derived INSERT failed closed unexpectedly: {plan:?}");
+        };
+        assert_eq!(transitions.len(),1,"{name}: one write");
+        assert_eq!(transitions[0].intermediate_states().len(),1,"{name}: one scoped producer");
+        assert_eq!(transitions[0].intermediate_states()[0].rows().len(),2,"{name}: filter");
+        assert_eq!(transitions[0].affected().inserted(),2,"{name}: affected");
+        assert_eq!(transitions[0].after().rows().len(),3,"{name}: complete target");
+        assert_eq!(final_states.len(),2,"{name}: no synthetic intermediate source");
+        dialects+=1;
+    }
+    assert_eq!(dialects,DIALECTS.len());
 }
