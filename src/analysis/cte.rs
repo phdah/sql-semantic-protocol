@@ -50,6 +50,38 @@ fn computed_projection(expression: &Expr, name: String) -> Option<CteProjection>
     Some(CteProjection::with_offset(name, column(left)?, offset))
 }
 
+fn count_star_output(item: &SelectItem) -> Option<String> {
+    let SelectItem::ExprWithAlias {
+        expr: Expr::Function(function),
+        alias,
+    } = item
+    else {
+        return None;
+    };
+    if alias.quote_style.is_some()
+        || !function.name.to_string().eq_ignore_ascii_case("count")
+        || function.over.is_some()
+        || function.filter.is_some()
+        || function.null_treatment.is_some()
+        || !function.within_group.is_empty()
+    {
+        return None;
+    }
+    let FunctionArguments::List(arguments) = &function.args else {
+        return None;
+    };
+    if !arguments.clauses.is_empty()
+        || arguments.duplicate_treatment.is_some()
+        || !matches!(
+            arguments.args.as_slice(),
+            [FunctionArg::Unnamed(FunctionArgExpr::Wildcard)]
+        )
+    {
+        return None;
+    }
+    Some(alias.value.clone())
+}
+
 fn integer_filter(expression: &Expr) -> Option<CteFilter> {
     let Expr::BinaryOp { left, op, right } = expression else {
         return None;
@@ -193,21 +225,29 @@ fn select_stage(
         Some(expression) => Some(integer_filter(expression)?),
         None => None,
     };
-    let projections = select
-        .projection
-        .iter()
-        .map(|projection| match projection {
-            SelectItem::UnnamedExpr(expression) => {
-                let ref_column = column(expression)?;
-                computed_projection(expression, ref_column.column().to_string())
-            }
-            SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
-                computed_projection(expr, alias.value.clone())
-            }
-            _ => None,
-        })
-        .collect::<Option<Vec<_>>>()?;
-    if projections.is_empty()
+    let count_output = match select.projection.as_slice() {
+        [item] => count_star_output(item),
+        _ => None,
+    };
+    let projections = if count_output.is_some() {
+        Vec::new()
+    } else {
+        select
+            .projection
+            .iter()
+            .map(|item| match item {
+                SelectItem::UnnamedExpr(expression) => {
+                    let ref_column = column(expression)?;
+                    computed_projection(expression, ref_column.column().to_string())
+                }
+                SelectItem::ExprWithAlias { expr, alias } if alias.quote_style.is_none() => {
+                    computed_projection(expr, alias.value.clone())
+                }
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>()?
+    };
+    if (projections.is_empty() && count_output.is_none())
         || projections
             .iter()
             .map(CteProjection::name)
@@ -232,14 +272,17 @@ fn select_stage(
                             && matches!(
                                 &key.expr,
                                 Expr::Identifier(name)
-                                    if projections.iter().any(|projection| projection.name() == name.value)
+                                    if count_output.as_deref() == Some(name.value.as_str()) || projections.iter().any(|projection| projection.name() == name.value)
                             )
                     })
             )
     }) {
         return None;
     }
-    Some(CteStage::new(id, inputs, projections, equality, filter))
+    match count_output {
+        Some(name) => Some(CteStage::count(id, inputs, equality, filter, name)),
+        None => Some(CteStage::new(id, inputs, projections, equality, filter)),
+    }
 }
 
 fn lower(
