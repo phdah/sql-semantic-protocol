@@ -9,8 +9,8 @@ use crate::protocol::{LiteralValue, ProtocolStatement, QueryStatement, WriteDefi
 
 use super::exists_producers::{complete_domain, PhysicalProducerDomain, PhysicalProducerRow};
 use super::write_states::{
-    evaluate_simple_select_with_source_ids, physical_closed_world_schema_plan,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    evaluate_simple_select_with_source_ids, physical_closed_world_schema_plan, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStatePlan,
 };
 
 /// An exact view producer and terminal read, with original physical occurrence IDs.
@@ -65,9 +65,7 @@ fn domain_membership(
     domains: &BTreeMap<String, PhysicalProducerDomain>,
     wanted: &BTreeMap<String, LiteralValue>,
 ) -> Result<bool, &'static str> {
-    if wanted.len() != domains.len()
-        || wanted.keys().any(|column| !domains.contains_key(column))
-    {
+    if wanted.len() != domains.len() || wanted.keys().any(|column| !domains.contains_key(column)) {
         return Err("requested view tuple differs from canonical output columns");
     }
     let mut normalized = BTreeMap::new();
@@ -83,15 +81,15 @@ fn domain_membership(
         normalized.insert(name, scalar);
     }
     Ok(terminal.iter().any(|row| {
-        normalized.iter().all(|(column, wanted)| {
-            match (row.values.get(*column), wanted) {
+        normalized
+            .iter()
+            .all(|(column, wanted)| match (row.values.get(*column), wanted) {
                 (Some(LiteralValue::Null), None) => true,
                 (Some(LiteralValue::Number(actual)), Some(wanted)) => {
                     actual.parse::<i128>().ok() == Some(*wanted)
                 }
                 _ => false,
-            }
-        })
+            })
     }))
 }
 
@@ -160,16 +158,17 @@ pub fn physical_finite_view_read_plan(
         })
         .collect::<Vec<_>>();
     let source_states = BTreeMap::from([(source_name.to_string(), initial_states[0].clone())]);
-    let view_results = match evaluate_simple_select_with_source_ids(
-        bundle,
-        definition_query,
-        &source_states,
-    ) {
-        Ok(rows) => rows,
-        Err(error) => return residual(format!("unproved view producer: {error:?}")),
-    };
-    let column_names = definition_query.output().columns()
-        .iter().map(|column| column.name().to_string()).collect::<Vec<_>>();
+    let view_results =
+        match evaluate_simple_select_with_source_ids(bundle, definition_query, &source_states) {
+            Ok(rows) => rows,
+            Err(error) => return residual(format!("unproved view producer: {error:?}")),
+        };
+    let column_names = definition_query
+        .output()
+        .columns()
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
     let mut view_bag = Vec::new();
     let mut view_rows = Vec::new();
     for (ordinal, values) in view_results {
@@ -204,8 +203,12 @@ pub fn physical_finite_view_read_plan(
         Ok(rows) => rows,
         Err(error) => return residual(format!("unproved view consumer: {error:?}")),
     };
-    let output_columns = read_query.output().columns()
-        .iter().map(|column| column.name().to_string()).collect::<Vec<_>>();
+    let output_columns = read_query
+        .output()
+        .columns()
+        .iter()
+        .map(|column| column.name().to_string())
+        .collect::<Vec<_>>();
     let mut terminal = Vec::new();
     for (ordinal, values) in rows {
         if values.len() != output_columns.len() {
@@ -229,9 +232,11 @@ pub fn physical_finite_view_read_plan(
     if let Some(wanted) = wanted {
         match domain_membership(&terminal, &terminal_domains, wanted) {
             Ok(true) => {}
-            Ok(false) => return PhysicalViewProof::Impossible {
-                reason: "requested row absent from exact logical view output".to_string(),
-            },
+            Ok(false) => {
+                return PhysicalViewProof::Impossible {
+                    reason: "requested row absent from exact logical view output".to_string(),
+                }
+            }
             Err(reason) => return residual(reason),
         }
     }
