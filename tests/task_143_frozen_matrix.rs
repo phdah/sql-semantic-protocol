@@ -126,8 +126,8 @@ fn every_mandatory_frozen_read_case_proves_complete_source_producer_and_terminal
             let ids=row["source_ids"].as_array().unwrap().iter().map(|id|id.as_str().unwrap().to_string()).collect::<Vec<_>>();
             (expected_row(row,&final_names),ids)
         }).collect::<Vec<_>>();
-        actual.sort();
-        expected.sort();
+        actual.sort_by(|left, right| left.1.cmp(&right.1));
+        expected.sort_by(|left, right| left.1.cmp(&right.1));
         assert_eq!(actual,expected,"{id}: entire terminal bag including duplicate occurrence IDs");
         for (name,domain) in case["terminal_domains"].as_object().unwrap() {
             let observed=&exact.terminal_domains[name];
