@@ -277,3 +277,32 @@ fn zero_iterations_and_inclusive_guard_have_exact_typed_terminal_domains() {
         );
     }
 }
+
+#[test]
+fn final_recursive_projection_qualifier_must_resolve_to_its_actual_source_alias() {
+    let recursive = "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM n WHERE x < 3)";
+    for final_query in ["SELECT wrong.x FROM n", "SELECT n.x FROM n AS t"] {
+        let sql = format!("{recursive} {final_query}");
+        let analyzed = sql_bundle(&sql, "duckdb");
+        let q = query(&analyzed);
+        assert!(q.cte_program().is_none(), "invalid source qualifier must not construct a canonical program: {sql}");
+        let layer = analyzed.layers().last().unwrap();
+        assert!(
+            matches!(
+                physical_finite_cte_bag_plan(&analyzed, layer.id(), &[], None),
+                PhysicalCteProof::Residual { .. }
+            ),
+            "bad qualifier cannot yield a complete physical bag: {sql}"
+        );
+        assert!(
+            !matches!(q.output().columns()[0].domain(), ValueDomain::Ranges(_)),
+            "bad qualifier cannot claim a precise recursive output interval: {sql}"
+        );
+    }
+
+    let sql = format!("{recursive} SELECT t.x FROM n AS t");
+    let analyzed = sql_bundle(&sql, "duckdb");
+    assert!(query(&analyzed).cte_program().is_some(), "properly bound qualifier must still prove");
+    let proof = exact(&analyzed);
+    assert_eq!(proof.terminal_domains["x"].integer_bounds, Some((1, 3)));
+}
