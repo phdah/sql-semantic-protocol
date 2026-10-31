@@ -194,6 +194,9 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         "assignments": write.assignments().iter().map(merge_assignment_to_value).collect::<Vec<_>>(),
         "state_effect": state_effect
     });
+    if write.view_execution_unknown() {
+        value["view_execution_unknown"] = json!(true);
+    }
     if let Some(source) = write.joined_source() {
         value["joined_source"] = source_relation_to_value(source);
     }
