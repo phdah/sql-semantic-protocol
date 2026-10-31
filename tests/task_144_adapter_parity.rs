@@ -400,3 +400,82 @@ fn compiled_dbt_read_preserves_the_complete_raw_script_materialized_poststate() 
         assert_eq!(dbt, *proof.read, "{id}: dbt compiled read must equal original-source constructed target/CTE/terminal bag");
     }
 }
+
+#[test]
+fn conditional_recursion_and_correlated_lateral_remain_residual_across_dbt() {
+    let freeze = cases();
+    for id in ["78-C144-N-RECURSIVE-CYCLE", "78-C144-N-LATERAL-SESSION"] {
+        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let sql = case["sql"].as_str().unwrap();
+        let source = if id.contains("LATERAL") { vec!["raw"] } else { Vec::new() };
+        let original = direct(sql, &catalog(!source.is_empty()));
+        let dbt = compiled_named(sql, &source);
+        for (adapter, bundle) in [("sql", original), ("dbt", dbt)] {
+            let layer = bundle.layers().last().unwrap();
+            assert!(matches!(
+                physical_finite_cte_bag_plan(&bundle, layer.id(), &snapshots(case), None),
+                PhysicalCteProof::Residual { .. }
+            ), "{id}/{adapter}: cannot promote unproved runtime/session semantics to Exact");
+        }
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn odcs_preserves_view_semantics_and_the_complete_raw_insert_transition() {
+    use sql_semantic_protocol::parse_odcs_yaml;
+    let contract = concat!(
+        "apiVersion: v3.2.0\nkind: DataContract\n",
+        "id: task144-view-write\nname: Source and target schema\n",
+        "version: 1.0.0\nstatus: active\nschema:\n",
+        "  - name: raw\n    physicalName: raw\n    properties:\n",
+        "      - name: k\n        physicalType: INTEGER\n",
+        "  - name: target\n    physicalName: target\n    properties:\n",
+        "      - name: k\n        physicalType: INTEGER\n",
+        "      - name: shifted\n        physicalType: INTEGER\n"
+    );
+    let parsed = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["raw","target"]).unwrap()).unwrap();
+    let metadata = RelationCatalog::from_schemas(parsed.source_schemas()).unwrap();
+    let direct = RelationCatalog::from_schemas(&[
+        RelationSchema::new("raw".to_string(), vec![
+            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()
+        ]).unwrap(),
+        RelationSchema::new("target".to_string(), vec![
+            SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap(),
+            SchemaColumn::from_sql_type("shifted", "INTEGER", "duckdb").unwrap()
+        ]).unwrap(),
+    ]).unwrap();
+    let freeze = cases();
+    for id in ["78-C144-P-MULTISTEP", "78-C144-N-MULTISTEP-NULL"] {
+        let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == id).unwrap();
+        let sqls = case["sql_statements"].as_array().unwrap();
+        let states = snapshots(case);
+        let mut observed = Vec::new();
+        for catalog in [&direct, &metadata] {
+            let bundle = view_script(catalog, sqls);
+            let target = bundle.layers().last().unwrap();
+            let result = physical_ordered_cte_read_plan(&bundle, target.id(), &states, None);
+            let PhysicalOrderedCteProof::Exact(proof) = result else {
+                panic!("{id}: missing source-derived write/terminal state for adapter");
+            };
+            observed.push(*proof);
+        }
+        assert_eq!(observed[1], observed[0], "{id}: ODCS typed evidence must not alter physical poststate, CTE, row identities or terminal domains");
+    }
+
+    // VIEW itself is logical: only original leaf schema facts come from ODCS.
+    let case = freeze["cases"].as_array().unwrap().iter().find(|c| c["id"] == "78-C144-P-VIEW").unwrap();
+    let sqls = case["sql_statements"].as_array().unwrap();
+    let physical = snapshots(case);
+    let mut results = Vec::new();
+    for catalog in [&direct, &metadata] {
+        let bundle = view_script(catalog, sqls);
+        let target = bundle.layers().last().unwrap();
+        let result = physical_finite_view_read_plan(&bundle, target.id(), &physical, None);
+        let PhysicalViewProof::Exact(proof) = result else {
+            panic!("ODCS VIEW source lacks the original physical leaf proof");
+        };
+        results.push(*proof);
+    }
+    assert_eq!(results[1], results[0], "ODCS cannot introduce independent logical VIEW rows");
+}
