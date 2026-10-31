@@ -8,7 +8,7 @@ mod common;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_cte_bag_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalCteRef, PhysicalWriteRow,
+    ConfiguredSqlInput, LiteralValue, PhysicalCteProof, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
