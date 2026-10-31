@@ -36,6 +36,10 @@ The [v1 independent parent freeze](task-81-parent-acceptance-freeze.json) indexe
 - TASK-152's native CHECK/PK failures are **Impossible** with independently preserved last committed state. FK deferral remains a reviewed engine/session boundary.
 - Production SQL semantics and protocol wire shapes remain unchanged in this parent audit.
 
+## Blocking specification finding
+
+Original TASK-81 **AC #4** explicitly requires interaction with **MERGE** in an ordered script. The frozen TASK-149..152 matrix proves an ordered INSERT/UPDATE/DELETE sequence, but does **not** contain a complete-bag INSERT/MERGE replay. This is a **mandatory parent acceptance gap**, not an acceptable vendor-only Residual, and cannot be waived by pointing at unfinished TASK-82. A separately frozen executable parent oracle (or identified existing independent equivalent) and native physical evidence are required before parent Done. The parent freeze records this blocker explicitly.
+
 ## Verification and pending signoff
 
 Child acceptance CI: [TASK-149](https://github.com/phdah/sql-semantic-protocol/actions/runs/40873925034), [TASK-150](https://github.com/phdah/sql-semantic-protocol/actions/runs/40916998581), [TASK-151](https://github.com/phdah/sql-semantic-protocol/actions/runs/41022690530), [TASK-152](https://github.com/phdah/sql-semantic-protocol/actions/runs/41051488486). Each child records successful verification for its implementation head and has since merged.
