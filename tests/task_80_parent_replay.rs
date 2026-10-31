@@ -46,11 +46,7 @@ fn row(value: &Value) -> PhysicalWriteRow {
 }
 
 fn state(relation: &str, rows: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        relation,
-        rows.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(relation, rows.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn analysis(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
@@ -81,8 +77,7 @@ fn analysis(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
         .collect::<Vec<_>>();
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let evidence = vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task80-parent")
-            .unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task80-parent").unwrap(),
         ConstraintEnforcement::Enforced,
     )];
     bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
@@ -161,7 +156,7 @@ fn assert_domains(
 #[test]
 fn conflict_do_nothing_has_exact_second_application_fixed_point() {
     let case = replay_oracle("80-P-REPLAY-CONFLICT");
-    assert_eq!(case["proof_positive"].as_str().unwrap().contains("Exact"), true);
+    assert!(case["proof_positive"].as_str().unwrap().contains("Exact"));
     let sql = case["sql"].as_str().unwrap();
     let bundle = analysis(sql);
     let source = state("source", &case["complete_source"]);
@@ -188,13 +183,22 @@ fn conflict_do_nothing_has_exact_second_application_fixed_point() {
         transitions[1].after(),
         &state("target", &case["target_after_second"])
     );
-    for (transition, expected) in transitions.iter().zip([
-        &case["first_affected"],
-        &case["second_affected"],
-    ]) {
-        assert_eq!(transition.affected().inserted(), expected["inserted"].as_u64().unwrap());
-        assert_eq!(transition.affected().updated(), expected["updated"].as_u64().unwrap());
-        assert_eq!(transition.affected().deleted(), expected["deleted"].as_u64().unwrap());
+    for (transition, expected) in transitions
+        .iter()
+        .zip([&case["first_affected"], &case["second_affected"]])
+    {
+        assert_eq!(
+            transition.affected().inserted(),
+            expected["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            expected["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            expected["deleted"].as_u64().unwrap()
+        );
     }
     let first = transitions[0].returning().unwrap();
     assert_eq!(first.rows().len(), 1);
@@ -206,19 +210,19 @@ fn conflict_do_nothing_has_exact_second_application_fixed_point() {
     assert!(second.rows().is_empty());
     let target_after = state("target", &case["target_after_second"]);
     assert_eq!(
-        final_states.iter().find(|state| state.relation() == "target"),
+        final_states
+            .iter()
+            .find(|state| state.relation() == "target"),
         Some(&target_after)
     );
     assert_eq!(
-        final_states.iter().find(|state| state.relation() == "source"),
+        final_states
+            .iter()
+            .find(|state| state.relation() == "source"),
         Some(&source)
     );
     assert_eq!(final_states.len(), 2);
-    assert_domains(
-        &target_after,
-        &bundle,
-        &case["typed_final_domains"],
-    );
+    assert_domains(&target_after, &bundle, &case["typed_final_domains"]);
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -228,8 +232,14 @@ fn conflict_do_nothing_has_exact_second_application_fixed_point() {
          INSERT INTO source VALUES (1,20),(2,30);",
     )
     .unwrap();
-    assert_eq!(native_bag(&db, "target"), frozen_bag(&case["initial_target"]));
-    assert_eq!(native_bag(&db, "source"), frozen_bag(&case["complete_source"]));
+    assert_eq!(
+        native_bag(&db, "target"),
+        frozen_bag(&case["initial_target"])
+    );
+    assert_eq!(
+        native_bag(&db, "source"),
+        frozen_bag(&case["complete_source"])
+    );
     for (after, expected_returning) in [
         (&case["target_after_first"], &case["returning_first"]),
         (&case["target_after_second"], &case["returning_second"]),
@@ -249,7 +259,10 @@ fn conflict_do_nothing_has_exact_second_application_fixed_point() {
         assert_eq!(returned, expected, "complete DuckDB RETURNING output");
         drop(statement);
         assert_eq!(native_bag(&db, "target"), frozen_bag(after));
-        assert_eq!(native_bag(&db, "source"), frozen_bag(&case["complete_source"]));
+        assert_eq!(
+            native_bag(&db, "source"),
+            frozen_bag(&case["complete_source"])
+        );
     }
 }
 
@@ -257,13 +270,14 @@ fn conflict_do_nothing_has_exact_second_application_fixed_point() {
 fn ordinary_duplicate_insert_is_impossible_not_idempotent() {
     let case = replay_oracle("80-N-REPLAY-PK");
     assert!(case["target_after_second"].is_null());
-    assert_eq!(case["proof_not_true"].as_str().unwrap().contains("Impossible"), true);
+    assert!(case["proof_not_true"]
+        .as_str()
+        .unwrap()
+        .contains("Impossible"));
     let sql = case["sql"].as_str().unwrap();
     let bundle = analysis(sql);
-    let plan = physical_ordered_write_state_plan(
-        &bundle,
-        &[state("target", &case["initial_target"])],
-    );
+    let plan =
+        physical_ordered_write_state_plan(&bundle, &[state("target", &case["initial_target"])]);
     assert!(
         matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
         "a second insertion of the same PK must contradict the complete bag: {plan:?}"
@@ -287,9 +301,5 @@ fn ordinary_duplicate_insert_is_impossible_not_idempotent() {
         frozen_bag(&case["post_failure_database_state"])
     );
     let first = state("target", &case["post_failure_database_state"]);
-    assert_domains(
-        &first,
-        &bundle,
-        &case["typed_last_committed_domains"],
-    );
+    assert_domains(&first, &bundle, &case["typed_last_committed_domains"]);
 }
