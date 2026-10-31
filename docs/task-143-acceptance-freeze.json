@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-143",
   "parent": "TASK-78",
-  "status": "complete_frozen_matrix_pending_final_ci_and_independent_review",
+  "status": "physical_read_write_matrix_complete_independent_review_pending",
   "fixture_ids": [
     "78-C143-P",
     "78-C143-N"
@@ -15,7 +15,7 @@
     6
   ],
   "acceptance_criteria_map": {
-    "1": "v2 frozen JOIN/COUNT/WRITE cases, complete source, intermediate, terminal and typed outcome domains; conditional dialect boundaries",
+    "1": "v4: all v3 frozen read/COUNT/write cases and new independently detected INTEGER-to-BIGINT width counterexample; previous immutable candidate archived",
     "2": "canonical CTE filter/computed/JOIN/COUNT physical source graph; source-derived INSERT complete target states",
     "3": "tests/task_143_frozen_matrix.rs, task_143_duckdb_oracles.rs, task_143_count.rs, task_143_write.rs",
     "4": "tests/task_143_dialects.rs and task_143_adapters.rs; vendor semantics not asserted",
@@ -899,6 +899,74 @@
           "release_disposition": "ODCS supplies equivalent column types; enforced CHECK attested separately"
         }
       ]
+    },
+    {
+      "id": "78-C143-N-WIDTH",
+      "fixture_family": "78-C143-N",
+      "variant": "computed INTEGER arithmetic overflow before BIGINT insert target coercion",
+      "classification": "conditional_write_residual",
+      "owner": "TASK-143",
+      "sql": "INSERT INTO target(k, shifted) WITH stage AS (SELECT k, k + 10 AS shifted FROM raw WHERE k > 1) SELECT k, shifted FROM stage",
+      "initial_bags": {
+        "raw": [
+          {
+            "id": "raw#0",
+            "k": 2147483640
+          }
+        ],
+        "target": []
+      },
+      "schemas": {
+        "raw": {
+          "k": "INTEGER"
+        },
+        "target": {
+          "k": "INTEGER",
+          "shifted": "BIGINT"
+        }
+      },
+      "producer_bags": "no exact bag: computed producer arithmetic overflows source width",
+      "terminal_bag": [],
+      "terminal_domains": {
+        "k": {
+          "type": "integer",
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        },
+        "shifted": {
+          "type": "integer",
+          "nullable": false,
+          "lower": null,
+          "upper": null
+        }
+      },
+      "true_proof": "k>1 is TRUE for the sole source row, but computation is not constructively admissible",
+      "not_true_proof": "INTEGER (2147483640 + 10) overflows before any BIGINT target coercion",
+      "expected_physical": "Residual",
+      "native_oracle": "DuckDB INSERT raises overflow; empty target remains unchanged",
+      "release_disposition": "Fail closed until expression-width rule can certify it; does not permit an exact stage",
+      "parser_family": "computed_insert",
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "Residual",
+          "oracle": "tests/task_143_write.rs",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "dbt_compiled_manifest_catalog",
+          "classification": "conditional_no_native_dbt_transaction_evidence",
+          "oracle": "not a standalone dbt model transaction",
+          "owner": "TASK-143"
+        },
+        {
+          "adapter": "odcs_equivalent_schema",
+          "classification": "Residual",
+          "oracle": "target BIGINT metadata does not widen source INTEGER arithmetic",
+          "owner": "TASK-143"
+        }
+      ]
     }
   ],
   "verification": {
@@ -917,11 +985,14 @@
     "mandatory_write_exact": 2,
     "mandatory_write_impossible": 1,
     "conditional_residual": 2,
-    "adapter_cells": 24,
+    "adapter_cells": 27,
     "freeze_history": [
       "docs/task-143-acceptance-freeze-v1.json",
-      "docs/task-143-acceptance-freeze-v2.json"
-    ]
+      "docs/task-143-acceptance-freeze-v2.json",
+      "docs/task-143-acceptance-freeze-v3.json"
+    ],
+    "conditional_write_residual": 1,
+    "width_counterexample": "tests/task_143_write.rs::computed_cte_overflow_never_certifies_a_wider_insert_target"
   },
   "parser_families": [
     {
