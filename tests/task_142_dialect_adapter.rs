@@ -7,10 +7,10 @@ mod common;
 use common::DIALECTS;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan,
-    AnalysisBundle, ConfiguredSqlInput, CteRecursionSetMode, Error, PhysicalCteProof,
-    PhysicalCteRef, ProtocolStatement, QueryStatement, RelationCatalog, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
+    parse_dbt_catalog, parse_dbt_manifest, physical_finite_cte_bag_plan, AnalysisBundle,
+    ConfiguredSqlInput, CteRecursionSetMode, Error, PhysicalCteProof, PhysicalCteRef,
+    ProtocolStatement, QueryStatement, RelationCatalog, SqlInput,
 };
 
 fn sql_bundle(sql: &str, dialect_name: &str) -> AnalysisBundle {
@@ -67,12 +67,15 @@ fn compiled_bundle(sql: &str) -> AnalysisBundle {
 }
 
 fn query(bundle: &AnalysisBundle) -> &QueryStatement {
-    bundle.inputs().iter().flat_map(|input| input.statements()).find_map(
-        |statement| match statement {
+    bundle
+        .inputs()
+        .iter()
+        .flat_map(|input| input.statements())
+        .find_map(|statement| match statement {
             ProtocolStatement::Query(query) => Some(query),
             _ => None,
-        }
-    ).expect("analyzed task-142 query")
+        })
+        .expect("analyzed task-142 query")
 }
 
 fn exact(bundle: &AnalysisBundle) -> sql_semantic_protocol::PhysicalCteExact {
@@ -86,13 +89,18 @@ fn exact(bundle: &AnalysisBundle) -> sql_semantic_protocol::PhysicalCteExact {
 
 #[test]
 fn all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag() {
-    let freeze: Value = serde_json::from_str(
-        include_str!("../docs/task-142-acceptance-freeze.json")
-    ).unwrap();
-    let frozen_names = freeze["dialects"].as_array().unwrap().iter().map(
-        |dialect| dialect["name"].as_str().unwrap()
-    ).collect::<Vec<_>>();
-    assert_eq!(frozen_names, DIALECTS, "freeze must include all exposed dialects");
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-142-acceptance-freeze.json")).unwrap();
+    let frozen_names = freeze["dialects"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|dialect| dialect["name"].as_str().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        frozen_names, DIALECTS,
+        "freeze must include all exposed dialects"
+    );
 
     let mut classified = 0;
     let mut constructed = 0;
@@ -111,7 +119,8 @@ fn all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag(
                 Err(other) => panic!("{name}: non-parser failure: {other}"),
                 Ok(_) => {
                     let bundle = sql_bundle(sql, name);
-                    let program = query(&bundle).cte_program()
+                    let program = query(&bundle)
+                        .cte_program()
                         .unwrap_or_else(|| panic!("{name}: parsed recursion lost canonical proof"));
                     assert_eq!(program.stages().len(), 2);
                     let recursion = program.stages()[0].recursion().unwrap();
@@ -125,7 +134,11 @@ fn all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag(
                     let proof = exact(&bundle);
                     assert!(proof.sources.is_empty());
                     assert_eq!(proof.terminal.len(), 3, "{name}");
-                    assert_eq!(proof.terminal_domains["x"].integer_bounds, Some((1, 3)), "{name}");
+                    assert_eq!(
+                        proof.terminal_domains["x"].integer_bounds,
+                        Some((1, 3)),
+                        "{name}"
+                    );
                     constructed += 1;
                 }
             }
@@ -134,14 +147,16 @@ fn all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag(
     }
     assert_eq!(classified, 2 * DIALECTS.len());
     assert_eq!(constructed + parser_boundaries, classified);
-    assert!(constructed > 0, "at least the DuckDB parser must accept the core");
+    assert!(
+        constructed > 0,
+        "at least the DuckDB parser must accept the core"
+    );
 }
 
 #[test]
 fn canonical_source_free_recursive_stages_match_compiled_dbt_without_invented_sources() {
-    let freeze: Value = serde_json::from_str(
-        include_str!("../docs/task-142-acceptance-freeze.json")
-    ).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-142-acceptance-freeze.json")).unwrap();
     let mut cases = 0;
     for entry in freeze["cases"].as_array().unwrap() {
         if entry["classification"] != "mandatory_exact" {
@@ -152,7 +167,10 @@ fn canonical_source_free_recursive_stages_match_compiled_dbt_without_invented_so
         let dbt = compiled_bundle(sql);
         let direct_query = query(&direct);
         let dbt_query = query(&dbt);
-        assert!(direct_query.dependencies().is_empty(), "recursive name is local");
+        assert!(
+            direct_query.dependencies().is_empty(),
+            "recursive name is local"
+        );
         assert_eq!(dbt_query.dependencies(), direct_query.dependencies());
         assert_eq!(dbt_query.sources(), direct_query.sources());
         assert_eq!(dbt_query.cte_program(), direct_query.cte_program());
@@ -168,7 +186,10 @@ fn canonical_source_free_recursive_stages_match_compiled_dbt_without_invented_so
         // One producer consumes its own previous iteration; the terminal
         // consumes that producer. Recursion is not an independent physical leaf.
         let producer = &direct_proof.nodes[0];
-        assert_eq!(producer.id, PhysicalCteRef::Producer("terminal/cte:0:n".into()));
+        assert_eq!(
+            producer.id,
+            PhysicalCteRef::Producer("terminal/cte:0:n".into())
+        );
         assert_eq!(producer.inputs.len(), 1);
         assert_eq!(producer.inputs[0].reference, producer.id);
         assert_eq!(producer.inputs[0].alias, "n");
