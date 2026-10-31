@@ -146,11 +146,58 @@ struct StageExecution {
     output_types: BTreeMap<String, bool>,
 }
 
+
+fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
+    let recursion = program.recursion().ok_or("not a recursive stage")?;
+    // The source-free seed and strictly increasing checked step are sufficient
+    // for a finite, iteration-by-iteration complete physical proof.
+    // Materialization is deliberately bounded; a larger finite result is
+    // Residual, never a silently truncated Exact bag.
+    const MAX_PHYSICAL_ROWS: usize = 10_000;
+    let mut selected = Vec::new();
+    let mut next = recursion.seed();
+    let mut stopped = None;
+    for ordinal in 0..MAX_PHYSICAL_ROWS {
+        let id = format!("{}#{ordinal}", program.id());
+        selected.push(PhysicalProducerRow {
+            values: BTreeMap::from([(
+                recursion.column().to_string(),
+                LiteralValue::Number(next.to_string()),
+            )]),
+            source_row_ids: vec![id.clone()],
+        });
+        let qualifies = next < recursion.bound()
+            || (recursion.inclusive() && next == recursion.bound());
+        if !qualifies {
+            stopped = Some(id);
+            break;
+        }
+        next = next
+            .checked_add(recursion.increment())
+            .ok_or("recursive integer step overflows typed value domain")?;
+    }
+    let stopped = stopped.ok_or("finite recursion exceeds attested physical bag limit")?;
+    // A positive step gives strictly distinct values, so DISTINCT and ALL
+    // construct the same occurrences. Do not infer this for zero/negative
+    // increments or arbitrary recursive source programs.
+    let _mode = recursion.set_mode();
+    Ok(StageExecution {
+        selected,
+        rejected: vec![vec![stopped.clone()]],
+        false_pairs: vec![vec![stopped]],
+        unknown_pairs: Vec::new(),
+        output_types: BTreeMap::from([(recursion.column().to_string(), true)]),
+    })
+}
+
 fn stage(
     program: &CteStage,
     bags: &BagMap,
     types: &BTreeMap<String, BTreeMap<String, bool>>,
 ) -> Result<StageExecution, &'static str> {
+    if program.recursion().is_some() {
+        return recursive_stage(program);
+    }
     let [first, others @ ..] = program.inputs() else {
         return Err("CTE needs a physical or lexical input");
     };
