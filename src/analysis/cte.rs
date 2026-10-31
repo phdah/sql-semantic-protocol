@@ -375,10 +375,13 @@ fn bounded_recursive_program(query: &SqlQuery) -> Option<CteProgram> {
     let final_stage = select_stage(query, terminal.clone(), &lexical)?;
     if final_stage.inputs().len() != 1
         || final_stage.inputs()[0].relation() != producer
-        || final_stage
-            .projections()
-            .iter()
-            .any(|column| column.source().column() != output)
+        || final_stage.projections().iter().any(|projection| {
+            projection.source().column() != output
+                || projection
+                    .source()
+                    .relation()
+                    .is_some_and(|qualifier| qualifier != final_stage.inputs()[0].alias())
+        })
     {
         return None;
     }
