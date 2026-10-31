@@ -1,6 +1,6 @@
 # TASK-143: filtered/computed CTE producer acceptance audit
 
-**State: implementation and task-owned oracle inventory complete; child signoff pending final-head CI and an independent reviewer.** Parent TASK-78 remains unsigned and open. No release approval is implied.
+**State: AC #2/#3/#4 evidenced and checked; AC #1/#5 blocked by historical freeze timing and independent-review requirements.** Parent TASK-78 remains unsigned and open. No release approval is implied.
 
 ## Finite task-owned evidence
 
@@ -18,7 +18,7 @@ The diff keeps SQL AST ownership in analysis, source-independent typed facts in 
 
 The exact `raw [1,2,3] WHERE k>1 -> [2,3]` oracle, same-producer two-consumer join, computed aliases, COUNT, ordered write, physical source prohibition, negative NULL/duplicate/CHECK/width and typed Residual cases all have task-owned tests. The remaining review gate is independent confirmation that v4 is the complete bounded matrix, with no missing mandatory cell or incorrect expected outcome. Historical timing of the freeze v1 is disclosed rather than claimed as preimplementation.
 
-**Signoff:** AC #1..#5 remain unchecked and TASK-143 In Progress until all final-head verification and independent-review requirements are satisfied. TASK-144 remains blocked until TASK-143 is Done and PR #169 merges into main.
+**Signoff:** AC #2, #3 and #4 are checked from executable canonical/physical, native DuckDB, parser and adapter evidence. AC #1 remains open because the original immutable freeze was not created before semantic edits; AC #5 remains open until the last-head CI and independent Standards/Spec review are complete. TASK-143 remains In Progress. TASK-144 remains blocked until TASK-143 is Done and PR #169 merges into main.
 
 ## Review findings pending independent acceptance
 
