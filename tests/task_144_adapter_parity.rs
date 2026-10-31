@@ -280,7 +280,7 @@ fn shadowed_cte_odcs_sources_preserve_complete_dual_leaf_truth() {
     assert_eq!(
         exact(&direct(case["sql"].as_str().unwrap(), &evidence), &states),
         exact(
-            &compiled_named(case["sql"].as_str().unwrap(), &["inner_src", "outer_src"]),
+            &compiled_with_dependencies(case["sql"].as_str().unwrap(), &["inner_src", "outer_src"], &["inner_src"]),
             &states
         ),
         "ODCS and compiled dbt must preserve shadowed source identity and full bag"
