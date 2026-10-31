@@ -27,7 +27,7 @@
     "parent_signed_off": true,
     "release_approved": false,
     "independent_native_engine": "DuckDB",
-    "gate": "final PR CI and independent parent review before marking Done; TASK-91 release separate",
+    "gate": "TASK-78 original AC signed off after reviewed green implementation CI; metadata-head CI required before merge; TASK-91 independent",
     "signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41242073407",
     "review": "https://github.com/phdah/sql-semantic-protocol/pull/171#pullrequestreview-5724940824",
     "final_metadata_head_ci": "must pass before merge"

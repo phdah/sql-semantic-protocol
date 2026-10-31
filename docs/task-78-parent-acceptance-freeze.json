@@ -440,7 +440,7 @@
   "required_review": {
     "native_execution": "DuckDB only; no native cross-vendor claims",
     "unsupported_logic": "conditional Residual stays conditional with child owner",
-    "signoff": "Final parent PR CI and independent review must pass before TASK-78 Done",
+    "signoff": "original AC signed off after reviewed green implementation CI; metadata-head CI required before merge",
     "release_gate": "TASK-91 separately gated"
   },
   "signoff": {
