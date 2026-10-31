@@ -157,6 +157,11 @@ fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
     let mut next = recursion.seed();
     let mut stopped = None;
     for ordinal in 0..MAX_PHYSICAL_ROWS {
+        // The recursive member is evaluated as a signed 32-bit SQL integer.
+        // A host i128 step may succeed where SQL would overflow: fail closed.
+        if i32::try_from(next).is_err() {
+            return Err("recursive step exceeds portable signed integer width");
+        }
         let id = format!("{}#{ordinal}", program.id());
         selected.push(PhysicalProducerRow {
             values: BTreeMap::from([(
@@ -177,9 +182,8 @@ fn recursive_stage(program: &CteStage) -> Result<StageExecution, &'static str> {
     }
     let stopped = stopped.ok_or("finite recursion exceeds attested physical bag limit")?;
     // A positive step gives strictly distinct values, so DISTINCT and ALL
-    // construct the same occurrences. Do not infer this for zero/negative
-    // increments or arbitrary recursive source programs.
-    let _mode = recursion.set_mode();
+    // construct the same occurrences. The set mode remains explicitly
+    // represented on the canonical recursive producer for consumers.
     Ok(StageExecution {
         selected,
         rejected: vec![vec![stopped.clone()]],
