@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-142",
   "parent": "TASK-78",
-  "status": "frozen_pending_implementation",
+  "status": "frozen_v2_pending_final_verification",
   "fixture_ids": [
     "78-C142-P",
     "78-C142-N"
@@ -24,7 +24,9 @@
   "semantics": {
     "recursion": "single self-recursive integer column; source-free seed; positive integer step; monotone guarded recursion",
     "evaluation": "seed once, then delta for each previous iteration; SQL UNION ALL preserves occurrences, UNION DISTINCT deduplicates",
-    "safety": "only monotone bounded steps under checked integer arithmetic; cyclic/nonterminated, unsupported ast or excessive rows are Residual"
+    "safety": "portable signed 32-bit arithmetic only, including every generated step; source-free monotone positive induction, at most 10000 materialized occurrences; cyclic/unknown and unsupported/overlarge cases remain Residual",
+    "truth": "exact non-NULL produced values; terminal negative membership and NULL requests are Impossible only against the complete final bag; SQL predicate comparisons with NULL evaluate UNKNOWN",
+    "provenance": "one recursive producer explicitly self-references its prior-iteration bag and terminal references the producer; per-occurrence IDs are stable and not independent physical inserts"
   },
   "cases": [
     {
@@ -80,7 +82,14 @@
         },
         "proof": "Impossible"
       },
-      "oracle": "DuckDB exact complete bag"
+      "oracle": "DuckDB exact complete bag",
+      "typed_precision": "signed_32_bit_portable_subset",
+      "dialect_scope": "all_exposed_project_names",
+      "adapter_scope": [
+        "direct_sql",
+        "dbt_manifest_compiled"
+      ],
+      "odcs": "not_applicable_no_physical_or_declared_source_columns"
     },
     {
       "id": "78-C142-P-DISTINCT",
@@ -135,7 +144,14 @@
         },
         "proof": "Impossible"
       },
-      "oracle": "DuckDB exact complete bag"
+      "oracle": "DuckDB exact complete bag",
+      "typed_precision": "signed_32_bit_portable_subset",
+      "dialect_scope": "all_exposed_project_names",
+      "adapter_scope": [
+        "direct_sql",
+        "dbt_manifest_compiled"
+      ],
+      "odcs": "not_applicable_no_physical_or_declared_source_columns"
     },
     {
       "id": "78-C142-N-ABSENCE",
@@ -168,7 +184,14 @@
           "inclusive": true
         }
       },
-      "oracle": "DuckDB anti-membership"
+      "oracle": "DuckDB anti-membership",
+      "typed_precision": "signed_32_bit_portable_subset",
+      "dialect_scope": "all_exposed_project_names",
+      "adapter_scope": [
+        "direct_sql",
+        "dbt_manifest_compiled"
+      ],
+      "odcs": "not_applicable_no_physical_or_declared_source_columns"
     },
     {
       "id": "78-C142-N-CYCLE",
@@ -185,112 +208,165 @@
       "proof": "Residual",
       "reason": "zero-step UNION ALL has no finite termination proof",
       "owner": "TASK-142",
-      "release_disposition": "pending_review",
-      "oracle": "No native complete bag claimed"
+      "release_disposition": "reviewed_residual_not_native_certified",
+      "oracle": "No native complete bag claimed",
+      "typed_precision": "signed_32_bit_portable_subset",
+      "dialect_scope": "all_exposed_project_names",
+      "adapter_scope": [
+        "direct_sql",
+        "dbt_manifest_compiled"
+      ],
+      "odcs": "not_applicable_no_physical_or_declared_source_columns",
+      "required_evidence": "nonpositive or cyclic recursive step cannot certify finite UNION ALL output"
     }
   ],
   "dialects": [
     {
       "name": "generic",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "mysql",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "postgresql",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "postgres",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "hive",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "sqlite",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "snowflake",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "redshift",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "mssql",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "clickhouse",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "bigquery",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "ansi",
-      "parser_status": "pending_classification",
+      "parser_status": "executable_parser_boundary_or_canonical",
       "native_engine_status": "not_attested",
-      "owner": "TASK-142"
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     },
     {
       "name": "duckdb",
-      "parser_status": "pending_classification",
-      "native_engine_status": "native_oracle_required",
-      "owner": "TASK-142"
+      "parser_status": "executable_parser_boundary_or_canonical",
+      "native_engine_status": "duckdb_exact_oracle",
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
+    },
+    {
+      "name": "databricks",
+      "parser_status": "executable_parser_boundary_or_canonical",
+      "native_engine_status": "not_attested",
+      "owner": "TASK-142",
+      "evidence": "tests/task_142_dialect_adapter.rs all_exposed_dialects_are_classified_at_the_parser_boundary_or_prove_same_bag"
     }
   ],
   "adapters": [
     {
       "source": "direct_sql",
-      "status": "pending"
+      "status": "mandatory_executable",
+      "evidence": "tests/task_142_recursive_cte.rs and tests/task_142_dialect_adapter.rs"
     },
     {
       "source": "dbt_manifest_compiled",
-      "status": "pending"
+      "status": "mandatory_executable",
+      "evidence": "tests/task_142_dialect_adapter.rs"
     },
     {
       "source": "odcs_equivalent_metadata",
-      "status": "pending_or_not_applicable_for_source_free"
+      "status": "not_applicable",
+      "reason": "Both named mandatory recursive CTEs are self-contained, source-free literal seeds. ODCS cannot provide equivalent external evidence without a source to describe; canonical SQL/dbt proof is already source-independent."
     }
   ],
   "ci": {
-    "fmt": "pending",
-    "clippy": "pending",
-    "test": "pending",
-    "docs": "pending",
-    "no_default_features": "pending",
-    "dbt_e2e": "pending",
-    "golden_schema": "pending",
-    "independent_review": "pending"
+    "fmt": "awaiting_final_head",
+    "clippy": "awaiting_final_head",
+    "test": "awaiting_final_head",
+    "docs": "awaiting_final_head",
+    "no_default_features": "awaiting_final_head",
+    "dbt_e2e": "awaiting_final_head",
+    "golden_schema": "awaiting_final_head",
+    "independent_review": "awaiting_review"
+  },
+  "freeze_history": "docs/task-142-acceptance-freeze-v1.json",
+  "review_note": "Version 2 adds explicit recursive self-reference, portable i32 width, direct/dbt checks, 14-dialect coverage, full negative and SQL UNKNOWN oracles. Mandatory v1 cases and outcomes are unchanged.",
+  "oracle_matrix": {
+    "mandatory_exact": [
+      "78-C142-P-ALL",
+      "78-C142-P-DISTINCT"
+    ],
+    "mandatory_impossible": [
+      "78-C142-N-ABSENCE"
+    ],
+    "conditional_residual": [
+      "78-C142-N-CYCLE"
+    ],
+    "dialect_cells": 28,
+    "source_adapter_cells": 6,
+    "negative_proof": "Closed-world absent integer and NULL tuple plus native DuckDB NOT EXISTS/UNKNOWN",
+    "signed_integer_boundary": "i32 step checked before claiming Exact",
+    "native_engine_claims": [
+      "DuckDB"
+    ],
+    "other_engine_claims": "none"
   }
 }
