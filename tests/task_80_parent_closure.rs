@@ -99,7 +99,8 @@ fn parent_cases_match_all_child_inventory_and_preserve_proof_boundaries() {
         "../docs/task-80-parent-acceptance-freeze.json"
     ));
     assert_eq!(freeze["task"], "TASK-80");
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["previous_snapshot"], "docs/task-80-parent-acceptance-freeze-v1.json");
     assert_eq!(freeze["parent_signed_off"], false);
     assert_eq!(freeze["release_approved"], false);
 
@@ -233,6 +234,37 @@ fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
         assert!(unique_strings(&ac["conditional_case_ids"]).is_subset(&conditional));
     }
 
+    let extra = freeze["parent_replay_oracles"]
+        .as_array()
+        .expect("two independent parent replay requirements");
+    assert_eq!(extra.len(), 2);
+    let ids = extra
+        .iter()
+        .map(|item| item["id"].as_str().expect("replay ID").to_owned())
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        ids,
+        BTreeSet::from([
+            "80-P-REPLAY-CONFLICT".to_owned(),
+            "80-N-REPLAY-PK".to_owned(),
+        ])
+    );
+    assert_eq!(
+        original[3]["supplementary_parent_oracle_ids"],
+        json!(["80-P-REPLAY-CONFLICT", "80-N-REPLAY-PK"])
+    );
+    for case in extra {
+        assert_eq!(case["owner"], "TASK-80");
+        assert!(nonempty(&case["sql"]));
+        assert!(nonempty(&case["native_oracle"]));
+        assert!(nonempty(&case["proof_positive"]));
+        assert!(nonempty(&case["proof_not_true"]));
+        assert!(nonempty(&case["release_disposition"]));
+        assert_eq!(case["executions"], 2);
+        let child = case["child_case_id"].as_str().unwrap();
+        assert!(mandatory.contains(child), "{child} is not a mandatory child witness");
+    }
+
     let entry = &manifest["task_80_parent_acceptance"];
     assert_eq!(entry["owner"], "TASK-80");
     assert_eq!(
@@ -240,6 +272,9 @@ fn parent_ac_mapping_and_manifest_preserve_unresolved_signoff() {
         "docs/task-80-parent-acceptance-freeze.json"
     );
     assert_eq!(entry["original_ac"], json!([1, 2, 3, 4, 5, 6]));
+    assert_eq!(entry["freeze_version"], 2);
+    assert_eq!(entry["replay_oracles"], 2);
+    assert_eq!(entry["replay_test"], "tests/task_80_parent_replay.rs");
     assert_eq!(entry["mandatory_cases"], json!(mandatory.len()));
     assert_eq!(entry["conditional_cases"], json!(conditional.len()));
     assert_eq!(entry["parent_signed_off"], false);
