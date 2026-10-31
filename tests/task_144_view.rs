@@ -241,8 +241,8 @@ fn view_execution_uncertainty_survives_canonical_wire_emission() {
 
 #[test]
 fn engine_specific_view_creation_options_fail_closed_in_canonical_wire_and_physical_proof() {
-    use sqlparser::parser::Parser;
     use sql_semantic_protocol::to_bundle_json;
+    use sqlparser::parser::Parser;
 
     let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
         "raw".to_string(),
@@ -284,8 +284,7 @@ fn engine_specific_view_creation_options_fail_closed_in_canonical_wire_and_physi
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
         let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(
-            wire["inputs"][0]["statements"][0]["write"]["view_execution_unknown"],
-            true,
+            wire["inputs"][0]["statements"][0]["write"]["view_execution_unknown"], true,
             "{dialect_name}: {definition}"
         );
         let target = bundle.layers().last().unwrap();
