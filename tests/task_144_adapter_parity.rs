@@ -76,20 +76,34 @@ fn exact(
 }
 
 fn compiled(sql: &str, with_source: bool) -> AnalysisBundle {
-    let sources = if with_source {
-        json!({"source.demo.raw": {
-            "unique_id":"source.demo.raw",
-            "resource_type":"source", "relation_name":"raw", "name":"raw",
-            "columns":{"k":{"name":"k","data_type":"INTEGER"}}
-        }})
-    } else {
-        json!({})
-    };
-    let dependencies = if with_source {
-        vec!["source.demo.raw"]
-    } else {
-        Vec::new()
-    };
+    let sources = if with_source { &["raw"][..] } else { &[][..] };
+    compiled_named(sql, sources)
+}
+
+fn compiled_named(sql: &str, names: &[&str]) -> AnalysisBundle {
+    let mut sources = serde_json::Map::new();
+    let mut catalog_sources = serde_json::Map::new();
+    let mut dependencies = Vec::new();
+    for name in names {
+        let id = format!("source.demo.{name}");
+        dependencies.push(id.clone());
+        let mut declared = serde_json::Map::new();
+        let mut introspected = serde_json::Map::new();
+        let columns = if *name == "target" { vec!["k","shifted"] } else { vec!["k"] };
+        for (index, column) in columns.iter().enumerate() {
+            declared.insert((*column).to_string(), json!({"name":column,"data_type":"INTEGER"}));
+            introspected.insert((*column).to_string(), json!({"name":column,"type":"INTEGER","index":index+1}));
+        }
+        sources.insert(id.clone(), json!({
+            "unique_id":id,"resource_type":"source","relation_name":name,
+            "name":name,"columns":declared,
+        }));
+        catalog_sources.insert(id.clone(), json!({
+            "unique_id":id,
+            "metadata":{"type":"BASE TABLE","database":"main","schema":"raw","name":name},
+            "columns":introspected,"stats":{}
+        }));
+    }
     let manifest = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
             "dbt_version":"1.11.8","adapter_type":"duckdb"},
@@ -102,20 +116,10 @@ fn compiled(sql: &str, with_source: bool) -> AnalysisBundle {
         }},
         "sources":sources
     });
-    let columns = if with_source {
-        json!({"source.demo.raw": {
-            "unique_id":"source.demo.raw",
-            "metadata":{"type":"BASE TABLE","database":"main","schema":"raw","name":"raw"},
-            "columns":{"k":{"name":"k","type":"INTEGER","index":1}},
-            "stats":{}
-        }})
-    } else {
-        json!({})
-    };
     let dbt_catalog = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/catalog/v1.json",
             "dbt_version":"1.11.8"},
-        "nodes":{},"sources":columns,"errors":null
+        "nodes":{},"sources":catalog_sources,"errors":null
     });
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let dbt_catalog = parse_dbt_catalog(&dbt_catalog.to_string()).unwrap();
