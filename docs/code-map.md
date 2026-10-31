@@ -1,3 +1,20 @@
+TASK-144 logical view and independently closed CTE acceptance:
+`src/analysis.rs` retains all recognized CREATE VIEW producer layers while
+`src/protocol/writes.rs` exposes `view_execution_unknown` for unverified
+materialization, temporary/session and other DDL clauses. The optional field
+is emitted in `src/emission/statements.rs` and constrained in the active JSON
+schema. `src/physical_realization/view_bags.rs` re-evaluates only a canonical
+one-leaf logical view from the complete original physical bag without
+treating the view as a new controllable source. The shared occurrence-aware
+projection lives in `src/physical_realization/write_states/projection.rs`.
+`tests/task_144_frozen_reads.rs` owns full raw/recursive/bounded typed
+truth; `tests/task_144_shadow_oracles.rs` owns two-leaf shadowing;
+`tests/task_144_dialects.rs` pins parser identities;
+`tests/task_144_adapter_parity.rs` verifies compiled dbt/ODCS semantics;
+`tests/task_144_view.rs` checks native view/full-bag truth and residuals.
+The v1 original freeze is preserved in `docs/task-144-acceptance-freeze-v1.json`;
+the reviewed v2 matrix owns nine explicit cases and 126 dialect cells.
+
 TASK-144 ordered materialized CTE scope proof:
 `src/physical_realization/cte_scripts.rs` composes the existing complete
 ordered write-state interpreter and bounded CTE bag evaluator without an
