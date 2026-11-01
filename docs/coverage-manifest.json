@@ -4,11 +4,12 @@
     "parent": "TASK-82",
     "status": "implementation_ci_pending",
     "freeze": "docs/task-156-acceptance-freeze.json",
-    "freeze_version": 3,
+    "freeze_version": 4,
     "freeze_history": [
       "docs/task-156-acceptance-freeze-v1.json",
       "docs/task-156-acceptance-freeze-v2.json",
-      "docs/task-156-acceptance-freeze-v3.json"
+      "docs/task-156-acceptance-freeze-v3.json",
+      "docs/task-156-acceptance-freeze-v4.json"
     ],
     "fixture_ids": [
       "82-C156-P",
