@@ -4,7 +4,6 @@
 use std::collections::BTreeMap;
 
 use serde_json::Value;
-use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
     dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
@@ -13,6 +12,7 @@ use sql_semantic_protocol::{
     PhysicalWriteState, PhysicalWriteStatePlan, ProtocolStatement, RelationCatalog,
     RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
+use sqlparser::parser::Parser;
 
 const DIALECTS: [&str; 13] = [
     "generic",
