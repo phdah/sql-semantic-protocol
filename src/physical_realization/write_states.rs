@@ -759,6 +759,7 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     }
 }
 
+mod alter_columns;
 mod boolean_checks;
 mod check_comparisons;
 mod constraints;
@@ -770,6 +771,9 @@ mod type_validation;
 mod typed_populations;
 mod typed_values;
 
+pub use alter_columns::{
+    physical_alter_column_snapshot, PhysicalColumnAlterProof, PhysicalColumnAlterStep,
+};
 pub use typed_populations::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
