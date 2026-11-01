@@ -52,7 +52,7 @@ The [active v4 acceptance freeze](../../docs/task-155-acceptance-freeze.json) is
 - **1 exact ordered replay**: ON CONFLICT DO NOTHING then a matched MERGE, preserving the original source and successive complete target states.
 - **52 parser/dialect classifications** across the 13 exposed dialect identities; **39 source-independent SQL/dbt/ODCS proof paths** for 12 cases plus the ordered replay.
 - Full independent DuckDB source, target and FK reference bags, atomic failure observations, per-occurrence TRUE/NOT TRUE partitions and typed nullable interval/domain frequencies.
-- All **9/9** required implementation-head checks passed on `3926cee64d80caffce27468b669e6dac56697ae9`: https://github.com/phdah/sql-semantic-protocol/actions/runs/41331817857
+- All **9/9** required implementation-head checks passed on `6354552649c2ca5fed235493c818afd3d97cb655`: https://github.com/phdah/sql-semantic-protocol/actions/runs/41333806420
 - Matt-style [two-axis Standards/Spec review](https://github.com/phdah/sql-semantic-protocol/pull/176#pullrequestreview-5729364657): zero blocking findings in both axes. It is an **author review**, not a distinct-account independent review. The project owner explicitly instructed completion and signoff in this conversation, so this task records an **owner-directed review exception** rather than falsely claiming distinct-account approval.
 
 **Status: Done** in the implementation PR https://github.com/phdah/sql-semantic-protocol/pull/176; the final metadata-head CI is a remaining PR integration gate and must pass before squash merge. **TASK-82 remains open**, and TASK-156 is blocked until this Done PR merges on `main`. TASK-91/release approval remains separate.
