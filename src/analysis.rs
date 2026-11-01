@@ -250,6 +250,53 @@ fn set_expr_contains_write(expr: &SetExpr) -> bool {
     }
 }
 
+/// Exclude CREATE table dialect/storage/session options from ordinary
+/// physical lifecycle proof. These AST facts cannot be inferred from a
+/// row-preserving SELECT and need independent engine evidence.
+fn create_table_execution_unknown(create_table: &sqlparser::ast::CreateTable) -> bool {
+    create_table.temporary
+        || create_table.external
+        || create_table.transient
+        || create_table.volatile
+        || create_table.iceberg
+        || create_table.global.is_some()
+        || create_table.like.is_some()
+        || create_table.clone.is_some()
+        || !matches!(
+            create_table.hive_distribution,
+            sqlparser::ast::HiveDistributionStyle::NONE
+        )
+        || create_table.hive_formats.is_some()
+        || create_table.file_format.is_some()
+        || create_table.location.is_some()
+        || create_table.without_rowid
+        || create_table.comment.is_some()
+        || create_table.on_commit.is_some()
+        || create_table.on_cluster.is_some()
+        || create_table.primary_key.is_some()
+        || create_table.order_by.is_some()
+        || create_table.partition_by.is_some()
+        || create_table.cluster_by.is_some()
+        || create_table.clustered_by.is_some()
+        || create_table.inherits.is_some()
+        || create_table.strict
+        || create_table.copy_grants
+        || create_table.enable_schema_evolution.is_some()
+        || create_table.change_tracking.is_some()
+        || create_table.data_retention_time_in_days.is_some()
+        || create_table.max_data_extension_time_in_days.is_some()
+        || create_table.default_ddl_collation.is_some()
+        || create_table.with_aggregation_policy.is_some()
+        || create_table.with_row_access_policy.is_some()
+        || create_table.with_tags.is_some()
+        || create_table.base_location.is_some()
+        || create_table.external_volume.is_some()
+        || create_table.catalog.is_some()
+        || create_table.catalog_sync.is_some()
+        || create_table.storage_serialization_policy.is_some()
+        || !matches!(create_table.table_options, sqlparser::ast::CreateTableOptions::None)
+}
+
 fn analyze_statement(
     statement: &SqlStatement,
     metadata: &AnalysisMetadata<'_>,
@@ -280,11 +327,7 @@ fn analyze_statement(
                 } else {
                     WriteDefinitionMode::CreateTable
                 };
-                let uncertain_lifecycle = create_table.temporary
-                    || create_table.transient
-                    || create_table.external
-                    || create_table.like.is_some()
-                    || create_table.clone.is_some();
+                let uncertain_lifecycle = create_table_execution_unknown(create_table);
                 let mut definition = WriteOperation::definition(target.clone(), mode);
                 if uncertain_lifecycle {
                     definition = definition.with_definition_execution_unknown();
@@ -295,11 +338,7 @@ fn analyze_statement(
             }
             None if !create_table.if_not_exists
                 && !create_table.or_replace
-                && !create_table.temporary
-                && !create_table.transient
-                && !create_table.external
-                && create_table.like.is_none()
-                && create_table.clone.is_none()
+                && !create_table_execution_unknown(create_table)
                 && !create_table.columns.is_empty() =>
             {
                 // A schema-only CREATE is an actual producer of an empty
