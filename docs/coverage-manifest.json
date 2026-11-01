@@ -1,4 +1,18 @@
 {
+  "task_155_merge_conflict_acceptance": {
+    "owner": "TASK-155",
+    "parent": "TASK-82",
+    "status": "implementation_in_progress",
+    "freeze": "docs/task-155-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["82-C155-P", "82-C155-N"],
+    "mandatory_cases": 10,
+    "initial_regression_cases": 7,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "ci_verified": false
+  },
   "task_154_unmatched_merge_acceptance": {
     "owner": "TASK-154",
     "parent": "TASK-82",
