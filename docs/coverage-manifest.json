@@ -4,7 +4,7 @@
     "parent": "TASK-82",
     "status": "implementation_matrix_in_review",
     "freeze": "docs/task-155-acceptance-freeze.json",
-    "freeze_version": 3,
+    "freeze_version": 4,
     "fixture_ids": [
       "82-C155-P",
       "82-C155-N"
@@ -27,10 +27,14 @@
     "acceptance_inventory": "tests/task_155_acceptance_inventory.rs",
     "freeze_history": [
       "docs/task-155-acceptance-freeze-v1.json",
-      "docs/task-155-acceptance-freeze-v2.json"
+      "docs/task-155-acceptance-freeze-v2.json",
+      "docs/task-155-acceptance-freeze-v3.json"
     ],
     "mandatory_verified": false,
-    "fk_deferral": "conditional source-independent residual; DuckDB immediate-error oracle is not portable enforcement evidence"
+    "fk_deferral": "conditional source-independent residual; DuckDB immediate-error oracle is not portable enforcement evidence",
+    "ordered_replay_cases": 1,
+    "ordered_replay_oracle": "tests/task_155_merge_conflicts.rs",
+    "ordered_replay_adapter_paths": 3
   },
   "task_154_unmatched_merge_acceptance": {
     "owner": "TASK-154",
