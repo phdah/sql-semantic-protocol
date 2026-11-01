@@ -154,8 +154,8 @@ fn input_errors_use_a_distinct_exit_code() {
 }
 
 #[test]
-fn unsupported_semantics_remain_successful_protocol_output() {
-    let output = run_with_stdin(&[], "CREATE TABLE t (a INT)");
+fn unsupported_conditional_ddl_remains_successful_protocol_output() {
+    let output = run_with_stdin(&[], "CREATE TABLE IF NOT EXISTS t (a INT)");
 
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
