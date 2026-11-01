@@ -22,7 +22,7 @@ pub(super) fn define_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
-) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
+) -> StateResult<(PhysicalWriteState, WriteRowCounts, Vec<Vec<String>>)> {
     let write = query
         .write()
         .ok_or_else(|| residual("missing definition operation"))?;
@@ -67,7 +67,7 @@ pub(super) fn define_rows(
     let projected = if schema_only {
         Vec::new()
     } else {
-        evaluate_simple_select(bundle, query, states)?
+        evaluate_simple_select_with_source_ids(bundle, query, states)?
     };
     let columns = query
         .output()
@@ -87,17 +87,21 @@ pub(super) fn define_rows(
             "definition projection does not determine all target columns",
         ));
     }
-    let rows = projected
-        .into_iter()
-        .map(|values| {
-            if values.len() != columns.len() {
-                return Err(residual("invalid definition projection arity"));
-            }
-            Ok(PhysicalWriteRow {
-                values: columns.iter().cloned().zip(values).collect(),
-            })
-        })
-        .collect::<StateResult<Vec<_>>>()?;
+    let source_name = query.sources().first().map(|source| source.name());
+    let mut rows = Vec::with_capacity(projected.len());
+    let mut definition_source_row_ids = Vec::with_capacity(projected.len());
+    for (ordinal, values) in projected {
+        if values.len() != columns.len() {
+            return Err(residual("invalid definition projection arity"));
+        }
+        let Some(source_name) = source_name else {
+            return Err(residual("definition has no authoritative physical source"));
+        };
+        definition_source_row_ids.push(vec![format!("{source_name}#{ordinal}")]);
+        rows.push(PhysicalWriteRow {
+            values: columns.iter().cloned().zip(values).collect(),
+        });
+    }
     let before_rows = before.map_or(0, |state| state.rows.len());
     let deleted = u64::try_from(before_rows).map_err(|_| residual("replaced table overflow"))?;
     let inserted = u64::try_from(rows.len()).map_err(|_| residual("definition result overflow"))?;
@@ -107,6 +111,7 @@ pub(super) fn define_rows(
             rows,
         },
         WriteRowCounts::new(inserted, 0, deleted),
+        definition_source_row_ids,
     ))
 }
 
