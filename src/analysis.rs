@@ -341,7 +341,6 @@ fn analyze_statement(
             // replacement/alteration, security context and target routing
             // require independent engine evidence even if the SELECT parses.
             let execution_unknown = *or_alter
-                || *materialized
                 || *temporary
                 || *if_not_exists
                 || *with_no_schema_binding
@@ -351,10 +350,11 @@ fn analyze_statement(
                 || to.is_some()
                 || params.is_some();
             let target = name.to_string();
-            let mode = if *or_replace {
-                WriteDefinitionMode::ReplaceView
-            } else {
-                WriteDefinitionMode::CreateView
+            let mode = match (*materialized, *or_replace) {
+                (false, false) => WriteDefinitionMode::CreateView,
+                (false, true) => WriteDefinitionMode::ReplaceView,
+                (true, false) => WriteDefinitionMode::CreateMaterializedView,
+                (true, true) => WriteDefinitionMode::ReplaceMaterializedView,
             };
             ProtocolStatement::Query(
                 analyze_query(query, Some(target.clone()), metadata).with_write(Some(
