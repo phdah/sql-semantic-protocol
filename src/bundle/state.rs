@@ -42,6 +42,19 @@ impl AnalysisBundle {
         &self.source_schemas
     }
 
+    /// Advance the authoritative typed schema after a certified ordered DDL step.
+    /// Only physical evaluation uses this copy; the original input evidence
+    /// remains unchanged and can be audited independently.
+    pub(crate) fn replace_physical_source_schema(&mut self, schema: RelationSchema) {
+        if let Some(current) = self
+            .source_schemas
+            .iter_mut()
+            .find(|entry| entry.relation() == schema.relation())
+        {
+            *current = schema;
+        }
+    }
+
     /// Return canonical relation constraints from SQL and metadata adapters.
     pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
         &self.relation_constraints
