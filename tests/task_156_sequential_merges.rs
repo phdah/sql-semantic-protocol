@@ -408,6 +408,34 @@ fn duplicate_merge_matches_remain_a_typed_residual() {
         ),
         "duplicate source matches cannot select an arbitrary winner: {plan:?}"
     );
+    let step = &case["steps"][0];
+    let db = native(&case);
+    let original_target = state("target", &case["initial"]["target"]);
+    let original_source = state("source", &case["initial"]["source"]);
+    assert_eq!(sorted(&native_state(&db, "target")), sorted(&original_target));
+    assert_eq!(sorted(&native_state(&db, "source")), sorted(&original_source));
+    assert_eq!(
+        native_truth(&db, "target", "source", false),
+        ordinals(&step["on_true_target_ordinals"]),
+    );
+    assert_eq!(
+        native_truth(&db, "target", "source", true),
+        ordinals(&step["on_not_true_target_ordinals"]),
+    );
+    assert_eq!(
+        native_truth(&db, "source", "target", false),
+        ordinals(&step["on_true_source_ordinals"]),
+    );
+    assert_eq!(
+        native_truth(&db, "source", "target", true),
+        ordinals(&step["on_not_true_source_ordinals"]),
+    );
+    // DuckDB's duplicate-match result cannot certify a cross-engine winner law.
+    // If this engine rejects, the full original target/source bags survive.
+    if db.execute_batch(step["sql"].as_str().unwrap()).is_err() {
+        assert_eq!(sorted(&native_state(&db, "target")), sorted(&original_target));
+    }
+    assert_eq!(sorted(&native_state(&db, "source")), sorted(&original_source));
 }
 
 #[test]
