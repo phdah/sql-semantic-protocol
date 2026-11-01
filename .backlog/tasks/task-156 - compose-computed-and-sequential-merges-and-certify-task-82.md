@@ -1,10 +1,10 @@
 ---
 id: TASK-156
 title: Compose computed and sequential MERGEs and certify TASK-82
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
