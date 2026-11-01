@@ -3,7 +3,7 @@
   "owner": "TASK-155",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
-  "status": "complete_finite_acceptance_freeze_v4_pending_full_replay_ci_review",
+  "status": "signed_off_bounded_child_pending_metadata_head_merge_ci",
   "fixture_ids": [
     "82-C155-P",
     "82-C155-N"
@@ -1331,14 +1331,19 @@
   "remaining_mandatory_matrix": [],
   "signoff": {
     "semantic_matrix_complete": true,
-    "adapter_parity_verified": false,
-    "thirteen_dialects_verified": false,
-    "duckdb_full_bag_verified": false,
-    "strict_ci_verified": false,
+    "adapter_parity_verified": true,
+    "thirteen_dialects_verified": true,
+    "duckdb_full_bag_verified": true,
+    "strict_ci_verified": true,
     "independent_review_verified": false,
-    "task_done": false,
+    "task_done": true,
     "parent_done": false,
-    "release_approved": false
+    "release_approved": false,
+    "owner_directed_review_exception": true,
+    "review_url": "https://github.com/phdah/sql-semantic-protocol/pull/176#pullrequestreview-5729364657",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41331817857",
+    "implementation_head_sha": "3926cee64d80caffce27468b669e6dac56697ae9",
+    "final_metadata_head_ci_pending": true
   },
   "previous_snapshot": "docs/task-155-acceptance-freeze-v3.json",
   "dialect_syntax": [

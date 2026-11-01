@@ -986,7 +986,13 @@
           "fixture_ids": [
             "82-C155-P",
             "82-C155-N"
-          ]
+          ],
+          "acceptance_signoff": "verified_bounded_child_owner_directed_review_exception_pending_merge",
+          "signoff_audit": "docs/task-155-acceptance-audit.md",
+          "freeze": "docs/task-155-acceptance-freeze.json",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/176",
+          "verified_semantic_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41331817857",
+          "dependency_gate": "TASK-156 remains blocked until TASK-155 Done PR #176 is squash-merged into main; TASK-82 original criteria remain unsigned"
         },
         {
           "title": "Compose computed and sequential MERGEs and certify TASK-82",

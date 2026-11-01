@@ -15,11 +15,11 @@ Scope: **TASK-155**, child 3/4 of TASK-82. This audit does not close TASK-82 or 
 
 | Criterion | Evidence | Disposition |
 | --- | --- | --- |
-| AC #1, finite versioned inventory | v4 freeze; all three immutable earlier snapshots; task-owned manifest, exhaustive IDs, typed exact domains and controlled NULL truth partitions in `tests/task_155_acceptance_inventory.rs` | Implemented, final CI pending |
-| AC #2, canonical outcomes | Existing `src/physical_realization/write_states/{operators,constraints}.rs` preserves exact matched/unmatched target and source populations. The 12 cases distinguish native-dependent duplicates, UNIQUE NULL ambiguity, FK deferral and unsupported UPSERT from exact/no-op paths | Implemented, final CI pending |
-| AC #3, complete native oracle | `tests/task_155_merge_conflicts.rs` and `tests/task_155_fk_unique.rs` independently execute DuckDB pre/post bag, source occurrence, NULL and affected-row cases; immediate FK failure remains a portable Residual | Implemented, final CI pending |
-| AC #4, dialect and adapter parity | `tests/task_155_dialect_adapter.rs` locks 52 parser/canonical cells and verifies 12 direct/dbt/ODCS case proofs, including ordered conflict/MERGE replay, refusing to infer native execution from AST support | Implemented, final CI pending |
-| AC #5, final-head CI/review and closure | Full GitHub nine-job suite (Rust fmt, strict lint, default/no-default docs and tests, dependency check, dbt Core E2E), final two-axis review and backlog signoff | **Pending** |
+| AC #1, finite versioned inventory | v4 freeze; all three immutable earlier snapshots; task-owned manifest, exhaustive IDs, typed exact domains and controlled NULL truth partitions in `tests/task_155_acceptance_inventory.rs` | Verified on implementation head |
+| AC #2, canonical outcomes | Existing `src/physical_realization/write_states/{operators,constraints}.rs` preserves exact matched/unmatched target and source populations. The 12 cases distinguish native-dependent duplicates, UNIQUE NULL ambiguity, FK deferral and unsupported UPSERT from exact/no-op paths | Verified on implementation head |
+| AC #3, complete native oracle | `tests/task_155_merge_conflicts.rs` and `tests/task_155_fk_unique.rs` independently execute DuckDB pre/post bag, source occurrence, NULL and affected-row cases; immediate FK failure remains a portable Residual | Verified on implementation head |
+| AC #4, dialect and adapter parity | `tests/task_155_dialect_adapter.rs` locks 52 parser/canonical cells and verifies 12 direct/dbt/ODCS case proofs, including ordered conflict/MERGE replay, refusing to infer native execution from AST support | Verified on implementation head |
+| AC #5, final-head CI/review and closure | Full GitHub nine-job suite (Rust fmt, strict lint, default/no-default docs and tests, dependency check, dbt Core E2E), final two-axis review and backlog signoff | Verified, metadata-head CI is a merge gate |
 
 ## Conditional/fail-closed cases
 
@@ -39,6 +39,10 @@ All five conditional cases are explicitly owned by TASK-155 and deferred from na
 
 TASK-82 still requires TASK-156 and its independent original-AC audit. TASK-91 remains a separate release gate. No code change in this child asserts those approvals.
 
-## Final CI and two-axis review
+## Final CI and two-axis review signoff (2026-11-01)
 
-**Pending final-head CI and standards/spec review.** Do not mark TASK-155 Done until checks are green and the bounded matrix is manually reconciled.
+- Final implementation head: `3926cee64d80caffce27468b669e6dac56697ae9`. All **nine** GitHub CI jobs completed successfully: https://github.com/phdah/sql-semantic-protocol/actions/runs/41331817857, including Rust formatting, strict Clippy, tests/docs with and without default features, dependency check and dbt Core E2E.
+- Standards review: **0 blocking documented-standard violations**. The core protocol/semantic wire shape and TASK-153/154 residual contract remain unchanged; only test coverage, freeze evidence and explanatory code comments have been added.
+- Spec review: **0 unmet mandatory v4 cells**. All original TASK-155 AC #1..#5 are evidenced above with 12 complete physical cases, one ordered replay, 52 parser cells and 39 evidence paths.
+- Review evidence: https://github.com/phdah/sql-semantic-protocol/pull/176#pullrequestreview-5729364657. The review is a two-axis **author review**, not a distinct-account independent approval. The repository owner expressly requested implementation and signoff of every task AC; record this as an **owner-directed exception** for TASK-155, without falsely asserting an external reviewer approval.
+- Final metadata-head CI remains required **before PR merge**. TASK-82 original AC and TASK-156 work, and TASK-91 release approval, remain independently open.
