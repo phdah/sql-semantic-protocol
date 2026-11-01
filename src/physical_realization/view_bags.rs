@@ -121,6 +121,17 @@ pub fn physical_finite_view_read_plan(
     initial_states: &[PhysicalWriteState],
     wanted: Option<&BTreeMap<String, LiteralValue>>,
 ) -> PhysicalViewProof {
+    // Unsupported statements have no transformation layer. They must not
+    // disappear from an otherwise matching CREATE VIEW / INSERT / SELECT
+    // program, especially when they control transactions or DDL lifetime.
+    if bundle.inputs().iter().any(|input| {
+        input
+            .statements()
+            .iter()
+            .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_)))
+    }) {
+        return residual("view program contains an unsupported statement or session law");
+    }
     let (definition, mutation, read) =
         match bundle.layers() {
             [definition, read] => (definition, None, read),
