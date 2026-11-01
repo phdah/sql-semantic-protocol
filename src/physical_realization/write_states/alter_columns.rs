@@ -32,13 +32,21 @@ pub enum PhysicalColumnAlterProof {
     Residual {
         /// Missing proof.
         reason: String,
+        /// Attested schema before the unproved operation.
+        before_schema: RelationSchema,
+        /// Intended schema when its typed shape is independently known.
+        attempted_schema: Option<RelationSchema>,
     },
 }
 
-fn classify_failure(error: StateFailure) -> PhysicalColumnAlterProof {
+fn classify_failure(error: StateFailure, schema: &RelationSchema) -> PhysicalColumnAlterProof {
     match error {
         StateFailure::Impossible(reason) => PhysicalColumnAlterProof::Impossible { reason },
-        StateFailure::Residual(_, reason) => PhysicalColumnAlterProof::Residual { reason },
+        StateFailure::Residual(_, reason) => PhysicalColumnAlterProof::Residual {
+            reason,
+            before_schema: schema.clone(),
+            attempted_schema: None,
+        },
     }
 }
 
@@ -63,6 +71,8 @@ pub fn physical_alter_column_snapshot(
     if constraint_inventory.is_none() || constraint_inventory.is_some_and(|sets| !sets.is_empty()) {
         return PhysicalColumnAlterProof::Residual {
             reason: "complete constraint-free ALTER schema attestation is missing".to_string(),
+            before_schema: schema.clone(),
+            attempted_schema: None,
         };
     }
     if state.exact_domains(schema).is_none() {
@@ -78,7 +88,7 @@ pub fn physical_alter_column_snapshot(
                 };
             };
             if let Err(error) = validate_column_value(value, column) {
-                return classify_failure(error);
+                return classify_failure(error, schema);
             }
         }
     }
@@ -98,7 +108,7 @@ pub fn physical_alter_column_snapshot(
                 }
                 let value = default.clone().unwrap_or(LiteralValue::Null);
                 if let Err(error) = validate_column_value(&value, column) {
-                    return classify_failure(error);
+                    return classify_failure(error, schema);
                 }
                 for row in &mut rows {
                     row.values.insert(column.name().to_string(), value.clone());
@@ -115,6 +125,8 @@ pub fn physical_alter_column_snapshot(
                     return PhysicalColumnAlterProof::Residual {
                         reason: "dropping the final column has unproved engine DDL laws"
                             .to_string(),
+                        before_schema: schema.clone(),
+                        attempted_schema: None,
                     };
                 }
                 columns.remove(index);
@@ -160,6 +172,16 @@ pub fn physical_alter_column_snapshot(
                 if columns[index] != *column {
                     return PhysicalColumnAlterProof::Residual {
                         reason: "ALTER TYPE requires independently proved cast/rewrite and comparison laws".to_string(),
+                        before_schema: schema.clone(),
+                        attempted_schema: RelationSchema::new(
+                            schema.relation().to_string(),
+                            columns.iter().enumerate().map(|(i, old)| {
+                                if i == index { column.clone() } else { old.clone() }
+                            }).collect(),
+                        ).ok().map(|next| match schema.source_kind() {
+                            Some(kind) => next.with_source_kind(kind),
+                            None => next,
+                        }),
                     };
                 }
             }
@@ -184,7 +206,7 @@ pub fn physical_alter_column_snapshot(
                 };
             };
             if let Err(error) = validate_column_value(value, column) {
-                return classify_failure(error);
+                return classify_failure(error, schema);
             }
         }
     }
