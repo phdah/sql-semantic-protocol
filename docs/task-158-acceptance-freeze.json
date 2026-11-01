@@ -1,15 +1,15 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-158",
   "parent": "TASK-83",
   "fixture_ids": [
     "83-C158-P",
     "83-C158-N"
   ],
-  "status": "implementation_in_progress",
+  "status": "extended_implementation_pending_independent_verification",
   "frozen_before_semantic_changes": true,
-  "scope": "Column transition proof over complete caller-attested schema and physical row bag. Does not certify the ordered SQL/DDL execution path or vendor casting law.",
-  "seam": "physical_alter_column_snapshot(RelationSchema, PhysicalWriteState, AlterColumnTransition[])",
+  "scope": "Canonical SQL ALTER TABLE column semantics plus conditional ordered complete-bag proof; only proven portable, constraint-free migrations are Exact. Vendor cast, key and session laws stay Residual.",
+  "seam": "WriteOperation::column_alter_steps and physical_ordered_write_state_plan with exact before/after schema plus state",
   "cases": [
     {
       "id": "83-C158-P-add-default",
@@ -41,8 +41,12 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-P-add-null",
@@ -67,8 +71,12 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-P-rename",
@@ -95,8 +103,12 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-P-drop",
@@ -128,8 +140,12 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-N-duplicate",
@@ -144,8 +160,12 @@
         }
       ],
       "expected": "impossible_duplicate_name",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-N-missing",
@@ -160,8 +180,12 @@
         }
       ],
       "expected": "impossible_missing_column",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-N-type",
@@ -178,8 +202,12 @@
       "expected": "residual_cast_rewrite_law",
       "owner": "TASK-158",
       "release_disposition": "pending_review",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     },
     {
       "id": "83-C158-N-key",
@@ -198,18 +226,21 @@
       "expected": "residual_constrained_schema_transition",
       "owner": "TASK-158",
       "release_disposition": "pending_review",
-      "dialect_matrix": "pending",
-      "adapter_matrix": "pending"
+      "dialect_matrix": "unverified",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
     }
   ],
   "unverified_mandatory": [
-    "SQL AST normalization into canonical write graph",
-    "ordered CREATE/INSERT/ALTER/SELECT lifecycle",
-    "complete DuckDB source/terminal execution per case",
+    "CI confirmation of SQL AST normalization and ordered CREATE/INSERT/ALTER lifecycle",
+    "full DuckDB source/intermediate/target execution for every frozen variant",
     "key/FK/default constraints and schema evidence",
-    "13 dialect parser matrix",
-    "dbt and ODCS parity",
-    "final CI and independent code review"
+    "frozen results of all 13 dialect parser cells",
+    "independent dbt and ODCS parity",
+    "final code head nine-job CI and independent review"
   ],
   "original_ac_mapping": {
     "1": [
@@ -237,5 +268,27 @@
     "mandatory_cells_verified": false,
     "ci_verified": false,
     "independent_review": false
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_expected": {},
+  "adapter_evidence": {
+    "direct_sql": "DDL statement and preexisting CREATE TABLE schema carry the lifecycle and typed column declarations",
+    "dbt_compiled": "Compiled SQL, not catalog metadata, owns ALTER statement identity; catalog supplies typed prestate only",
+    "odcs": "Contract schemas can describe prestate typed columns, not ALTER execution order or default/cast vendor laws",
+    "limitation": "Do not claim direct/dbt/ODCS parity until all three independently replay the same canonical states"
   }
 }
