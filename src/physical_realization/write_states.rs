@@ -536,7 +536,9 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         "ALTER TABLE requires a prior complete physical table population",
                     )
                 });
-                let schema = execution_bundle.source_schemas().iter()
+                let schema = execution_bundle
+                    .source_schemas()
+                    .iter()
                     .find(|entry| entry.relation() == target);
                 match (prior, schema) {
                     (Err(error), _) => Err(error),
@@ -549,14 +551,16 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         // attest the absence of declared table constraints.
                         // Catalog/adapter schemas alone do not certify this.
                         let declared_create = bundle.inputs().iter().any(|input| {
-                            input.statements().iter().any(|statement| matches!(statement,
-                                ProtocolStatement::Query(query)
-                                    if query.write().is_some_and(|operation|
-                                        operation.target() == target
-                                            && operation.definition_mode()
-                                                == Some(WriteDefinitionMode::CreateTable)
-                                    )
-                            ))
+                            input.statements().iter().any(|statement| {
+                                matches!(statement,
+                                    ProtocolStatement::Query(query)
+                                        if query.write().is_some_and(|operation|
+                                            operation.target() == target
+                                                && operation.definition_mode()
+                                                    == Some(WriteDefinitionMode::CreateTable)
+                                        )
+                                )
+                            })
                         });
                         let constrained = bundle.relation_constraints().iter().any(|set| {
                             set.relation() == target || set.constraints().iter().any(|constraint| {
@@ -570,27 +574,39 @@ pub fn physical_ordered_write_state_plan_with_identities(
                             None
                         };
                         match alter_columns::physical_alter_column_snapshot(
-                            schema, prior, write.column_alter_steps(), inventory,
+                            schema,
+                            prior,
+                            write.column_alter_steps(),
+                            inventory,
                         ) {
                             PhysicalColumnAlterProof::Exact { schema, state } => {
-                                before_schema = execution_bundle.source_schemas().iter()
-                                    .find(|entry| entry.relation() == target).cloned();
+                                before_schema = execution_bundle
+                                    .source_schemas()
+                                    .iter()
+                                    .find(|entry| entry.relation() == target)
+                                    .cloned();
                                 after_schema = Some(schema);
                                 Ok((state, WriteRowCounts::new(0, 0, 0)))
                             }
-                            PhysicalColumnAlterProof::Impossible { reason } => Err(impossible(reason)),
+                            PhysicalColumnAlterProof::Impossible { reason } => {
+                                Err(impossible(reason))
+                            }
                             PhysicalColumnAlterProof::Residual { reason } => Err(residual_gap(
-                                PhysicalWriteStateGap::UnprovedOperation, reason,
+                                PhysicalWriteStateGap::UnprovedOperation,
+                                reason,
                             )),
                         }
                     }
                 }
             }
-            WriteKind::Definition => define_rows(&execution_bundle, query, &states, target, before.as_ref())
-                .map(|(after, counts, source_row_ids)| {
-                    definition_source_row_ids = source_row_ids;
-                    (after, counts)
-                }),
+            WriteKind::Definition => {
+                define_rows(&execution_bundle, query, &states, target, before.as_ref()).map(
+                    |(after, counts, source_row_ids)| {
+                        definition_source_row_ids = source_row_ids;
+                        (after, counts)
+                    },
+                )
+            }
             WriteKind::Append => append_rows(
                 &execution_bundle,
                 query,
