@@ -47,6 +47,6 @@ Next: [TASK-156](task-156%20-%20compose-computed-and-sequential-merges-and-certi
 ## Implementation increment (2026-11-01)
 
 - Frozen TASK-155 v1 contains seven initial classified complete-bag cases, their typed source/pre/post domains and three explicit missing mandatory FK/nullable-key cells. It is linked from the canonical coverage manifest; no child acceptance criterion is signed off yet.
-- The canonical MERGE physical interpreter now reports repeated source matches as `UnresolvedSourceIdentity`, instead of a generic operation residual. It still never assumes a first/last winner or an engine-native error law.
+- The canonical MERGE physical interpreter retains the established `UnprovedOperation` classification for duplicate matching source identities, with a concrete explanation rather than assuming a first/last winner or an engine-native error law.
 - `tests/task_155_merge_conflicts.rs` exercises exact matched/NULL/DO NOTHING states, source-key and target-key impossibility, ambiguous multiple matches, and unsupported ON CONFLICT DO UPDATE. Independent DuckDB complete-bag comparisons are included for the executable cases.
 - **Not Done.** Remaining: full FK and nullable UNIQUE fixture/oracles, complete 13-dialect and SQL/dbt/ODCS parity, any missing canonical semantics, full CI, independent review and owner signoff. The parent TASK-82 remains open.
