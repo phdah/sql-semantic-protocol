@@ -31,7 +31,7 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     );
     assert_eq!(frozen["remaining_mandatory_matrix"], serde_json::json!([]));
     assert_eq!(record["freeze"], "docs/task-155-acceptance-freeze.json");
-    assert_eq!(record["freeze_version"], 2);
+    assert_eq!(record["freeze_version"], 3);
     assert_eq!(record["parent_signed_off"], false);
     assert_eq!(frozen["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(frozen["dialect_syntax"].as_array().unwrap().len(), 4);
