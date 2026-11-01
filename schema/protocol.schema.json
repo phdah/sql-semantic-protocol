@@ -3018,6 +3018,8 @@
             "replace_table",
             "create_view",
             "replace_view",
+            "create_materialized_view",
+            "replace_materialized_view",
             null
           ]
         },
