@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-154",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
@@ -1667,7 +1667,9 @@
     ],
     "4": [
       "dialect_expected",
-      "SQL/dbt/ODCS typed parity"
+      "SQL/dbt/ODCS typed parity",
+      "vendor_dialect_expected",
+      "ordered_replay SQL/dbt/ODCS metadata parity"
     ],
     "5": [
       "cargo fmt",
@@ -1715,10 +1717,11 @@
     "tests/task_154_merge_unmatched.rs",
     "tests/task_154_dialect_adapter.rs",
     "tests/task_154_acceptance_inventory.rs",
-    "tests/task_154_merge_unmatched.rs::ordered_unmatched_merges_replay_without_invented_intermediate_sources"
+    "tests/task_154_merge_unmatched.rs::ordered_unmatched_merges_replay_without_invented_intermediate_sources",
+    "tests/task_154_dialect_adapter.rs::ordered_replay_has_equivalent_direct_dbt_and_odcs_outcomes"
   ],
-  "previous_snapshot": "docs/task-154-acceptance-freeze-v2.json",
-  "revision_note": "Reviewed v3 adds mandatory sequential three-MERGE replay: newly inserted rows are target rows of later statements but never independent original source rows. v1 and v2 immutable histories retained.",
+  "previous_snapshot": "docs/task-154-acceptance-freeze-v3.json",
+  "revision_note": "Independent standards/spec audit: vendor OUTPUT/RETURNING syntax needs explicit conditional parser boundaries, and 3-step replay needs equivalent SQL/dbt/ODCS metadata proof. Historical v1-v3 frozen inventories remain unchanged.",
   "ordered_replay": {
     "id": "82-C154-P-ordered-replay",
     "proof": "Exact",
@@ -2042,5 +2045,72 @@
         "affected_ordinals": []
       }
     ]
-  }
+  },
+  "vendor_parser_syntax": [
+    "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score) OUTPUT inserted.id",
+    "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED BY SOURCE THEN DELETE RETURNING id"
+  ],
+  "vendor_dialect_expected": {
+    "generic": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mysql": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "postgresql": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "hive": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "sqlite": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "snowflake": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "redshift": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mssql": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "clickhouse": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "bigquery": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "ansi": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "duckdb": [
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "databricks": [
+      "parser_boundary",
+      "parser_boundary"
+    ]
+  },
+  "vendor_dialect_cells_required": 26,
+  "vendor_boundary_disposition": {
+    "owner": "TASK-154",
+    "classification": "parser_boundary_or_canonical_unsupported",
+    "native_execution_claim": "none",
+    "release_disposition": "conditional native vendor execution not certified by parser success"
+  },
+  "adapter_ordered_replay_cases_required": 1,
+  "adapter_parity_cases_required": 13
 }
