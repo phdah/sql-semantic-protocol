@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-153",
   "parent": "TASK-82",
-  "status": "complete_bounded_matrix_pending_final_review_and_ci",
+  "status": "verified_implementation_pending_independent_review",
   "freeze_date": "2026-11-01",
   "fixture_ids": [
     "82-C153-P",
@@ -885,12 +885,16 @@
     "negative_cases": 3,
     "all_mandatory_verified": true,
     "independent_review": false,
-    "ci_verified": false,
+    "ci_verified": true,
     "child_done": false,
     "parent_done": false,
     "dialect_matrix_verified": true,
     "adapter_paths_verified": true,
-    "ordered_replay_verified": false
+    "ordered_replay_verified": true,
+    "ci_implementation_head": "45bc97d816d523ecf2874b0ce6baa7257a50b5bf",
+    "ci_implementation_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41296952911",
+    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/174#pullrequestreview-5727583440",
+    "remaining_gate": "independent reviewer confirmation and final metadata head CI"
   },
   "previous_snapshot": "docs/task-153-acceptance-freeze-v2.json",
   "vendor_parser_syntax": [
