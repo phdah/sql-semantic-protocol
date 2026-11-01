@@ -21,7 +21,9 @@ evaluated at read time with stable occurrence ordinals, rather than inserting
 independent VIEW rows.
 
 A plain CREATE MATERIALIZED VIEW is a different canonical definition mode: it
-captures one complete physical producer bag at creation. Later source INSERTs
+captures one complete physical producer bag at creation. Its ordered physical
+transition retains `definition_source_row_ids()` for every created output row.
+Later source INSERTs
 do not mutate the stored snapshot. DuckDB's CTAS equivalent verifies snapshot
 and duplicate/NULL laws without claiming native MATERIALIZED VIEW syntax.
 Vendor session, refresh, placement, conditional creation and opaque options
