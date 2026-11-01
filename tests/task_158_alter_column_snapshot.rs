@@ -221,9 +221,18 @@ fn data_type_rewrite_and_unattested_constraints_fail_closed() {
             attempted_schema: Some(attempted_schema),
             ..
         } => {
-            assert_eq!(before_schema.columns()[0].data_type(), column("a", "INTEGER").data_type());
-            assert_eq!(attempted_schema.columns()[0].data_type(), column("a", "VARCHAR").data_type());
-            assert_eq!(attempted_schema.source_kind(), Some(SchemaSourceKind::SqlDdl));
+            assert_eq!(
+                before_schema.columns()[0].data_type(),
+                column("a", "INTEGER").data_type()
+            );
+            assert_eq!(
+                attempted_schema.columns()[0].data_type(),
+                column("a", "VARCHAR").data_type()
+            );
+            assert_eq!(
+                attempted_schema.source_kind(),
+                Some(SchemaSourceKind::SqlDdl)
+            );
         }
         other => panic!("unproved SQL cast must preserve typed schemas: {other:?}"),
     }
