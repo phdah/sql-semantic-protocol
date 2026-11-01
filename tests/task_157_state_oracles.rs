@@ -427,9 +427,8 @@ fn frozen_positive_and_not_true_source_identities_match_duckdb_sql_three_valued_
             ("true_ordinals", "IS TRUE"),
             ("not_true_ordinals", "IS NOT TRUE"),
         ] {
-            let query = format!(
-                "SELECT rowid FROM raw WHERE ({predicate}) {truth}{scope} ORDER BY rowid"
-            );
+            let query =
+                format!("SELECT rowid FROM raw WHERE ({predicate}) {truth}{scope} ORDER BY rowid");
             let mut statement = db.prepare(&query).unwrap();
             let actual = statement
                 .query_map([], |row| row.get::<_, i64>(0))
@@ -442,7 +441,10 @@ fn frozen_positive_and_not_true_source_identities_match_duckdb_sql_three_valued_
                 .iter()
                 .map(|value| value.as_i64().unwrap())
                 .collect::<Vec<_>>();
-            assert_eq!(actual, expected, "{id}/{column}: exact source occurrence membership");
+            assert_eq!(
+                actual, expected,
+                "{id}/{column}: exact source occurrence membership"
+            );
         }
     }
 }
