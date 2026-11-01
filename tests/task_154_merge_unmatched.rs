@@ -504,7 +504,7 @@ fn ordered_unmatched_merges_replay_without_invented_intermediate_sources() {
         "pk": false
     }));
 
-    for (index, (step, transition)) in steps.iter().zip(&transitions).enumerate() {
+    for (index, (step, transition)) in steps.iter().zip(transitions).enumerate() {
         let before = state("target", &step["before"]);
         let after = state("target", &step["after"]);
         assert_eq!(
