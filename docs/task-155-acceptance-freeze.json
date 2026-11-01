@@ -1,9 +1,9 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-155",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
-  "status": "freeze_v3_fk_deferral_boundary_explicit_pending_final_oracles",
+  "status": "complete_finite_acceptance_freeze_v4_pending_full_replay_ci_review",
   "fixture_ids": [
     "82-C155-P",
     "82-C155-N"
@@ -1340,7 +1340,7 @@
     "parent_done": false,
     "release_approved": false
   },
-  "previous_snapshot": "docs/task-155-acceptance-freeze-v2.json",
+  "previous_snapshot": "docs/task-155-acceptance-freeze-v3.json",
   "dialect_syntax": [
     {
       "id": "merge-matched",
@@ -1472,5 +1472,109 @@
     "justification": "The current canonical schema proves FK enforcement but not statement-time versus deferred enforcement; follow the TASK-152 deferred-FK law, never promote a DuckDB immediate error to portable Impossible.",
     "owner": "TASK-155",
     "release_disposition": "conditional native immediate execution observed in DuckDB; generic portable FK deferral attestation remains pending TASK-84/87"
+  },
+  "ordered_replay": {
+    "id": "82-C155-P-ordered-conflict-merge",
+    "variant": "same target prestate through source-free INSERT conflict followed by source-backed matched MERGE",
+    "target_pk": true,
+    "target_initial": [
+      {
+        "id": 1,
+        "score": 10
+      },
+      {
+        "id": 2,
+        "score": 20
+      }
+    ],
+    "source": [
+      {
+        "id": 1,
+        "score": 30
+      }
+    ],
+    "steps": [
+      {
+        "sql": "INSERT INTO target (id,score) VALUES (1,99) ON CONFLICT (id) DO NOTHING",
+        "before": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 20
+          }
+        ],
+        "after": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 20
+          }
+        ],
+        "affected": {
+          "inserted": 0,
+          "updated": 0,
+          "deleted": 0
+        },
+        "affected_target_ordinals": []
+      },
+      {
+        "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+        "before": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 20
+          }
+        ],
+        "after": [
+          {
+            "id": 1,
+            "score": 30
+          },
+          {
+            "id": 2,
+            "score": 20
+          }
+        ],
+        "affected": {
+          "inserted": 0,
+          "updated": 1,
+          "deleted": 0
+        },
+        "affected_target_ordinals": [
+          0
+        ]
+      }
+    ],
+    "terminal": [
+      {
+        "id": 1,
+        "score": 30
+      },
+      {
+        "id": 2,
+        "score": 20
+      }
+    ],
+    "native_oracle": "DuckDB complete target/source snapshots after both statements, no source mutation",
+    "adapter_parity": "12 single-case adapter proofs plus one ordered replay across SQL/dbt/ODCS with authoritative target PK",
+    "classification": "Exact",
+    "source_identity": "one complete original source bag, no independent intermediate target rows"
+  },
+  "ordered_replay_cases_required": 1,
+  "adapter_replay_paths_required": 3,
+  "reviewed_scope_extension": {
+    "reason": "TASK-155 AC #2 explicitly requires ordered write/transaction precedence; first v3 matrix omitted a task-owned compositional replay",
+    "owner": "TASK-155",
+    "disposition": "add bounded two-step exact replay with stable pre/post target source and affected occurrence IDs"
   }
 }
