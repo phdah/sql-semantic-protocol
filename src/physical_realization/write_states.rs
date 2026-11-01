@@ -197,6 +197,7 @@ pub struct PhysicalWriteTransition {
     after: PhysicalWriteState,
     affected: WriteRowCounts,
     affected_target_ordinals: Vec<usize>,
+    definition_source_row_ids: Vec<Vec<String>>,
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
     returning_columns: Vec<String>,
@@ -230,6 +231,14 @@ impl PhysicalWriteTransition {
     /// These are prestate identities, never output ordinals.
     pub fn affected_target_ordinals(&self) -> &[usize] {
         &self.affected_target_ordinals
+    }
+
+    /// For CTAS and MATERIALIZED VIEW, the exact source-row occurrence IDs
+    /// corresponding positionally to each produced physical target row.
+    /// A schema-only CREATE has no such identities; these are never invented
+    /// for logical VIEW definitions or DML.
+    pub fn definition_source_row_ids(&self) -> &[Vec<String>] {
+        &self.definition_source_row_ids
     }
 
     /// Complete local CTE materializations used for this write, never caller-supplied
@@ -503,8 +512,16 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut intermediate_states = Vec::new();
         let mut mutation_returning_rows = Vec::new();
         let mut affected_target_ordinals = Vec::new();
+        let mut definition_source_row_ids = Vec::new();
         let result = match kind {
-            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
+            WriteKind::Definition => {
+                define_rows(bundle, query, &states, target, before.as_ref()).map(
+                    |(after, counts, source_row_ids)| {
+                        definition_source_row_ids = source_row_ids;
+                        (after, counts)
+                    },
+                )
+            },
             WriteKind::Append => append_rows(
                 bundle,
                 query,
@@ -629,6 +646,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             after,
             affected: counts,
             affected_target_ordinals,
+            definition_source_row_ids,
             intermediate_states,
             returning,
             returning_columns: write.returning_columns().to_vec(),
