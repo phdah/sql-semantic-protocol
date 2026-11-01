@@ -19,8 +19,7 @@ fn frozen() -> Value {
 
 fn evidence() -> Vec<ConstraintEvidence> {
     vec![ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-155-fk")
-            .unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-155-fk").unwrap(),
         ConstraintEnforcement::Enforced,
     )]
 }
@@ -127,11 +126,7 @@ fn sorted(state: &PhysicalWriteState) -> Vec<String> {
     values
 }
 
-fn assert_typed_domains(
-    state: &PhysicalWriteState,
-    relation: &RelationSchema,
-    expected: &Value,
-) {
+fn assert_typed_domains(state: &PhysicalWriteState, relation: &RelationSchema, expected: &Value) {
     for domain in state.exact_domains(relation).unwrap() {
         let want = &expected[domain.column()];
         assert_eq!(want["type"], "INTEGER");
@@ -189,8 +184,11 @@ fn native(case: &Value) -> Connection {
     .unwrap();
     if case["parent"].is_array() {
         for row in case["parent"].as_array().unwrap() {
-            db.execute("INSERT INTO parent VALUES (?1)", params![row["id"].as_i64()])
-                .unwrap();
+            db.execute(
+                "INSERT INTO parent VALUES (?1)",
+                params![row["id"].as_i64()],
+            )
+            .unwrap();
         }
     }
     for row in case["target_before"].as_array().unwrap() {
@@ -211,7 +209,11 @@ fn native(case: &Value) -> Connection {
 }
 
 fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
-    let columns = if relation == "parent" { "id" } else { "id,score" };
+    let columns = if relation == "parent" {
+        "id"
+    } else {
+        "id,score"
+    };
     let mut stmt = db
         .prepare(&format!("SELECT {columns} FROM {relation}"))
         .unwrap();
