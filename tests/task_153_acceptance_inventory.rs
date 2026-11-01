@@ -97,7 +97,7 @@ fn stable_frozen_variants_prove_every_original_child_and_parent_ac() {
     assert_eq!(replay["fixture_id"], "82-C153-P");
     assert_eq!(replay["proof"], "Exact");
     assert_eq!(replay["steps"].as_array().unwrap().len(), 3);
-    assert_eq!(replay["source_domains"].is_object(), true);
+    assert!(replay["source_domains"].is_object());
     for step in replay["steps"].as_array().unwrap() {
         assert!(step["before"].is_array());
         assert!(step["after"].is_array());
@@ -106,14 +106,19 @@ fn stable_frozen_variants_prove_every_original_child_and_parent_ac() {
         assert!(step["affected_ordinals"].is_array());
     }
     for index in 1..3 {
-        assert_eq!(replay["steps"][index]["before"], replay["steps"][index - 1]["after"]);
+        assert_eq!(
+            replay["steps"][index]["before"],
+            replay["steps"][index - 1]["after"]
+        );
     }
     assert_eq!(replay["terminal"], replay["steps"][2]["after"]);
 
     let crosswalk = freeze["acceptance_map"].as_object().unwrap();
     assert_eq!(crosswalk.len(), 5);
     for ac in ["1", "2", "3", "4", "5"] {
-        assert!(crosswalk[ac].as_array().is_some_and(|parts| !parts.is_empty()));
+        assert!(crosswalk[ac]
+            .as_array()
+            .is_some_and(|parts| !parts.is_empty()));
     }
 }
 
@@ -142,7 +147,10 @@ fn parser_and_conditional_cells_are_complete_without_false_native_certification(
     }
     assert_eq!((exact, boundary), (39, 26));
     assert_eq!(freeze["dialect_evidence"]["canonical_cells"], 39);
-    assert_eq!(freeze["dialect_evidence"]["conditional_parser_boundaries"], 26);
+    assert_eq!(
+        freeze["dialect_evidence"]["conditional_parser_boundaries"],
+        26
+    );
     assert_eq!(values(&freeze["adapters"]).len(), 3);
     assert_eq!(freeze["vendor_boundaries"].as_array().unwrap().len(), 2);
     for boundary in freeze["vendor_boundaries"].as_array().unwrap() {
