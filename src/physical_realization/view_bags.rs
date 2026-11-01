@@ -19,7 +19,7 @@ use super::write_states::{
 pub struct PhysicalViewExact {
     /// Name of the SQL logical view, never an independent physical source.
     pub view_name: String,
-    /// Complete original physical source rows.
+    /// Complete physical source bag at read time, after an optional attested append.
     pub source_bag: Vec<PhysicalProducerRow>,
     /// Re-evaluated view rows, retaining physical input occurrence identities.
     pub view_bag: Vec<PhysicalProducerRow>,
