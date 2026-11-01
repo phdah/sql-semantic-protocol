@@ -143,7 +143,7 @@ fn native(case: &Value, materialized_emulated: bool) -> Connection {
 }
 
 fn native_bag(db: &Connection, target: &str) -> Vec<Option<i64>> {
-    assert!(["empty_stage", "copy_stage", "stage.copy_stage", "view_stage", "snap_stage"].contains(&target));
+    assert!(["empty_stage", "copy_stage", "stage.copy_stage", "view_stage", "snap_stage", "raw"].contains(&target));
     let mut statement = db.prepare(&format!("SELECT k FROM {target}")).unwrap();
     let mut result = statement.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
         .map(Result::unwrap).collect::<Vec<_>>();
