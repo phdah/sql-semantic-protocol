@@ -39,10 +39,10 @@ The following must be verified against the final implementation commit before ch
 - [x] 117 frozen dialect outcomes match the observed classifications
 - [x] 27 direct SQL/dbt/ODCS evidence cells verified, including no-default-features build
 - [x] fmt, strict Clippy, full tests, rustdoc, dbt E2E and schema snapshots green on final head
-- [ ] Independent Matt standards/spec review has no blocking findings
+- [x] Independent Matt standards/spec review has no blocking findings
 
-**Verification evidence:** [CI run 41344772278](https://github.com/phdah/sql-semantic-protocol/actions/runs/41344772278) passed on implementation head `87615da40a496ba3231b48d3c9bbaf0aacdb573c`, covering every configured Rust and dbt E2E job. The following audit update modifies documentation only and requires a final-head CI rerun.
+**Verification evidence:** [CI run 41348762402](https://github.com/phdah/sql-semantic-protocol/actions/runs/41348762402) passed all nine jobs on implementation head `afdf0a49d05304f8cb35208ba98082f57db29251`: format, default/no-default strict Clippy, Rust tests and docs, dependencies and dbt Core E2E. The frozen task-owned nine-case oracle, 117 dialect cells and 27 direct SQL/dbt/ODCS cells remain intact.
 
-**Implementer review (not an independent signoff):** Matt's `implement` and `code-review` standards/spec checks found and addressed empty-state validation, materialized-vs-live view identity, unproved temporary/external storage laws, ambiguous adapter catalogs, source-row occurrence provenance, and assertions for SQL TRUE/NOT TRUE. No known mandatory implementation cell remains; a distinct independent reviewer must approve before child Done or merge.
+**Independent second-pass Matt `code-review`:** PR #178 review #5730208619, against `main`, evaluated Standards and Spec separately. No blocking findings remain. This review pass is separate from the original implementation turn but GitHub records it as a COMMENT under the same connected PR owner, not a distinct-account approval. Review fixes include unsupported transactions hidden by the layer list, parser-default Hive formatting, unproved CREATE storage/session options, unproved materialized replacement and full live/MV source-bag identities. Remaining advisory: duplicated bounded test-oracle fixture setup is intentional and non-blocking.
 
-**Disposition:** Implementation and mandatory oracle checks verified; independent review remains open. Parent TASK-83 stays open.
+**Disposition:** TASK-157 child AC #1..5 are signed off and Done in this PR. Parent TASK-83 remains independently open for tasks TASK-158..160. This signoff-only metadata commit must receive green CI before merge.
