@@ -35,11 +35,7 @@ fn row(values: &Value) -> PhysicalWriteRow {
 }
 
 fn state(relation: &str, rows: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        relation,
-        rows.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(relation, rows.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn all_initial(case: &Value) -> Vec<PhysicalWriteState> {
@@ -133,10 +129,7 @@ fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
         .unwrap();
     let rows = statement
         .query_map([], |row| {
-            Ok((
-                row.get::<_, Option<i64>>(0)?,
-                row.get::<_, Option<i64>>(1)?,
-            ))
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?))
         })
         .unwrap()
         .map(Result::unwrap)
@@ -217,9 +210,18 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
             .collect::<Vec<_>>();
         assert_eq!(numbers.iter().min().copied(), column["lower"].as_i64());
         assert_eq!(numbers.iter().max().copied(), column["upper"].as_i64());
-        assert_eq!(actual.contains_key("NULL"), column["nullable"].as_bool().unwrap());
-        assert_eq!(!numbers.is_empty(), column["lower_inclusive"].as_bool().unwrap());
-        assert_eq!(!numbers.is_empty(), column["upper_inclusive"].as_bool().unwrap());
+        assert_eq!(
+            actual.contains_key("NULL"),
+            column["nullable"].as_bool().unwrap()
+        );
+        assert_eq!(
+            !numbers.is_empty(),
+            column["lower_inclusive"].as_bool().unwrap()
+        );
+        assert_eq!(
+            !numbers.is_empty(),
+            column["upper_inclusive"].as_bool().unwrap()
+        );
         assert_eq!(column["type"], "INTEGER");
     }
 }
@@ -265,7 +267,11 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
                 .iter()
                 .find(|schema| schema.relation() == source)
                 .unwrap();
-            assert_eq!(sorted(transition.before()), sorted(&before), "{id}: prestate");
+            assert_eq!(
+                sorted(transition.before()),
+                sorted(&before),
+                "{id}: prestate"
+            );
             assert_eq!(sorted(&native_state(&db, target)), sorted(&before));
             assert_domains(transition.before(), schema, &step["before_domains"]);
             assert_eq!(
@@ -275,7 +281,10 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
             );
             assert_eq!(
                 native_state(&db, source).exact_domains(source_schema),
-                expected_states.get(source).unwrap().exact_domains(source_schema)
+                expected_states
+                    .get(source)
+                    .unwrap()
+                    .exact_domains(source_schema)
             );
             assert_eq!(
                 native_truth(&db, target, source, false),
@@ -305,10 +314,18 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
                 step["affected"]["deleted"].as_u64().unwrap()
             );
             assert!(transition.intermediate_states().is_empty());
-            assert_eq!(sorted(transition.after()), sorted(&after), "{id}: poststate");
+            assert_eq!(
+                sorted(transition.after()),
+                sorted(&after),
+                "{id}: poststate"
+            );
             assert_domains(transition.after(), schema, &step["after_domains"]);
             db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
-            assert_eq!(sorted(&native_state(&db, target)), sorted(&after), "{id}: native after");
+            assert_eq!(
+                sorted(&native_state(&db, target)),
+                sorted(&after),
+                "{id}: native after"
+            );
             assert_domains(&native_state(&db, target), schema, &step["after_domains"]);
             expected_states.insert(target.to_owned(), after);
         }
@@ -322,7 +339,11 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
                 .iter()
                 .find(|schema| schema.relation() == relation)
                 .unwrap();
-            assert_eq!(sorted(actual), sorted(&state(relation, expected)), "{id}: terminal bag");
+            assert_eq!(
+                sorted(actual),
+                sorted(&state(relation, expected)),
+                "{id}: terminal bag"
+            );
             assert_eq!(sorted(&native_state(&db, relation)), sorted(actual));
             assert_domains(actual, schema, &case["final_domains"][relation]);
         }
