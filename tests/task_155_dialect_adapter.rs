@@ -15,8 +15,19 @@ use sql_semantic_protocol::{
 use sqlparser::parser::Parser;
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 const TARGET: &str = "warehouse.analytics.stg_orders";
 const SOURCE: &str = "warehouse.raw.orders";
@@ -36,12 +47,22 @@ fn classify(dialect: &str, sql: &str, kind: &str) -> &'static str {
     match parsed.inputs()[0].statements().first().unwrap() {
         ProtocolStatement::Unsupported(_) => "canonical_unsupported",
         ProtocolStatement::Query(q) => match q.write() {
-            Some(write) if kind == "merge" && write.kind() == WriteKind::ConditionalMutation
-                && write.match_condition().is_some()
-                && q.sources().len() == 1
-                && !write.merge_clauses().is_empty() => "parsed_canonical",
-            Some(write) if kind == "conflict-ignore" && write.kind() == WriteKind::Append
-                && write.insert_conflict().is_some() => "parsed_canonical",
+            Some(write)
+                if kind == "merge"
+                    && write.kind() == WriteKind::ConditionalMutation
+                    && write.match_condition().is_some()
+                    && q.sources().len() == 1
+                    && !write.merge_clauses().is_empty() =>
+            {
+                "parsed_canonical"
+            }
+            Some(write)
+                if kind == "conflict-ignore"
+                    && write.kind() == WriteKind::Append
+                    && write.insert_conflict().is_some() =>
+            {
+                "parsed_canonical"
+            }
             _ => "canonical_unsupported",
         },
         _ => "canonical_unsupported",
@@ -68,9 +89,18 @@ fn all_thirteen_dialects_have_explicit_parser_and_upsert_law_boundaries() {
             })
             .collect::<Vec<_>>();
         assert_eq!(cases.len(), 4);
-        assert_eq!(cases[0], "parsed_canonical", "{dialect}: shared MATCHED MERGE");
-        assert_eq!(cases[1], "parsed_canonical", "{dialect}: shared INSERT MERGE");
-        assert_ne!(cases[3], "parsed_canonical", "{dialect}: DO UPDATE must fail closed");
+        assert_eq!(
+            cases[0], "parsed_canonical",
+            "{dialect}: shared MATCHED MERGE"
+        );
+        assert_eq!(
+            cases[1], "parsed_canonical",
+            "{dialect}: shared INSERT MERGE"
+        );
+        assert_ne!(
+            cases[3], "parsed_canonical",
+            "{dialect}: DO UPDATE must fail closed"
+        );
         actual.insert(dialect.to_string(), cases);
     }
     assert_eq!(matrix["dialect_cells_required"], 52);
@@ -189,12 +219,16 @@ fn state(relation: &str, value: &Value) -> PhysicalWriteState {
             let values = columns
                 .iter()
                 .map(|column| {
-                    let source_name = if *column == "amount" { "score" } else { *column };
+                    let source_name = if *column == "amount" {
+                        "score"
+                    } else {
+                        *column
+                    };
                     (
                         (*column).to_string(),
-                        item[source_name].as_i64().map_or(LiteralValue::Null, |n| {
-                            LiteralValue::Number(n.to_string())
-                        }),
+                        item[source_name]
+                            .as_i64()
+                            .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
                     )
                 })
                 .collect::<BTreeMap<_, _>>();
@@ -297,11 +331,13 @@ fn every_frozen_case_has_identical_direct_dbt_and_odcs_proof_strength() {
             }
             "Impossible" => assert!(
                 matches!(direct, PhysicalWriteStatePlan::Impossible { .. }),
-                "{}: expected enforced contradiction", case["id"]
+                "{}: expected enforced contradiction",
+                case["id"]
             ),
             "Residual" => assert!(
                 matches!(direct, PhysicalWriteStatePlan::Residual { .. }),
-                "{}: expected explicit conditional boundary", case["id"]
+                "{}: expected explicit conditional boundary",
+                case["id"]
             ),
             other => panic!("unreviewed adapter classification: {other}"),
         }
