@@ -194,12 +194,17 @@ fn domains(state: &PhysicalWriteState, expected: &Value, schema: &RelationSchema
     }
 }
 
-fn on_ordinals(db: &Connection, not_true: bool) -> Vec<usize> {
+fn on_ordinals(db: &Connection, relation: &str, not_true: bool) -> Vec<usize> {
+    let opposite = if relation == "target" {
+        "source"
+    } else {
+        "target"
+    };
     let predicate = if not_true { "NOT EXISTS" } else { "EXISTS" };
     let query = format!(
         "SELECT ordinal FROM (
-           SELECT row_number() OVER (ORDER BY rowid)-1 AS ordinal, id FROM target
-         ) AS t WHERE {predicate} (SELECT 1 FROM source s WHERE t.id=s.id)
+           SELECT row_number() OVER (ORDER BY rowid)-1 AS ordinal, id FROM {relation}
+         ) AS t WHERE {predicate} (SELECT 1 FROM {opposite} s WHERE t.id=s.id)
          ORDER BY ordinal"
     );
     let mut stmt = db.prepare(&query).unwrap();
@@ -296,14 +301,24 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                 if case["sql"].as_str().unwrap().starts_with("MERGE") {
                     assert_eq!(
-                        on_ordinals(&db, false),
+                        on_ordinals(&db, "target", false),
                         ordinals(&case["on_true_target_ordinals"]),
                         "{id}: independent ON TRUE"
                     );
                     assert_eq!(
-                        on_ordinals(&db, true),
+                        on_ordinals(&db, "target", true),
                         ordinals(&case["on_not_true_target_ordinals"]),
                         "{id}: independent ON NOT TRUE"
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", false),
+                        ordinals(&case["on_true_source_ordinals"]),
+                        "{id}: independent source ON TRUE"
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", true),
+                        ordinals(&case["on_not_true_source_ordinals"]),
+                        "{id}: independent source ON NOT TRUE"
                     );
                 }
                 db.execute_batch(case["sql"].as_str().unwrap()).unwrap();
@@ -320,6 +335,22 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                     assert!(native(case).is_err(), "{id}: invalid closed source bag");
                 } else {
                     let db = native(case).unwrap();
+                    assert_eq!(
+                        on_ordinals(&db, "target", false),
+                        ordinals(&case["on_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "target", true),
+                        ordinals(&case["on_not_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", false),
+                        ordinals(&case["on_true_source_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", true),
+                        ordinals(&case["on_not_true_source_ordinals"])
+                    );
                     assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err());
                     assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
                     assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
@@ -335,12 +366,20 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                     assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
                     assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                     assert_eq!(
-                        on_ordinals(&db, false),
+                        on_ordinals(&db, "target", false),
                         ordinals(&case["on_true_target_ordinals"])
                     );
                     assert_eq!(
-                        on_ordinals(&db, true),
+                        on_ordinals(&db, "target", true),
                         ordinals(&case["on_not_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", false),
+                        ordinals(&case["on_true_source_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, "source", true),
+                        ordinals(&case["on_not_true_source_ordinals"])
                     );
                     let result = db.execute_batch(case["sql"].as_str().unwrap());
                     let after = native_state(&db, "target");
