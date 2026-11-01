@@ -146,6 +146,17 @@ fn initial(case: &Value) -> Vec<PhysicalWriteState> {
         .collect()
 }
 
+fn scoped_catalog(case: &Value, evidence: &RelationCatalog) -> RelationCatalog {
+    let target = case["target"].as_str().unwrap();
+    let schemas = evidence
+        .schemas()
+        .iter()
+        .filter(|schema| schema.relation() == "raw" || schema.relation() == target)
+        .cloned()
+        .collect::<Vec<_>>();
+    RelationCatalog::from_schemas(&schemas).unwrap()
+}
+
 fn outcome(case: &Value, catalog: &RelationCatalog) -> String {
     let analyzed = bundle(case, catalog);
     let initial = initial(case);
