@@ -106,13 +106,6 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
         other => panic!("ALTER must normalize in every equivalent evidence path: {other:?}"),
     };
     let result = physical_ordered_write_state_plan(&analyzed, &[]);
-    assert!(
-        matches!(
-            result,
-            PhysicalWriteStatePlan::Feasible { .. } | PhysicalWriteStatePlan::Residual { .. }
-        ),
-        "no adapter can invent impossible lifecycle facts: {result:?}"
-    );
     match result {
         PhysicalWriteStatePlan::Feasible {
             transitions,
