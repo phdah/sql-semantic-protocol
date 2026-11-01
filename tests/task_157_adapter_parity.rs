@@ -198,8 +198,8 @@ fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_dbt_schema() {
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
         assert_eq!(
-            outcome(case, &direct),
-            outcome(case, &dbt),
+            outcome(case, &scoped_catalog(case, &direct)),
+            outcome(case, &scoped_catalog(case, &dbt)),
             "{id}: compiled dbt catalog parity"
         );
     }
@@ -214,8 +214,8 @@ fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_odcs_schema() {
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
         assert_eq!(
-            outcome(case, &direct),
-            outcome(case, &odcs),
+            outcome(case, &scoped_catalog(case, &direct)),
+            outcome(case, &scoped_catalog(case, &odcs)),
             "{id}: ODCS canonical schema parity"
         );
     }
