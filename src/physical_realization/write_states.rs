@@ -591,7 +591,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                             PhysicalColumnAlterProof::Impossible { reason } => {
                                 Err(impossible(reason))
                             }
-                            PhysicalColumnAlterProof::Residual { reason } => Err(residual_gap(
+                            PhysicalColumnAlterProof::Residual { reason, .. } => Err(residual_gap(
                                 PhysicalWriteStateGap::UnprovedOperation,
                                 reason,
                             )),
