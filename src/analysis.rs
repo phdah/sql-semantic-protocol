@@ -266,7 +266,12 @@ fn create_table_execution_unknown(create_table: &sqlparser::ast::CreateTable) ->
             create_table.hive_distribution,
             sqlparser::ast::HiveDistributionStyle::NONE
         )
-        || create_table.hive_formats.is_some()
+        || create_table.hive_formats.as_ref().is_some_and(|format| {
+            format.row_format.is_some()
+                || format.serde_properties.is_some()
+                || format.storage.is_some()
+                || format.location.is_some()
+        })
         || create_table.file_format.is_some()
         || create_table.location.is_some()
         || create_table.without_rowid
