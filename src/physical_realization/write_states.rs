@@ -645,12 +645,48 @@ fn validate_ordered_constraints(
     states: &BTreeMap<String, PhysicalWriteState>,
     identities: &BTreeSet<(String, String)>,
 ) -> StateResult<()> {
+    // A declared table which has not been created yet has no physical rows.
+    // Supply an empty validation-only bag for that future CREATE, never as
+    // an input or as a state that an earlier statement can read or mutate.
+    // Other omitted constrained/FK source populations remain errors.
+    let mut checked = states.clone();
+    for input in bundle.inputs() {
+        for statement in input.statements() {
+            let ProtocolStatement::Query(query) = statement else {
+                continue;
+            };
+            let Some(write) = query.write() else {
+                continue;
+            };
+            if write.definition_mode() != Some(crate::protocol::WriteDefinitionMode::CreateTable)
+                || checked.contains_key(write.target())
+            {
+                continue;
+            }
+            let Some(schema) = bundle
+                .source_schemas()
+                .iter()
+                .find(|schema| schema.relation() == write.target())
+            else {
+                continue;
+            };
+            if !schema.columns().is_empty() {
+                checked.insert(
+                    write.target().to_string(),
+                    PhysicalWriteState {
+                        relation: write.target().to_string(),
+                        rows: Vec::new(),
+                    },
+                );
+            }
+        }
+    }
     if identities.is_empty() {
-        constraints::validate_all_constraints(bundle, states)
+        constraints::validate_all_constraints(bundle, &checked)
     } else {
         constraints::validate_all_constraints_with_identity(
             bundle,
-            states,
+            &checked,
             &BTreeSet::new(),
             identities,
         )
