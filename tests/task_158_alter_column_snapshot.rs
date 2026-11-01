@@ -215,10 +215,18 @@ fn data_type_rewrite_and_unattested_constraints_fail_closed() {
         column: column("a", "VARCHAR"),
     };
     let result = physical_alter_column_snapshot(&old_schema, &initial, &[operation], Some(&[]));
-    assert!(
-        matches!(result, PhysicalColumnAlterProof::Residual { .. }),
-        "{result:?}"
-    );
+    match result {
+        PhysicalColumnAlterProof::Residual {
+            before_schema,
+            attempted_schema: Some(attempted_schema),
+            ..
+        } => {
+            assert_eq!(before_schema.columns()[0].data_type(), column("a", "INTEGER").data_type());
+            assert_eq!(attempted_schema.columns()[0].data_type(), column("a", "VARCHAR").data_type());
+            assert_eq!(attempted_schema.source_kind(), Some(SchemaSourceKind::SqlDdl));
+        }
+        other => panic!("unproved SQL cast must preserve typed schemas: {other:?}"),
+    }
 
     let add = PhysicalColumnAlterStep::Add {
         column: column("b", "INTEGER"),
