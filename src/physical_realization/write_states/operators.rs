@@ -27,9 +27,9 @@ pub(super) fn define_rows(
         .write()
         .ok_or_else(|| residual("missing definition operation"))?;
     match write.definition_mode() {
-        Some(
-            WriteDefinitionMode::CreateTable | WriteDefinitionMode::CreateMaterializedView,
-        ) if before.is_some() => {
+        Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::CreateMaterializedView)
+            if before.is_some() =>
+        {
             return Err(impossible(
                 "CREATE TABLE conflicts with a prior physical target",
             ));
@@ -41,7 +41,9 @@ pub(super) fn define_rows(
             | WriteDefinitionMode::ReplaceMaterializedView,
         ) => {
             if write.view_execution_unknown() {
-                return Err(residual("materialized view options require engine/session evidence"));
+                return Err(residual(
+                    "materialized view options require engine/session evidence",
+                ));
             }
         }
         Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
