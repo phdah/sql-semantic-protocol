@@ -252,7 +252,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     for case in frozen["cases"].as_array().unwrap() {
         if case["classification"] != "Exact" {
             continue;
