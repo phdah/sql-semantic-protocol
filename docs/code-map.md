@@ -1,3 +1,5 @@
+TASK-154 unmatched MERGE branches: the canonical `src/physical_realization/write_states/operators.rs::merge_rows` evaluates target-only BY SOURCE UPDATE/DELETE and source-only BY TARGET INSERT against one complete physical preimage without introducing independent source rows. `tests/task_154_merge_unmatched.rs` owns the 12-case native DuckDB full-bag and dual ON TRUE/NOT TRUE evidence; `tests/task_154_dialect_adapter.rs` owns 65 parser cells and direct/dbt/ODCS parity; `tests/task_154_acceptance_inventory.rs` guards the active v2 matrix and manifest. Historical v1 is retained. TASK-82 parent remains independent.
+
 TASK-144 logical view and independently closed CTE acceptance:
 `src/analysis.rs` retains all recognized CREATE VIEW producer layers while
 `src/protocol/writes.rs` exposes `view_execution_unknown` for unverified
