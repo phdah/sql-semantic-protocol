@@ -39,7 +39,10 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     assert_eq!(frozen["adapter_cases_required"], 12);
     assert_eq!(frozen["ordered_replay_cases_required"], 1);
     assert_eq!(frozen["adapter_replay_paths_required"], 3);
-    assert_eq!(frozen["ordered_replay"]["steps"].as_array().unwrap().len(), 2);
+    assert_eq!(
+        frozen["ordered_replay"]["steps"].as_array().unwrap().len(),
+        2
+    );
     assert_eq!(frozen["adapter_paths_required"], 3);
     assert_eq!(frozen["evidence_sources"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["required_ci"].as_array().unwrap().len(), 8);
