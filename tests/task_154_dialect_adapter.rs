@@ -359,7 +359,7 @@ fn ordered_replay_plan(replay: &Value, catalog: &RelationCatalog) -> PhysicalWri
         .collect::<Vec<_>>();
     let sql_inputs = sql_texts
         .iter()
-        .map(|sql| SqlInput::inline(sql))
+        .map(SqlInput::inline)
         .collect::<Vec<_>>();
     let ids = (0..sql_inputs.len())
         .map(|index| format!("task154-parity-step-{index}"))
