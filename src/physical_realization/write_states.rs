@@ -514,14 +514,11 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut affected_target_ordinals = Vec::new();
         let mut definition_source_row_ids = Vec::new();
         let result = match kind {
-            WriteKind::Definition => {
-                define_rows(bundle, query, &states, target, before.as_ref()).map(
-                    |(after, counts, source_row_ids)| {
-                        definition_source_row_ids = source_row_ids;
-                        (after, counts)
-                    },
-                )
-            },
+            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref())
+                .map(|(after, counts, source_row_ids)| {
+                    definition_source_row_ids = source_row_ids;
+                    (after, counts)
+                }),
             WriteKind::Append => append_rows(
                 bundle,
                 query,
