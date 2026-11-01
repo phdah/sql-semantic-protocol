@@ -1,10 +1,10 @@
 ---
 id: TASK-153
 title: Prove ordered MERGE matched UPDATE DELETE actions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
@@ -50,3 +50,7 @@ type: feature
 ## Sequencing
 
 Next: [TASK-154](task-154%20-%20prove-unmatched-insert-and-by-source-branches.md) after this child is merged.
+
+## Implementation progress (2026-11-01)
+
+Frozen v1 task matrix linked from the coverage manifest before semantics changes. Matched branch UPDATE/DELETE now records exact prestate target occurrence ordinals; an independent DuckDB full-bag oracle covers ordered predicates, NULLs and unsafe matches. This child remains In Progress until complete adapter/dialect matrix, CI and independent signoff are verified. TASK-82 remains open.
