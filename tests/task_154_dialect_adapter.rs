@@ -36,7 +36,23 @@ fn frozen() -> Value {
     serde_json::from_str(include_str!("../docs/task-154-acceptance-freeze.json")).unwrap()
 }
 
-fn classify(dialect: &str, statement: &str) -> &'static str {
+const SHARED_MATCH_KINDS: [&[MergeMatchKind]; 5] = [
+    &[MergeMatchKind::NotMatched],
+    &[MergeMatchKind::NotMatchedByTarget],
+    &[MergeMatchKind::NotMatchedBySource],
+    &[MergeMatchKind::NotMatchedBySource],
+    &[
+        MergeMatchKind::Matched,
+        MergeMatchKind::NotMatchedByTarget,
+        MergeMatchKind::NotMatchedBySource,
+    ],
+];
+
+fn classify(
+    dialect: &str,
+    statement: &str,
+    expected_kinds: Option<&[MergeMatchKind]>,
+) -> &'static str {
     let parser = dialect_from_name(dialect).expect("advertised dialect");
     let Ok(bundle) = analyze_inputs(&[SqlInput::inline(statement)], dialect, parser.as_ref())
     else {
@@ -61,6 +77,18 @@ fn classify(dialect: &str, statement: &str) -> &'static str {
                 );
                 assert_eq!(query.sources()[0].name(), "source", "{dialect}: source");
                 assert_eq!(write.target(), "target", "{dialect}: target");
+                if let Some(expected) = expected_kinds {
+                    let actual = write
+                        .merge_clauses()
+                        .iter()
+                        .map(|clause| clause.match_kind())
+                        .collect::<Vec<_>>();
+                    assert_eq!(
+                        actual.as_slice(),
+                        expected,
+                        "{dialect}: parser normalization changed branch identity/order"
+                    );
+                }
                 assert!(
                     write.merge_clauses().iter().all(|branch| {
                         matches!(
@@ -95,7 +123,8 @@ fn all_thirteen_dialects_match_frozen_unmatched_merge_parser_matrix() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|item| classify(dialect, item.as_str().unwrap()))
+            .zip(SHARED_MATCH_KINDS)
+            .map(|(item, expected)| classify(dialect, item.as_str().unwrap(), Some(expected)))
             .collect::<Vec<_>>();
         observed.insert(dialect.to_string(), cases);
     }
@@ -114,7 +143,7 @@ fn all_thirteen_dialects_match_frozen_unmatched_merge_parser_matrix() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|item| classify(dialect, item.as_str().unwrap()))
+            .map(|item| classify(dialect, item.as_str().unwrap(), None))
             .collect::<Vec<_>>();
         vendor.insert(dialect.to_string(), observed);
     }
