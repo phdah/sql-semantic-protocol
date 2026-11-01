@@ -343,7 +343,6 @@ fn all_frozen_unmatched_merge_proofs_are_equivalent_across_adapter_metadata() {
     }
 }
 
-
 fn ordered_replay_plan(replay: &Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let sql_texts = replay["steps"]
         .as_array()
