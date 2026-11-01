@@ -14,11 +14,11 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let record = &manifest["task_154_unmatched_merge_acceptance"];
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     assert_eq!(frozen["owner"], "TASK-154");
     assert_eq!(
         frozen["previous_snapshot"],
-        "docs/task-154-acceptance-freeze-v1.json"
+        "docs/task-154-acceptance-freeze-v2.json"
     );
     assert_eq!(frozen["parent"], "TASK-82");
     assert_eq!(
@@ -49,6 +49,7 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     assert_eq!(frozen["adapter_sources"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["adapter_cases_required"], 3);
     assert_eq!(frozen["required_ci"].as_array().unwrap().len(), 7);
+    assert_eq!(frozen["ordered_replay"]["steps"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["acceptance_map"].as_object().unwrap().len(), 5);
 }
 
