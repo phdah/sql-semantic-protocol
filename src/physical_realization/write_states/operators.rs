@@ -53,6 +53,11 @@ pub(super) fn define_rows(
         }
         None => return Err(residual("missing CREATE/REPLACE lifecycle evidence")),
     }
+    if write.definition_execution_unknown() {
+        return Err(residual(
+            "DDL storage, session or vendor lifecycle requires unproved execution evidence",
+        ));
+    }
     let schema = schema_for(bundle, target)?;
     // Schema-only CREATE TABLE is the empty bag, not a SELECT whose input
     // may be omitted or invented. An AS SELECT must still prove its source.
