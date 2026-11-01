@@ -248,7 +248,7 @@ fn frozen_table_create_replace_and_duplicate_oracles_match_native_duckdb() {
             .collect::<Vec<_>>();
         assert_eq!(
             transition.definition_source_row_ids(),
-            expected_source_ids,
+            expected_source_ids.as_slice(),
             "{id}: each physical output must retain its exact original source occurrence"
         );
         assert_eq!(transition.after().relation(), target);
