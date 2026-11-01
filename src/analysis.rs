@@ -294,7 +294,10 @@ fn create_table_execution_unknown(create_table: &sqlparser::ast::CreateTable) ->
         || create_table.catalog.is_some()
         || create_table.catalog_sync.is_some()
         || create_table.storage_serialization_policy.is_some()
-        || !matches!(create_table.table_options, sqlparser::ast::CreateTableOptions::None)
+        || !matches!(
+            create_table.table_options,
+            sqlparser::ast::CreateTableOptions::None
+        )
 }
 
 fn analyze_statement(
