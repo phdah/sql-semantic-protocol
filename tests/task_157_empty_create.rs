@@ -64,7 +64,7 @@ fn create_table_with_declared_schema_constructs_an_empty_relation() {
 fn create_table_rejects_an_existing_target_without_destroying_it() {
     let bundle = analyze("CREATE TABLE empty_stage (k INTEGER)");
     let original = PhysicalWriteState::new("empty_stage", vec![row(Some(7))]).unwrap();
-    let plan = physical_ordered_write_state_plan(&bundle, &[original.clone()]);
+    let plan = physical_ordered_write_state_plan(&bundle, std::slice::from_ref(&original));
     assert!(
         matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
         "{plan:?}"
