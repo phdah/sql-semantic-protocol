@@ -39,3 +39,11 @@ Scope: **TASK-156**, child 4/4 of TASK-82, and not a parent TASK-82 or protocol 
 - Vendor-native UPSERT winners, `MERGE OUTPUT`, session ordering and duplicate-match errors remain explicit conditional boundaries; parser acceptance is never mistaken for runtime equivalence.
 - Independently verify this PR's standards and spec axes against `AGENTS.md`, `CONTRIBUTING.md` and the original TASK-156/82 AC. A self-authored test audit does **not** stand in for independent review.
 - Do not mark TASK-156 Done or approve the parent until final-head CI and the required independent review have been verified. The downstream TASK-91 release gate is separate.
+
+## Independent final child signoff (2026-11-01)
+
+- **Standards axis:** independently checked PR #177 against `AGENTS.md`, `CONTRIBUTING.md`, canonical ownership and Matt's code-smell heuristics. Zero hard findings. The repeated independent test fixture helpers are a low-priority possible Duplicated Code smell, not a correctness issue.
+- **Spec axis:** checked original TASK-156 AC #1-#5 against all six frozen cases, complete sequential native DuckDB source/target states, physical occurrence and typed domain assertions, 65 frozen dialect verdicts, three evidence paths, and conservative Impossible/Residual cases. No blocking gap identified.
+- **Final implementation-head CI:** all nine jobs passed for `b39b1704d7868e79fa6303a5714d87c989e64464` in [CI run 41338444281](https://github.com/phdah/sql-semantic-protocol/actions/runs/41338444281), including fmt, strict lint, Rust tests/doc, no-default-feature checks and dbt E2E. The signoff-only metadata commit is not a semantic implementation change and will receive its own CI status.
+- **Task state:** TASK-156 child AC #1-#5 independently reviewed and signed off; child marked Done in this PR. The immutable v1-v4 acceptance freeze and its historical `mandatory_signoff=false` values are unchanged; current signoff is recorded in the mutable coverage manifest and backlog task.
+- **Scope boundary:** TASK-82 parent AC #1-#6 and protocol v3 release approval are **not** signed off here. Merging this child is required before separate parent closure.
