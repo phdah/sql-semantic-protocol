@@ -57,12 +57,13 @@ pub(super) fn define_rows(
         .iter()
         .map(|c| c.name().to_string())
         .collect::<Vec<_>>();
-    if columns.len() != schema.columns().len()
-        || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema
-            .columns()
-            .iter()
-            .any(|c| !columns.contains(&c.name().to_string()))
+    if !schema_only
+        && (columns.len() != schema.columns().len()
+            || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+            || schema
+                .columns()
+                .iter()
+                .any(|c| !columns.contains(&c.name().to_string())))
     {
         return Err(residual(
             "definition projection does not determine all target columns",
