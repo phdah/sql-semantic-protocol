@@ -6,8 +6,7 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_ordered_write_state_plan, LiteralValue,
-    PhysicalWriteRow, PhysicalWriteStatePlan, ProtocolStatement, SqlInput,
-    WriteKind,
+    PhysicalWriteRow, PhysicalWriteStatePlan, ProtocolStatement, SqlInput, WriteKind,
 };
 
 fn bundle(statements: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
