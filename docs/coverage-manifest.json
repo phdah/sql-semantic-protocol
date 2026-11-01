@@ -2,7 +2,7 @@
   "task_157_ddl_identity_acceptance": {
     "owner": "TASK-157",
     "parent": "TASK-83",
-    "status": "in_progress_matrix_frozen_implementation_pending",
+    "status": "implementation_complete_ci_verified_independent_review_pending",
     "freeze": "docs/task-157-acceptance-freeze.json",
     "freeze_version": 2,
     "freeze_history": ["docs/task-157-acceptance-freeze-v1.json"],
@@ -13,8 +13,13 @@
     "adapter_cells_required": 27,
     "child_signed_off": false,
     "parent_signed_off": false,
-    "ci_verified": false,
-    "remaining_gates": ["CREATE TABLE", "CTAS and REPLACE", "logical vs materialized VIEW", "13-dialect matrix", "adapter parity", "native DuckDB snapshots", "independent review", "CI"]
+    "ci_verified": true,
+    "verified_implementation_head": "87615da40a496ba3231b48d3c9bbaf0aacdb573c",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41344772278",
+    "mandatory_cells_verified": true,
+    "dialect_cells_verified": 117,
+    "adapter_cells_verified": 27,
+    "remaining_gates": ["independent Matt code-review"]
   },
   "task_156_computed_sequential_merge_acceptance": {
     "owner": "TASK-156",
