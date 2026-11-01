@@ -6,7 +6,7 @@ pub(super) fn unsupported_queryless_create_table() -> ProtocolStatement {
     let diagnostic = warning(
         "unsupported_queryless_create_table",
         DiagnosticArea::Statement,
-        "CREATE TABLE without an AS query does not define transformation semantics",
+        "CREATE TABLE variants without proven object-existence, storage or schema semantics remain unsupported",
     );
 
     ProtocolStatement::Unsupported(UnsupportedStatement::new(
