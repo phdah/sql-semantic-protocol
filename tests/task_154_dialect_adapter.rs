@@ -54,7 +54,11 @@ fn classify(dialect: &str, statement: &str) -> &'static str {
                     && write.match_condition().is_some()
                     && !write.merge_clauses().is_empty() =>
             {
-                assert_eq!(query.sources().len(), 1, "{dialect}: one independent source");
+                assert_eq!(
+                    query.sources().len(),
+                    1,
+                    "{dialect}: one independent source"
+                );
                 assert_eq!(query.sources()[0].name(), "source", "{dialect}: source");
                 assert_eq!(write.target(), "target", "{dialect}: target");
                 assert!(
@@ -96,7 +100,10 @@ fn all_thirteen_dialects_match_frozen_unmatched_merge_parser_matrix() {
         observed.insert(dialect.to_string(), cases);
     }
     let actual = serde_json::to_value(&observed).unwrap();
-    assert_eq!(actual, matrix["dialect_expected"], "TASK-154 parser matrix drift: {actual}");
+    assert_eq!(
+        actual, matrix["dialect_expected"],
+        "TASK-154 parser matrix drift: {actual}"
+    );
     assert_eq!(matrix["dialects"], serde_json::json!(DIALECTS));
     assert_eq!(matrix["parser_syntax"].as_array().unwrap().len(), 5);
     assert_eq!(observed.values().map(Vec::len).sum::<usize>(), 65);
