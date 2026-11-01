@@ -494,6 +494,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         return failure(None, error);
     }
     let mut execution_bundle = bundle.clone();
+    let mut executed_create = BTreeSet::<String>::new();
     let mut transitions = Vec::new();
     for layer in bundle.layers() {
         let Some(kind) = layer.write_kind() else {
@@ -550,18 +551,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         // Only a complete schema-only CREATE in this input can
                         // attest the absence of declared table constraints.
                         // Catalog/adapter schemas alone do not certify this.
-                        let declared_create = bundle.inputs().iter().any(|input| {
-                            input.statements().iter().any(|statement| {
-                                matches!(statement,
-                                    ProtocolStatement::Query(query)
-                                        if query.write().is_some_and(|operation|
-                                            operation.target() == target
-                                                && operation.definition_mode()
-                                                    == Some(WriteDefinitionMode::CreateTable)
-                                        )
-                                )
-                            })
-                        });
+                        let declared_create = executed_create.contains(target);
                         let constrained = bundle.relation_constraints().iter().any(|set| {
                             set.relation() == target || set.constraints().iter().any(|constraint| {
                                 matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
@@ -677,6 +667,9 @@ pub fn physical_ordered_write_state_plan_with_identities(
             rows: Vec::new(),
         });
         states.insert(target.to_string(), after.clone());
+        if write.definition_mode() == Some(WriteDefinitionMode::CreateTable) {
+            executed_create.insert(target.to_string());
+        }
         if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
