@@ -324,6 +324,11 @@ fn fk_and_unique_cases_preserve_complete_sources_and_do_not_guess_native_laws() 
                 assert_eq!(sorted(step.before()), sorted(&before));
                 assert_eq!(sorted(step.after()), sorted(&expected));
                 assert_eq!(
+                    step.affected_target_ordinals(),
+                    ordinals(&case["on_true_target_ordinals"]),
+                    "{id}: affected prestate ordinals"
+                );
+                assert_eq!(
                     step.affected().updated(),
                     case["affected"]["updated"].as_u64().unwrap()
                 );
