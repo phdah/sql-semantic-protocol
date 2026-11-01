@@ -13,7 +13,7 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let record = &manifest["task_155_merge_conflict_acceptance"];
-    assert_eq!(frozen["version"], 3);
+    assert_eq!(frozen["version"], 4);
     assert_eq!(frozen["owner"], "TASK-155");
     assert_eq!(frozen["parent"], "TASK-82");
     assert_eq!(
@@ -31,12 +31,15 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     );
     assert_eq!(frozen["remaining_mandatory_matrix"], serde_json::json!([]));
     assert_eq!(record["freeze"], "docs/task-155-acceptance-freeze.json");
-    assert_eq!(record["freeze_version"], 3);
+    assert_eq!(record["freeze_version"], 4);
     assert_eq!(record["parent_signed_off"], false);
     assert_eq!(frozen["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(frozen["dialect_syntax"].as_array().unwrap().len(), 4);
     assert_eq!(frozen["dialect_cells_required"], 52);
     assert_eq!(frozen["adapter_cases_required"], 12);
+    assert_eq!(frozen["ordered_replay_cases_required"], 1);
+    assert_eq!(frozen["adapter_replay_paths_required"], 3);
+    assert_eq!(frozen["ordered_replay"]["steps"].as_array().unwrap().len(), 2);
     assert_eq!(frozen["adapter_paths_required"], 3);
     assert_eq!(frozen["evidence_sources"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["required_ci"].as_array().unwrap().len(), 8);
