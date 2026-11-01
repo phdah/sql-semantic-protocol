@@ -147,7 +147,9 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
                     "{id}"
                 );
                 let true_ordinals = case["source_truth"]["true_ordinals"].as_array().unwrap();
-                let not_true_ordinals = case["source_truth"]["not_true_ordinals"].as_array().unwrap();
+                let not_true_ordinals = case["source_truth"]["not_true_ordinals"]
+                    .as_array()
+                    .unwrap();
                 assert_eq!(true_ordinals.len(), before.rows().len());
                 assert!(not_true_ordinals.is_empty());
                 assert_eq!(case["after_count"], after.rows().len());
@@ -175,13 +177,30 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
                         };
                         actual.insert(key, *n);
                     }
-                    let expected = frozen_domain["frequencies"].as_object().unwrap()
-                        .iter().map(|(k,v)| (k.clone(),v.as_u64().unwrap()))
+                    let expected = frozen_domain["frequencies"]
+                        .as_object()
+                        .unwrap()
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.as_u64().unwrap()))
                         .collect::<BTreeMap<_, _>>();
-                    assert_eq!(actual, expected, "{id}/{}: exact frozen typed frequency", column.name());
-                    assert_eq!(actual.contains_key("NULL"), frozen_domain["nullable"].as_bool().unwrap());
-                    assert_eq!(numbers.iter().min().copied(), frozen_domain["lower"].as_i64());
-                    assert_eq!(numbers.iter().max().copied(), frozen_domain["upper"].as_i64());
+                    assert_eq!(
+                        actual,
+                        expected,
+                        "{id}/{}: exact frozen typed frequency",
+                        column.name()
+                    );
+                    assert_eq!(
+                        actual.contains_key("NULL"),
+                        frozen_domain["nullable"].as_bool().unwrap()
+                    );
+                    assert_eq!(
+                        numbers.iter().min().copied(),
+                        frozen_domain["lower"].as_i64()
+                    );
+                    assert_eq!(
+                        numbers.iter().max().copied(),
+                        frozen_domain["upper"].as_i64()
+                    );
                     assert_eq!(frozen_domain["lower_inclusive"], !numbers.is_empty());
                     assert_eq!(frozen_domain["upper_inclusive"], !numbers.is_empty());
                 }
@@ -246,43 +265,68 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
             continue;
         }
         let db = Connection::open_in_memory().unwrap();
-        let before = case["initial_schema"].as_array().unwrap().iter()
-            .map(|column| column.as_str().unwrap()).collect::<Vec<_>>();
-        db.execute_batch(&format!("CREATE TABLE t ({})", before.join(", "))).unwrap();
+        let before = case["initial_schema"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|column| column.as_str().unwrap())
+            .collect::<Vec<_>>();
+        db.execute_batch(&format!("CREATE TABLE t ({})", before.join(", ")))
+            .unwrap();
         for original_row in case["prestate"].as_array().unwrap() {
             let row = original_row.as_object().unwrap();
-            let columns = before.iter().map(|declared| declared.split_once(' ').unwrap().0)
+            let columns = before
+                .iter()
+                .map(|declared| declared.split_once(' ').unwrap().0)
                 .collect::<Vec<_>>();
-            let values = columns.iter().map(|name| match &row[*name] {
-                Value::Null => "NULL".to_string(),
-                Value::Number(number) => number.to_string(),
-                other => panic!("{id}: unsupported native SQL value {other:?}"),
-            }).collect::<Vec<_>>();
+            let values = columns
+                .iter()
+                .map(|name| match &row[*name] {
+                    Value::Null => "NULL".to_string(),
+                    Value::Number(number) => number.to_string(),
+                    other => panic!("{id}: unsupported native SQL value {other:?}"),
+                })
+                .collect::<Vec<_>>();
             db.execute_batch(&format!(
-                "INSERT INTO t ({}) VALUES ({})", columns.join(", "), values.join(", ")
-            )).unwrap();
+                "INSERT INTO t ({}) VALUES ({})",
+                columns.join(", "),
+                values.join(", ")
+            ))
+            .unwrap();
         }
         let operation = case["sql"].as_str().unwrap();
         if id.starts_with("83-C158-N-") {
-            assert!(db.execute_batch(operation).is_err(), "{id}: native contradiction");
+            assert!(
+                db.execute_batch(operation).is_err(),
+                "{id}: native contradiction"
+            );
             continue;
         }
         db.execute_batch(operation).unwrap();
-        let after_cols = case["expected_schema"].as_array().unwrap().iter()
+        let after_cols = case["expected_schema"]
+            .as_array()
+            .unwrap()
+            .iter()
             .map(|declared| declared.as_str().unwrap().split_once(' ').unwrap().0)
             .collect::<Vec<_>>();
-        let mut statement = db.prepare(&format!("SELECT {} FROM t", after_cols.join(", ")))
+        let mut statement = db
+            .prepare(&format!("SELECT {} FROM t", after_cols.join(", ")))
             .unwrap();
-        let native = statement.query_map([], |row| {
-            let mut values = BTreeMap::new();
-            for (index, column) in after_cols.iter().enumerate() {
-                let n: Option<i64> = row.get(index)?;
-                let canonical = n.map_or(LiteralValue::Null,
-                    |number| LiteralValue::Number(number.to_string()));
-                values.insert((*column).to_string(), canonical);
-            }
-            Ok(PhysicalWriteRow::new(values).unwrap())
-        }).unwrap().map(Result::unwrap).collect::<Vec<_>>();
+        let native = statement
+            .query_map([], |row| {
+                let mut values = BTreeMap::new();
+                for (index, column) in after_cols.iter().enumerate() {
+                    let n: Option<i64> = row.get(index)?;
+                    let canonical = n.map_or(LiteralValue::Null, |number| {
+                        LiteralValue::Number(number.to_string())
+                    });
+                    values.insert((*column).to_string(), canonical);
+                }
+                Ok(PhysicalWriteRow::new(values).unwrap())
+            })
+            .unwrap()
+            .map(Result::unwrap)
+            .collect::<Vec<_>>();
         assert_eq!(
             sorted_bag(&native),
             sorted_bag(state(&case["poststate"]).rows()),
@@ -291,8 +335,14 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
         let mut columns = db.prepare(
             "SELECT column_name FROM information_schema.columns WHERE table_name='t' ORDER BY ordinal_position"
         ).unwrap();
-        let actual_names = columns.query_map([], |row| row.get::<_, String>(0))
-            .unwrap().map(Result::unwrap).collect::<Vec<_>>();
-        assert_eq!(actual_names, after_cols, "{id}: native post-schema ordinal identity");
+        let actual_names = columns
+            .query_map([], |row| row.get::<_, String>(0))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            actual_names, after_cols,
+            "{id}: native post-schema ordinal identity"
+        );
     }
 }
