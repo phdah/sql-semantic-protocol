@@ -4,7 +4,7 @@
 
 ## Frozen contract
 
-The task-specific preimplementation v1 matrix is `docs/task-154-acceptance-freeze.json`, linked from `docs/coverage-manifest.json`. It owns 12 full-bag cases (9 mandatory Exact, 2 Residual, 1 Impossible), 65 parser/dialect classifications, source/target SQL TRUE and NOT TRUE partitions, 3 SQL/dbt/ODCS metadata paths, explicit nullable INTEGER bounds/frequencies, target prestate ordinals and atomicity oracles.
+The task-specific active v2 matrix is `docs/task-154-acceptance-freeze.json`, linked from `docs/coverage-manifest.json`. It owns 12 full-bag cases (9 mandatory Exact, 2 Residual, 1 Impossible), 65 parser/dialect classifications, source/target SQL TRUE and NOT TRUE partitions, 3 SQL/dbt/ODCS metadata paths, explicit nullable INTEGER bounds/frequencies, target prestate ordinals and atomicity oracles.
 
 ## Ownership and evidence
 
