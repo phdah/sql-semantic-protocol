@@ -747,12 +747,11 @@ pub(super) fn merge_rows(
             })
             .collect::<StateResult<Vec<_>>>()?;
         if matches.len() > 1 {
-            // Each source occurrence is independently matched against the
-            // same original target row. The engine may reject the statement
-            // or apply an engine-specific winner; neither is an exact proof.
-            return Err(residual_gap(
-                PhysicalWriteStateGap::UnresolvedSourceIdentity,
-                "multiple MERGE source matches have no attested winner/error law",
+            // Duplicate matches can produce engine-specific errors or winners.
+            // Keep the established TASK-153/154 residual category; no exact
+            // poststate can be claimed without an attested native law.
+            return Err(residual(
+                "multiple MERGE source matches require deterministic branch/multiplicity law",
             ));
         }
         let mut result = Some(target_row.clone());
