@@ -224,3 +224,24 @@ fn unsupported_default_function_never_becomes_a_silent_null() {
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn future_create_cannot_attest_a_preexisting_table_has_no_constraints() {
+    let analyzed = bundle(&[
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "CREATE TABLE t (a INTEGER)",
+    ]);
+    let source = sql_semantic_protocol::PhysicalWriteState::new(
+        "t",
+        vec![sql_semantic_protocol::PhysicalWriteRow::new(BTreeMap::from([(
+            "a".to_string(),
+            LiteralValue::Number("1".to_string()),
+        )]))
+        .unwrap()],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_ordered_write_state_plan(&analyzed, &[source]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
