@@ -3009,7 +3009,7 @@
           ]
         },
         "view_execution_unknown": {
-          "description": "Optional true marker: materialized, temporary, conditional, or vendor view execution lacks a portable exact re-evaluation proof.",
+          "description": "Optional true marker: temporary, conditional, or vendor-specific view execution requires additional evidence; plain materialized VIEW uses a distinct stored-snapshot definition mode.",
           "const": true
         },
         "definition_mode": {
