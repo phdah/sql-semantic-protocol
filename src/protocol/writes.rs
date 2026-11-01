@@ -45,6 +45,10 @@ pub enum WriteDefinitionMode {
     CreateView,
     /// Replace a logical view, without assuming physical storage.
     ReplaceView,
+    /// Create a physical snapshot at definition time, not a live logical view.
+    CreateMaterializedView,
+    /// Replace the stored materialized snapshot at definition time.
+    ReplaceMaterializedView,
 }
 
 impl WriteDefinitionMode {
@@ -54,6 +58,8 @@ impl WriteDefinitionMode {
             Self::ReplaceTable => "replace_table",
             Self::CreateView => "create_view",
             Self::ReplaceView => "replace_view",
+            Self::CreateMaterializedView => "create_materialized_view",
+            Self::ReplaceMaterializedView => "replace_materialized_view",
         }
     }
 }
