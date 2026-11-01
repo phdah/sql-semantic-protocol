@@ -290,8 +290,7 @@ fn analyze_statement(
                     definition = definition.with_definition_execution_unknown();
                 }
                 ProtocolStatement::Query(
-                    analyze_query(query, Some(target), metadata)
-                        .with_write(Some(definition)),
+                    analyze_query(query, Some(target), metadata).with_write(Some(definition)),
                 )
             }
             None if !create_table.if_not_exists
