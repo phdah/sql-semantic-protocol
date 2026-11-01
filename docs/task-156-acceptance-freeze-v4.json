@@ -1,0 +1,2117 @@
+{
+  "version": 4,
+  "owner": "TASK-156",
+  "parent": "TASK-82",
+  "freeze_date": "2026-11-01",
+  "status": "expanded_required_matrix_under_review",
+  "fixture_ids": [
+    "82-C156-P",
+    "82-C156-N"
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "comparison_assumptions": "Complete typed INTEGER physical bags; NULL '=' NULL is UNKNOWN, not TRUE; arithmetic is checked; no winner, transaction or vendor semantics inferred from parsing.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "evidence_sources": [
+    "direct_sql",
+    "dbt_compiled_sql_with_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "case_ids_required": [
+    "82-C156-P-two-increments",
+    "82-C156-P-computed-insert-then-update",
+    "82-C156-P-nested-prior-source",
+    "82-C156-N-null-not-true",
+    "82-C156-N-duplicate-source",
+    "82-C156-N-computed-duplicate-primary-key"
+  ],
+  "cases": [
+    {
+      "id": "82-C156-P-two-increments",
+      "fixture_id": "82-C156-P",
+      "variant": "computed target+source SET twice over the evolving prestate",
+      "classification": "Exact",
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 1
+          },
+          {
+            "id": 2,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 1,
+              "score": 1
+            },
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 2
+            },
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [
+            0
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "10": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "10": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": []
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 1,
+              "score": 2
+            },
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 3
+            },
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [
+            0
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [
+            1
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "10": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 3,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "3": 1,
+                "10": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": []
+        }
+      ],
+      "initial_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "10": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        }
+      },
+      "final": {
+        "target": [
+          {
+            "id": 1,
+            "score": 3
+          },
+          {
+            "id": 2,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ]
+      },
+      "final_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 3,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "3": 1,
+              "10": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; dbt and ODCS must prove identical complete schema and result before signoff"
+    },
+    {
+      "id": "82-C156-P-computed-insert-then-update",
+      "fixture_id": "82-C156-P",
+      "variant": "computed INSERT expression consumed by subsequent MERGE",
+      "classification": "Exact",
+      "initial": {
+        "target": [
+          {
+            "id": 2,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 3,
+            "score": 4
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score * 2)",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "after": [
+            {
+              "id": 2,
+              "score": 10
+            },
+            {
+              "id": 3,
+              "score": 8
+            }
+          ],
+          "affected": {
+            "inserted": 1,
+            "updated": 0,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [],
+          "on_true_target_ordinals": [],
+          "on_not_true_target_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 8,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "8": 1,
+                "10": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 3,
+              "score": 4
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 3,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 4,
+              "upper": 4,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "4": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [],
+          "on_not_true_source_ordinals": [
+            0
+          ]
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 2,
+              "score": 10
+            },
+            {
+              "id": 3,
+              "score": 8
+            }
+          ],
+          "after": [
+            {
+              "id": 2,
+              "score": 10
+            },
+            {
+              "id": 3,
+              "score": 12
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [
+            1
+          ],
+          "on_true_target_ordinals": [
+            1
+          ],
+          "on_not_true_target_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 8,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "8": 1,
+                "10": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 10,
+              "upper": 12,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "10": 1,
+                "12": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 3,
+              "score": 4
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 3,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "3": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 4,
+              "upper": 4,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "4": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": []
+        }
+      ],
+      "initial_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 10,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "10": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 3,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 4,
+            "upper": 4,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "4": 1
+            }
+          }
+        }
+      },
+      "final": {
+        "target": [
+          {
+            "id": 2,
+            "score": 10
+          },
+          {
+            "id": 3,
+            "score": 12
+          }
+        ],
+        "source": [
+          {
+            "id": 3,
+            "score": 4
+          }
+        ]
+      },
+      "final_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1,
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 10,
+            "upper": 12,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "10": 1,
+              "12": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 3,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 4,
+            "upper": 4,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "4": 1
+            }
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; dbt and ODCS must prove identical complete schema and result before signoff"
+    },
+    {
+      "id": "82-C156-P-nested-prior-source",
+      "fixture_id": "82-C156-P",
+      "variant": "second MERGE reads a prior target state, not independent intermediate rows",
+      "classification": "Exact",
+      "initial": {
+        "stage": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ],
+        "terminal": [
+          {
+            "id": 1,
+            "score": 0
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO stage AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "stage",
+          "source": "source",
+          "before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 2
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [
+            0
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": []
+        },
+        {
+          "sql": "MERGE INTO terminal AS t USING stage AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = s.score",
+          "target": "terminal",
+          "source": "stage",
+          "before": [
+            {
+              "id": 1,
+              "score": 0
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 2
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [
+            0
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 0,
+              "upper": 0,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "0": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 1,
+              "score": 2
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": []
+        }
+      ],
+      "initial_domains": {
+        "stage": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        },
+        "terminal": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 0,
+            "upper": 0,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "0": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        }
+      },
+      "final": {
+        "stage": [
+          {
+            "id": 1,
+            "score": 2
+          }
+        ],
+        "terminal": [
+          {
+            "id": 1,
+            "score": 2
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ]
+      },
+      "final_domains": {
+        "stage": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          }
+        },
+        "terminal": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; dbt and ODCS must prove identical complete schema and result before signoff"
+    },
+    {
+      "id": "82-C156-N-null-not-true",
+      "fixture_id": "82-C156-N",
+      "variant": "NULL ON equality is NOT TRUE in both sequential MERGEs",
+      "classification": "Exact",
+      "initial": {
+        "target": [
+          {
+            "id": null,
+            "score": 5
+          }
+        ],
+        "source": [
+          {
+            "id": null,
+            "score": 2
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": null,
+              "score": 5
+            }
+          ],
+          "after": [
+            {
+              "id": null,
+              "score": 5
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [],
+          "on_true_target_ordinals": [],
+          "on_not_true_target_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 5,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 5,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": null,
+              "score": 2
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [],
+          "on_not_true_source_ordinals": [
+            0
+          ]
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": null,
+              "score": 5
+            }
+          ],
+          "after": [
+            {
+              "id": null,
+              "score": 5
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 0,
+            "deleted": 0
+          },
+          "affected_target_ordinals": [],
+          "on_true_target_ordinals": [],
+          "on_not_true_target_ordinals": [
+            0
+          ],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 5,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1
+              }
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 5,
+              "upper": 5,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "5": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": null,
+              "score": 2
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": true,
+              "lower": null,
+              "upper": null,
+              "lower_inclusive": false,
+              "upper_inclusive": false,
+              "frequencies": {
+                "NULL": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [],
+          "on_not_true_source_ordinals": [
+            0
+          ]
+        }
+      ],
+      "initial_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": true,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {
+              "NULL": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 5,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "5": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": true,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {
+              "NULL": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          }
+        }
+      },
+      "final": {
+        "target": [
+          {
+            "id": null,
+            "score": 5
+          }
+        ],
+        "source": [
+          {
+            "id": null,
+            "score": 2
+          }
+        ]
+      },
+      "final_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": true,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {
+              "NULL": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 5,
+            "upper": 5,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "5": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": true,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {
+              "NULL": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; dbt and ODCS must prove identical complete schema and result before signoff"
+    },
+    {
+      "id": "82-C156-N-duplicate-source",
+      "fixture_id": "82-C156-N",
+      "variant": "duplicate source matches must not invent a winner",
+      "classification": "Residual",
+      "gap": "UnprovedOperation",
+      "conditional_owner": "TASK-156",
+      "release_disposition": "engine-specific duplicate-match winner or error; exact execution not approved",
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 2
+          },
+          {
+            "id": 1,
+            "score": 3
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          },
+          "source_before": [
+            {
+              "id": 1,
+              "score": 2
+            },
+            {
+              "id": 1,
+              "score": 3
+            }
+          ],
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 2
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 2,
+              "upper": 3,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "2": 1,
+                "3": 1
+              }
+            }
+          },
+          "on_true_source_ordinals": [
+            0,
+            1
+          ],
+          "on_not_true_source_ordinals": []
+        }
+      ],
+      "initial_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 2
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1,
+              "3": 1
+            }
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; dbt and ODCS must prove identical complete schema and result before signoff"
+    },
+    {
+      "id": "82-C156-N-computed-duplicate-primary-key",
+      "fixture_id": "82-C156-N",
+      "variant": "computed UPDATE violates enforced target PRIMARY KEY after matching one source occurrence",
+      "classification": "Impossible",
+      "target_pk": true,
+      "impossible_reason": "UPDATE id=t.id+s.id creates duplicate id=2 against retained target occurrence",
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 1
+          },
+          {
+            "id": 2,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 1
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET id = t.id + s.id",
+          "target": "target",
+          "source": "source",
+          "before": [
+            {
+              "id": 1,
+              "score": 1
+            },
+            {
+              "id": 2,
+              "score": 10
+            }
+          ],
+          "source_before": [
+            {
+              "id": 1,
+              "score": 1
+            }
+          ],
+          "on_true_target_ordinals": [
+            0
+          ],
+          "on_not_true_target_ordinals": [
+            1
+          ],
+          "on_true_source_ordinals": [
+            0
+          ],
+          "on_not_true_source_ordinals": [],
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 2,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 10,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1,
+                "10": 1
+              }
+            }
+          },
+          "source_before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            },
+            "score": {
+              "type": "INTEGER",
+              "nullable": false,
+              "lower": 1,
+              "upper": 1,
+              "lower_inclusive": true,
+              "upper_inclusive": true,
+              "frequencies": {
+                "1": 1
+              }
+            }
+          }
+        }
+      ],
+      "conditional_owner": null,
+      "release_disposition": "enforced duplicate PK is an exact impossibility, not a release-conditional residual",
+      "adapter_evidence": "direct/dbt/ODCS equivalence for declared integer columns, with enforced key evidence supplied explicitly",
+      "initial_domains": {
+        "target": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 10,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "10": 1
+            }
+          }
+        },
+        "source": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1
+            }
+          }
+        }
+      }
+    }
+  ],
+  "acceptance_mapping": {
+    "1": "frozen v1 cases and manifest link; remaining dialect/adapter cells must be frozen before signoff",
+    "2": "canonical interpreter must reuse pre/post target state, validate typed arithmetic and fail closed on ambiguity",
+    "3": "tests/task_156_sequential_merges.rs full DuckDB bag, occurrence, true/not true, typed domain snapshots",
+    "4": "13-dialect parser matrix, vendor/session boundaries and SQL/dbt/ODCS adapter parity pending",
+    "5": "final head cargo fmt/clippy/test/doc/no-default-features/dbt E2E and independent review pending"
+  },
+  "conditional_boundaries": [
+    {
+      "variant": "two matching source occurrences",
+      "owner": "TASK-156",
+      "proof": "Residual",
+      "disposition": "no exact outcome without native winner/error law"
+    },
+    {
+      "variant": "vendor-specific MERGE or UPSERT/transaction session semantics",
+      "owner": "TASK-156",
+      "proof": "Residual",
+      "disposition": "requires pinned engine evidence"
+    },
+    {
+      "variant": "computed SQL with unknown input types/overflow",
+      "owner": "TASK-156",
+      "proof": "Residual",
+      "disposition": "no invented domain when proof missing"
+    }
+  ],
+  "mandatory_signoff": {
+    "native_duckdb": false,
+    "typed_domains": false,
+    "positive_not_true": false,
+    "dialect_matrix": false,
+    "adapter_parity": false,
+    "full_ci": false,
+    "independent_review": false,
+    "parent_signoff": false
+  },
+  "previous_snapshot": "docs/task-156-acceptance-freeze-v3.json",
+  "reviewed_matrix_change": "Original TASK-156 cross-producer source law requires the second MERGE to read the first MERGE's committed stage score=2, not the initial stage score=1. V3 frozen matrix had an inconsistent source_before_domain even though the expected terminal was correct. Native DuckDB source proof caught this. V4 repairs the incorrectly frozen source evidence without changing any SQL or claimed result.",
+  "dialect_syntax": [
+    {
+      "id": "computed-set",
+      "kind": "merge",
+      "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score"
+    },
+    {
+      "id": "computed-insert",
+      "kind": "merge",
+      "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score * 2)"
+    },
+    {
+      "id": "qualified-set",
+      "kind": "merge",
+      "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET id = t.id + s.id"
+    },
+    {
+      "id": "merge-output",
+      "kind": "merge",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id"
+    },
+    {
+      "id": "postgres-conflict-update",
+      "kind": "conflict",
+      "sql": "INSERT INTO target (id,score) VALUES (1,1) ON CONFLICT (id) DO UPDATE SET score = excluded.score"
+    }
+  ],
+  "dialect_cells_required": 65,
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "canonical_unsupported"
+    ]
+  },
+  "adapter_cases_required": 6,
+  "adapter_paths_required": 3,
+  "mandatory_oracle_case_ids": [
+    "82-C156-P-two-increments",
+    "82-C156-P-computed-insert-then-update",
+    "82-C156-P-nested-prior-source",
+    "82-C156-N-null-not-true",
+    "82-C156-N-duplicate-source",
+    "82-C156-N-computed-duplicate-primary-key"
+  ],
+  "required_ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo doc --no-deps",
+    "cargo test --no-default-features",
+    "cargo doc --no-default-features --no-deps",
+    "dbt Core E2E",
+    "active protocol/schema snapshots"
+  ]
+}
