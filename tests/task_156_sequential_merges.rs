@@ -8,9 +8,9 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
-    SchemaColumn, SqlInput,
+    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStateGap, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn freeze() -> Value {
@@ -93,11 +93,8 @@ fn analyze(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
             vec![RelationConstraint::primary_key(
                 vec!["id".to_owned()],
                 vec![ConstraintEvidence::new(
-                    ConstraintProvenance::new(
-                        ConstraintSourceKind::ExternalMetadata,
-                        "task156",
-                    )
-                    .unwrap(),
+                    ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task156")
+                        .unwrap(),
                     ConstraintEnforcement::Enforced,
                 )],
             )
