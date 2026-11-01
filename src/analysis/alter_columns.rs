@@ -11,11 +11,16 @@ fn scalar_default(expr: &Expr) -> Option<LiteralValue> {
         Expr::Value(value) => match &value.value {
             Value::Null => Some(LiteralValue::Null),
             Value::Boolean(value) => Some(LiteralValue::Boolean(*value)),
-            Value::Number(value, _) => Number::from_str(value).ok().map(|n| LiteralValue::Number(n.to_string())),
+            Value::Number(value, _) => Number::from_str(value)
+                .ok()
+                .map(|n| LiteralValue::Number(n.to_string())),
             Value::SingleQuotedString(value) => Some(LiteralValue::Text(value.clone())),
             _ => None,
         },
-        Expr::UnaryOp { op: SqlUnaryOperator::Minus, expr } => {
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Minus,
+            expr,
+        } => {
             let Expr::Value(value) = expr.as_ref() else {
                 return None;
             };
@@ -38,7 +43,8 @@ fn add_column(
         declared.name.to_string(),
         &declared.data_type.to_string(),
         dialect_name,
-    ).ok()?;
+    )
+    .ok()?;
     let mut default = None;
     for option in &declared.options {
         match &option.option {
@@ -62,7 +68,8 @@ pub(super) fn analyze_alter_columns(
     use crate::protocol::ColumnAlterStep;
     if operations.is_empty() {
         return unsupported_write_statement(
-            "alter_table", "unsupported_alter_table",
+            "alter_table",
+            "unsupported_alter_table",
             "ALTER TABLE requires at least one supported column operation",
         );
     }
@@ -92,17 +99,25 @@ pub(super) fn analyze_alter_columns(
             }),
             AlterTableOperation::AlterColumn {
                 column_name,
-                op: AlterColumnOperation::SetDataType { data_type, using: None, .. },
+                op:
+                    AlterColumnOperation::SetDataType {
+                        data_type,
+                        using: None,
+                        ..
+                    },
             } => SchemaColumn::from_sql_type(
                 column_name.to_string(),
                 &data_type.to_string(),
                 dialect_name,
-            ).ok().map(|column| ColumnAlterStep::SetType { column }),
+            )
+            .ok()
+            .map(|column| ColumnAlterStep::SetType { column }),
             _ => None,
         };
         let Some(step) = step else {
             return unsupported_write_statement(
-                "alter_table", "unsupported_alter_column",
+                "alter_table",
+                "unsupported_alter_column",
                 "ALTER TABLE contains an unproved column option, cast, rename or vendor law",
             );
         };
