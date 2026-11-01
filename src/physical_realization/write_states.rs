@@ -532,6 +532,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 target,
                 before.as_ref(),
                 &mut identity_sequences,
+                &mut affected_target_ordinals,
             ),
         };
         let (after, counts) = match result {
