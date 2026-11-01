@@ -1932,7 +1932,7 @@ remain unsupported statements, never partially normalized transformations.
 `physical_ordered_write_state_plan` executes steps against the *previous* complete
 physical table state and typed schema. Exact results retain all duplicate row
 occurrences and NULL values; ALTER transitions expose `before_schema` and
-`after_schema`. Table constraints, referenced keys, cast/rewrite rules and
+`after_schema`. Table constraints, referenced keys, unproved casts (other than lossless signed integer widening), identifier folding and
 session-specific behavior require separately attested evidence. An absent complete
 constraint-free DDL declaration or a nonidentity type rewrite remains Residual,
 even if an SQL parser accepts the syntax. This proof is scoped to row/schema
