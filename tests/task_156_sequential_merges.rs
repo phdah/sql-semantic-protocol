@@ -217,9 +217,9 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
             .collect::<Vec<_>>();
         assert_eq!(numbers.iter().min().copied(), column["lower"].as_i64());
         assert_eq!(numbers.iter().max().copied(), column["upper"].as_i64());
-        assert_eq!(actual.contains_key("NULL"), column["nullable"]);
-        assert_eq!(!numbers.is_empty(), column["lower_inclusive"]);
-        assert_eq!(!numbers.is_empty(), column["upper_inclusive"]);
+        assert_eq!(actual.contains_key("NULL"), column["nullable"].as_bool().unwrap());
+        assert_eq!(!numbers.is_empty(), column["lower_inclusive"].as_bool().unwrap());
+        assert_eq!(!numbers.is_empty(), column["upper_inclusive"].as_bool().unwrap());
         assert_eq!(column["type"], "INTEGER");
     }
 }
@@ -246,6 +246,10 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
         let steps = case["steps"].as_array().unwrap();
         assert_eq!(transitions.len(), steps.len(), "{id}: statement count");
         let db = native(case);
+        let mut expected_states = initial
+            .iter()
+            .map(|state| (state.relation().to_owned(), state.clone()))
+            .collect::<BTreeMap<_, _>>();
         for (step, transition) in steps.iter().zip(&transitions) {
             let target = step["target"].as_str().unwrap();
             let source = step["source"].as_str().unwrap();
@@ -264,7 +268,15 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
             assert_eq!(sorted(transition.before()), sorted(&before), "{id}: prestate");
             assert_eq!(sorted(&native_state(&db, target)), sorted(&before));
             assert_domains(transition.before(), schema, &step["before_domains"]);
-            assert_domains(&native_state(&db, source), source_schema, &case["initial_domains"][source]);
+            assert_eq!(
+                sorted(&native_state(&db, source)),
+                sorted(expected_states.get(source).unwrap()),
+                "{id}: physical source must reflect only prior committed writes"
+            );
+            assert_eq!(
+                native_state(&db, source).exact_domains(source_schema),
+                expected_states.get(source).unwrap().exact_domains(source_schema)
+            );
             assert_eq!(
                 native_truth(&db, target, source, false),
                 ordinals(&step["on_true_target_ordinals"]),
@@ -298,6 +310,7 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
             db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
             assert_eq!(sorted(&native_state(&db, target)), sorted(&after), "{id}: native after");
             assert_domains(&native_state(&db, target), schema, &step["after_domains"]);
+            expected_states.insert(target.to_owned(), after);
         }
         for (relation, expected) in case["final"].as_object().unwrap() {
             let actual = final_states
