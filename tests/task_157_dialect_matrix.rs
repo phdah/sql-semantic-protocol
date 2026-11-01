@@ -56,7 +56,10 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
             };
             assert_eq!(write.definition_mode(), Some(mode), "{name}/{id}");
             if mode == WriteDefinitionMode::CreateMaterializedView {
-                assert!(!write.view_execution_unknown(), "{name}/{id}: plain snapshot definition");
+                assert!(
+                    !write.view_execution_unknown(),
+                    "{name}/{id}: plain snapshot definition"
+                );
             }
         }
     }
@@ -70,8 +73,14 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
 fn session_and_vendor_view_options_cannot_erase_execution_uncertainty() {
     for (dialect, sql) in [
         ("duckdb", "CREATE TEMP VIEW view_stage AS SELECT k FROM raw"),
-        ("postgresql", "CREATE VIEW view_stage WITH (security_barrier = true) AS SELECT k FROM raw"),
-        ("clickhouse", "CREATE MATERIALIZED VIEW snap_stage TO sink AS SELECT k FROM raw"),
+        (
+            "postgresql",
+            "CREATE VIEW view_stage WITH (security_barrier = true) AS SELECT k FROM raw",
+        ),
+        (
+            "clickhouse",
+            "CREATE MATERIALIZED VIEW snap_stage TO sink AS SELECT k FROM raw",
+        ),
     ] {
         let parser = dialect_from_name(dialect).unwrap();
         if Parser::parse_sql(parser.as_ref(), sql).is_err() {
