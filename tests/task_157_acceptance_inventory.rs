@@ -12,7 +12,10 @@ fn frozen() -> Value {
 #[test]
 fn every_frozen_ddl_cell_has_one_typed_complete_target_bag_and_truth_partition() {
     let f = frozen();
-    assert_eq!(f["version"], 1);
+    assert_eq!(f["version"], 2);
+    assert_eq!(f["previous_snapshot"], "docs/task-157-acceptance-freeze-v1.json");
+    assert_eq!(f["dialect_expected"].as_object().unwrap().len(), 13);
+    assert_eq!(f["adapter_expected"].as_object().unwrap().len(), 9);
     assert_eq!(f["owner"], "TASK-157");
     assert_eq!(f["parent"], "TASK-83");
     assert_eq!(f["fixture_ids"], serde_json::json!(["83-C157-P", "83-C157-N"]));
@@ -102,7 +105,7 @@ fn coverage_manifest_points_to_same_immutable_version_without_parent_signoff() {
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let entry = &manifest["task_157_ddl_identity_acceptance"];
     assert_eq!(entry["freeze"], "docs/task-157-acceptance-freeze.json");
-    assert_eq!(entry["freeze_version"], 1);
+    assert_eq!(entry["freeze_version"], 2);
     assert_eq!(entry["mandatory_cases"], 8);
     assert_eq!(entry["conditional_cases"], 1);
     assert_eq!(entry["parent_signed_off"], false);
