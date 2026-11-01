@@ -698,6 +698,7 @@ pub(super) fn merge_rows(
     target: &str,
     before: Option<&PhysicalWriteState>,
     identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
+    affected_target_ordinals: &mut Vec<usize>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
@@ -727,7 +728,7 @@ pub(super) fn merge_rows(
     let mut deletes = 0_u64;
     let mut inserts = Vec::new();
     let mut retained = Vec::new();
-    for target_row in &before.rows {
+    for (target_ordinal, target_row) in before.rows.iter().enumerate() {
         let matches = source_rows
             .rows
             .iter()
@@ -776,10 +777,12 @@ pub(super) fn merge_rows(
                             &aliases,
                         )?);
                         updates += 1;
+                        affected_target_ordinals.push(target_ordinal);
                     }
                     MergeAction::Delete => {
                         result = None;
                         deletes += 1;
+                        affected_target_ordinals.push(target_ordinal);
                     }
                     MergeAction::Insert { .. } | MergeAction::Unsupported(_) => {
                         return Err(residual("unproved MATCHED MERGE action"));
@@ -810,10 +813,12 @@ pub(super) fn merge_rows(
                             &aliases,
                         )?);
                         updates += 1;
+                        affected_target_ordinals.push(target_ordinal);
                     }
                     MergeAction::Delete => {
                         result = None;
                         deletes += 1;
+                        affected_target_ordinals.push(target_ordinal);
                     }
                     _ => return Err(residual("unproved BY SOURCE MERGE action")),
                 }

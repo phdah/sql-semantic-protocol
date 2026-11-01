@@ -225,8 +225,9 @@ impl PhysicalWriteTransition {
     }
 
     /// Zero-based physical row-occurrence ordinals in this statement's
-    /// complete target prestate selected by UPDATE/DELETE, including duplicates.
-    /// Empty for other write kinds. These are prestate, never output ordinals.
+    /// complete target prestate selected by UPDATE/DELETE, including MERGE
+    /// matched and BY SOURCE actions. Empty for inserts and definitions.
+    /// These are prestate identities, never output ordinals.
     pub fn affected_target_ordinals(&self) -> &[usize] {
         &self.affected_target_ordinals
     }
@@ -532,6 +533,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 target,
                 before.as_ref(),
                 &mut identity_sequences,
+                &mut affected_target_ordinals,
             ),
         };
         let (after, counts) = match result {

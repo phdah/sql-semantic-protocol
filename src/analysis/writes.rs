@@ -839,15 +839,17 @@ pub(super) fn analyze_merge(
     let target = target_source.name().to_string();
     let target_alias = target_source.alias().map(str::to_string);
 
-    let mut diagnostics = Vec::new();
+    // OUTPUT has observable mutation/row semantics. Do not claim an exact
+    // post-state while silently dropping a requested vendor action.
     if has_output {
-        diagnostics.push(warning(
+        return unsupported_write_statement(
+            "merge",
             "unsupported_merge_output",
-            DiagnosticArea::Output,
             "MERGE OUTPUT semantics are not represented",
-        ));
+        );
     }
 
+    let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let Some(source_relation) = analyze_table_factor(
         source,
