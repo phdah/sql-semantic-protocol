@@ -8,35 +8,7 @@ use super::*;
 use crate::constraints::RelationConstraintSet;
 use crate::relation::{RelationSchema, SchemaColumn};
 
-/// One parser-independent change to an existing table's columns.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PhysicalColumnAlterStep {
-    /// Append a declared column. None represents SQL NULL, not an inferred DEFAULT.
-    Add {
-        /// Authoritative target column declaration.
-        column: SchemaColumn,
-        /// Attested scalar DEFAULT, or SQL NULL if absent.
-        default: Option<LiteralValue>,
-    },
-    /// Drop an existing nonfinal column.
-    Drop {
-        /// Column to remove.
-        column: String,
-    },
-    /// Rename a column while keeping its type and comparison evidence.
-    Rename {
-        /// Existing column name.
-        old: String,
-        /// Replacement column name.
-        new: String,
-    },
-    /// Replace the column type. Only an identical typed declaration is exact
-    /// without independently verified SQL cast and rewrite laws.
-    SetType {
-        /// New typed declaration with the same column name.
-        column: SchemaColumn,
-    },
-}
+pub use crate::protocol::ColumnAlterStep as PhysicalColumnAlterStep;
 
 /// A complete physical column transformation, or an explicit proof boundary.
 ///
