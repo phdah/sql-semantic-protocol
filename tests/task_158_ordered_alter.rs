@@ -294,8 +294,10 @@ fn widened_signed_integer_preserves_exact_values_and_sql_nulls() {
         "ALTER TABLE t ALTER COLUMN a SET DATA TYPE BIGINT",
     ];
     let analyzed = bundle(&sql);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("exact signed INTEGER to BIGINT widening should preserve the physical bag");
     };
@@ -303,7 +305,8 @@ fn widened_signed_integer_preserves_exact_values_and_sql_nulls() {
     assert_eq!(
         post.columns()[0].data_type(),
         sql_semantic_protocol::SchemaColumn::from_sql_type("a", "BIGINT", "duckdb")
-            .unwrap().data_type()
+            .unwrap()
+            .data_type()
     );
     assert_eq!(
         final_states[0].exact_domains(post).unwrap()[0].values(),
@@ -322,7 +325,10 @@ fn widened_signed_integer_preserves_exact_values_and_sql_nulls() {
     ).unwrap();
     assert_eq!(data_type, "BIGINT");
     let mut statement = db.prepare("SELECT a FROM t ORDER BY a NULLS LAST").unwrap();
-    let native = statement.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-        .map(Result::unwrap).collect::<Vec<_>>();
+    let native = statement
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     assert_eq!(native, vec![Some(2147483647), Some(2147483647), None]);
 }
