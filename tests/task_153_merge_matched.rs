@@ -246,7 +246,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_matched_merge_cases_match_complete_duckdb_bags_and_typed_bounds() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     let cases = frozen["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 8);
     let exact = cases
