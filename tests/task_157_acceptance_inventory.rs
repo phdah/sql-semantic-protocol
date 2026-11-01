@@ -13,12 +13,18 @@ fn frozen() -> Value {
 fn every_frozen_ddl_cell_has_one_typed_complete_target_bag_and_truth_partition() {
     let f = frozen();
     assert_eq!(f["version"], 2);
-    assert_eq!(f["previous_snapshot"], "docs/task-157-acceptance-freeze-v1.json");
+    assert_eq!(
+        f["previous_snapshot"],
+        "docs/task-157-acceptance-freeze-v1.json"
+    );
     assert_eq!(f["dialect_expected"].as_object().unwrap().len(), 13);
     assert_eq!(f["adapter_expected"].as_object().unwrap().len(), 9);
     assert_eq!(f["owner"], "TASK-157");
     assert_eq!(f["parent"], "TASK-83");
-    assert_eq!(f["fixture_ids"], serde_json::json!(["83-C157-P", "83-C157-N"]));
+    assert_eq!(
+        f["fixture_ids"],
+        serde_json::json!(["83-C157-P", "83-C157-N"])
+    );
     assert_eq!(f["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
     assert_eq!(f["original_parent_ac"], serde_json::json!([1, 3, 4, 5, 6]));
     assert_eq!(f["dialects"].as_array().unwrap().len(), 13);
@@ -41,33 +47,77 @@ fn every_frozen_ddl_cell_has_one_typed_complete_target_bag_and_truth_partition()
         let class = case["classification"].as_str().unwrap();
         *classes.entry(class.to_string()).or_default() += 1;
         let raw = case["initial"]["raw"].as_array().unwrap();
-        let accepted = case["source_truth"]["true_ordinals"].as_array().unwrap()
-            .iter().map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>();
-        let rejected = case["source_truth"]["not_true_ordinals"].as_array().unwrap()
-            .iter().map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>();
+        let accepted = case["source_truth"]["true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_u64().unwrap() as usize)
+            .collect::<Vec<_>>();
+        let rejected = case["source_truth"]["not_true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_u64().unwrap() as usize)
+            .collect::<Vec<_>>();
         if class != "Residual" {
-            let allowed = if id.contains("logical-view") { raw.len() + 1 } else { raw.len() };
-            let union = accepted.iter().chain(&rejected).copied().collect::<BTreeSet<_>>();
-            assert_eq!(union, (0..allowed).collect(), "{id}: every source occurrence accounted for");
-            assert_eq!(accepted.len() + rejected.len(), allowed, "{id}: no duplicate row identity");
+            let allowed = if id.contains("logical-view") {
+                raw.len() + 1
+            } else {
+                raw.len()
+            };
+            let union = accepted
+                .iter()
+                .chain(&rejected)
+                .copied()
+                .collect::<BTreeSet<_>>();
+            assert_eq!(
+                union,
+                (0..allowed).collect(),
+                "{id}: every source occurrence accounted for"
+            );
+            assert_eq!(
+                accepted.len() + rejected.len(),
+                allowed,
+                "{id}: no duplicate row identity"
+            );
         }
         if class == "Exact" {
             assert_eq!(case["requirement"], "exact_required");
             let values = case["after"].as_array().unwrap();
             let domain = &case["domain"];
             assert_eq!(domain["type"], "INTEGER");
-            let actual = values.iter().filter_map(|row| row["k"].as_i64()).collect::<Vec<_>>();
-            assert_eq!(actual.iter().min().copied(), domain["lower"].as_i64(), "{id}");
-            assert_eq!(actual.iter().max().copied(), domain["upper"].as_i64(), "{id}");
+            let actual = values
+                .iter()
+                .filter_map(|row| row["k"].as_i64())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                actual.iter().min().copied(),
+                domain["lower"].as_i64(),
+                "{id}"
+            );
+            assert_eq!(
+                actual.iter().max().copied(),
+                domain["upper"].as_i64(),
+                "{id}"
+            );
             assert_eq!(domain["lower_inclusive"], !actual.is_empty(), "{id}");
             assert_eq!(domain["upper_inclusive"], !actual.is_empty(), "{id}");
-            assert_eq!(domain["nullable"], values.iter().any(|row| row["k"].is_null()), "{id}");
+            assert_eq!(
+                domain["nullable"],
+                values.iter().any(|row| row["k"].is_null()),
+                "{id}"
+            );
             let mut frequencies = BTreeMap::new();
             for row in values {
-                let key = row["k"].as_i64().map_or("NULL".to_owned(), |n| n.to_string());
+                let key = row["k"]
+                    .as_i64()
+                    .map_or("NULL".to_owned(), |n| n.to_string());
                 *frequencies.entry(key).or_insert(0_u64) += 1;
             }
-            let expected = domain["frequencies"].as_object().unwrap().iter()
+            let expected = domain["frequencies"]
+                .as_object()
+                .unwrap()
+                .iter()
                 .map(|(key, value)| (key.clone(), value.as_u64().unwrap()))
                 .collect::<BTreeMap<_, _>>();
             assert_eq!(frequencies, expected, "{id}: complete value frequency bag");
@@ -90,7 +140,10 @@ fn every_frozen_ddl_cell_has_one_typed_complete_target_bag_and_truth_partition()
         let linked = f["acceptance_mapping"][&key].as_array().unwrap();
         assert_eq!(linked.len(), cases.len());
         assert_eq!(
-            linked.iter().map(|value| value.as_str().unwrap()).collect::<BTreeSet<_>>(),
+            linked
+                .iter()
+                .map(|value| value.as_str().unwrap())
+                .collect::<BTreeSet<_>>(),
             ids,
             "AC #{index} must map every mandatory/conditional case"
         );
