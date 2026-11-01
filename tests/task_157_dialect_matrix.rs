@@ -111,3 +111,20 @@ fn session_and_vendor_view_options_cannot_erase_execution_uncertainty() {
         assert!(query.write().unwrap().view_execution_unknown());
     }
 }
+
+#[test]
+fn portable_ctas_does_not_upgrade_unproved_temporary_storage_laws() {
+    use sql_semantic_protocol::{physical_ordered_write_state_plan, to_bundle_json, PhysicalWriteStatePlan};
+    let dialect = dialect_from_name("snowflake").unwrap();
+    let sql = "CREATE TEMPORARY TABLE temp_stage AS SELECT k FROM raw";
+    let bundle = analyze_inputs(&[SqlInput::inline(sql)], "snowflake", dialect.as_ref()).unwrap();
+    let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+        panic!("temporary CTAS must retain its canonical query identity");
+    };
+    assert_eq!(query.write().unwrap().definition_mode(), Some(WriteDefinitionMode::CreateTable));
+    assert!(query.write().unwrap().definition_execution_unknown());
+    let wire: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    assert_eq!(wire["inputs"][0]["statements"][0]["write"]["definition_execution_unknown"], true);
+    let plan = physical_ordered_write_state_plan(&bundle, &[]);
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+}
