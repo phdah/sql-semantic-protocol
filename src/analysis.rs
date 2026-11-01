@@ -391,6 +391,7 @@ fn analyze_statement(
             // replacement/alteration, security context and target routing
             // require independent engine evidence even if the SELECT parses.
             let execution_unknown = *or_alter
+                || (*materialized && *or_replace)
                 || *temporary
                 || *if_not_exists
                 || *with_no_schema_binding
