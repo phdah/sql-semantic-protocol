@@ -671,10 +671,10 @@ pub(in crate::physical_realization) fn append_source_for_view_read(
         return Err("view source append requires unproved intermediate state".to_string());
     }
     validate_state(bundle, &next).map_err(|error| format!("invalid source append: {error:?}"))?;
-    constraints::validate_all_constraints(bundle, &BTreeMap::from([(
-        next.relation().to_string(),
-        next.clone(),
-    )]))
+    constraints::validate_all_constraints(
+        bundle,
+        &BTreeMap::from([(next.relation().to_string(), next.clone())]),
+    )
     .map_err(|error| format!("unproved appended source constraints: {error:?}"))?;
     Ok(next)
 }
