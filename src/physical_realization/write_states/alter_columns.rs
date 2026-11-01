@@ -106,6 +106,15 @@ pub fn physical_alter_column_snapshot(
                         reason: format!("ADD column '{}' already exists", column.name()),
                     };
                 }
+                if columns.iter().any(|existing| {
+                    existing.name().eq_ignore_ascii_case(column.name())
+                }) {
+                    return PhysicalColumnAlterProof::Residual {
+                        reason: "ADD column identifier folding differs by SQL dialect".to_string(),
+                        before_schema: schema.clone(),
+                        attempted_schema: None,
+                    };
+                }
                 let value = default.clone().unwrap_or(LiteralValue::Null);
                 if let Err(error) = validate_column_value(&value, column) {
                     return classify_failure(error, schema);
@@ -117,6 +126,13 @@ pub fn physical_alter_column_snapshot(
             }
             PhysicalColumnAlterStep::Drop { column } => {
                 let Some(index) = columns.iter().position(|item| item.name() == column) else {
+                    if columns.iter().any(|existing| existing.name().eq_ignore_ascii_case(column)) {
+                        return PhysicalColumnAlterProof::Residual {
+                            reason: "DROP column requires attested identifier case-folding law".to_string(),
+                            before_schema: schema.clone(),
+                            attempted_schema: None,
+                        };
+                    }
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("DROP column '{column}' does not exist"),
                     };
@@ -136,10 +152,31 @@ pub fn physical_alter_column_snapshot(
             }
             PhysicalColumnAlterStep::Rename { old, new } => {
                 let Some(index) = columns.iter().position(|item| item.name() == old) else {
+                    if columns.iter().any(|existing| existing.name().eq_ignore_ascii_case(old)) {
+                        return PhysicalColumnAlterProof::Residual {
+                            reason: "RENAME source requires attested identifier case-folding law".to_string(),
+                            before_schema: schema.clone(),
+                            attempted_schema: None,
+                        };
+                    }
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("RENAME column '{old}' does not exist"),
                     };
                 };
+                if old != new && old.eq_ignore_ascii_case(new) {
+                    return PhysicalColumnAlterProof::Residual {
+                        reason: "case-only RENAME requires attested dialect identifier law".to_string(),
+                        before_schema: schema.clone(),
+                        attempted_schema: None,
+                    };
+                }
+                if columns.iter().any(|item| item.name() != old && item.name().eq_ignore_ascii_case(new)) {
+                    return PhysicalColumnAlterProof::Residual {
+                        reason: "RENAME target may collide under dialect identifier folding".to_string(),
+                        before_schema: schema.clone(),
+                        attempted_schema: None,
+                    };
+                }
                 if old != new && columns.iter().any(|item| item.name() == new) {
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("RENAME destination '{new}' already exists"),
@@ -165,6 +202,13 @@ pub fn physical_alter_column_snapshot(
             PhysicalColumnAlterStep::SetType { column } => {
                 let Some(index) = columns.iter().position(|item| item.name() == column.name())
                 else {
+                    if columns.iter().any(|item| item.name().eq_ignore_ascii_case(column.name())) {
+                        return PhysicalColumnAlterProof::Residual {
+                            reason: "ALTER TYPE requires attested identifier case-folding law".to_string(),
+                            before_schema: schema.clone(),
+                            attempted_schema: None,
+                        };
+                    }
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("ALTER TYPE column '{}' does not exist", column.name()),
                     };
