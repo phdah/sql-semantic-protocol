@@ -257,8 +257,10 @@ fn post_alter_inserts_validate_against_evolved_schema_not_initial_create() {
         "INSERT INTO t (a, b) VALUES (3, 4)",
     ];
     let analyzed = bundle(&sql);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("later INSERT must see post-ALTER column and type evidence");
     };
@@ -276,7 +278,10 @@ fn post_alter_inserts_validate_against_evolved_schema_not_initial_create() {
         db.execute_batch(statement).unwrap();
     }
     let mut stmt = db.prepare("SELECT a, b FROM t ORDER BY a").unwrap();
-    let native = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
-        .unwrap().map(Result::unwrap).collect::<Vec<_>>();
+    let native = stmt
+        .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     assert_eq!(native, vec![(1, 2), (3, 4)]);
 }
