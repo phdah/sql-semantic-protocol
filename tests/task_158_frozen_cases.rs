@@ -70,7 +70,7 @@ fn sorted_bag(rows: &[PhysicalWriteRow]) -> Vec<String> {
 #[test]
 fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
     let matrix = frozen();
-    assert_eq!(matrix["version"], 2);
+    assert_eq!(matrix["version"], 3);
     assert_eq!(matrix["owner"], "TASK-158");
     assert_eq!(matrix["parent"], "TASK-83");
     let mut seen = BTreeSet::new();
@@ -146,6 +146,11 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
                     sorted_bag(state(&case["poststate"]).rows()),
                     "{id}"
                 );
+                let true_ordinals = case["source_truth"]["true_ordinals"].as_array().unwrap();
+                let not_true_ordinals = case["source_truth"]["not_true_ordinals"].as_array().unwrap();
+                assert_eq!(true_ordinals.len(), before.rows().len());
+                assert!(not_true_ordinals.is_empty());
+                assert_eq!(case["after_count"], after.rows().len());
                 let domains = after.exact_domains(&after_schema).unwrap();
                 for (column, domain) in after_schema.columns().iter().zip(domains) {
                     let mut total = 0_u64;
@@ -156,6 +161,29 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
                         total += frequency;
                     }
                     assert_eq!(total as usize, after.rows().len(), "{id}/{}", column.name());
+                    let frozen_domain = &case["typed_domains"][column.name()];
+                    let mut actual = BTreeMap::<String, u64>::new();
+                    let mut numbers = Vec::<i64>::new();
+                    for (value, n) in domain.values() {
+                        let key = match value {
+                            LiteralValue::Null => "NULL".to_string(),
+                            LiteralValue::Number(number) => {
+                                numbers.push(number.parse().unwrap());
+                                number.clone()
+                            }
+                            other => panic!("{id}: unsupported integer domain {other:?}"),
+                        };
+                        actual.insert(key, *n);
+                    }
+                    let expected = frozen_domain["frequencies"].as_object().unwrap()
+                        .iter().map(|(k,v)| (k.clone(),v.as_u64().unwrap()))
+                        .collect::<BTreeMap<_, _>>();
+                    assert_eq!(actual, expected, "{id}/{}: exact frozen typed frequency", column.name());
+                    assert_eq!(actual.contains_key("NULL"), frozen_domain["nullable"].as_bool().unwrap());
+                    assert_eq!(numbers.iter().min().copied(), frozen_domain["lower"].as_i64());
+                    assert_eq!(numbers.iter().max().copied(), frozen_domain["upper"].as_i64());
+                    assert_eq!(frozen_domain["lower_inclusive"], !numbers.is_empty());
+                    assert_eq!(frozen_domain["upper_inclusive"], !numbers.is_empty());
                 }
             }
             "impossible_duplicate_name" | "impossible_missing_column" => assert!(
@@ -203,7 +231,7 @@ fn acceptance_dialect_matrix_is_complete_and_parent_stays_open() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let entry = &manifest["task_158_alter_column_transition_acceptance"];
-    assert_eq!(entry["freeze_version"], 2);
+    assert_eq!(entry["freeze_version"], 3);
     assert_eq!(entry["parent_signed_off"], false);
 }
 
