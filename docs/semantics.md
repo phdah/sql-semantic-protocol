@@ -26,6 +26,9 @@ do not mutate the stored snapshot. DuckDB's CTAS equivalent verifies snapshot
 and duplicate/NULL laws without claiming native MATERIALIZED VIEW syntax.
 Vendor session, refresh, placement, conditional creation and opaque options
 remain typed residuals; a parser accepting syntax is not an engine law.
+Unverified temporary, transient and external CTAS carries a separate canonical
+`definition_execution_unknown` marker and cannot realize an exact physical
+state merely because the SQL query normalizes.
 
 
 ### Sampling and row-membership uncertainty (TASK-136)
