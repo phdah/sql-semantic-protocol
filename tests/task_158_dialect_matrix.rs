@@ -31,10 +31,13 @@ fn every_frozen_alter_variant_has_a_classification_in_all_thirteen_dialects() {
             let result = analyze_inputs(&[SqlInput::inline(sql)], name, parser.as_ref()).unwrap();
             let status = match &result.inputs()[0].statements()[0] {
                 ProtocolStatement::Query(q)
-                    if q.write().is_some_and(|write|
+                    if q.write().is_some_and(|write| {
                         write.kind() == WriteKind::SchemaAlter
                             && write.column_alter_steps().len() == 1
-                    ) => "canonical_alter",
+                    }) =>
+                {
+                    "canonical_alter"
+                }
                 ProtocolStatement::Unsupported(_) => "canonical_unsupported",
                 _ => "unexpected_canonical_shape",
             };
