@@ -36,6 +36,7 @@
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
+//! - physical_alter_column_snapshot proves constraint-free, complete-bag column projections without treating them as executed SQL DDL.
 //! - PhysicalWriteTransition::returning_exact_domains derives exact schema-backed returned value frequencies, including empty INSERT RETURNING bags.
 //! - InsertCteSource preserves one canonical producer/consumer CTE pair for INSERT SELECT without inventing physical stage populations.
 //! - JoinedMutationCteSource preserves an exact read-only CTE producer feeding UPDATE FROM or DELETE USING without independent physical insertion.
@@ -169,7 +170,7 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
+    physical_alter_column_snapshot, physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
     physical_finite_chain_bag_plan, physical_finite_composed_page_membership_plan,
     physical_finite_composed_page_plan, physical_finite_cte_bag_plan,
     physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
@@ -189,6 +190,7 @@ pub use physical_realization::{
     physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
     PhysicalAggregateTruth, PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact,
     PhysicalCteInput, PhysicalCteNode, PhysicalCteProof, PhysicalCteRef,
+    PhysicalColumnAlterProof, PhysicalColumnAlterStep,
     PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof,
     PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
     PhysicalFiniteExistsExact, PhysicalFiniteExistsProof, PhysicalFiniteInExact,
