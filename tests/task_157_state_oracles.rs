@@ -10,9 +10,8 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
     physical_finite_view_read_plan, physical_ordered_write_state_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalViewProof, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput, WriteDefinitionMode,
+    LiteralValue, PhysicalViewProof, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteDefinitionMode,
 };
 
 fn freeze() -> Value {
@@ -20,22 +19,21 @@ fn freeze() -> Value {
 }
 
 fn row(value: &Value) -> PhysicalWriteRow {
-    let v = value["k"].as_i64().map_or(LiteralValue::Null, |n| {
-        LiteralValue::Number(n.to_string())
-    });
+    let v = value["k"]
+        .as_i64()
+        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()));
     PhysicalWriteRow::new(BTreeMap::from([("k".to_owned(), v)])).unwrap()
 }
 
 fn state(name: &str, values: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        name,
-        values.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(name, values.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn catalog(case: &Value) -> RelationCatalog {
-    let mut names = vec!["raw".to_owned(), case["target"].as_str().unwrap().to_owned()];
+    let mut names = vec![
+        "raw".to_owned(),
+        case["target"].as_str().unwrap().to_owned(),
+    ];
     names.sort();
     names.dedup();
     RelationCatalog::from_schemas(
@@ -56,7 +54,10 @@ fn catalog(case: &Value) -> RelationCatalog {
 fn bundle(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
     let sql = case["sql"].as_array().unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    let inputs = sql.iter().map(|value| SqlInput::inline(value.as_str().unwrap())).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|value| SqlInput::inline(value.as_str().unwrap()))
+        .collect::<Vec<_>>();
     if case["id"] == "83-C157-P-empty-table" {
         return analyze_inputs(&inputs, "duckdb", dialect.as_ref()).unwrap();
     }
@@ -75,18 +76,31 @@ fn initial(case: &Value) -> Vec<PhysicalWriteState> {
     if case["id"] == "83-C157-P-empty-table" {
         return vec![];
     }
-    case["initial"].as_object().unwrap().iter().map(|(name, values)| state(name, values)).collect()
+    case["initial"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(name, values)| state(name, values))
+        .collect()
 }
 
 fn sorted_rows(state: &PhysicalWriteState) -> Vec<String> {
-    let mut values = state.rows().iter().map(|row| format!("{:?}", row.values())).collect::<Vec<_>>();
+    let mut values = state
+        .rows()
+        .iter()
+        .map(|row| format!("{:?}", row.values()))
+        .collect::<Vec<_>>();
     values.sort();
     values
 }
 
 fn assert_bag(actual: &PhysicalWriteState, expected: &Value, case_id: &str) {
     let expected = state(actual.relation(), expected);
-    assert_eq!(sorted_rows(actual), sorted_rows(&expected), "{case_id}: exact row multiset");
+    assert_eq!(
+        sorted_rows(actual),
+        sorted_rows(&expected),
+        "{case_id}: exact row multiset"
+    );
 }
 
 fn assert_domains(actual: &PhysicalWriteState, schema: &RelationSchema, domain: &Value) {
@@ -106,27 +120,45 @@ fn assert_domains(actual: &PhysicalWriteState, schema: &RelationSchema, domain: 
         };
         actual_freq.insert(key, *frequency);
     }
-    let expected = domain["frequencies"].as_object().unwrap().iter()
+    let expected = domain["frequencies"]
+        .as_object()
+        .unwrap()
+        .iter()
         .map(|(key, value)| (key.clone(), value.as_u64().unwrap()))
         .collect::<BTreeMap<_, _>>();
     assert_eq!(actual_freq, expected);
     assert_eq!(integers.iter().min().copied(), domain["lower"].as_i64());
     assert_eq!(integers.iter().max().copied(), domain["upper"].as_i64());
-    assert_eq!(actual_freq.contains_key("NULL"), domain["nullable"].as_bool().unwrap());
-    assert_eq!(!integers.is_empty(), domain["lower_inclusive"].as_bool().unwrap());
-    assert_eq!(!integers.is_empty(), domain["upper_inclusive"].as_bool().unwrap());
+    assert_eq!(
+        actual_freq.contains_key("NULL"),
+        domain["nullable"].as_bool().unwrap()
+    );
+    assert_eq!(
+        !integers.is_empty(),
+        domain["lower_inclusive"].as_bool().unwrap()
+    );
+    assert_eq!(
+        !integers.is_empty(),
+        domain["upper_inclusive"].as_bool().unwrap()
+    );
 }
 
 fn native(case: &Value, materialized_emulated: bool) -> Connection {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE raw(k INTEGER)").unwrap();
     for value in case["initial"]["raw"].as_array().unwrap() {
-        db.execute("INSERT INTO raw VALUES (?1)", params![value["k"].as_i64()]).unwrap();
+        db.execute("INSERT INTO raw VALUES (?1)", params![value["k"].as_i64()])
+            .unwrap();
     }
     if case["initial"]["copy_stage"].is_array() {
-        db.execute_batch("CREATE TABLE copy_stage(k INTEGER)").unwrap();
+        db.execute_batch("CREATE TABLE copy_stage(k INTEGER)")
+            .unwrap();
         for value in case["initial"]["copy_stage"].as_array().unwrap() {
-            db.execute("INSERT INTO copy_stage VALUES (?1)", params![value["k"].as_i64()]).unwrap();
+            db.execute(
+                "INSERT INTO copy_stage VALUES (?1)",
+                params![value["k"].as_i64()],
+            )
+            .unwrap();
         }
     }
     if case["setup_sql"].is_array() {
@@ -138,9 +170,13 @@ fn native(case: &Value, materialized_emulated: bool) -> Connection {
         let stmt = sql.as_str().unwrap();
         if materialized_emulated && index == 0 {
             assert!(stmt.starts_with("CREATE MATERIALIZED VIEW "));
-            db.execute_batch(&stmt.replacen("CREATE MATERIALIZED VIEW ", "CREATE TABLE ", 1)).unwrap();
+            db.execute_batch(&stmt.replacen("CREATE MATERIALIZED VIEW ", "CREATE TABLE ", 1))
+                .unwrap();
         } else if case["classification"] == "Impossible" && index == 0 {
-            assert!(db.execute_batch(stmt).is_err(), "duplicate CREATE must fail");
+            assert!(
+                db.execute_batch(stmt).is_err(),
+                "duplicate CREATE must fail"
+            );
         } else {
             db.execute_batch(stmt).unwrap();
         }
@@ -149,16 +185,32 @@ fn native(case: &Value, materialized_emulated: bool) -> Connection {
 }
 
 fn native_bag(db: &Connection, target: &str) -> Vec<Option<i64>> {
-    assert!(["empty_stage", "copy_stage", "stage.copy_stage", "view_stage", "snap_stage", "raw"].contains(&target));
+    assert!([
+        "empty_stage",
+        "copy_stage",
+        "stage.copy_stage",
+        "view_stage",
+        "snap_stage",
+        "raw"
+    ]
+    .contains(&target));
     let mut statement = db.prepare(&format!("SELECT k FROM {target}")).unwrap();
-    let mut result = statement.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
-        .map(Result::unwrap).collect::<Vec<_>>();
+    let mut result = statement
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     result.sort();
     result
 }
 
 fn frozen_bag(rows: &Value) -> Vec<Option<i64>> {
-    let mut values = rows.as_array().unwrap().iter().map(|row| row["k"].as_i64()).collect::<Vec<_>>();
+    let mut values = rows
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| row["k"].as_i64())
+        .collect::<Vec<_>>();
     values.sort();
     values
 }
@@ -167,7 +219,10 @@ fn frozen_bag(rows: &Value) -> Vec<Option<i64>> {
 fn frozen_table_create_replace_and_duplicate_oracles_match_native_duckdb() {
     for case in freeze()["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
-        if id.contains("logical-view") || id.contains("materialized") || case["classification"] == "Residual" {
+        if id.contains("logical-view")
+            || id.contains("materialized")
+            || case["classification"] == "Residual"
+        {
             continue;
         }
         let analyzed = bundle(case);
@@ -175,47 +230,91 @@ fn frozen_table_create_replace_and_duplicate_oracles_match_native_duckdb() {
         let db = native(case, false);
         let target = case["target"].as_str().unwrap();
         if case["classification"] == "Impossible" {
-            assert!(matches!(result, PhysicalWriteStatePlan::Impossible { .. }), "{id}: {result:?}");
+            assert!(
+                matches!(result, PhysicalWriteStatePlan::Impossible { .. }),
+                "{id}: {result:?}"
+            );
             assert_eq!(native_bag(&db, target), frozen_bag(&case["before"]));
             continue;
         }
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result else {
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = result
+        else {
             panic!("{id}: expected a certified CREATE/CTAS output: {result:?}");
         };
         assert_eq!(transitions.len(), 1, "{id}: single DDL transition");
         let transition = &transitions[0];
         assert_eq!(transition.after().relation(), target);
         assert_bag(transition.after(), &case["after"], id);
-        assert_eq!(transition.affected().inserted() as usize, case["after"].as_array().unwrap().len());
-        assert_eq!(transition.affected().deleted() as usize, case["before"].as_array().map_or(0, Vec::len));
+        assert_eq!(
+            transition.affected().inserted() as usize,
+            case["after"].as_array().unwrap().len()
+        );
+        assert_eq!(
+            transition.affected().deleted() as usize,
+            case["before"].as_array().map_or(0, Vec::len)
+        );
         assert_eq!(transition.affected().updated(), 0);
-        let final_state = final_states.iter().find(|s| s.relation() == target).unwrap();
+        let final_state = final_states
+            .iter()
+            .find(|s| s.relation() == target)
+            .unwrap();
         assert_bag(final_state, &case["after"], id);
-        let schema = analyzed.source_schemas().iter().find(|s| s.relation() == target).unwrap();
+        let schema = analyzed
+            .source_schemas()
+            .iter()
+            .find(|s| s.relation() == target)
+            .unwrap();
         assert_domains(final_state, schema, &case["domain"]);
-        assert_eq!(native_bag(&db, target), frozen_bag(&case["after"]), "{id}: DuckDB full snapshot");
+        assert_eq!(
+            native_bag(&db, target),
+            frozen_bag(&case["after"]),
+            "{id}: DuckDB full snapshot"
+        );
     }
 }
 
 #[test]
 fn materialized_view_freezes_creation_bag_while_source_changes() {
     let freeze = freeze();
-    let case = freeze["cases"].as_array().unwrap().iter()
-        .find(|c| c["id"] == "83-C157-P-materialized").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "83-C157-P-materialized")
+        .unwrap();
     let analyzed = bundle(case);
     let definition = analyzed.inputs()[0].statements().first().unwrap();
-    let sql_semantic_protocol::ProtocolStatement::Query(query) = definition else { panic!("materialized view definition must normalize"); };
-    assert_eq!(query.write().unwrap().definition_mode(), Some(WriteDefinitionMode::CreateMaterializedView));
+    let sql_semantic_protocol::ProtocolStatement::Query(query) = definition else {
+        panic!("materialized view definition must normalize");
+    };
+    assert_eq!(
+        query.write().unwrap().definition_mode(),
+        Some(WriteDefinitionMode::CreateMaterializedView)
+    );
     let result = physical_ordered_write_state_plan(&analyzed, &initial(case));
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = result
+    else {
         panic!("materialized snapshot and source append must be exact: {result:?}");
     };
     assert_eq!(transitions.len(), 2);
-    let snapshot = final_states.iter().find(|s| s.relation() == "snap_stage").unwrap();
+    let snapshot = final_states
+        .iter()
+        .find(|s| s.relation() == "snap_stage")
+        .unwrap();
     let source = final_states.iter().find(|s| s.relation() == "raw").unwrap();
     assert_bag(snapshot, &case["after"], "snap_stage");
     assert_eq!(source.rows().len(), 6);
-    let schema = analyzed.source_schemas().iter().find(|s| s.relation() == "snap_stage").unwrap();
+    let schema = analyzed
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "snap_stage")
+        .unwrap();
     assert_domains(snapshot, schema, &case["domain"]);
     let db = native(case, true);
     assert_eq!(native_bag(&db, "snap_stage"), frozen_bag(&case["after"]));
@@ -225,10 +324,17 @@ fn materialized_view_freezes_creation_bag_while_source_changes() {
 #[test]
 fn if_not_exists_does_not_silently_invent_an_exact_creation() {
     let freeze = freeze();
-    let case = freeze["cases"].as_array().unwrap().iter()
-        .find(|c| c["id"] == "83-C157-N-conditional").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["id"] == "83-C157-N-conditional")
+        .unwrap();
     let result = physical_ordered_write_state_plan(&bundle(case), &initial(case));
-    assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
+    assert!(
+        matches!(result, PhysicalWriteStatePlan::Residual { .. }),
+        "{result:?}"
+    );
 }
 
 #[test]
@@ -243,12 +349,7 @@ fn logical_view_re_evaluates_after_canonical_source_append() {
     let analyzed = bundle(case);
     assert_eq!(analyzed.layers().len(), 3);
     let target_layer = analyzed.layers().last().unwrap();
-    let result = physical_finite_view_read_plan(
-        &analyzed,
-        target_layer.id(),
-        &initial(case),
-        None,
-    );
+    let result = physical_finite_view_read_plan(&analyzed, target_layer.id(), &initial(case), None);
     let PhysicalViewProof::Exact(proof) = result else {
         panic!("VIEW must re-evaluate the canonical post-append physical leaf: {result:?}");
     };
@@ -260,20 +361,27 @@ fn logical_view_re_evaluates_after_canonical_source_append() {
     assert_eq!(proof.terminal[1].source_row_ids, ["raw#1"]);
     assert_eq!(proof.terminal[2].source_row_ids, ["raw#2"]);
     assert_eq!(proof.terminal[3].source_row_ids, ["raw#5"]);
-    let mut values = proof.terminal.iter().map(|row| {
-        match &row.values["k"] {
+    let mut values = proof
+        .terminal
+        .iter()
+        .map(|row| match &row.values["k"] {
             LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
             LiteralValue::Null => None,
             other => panic!("unexpected view value {other:?}"),
-        }
-    }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
     values.sort();
     assert_eq!(values, frozen_bag(&case["after"]));
     assert_eq!(proof.terminal_domains["k"].integer_bounds, Some((1, 3)));
     assert!(!proof.terminal_domains["k"].null_allowed);
     let missing = BTreeMap::from([("k".to_owned(), LiteralValue::Number("0".to_owned()))]);
     assert!(matches!(
-        physical_finite_view_read_plan(&analyzed, target_layer.id(), &initial(case), Some(&missing)),
+        physical_finite_view_read_plan(
+            &analyzed,
+            target_layer.id(),
+            &initial(case),
+            Some(&missing)
+        ),
         PhysicalViewProof::Impossible { .. }
     ));
     let db = native(case, false);
