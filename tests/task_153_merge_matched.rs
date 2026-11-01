@@ -369,9 +369,41 @@ fn frozen_merge_negatives_never_claim_exact_source_winners_or_invalid_final_rows
                 };
                 assert_eq!(format!("{gap:?}"), case["gap"].as_str().unwrap(), "{id}");
                 if case["source"].is_array() {
+                    assert_eq!(id, "82-C153-N-multimatch");
                     let db = native(case);
-                    // Native error behavior does not establish portable semantics.
-                    let _ = db.execute_batch(case["sql"].as_str().unwrap());
+                    let before = state("target", &case["target_before"]);
+                    let source = state("source", &case["source"]);
+                    assert_eq!(native_state(&db, "target"), before, "{id}: prestate");
+                    assert_eq!(native_state(&db, "source"), source, "{id}: source prestate");
+
+                    // Duplicate-match behavior is an engine boundary: DuckDB may
+                    // reject the mutation or select either matching source row.
+                    // Neither outcome establishes a portable source winner.
+                    let native_result = db.execute_batch(case["sql"].as_str().unwrap());
+                    let after = native_state(&db, "target");
+                    if native_result.is_err() {
+                        assert_eq!(after, before, "{id}: atomic failure");
+                    } else {
+                        let possible = case["source"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .map(|winner| {
+                                let mut candidate = case["target_before"].clone();
+                                candidate[0]["score"] = winner["score"].clone();
+                                state("target", &candidate)
+                            })
+                            .collect::<Vec<_>>();
+                        assert!(
+                            possible.contains(&after),
+                            "{id}: native result must preserve every untouched row: {after:?}"
+                        );
+                    }
+                    assert_eq!(
+                        native_state(&db, "source"),
+                        source,
+                        "{id}: complete source bag must remain unchanged"
+                    );
                 }
             }
             "Impossible" => {
@@ -386,7 +418,13 @@ fn frozen_merge_negatives_never_claim_exact_source_winners_or_invalid_final_rows
                 );
                 assert_eq!(
                     native_state(&db, "target"),
-                    state("target", &case["target_before"])
+                    state("target", &case["target_before"]),
+                    "{id}: failed mutation must preserve the complete target bag"
+                );
+                assert_eq!(
+                    native_state(&db, "source"),
+                    state("source", &case["source"]),
+                    "{id}: failed mutation must preserve the complete source bag"
                 );
             }
             other => panic!("{id}: unexpected proof claim {other}"),
