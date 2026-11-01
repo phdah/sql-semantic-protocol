@@ -246,7 +246,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_matched_merge_cases_match_complete_duckdb_bags_and_typed_bounds() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     let cases = frozen["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 8);
     let exact = cases
@@ -272,6 +272,10 @@ fn frozen_matched_merge_cases_match_complete_duckdb_bags_and_typed_bounds() {
         };
         assert_eq!(transitions.len(), 1, "{id}: one atomic action");
         let transition = &transitions[0];
+        assert!(
+            transition.intermediate_states().is_empty(),
+            "{id}: direct MERGE has no constructed CTE or intermediate source"
+        );
         let db = native(case);
         let initial = state("target", &case["target_before"]);
         let source = state("source", &case["source"]);
@@ -388,4 +392,118 @@ fn frozen_merge_negatives_never_claim_exact_source_winners_or_invalid_final_rows
             other => panic!("{id}: unexpected proof claim {other}"),
         }
     }
+}
+
+
+#[test]
+fn ordered_insert_then_two_matched_merges_replay_each_native_state_without_new_source_rows() {
+    let frozen = freeze();
+    let replay = &frozen["ordered_replay"];
+    assert_eq!(replay["id"], "82-C153-P-ordered-replay");
+    assert_eq!(replay["proof"], "Exact");
+    let steps = replay["steps"].as_array().unwrap();
+    assert_eq!(steps.len(), 3);
+
+    let sql = steps
+        .iter()
+        .map(|step| SqlInput::inline(step["sql"].as_str().unwrap()))
+        .collect::<Vec<_>>();
+    let ids = (0..sql.len())
+        .map(|index| format!("task153-replay-{index}"))
+        .collect::<Vec<_>>();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = sql
+        .iter()
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(
+            vec!["id".to_owned()],
+            vec![ConstraintEvidence::new(
+                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-153-replay")
+                    .unwrap(),
+                ConstraintEnforcement::Enforced,
+            )],
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
+
+    let source = state("source", &replay["source"]);
+    let initial = state("target", &replay["target_initial"]);
+    let plan = physical_ordered_write_state_plan(&bundle, &[initial.clone(), source.clone()]);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = &plan
+    else {
+        panic!("expected exact ordered MERGE replay: {plan:?}");
+    };
+    assert_eq!(transitions.len(), steps.len());
+
+    let native_case = serde_json::json!({
+        "pk": true,
+        "target_before": replay["target_initial"],
+        "source": replay["source"]
+    });
+    let db = native(&native_case);
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "target")
+        .unwrap();
+    let source_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "source")
+        .unwrap();
+    assert_domains(&source, source_schema, &replay["source_domains"]);
+
+    for (index, (transition, step)) in transitions.iter().zip(steps).enumerate() {
+        let before = state("target", &step["before"]);
+        let after = state("target", &step["after"]);
+        assert_eq!(transition.before(), &before, "step {index}: canonical before");
+        assert_eq!(native_state(&db, "target"), before, "step {index}: native before");
+        assert_eq!(native_state(&db, "source"), source, "step {index}: source before");
+        assert_domains(&before, schema, &step["before_domains"]);
+        assert_eq!(
+            transition.affected().inserted(),
+            step["affected"]["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            step["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            step["affected"]["deleted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected_target_ordinals(),
+            ordinals(&step["affected_ordinals"]),
+            "step {index}: exact prestate occurrence identities"
+        );
+        assert!(
+            transition.intermediate_states().is_empty(),
+            "step {index}: no independent write intermediate"
+        );
+        db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+        assert_eq!(native_state(&db, "target"), after, "step {index}: native after");
+        assert_eq!(transition.after(), &after, "step {index}: canonical after");
+        assert_domains(&after, schema, &step["after_domains"]);
+        assert_eq!(native_state(&db, "source"), source, "step {index}: unchanged source");
+    }
+    let terminal = state("target", &replay["terminal"]);
+    assert_eq!(transitions.last().unwrap().after(), &terminal);
+    assert_eq!(
+        final_states.iter().find(|s| s.relation() == "target"),
+        Some(&terminal)
+    );
+    assert_eq!(
+        final_states.iter().find(|s| s.relation() == "source"),
+        Some(&source)
+    );
 }
