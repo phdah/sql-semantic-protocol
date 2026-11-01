@@ -195,7 +195,7 @@ fn every_case_has_complete_typed_bags_and_true_not_true_witnesses() {
             .as_array()
             .unwrap()
             .iter()
-            .map(|v| v.as_str().unwrap().to_owned())
+            .map(|v| v.as_str().unwrap())
             .collect::<BTreeSet<_>>()
     );
 }
