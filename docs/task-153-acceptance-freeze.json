@@ -1077,7 +1077,53 @@
           "updated": 0,
           "deleted": 0
         },
-        "affected_ordinals": []
+        "affected_ordinals": [],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 10,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "10": 1,
+              "20": 1
+            }
+          }
+        }
       },
       {
         "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN UPDATE SET score = source.score WHEN MATCHED THEN DELETE",
@@ -1108,7 +1154,59 @@
         },
         "affected_ordinals": [
           0
-        ]
+        ],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 10,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "10": 1,
+              "20": 1
+            }
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 20,
+            "upper": 50,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "20": 1,
+              "50": 1
+            }
+          }
+        }
       },
       {
         "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN DELETE",
@@ -1135,7 +1233,57 @@
         },
         "affected_ordinals": [
           0
-        ]
+        ],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 20,
+            "upper": 50,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "20": 1,
+              "50": 1
+            }
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 20,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "20": 1
+            }
+          }
+        }
       }
     ],
     "terminal": [
@@ -1150,6 +1298,30 @@
     "comparison_assumptions": "one physical source bag, complete target prestate for each ordered statement; no transaction rollback or engine-specific auto-commit claim",
     "source_oracle": "source remains [(1,50)] through every write",
     "no_intermediate_materialization": true,
-    "negative_reference": "82-C153-N-key-collision is Impossible and does not provide a committable partial poststate"
+    "negative_reference": "82-C153-N-key-collision is Impossible and does not provide a committable partial poststate",
+    "source_domains": {
+      "id": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 1,
+        "upper": 1,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "1": 1
+        }
+      },
+      "score": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 50,
+        "upper": 50,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "50": 1
+        }
+      }
+    }
   }
 }
