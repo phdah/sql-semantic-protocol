@@ -31,7 +31,11 @@ Scope: **TASK-155**, child 3/4 of TASK-82. This audit does not close TASK-82 or 
 
 All five conditional cases are explicitly owned by TASK-155 and deferred from native release certification, without weakening any portable exact mandatory case.
 
-## Ordered replay closure\n\n`82-C155-P-ordered-conflict-merge` has two exact transitions on a single target physical bag: ON CONFLICT DO NOTHING preserves the prestate, and the following matched MERGE consumes that same state and updates the original target occurrence. Both intermediate terminal DuckDB bags and source immutability are checked in the task-owned public API and native tests. SQL/dbt/ODCS equality uses the same two-step canonical program.\n\n## Release / parent boundaries
+## Ordered replay closure
+
+`82-C155-P-ordered-conflict-merge` has two exact transitions on a single target physical bag: ON CONFLICT DO NOTHING preserves the prestate, and the following matched MERGE consumes that same state and updates the original target occurrence. Both intermediate terminal DuckDB bags and source immutability are checked in the task-owned public API and native tests. SQL/dbt/ODCS equality uses the same two-step canonical program.
+
+## Release / parent boundaries
 
 TASK-82 still requires TASK-156 and its independent original-AC audit. TASK-91 remains a separate release gate. No code change in this child asserts those approvals.
 
