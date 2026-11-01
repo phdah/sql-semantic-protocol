@@ -253,7 +253,9 @@ fn bare_select_produces_anonymous_layer_output() {
 fn conditional_queryless_create_table_remains_unsupported_and_creates_no_layer() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE IF NOT EXISTS standalone (id INT)")],
+        &[SqlInput::inline(
+            "CREATE TABLE IF NOT EXISTS standalone (id INT)",
+        )],
         "generic",
         &dialect,
     )
