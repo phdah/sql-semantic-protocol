@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-156",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
@@ -1051,7 +1051,7 @@
           "source_before": [
             {
               "id": 1,
-              "score": 1
+              "score": 2
             }
           ],
           "source_before_domains": {
@@ -1069,12 +1069,12 @@
             "score": {
               "type": "INTEGER",
               "nullable": false,
-              "lower": 1,
-              "upper": 1,
+              "lower": 2,
+              "upper": 2,
               "lower_inclusive": true,
               "upper_inclusive": true,
               "frequencies": {
-                "1": 1
+                "2": 1
               }
             }
           },
@@ -1971,8 +1971,8 @@
     "independent_review": false,
     "parent_signoff": false
   },
-  "previous_snapshot": "docs/task-156-acceptance-freeze-v2.json",
-  "reviewed_matrix_change": "The v2 matrix incorrectly conflated SQL parser rejection of MERGE OUTPUT with canonical unsupported semantics. Independent 13-dialect sqlparser CI showed parser_boundary in all 13 cells. V3 records observed parser limitation, without promoting any execution or proof strength.",
+  "previous_snapshot": "docs/task-156-acceptance-freeze-v3.json",
+  "reviewed_matrix_change": "Original TASK-156 cross-producer source law requires the second MERGE to read the first MERGE's committed stage score=2, not the initial stage score=1. V3 frozen matrix had an inconsistent source_before_domain even though the expected terminal was correct. Native DuckDB source proof caught this. V4 repairs the incorrectly frozen source evidence without changing any SQL or claimed result.",
   "dialect_syntax": [
     {
       "id": "computed-set",
