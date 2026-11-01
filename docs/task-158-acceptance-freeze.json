@@ -41,7 +41,7 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
@@ -71,7 +71,7 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
@@ -103,7 +103,7 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
@@ -140,7 +140,7 @@
         }
       ],
       "expected": "exact_row_projection_only",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
@@ -160,7 +160,7 @@
         }
       ],
       "expected": "impossible_duplicate_name",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
@@ -180,7 +180,7 @@
         }
       ],
       "expected": "impossible_missing_column",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
@@ -202,7 +202,7 @@
       "expected": "residual_cast_rewrite_law",
       "owner": "TASK-158",
       "release_disposition": "pending_review",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
@@ -226,7 +226,7 @@
       "expected": "residual_constrained_schema_transition",
       "owner": "TASK-158",
       "release_disposition": "pending_review",
-      "dialect_matrix": "unverified",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
@@ -284,11 +284,143 @@
     "duckdb",
     "databricks"
   ],
-  "dialect_expected": {},
+  "dialect_expected": {
+    "generic": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mysql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "postgresql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "hive": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "sqlite": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "snowflake": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "redshift": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mssql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "clickhouse": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "bigquery": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "ansi": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "duckdb": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "databricks": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ]
+  },
   "adapter_evidence": {
     "direct_sql": "DDL statement and preexisting CREATE TABLE schema carry the lifecycle and typed column declarations",
     "dbt_compiled": "Compiled SQL, not catalog metadata, owns ALTER statement identity; catalog supplies typed prestate only",
     "odcs": "Contract schemas can describe prestate typed columns, not ALTER execution order or default/cast vendor laws",
     "limitation": "Do not claim direct/dbt/ODCS parity until all three independently replay the same canonical states"
-  }
+  },
+  "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells"
 }
