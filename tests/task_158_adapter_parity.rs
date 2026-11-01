@@ -128,7 +128,9 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
         PhysicalWriteStatePlan::Residual { gap, reason, .. } => {
             (format!("Residual:{gap:?}"), reason)
         }
-        other => panic!("unexpected adapter-dependent ALTER result: {other:?}"),
+        PhysicalWriteStatePlan::Impossible { reason, .. } => {
+            ("Impossible".into(), reason)
+        }
     }
 }
 
@@ -136,6 +138,10 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
 fn direct_and_dbt_equivalent_schema_evidence_preserve_alter_classification() {
     for sql in [
         "ALTER TABLE t ADD COLUMN c INTEGER DEFAULT 2",
+        "ALTER TABLE t ADD COLUMN c INTEGER",
+        "ALTER TABLE t ADD COLUMN c INTEGER DEFAULT NULL",
+        "ALTER TABLE t ADD COLUMN a INTEGER",
+        "ALTER TABLE t DROP COLUMN absent",
         "ALTER TABLE t RENAME COLUMN a TO c",
         "ALTER TABLE t DROP COLUMN b",
         "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
@@ -149,6 +155,10 @@ fn direct_and_dbt_equivalent_schema_evidence_preserve_alter_classification() {
 fn direct_and_odcs_equivalent_schema_evidence_preserve_alter_classification() {
     for sql in [
         "ALTER TABLE t ADD COLUMN c INTEGER DEFAULT 2",
+        "ALTER TABLE t ADD COLUMN c INTEGER",
+        "ALTER TABLE t ADD COLUMN c INTEGER DEFAULT NULL",
+        "ALTER TABLE t ADD COLUMN a INTEGER",
+        "ALTER TABLE t DROP COLUMN absent",
         "ALTER TABLE t RENAME COLUMN a TO c",
         "ALTER TABLE t DROP COLUMN b",
         "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
