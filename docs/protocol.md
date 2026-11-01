@@ -1915,3 +1915,25 @@ identity evidence, including a caller-attested identity sequence when
 needed. Missing or opaque default evidence yields a typed residual rather
 than an invented SQL NULL. Other writes set `default_values = false`.
 
+
+### ALTER TABLE column steps (TASK-158)
+
+Portable `ALTER TABLE` column operations normalize to a query-backed transformation whose
+`write.kind` is `schema_alter`. This is **not** a definition or an independent row
+producer. The write's `alter_columns` array contains ordered parser-independent steps:
+`add` carries `column: {name, data_type}`, `has_default` and `default`;
+`drop` carries a column name; `rename` carries `old` and `new`; and
+`set_type` carries a typed replacement column. The `data_type` object uses the
+same canonical datatype representation as `source_schemas`. A missing default
+backfills SQL NULL; an explicit SQL NULL default is distinguishable via
+`has_default`. Unsupported vendor options, expressions and conditional clauses
+remain unsupported statements, never partially normalized transformations.
+
+`physical_ordered_write_state_plan` executes steps against the *previous* complete
+physical table state and typed schema. Exact results retain all duplicate row
+occurrences and NULL values; ALTER transitions expose `before_schema` and
+`after_schema`. Table constraints, referenced keys, cast/rewrite rules and
+session-specific behavior require separately attested evidence. An absent complete
+constraint-free DDL declaration or a nonidentity type rewrite remains Residual,
+even if an SQL parser accepts the syntax. This proof is scoped to row/schema
+projection, not independent certification of vendor DDL transaction behavior.
