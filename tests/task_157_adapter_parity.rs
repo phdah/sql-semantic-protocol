@@ -80,18 +80,20 @@ fn dbt() -> RelationCatalog {
 }
 
 #[cfg(feature = "odcs")]
-fn odcs() -> RelationCatalog {
+fn odcs(case: &Value) -> RelationCatalog {
     use sql_semantic_protocol::parse_odcs_yaml;
 
     let mut contract = String::from(
         "apiVersion: v3.2.0\nkind: DataContract\nid: task157\nname: TASK-157 parity\nversion: 1.0.0\nstatus: active\nschema:\n",
     );
-    for name in NAMES {
+    let target = case["target"].as_str().unwrap();
+    let names = ["raw", target];
+    for name in names {
         contract.push_str(&format!(
             "  - name: {name}\n    physicalName: {name}\n    properties:\n      - name: k\n        physicalType: INTEGER\n"
         ));
     }
-    let known = RelationCatalog::new(NAMES).unwrap();
+    let known = RelationCatalog::new(&names).unwrap();
     let evidence = parse_odcs_yaml(&contract, "duckdb", &known).unwrap();
     RelationCatalog::from_schemas(evidence.source_schemas()).unwrap()
 }
@@ -210,8 +212,8 @@ fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_dbt_schema() {
 fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_odcs_schema() {
     let freeze = frozen();
     let direct = direct();
-    let odcs = odcs();
     for case in freeze["cases"].as_array().unwrap() {
+        let odcs = odcs(case);
         let id = case["id"].as_str().unwrap();
         assert_eq!(
             outcome(case, &scoped_catalog(case, &direct)),
