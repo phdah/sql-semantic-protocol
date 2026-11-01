@@ -281,7 +281,7 @@ fn ordinals(value: &Value) -> Vec<usize> {
 #[test]
 fn fk_and_unique_cases_preserve_complete_sources_and_do_not_guess_native_laws() {
     let freeze = frozen();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 12);
     for case in cases.iter().skip(7) {
@@ -396,6 +396,16 @@ fn fk_and_unique_cases_preserve_complete_sources_and_do_not_guess_native_laws() 
                 if id == "82-C155-N-fk-missing-population" {
                     assert_eq!(gap, PhysicalWriteStateGap::MissingPopulation);
                     assert!(parent.is_none());
+                } else if id == "82-C155-N-fk-violation" {
+                    assert_eq!(gap, PhysicalWriteStateGap::UnprovedOperation);
+                    let db = native(case);
+                    assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err());
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(&before));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+                    assert_eq!(
+                        sorted(&native_state(&db, "parent")),
+                        sorted(parent.as_ref().unwrap())
+                    );
                 } else {
                     assert_eq!(gap, PhysicalWriteStateGap::UnprovedConstraint);
                     let db = native(case);
