@@ -6,11 +6,10 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const TARGET: &str = "warehouse.analytics.stg_orders";
@@ -65,7 +64,8 @@ fn dbt_catalog() -> RelationCatalog {
     let manifest = parse_dbt_manifest(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let parser = dialect_from_name("postgresql").unwrap();
-    let evidence = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", parser.as_ref()).unwrap();
+    let evidence =
+        analyze_dbt_artifacts(&manifest, &catalog, "postgresql", parser.as_ref()).unwrap();
     let mut schemas = evidence.source_schemas().to_vec();
     // Stage and terminal are separately attested identities; dbt owns only
     // the two artifact-backed physical relations. Never fabricate dbt nodes.
@@ -140,9 +140,9 @@ fn row(value: &Value) -> PhysicalWriteRow {
             .map(|column| {
                 (
                     if column == "score" { "amount" } else { column }.to_owned(),
-                    value[column].as_i64().map_or(LiteralValue::Null, |n| {
-                        LiteralValue::Number(n.to_string())
-                    }),
+                    value[column]
+                        .as_i64()
+                        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
                 )
             })
             .collect::<BTreeMap<_, _>>(),
@@ -181,9 +181,7 @@ fn plan(case: &Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
     let configured = sql
         .iter()
         .zip(&ids)
-        .map(|(query, id)| {
-            ConfiguredSqlInput::new(id, query, "postgresql", parser.as_ref())
-        })
+        .map(|(query, id)| ConfiguredSqlInput::new(id, query, "postgresql", parser.as_ref()))
         .collect::<Vec<_>>();
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     if case["target_pk"] == true {
@@ -197,7 +195,9 @@ fn plan(case: &Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
         );
         bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
             TARGET,
-            vec![RelationConstraint::primary_key(vec!["id".to_owned()], vec![enforcement]).unwrap()],
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_owned()], vec![enforcement]).unwrap(),
+            ],
         )
         .unwrap()]);
     }
@@ -223,23 +223,40 @@ fn all_frozen_computed_merge_cases_have_identical_direct_dbt_odcs_proofs() {
     for case in f["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
         let actual = plan(case, &direct);
-        assert_eq!(actual, plan(case, &dbt), "{id}: compiled dbt equivalent schema");
+        assert_eq!(
+            actual,
+            plan(case, &dbt),
+            "{id}: compiled dbt equivalent schema"
+        );
         #[cfg(feature = "odcs")]
         assert_eq!(actual, plan(case, &odcs), "{id}: ODCS equivalent schema");
 
         match case["classification"].as_str().unwrap() {
             "Exact" => {
-                let PhysicalWriteStatePlan::Feasible { transitions, final_states } = actual else {
+                let PhysicalWriteStatePlan::Feasible {
+                    transitions,
+                    final_states,
+                } = actual
+                else {
                     panic!("{id}: expected exact adapter parity, got {actual:?}");
                 };
                 assert_eq!(transitions.len(), case["steps"].as_array().unwrap().len());
-                for (transition, step) in transitions.iter().zip(case["steps"].as_array().unwrap()) {
-                    assert_eq!(transition.before(), &state(step["target"].as_str().unwrap(), &step["before"]));
-                    assert_eq!(transition.after(), &state(step["target"].as_str().unwrap(), &step["after"]));
+                for (transition, step) in transitions.iter().zip(case["steps"].as_array().unwrap())
+                {
+                    assert_eq!(
+                        transition.before(),
+                        &state(step["target"].as_str().unwrap(), &step["before"])
+                    );
+                    assert_eq!(
+                        transition.after(),
+                        &state(step["target"].as_str().unwrap(), &step["after"])
+                    );
                 }
                 for (relation, expected) in case["final"].as_object().unwrap() {
                     assert_eq!(
-                        final_states.iter().find(|s| s.relation() == physical(relation)),
+                        final_states
+                            .iter()
+                            .find(|s| s.relation() == physical(relation)),
                         Some(&state(relation, expected)),
                         "{id}: final complete bag"
                     );
