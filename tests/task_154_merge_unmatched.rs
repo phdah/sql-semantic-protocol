@@ -230,7 +230,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_unmatched_merge_cases_prove_both_complete_bags_and_both_on_directions() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     let cases = frozen["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 12);
     let exact = cases.iter().filter(|case| case["proof"] == "Exact");
