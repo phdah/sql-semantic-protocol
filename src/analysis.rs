@@ -280,9 +280,18 @@ fn analyze_statement(
                 } else {
                     WriteDefinitionMode::CreateTable
                 };
+                let uncertain_lifecycle = create_table.temporary
+                    || create_table.transient
+                    || create_table.external
+                    || create_table.like.is_some()
+                    || create_table.clone.is_some();
+                let mut definition = WriteOperation::definition(target.clone(), mode);
+                if uncertain_lifecycle {
+                    definition = definition.with_definition_execution_unknown();
+                }
                 ProtocolStatement::Query(
-                    analyze_query(query, Some(target.clone()), metadata)
-                        .with_write(Some(WriteOperation::definition(target, mode))),
+                    analyze_query(query, Some(target), metadata)
+                        .with_write(Some(definition)),
                 )
             }
             None if !create_table.if_not_exists
