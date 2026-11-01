@@ -395,7 +395,8 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                         assert!(
                             candidates
                                 .iter()
-                                .any(|candidate| sorted(&after) == sorted(&state("target", candidate))),
+                                .any(|candidate| sorted(&after)
+                                    == sorted(&state("target", candidate))),
                             "{id}: native success must preserve exactly one original target row"
                         );
                     }
