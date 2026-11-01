@@ -1381,5 +1381,85 @@
     "no-default-docs",
     "dbt-core-e2e",
     "active-snapshots"
-  ]
+  ],
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ]
+  }
 }
