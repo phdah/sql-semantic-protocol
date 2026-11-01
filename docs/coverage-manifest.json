@@ -2,9 +2,9 @@
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
     "parent": "TASK-82",
-    "status": "implementation_matrix_expanded_pending_parser_observation_and_review",
+    "status": "complete_bounded_matrix_pending_final_review_and_ci",
     "freeze": "docs/task-153-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "fixture_ids": [
       "82-C153-P",
       "82-C153-N"
@@ -19,12 +19,15 @@
     "release_approved": false,
     "ci_verified": false,
     "freeze_history": [
-      "docs/task-153-acceptance-freeze-v1.json"
+      "docs/task-153-acceptance-freeze-v1.json",
+      "docs/task-153-acceptance-freeze-v2.json"
     ],
     "dialect_matrix_oracle": "tests/task_153_dialect_adapter.rs",
     "adapter_matrix_oracle": "tests/task_153_dialect_adapter.rs",
     "parser_cells_required": 65,
-    "adapter_cells_required": 24
+    "adapter_cells_required": 24,
+    "ordered_replay_oracle": "tests/task_153_merge_matched.rs",
+    "ordered_replay_cases": 1
   },
   "task_80_parent_acceptance": {
     "owner": "TASK-80",
