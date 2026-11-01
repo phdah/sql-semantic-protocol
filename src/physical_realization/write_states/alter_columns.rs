@@ -106,9 +106,10 @@ pub fn physical_alter_column_snapshot(
                         reason: format!("ADD column '{}' already exists", column.name()),
                     };
                 }
-                if columns.iter().any(|existing| {
-                    existing.name().eq_ignore_ascii_case(column.name())
-                }) {
+                if columns
+                    .iter()
+                    .any(|existing| existing.name().eq_ignore_ascii_case(column.name()))
+                {
                     return PhysicalColumnAlterProof::Residual {
                         reason: "ADD column identifier folding differs by SQL dialect".to_string(),
                         before_schema: schema.clone(),
@@ -126,9 +127,13 @@ pub fn physical_alter_column_snapshot(
             }
             PhysicalColumnAlterStep::Drop { column } => {
                 let Some(index) = columns.iter().position(|item| item.name() == column) else {
-                    if columns.iter().any(|existing| existing.name().eq_ignore_ascii_case(column)) {
+                    if columns
+                        .iter()
+                        .any(|existing| existing.name().eq_ignore_ascii_case(column))
+                    {
                         return PhysicalColumnAlterProof::Residual {
-                            reason: "DROP column requires attested identifier case-folding law".to_string(),
+                            reason: "DROP column requires attested identifier case-folding law"
+                                .to_string(),
                             before_schema: schema.clone(),
                             attempted_schema: None,
                         };
@@ -152,9 +157,13 @@ pub fn physical_alter_column_snapshot(
             }
             PhysicalColumnAlterStep::Rename { old, new } => {
                 let Some(index) = columns.iter().position(|item| item.name() == old) else {
-                    if columns.iter().any(|existing| existing.name().eq_ignore_ascii_case(old)) {
+                    if columns
+                        .iter()
+                        .any(|existing| existing.name().eq_ignore_ascii_case(old))
+                    {
                         return PhysicalColumnAlterProof::Residual {
-                            reason: "RENAME source requires attested identifier case-folding law".to_string(),
+                            reason: "RENAME source requires attested identifier case-folding law"
+                                .to_string(),
                             before_schema: schema.clone(),
                             attempted_schema: None,
                         };
@@ -165,14 +174,19 @@ pub fn physical_alter_column_snapshot(
                 };
                 if old != new && old.eq_ignore_ascii_case(new) {
                     return PhysicalColumnAlterProof::Residual {
-                        reason: "case-only RENAME requires attested dialect identifier law".to_string(),
+                        reason: "case-only RENAME requires attested dialect identifier law"
+                            .to_string(),
                         before_schema: schema.clone(),
                         attempted_schema: None,
                     };
                 }
-                if columns.iter().any(|item| item.name() != old && item.name().eq_ignore_ascii_case(new)) {
+                if columns
+                    .iter()
+                    .any(|item| item.name() != old && item.name().eq_ignore_ascii_case(new))
+                {
                     return PhysicalColumnAlterProof::Residual {
-                        reason: "RENAME target may collide under dialect identifier folding".to_string(),
+                        reason: "RENAME target may collide under dialect identifier folding"
+                            .to_string(),
                         before_schema: schema.clone(),
                         attempted_schema: None,
                     };
@@ -202,9 +216,13 @@ pub fn physical_alter_column_snapshot(
             PhysicalColumnAlterStep::SetType { column } => {
                 let Some(index) = columns.iter().position(|item| item.name() == column.name())
                 else {
-                    if columns.iter().any(|item| item.name().eq_ignore_ascii_case(column.name())) {
+                    if columns
+                        .iter()
+                        .any(|item| item.name().eq_ignore_ascii_case(column.name()))
+                    {
                         return PhysicalColumnAlterProof::Residual {
-                            reason: "ALTER TYPE requires attested identifier case-folding law".to_string(),
+                            reason: "ALTER TYPE requires attested identifier case-folding law"
+                                .to_string(),
                             before_schema: schema.clone(),
                             attempted_schema: None,
                         };
@@ -219,18 +237,18 @@ pub fn physical_alter_column_snapshot(
                     // It has no collation, timezone or vendor rounding law.
                     // This certifies the schema/bag projection, not DDL success
                     // in an engine whose operational migration law is unknown.
-                    let lossless_signed_widening = match (
-                        columns[index].data_type(),
-                        column.data_type(),
-                    ) {
-                        (
-                            DataType::SignedInteger { bits: Some(old) },
-                            DataType::SignedInteger { bits: Some(new) },
-                        ) => *new > *old
-                            && matches!(*old, 8 | 16 | 32 | 64)
-                            && matches!(*new, 16 | 32 | 64 | 128),
-                        _ => false,
-                    };
+                    let lossless_signed_widening =
+                        match (columns[index].data_type(), column.data_type()) {
+                            (
+                                DataType::SignedInteger { bits: Some(old) },
+                                DataType::SignedInteger { bits: Some(new) },
+                            ) => {
+                                *new > *old
+                                    && matches!(*old, 8 | 16 | 32 | 64)
+                                    && matches!(*new, 16 | 32 | 64 | 128)
+                            }
+                            _ => false,
+                        };
                     if lossless_signed_widening
                         && columns[index].collation().is_none()
                         && column.collation().is_none()
