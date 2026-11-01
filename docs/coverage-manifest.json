@@ -1,4 +1,24 @@
 {
+  "task_153_matched_merge_acceptance": {
+    "owner": "TASK-153",
+    "parent": "TASK-82",
+    "status": "preimplementation_frozen_pending_ci_and_review",
+    "freeze": "docs/task-153-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "82-C153-P",
+      "82-C153-N"
+    ],
+    "semantic_oracle": "tests/task_153_merge_matched.rs",
+    "mandatory_exact_cases": 5,
+    "mandatory_negative_cases": 3,
+    "dialect_identities": 13,
+    "adapter_sources": 3,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "ci_verified": false
+  },
   "task_80_parent_acceptance": {
     "owner": "TASK-80",
     "freeze": "docs/task-80-parent-acceptance-freeze.json",
