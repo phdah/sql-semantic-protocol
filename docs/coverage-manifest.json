@@ -2,7 +2,7 @@
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
     "parent": "TASK-82",
-    "status": "complete_bounded_matrix_pending_final_review_and_ci",
+    "status": "verified_implementation_pending_independent_review",
     "freeze": "docs/task-153-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -17,7 +17,7 @@
     "child_signed_off": false,
     "parent_signed_off": false,
     "release_approved": false,
-    "ci_verified": false,
+    "ci_verified": true,
     "freeze_history": [
       "docs/task-153-acceptance-freeze-v1.json",
       "docs/task-153-acceptance-freeze-v2.json"
@@ -27,7 +27,21 @@
     "parser_cells_required": 65,
     "adapter_cells_required": 24,
     "ordered_replay_oracle": "tests/task_153_merge_matched.rs",
-    "ordered_replay_cases": 1
+    "ordered_replay_cases": 1,
+    "mandatory_verified": true,
+    "dialect_parser_cells_verified": 65,
+    "adapter_parity_cases_verified": 8,
+    "adapter_parity_paths_verified": 3,
+    "ordered_replay_verified": true,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41296952911",
+    "implementation_ci_head": "45bc97d816d523ecf2874b0ce6baa7257a50b5bf",
+    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/174#pullrequestreview-5727583440",
+    "independent_review_verified": false,
+    "remaining_gates": [
+      "independent reviewer confirmation",
+      "final metadata-head green CI",
+      "TASK-82 independent parent signoff remains separate"
+    ]
   },
   "task_80_parent_acceptance": {
     "owner": "TASK-80",
