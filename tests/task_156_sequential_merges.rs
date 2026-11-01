@@ -502,3 +502,39 @@ fn computed_primary_key_collision_is_impossible_and_duckdb_atomic() {
     assert_eq!(sorted(&native_state(&db, "target")), sorted(&target));
     assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
 }
+
+#[test]
+fn transaction_wrapped_merge_cannot_claim_portable_sequential_commit_laws() {
+    let f = freeze();
+    let boundary = f["conditional_boundaries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|item| item["variant"].as_str().unwrap().contains("transaction"))
+        .unwrap();
+    assert_eq!(boundary["owner"], "TASK-156");
+    assert_eq!(boundary["proof"], "Residual");
+
+    let sql = SqlInput::inline(
+        "BEGIN;
+         MERGE INTO target AS t USING source AS s ON t.id = s.id
+         WHEN MATCHED THEN UPDATE SET score = t.score + s.score;
+         COMMIT;",
+    );
+    let parser = dialect_from_name("duckdb").unwrap();
+    let input = ConfiguredSqlInput::new("task156-transaction", &sql, "duckdb", parser.as_ref());
+    let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog()).unwrap();
+    let target = state("target", &serde_json::json!([{"id": 1, "score": 1}]));
+    let source = state("source", &serde_json::json!([{"id": 1, "score": 1}]));
+    let plan = physical_ordered_write_state_plan(&bundle, &[target, source]);
+    assert!(
+        matches!(
+            plan,
+            PhysicalWriteStatePlan::Residual {
+                gap: PhysicalWriteStateGap::UnsupportedStatement,
+                ..
+            }
+        ),
+        "session/commit semantics require native law evidence, not an invented Exact state: {plan:?}"
+    );
+}
