@@ -382,6 +382,48 @@ fn frozen_negative_merges_fail_closed_and_preserve_native_atomicity() {
                     panic!("{id}: expected typed Residual: {plan:?}");
                 };
                 assert_eq!(format!("{gap:?}"), case["gap"].as_str().unwrap(), "{id}");
+                if id == "82-C154-N-duplicate-match" {
+                    let db = native(case);
+                    let before = state("target", &case["target_before"]);
+                    let source = state("source", &case["source"]);
+                    let executed = db.execute_batch(case["sql"].as_str().unwrap());
+                    let observed = native_state(&db, "target");
+                    if executed.is_err() {
+                        assert_eq!(
+                            sorted_rows(&observed),
+                            sorted_rows(&before),
+                            "{id}: native failed statement is atomic"
+                        );
+                    } else {
+                        // A native success may select either duplicate source
+                        // winner. It does not establish portable exactness.
+                        let winners = case["source"].as_array().unwrap();
+                        let candidates = winners
+                            .iter()
+                            .filter(|winner| winner["id"] == 1)
+                            .map(|winner| {
+                                let mut candidate = case["target_before"].clone();
+                                candidate[0]["score"] = winner["score"].clone();
+                                candidate
+                                    .as_array_mut()
+                                    .unwrap()
+                                    .push(serde_json::json!({"id": 3, "score": 300}));
+                                state("target", &candidate)
+                            })
+                            .collect::<Vec<_>>();
+                        assert!(
+                            candidates
+                                .iter()
+                                .any(|candidate| sorted_rows(candidate) == sorted_rows(&observed)),
+                            "{id}: native success must have a permitted but unproven source winner"
+                        );
+                    }
+                    assert_eq!(
+                        sorted_rows(&native_state(&db, "source")),
+                        sorted_rows(&source),
+                        "{id}: complete independent source is never mutated"
+                    );
+                }
             }
             "Impossible" => {
                 assert!(
