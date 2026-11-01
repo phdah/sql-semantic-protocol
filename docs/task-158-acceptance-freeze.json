@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-158",
   "parent": "TASK-83",
   "fixture_ids": [
@@ -46,7 +46,46 @@
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 2,
+      "after_count": 2,
+      "source_truth": {
+        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 2
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-P-add-null",
@@ -76,7 +115,44 @@
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": 1,
+      "source_truth": {
+        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      }
     },
     {
       "id": "83-C158-P-rename",
@@ -108,7 +184,44 @@
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": 1,
+      "source_truth": {
+        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": []
+      },
+      "typed_domains": {
+        "c": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-P-drop",
@@ -145,7 +258,34 @@
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 2,
+      "after_count": 2,
+      "source_truth": {
+        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-N-duplicate",
@@ -165,7 +305,21 @@
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Impossible",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "entire proposed ALTER rejected atomically",
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0
+        ]
+      },
+      "typed_domains": null
     },
     {
       "id": "83-C158-N-missing",
@@ -185,7 +339,21 @@
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Impossible",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "entire proposed ALTER rejected atomically",
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0
+        ]
+      },
+      "typed_domains": null
     },
     {
       "id": "83-C158-N-type",
@@ -201,13 +369,23 @@
       ],
       "expected": "residual_cast_rewrite_law",
       "owner": "TASK-158",
-      "release_disposition": "pending_review",
+      "release_disposition": "remain unproved until independent engine cast/constraint contract",
       "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Residual",
+      "requirement": "conditional",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "no SQL row truth can be certified without engine law",
+        "true_ordinals": null,
+        "not_true_ordinals": null
+      },
+      "typed_domains": null
     },
     {
       "id": "83-C158-N-key",
@@ -225,13 +403,23 @@
       ],
       "expected": "residual_constrained_schema_transition",
       "owner": "TASK-158",
-      "release_disposition": "pending_review",
+      "release_disposition": "remain unproved until independent engine cast/constraint contract",
       "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
       "adapter_matrix": "unverified",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
       "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "classification": "Residual",
+      "requirement": "conditional",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "no SQL row truth can be certified without engine law",
+        "true_ordinals": null,
+        "not_true_ordinals": null
+      },
+      "typed_domains": null
     }
   ],
   "unverified_mandatory": [
@@ -422,5 +610,34 @@
     "odcs": "Contract schemas can describe prestate typed columns, not ALTER execution order or default/cast vendor laws",
     "limitation": "Do not claim direct/dbt/ODCS parity until all three independently replay the same canonical states"
   },
-  "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells"
+  "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells",
+  "previous_snapshot": "docs/task-158-acceptance-freeze-v2.json",
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    2,
+    4,
+    5,
+    6
+  ],
+  "evidence_sources": [
+    "sql",
+    "dbt",
+    "odcs"
+  ],
+  "coverage": {
+    "mandatory_exact_cases": 4,
+    "mandatory_impossible_cases": 2,
+    "conditional_residual_cases": 2,
+    "dialect_parser_cells_required": 104,
+    "adapter_evidence_sources": 3,
+    "adapter_cases_required": 8,
+    "oracle_required": 8,
+    "core_exact_or_impossible_cases": 6
+  }
 }
