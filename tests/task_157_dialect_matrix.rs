@@ -143,8 +143,16 @@ fn portable_ctas_does_not_upgrade_unproved_temporary_storage_laws() {
 #[test]
 fn parsed_table_storage_options_never_claim_plain_create_exactness() {
     let examples = [
-        ("sqlite", "CREATE TABLE storage_stage (k INTEGER) STRICT", false),
-        ("sqlite", "CREATE TABLE storage_stage (k INTEGER) WITHOUT ROWID", false),
+        (
+            "sqlite",
+            "CREATE TABLE storage_stage (k INTEGER) STRICT",
+            false,
+        ),
+        (
+            "sqlite",
+            "CREATE TABLE storage_stage (k INTEGER) WITHOUT ROWID",
+            false,
+        ),
         (
             "postgresql",
             "CREATE TABLE storage_stage (k INTEGER) WITH (fillfactor = 70)",
@@ -172,10 +180,13 @@ fn parsed_table_storage_options_never_claim_plain_create_exactness() {
                     "{dialect}: parser-accepted storage variant cannot be an exact CREATE"
                 );
             }
-            statement => panic!(
-                "{dialect}: unsupported storage variant must fail closed: {statement:?}"
-            ),
+            statement => {
+                panic!("{dialect}: unsupported storage variant must fail closed: {statement:?}")
+            }
         }
     }
-    assert!(parsed >= 2, "at least two storage variants must be exercised");
+    assert!(
+        parsed >= 2,
+        "at least two storage variants must be exercised"
+    );
 }
