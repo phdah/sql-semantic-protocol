@@ -7,8 +7,10 @@ use duckdb::{params, Connection};
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
+    SchemaColumn, SqlInput,
 };
 
 fn freeze() -> Value {
@@ -84,7 +86,26 @@ fn analyze(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
         .zip(&ids)
         .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
-    analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap()
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
+    if case["target_pk"] == true {
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::primary_key(
+                vec!["id".to_owned()],
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata,
+                        "task156",
+                    )
+                    .unwrap(),
+                    ConstraintEnforcement::Enforced,
+                )],
+            )
+            .unwrap()],
+        )
+        .unwrap()]);
+    }
+    bundle
 }
 
 fn sorted(state: &PhysicalWriteState) -> Vec<String> {
@@ -99,10 +120,15 @@ fn sorted(state: &PhysicalWriteState) -> Vec<String> {
 
 fn native(case: &Value) -> Connection {
     let db = Connection::open_in_memory().unwrap();
+    let target_ddl = if case["target_pk"] == true {
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);"
+    } else {
+        "CREATE TABLE target(id INTEGER, score INTEGER);"
+    };
+    db.execute_batch(target_ddl).unwrap();
     db.execute_batch(
         "CREATE TABLE source(id INTEGER, score INTEGER);
          CREATE TABLE stage(id INTEGER, score INTEGER);
-         CREATE TABLE target(id INTEGER, score INTEGER);
          CREATE TABLE terminal(id INTEGER, score INTEGER);",
     )
     .unwrap();
@@ -229,7 +255,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     for case in frozen["cases"].as_array().unwrap() {
         if case["classification"] != "Exact" {
             continue;
@@ -285,6 +311,21 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
                     .get(source)
                     .unwrap()
                     .exact_domains(source_schema)
+            );
+            assert_domains(
+                &native_state(&db, source),
+                source_schema,
+                &step["source_before_domains"],
+            );
+            assert_eq!(
+                native_truth(&db, source, target, false),
+                ordinals(&step["on_true_source_ordinals"]),
+                "{id}: ON TRUE source occurrence partition"
+            );
+            assert_eq!(
+                native_truth(&db, source, target, true),
+                ordinals(&step["on_not_true_source_ordinals"]),
+                "{id}: ON NOT TRUE source occurrence partition"
             );
             assert_eq!(
                 native_truth(&db, target, source, false),
@@ -370,4 +411,57 @@ fn duplicate_merge_matches_remain_a_typed_residual() {
         ),
         "duplicate source matches cannot select an arbitrary winner: {plan:?}"
     );
+}
+
+#[test]
+fn computed_primary_key_collision_is_impossible_and_duckdb_atomic() {
+    let frozen = freeze();
+    let case = frozen["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "82-C156-N-computed-duplicate-primary-key")
+        .unwrap();
+    assert_eq!(case["classification"], "Impossible");
+    let bundle = analyze(case);
+    let original = all_initial(case);
+    let plan = physical_ordered_write_state_plan(&bundle, &original);
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+        "an enforced computed primary-key collision cannot be feasible: {plan:?}"
+    );
+    let step = &case["steps"][0];
+    let db = native(case);
+    let target = state("target", &case["initial"]["target"]);
+    let source = state("source", &case["initial"]["source"]);
+    assert_eq!(sorted(&native_state(&db, "target")), sorted(&target));
+    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+    assert_eq!(
+        native_truth(&db, "target", "source", false),
+        ordinals(&step["on_true_target_ordinals"])
+    );
+    assert_eq!(
+        native_truth(&db, "target", "source", true),
+        ordinals(&step["on_not_true_target_ordinals"])
+    );
+    assert_eq!(
+        native_truth(&db, "source", "target", false),
+        ordinals(&step["on_true_source_ordinals"])
+    );
+    assert_eq!(
+        native_truth(&db, "source", "target", true),
+        ordinals(&step["on_not_true_source_ordinals"])
+    );
+    let target_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
+    assert_domains(&target, target_schema, &step["before_domains"]);
+    assert!(
+        db.execute_batch(step["sql"].as_str().unwrap()).is_err(),
+        "native DuckDB must enforce the post-update PRIMARY KEY"
+    );
+    assert_eq!(sorted(&native_state(&db, "target")), sorted(&target));
+    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
 }
