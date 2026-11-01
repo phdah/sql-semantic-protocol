@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-154",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
@@ -1710,5 +1710,7 @@
     "tests/task_154_merge_unmatched.rs",
     "tests/task_154_dialect_adapter.rs",
     "tests/task_154_acceptance_inventory.rs"
-  ]
+  ],
+  "previous_snapshot": "docs/task-154-acceptance-freeze-v1.json",
+  "revision_note": "Reviewed correction: absent source population has unknown ON partitions, never NOT TRUE; v1 preserved unchanged."
 }
