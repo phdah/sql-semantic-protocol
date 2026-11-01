@@ -36,6 +36,7 @@
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
+//! - physical_alter_column_snapshot proves constraint-free, complete-bag column projections; ordered ALTER statements normalize into typed canonical write steps with conservative engine-law boundaries.
 //! - PhysicalWriteTransition::returning_exact_domains derives exact schema-backed returned value frequencies, including empty INSERT RETURNING bags.
 //! - InsertCteSource preserves one canonical producer/consumer CTE pair for INSERT SELECT without inventing physical stage populations.
 //! - JoinedMutationCteSource preserves an exact read-only CTE producer feeding UPDATE FROM or DELETE USING without independent physical insertion.
@@ -169,10 +170,10 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_closed_world_schema_plan, physical_finite_aggregate_bag_plan,
-    physical_finite_chain_bag_plan, physical_finite_composed_page_membership_plan,
-    physical_finite_composed_page_plan, physical_finite_cte_bag_plan,
-    physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
+    physical_alter_column_snapshot, physical_closed_world_schema_plan,
+    physical_finite_aggregate_bag_plan, physical_finite_chain_bag_plan,
+    physical_finite_composed_page_membership_plan, physical_finite_composed_page_plan,
+    physical_finite_cte_bag_plan, physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
     physical_finite_join_aggregate_plan, physical_finite_joined_exists_bag_plan,
     physical_finite_page_bag_plan, physical_finite_page_membership_plan,
     physical_finite_producer_exists_plan, physical_finite_quantified_comparison,
@@ -187,30 +188,30 @@ pub use physical_realization::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
     physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
-    PhysicalAggregateTruth, PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact,
-    PhysicalCteInput, PhysicalCteNode, PhysicalCteProof, PhysicalCteRef,
-    PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof,
-    PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact, PhysicalFiniteChainProof,
-    PhysicalFiniteExistsExact, PhysicalFiniteExistsProof, PhysicalFiniteInExact,
-    PhysicalFiniteInProof, PhysicalFinitePageExact, PhysicalFinitePageProof,
-    PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact,
-    PhysicalFiniteRankProof, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
-    PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalFiniteTableExact,
-    PhysicalFiniteTableProof, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
-    PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
-    PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact,
-    PhysicalJoinedExistsProof, PhysicalJointSourcePlan, PhysicalOrderedCteExact,
-    PhysicalOrderedCteProof, PhysicalPageRow, PhysicalPlanNode, PhysicalPlanRef,
-    PhysicalProducerDomain, PhysicalProducerExistsExact, PhysicalProducerExistsProof,
-    PhysicalProducerRow, PhysicalProofGap, PhysicalQuantifiedColumnDomain,
-    PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
-    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
-    PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof, PhysicalSetColumnDomain,
-    PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSourcePlan,
-    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalViewExact, PhysicalViewProof, PhysicalWriteColumnDomain,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
-    PhysicalWriteTransition,
+    PhysicalAggregateTruth, PhysicalColumnAlterProof, PhysicalColumnAlterStep,
+    PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact, PhysicalCteInput,
+    PhysicalCteNode, PhysicalCteProof, PhysicalCteRef, PhysicalExistsColumnDomain,
+    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
+    PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteExistsExact,
+    PhysicalFiniteExistsProof, PhysicalFiniteInExact, PhysicalFiniteInProof,
+    PhysicalFinitePageExact, PhysicalFinitePageProof, PhysicalFiniteQuantifiedExact,
+    PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
+    PhysicalFiniteSetExact, PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact,
+    PhysicalFiniteSetTreeProof, PhysicalFiniteTableExact, PhysicalFiniteTableProof,
+    PhysicalFiniteWindowExact, PhysicalFiniteWindowProof, PhysicalIdentitySequence,
+    PhysicalInColumnDomain, PhysicalInTruth, PhysicalJoinedAggregateExact,
+    PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
+    PhysicalJointSourcePlan, PhysicalOrderedCteExact, PhysicalOrderedCteProof, PhysicalPageRow,
+    PhysicalPlanNode, PhysicalPlanRef, PhysicalProducerDomain, PhysicalProducerExistsExact,
+    PhysicalProducerExistsProof, PhysicalProducerRow, PhysicalProofGap,
+    PhysicalQuantifiedColumnDomain, PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact,
+    PhysicalQuantifiedScalarProof, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow,
+    PhysicalRowTarget, PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof,
+    PhysicalSetColumnDomain, PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple,
+    PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalViewExact, PhysicalViewProof,
+    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
+    PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,

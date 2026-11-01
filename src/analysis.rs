@@ -422,6 +422,25 @@ fn analyze_statement(
                 )),
             )
         }
+        SqlStatement::AlterTable {
+            name,
+            if_exists,
+            only,
+            operations,
+            location,
+            on_cluster,
+            iceberg,
+        } => {
+            if *if_exists || *only || location.is_some() || on_cluster.is_some() || *iceberg {
+                unsupported_write_statement(
+                    "alter_table",
+                    "unsupported_alter_lifecycle",
+                    "conditional, storage or vendor ALTER TABLE requires engine evidence",
+                )
+            } else {
+                analyze_alter_columns(name, operations, metadata.dialect_name)
+            }
+        }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
         SqlStatement::Update {
             table,
@@ -454,6 +473,7 @@ fn analyze_statement(
 
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
 mod aggregation;
+mod alter_columns;
 mod arithmetic_domains;
 mod cast_domains;
 pub(crate) mod constraints;
@@ -482,6 +502,7 @@ mod typing;
 mod writes;
 
 use aggregation::*;
+use alter_columns::*;
 use arithmetic_domains::*;
 use cast_domains::*;
 use constraints::*;

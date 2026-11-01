@@ -201,6 +201,8 @@ pub struct PhysicalWriteTransition {
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
     returning_columns: Vec<String>,
+    before_schema: Option<RelationSchema>,
+    after_schema: Option<RelationSchema>,
 }
 
 impl PhysicalWriteTransition {
@@ -220,6 +222,16 @@ impl PhysicalWriteTransition {
     pub fn after(&self) -> &PhysicalWriteState {
         &self.after
     }
+    /// Typed pre-transition schema for an ALTER TABLE column operation.
+    pub fn before_schema(&self) -> Option<&RelationSchema> {
+        self.before_schema.as_ref()
+    }
+
+    /// Typed post-transition schema for an exactly proved ALTER TABLE operation.
+    pub fn after_schema(&self) -> Option<&RelationSchema> {
+        self.after_schema.as_ref()
+    }
+
     /// Exact logical action counts, not estimated source-row counts.
     pub fn affected(&self) -> WriteRowCounts {
         self.affected
@@ -481,6 +493,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
     if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
         return failure(None, error);
     }
+    let mut execution_bundle = bundle.clone();
+    let mut executed_create = BTreeSet::<String>::new();
     let mut transitions = Vec::new();
     for layer in bundle.layers() {
         let Some(kind) = layer.write_kind() else {
@@ -513,14 +527,78 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut mutation_returning_rows = Vec::new();
         let mut affected_target_ordinals = Vec::new();
         let mut definition_source_row_ids = Vec::new();
+        let mut before_schema = None;
+        let mut after_schema = None;
         let result = match kind {
-            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref())
-                .map(|(after, counts, source_row_ids)| {
-                    definition_source_row_ids = source_row_ids;
-                    (after, counts)
-                }),
+            WriteKind::SchemaAlter => {
+                let prior = before.as_ref().ok_or_else(|| {
+                    residual_gap(
+                        PhysicalWriteStateGap::MissingPopulation,
+                        "ALTER TABLE requires a prior complete physical table population",
+                    )
+                });
+                let schema = execution_bundle
+                    .source_schemas()
+                    .iter()
+                    .find(|entry| entry.relation() == target);
+                match (prior, schema) {
+                    (Err(error), _) => Err(error),
+                    (_, None) => Err(residual_gap(
+                        PhysicalWriteStateGap::MissingSchema,
+                        "ALTER TABLE requires a prior complete typed schema",
+                    )),
+                    (Ok(prior), Some(schema)) => {
+                        // Only a complete schema-only CREATE in this input can
+                        // attest the absence of declared table constraints.
+                        // Catalog/adapter schemas alone do not certify this.
+                        let declared_create = executed_create.contains(target);
+                        let constrained = bundle.relation_constraints().iter().any(|set| {
+                            set.relation() == target || set.constraints().iter().any(|constraint| {
+                                matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
+                                    if key.referenced_relation() == target)
+                            })
+                        });
+                        let inventory = if declared_create && !constrained {
+                            Some(&[][..])
+                        } else {
+                            None
+                        };
+                        match alter_columns::physical_alter_column_snapshot(
+                            schema,
+                            prior,
+                            write.column_alter_steps(),
+                            inventory,
+                        ) {
+                            PhysicalColumnAlterProof::Exact { schema, state } => {
+                                before_schema = execution_bundle
+                                    .source_schemas()
+                                    .iter()
+                                    .find(|entry| entry.relation() == target)
+                                    .cloned();
+                                after_schema = Some(schema);
+                                Ok((state, WriteRowCounts::new(0, 0, 0)))
+                            }
+                            PhysicalColumnAlterProof::Impossible { reason } => {
+                                Err(impossible(reason))
+                            }
+                            PhysicalColumnAlterProof::Residual { reason, .. } => Err(residual_gap(
+                                PhysicalWriteStateGap::UnprovedOperation,
+                                reason,
+                            )),
+                        }
+                    }
+                }
+            }
+            WriteKind::Definition => {
+                define_rows(&execution_bundle, query, &states, target, before.as_ref()).map(
+                    |(after, counts, source_row_ids)| {
+                        definition_source_row_ids = source_row_ids;
+                        (after, counts)
+                    },
+                )
+            }
             WriteKind::Append => append_rows(
-                bundle,
+                &execution_bundle,
                 query,
                 &states,
                 target,
@@ -529,7 +607,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 &mut intermediate_states,
             ),
             WriteKind::Update | WriteKind::Delete => mutate_rows(
-                bundle,
+                &execution_bundle,
                 query,
                 &states,
                 target,
@@ -541,7 +619,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 },
             ),
             WriteKind::ConditionalMutation => merge_rows(
-                bundle,
+                &execution_bundle,
                 query,
                 &states,
                 target,
@@ -572,13 +650,16 @@ pub fn physical_ordered_write_state_plan_with_identities(
                     impossible("constructed rows contradict DML count law"),
                 );
             }
-        } else if kind != WriteKind::Definition {
+        } else if !matches!(kind, WriteKind::Definition | WriteKind::SchemaAlter) {
             return failure(
                 Some(layer.id()),
                 residual("missing canonical write count law"),
             );
         }
-        if let Err(error) = validate_state(bundle, &after) {
+        if let Some(schema) = &after_schema {
+            execution_bundle.replace_physical_source_schema(schema.clone());
+        }
+        if let Err(error) = validate_state(&execution_bundle, &after) {
             return failure(Some(layer.id()), error);
         }
         let before = before.unwrap_or_else(|| PhysicalWriteState {
@@ -586,11 +667,16 @@ pub fn physical_ordered_write_state_plan_with_identities(
             rows: Vec::new(),
         });
         states.insert(target.to_string(), after.clone());
-        if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
+        if write.definition_mode() == Some(WriteDefinitionMode::CreateTable) {
+            executed_create.insert(target.to_string());
+        }
+        if let Err(error) =
+            validate_ordered_constraints(&execution_bundle, &states, &identity_columns)
+        {
             return failure(Some(layer.id()), error);
         }
         let returning = if !write.returning_columns().is_empty() {
-            let schema = match projection::schema_for(bundle, target) {
+            let schema = match projection::schema_for(&execution_bundle, target) {
                 Ok(schema) => schema,
                 Err(error) => return failure(Some(layer.id()), error),
             };
@@ -608,7 +694,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             let affected_rows: Vec<&PhysicalWriteRow> = match kind {
                 WriteKind::Append => after.rows.iter().skip(before.rows.len()).collect(),
                 WriteKind::Update | WriteKind::Delete => mutation_returning_rows.iter().collect(),
-                WriteKind::Definition | WriteKind::ConditionalMutation => {
+                WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::ConditionalMutation => {
                     return failure(
                         Some(layer.id()),
                         residual("RETURNING is not implemented for this write kind"),
@@ -647,6 +733,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
             intermediate_states,
             returning,
             returning_columns: write.returning_columns().to_vec(),
+            before_schema,
+            after_schema,
         });
     }
     PhysicalWriteStatePlan::Feasible {
@@ -759,6 +847,7 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     }
 }
 
+mod alter_columns;
 mod boolean_checks;
 mod check_comparisons;
 mod constraints;
@@ -770,6 +859,9 @@ mod type_validation;
 mod typed_populations;
 mod typed_values;
 
+pub use alter_columns::{
+    physical_alter_column_snapshot, PhysicalColumnAlterProof, PhysicalColumnAlterStep,
+};
 pub use typed_populations::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
     physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,

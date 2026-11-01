@@ -293,6 +293,19 @@ impl SchemaColumn {
         &self.name
     }
 
+    /// Rename this column without discarding typed or comparison evidence.
+    pub fn renamed(mut self, name: impl Into<String>) -> Result<Self, RelationMetadataError> {
+        let name = name.into();
+        if name.trim().is_empty() {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "column name cannot be empty".to_string(),
+            });
+        }
+        self.name = name;
+        Ok(self)
+    }
+
     /// Return the canonical declared datatype.
     pub fn data_type(&self) -> &DataType {
         &self.data_type

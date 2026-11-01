@@ -1,10 +1,10 @@
 ---
 id: TASK-158
 title: Prove ALTER ADD DROP RENAME TYPE column transitions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,10 @@ type: feature
 - **Numerical/row-state oracle:** table (a=1) ADD b DEFAULT 2 => row (1,2); RENAME a TO c => (c=1,b=2).
 - **Typed conditional boundary:** Engine-specific cast/rewrite failure is typed residual with before/after schema. Owner: TASK-158.
 - **Original TASK-83 criteria:** #2, #4, #5, #6.
+
+## Implementation progress (2026-11-01)
+
+PR #179 includes SQL AST `ALTER TABLE` normalization, a canonical `schema_alter` write kind with ordered typed operations, and complete-bag replay for conservative ADD/DROP/RENAME/identical-TYPE and provably lossless integer widening transitions. `PhysicalWriteTransition` retains exact before/after schemas, and unproved casts retain typed before/proposed schemas. The v1 inventory is preserved as `docs/task-158-acceptance-freeze-v1.json`; active `docs/task-158-acceptance-freeze.json` is v3 with typed domains, exact row truth partitions and 104 observed parser classifications. SQL/dbt/ODCS, DuckDB and negative tests have been added. `docs/task-158-acceptance-audit.md` records the still-open evidence obligations. No original AC is signed off until final-head CI, complete evidence and independent review are verified. Parent TASK-83 remains open.
 
 ## Acceptance Criteria
 

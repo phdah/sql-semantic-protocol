@@ -194,6 +194,22 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         "assignments": write.assignments().iter().map(merge_assignment_to_value).collect::<Vec<_>>(),
         "state_effect": state_effect
     });
+    if !write.column_alter_steps().is_empty() {
+        value["alter_columns"] = json!(write.column_alter_steps().iter().map(|step| match step {
+            ColumnAlterStep::Add { column, default } => json!({
+                "kind": "add",
+                "column": { "name": column.name(), "data_type": data_type_to_value(column.data_type()) },
+                "has_default": default.is_some(),
+                "default": default.as_ref().map_or(Value::Null, literal_value_to_value),
+            }),
+            ColumnAlterStep::Drop { column } => json!({ "kind": "drop", "column": column }),
+            ColumnAlterStep::Rename { old, new } => json!({ "kind": "rename", "old": old, "new": new }),
+            ColumnAlterStep::SetType { column } => json!({
+                "kind": "set_type",
+                "column": { "name": column.name(), "data_type": data_type_to_value(column.data_type()) },
+            }),
+        }).collect::<Vec<_>>());
+    }
     if write.view_execution_unknown() {
         value["view_execution_unknown"] = json!(true);
     }

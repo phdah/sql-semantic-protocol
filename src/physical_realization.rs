@@ -591,13 +591,14 @@ pub use window_bags::{
     physical_finite_window_bag_plan, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
 };
 pub use write_states::{
-    physical_closed_world_schema_plan, physical_ordered_write_state_plan,
-    physical_ordered_write_state_plan_with_identities, physical_typed_append_schema_plan,
-    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_ordered_write_plan, physical_typed_value_plan, PhysicalIdentitySequence,
-    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
+    physical_alter_column_snapshot, physical_closed_world_schema_plan,
+    physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
+    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
+    physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
+    physical_typed_value_plan, PhysicalColumnAlterProof, PhysicalColumnAlterStep,
+    PhysicalIdentitySequence, PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
 use composition::*;
