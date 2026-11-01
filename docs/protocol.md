@@ -618,8 +618,9 @@ regardless of their original adapter or SQL DDL source.
 
 Optional `relation_constraints` metadata records parser-independent relation and column
 constraints for named relations. It is separate from transformation semantics and from
-`source_schemas`; a relation can therefore carry metadata even when a queryless `CREATE TABLE`
-produces no transformation layer.
+`source_schemas`; a relation can therefore carry metadata independently of transformation semantics.
+Plain schema-only `CREATE TABLE` also creates an explicit empty relation definition layer;
+conditional, vendor and unsupported queryless forms remain explicit residuals.
 
 Each relation entry contains a deterministic `constraints` array. Relation-scoped unsupported
 metadata remains in that entry's optional `diagnostics` array. Diagnostics that cannot be
