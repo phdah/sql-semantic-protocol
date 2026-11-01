@@ -2,7 +2,7 @@
   "task_154_unmatched_merge_acceptance": {
     "owner": "TASK-154",
     "parent": "TASK-82",
-    "status": "bounded_ac_verified_independent_review_pending",
+    "status": "bounded_ac_signed_off_owner_exception",
     "freeze": "docs/task-154-acceptance-freeze.json",
     "freeze_version": 4,
     "fixture_ids": [
@@ -15,7 +15,7 @@
     "adapter_sources": 3,
     "full_bag_oracle": "tests/task_154_merge_unmatched.rs",
     "dialect_adapter_oracle": "tests/task_154_dialect_adapter.rs",
-    "child_signed_off": false,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "release_approved": false,
     "ci_verified": true,
@@ -28,8 +28,8 @@
     "vendor_parser_cells_required": 26,
     "ordered_replay_adapter_paths": 3,
     "mandatory_adapter_cases": 13,
-    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41322646368",
-    "implementation_ci_head": "35f8561f6598fc333f1437828929ed9edad6c824",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41323578451",
+    "implementation_ci_head": "84d8d2b152e2d582491dbec231c3ef8c5078fae1",
     "mandatory_verified": true,
     "mandatory_exact_verified": 9,
     "mandatory_negative_verified": 3,
@@ -39,13 +39,15 @@
     "adapter_ordered_replay_cases_verified": 1,
     "adapter_parity_paths_verified": 3,
     "ordered_replay_verified": true,
-    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728876718",
+    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728930928",
     "independent_review_verified": false,
-    "remaining_gates": [
-      "independent distinct-account reviewer approval or explicit project-owner exception",
-      "final metadata-head CI must pass before merge"
-    ],
-    "merge_pr": "https://github.com/phdah/sql-semantic-protocol/pull/175"
+    "remaining_gates": [],
+    "merge_pr": "https://github.com/phdah/sql-semantic-protocol/pull/175",
+    "owner_exception_approved": true,
+    "owner_exception_date": "2026-11-01",
+    "owner_exception_evidence": "https://github.com/phdah/sql-semantic-protocol/pull/175#issuecomment-6560869104",
+    "owner_exception_to_independent_review": true,
+    "final_metadata_head_ci_required_before_merge": true
   },
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
