@@ -4,7 +4,7 @@
     "parent": "TASK-82",
     "status": "implementation_in_progress",
     "freeze": "docs/task-154-acceptance-freeze.json",
-    "freeze_version": 3,
+    "freeze_version": 4,
     "fixture_ids": [
       "82-C154-P",
       "82-C154-N"
@@ -21,9 +21,15 @@
     "ci_verified": false,
     "freeze_history": [
       "docs/task-154-acceptance-freeze-v1.json",
-      "docs/task-154-acceptance-freeze-v2.json"
+      "docs/task-154-acceptance-freeze-v2.json",
+      "docs/task-154-acceptance-freeze-v3.json"
     ],
-    "ordered_replay_cases": 1
+    "ordered_replay_cases": 1,
+    "vendor_parser_cells_required": 26,
+    "ordered_replay_adapter_paths": 3,
+    "mandatory_adapter_cases": 13,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41320338392",
+    "implementation_ci_head": "b8626fff379485418b4153011fb04a70b5329881"
   },
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
