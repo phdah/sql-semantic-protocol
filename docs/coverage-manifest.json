@@ -1,4 +1,25 @@
 {
+  "task_154_unmatched_merge_acceptance": {
+    "owner": "TASK-154",
+    "parent": "TASK-82",
+    "status": "implementation_in_progress",
+    "freeze": "docs/task-154-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "82-C154-P",
+      "82-C154-N"
+    ],
+    "exact_cases": 9,
+    "negative_cases": 3,
+    "parser_cells_required": 65,
+    "adapter_sources": 3,
+    "full_bag_oracle": "tests/task_154_merge_unmatched.rs",
+    "dialect_adapter_oracle": "tests/task_154_dialect_adapter.rs",
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "ci_verified": false
+  },
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
     "parent": "TASK-82",
