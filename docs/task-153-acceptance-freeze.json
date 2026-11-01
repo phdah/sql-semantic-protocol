@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-153",
   "parent": "TASK-82",
-  "status": "preimplementation_frozen_pending_ci_and_review",
+  "status": "implementation_matrix_expanded_pending_parser_observation_and_review",
   "freeze_date": "2026-11-01",
   "fixture_ids": [
     "82-C153-P",
@@ -194,7 +194,13 @@
             "50": 1
           }
         }
-      }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-P-delete-first",
@@ -313,7 +319,13 @@
             "50": 1
           }
         }
-      }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-P-fallback-delete",
@@ -432,7 +444,13 @@
             "-5": 1
           }
         }
-      }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-N-null-key",
@@ -577,7 +595,14 @@
             "99": 1
           }
         }
-      }
+      },
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-N-no-match",
@@ -701,7 +726,13 @@
             "30": 1
           }
         }
-      }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-N-multimatch",
@@ -732,7 +763,14 @@
       "gap": "UnprovedOperation",
       "pk": true,
       "owner": "TASK-153",
-      "reason": "two source matches cannot select a unique branch evaluation"
+      "reason": "two source matches cannot select a unique branch evaluation",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-N-key-collision",
@@ -758,7 +796,13 @@
       "proof": "Impossible",
       "pk": true,
       "owner": "TASK-153",
-      "reason": "updated id=2 collides with untouched id=2"
+      "reason": "updated id=2 collides with untouched id=2",
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     },
     {
       "id": "82-C153-N-missing-source",
@@ -780,7 +824,10 @@
       "gap": "MissingPopulation",
       "pk": true,
       "owner": "TASK-153",
-      "reason": "no complete source bag may be invented"
+      "reason": "no complete source bag may be invented",
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
     }
   ],
   "conditional_boundaries": [
@@ -838,6 +885,38 @@
     "independent_review": false,
     "ci_verified": false,
     "child_done": false,
-    "parent_done": false
-  }
+    "parent_done": false,
+    "dialect_matrix_verified": false,
+    "adapter_paths_verified": false
+  },
+  "previous_snapshot": "docs/task-153-acceptance-freeze-v1.json",
+  "vendor_parser_syntax": [
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id",
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score RETURNING id"
+  ],
+  "dialect_expected": null,
+  "dialect_cells_required": 65,
+  "dialect_matrix_fixture_version": 2,
+  "adapter_cells_required": 24,
+  "adapter_equivalent_evidence": "same typed source/target catalog and explicit enforced PK metadata across direct SQL, dbt warehouse catalog and ODCS physical schema; test both exact and fail-closed cases at canonical interpreter seam",
+  "sql_oracles": "tests/task_153_merge_matched.rs",
+  "dialect_adapter_oracles": "tests/task_153_dialect_adapter.rs",
+  "vendor_boundaries": [
+    {
+      "id": "82-C153-N-vendor-1",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id",
+      "owner": "TASK-153",
+      "proof": "Residual",
+      "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
+      "evidence_owner": "TASK-153"
+    },
+    {
+      "id": "82-C153-N-vendor-2",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score RETURNING id",
+      "owner": "TASK-153",
+      "proof": "Residual",
+      "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
+      "evidence_owner": "TASK-153"
+    }
+  ]
 }
