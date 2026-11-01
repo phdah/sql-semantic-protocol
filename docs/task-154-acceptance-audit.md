@@ -16,10 +16,12 @@ The task-specific active v4 matrix is `docs/task-154-acceptance-freeze.json`, li
 
 ## Standards and specification review
 
-The [Matt two-axis review COMMENT](https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728876718) reports **no blocking implementation findings** against AGENTS.md/CONTRIBUTING.md or the bounded task specification. The frozen v1-v3 versions are immutable. The active v4 matrix adds exactly the separately reviewed vendor/parser and ordered-replay adapter evidence; it does not expand the production protocol format or invent native vendor/session claims.
+[Matt final Standards/Spec review](https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728930928) identified and resolved one test classification issue: canonical analysis errors can no longer be silently classified as parser-boundary failures. No blocking implementation or bounded-spec issues remain. Production SQL semantics, protocol shape and dependencies were unchanged. The immutable v1-v3 acceptance histories and active v4 frozen oracle retain their freeze-time values; current task signoff is recorded in the coverage manifest and task file.
 
 ## Signoff decision (2026-11-01)
 
-**All five bounded child acceptance criteria have executable and 9/9 green implementation-head verification.** They are marked checked in the task file, and `docs/coverage-manifest.json` records the verified case, parser, adapter, replay and CI counts.
+**TASK-154 signed off as Done:** All five bounded child acceptance criteria have executable evidence. All **nine final implementation-head CI jobs** passed on `84d8d2b152e2d582491dbec231c3ef8c5078fae1` ([run 41323578451](https://github.com/phdah/sql-semantic-protocol/actions/runs/41323578451)), covering fmt, both strict Clippy configurations, complete Rust tests/docs, no-default-features, dbt Core E2E, and protocol/schema regressions.
 
-**TASK-154 remains In Progress.** The above COMMENT was submitted with the PR author's connected GitHub account; it is not a distinct-account independent review. The repository's independent-review gate therefore remains open unless the project owner expressly authorizes an exception. No independent reviewer or owner waiver is claimed. The final metadata-head CI is also a premerge gate. TASK-82 parent original AC, TASK-155 dependency and TASK-91 release are separate. Do not merge TASK-154 or start TASK-155 until the child is formally closed and merged on main.
+**Independent-review gate:** The PR author and connected GitHub account are the same, so the two-axis COMMENT is not a distinct-account approval. The project owner explicitly approved a **waiver of that gate** after the review and authorized squash merge: [owner signoff](https://github.com/phdah/sql-semantic-protocol/pull/175#issuecomment-6560869104). No separate-account reviewer is falsely claimed.
+
+**Pre-merge gate:** The final signoff/metadata commit must also pass CI before the PR is squash merged. TASK-82 original parent criteria and TASK-91 release remain open; TASK-155 only unblocks after this Done child is merged into `main`.
