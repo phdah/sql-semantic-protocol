@@ -1,10 +1,10 @@
 ---
 id: TASK-158
 title: Prove ALTER ADD DROP RENAME TYPE column transitions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
@@ -29,6 +29,10 @@ type: feature
 - **Numerical/row-state oracle:** table (a=1) ADD b DEFAULT 2 => row (1,2); RENAME a TO c => (c=1,b=2).
 - **Typed conditional boundary:** Engine-specific cast/rewrite failure is typed residual with before/after schema. Owner: TASK-158.
 - **Original TASK-83 criteria:** #2, #4, #5, #6.
+
+## Implementation progress (2026-11-01)
+
+The initial v1 acceptance inventory is frozen in [docs/task-158-acceptance-freeze.json](../../docs/task-158-acceptance-freeze.json). A first independently callable physical-state seam proves constrained-scope ADD with scalar/default NULL backfill, DROP and RENAME (preserving duplicate occurrences and exact domains) and identical-typed SET TYPE, with explicit Impossible or Residual on unproved column, constraint or cast behavior. DuckDB assertions are in `tests/task_158_alter_column_snapshot.rs`. This is **partial work**, not a completed child: SQL AST and canonical write graph integration, full schema/constraint evolution, all 13 dialect cells, adapter parity, complete task-specific oracles, CI and review still block every original AC and Done.
 
 ## Acceptance Criteria
 
