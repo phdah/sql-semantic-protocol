@@ -316,13 +316,13 @@
       "target_pk": true,
       "source_pk": false,
       "classification": "Residual",
-      "gap": "UnresolvedSourceIdentity",
+      "gap": "UnprovedOperation",
       "on_true_target_ordinals": [
         0
       ],
       "on_not_true_target_ordinals": [],
       "conditional_owner": "TASK-155",
-      "release_disposition": "pending native engine law; no arbitrary winner",
+      "release_disposition": "pending native engine law; canonical UnprovedOperation residual remains stable for TASK-153/154",
       "source_domains": {
         "id": {
           "type": "INTEGER",
