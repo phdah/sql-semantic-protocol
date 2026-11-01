@@ -1,4 +1,20 @@
 {
+  "task_157_ddl_identity_acceptance": {
+    "owner": "TASK-157",
+    "parent": "TASK-83",
+    "status": "in_progress_matrix_frozen_implementation_pending",
+    "freeze": "docs/task-157-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["83-C157-P", "83-C157-N"],
+    "mandatory_cases": 8,
+    "conditional_cases": 1,
+    "dialect_cells_required": 117,
+    "adapter_cells_required": 27,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "ci_verified": false,
+    "remaining_gates": ["CREATE TABLE", "CTAS and REPLACE", "logical vs materialized VIEW", "13-dialect matrix", "adapter parity", "native DuckDB snapshots", "independent review", "CI"]
+  },
   "task_156_computed_sequential_merge_acceptance": {
     "owner": "TASK-156",
     "parent": "TASK-82",
