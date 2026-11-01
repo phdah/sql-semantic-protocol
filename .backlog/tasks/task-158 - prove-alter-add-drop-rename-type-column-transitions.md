@@ -32,7 +32,7 @@ type: feature
 
 ## Implementation progress (2026-11-01)
 
-The initial v1 acceptance inventory is frozen in [docs/task-158-acceptance-freeze.json](../../docs/task-158-acceptance-freeze.json). A first independently callable physical-state seam proves constrained-scope ADD with scalar/default NULL backfill, DROP and RENAME (preserving duplicate occurrences and exact domains) and identical-typed SET TYPE, with explicit Impossible or Residual on unproved column, constraint or cast behavior. DuckDB assertions are in `tests/task_158_alter_column_snapshot.rs`. This is **partial work**, not a completed child: SQL AST and canonical write graph integration, full schema/constraint evolution, all 13 dialect cells, adapter parity, complete task-specific oracles, CI and review still block every original AC and Done.
+PR #179 includes SQL AST `ALTER TABLE` normalization, a canonical `schema_alter` write kind with ordered typed operations, and complete-bag replay for conservative ADD/DROP/RENAME/identical-TYPE transitions. `PhysicalWriteTransition` retains exact before/after schemas, and unproved casts retain typed before/proposed schemas. The v1 inventory is preserved as `docs/task-158-acceptance-freeze-v1.json`; active `docs/task-158-acceptance-freeze.json` is v2 with 104 observed parser classifications. SQL/dbt/ODCS, DuckDB and negative tests have been added. `docs/task-158-acceptance-audit.md` records the still-open evidence obligations. No original AC is signed off until final-head CI, complete evidence and independent review are verified. Parent TASK-83 remains open.
 
 ## Acceptance Criteria
 
