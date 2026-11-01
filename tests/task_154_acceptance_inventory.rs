@@ -16,7 +16,10 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     let record = &manifest["task_154_unmatched_merge_acceptance"];
     assert_eq!(frozen["version"], 2);
     assert_eq!(frozen["owner"], "TASK-154");
-    assert_eq!(frozen["previous_snapshot"], "docs/task-154-acceptance-freeze-v1.json");
+    assert_eq!(
+        frozen["previous_snapshot"],
+        "docs/task-154-acceptance-freeze-v1.json"
+    );
     assert_eq!(frozen["parent"], "TASK-82");
     assert_eq!(
         frozen["fixture_ids"],
