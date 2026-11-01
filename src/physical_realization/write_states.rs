@@ -670,7 +670,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         if write.definition_mode() == Some(WriteDefinitionMode::CreateTable) {
             executed_create.insert(target.to_string());
         }
-        if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
+        if let Err(error) = validate_ordered_constraints(&execution_bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
         let returning = if !write.returning_columns().is_empty() {
