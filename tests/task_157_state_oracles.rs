@@ -331,8 +331,16 @@ fn materialized_view_freezes_creation_bag_while_source_changes() {
     let mut expected_source_rows = case["initial"]["raw"].as_array().unwrap().clone();
     expected_source_rows.push(serde_json::json!({"k": 3}));
     let expected_source_after = Value::Array(expected_source_rows);
-    assert_bag(transitions[1].before(), &case["initial"]["raw"], "raw before append");
-    assert_bag(transitions[1].after(), &expected_source_after, "raw after append");
+    assert_bag(
+        transitions[1].before(),
+        &case["initial"]["raw"],
+        "raw before append",
+    );
+    assert_bag(
+        transitions[1].after(),
+        &expected_source_after,
+        "raw after append",
+    );
     assert_eq!(transitions[1].affected().inserted(), 1);
     assert_eq!(transitions[1].affected().deleted(), 0);
     assert_bag(source, &expected_source_after, "raw final source");
@@ -388,7 +396,11 @@ fn logical_view_re_evaluates_after_canonical_source_append() {
     expected_source_rows.push(serde_json::json!({"k": 3}));
     for (ordinal, expected) in expected_source_rows.iter().enumerate() {
         let actual = &proof.source_bag[ordinal];
-        assert_eq!(&actual.values, row(expected).values(), "source row {ordinal}");
+        assert_eq!(
+            &actual.values,
+            row(expected).values(),
+            "source row {ordinal}"
+        );
         assert_eq!(actual.source_row_ids, [format!("raw#{ordinal}")]);
     }
     assert_eq!(proof.source_bag.len(), expected_source_rows.len());
