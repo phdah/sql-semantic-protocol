@@ -37,11 +37,20 @@ fn add_default_has_typed_canonical_shape_and_no_silent_missing_default() {
 
 #[test]
 fn schema_declares_optional_alter_columns_and_new_write_kind() {
-    let contract: Value = serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    let contract: Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
     let write = &contract["$defs"]["writeOperation"];
     assert!(write["properties"]["kind"]["enum"]
-        .as_array().unwrap().contains(&json!("schema_alter")));
+        .as_array()
+        .unwrap()
+        .contains(&json!("schema_alter")));
     assert_eq!(write["properties"]["alter_columns"]["type"], "array");
-    assert_eq!(write["properties"]["alter_columns"]["items"]["additionalProperties"], false);
-    assert!(!write["required"].as_array().unwrap().contains(&json!("alter_columns")));
+    assert_eq!(
+        write["properties"]["alter_columns"]["items"]["additionalProperties"],
+        false
+    );
+    assert!(!write["required"]
+        .as_array()
+        .unwrap()
+        .contains(&json!("alter_columns")));
 }
