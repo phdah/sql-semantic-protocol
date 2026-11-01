@@ -299,9 +299,9 @@ fn case_predicate_expression_remains_explicit() {
 }
 
 #[test]
-fn queryless_create_table_remains_explicitly_unsupported() {
+fn conditional_queryless_create_table_remains_explicitly_unsupported() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("CREATE TABLE t (a INT)", "generic", &dialect)
+    let protocol = analyze_sql("CREATE TABLE IF NOT EXISTS t (a INT)", "generic", &dialect)
         .expect("supported parser statement should return protocol output");
 
     match protocol.statements().first() {

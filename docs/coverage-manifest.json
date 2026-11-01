@@ -1,4 +1,27 @@
 {
+  "task_157_ddl_identity_acceptance": {
+    "owner": "TASK-157",
+    "parent": "TASK-83",
+    "status": "done_independently_reviewed_ci_verified",
+    "freeze": "docs/task-157-acceptance-freeze.json",
+    "freeze_version": 2,
+    "freeze_history": ["docs/task-157-acceptance-freeze-v1.json"],
+    "fixture_ids": ["83-C157-P", "83-C157-N"],
+    "mandatory_cases": 8,
+    "conditional_cases": 1,
+    "dialect_cells_required": 117,
+    "adapter_cells_required": 27,
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "ci_verified": true,
+    "verified_implementation_head": "afdf0a49d05304f8cb35208ba98082f57db29251",
+    "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41348762402",
+    "mandatory_cells_verified": true,
+    "dialect_cells_verified": 117,
+    "adapter_cells_verified": 27,
+    "independent_review": "PR #178 review #5730208619, second-pass Matt code-review (comment under same connected GitHub account)",
+    "remaining_gates": []
+  },
   "task_156_computed_sequential_merge_acceptance": {
     "owner": "TASK-156",
     "parent": "TASK-82",

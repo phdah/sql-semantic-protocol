@@ -103,7 +103,7 @@ fn conflicting_primary_keys_are_explicit_diagnostics() {
 }
 
 #[test]
-fn queryless_ddl_constraints_are_emitted_without_inventing_a_layer() {
+fn schema_only_ddl_emits_constraints_and_an_empty_definition_layer() {
     let bundle = analyze_inputs(
         &[SqlInput::inline(
             "CREATE TABLE orders (id BIGINT PRIMARY KEY, code TEXT UNIQUE)",
@@ -113,8 +113,14 @@ fn queryless_ddl_constraints_are_emitted_without_inventing_a_layer() {
     )
     .expect("DDL should analyze");
 
-    assert!(bundle.layers().is_empty());
+    assert_eq!(bundle.layers().len(), 1);
     assert_eq!(bundle.relation_constraints().len(), 1);
+    let plan = sql_semantic_protocol::physical_ordered_write_state_plan(&bundle, &[]);
+    let sql_semantic_protocol::PhysicalWriteStatePlan::Feasible { final_states, .. } = plan else {
+        panic!("CREATE TABLE must prove the empty target population: {plan:?}");
+    };
+    assert_eq!(final_states.len(), 1);
+    assert!(final_states[0].rows().is_empty());
 
     let json: serde_json::Value =
         serde_json::from_str(&to_bundle_json(&bundle)).expect("protocol JSON should parse");

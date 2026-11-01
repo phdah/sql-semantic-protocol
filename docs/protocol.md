@@ -618,8 +618,9 @@ regardless of their original adapter or SQL DDL source.
 
 Optional `relation_constraints` metadata records parser-independent relation and column
 constraints for named relations. It is separate from transformation semantics and from
-`source_schemas`; a relation can therefore carry metadata even when a queryless `CREATE TABLE`
-produces no transformation layer.
+`source_schemas`; a relation can therefore carry metadata independently of transformation semantics.
+Plain schema-only `CREATE TABLE` also creates an explicit empty relation definition layer;
+conditional, vendor and unsupported queryless forms remain explicit residuals.
 
 Each relation entry contains a deterministic `constraints` array. Relation-scoped unsupported
 metadata remains in that entry's optional `diagnostics` array. Diagnostics that cannot be
@@ -1700,7 +1701,12 @@ an exact source construction. The optional field is absent on ordinary writes.
 The active write-operation JSON schema adds `target_alias` (nullable
 resolved SQL target qualifier) and `definition_mode` (nullable
 `create_table`, `replace_table`, `create_view`,
-`replace_view`). These are explicit semantic facts rather than inferred
+`replace_view`, `create_materialized_view`,
+`replace_materialized_view`). Materialized definitions snapshot a complete
+source bag at creation; logical VIEW definitions never become independently
+writable physical source states. The optional true `definition_execution_unknown`
+marker blocks exact realization for temporary, transient, external or other
+unverified storage/session definition variants without hiding canonical SQL. These are explicit semantic facts rather than inferred
 table-writability hints. The corresponding Rust API
 `physical_ordered_write_state_plan` yields typed
 `PhysicalWriteStatePlan::{Feasible, Impossible, Residual}` outcomes.

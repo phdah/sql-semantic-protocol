@@ -22,17 +22,30 @@ pub(super) fn define_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
-) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
+) -> StateResult<(PhysicalWriteState, WriteRowCounts, Vec<Vec<String>>)> {
     let write = query
         .write()
         .ok_or_else(|| residual("missing definition operation"))?;
     match write.definition_mode() {
-        Some(WriteDefinitionMode::CreateTable) if before.is_some() => {
+        Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::CreateMaterializedView)
+            if before.is_some() =>
+        {
             return Err(impossible(
                 "CREATE TABLE conflicts with a prior physical target",
             ));
         }
-        Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::ReplaceTable) => {}
+        Some(
+            WriteDefinitionMode::CreateTable
+            | WriteDefinitionMode::ReplaceTable
+            | WriteDefinitionMode::CreateMaterializedView
+            | WriteDefinitionMode::ReplaceMaterializedView,
+        ) => {
+            if write.view_execution_unknown() {
+                return Err(residual(
+                    "materialized view options require engine/session evidence",
+                ));
+            }
+        }
         Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
             return Err(residual(
                 "logical CREATE VIEW is not a writable physical table",
@@ -40,36 +53,55 @@ pub(super) fn define_rows(
         }
         None => return Err(residual("missing CREATE/REPLACE lifecycle evidence")),
     }
+    if write.definition_execution_unknown() {
+        return Err(residual(
+            "DDL storage, session or vendor lifecycle requires unproved execution evidence",
+        ));
+    }
     let schema = schema_for(bundle, target)?;
-    let projected = evaluate_simple_select(bundle, query, states)?;
+    // Schema-only CREATE TABLE is the empty bag, not a SELECT whose input
+    // may be omitted or invented. An AS SELECT must still prove its source.
+    let schema_only = write.definition_mode() == Some(WriteDefinitionMode::CreateTable)
+        && query.sources().is_empty()
+        && query.output().columns().is_empty();
+    let projected = if schema_only {
+        Vec::new()
+    } else {
+        evaluate_simple_select_with_source_ids(bundle, query, states)?
+    };
     let columns = query
         .output()
         .columns()
         .iter()
         .map(|c| c.name().to_string())
         .collect::<Vec<_>>();
-    if columns.len() != schema.columns().len()
-        || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema
-            .columns()
-            .iter()
-            .any(|c| !columns.contains(&c.name().to_string()))
+    if !schema_only
+        && (columns.len() != schema.columns().len()
+            || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+            || schema
+                .columns()
+                .iter()
+                .any(|c| !columns.contains(&c.name().to_string())))
     {
         return Err(residual(
             "definition projection does not determine all target columns",
         ));
     }
-    let rows = projected
-        .into_iter()
-        .map(|values| {
-            if values.len() != columns.len() {
-                return Err(residual("invalid definition projection arity"));
-            }
-            Ok(PhysicalWriteRow {
-                values: columns.iter().cloned().zip(values).collect(),
-            })
-        })
-        .collect::<StateResult<Vec<_>>>()?;
+    let source_name = query.sources().first().map(|source| source.name());
+    let mut rows = Vec::with_capacity(projected.len());
+    let mut definition_source_row_ids = Vec::with_capacity(projected.len());
+    for (ordinal, values) in projected {
+        if values.len() != columns.len() {
+            return Err(residual("invalid definition projection arity"));
+        }
+        let Some(source_name) = source_name else {
+            return Err(residual("definition has no authoritative physical source"));
+        };
+        definition_source_row_ids.push(vec![format!("{source_name}#{ordinal}")]);
+        rows.push(PhysicalWriteRow {
+            values: columns.iter().cloned().zip(values).collect(),
+        });
+    }
     let before_rows = before.map_or(0, |state| state.rows.len());
     let deleted = u64::try_from(before_rows).map_err(|_| residual("replaced table overflow"))?;
     let inserted = u64::try_from(rows.len()).map_err(|_| residual("definition result overflow"))?;
@@ -79,6 +111,7 @@ pub(super) fn define_rows(
             rows,
         },
         WriteRowCounts::new(inserted, 0, deleted),
+        definition_source_row_ids,
     ))
 }
 

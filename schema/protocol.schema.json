@@ -3009,7 +3009,11 @@
           ]
         },
         "view_execution_unknown": {
-          "description": "Optional true marker: materialized, temporary, conditional, or vendor view execution lacks a portable exact re-evaluation proof.",
+          "description": "Optional true marker: temporary, conditional, or vendor-specific view execution requires additional evidence; plain materialized VIEW uses a distinct stored-snapshot definition mode.",
+          "const": true
+        },
+        "definition_execution_unknown": {
+          "description": "Optional true marker: a table or materialized definition requires unavailable session, storage or vendor execution evidence. Do not realize physical rows exactly.",
           "const": true
         },
         "definition_mode": {
@@ -3018,6 +3022,8 @@
             "replace_table",
             "create_view",
             "replace_view",
+            "create_materialized_view",
+            "replace_materialized_view",
             null
           ]
         },

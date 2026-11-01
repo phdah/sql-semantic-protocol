@@ -45,6 +45,10 @@ pub enum WriteDefinitionMode {
     CreateView,
     /// Replace a logical view, without assuming physical storage.
     ReplaceView,
+    /// Create a physical snapshot at definition time, not a live logical view.
+    CreateMaterializedView,
+    /// Replace the stored materialized snapshot at definition time.
+    ReplaceMaterializedView,
 }
 
 impl WriteDefinitionMode {
@@ -54,6 +58,8 @@ impl WriteDefinitionMode {
             Self::ReplaceTable => "replace_table",
             Self::CreateView => "create_view",
             Self::ReplaceView => "replace_view",
+            Self::CreateMaterializedView => "create_materialized_view",
+            Self::ReplaceMaterializedView => "replace_materialized_view",
         }
     }
 }
@@ -148,6 +154,7 @@ pub struct WriteOperation {
     target_alias: Option<String>,
     definition_mode: Option<WriteDefinitionMode>,
     view_execution_unknown: bool,
+    definition_execution_unknown: bool,
     kind: WriteKind,
     target_columns: Vec<String>,
     default_values: bool,
@@ -170,6 +177,7 @@ impl WriteOperation {
             target_alias: None,
             definition_mode: Some(mode),
             view_execution_unknown: false,
+            definition_execution_unknown: false,
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
             default_values: false,
@@ -192,6 +200,7 @@ impl WriteOperation {
             target_alias: None,
             definition_mode: None,
             view_execution_unknown: false,
+            definition_execution_unknown: false,
             kind: WriteKind::Append,
             target_columns,
             default_values: false,
@@ -226,6 +235,7 @@ impl WriteOperation {
             target_alias,
             definition_mode: None,
             view_execution_unknown: false,
+            definition_execution_unknown: false,
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
             default_values: false,
@@ -254,6 +264,7 @@ impl WriteOperation {
             target_alias,
             definition_mode: None,
             view_execution_unknown: false,
+            definition_execution_unknown: false,
             kind: WriteKind::Update,
             target_columns: Vec::new(),
             default_values: false,
@@ -281,6 +292,7 @@ impl WriteOperation {
             target_alias,
             definition_mode: None,
             view_execution_unknown: false,
+            definition_execution_unknown: false,
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
             default_values: false,
@@ -320,6 +332,17 @@ impl WriteOperation {
 
     pub(crate) fn with_view_execution_unknown(mut self) -> Self {
         self.view_execution_unknown = true;
+        self
+    }
+
+    /// Whether a materialized/table definition requires unattested storage,
+    /// session or vendor lifecycle semantics before physical execution.
+    pub fn definition_execution_unknown(&self) -> bool {
+        self.definition_execution_unknown
+    }
+
+    pub(crate) fn with_definition_execution_unknown(mut self) -> Self {
+        self.definition_execution_unknown = true;
         self
     }
 

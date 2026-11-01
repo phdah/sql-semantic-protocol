@@ -197,6 +197,7 @@ pub struct PhysicalWriteTransition {
     after: PhysicalWriteState,
     affected: WriteRowCounts,
     affected_target_ordinals: Vec<usize>,
+    definition_source_row_ids: Vec<Vec<String>>,
     intermediate_states: Vec<PhysicalWriteState>,
     returning: Option<PhysicalWriteState>,
     returning_columns: Vec<String>,
@@ -230,6 +231,14 @@ impl PhysicalWriteTransition {
     /// These are prestate identities, never output ordinals.
     pub fn affected_target_ordinals(&self) -> &[usize] {
         &self.affected_target_ordinals
+    }
+
+    /// For CTAS and MATERIALIZED VIEW, the exact source-row occurrence IDs
+    /// corresponding positionally to each produced physical target row.
+    /// A schema-only CREATE has no such identities; these are never invented
+    /// for logical VIEW definitions or DML.
+    pub fn definition_source_row_ids(&self) -> &[Vec<String>] {
+        &self.definition_source_row_ids
     }
 
     /// Complete local CTE materializations used for this write, never caller-supplied
@@ -503,8 +512,13 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut intermediate_states = Vec::new();
         let mut mutation_returning_rows = Vec::new();
         let mut affected_target_ordinals = Vec::new();
+        let mut definition_source_row_ids = Vec::new();
         let result = match kind {
-            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
+            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref())
+                .map(|(after, counts, source_row_ids)| {
+                    definition_source_row_ids = source_row_ids;
+                    (after, counts)
+                }),
             WriteKind::Append => append_rows(
                 bundle,
                 query,
@@ -629,6 +643,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             after,
             affected: counts,
             affected_target_ordinals,
+            definition_source_row_ids,
             intermediate_states,
             returning,
             returning_columns: write.returning_columns().to_vec(),
@@ -640,17 +655,92 @@ pub fn physical_ordered_write_state_plan_with_identities(
     }
 }
 
+/// Apply one normalized, complete, source-local append for a logical-view
+/// read. The view itself remains nonphysical, and the established DML executor
+/// owns data movement, nullability, defaults, and constraint enforcement.
+pub(in crate::physical_realization) fn append_source_for_view_read(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    initial: &PhysicalWriteState,
+) -> Result<PhysicalWriteState, String> {
+    let Some(write) = query.write() else {
+        return Err("missing canonical source append".to_string());
+    };
+    if write.kind() != WriteKind::Append || write.target() != initial.relation() {
+        return Err("view source mutation must be an append to its original leaf".to_string());
+    }
+    let states = BTreeMap::from([(initial.relation().to_string(), initial.clone())]);
+    let mut sequences = BTreeMap::new();
+    let mut intermediate = Vec::new();
+    let (next, _) = append_rows(
+        bundle,
+        query,
+        &states,
+        initial.relation(),
+        Some(initial),
+        &mut sequences,
+        &mut intermediate,
+    )
+    .map_err(|error| format!("unproved source append: {error:?}"))?;
+    if !intermediate.is_empty() {
+        return Err("view source append requires unproved intermediate state".to_string());
+    }
+    validate_state(bundle, &next).map_err(|error| format!("invalid source append: {error:?}"))?;
+    constraints::validate_all_constraints(
+        bundle,
+        &BTreeMap::from([(next.relation().to_string(), next.clone())]),
+    )
+    .map_err(|error| format!("unproved appended source constraints: {error:?}"))?;
+    Ok(next)
+}
+
 fn validate_ordered_constraints(
     bundle: &AnalysisBundle,
     states: &BTreeMap<String, PhysicalWriteState>,
     identities: &BTreeSet<(String, String)>,
 ) -> StateResult<()> {
+    // A declared table which has not been created yet has no physical rows.
+    // Supply an empty validation-only bag for that future CREATE, never as
+    // an input or as a state that an earlier statement can read or mutate.
+    // Other omitted constrained/FK source populations remain errors.
+    let mut checked = states.clone();
+    for input in bundle.inputs() {
+        for statement in input.statements() {
+            let ProtocolStatement::Query(query) = statement else {
+                continue;
+            };
+            let Some(write) = query.write() else {
+                continue;
+            };
+            if write.definition_mode() != Some(crate::protocol::WriteDefinitionMode::CreateTable)
+                || checked.contains_key(write.target())
+            {
+                continue;
+            }
+            let Some(schema) = bundle
+                .source_schemas()
+                .iter()
+                .find(|schema| schema.relation() == write.target())
+            else {
+                continue;
+            };
+            if !schema.columns().is_empty() {
+                checked.insert(
+                    write.target().to_string(),
+                    PhysicalWriteState {
+                        relation: write.target().to_string(),
+                        rows: Vec::new(),
+                    },
+                );
+            }
+        }
+    }
     if identities.is_empty() {
-        constraints::validate_all_constraints(bundle, states)
+        constraints::validate_all_constraints(bundle, &checked)
     } else {
         constraints::validate_all_constraints_with_identity(
             bundle,
-            states,
+            &checked,
             &BTreeSet::new(),
             identities,
         )

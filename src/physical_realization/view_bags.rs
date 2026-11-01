@@ -9,8 +9,9 @@ use crate::protocol::{LiteralValue, ProtocolStatement, QueryStatement, WriteDefi
 
 use super::exists_producers::{complete_domain, PhysicalProducerDomain, PhysicalProducerRow};
 use super::write_states::{
-    evaluate_simple_select_with_source_ids, physical_closed_world_schema_plan, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan,
+    append_source_for_view_read, evaluate_simple_select_with_source_ids,
+    physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan,
 };
 
 /// An exact view producer and terminal read, with original physical occurrence IDs.
@@ -18,7 +19,7 @@ use super::write_states::{
 pub struct PhysicalViewExact {
     /// Name of the SQL logical view, never an independent physical source.
     pub view_name: String,
-    /// Complete original physical source rows.
+    /// Complete physical source bag at read time, after an optional attested append.
     pub source_bag: Vec<PhysicalProducerRow>,
     /// Re-evaluated view rows, retaining physical input occurrence identities.
     pub view_bag: Vec<PhysicalProducerRow>,
@@ -109,17 +110,36 @@ fn domain_membership(
 /// The only independent input is a complete typed physical leaf. Logical VIEW
 /// rows are evaluated from canonical normalized projection/filter expressions
 /// at read time; no independent view snapshot is accepted. More than one view,
-/// REPLACE, DML, joins, aggregation, session modifiers or unsupported expressions
+/// REPLACE, joins, aggregation, session modifiers or unsupported expressions
 /// remain Residual rather than treating a logical view as a writable table.
+/// One canonically normalized INSERT into the original physical leaf may occur
+/// between definition and read; the VIEW is re-evaluated on that complete
+/// updated source, never supplied as an independent physical population.
 pub fn physical_finite_view_read_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
     initial_states: &[PhysicalWriteState],
     wanted: Option<&BTreeMap<String, LiteralValue>>,
 ) -> PhysicalViewProof {
-    let [definition, read] = bundle.layers() else {
-        return residual("logical view proof requires exactly one definition and one read");
-    };
+    // Unsupported statements have no transformation layer. They must not
+    // disappear from an otherwise matching CREATE VIEW / INSERT / SELECT
+    // program, especially when they control transactions or DDL lifetime.
+    if bundle.inputs().iter().any(|input| {
+        input
+            .statements()
+            .iter()
+            .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_)))
+    }) {
+        return residual("view program contains an unsupported statement or session law");
+    }
+    let (definition, mutation, read) =
+        match bundle.layers() {
+            [definition, read] => (definition, None, read),
+            [definition, mutation, read] => (definition, Some(mutation), read),
+            _ => return residual(
+                "logical view proof requires one definition, optional source append, and one read",
+            ),
+        };
     if read.id() != target_layer_id || read.write_kind().is_some() {
         return residual("logical view read must be the terminal SELECT");
     }
@@ -162,7 +182,18 @@ pub fn physical_finite_view_read_plan(
     }
 
     let source_name = source.name();
-    let source_bag = initial_states[0]
+    let physical_source = if let Some(mutation) = mutation {
+        let Some(mutation_query) = query_for(bundle, mutation) else {
+            return residual("view source mutation has no canonical write");
+        };
+        match append_source_for_view_read(bundle, mutation_query, &initial_states[0]) {
+            Ok(state) => state,
+            Err(reason) => return residual(reason),
+        }
+    } else {
+        initial_states[0].clone()
+    };
+    let source_bag = physical_source
         .rows()
         .iter()
         .enumerate()
@@ -171,7 +202,7 @@ pub fn physical_finite_view_read_plan(
             source_row_ids: vec![format!("{source_name}#{ordinal}")],
         })
         .collect::<Vec<_>>();
-    let source_states = BTreeMap::from([(source_name.to_string(), initial_states[0].clone())]);
+    let source_states = BTreeMap::from([(source_name.to_string(), physical_source)]);
     let view_results =
         match evaluate_simple_select_with_source_ids(bundle, definition_query, &source_states) {
             Ok(rows) => rows,

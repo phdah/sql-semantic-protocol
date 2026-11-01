@@ -250,14 +250,16 @@ fn bare_select_produces_anonymous_layer_output() {
 }
 
 #[test]
-fn queryless_create_table_is_explicitly_unsupported_and_creates_no_layer() {
+fn conditional_queryless_create_table_remains_unsupported_and_creates_no_layer() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE standalone (id INT)")],
+        &[SqlInput::inline(
+            "CREATE TABLE IF NOT EXISTS standalone (id INT)",
+        )],
         "generic",
         &dialect,
     )
-    .expect("queryless DDL should parse and remain explicitly unsupported");
+    .expect("unproved IF NOT EXISTS should remain unsupported");
 
     assert!(bundle.layers().is_empty());
 

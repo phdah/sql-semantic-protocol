@@ -1,0 +1,874 @@
+{
+  "version": 2,
+  "owner": "TASK-157",
+  "parent": "TASK-83",
+  "freeze_date": "2026-11-01",
+  "status": "expanded_required_matrix_under_review",
+  "immutable": true,
+  "fixture_ids": [
+    "83-C157-P",
+    "83-C157-N"
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "comparison_assumptions": "Complete INTEGER source bags, stable physical occurrence identities, SQL 3VL WHERE filters, no independent logical view rows. Materialized snapshots are distinct from logical views. DuckDB-native DDL differences require separate explicit evidence.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "evidence_sources": [
+    "direct_sql",
+    "dbt_compiled_sql_with_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "cases": [
+    {
+      "id": "83-C157-P-empty-table",
+      "variant": "CREATE TABLE explicit typed empty relation",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE TABLE empty_stage (k INTEGER)"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "empty_stage",
+      "before": null,
+      "after": [],
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": null,
+        "upper": null,
+        "lower_inclusive": false,
+        "upper_inclusive": false,
+        "nullable": false,
+        "frequencies": {}
+      },
+      "post_existence": true
+    },
+    {
+      "id": "83-C157-P-ctas",
+      "variant": "CREATE TABLE AS SELECT filtered physical source",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE TABLE copy_stage AS SELECT k FROM raw WHERE k > 0"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "copy_stage",
+      "before": null,
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false,
+        "frequencies": {
+          "1": 1,
+          "2": 2
+        }
+      },
+      "post_existence": true
+    },
+    {
+      "id": "83-C157-P-qualified",
+      "variant": "schema qualified CREATE TABLE AS",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "setup_sql": [
+        "CREATE SCHEMA stage"
+      ],
+      "sql": [
+        "CREATE TABLE stage.copy_stage AS SELECT k FROM raw WHERE k > 0"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "stage.copy_stage",
+      "before": null,
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false,
+        "frequencies": {
+          "1": 1,
+          "2": 2
+        }
+      },
+      "post_existence": true
+    },
+    {
+      "id": "83-C157-P-replace",
+      "variant": "CREATE OR REPLACE TABLE AS discards old physical target",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE OR REPLACE TABLE copy_stage AS SELECT k FROM raw WHERE k > 0"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ],
+        "copy_stage": [
+          {
+            "k": 99
+          }
+        ]
+      },
+      "target": "copy_stage",
+      "before": [
+        {
+          "k": 99
+        }
+      ],
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false,
+        "frequencies": {
+          "1": 1,
+          "2": 2
+        }
+      },
+      "post_existence": true
+    },
+    {
+      "id": "83-C157-P-logical-view",
+      "variant": "CREATE VIEW live evaluation after source mutation",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE VIEW view_stage AS SELECT k FROM raw WHERE k > 0",
+        "INSERT INTO raw VALUES (3)",
+        "SELECT k FROM view_stage"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "view_stage",
+      "before": null,
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 3
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2,
+          5
+        ],
+        "not_true_ordinals": [
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": 1,
+        "upper": 3,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false,
+        "frequencies": {
+          "1": 1,
+          "2": 2,
+          "3": 1
+        }
+      },
+      "post_existence": true,
+      "identity": "logical_producer_not_independent_physical_state"
+    },
+    {
+      "id": "83-C157-P-materialized",
+      "variant": "CREATE MATERIALIZED VIEW frozen snapshot after source mutation",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE MATERIALIZED VIEW snap_stage AS SELECT k FROM raw WHERE k > 0",
+        "INSERT INTO raw VALUES (3)",
+        "SELECT k FROM snap_stage"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "snap_stage",
+      "before": null,
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [
+          3,
+          4
+        ]
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": 1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": false,
+        "frequencies": {
+          "1": 1,
+          "2": 2
+        }
+      },
+      "post_existence": true,
+      "identity": "physical_snapshot_with_creation_occurrence_ids",
+      "runtime_boundary": "DuckDB has no native CREATE MATERIALIZED VIEW; vendor evidence required before exact native signoff"
+    },
+    {
+      "id": "83-C157-N-duplicate",
+      "variant": "CREATE existing table fails atomically",
+      "classification": "Impossible",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE TABLE copy_stage AS SELECT k FROM raw"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ],
+        "copy_stage": [
+          {
+            "k": 99
+          }
+        ]
+      },
+      "target": "copy_stage",
+      "before": [
+        {
+          "k": 99
+        }
+      ],
+      "after": null,
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "not_true_ordinals": []
+      },
+      "domain": null,
+      "post_existence": true,
+      "impossible_reason": "existing_relation_conflict"
+    },
+    {
+      "id": "83-C157-N-null-duplicate",
+      "variant": "CTAS preserves source duplicates and NULL under unrestricted projection",
+      "classification": "Exact",
+      "requirement": "exact_required",
+      "sql": [
+        "CREATE TABLE copy_stage AS SELECT k FROM raw"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "copy_stage",
+      "before": null,
+      "after": [
+        {
+          "k": 1
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": 2
+        },
+        {
+          "k": null
+        },
+        {
+          "k": -1
+        }
+      ],
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "not_true_ordinals": []
+      },
+      "domain": {
+        "type": "INTEGER",
+        "lower": -1,
+        "upper": 2,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "nullable": true,
+        "frequencies": {
+          "1": 1,
+          "2": 2,
+          "NULL": 1,
+          "-1": 1
+        }
+      },
+      "post_existence": true
+    },
+    {
+      "id": "83-C157-N-conditional",
+      "variant": "IF NOT EXISTS and vendor/session materialization",
+      "classification": "Residual",
+      "requirement": "conditional",
+      "sql": [
+        "CREATE TABLE IF NOT EXISTS copy_stage AS SELECT k FROM raw"
+      ],
+      "initial": {
+        "raw": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": null
+          },
+          {
+            "k": -1
+          }
+        ]
+      },
+      "target": "copy_stage",
+      "before": null,
+      "after": null,
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": []
+      },
+      "domain": null,
+      "post_existence": null,
+      "owner": "TASK-157",
+      "release_disposition": "Requires verified object-existence and session semantics, cannot be silently exact"
+    }
+  ],
+  "coverage": {
+    "dialect_cells_required": 117,
+    "adapter_cells_required": 27,
+    "oracle_required": 9
+  },
+  "acceptance_mapping": {
+    "1": [
+      "83-C157-P-empty-table",
+      "83-C157-P-ctas",
+      "83-C157-P-qualified",
+      "83-C157-P-replace",
+      "83-C157-P-logical-view",
+      "83-C157-P-materialized",
+      "83-C157-N-duplicate",
+      "83-C157-N-null-duplicate",
+      "83-C157-N-conditional"
+    ],
+    "2": [
+      "83-C157-P-empty-table",
+      "83-C157-P-ctas",
+      "83-C157-P-qualified",
+      "83-C157-P-replace",
+      "83-C157-P-logical-view",
+      "83-C157-P-materialized",
+      "83-C157-N-duplicate",
+      "83-C157-N-null-duplicate",
+      "83-C157-N-conditional"
+    ],
+    "3": [
+      "83-C157-P-empty-table",
+      "83-C157-P-ctas",
+      "83-C157-P-qualified",
+      "83-C157-P-replace",
+      "83-C157-P-logical-view",
+      "83-C157-P-materialized",
+      "83-C157-N-duplicate",
+      "83-C157-N-null-duplicate",
+      "83-C157-N-conditional"
+    ],
+    "4": [
+      "all 13 parser dialect cells per case",
+      "direct_sql",
+      "dbt_compiled_sql_with_catalog",
+      "odcs_equivalent_schema"
+    ],
+    "5": [
+      "cargo fmt --check",
+      "cargo clippy --all-targets --all-features -- -D warnings",
+      "cargo test",
+      "cargo test --no-default-features",
+      "cargo doc --no-deps",
+      "dbt e2e",
+      "protocol/schema snapshots",
+      "independent review"
+    ]
+  },
+  "signoff": {
+    "mandatory_verified": false,
+    "duckdb_verified": false,
+    "dialects_verified": false,
+    "adapters_verified": false,
+    "ci_verified": false,
+    "independent_review_verified": false,
+    "parent_signed_off": false
+  },
+  "previous_snapshot": "docs/task-157-acceptance-freeze-v1.json",
+  "reviewed_matrix_change": "v2 adds explicit observed 117 parser/canonical verdicts and 27 source parity obligations without reclassifying or weakening any v1 mandatory source/terminal oracle; independent review and final CI required",
+  "dialect_expected": {
+    "generic": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "ansi": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ]
+  },
+  "adapter_expected": {
+    "83-C157-P-empty-table": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-ctas": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-qualified": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-replace": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-logical-view": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-materialized": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-N-duplicate": {
+      "direct_sql": "Impossible",
+      "dbt_compiled_sql_with_catalog": "Impossible",
+      "odcs_equivalent_schema": "Impossible"
+    },
+    "83-C157-N-null-duplicate": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-N-conditional": {
+      "direct_sql": "Residual",
+      "dbt_compiled_sql_with_catalog": "Residual",
+      "odcs_equivalent_schema": "Residual"
+    }
+  },
+  "dialect_cells_required": 117,
+  "adapter_cells_required": 27
+}
