@@ -78,7 +78,7 @@ fn odcs() -> RelationCatalog {
     RelationCatalog::from_schemas(evidence.source_schemas()).unwrap()
 }
 
-fn replay(catalog: &RelationCatalog, alter: &str) -> String {
+fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
     let dialect = dialect_from_name("duckdb").unwrap();
     let sql = [
         SqlInput::inline("CREATE TABLE t (a INTEGER, b INTEGER)"),
@@ -113,7 +113,23 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> String {
         ),
         "no adapter can invent impossible lifecycle facts: {result:?}"
     );
-    format!("{result:?}")
+    match result {
+        PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } => {
+            let alteration = transitions.last().unwrap();
+            let schema = alteration.after_schema().unwrap();
+            (
+                format!("{:?}", schema.columns()),
+                format!("{:?}", final_states[0].rows()),
+            )
+        }
+        PhysicalWriteStatePlan::Residual { gap, reason, .. } => {
+            (format!("Residual:{gap:?}"), reason)
+        }
+        other => panic!("unexpected adapter-dependent ALTER result: {other:?}"),
+    }
 }
 
 #[test]
