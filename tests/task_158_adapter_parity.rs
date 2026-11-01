@@ -128,9 +128,7 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
         PhysicalWriteStatePlan::Residual { gap, reason, .. } => {
             (format!("Residual:{gap:?}"), reason)
         }
-        PhysicalWriteStatePlan::Impossible { reason, .. } => {
-            ("Impossible".into(), reason)
-        }
+        PhysicalWriteStatePlan::Impossible { reason, .. } => ("Impossible".into(), reason),
     }
 }
 
