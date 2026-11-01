@@ -233,11 +233,13 @@ fn future_create_cannot_attest_a_preexisting_table_has_no_constraints() {
     ]);
     let source = sql_semantic_protocol::PhysicalWriteState::new(
         "t",
-        vec![sql_semantic_protocol::PhysicalWriteRow::new(BTreeMap::from([(
-            "a".to_string(),
-            LiteralValue::Number("1".to_string()),
-        )]))
-        .unwrap()],
+        vec![
+            sql_semantic_protocol::PhysicalWriteRow::new(BTreeMap::from([(
+                "a".to_string(),
+                LiteralValue::Number("1".to_string()),
+            )]))
+            .unwrap(),
+        ],
     )
     .unwrap();
     assert!(matches!(
