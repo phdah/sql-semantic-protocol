@@ -2,16 +2,33 @@
   "task_155_merge_conflict_acceptance": {
     "owner": "TASK-155",
     "parent": "TASK-82",
-    "status": "implementation_in_progress",
+    "status": "implementation_matrix_in_review",
     "freeze": "docs/task-155-acceptance-freeze.json",
-    "freeze_version": 1,
-    "fixture_ids": ["82-C155-P", "82-C155-N"],
-    "mandatory_cases": 10,
+    "freeze_version": 2,
+    "fixture_ids": [
+      "82-C155-P",
+      "82-C155-N"
+    ],
+    "mandatory_cases": 12,
     "initial_regression_cases": 7,
     "child_signed_off": false,
     "parent_signed_off": false,
     "release_approved": false,
-    "ci_verified": false
+    "ci_verified": false,
+    "exact_cases": 5,
+    "impossible_cases": 3,
+    "residual_cases": 4,
+    "parser_cells_required": 52,
+    "adapter_cases_required": 12,
+    "adapter_sources": 3,
+    "full_bag_oracle": "tests/task_155_merge_conflicts.rs",
+    "constraint_oracle": "tests/task_155_fk_unique.rs",
+    "dialect_adapter_oracle": "tests/task_155_dialect_adapter.rs",
+    "acceptance_inventory": "tests/task_155_acceptance_inventory.rs",
+    "freeze_history": [
+      "docs/task-155-acceptance-freeze-v1.json"
+    ],
+    "mandatory_verified": false
   },
   "task_154_unmatched_merge_acceptance": {
     "owner": "TASK-154",
