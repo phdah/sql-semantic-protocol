@@ -1704,7 +1704,9 @@ resolved SQL target qualifier) and `definition_mode` (nullable
 `replace_view`, `create_materialized_view`,
 `replace_materialized_view`). Materialized definitions snapshot a complete
 source bag at creation; logical VIEW definitions never become independently
-writable physical source states. These are explicit semantic facts rather than inferred
+writable physical source states. The optional true `definition_execution_unknown`
+marker blocks exact realization for temporary, transient, external or other
+unverified storage/session definition variants without hiding canonical SQL. These are explicit semantic facts rather than inferred
 table-writability hints. The corresponding Rust API
 `physical_ordered_write_state_plan` yields typed
 `PhysicalWriteStatePlan::{Feasible, Impossible, Residual}` outcomes.
