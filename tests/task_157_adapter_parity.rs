@@ -118,9 +118,6 @@ fn bundle(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::Ana
 }
 
 fn initial(case: &Value) -> Vec<PhysicalWriteState> {
-    if case["id"] == "83-C157-P-empty-table" {
-        return Vec::new();
-    }
     case["initial"]
         .as_object()
         .unwrap()
