@@ -467,3 +467,49 @@ fn frozen_positive_and_not_true_source_identities_match_duckdb_sql_three_valued_
         }
     }
 }
+
+#[test]
+fn unsupported_transaction_between_view_definition_and_read_blocks_exact_proof() {
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let sql = [
+        SqlInput::inline("CREATE VIEW view_stage AS SELECT k FROM raw WHERE k > 0"),
+        SqlInput::inline("BEGIN"),
+        SqlInput::inline("INSERT INTO raw VALUES (3)"),
+        SqlInput::inline("SELECT k FROM view_stage"),
+    ];
+    let ids = ["view", "transaction", "append", "read"];
+    let configured = sql
+        .iter()
+        .zip(ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "raw",
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    assert!(bundle.inputs().iter().any(|input| {
+        input.statements().iter().any(|statement| {
+            matches!(statement, sql_semantic_protocol::ProtocolStatement::Unsupported(_))
+        })
+    }));
+    assert_eq!(bundle.layers().len(), 3);
+    let leaf = PhysicalWriteState::new(
+        "raw",
+        vec![PhysicalWriteRow::new(BTreeMap::from([(
+            "k".to_owned(),
+            LiteralValue::Number("1".to_owned()),
+        )]))
+        .unwrap()],
+    )
+    .unwrap();
+    let read = bundle.layers().last().unwrap();
+    assert!(matches!(
+        physical_finite_view_read_plan(&bundle, read.id(), &[leaf], None),
+        PhysicalViewProof::Residual { .. }
+    ));
+}
