@@ -27,12 +27,22 @@ pub(super) fn define_rows(
         .write()
         .ok_or_else(|| residual("missing definition operation"))?;
     match write.definition_mode() {
-        Some(WriteDefinitionMode::CreateTable) if before.is_some() => {
+        Some(
+            WriteDefinitionMode::CreateTable | WriteDefinitionMode::CreateMaterializedView,
+        ) if before.is_some() => {
             return Err(impossible(
                 "CREATE TABLE conflicts with a prior physical target",
             ));
         }
-        Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::ReplaceTable) => {}
+        Some(
+            WriteDefinitionMode::CreateTable
+            | WriteDefinitionMode::ReplaceTable
+            | WriteDefinitionMode::CreateMaterializedView
+            | WriteDefinitionMode::ReplaceMaterializedView,
+        ) if !write.view_execution_unknown() => {}
+        Some(
+            WriteDefinitionMode::CreateMaterializedView | WriteDefinitionMode::ReplaceMaterializedView,
+        ) => return Err(residual("materialized view options require engine/session evidence")),
         Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
             return Err(residual(
                 "logical CREATE VIEW is not a writable physical table",
