@@ -640,6 +640,45 @@ pub fn physical_ordered_write_state_plan_with_identities(
     }
 }
 
+/// Apply one normalized, complete, source-local append for a logical-view
+/// read. The view itself remains nonphysical, and the established DML executor
+/// owns data movement, nullability, defaults, and constraint enforcement.
+pub(in crate::physical_realization) fn append_source_for_view_read(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    initial: &PhysicalWriteState,
+) -> Result<PhysicalWriteState, String> {
+    let Some(write) = query.write() else {
+        return Err("missing canonical source append".to_string());
+    };
+    if write.kind() != WriteKind::Append || write.target() != initial.relation() {
+        return Err("view source mutation must be an append to its original leaf".to_string());
+    }
+    let states = BTreeMap::from([(initial.relation().to_string(), initial.clone())]);
+    let mut sequences = BTreeMap::new();
+    let mut intermediate = Vec::new();
+    let (next, _) = append_rows(
+        bundle,
+        query,
+        &states,
+        initial.relation(),
+        Some(initial),
+        &mut sequences,
+        &mut intermediate,
+    )
+    .map_err(|error| format!("unproved source append: {error:?}"))?;
+    if !intermediate.is_empty() {
+        return Err("view source append requires unproved intermediate state".to_string());
+    }
+    validate_state(bundle, &next).map_err(|error| format!("invalid source append: {error:?}"))?;
+    constraints::validate_all_constraints(bundle, &BTreeMap::from([(
+        next.relation().to_string(),
+        next.clone(),
+    )]))
+    .map_err(|error| format!("unproved appended source constraints: {error:?}"))?;
+    Ok(next)
+}
+
 fn validate_ordered_constraints(
     bundle: &AnalysisBundle,
     states: &BTreeMap<String, PhysicalWriteState>,
