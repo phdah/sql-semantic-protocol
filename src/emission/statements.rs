@@ -197,6 +197,9 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
     if write.view_execution_unknown() {
         value["view_execution_unknown"] = json!(true);
     }
+    if write.definition_execution_unknown() {
+        value["definition_execution_unknown"] = json!(true);
+    }
     if let Some(source) = write.joined_source() {
         value["joined_source"] = source_relation_to_value(source);
     }
