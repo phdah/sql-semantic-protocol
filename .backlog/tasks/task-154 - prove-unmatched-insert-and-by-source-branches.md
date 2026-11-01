@@ -1,7 +1,7 @@
 ---
 id: TASK-154
 title: Prove unmatched INSERT and BY SOURCE branches
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-11-01'
@@ -44,6 +44,10 @@ type: feature
 
 Next: [TASK-155](task-155%20-%20classify-repeated-matches-upsert-equivalents-and-constraint-effects.md) after this child is merged.
 
-## Implementation progress (2026-11-01)
+## Final implementation and owner sign-off (2026-11-01)
 
-Frozen the task-owned 12-case exact/negative physical source/target inventory in `docs/task-154-acceptance-freeze.json` (active v4; immutable historical v1/v2/v3 retained) before semantic changes. It defines exact expected before/after bags, NULL and SQL ON TRUE/NOT TRUE partitions, target occurrence ordinals, typed frequency/bound oracles, 65 shared parser cells, 26 conditional vendor parser cells, 3 evidence sources and conditional residual owners. Also froze an independent three-step ordered replay and explicit transaction-law residual. All five bounded task AC have implementation evidence in the active v4 freeze and its executable oracles. Nine of nine implementation-head checks passed at `35f8561f6598fc333f1437828929ed9edad6c824`: https://github.com/phdah/sql-semantic-protocol/actions/runs/41322646368 . Matt Standards/Spec review recorded no blocking implementation findings: https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728876718 . This author-account COMMENT is not a separate-account independent approval. TASK-154 stays In Progress until an independent reviewer approves or the owner explicitly waives that gate; final metadata-head CI is required before merging. TASK-82 remains open.
+The frozen TASK-154 v4 acceptance inventory (9 Exact, 2 Residual, 1 Impossible; 65 shared plus 26 vendor parser cells; SQL/dbt/ODCS equivalent metadata and ordered replay) is executed by the task-owned acceptance tests. All five bounded acceptance criteria above were independently checked against the task contract and satisfied. The final Matt Standards/Spec review fixed one test-classification defect, leaving zero blocking implementation findings: https://github.com/phdah/sql-semantic-protocol/pull/175#pullrequestreview-5728930928 .
+
+Nine of nine full implementation-head CI jobs passed at `84d8d2b152e2d582491dbec231c3ef8c5078fae1`: https://github.com/phdah/sql-semantic-protocol/actions/runs/41323578451 .
+
+**Sign-off:** The project owner explicitly approved TASK-154 and waived the distinct-account independent-review gate after the completed two-axis code review: https://github.com/phdah/sql-semantic-protocol/pull/175#issuecomment-6560869104 . This is an **owner exception**, not a claimed distinct-account approval. TASK-154 is **Done** in the implementation PR, contingent on final metadata-head CI passing before squash merge. TASK-82's original parent criteria and TASK-91 release signoff remain open. TASK-155 begins only once this Done PR is squash-merged on `main`.
