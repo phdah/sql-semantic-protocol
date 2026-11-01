@@ -1,10 +1,10 @@
 ---
 id: TASK-157
 title: Prove CREATE CTAS VIEW and materialization identities
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
@@ -34,6 +34,8 @@ type: feature
 - **Numerical/row-state oracle:** source [1,2] CTAS -> table [1,2]; VIEW remains logical dependency, materialized snapshots frozen at creation.
 - **Typed conditional boundary:** No confusing logical view reads with stored physical producer rows. Owner: TASK-157.
 - **Original TASK-83 criteria:** #1, #3, #4, #5, #6.
+
+Frozen version 1 inventory: [docs/task-157-acceptance-freeze.json](../../docs/task-157-acceptance-freeze.json), registered in `docs/coverage-manifest.json`. Signoff and required oracle cells remain blocked until verified.
 
 ## Acceptance Criteria
 
