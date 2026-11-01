@@ -6,7 +6,7 @@
 
 use super::*;
 use crate::constraints::RelationConstraintSet;
-use crate::relation::{RelationSchema, SchemaColumn};
+use crate::relation::RelationSchema;
 
 pub use crate::protocol::ColumnAlterStep as PhysicalColumnAlterStep;
 
