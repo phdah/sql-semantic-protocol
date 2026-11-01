@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-156",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
@@ -1971,8 +1971,8 @@
     "independent_review": false,
     "parent_signoff": false
   },
-  "previous_snapshot": "docs/task-156-acceptance-freeze-v1.json",
-  "reviewed_matrix_change": "V1 omitted original TASK-156 mandatory enforced constraint contradiction and per-step source TRUE/NOT TRUE partitions; v2 restores these originally required checks. No original outcome weakened.",
+  "previous_snapshot": "docs/task-156-acceptance-freeze-v2.json",
+  "reviewed_matrix_change": "The v2 matrix incorrectly conflated SQL parser rejection of MERGE OUTPUT with canonical unsupported semantics. Independent 13-dialect sqlparser CI showed parser_boundary in all 13 cells. V3 records observed parser limitation, without promoting any execution or proof strength.",
   "dialect_syntax": [
     {
       "id": "computed-set",
@@ -2006,91 +2006,91 @@
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "mysql": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "postgresql": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "hive": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "sqlite": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "snowflake": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "redshift": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "mssql": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "clickhouse": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "bigquery": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "ansi": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "duckdb": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ],
     "databricks": [
       "parsed_canonical",
       "parsed_canonical",
       "parsed_canonical",
-      "canonical_unsupported",
+      "parser_boundary",
       "canonical_unsupported"
     ]
   },
