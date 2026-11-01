@@ -222,7 +222,7 @@ fn ordinals(value: &Value) -> Vec<usize> {
 #[test]
 fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates() {
     let freeze = frozen();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 12);
     for case in freeze["cases"].as_array().unwrap().iter().take(7) {
         let id = case["id"].as_str().unwrap();
