@@ -412,11 +412,39 @@ fn fk_and_unique_cases_preserve_complete_sources_and_do_not_guess_native_laws() 
                         sorted(parent.as_ref().unwrap())
                     );
                 } else {
+                    assert_eq!(id, "82-C155-N-nullable-unique");
                     assert_eq!(gap, PhysicalWriteStateGap::UnprovedConstraint);
                     let db = native(case);
-                    // DuckDB's result is an observation, not permission to
-                    // promote its nullable UNIQUE law to all SQL dialects.
-                    let _ = db.execute_batch(case["sql"].as_str().unwrap());
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(&before));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+                    assert_eq!(
+                        native_ordinals(&db, "target", false),
+                        ordinals(&case["on_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        native_ordinals(&db, "target", true),
+                        ordinals(&case["on_not_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        native_ordinals(&db, "source", false),
+                        ordinals(&case["on_true_source_ordinals"])
+                    );
+                    assert_eq!(
+                        native_ordinals(&db, "source", true),
+                        ordinals(&case["on_not_true_source_ordinals"])
+                    );
+                    // DuckDB permits these distinct NULL-key occurrences. Assert
+                    // the entire native bag without promoting that vendor-specific
+                    // UNIQUE law to a portable Exact classification.
+                    db.execute_batch(case["sql"].as_str().unwrap()).unwrap();
+                    let native_after = state(
+                        "target",
+                        &serde_json::json!([
+                            {"id": null, "score": 10},
+                            {"id": null, "score": 20}
+                        ]),
+                    );
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(&native_after));
                     assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                 }
             }
