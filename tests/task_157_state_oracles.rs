@@ -483,18 +483,19 @@ fn unsupported_transaction_between_view_definition_and_read_blocks_exact_proof()
         .zip(ids)
         .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "raw",
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
-        )
-        .unwrap(),
-    ])
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "raw",
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
     .unwrap();
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     assert!(bundle.inputs().iter().any(|input| {
         input.statements().iter().any(|statement| {
-            matches!(statement, sql_semantic_protocol::ProtocolStatement::Unsupported(_))
+            matches!(
+                statement,
+                sql_semantic_protocol::ProtocolStatement::Unsupported(_)
+            )
         })
     }));
     assert_eq!(bundle.layers().len(), 3);
