@@ -188,7 +188,7 @@ pub fn physical_alter_column_snapshot(
             }
         }
     }
-    let schema = match RelationSchema::new(schema.relation().to_string(), columns) {
+    let mut resulting_schema = match RelationSchema::new(schema.relation().to_string(), columns) {
         Ok(schema) => schema,
         Err(error) => {
             return PhysicalColumnAlterProof::Impossible {
@@ -196,8 +196,11 @@ pub fn physical_alter_column_snapshot(
             };
         }
     };
+    if let Some(source_kind) = schema.source_kind() {
+        resulting_schema = resulting_schema.with_source_kind(source_kind);
+    }
     for row in &rows {
-        for column in schema.columns() {
+        for column in resulting_schema.columns() {
             let Some(value) = row.values().get(column.name()) else {
                 return PhysicalColumnAlterProof::Impossible {
                     reason: "a physical row omits a declared post-alter column".to_string(),
@@ -209,7 +212,7 @@ pub fn physical_alter_column_snapshot(
         }
     }
     PhysicalColumnAlterProof::Exact {
-        schema,
+        schema: resulting_schema,
         state: PhysicalWriteState {
             relation: state.relation().to_string(),
             rows,
