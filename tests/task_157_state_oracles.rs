@@ -404,3 +404,45 @@ fn materialized_snapshot_cannot_be_reinterpreted_as_a_logical_view() {
         PhysicalViewProof::Residual { .. }
     ));
 }
+
+#[test]
+fn frozen_positive_and_not_true_source_identities_match_duckdb_sql_three_valued_logic() {
+    let freeze = freeze();
+    for case in freeze["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        if id == "83-C157-P-empty-table" || case["classification"] == "Residual" {
+            continue; // No source query or attested conditional execution.
+        }
+        let materialized = id == "83-C157-P-materialized";
+        let db = native(case, materialized);
+        let predicate = if id == "83-C157-N-duplicate" || id == "83-C157-N-null-duplicate" {
+            "TRUE"
+        } else {
+            "k > 0"
+        };
+        // A materialized snapshot's source membership is fixed before the
+        // subsequent INSERT, not recomputed from the later six-row input.
+        let scope = if materialized { " AND rowid < 5" } else { "" };
+        for (column, truth) in [
+            ("true_ordinals", "IS TRUE"),
+            ("not_true_ordinals", "IS NOT TRUE"),
+        ] {
+            let query = format!(
+                "SELECT rowid FROM raw WHERE ({predicate}) {truth}{scope} ORDER BY rowid"
+            );
+            let mut statement = db.prepare(&query).unwrap();
+            let actual = statement
+                .query_map([], |row| row.get::<_, i64>(0))
+                .unwrap()
+                .map(Result::unwrap)
+                .collect::<Vec<_>>();
+            let expected = case["source_truth"][column]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|value| value.as_i64().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(actual, expected, "{id}/{column}: exact source occurrence membership");
+        }
+    }
+}
