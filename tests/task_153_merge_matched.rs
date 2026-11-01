@@ -285,6 +285,12 @@ fn frozen_matched_merge_cases_match_complete_duckdb_bags_and_typed_bounds() {
             source,
             "{id}: native source prestate"
         );
+        let source_schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == "source")
+            .unwrap();
+        assert_domains(&source, source_schema, &case["source_domains"]);
         assert_eq!(
             native_match_ordinals(&db, false),
             ordinals(&case["ordinals"])
