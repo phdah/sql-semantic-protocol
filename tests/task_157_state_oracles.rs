@@ -9,7 +9,8 @@ use duckdb::{params, Connection};
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
-    physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue, PhysicalWriteRow,
+    physical_finite_view_read_plan, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalViewProof, PhysicalWriteRow,
     PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn,
     SqlInput, WriteDefinitionMode,
 };
@@ -223,4 +224,70 @@ fn if_not_exists_does_not_silently_invent_an_exact_creation() {
         .find(|c| c["id"] == "83-C157-N-conditional").unwrap();
     let result = physical_ordered_write_state_plan(&bundle(case), &initial(case));
     assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
+}
+
+#[test]
+fn logical_view_re_evaluates_after_canonical_source_append() {
+    let frozen = freeze();
+    let case = frozen["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "83-C157-P-logical-view")
+        .unwrap();
+    let analyzed = bundle(case);
+    assert_eq!(analyzed.layers().len(), 3);
+    let target_layer = analyzed.layers().last().unwrap();
+    let result = physical_finite_view_read_plan(
+        &analyzed,
+        target_layer.id(),
+        &initial(case),
+        None,
+    );
+    let PhysicalViewProof::Exact(proof) = result else {
+        panic!("VIEW must re-evaluate the canonical post-append physical leaf: {result:?}");
+    };
+    assert_eq!(proof.view_name, "view_stage");
+    assert_eq!(proof.source_bag.len(), 6);
+    assert_eq!(proof.view_bag.len(), 4);
+    assert_eq!(proof.terminal.len(), 4);
+    assert_eq!(proof.terminal[0].source_row_ids, ["raw#0"]);
+    assert_eq!(proof.terminal[1].source_row_ids, ["raw#1"]);
+    assert_eq!(proof.terminal[2].source_row_ids, ["raw#2"]);
+    assert_eq!(proof.terminal[3].source_row_ids, ["raw#5"]);
+    let mut values = proof.terminal.iter().map(|row| {
+        match &row.values["k"] {
+            LiteralValue::Number(value) => Some(value.parse::<i64>().unwrap()),
+            LiteralValue::Null => None,
+            other => panic!("unexpected view value {other:?}"),
+        }
+    }).collect::<Vec<_>>();
+    values.sort();
+    assert_eq!(values, frozen_bag(&case["after"]));
+    assert_eq!(proof.terminal_domains["k"].integer_bounds, Some((1, 3)));
+    assert!(!proof.terminal_domains["k"].null_allowed);
+    let missing = BTreeMap::from([("k".to_owned(), LiteralValue::Number("0".to_owned()))]);
+    assert!(matches!(
+        physical_finite_view_read_plan(&analyzed, target_layer.id(), &initial(case), Some(&missing)),
+        PhysicalViewProof::Impossible { .. }
+    ));
+    let db = native(case, false);
+    assert_eq!(native_bag(&db, "view_stage"), frozen_bag(&case["after"]));
+}
+
+#[test]
+fn materialized_snapshot_cannot_be_reinterpreted_as_a_logical_view() {
+    let frozen = freeze();
+    let case = frozen["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "83-C157-P-materialized")
+        .unwrap();
+    let analyzed = bundle(case);
+    let read = analyzed.layers().last().unwrap();
+    assert!(matches!(
+        physical_finite_view_read_plan(&analyzed, read.id(), &initial(case), None),
+        PhysicalViewProof::Residual { .. }
+    ));
 }
