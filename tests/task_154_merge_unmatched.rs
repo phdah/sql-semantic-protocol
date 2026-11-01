@@ -25,9 +25,9 @@ fn row(v: &Value) -> PhysicalWriteRow {
             .map(|(name, value)| {
                 (
                     name.clone(),
-                    value.as_i64().map_or(LiteralValue::Null, |n| {
-                        LiteralValue::Number(n.to_string())
-                    }),
+                    value
+                        .as_i64()
+                        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
                 )
             })
             .collect(),
@@ -36,28 +36,19 @@ fn row(v: &Value) -> PhysicalWriteRow {
 }
 
 fn state(relation: &str, v: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        relation,
-        v.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(relation, v.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(
-        &["target", "source"]
-            .map(|relation| {
-                RelationSchema::new(
-                    relation,
-                    ["id", "score"]
-                        .map(|column| {
-                            SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap()
-                        })
-                        .to_vec(),
-                )
-                .unwrap()
-            }),
-    )
+    RelationCatalog::from_schemas(&["target", "source"].map(|relation| {
+        RelationSchema::new(
+            relation,
+            ["id", "score"]
+                .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap())
+                .to_vec(),
+        )
+        .unwrap()
+    }))
     .unwrap()
 }
 
@@ -144,10 +135,7 @@ fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
         .unwrap();
     let rows = query
         .query_map([], |row| {
-            Ok((
-                row.get::<_, Option<i64>>(0)?,
-                row.get::<_, Option<i64>>(1)?,
-            ))
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?))
         })
         .unwrap()
         .map(Result::unwrap)
@@ -171,7 +159,11 @@ fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
 // This independent native SQL oracle checks both ON directions. UNKNOWN from
 // NULL behaves as NOT TRUE; a NOT MATCHED source row is never a target row.
 fn native_on_ordinals(db: &Connection, relation: &str, not_true: bool) -> Vec<usize> {
-    let other = if relation == "target" { "source" } else { "target" };
+    let other = if relation == "target" {
+        "source"
+    } else {
+        "target"
+    };
     let predicate = if not_true { "NOT EXISTS" } else { "EXISTS" };
     let sql = format!(
         "SELECT ordinal FROM (
@@ -261,42 +253,113 @@ fn frozen_unmatched_merge_cases_prove_both_complete_bags_and_both_on_directions(
         let source = state("source", &case["source"]);
         let after = state("target", &case["target_after"]);
         let db = native(case);
-        assert_eq!(sorted_rows(&native_state(&db, "target")), sorted_rows(&before), "{id}: native before");
-        assert_eq!(sorted_rows(&native_state(&db, "source")), sorted_rows(&source), "{id}: source before");
+        assert_eq!(
+            sorted_rows(&native_state(&db, "target")),
+            sorted_rows(&before),
+            "{id}: native before"
+        );
+        assert_eq!(
+            sorted_rows(&native_state(&db, "source")),
+            sorted_rows(&source),
+            "{id}: source before"
+        );
 
-        assert_eq!(native_on_ordinals(&db, "target", false), ordinals(&case["on_true_target_ordinals"]), "{id}: target ON TRUE");
-        assert_eq!(native_on_ordinals(&db, "target", true), ordinals(&case["on_not_true_target_ordinals"]), "{id}: target NOT TRUE");
-        assert_eq!(native_on_ordinals(&db, "source", false), ordinals(&case["on_true_source_ordinals"]), "{id}: source ON TRUE");
-        assert_eq!(native_on_ordinals(&db, "source", true), ordinals(&case["on_not_true_source_ordinals"]), "{id}: source NOT TRUE");
+        assert_eq!(
+            native_on_ordinals(&db, "target", false),
+            ordinals(&case["on_true_target_ordinals"]),
+            "{id}: target ON TRUE"
+        );
+        assert_eq!(
+            native_on_ordinals(&db, "target", true),
+            ordinals(&case["on_not_true_target_ordinals"]),
+            "{id}: target NOT TRUE"
+        );
+        assert_eq!(
+            native_on_ordinals(&db, "source", false),
+            ordinals(&case["on_true_source_ordinals"]),
+            "{id}: source ON TRUE"
+        );
+        assert_eq!(
+            native_on_ordinals(&db, "source", true),
+            ordinals(&case["on_not_true_source_ordinals"]),
+            "{id}: source NOT TRUE"
+        );
 
         assert_domains(&before, schema, &case["before_domains"]);
         assert_domains(&source, source_schema, &case["source_domains"]);
         let plan = physical_ordered_write_state_plan(&bundle, &snapshots(case));
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = &plan else {
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = &plan
+        else {
             panic!("{id}: expected exact complete MERGE, got {plan:?}");
         };
         assert_eq!(transitions.len(), 1, "{id}: one atomic MERGE");
         let step = &transitions[0];
         assert_eq!(step.before(), &before, "{id}: canonical prestate");
-        assert_eq!(sorted_rows(step.after()), sorted_rows(&after), "{id}: canonical poststate");
-        assert_eq!(step.affected().inserted(), case["affected"]["inserted"].as_u64().unwrap(), "{id}: inserts");
-        assert_eq!(step.affected().updated(), case["affected"]["updated"].as_u64().unwrap(), "{id}: updates");
-        assert_eq!(step.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap(), "{id}: deletes");
-        assert_eq!(step.affected_target_ordinals(), ordinals(&case["affected_target_ordinals"]), "{id}: prestate identities");
-        assert!(step.intermediate_states().is_empty(), "{id}: no invented intermediate source");
+        assert_eq!(
+            sorted_rows(step.after()),
+            sorted_rows(&after),
+            "{id}: canonical poststate"
+        );
+        assert_eq!(
+            step.affected().inserted(),
+            case["affected"]["inserted"].as_u64().unwrap(),
+            "{id}: inserts"
+        );
+        assert_eq!(
+            step.affected().updated(),
+            case["affected"]["updated"].as_u64().unwrap(),
+            "{id}: updates"
+        );
+        assert_eq!(
+            step.affected().deleted(),
+            case["affected"]["deleted"].as_u64().unwrap(),
+            "{id}: deletes"
+        );
+        assert_eq!(
+            step.affected_target_ordinals(),
+            ordinals(&case["affected_target_ordinals"]),
+            "{id}: prestate identities"
+        );
+        assert!(
+            step.intermediate_states().is_empty(),
+            "{id}: no invented intermediate source"
+        );
         assert_domains(step.after(), schema, &case["after_domains"]);
         db.execute_batch(case["sql"].as_str().unwrap()).unwrap();
         let native_after = native_state(&db, "target");
-        assert_eq!(sorted_rows(&native_after), sorted_rows(&after), "{id}: DuckDB poststate");
-        assert_domains(&native_after, schema, &case["after_domains"]);
-        assert_eq!(sorted_rows(&native_state(&db, "source")), sorted_rows(&source), "{id}: unchanged physical source");
         assert_eq!(
-            sorted_rows(final_states.iter().find(|s| s.relation() == "target").unwrap()),
-            sorted_rows(&after), "{id}: final target"
+            sorted_rows(&native_after),
+            sorted_rows(&after),
+            "{id}: DuckDB poststate"
+        );
+        assert_domains(&native_after, schema, &case["after_domains"]);
+        assert_eq!(
+            sorted_rows(&native_state(&db, "source")),
+            sorted_rows(&source),
+            "{id}: unchanged physical source"
         );
         assert_eq!(
-            sorted_rows(final_states.iter().find(|s| s.relation() == "source").unwrap()),
-            sorted_rows(&source), "{id}: final source"
+            sorted_rows(
+                final_states
+                    .iter()
+                    .find(|s| s.relation() == "target")
+                    .unwrap()
+            ),
+            sorted_rows(&after),
+            "{id}: final target"
+        );
+        assert_eq!(
+            sorted_rows(
+                final_states
+                    .iter()
+                    .find(|s| s.relation() == "source")
+                    .unwrap()
+            ),
+            sorted_rows(&source),
+            "{id}: final source"
         );
     }
     assert_eq!(proven, 9);
@@ -321,13 +384,27 @@ fn frozen_negative_merges_fail_closed_and_preserve_native_atomicity() {
                 assert_eq!(format!("{gap:?}"), case["gap"].as_str().unwrap(), "{id}");
             }
             "Impossible" => {
-                assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{id}: {plan:?}");
+                assert!(
+                    matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+                    "{id}: {plan:?}"
+                );
                 let db = native(case);
                 let before = state("target", &case["target_before"]);
                 let source = state("source", &case["source"]);
-                assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err(), "{id}: native key collision");
-                assert_eq!(sorted_rows(&native_state(&db, "target")), sorted_rows(&before), "{id}: atomic failure target");
-                assert_eq!(sorted_rows(&native_state(&db, "source")), sorted_rows(&source), "{id}: untouched source");
+                assert!(
+                    db.execute_batch(case["sql"].as_str().unwrap()).is_err(),
+                    "{id}: native key collision"
+                );
+                assert_eq!(
+                    sorted_rows(&native_state(&db, "target")),
+                    sorted_rows(&before),
+                    "{id}: atomic failure target"
+                );
+                assert_eq!(
+                    sorted_rows(&native_state(&db, "source")),
+                    sorted_rows(&source),
+                    "{id}: untouched source"
+                );
             }
             other => panic!("{id}: unexpected proof classification {other}"),
         }
