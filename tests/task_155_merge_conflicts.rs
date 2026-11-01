@@ -88,10 +88,11 @@ fn analyzed(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
 }
 
 fn snapshots(case: &Value) -> Vec<PhysicalWriteState> {
-    vec![
-        state("target", &case["target_before"]),
-        state("source", &case["source"]),
-    ]
+    let mut snapshots = vec![state("target", &case["target_before"])];
+    if case["sql"].as_str().unwrap().starts_with("MERGE") {
+        snapshots.push(state("source", &case["source"]));
+    }
+    snapshots
 }
 
 fn sorted(state: &PhysicalWriteState) -> Vec<String> {
@@ -233,19 +234,21 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
         let bundle = analyzed(case);
         let initial = snapshots(case);
         let before = &initial[0];
-        let source = &initial[1];
+        let source = state("source", &case["source"]);
         let target_schema = bundle
             .source_schemas()
             .iter()
             .find(|schema| schema.relation() == "target")
             .unwrap();
-        let source_schema = bundle
-            .source_schemas()
-            .iter()
-            .find(|schema| schema.relation() == "source")
-            .unwrap();
+        let source_schema = RelationSchema::new(
+            "source",
+            ["id", "score"]
+                .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
+                .to_vec(),
+        )
+        .unwrap();
         domains(before, &case["before_domains"], target_schema);
-        domains(source, &case["source_domains"], source_schema);
+        domains(&source, &case["source_domains"], &source_schema);
         let plan = physical_ordered_write_state_plan(&bundle, &initial);
 
         match case["classification"].as_str().unwrap() {
@@ -266,15 +269,17 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 assert_eq!(transition.affected().updated(), case["affected"]["updated"].as_u64().unwrap());
                 assert_eq!(transition.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap());
                 domains(transition.after(), &case["after_domains"], target_schema);
-                assert_eq!(
-                    sorted(final_states.iter().find(|s| s.relation() == "source").unwrap()),
-                    sorted(source),
-                    "{id}: source bag is never rewritten"
-                );
+                if case["sql"].as_str().unwrap().starts_with("MERGE") {
+                    assert_eq!(
+                        sorted(final_states.iter().find(|s| s.relation() == "source").unwrap()),
+                        sorted(&source),
+                        "{id}: MERGE source bag is never rewritten"
+                    );
+                }
 
                 let db = native(case).unwrap();
                 assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
-                assert_eq!(sorted(&native_state(&db, "source")), sorted(source));
+                assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                 if case["sql"].as_str().unwrap().starts_with("MERGE") {
                     assert_eq!(
                         on_ordinals(&db, false),
@@ -289,7 +294,7 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 }
                 db.execute_batch(case["sql"].as_str().unwrap()).unwrap();
                 assert_eq!(sorted(&native_state(&db, "target")), sorted(&expected));
-                assert_eq!(sorted(&native_state(&db, "source")), sorted(source));
+                assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
             }
             "Impossible" => {
                 assert!(
@@ -303,7 +308,7 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                     let db = native(case).unwrap();
                     assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err());
                     assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
-                    assert_eq!(sorted(&native_state(&db, "source")), sorted(source));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                 }
             }
             "Residual" => {
