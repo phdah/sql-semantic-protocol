@@ -190,3 +190,31 @@ fn parsed_table_storage_options_never_claim_plain_create_exactness() {
         "at least two storage variants must be exercised"
     );
 }
+
+#[test]
+fn materialized_view_replace_is_not_inferred_from_plain_snapshot_support() {
+    let sql = "CREATE OR REPLACE MATERIALIZED VIEW snap_stage AS SELECT k FROM raw";
+    let mut parsed = 0;
+    for dialect in freeze()["dialects"].as_array().unwrap() {
+        let name = dialect.as_str().unwrap();
+        let parser = dialect_from_name(name).unwrap();
+        if Parser::parse_sql(parser.as_ref(), sql).is_err() {
+            continue;
+        }
+        parsed += 1;
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], name, parser.as_ref()).unwrap();
+        let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+            panic!("{name}: materialized replacement must keep its canonical operation");
+        };
+        let write = query.write().unwrap();
+        assert_eq!(
+            write.definition_mode(),
+            Some(WriteDefinitionMode::ReplaceMaterializedView)
+        );
+        assert!(
+            write.view_execution_unknown(),
+            "{name}: native replacement/session semantics cannot be inferred"
+        );
+    }
+    assert!(parsed > 0, "at least one parser must accept this vendor boundary");
+}
