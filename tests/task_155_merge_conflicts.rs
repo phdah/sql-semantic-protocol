@@ -368,7 +368,11 @@ fn ordered_conflict_then_matched_merge_reuses_one_complete_target_and_source_bag
         .enumerate()
         .map(|(i, input)| {
             ConfiguredSqlInput::new(
-                if i == 0 { "task155-step0" } else { "task155-step1" },
+                if i == 0 {
+                    "task155-step0"
+                } else {
+                    "task155-step1"
+                },
                 input,
                 "duckdb",
                 dialect.as_ref(),
@@ -433,7 +437,12 @@ fn ordered_conflict_then_matched_merge_reuses_one_complete_target_and_source_bag
         Some(&source)
     );
     assert_eq!(
-        sorted(final_states.iter().find(|s| s.relation() == "target").unwrap()),
+        sorted(
+            final_states
+                .iter()
+                .find(|s| s.relation() == "target")
+                .unwrap()
+        ),
         sorted(&state("target", &replay["terminal"]))
     );
 
