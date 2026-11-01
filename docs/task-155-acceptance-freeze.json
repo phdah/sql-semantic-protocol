@@ -183,7 +183,12 @@
       "parent_pk": false,
       "parent": null,
       "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
-      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable"
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-P-two-null-keys",
@@ -303,7 +308,12 @@
       "parent_pk": false,
       "parent": null,
       "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
-      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable"
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
     },
     {
       "id": "82-C155-N-ambiguous-winner",
@@ -390,7 +400,13 @@
       "score_fk": false,
       "parent_pk": false,
       "parent": null,
-      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='"
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0,
+        1
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-N-attested-source-key",
@@ -474,7 +490,13 @@
       "score_fk": false,
       "parent_pk": false,
       "parent": null,
-      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='"
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0,
+        1
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-N-insert-target-key",
@@ -558,7 +580,13 @@
       "score_fk": false,
       "parent_pk": false,
       "parent": null,
-      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='"
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0,
+        1
+      ]
     },
     {
       "id": "82-C155-P-conflict-ignore",
@@ -664,7 +692,8 @@
       "parent_pk": false,
       "parent": null,
       "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
-      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable"
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null
     },
     {
       "id": "82-C155-N-upsert-update",
@@ -733,7 +762,8 @@
       "score_fk": false,
       "parent_pk": false,
       "parent": null,
-      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='"
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null
     },
     {
       "id": "82-C155-P-fk-supported",
@@ -872,7 +902,26 @@
       },
       "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
       "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
-      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required"
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-N-fk-violation",
@@ -958,7 +1007,25 @@
       },
       "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
       "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
-      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required"
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1
+          }
+        }
+      },
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-N-fk-missing-population",
@@ -1040,7 +1107,12 @@
       },
       "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
       "native_oracle": "conditional: fail closed without claiming native portability",
-      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required"
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
     },
     {
       "id": "82-C155-N-nullable-unique",
@@ -1121,7 +1193,12 @@
       },
       "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
       "native_oracle": "conditional: fail closed without claiming native portability",
-      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required"
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
     },
     {
       "id": "82-C155-P-unique-key-insert",
@@ -1240,7 +1317,12 @@
       },
       "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
       "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
-      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required"
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
     }
   ],
   "remaining_mandatory_matrix": [],
