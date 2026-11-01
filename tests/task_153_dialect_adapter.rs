@@ -75,6 +75,7 @@ fn classify(dialect: &str, statement: &str) -> &'static str {
             }
             _ => "canonical_unsupported",
         },
+        _ => "canonical_unsupported", // Forward-compatible public protocol variants.
     }
 }
 
