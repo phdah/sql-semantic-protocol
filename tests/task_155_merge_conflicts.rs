@@ -36,28 +36,19 @@ fn row(value: &Value) -> PhysicalWriteRow {
 }
 
 fn state(relation: &str, rows: &Value) -> PhysicalWriteState {
-    PhysicalWriteState::new(
-        relation,
-        rows.as_array().unwrap().iter().map(row).collect(),
-    )
-    .unwrap()
+    PhysicalWriteState::new(relation, rows.as_array().unwrap().iter().map(row).collect()).unwrap()
 }
 
 fn catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(
-        &["target", "source"]
-            .map(|relation| {
-                RelationSchema::new(
-                    relation,
-                    ["id", "score"]
-                        .map(|column| {
-                            SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap()
-                        })
-                        .to_vec(),
-                )
-                .unwrap()
-            }),
-    )
+    RelationCatalog::from_schemas(&["target", "source"].map(|relation| {
+        RelationSchema::new(
+            relation,
+            ["id", "score"]
+                .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap())
+                .to_vec(),
+        )
+        .unwrap()
+    }))
     .unwrap()
 }
 
@@ -73,15 +64,19 @@ fn analyzed(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
             continue;
         }
         let evidence = ConstraintEvidence::new(
-            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-155")
-                .unwrap(),
+            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-155").unwrap(),
             ConstraintEnforcement::Enforced,
         );
-        constraints.push(RelationConstraintSet::new(
-            relation,
-            vec![RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence]).unwrap()],
-        )
-        .unwrap());
+        constraints.push(
+            RelationConstraintSet::new(
+                relation,
+                vec![
+                    RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence])
+                        .unwrap(),
+                ],
+            )
+            .unwrap(),
+        );
     }
     bundle.enrich_relation_constraints(&constraints);
     bundle
@@ -265,13 +260,27 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 let expected = state("target", &case["target_after"]);
                 assert_eq!(sorted(transition.before()), sorted(before));
                 assert_eq!(sorted(transition.after()), sorted(&expected));
-                assert_eq!(transition.affected().inserted(), case["affected"]["inserted"].as_u64().unwrap());
-                assert_eq!(transition.affected().updated(), case["affected"]["updated"].as_u64().unwrap());
-                assert_eq!(transition.affected().deleted(), case["affected"]["deleted"].as_u64().unwrap());
+                assert_eq!(
+                    transition.affected().inserted(),
+                    case["affected"]["inserted"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    transition.affected().updated(),
+                    case["affected"]["updated"].as_u64().unwrap()
+                );
+                assert_eq!(
+                    transition.affected().deleted(),
+                    case["affected"]["deleted"].as_u64().unwrap()
+                );
                 domains(transition.after(), &case["after_domains"], target_schema);
                 if case["sql"].as_str().unwrap().starts_with("MERGE") {
                     assert_eq!(
-                        sorted(final_states.iter().find(|s| s.relation() == "source").unwrap()),
+                        sorted(
+                            final_states
+                                .iter()
+                                .find(|s| s.relation() == "source")
+                                .unwrap()
+                        ),
                         sorted(&source),
                         "{id}: MERGE source bag is never rewritten"
                     );
