@@ -17,10 +17,19 @@ fn task_156_has_a_versioned_finite_matrix_and_all_original_parent_mappings() {
     assert_eq!(f["version"], 2);
     assert_eq!(f["owner"], "TASK-156");
     assert_eq!(f["parent"], "TASK-82");
-    assert_eq!(f["previous_snapshot"], "docs/task-156-acceptance-freeze-v1.json");
-    assert_eq!(f["fixture_ids"], serde_json::json!(["82-C156-P", "82-C156-N"]));
+    assert_eq!(
+        f["previous_snapshot"],
+        "docs/task-156-acceptance-freeze-v1.json"
+    );
+    assert_eq!(
+        f["fixture_ids"],
+        serde_json::json!(["82-C156-P", "82-C156-N"])
+    );
     assert_eq!(f["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
-    assert_eq!(f["original_parent_ac"], serde_json::json!([1, 2, 3, 4, 5, 6]));
+    assert_eq!(
+        f["original_parent_ac"],
+        serde_json::json!([1, 2, 3, 4, 5, 6])
+    );
     assert_eq!(entry["freeze"], "docs/task-156-acceptance-freeze.json");
     assert_eq!(entry["freeze_version"], 2);
     assert_eq!(entry["parent_signed_off"], false);
@@ -40,20 +49,31 @@ fn typed_domains(rows: &Value, columns: &Value, id: &str) {
     let rows = rows.as_array().unwrap();
     for column in ["id", "score"] {
         let values = rows.iter().map(|row| &row[column]).collect::<Vec<_>>();
-        let nonnull = values
-            .iter()
-            .filter_map(|v| v.as_i64())
-            .collect::<Vec<_>>();
+        let nonnull = values.iter().filter_map(|v| v.as_i64()).collect::<Vec<_>>();
         let domain = &columns[column];
         assert_eq!(domain["type"], "INTEGER", "{id}/{column}");
-        assert_eq!(domain["lower"].as_i64(), nonnull.iter().min().copied(), "{id}");
-        assert_eq!(domain["upper"].as_i64(), nonnull.iter().max().copied(), "{id}");
-        assert_eq!(domain["nullable"], values.iter().any(|v| v.is_null()), "{id}");
+        assert_eq!(
+            domain["lower"].as_i64(),
+            nonnull.iter().min().copied(),
+            "{id}"
+        );
+        assert_eq!(
+            domain["upper"].as_i64(),
+            nonnull.iter().max().copied(),
+            "{id}"
+        );
+        assert_eq!(
+            domain["nullable"],
+            values.iter().any(|v| v.is_null()),
+            "{id}"
+        );
         assert_eq!(domain["lower_inclusive"], !nonnull.is_empty(), "{id}");
         assert_eq!(domain["upper_inclusive"], !nonnull.is_empty(), "{id}");
         let mut frequencies = std::collections::BTreeMap::new();
         for value in &values {
-            let key = value.as_i64().map_or_else(|| "NULL".to_string(), |n| n.to_string());
+            let key = value
+                .as_i64()
+                .map_or_else(|| "NULL".to_string(), |n| n.to_string());
             *frequencies.entry(key).or_insert(0_u64) += 1;
         }
         let frozen = domain["frequencies"]
@@ -75,7 +95,11 @@ fn partition(rows: &Value, yes: &Value, no: &Value, id: &str) {
         .map(|v| v.as_u64().unwrap())
         .collect::<Vec<_>>();
     let unique = actual.iter().copied().collect::<BTreeSet<_>>();
-    assert_eq!(actual.len(), rows.as_array().unwrap().len(), "{id}: exact partition");
+    assert_eq!(
+        actual.len(),
+        rows.as_array().unwrap().len(),
+        "{id}: exact partition"
+    );
     assert_eq!(unique.len(), actual.len(), "{id}: no repeated occurrence");
     assert_eq!(
         unique,
@@ -100,10 +124,19 @@ fn every_case_has_complete_typed_bags_and_true_not_true_witnesses() {
             typed_domains(bag, &case["initial_domains"][name], id);
         }
         let steps = case["steps"].as_array().unwrap();
-        assert!(!steps.is_empty(), "{id}: at least one complete source/target step");
+        assert!(
+            !steps.is_empty(),
+            "{id}: at least one complete source/target step"
+        );
         for step in steps {
-            assert!(step["sql"].as_str().unwrap().starts_with("MERGE INTO"), "{id}");
-            assert_ne!(step["target"], step["source"], "{id}: independent identities");
+            assert!(
+                step["sql"].as_str().unwrap().starts_with("MERGE INTO"),
+                "{id}"
+            );
+            assert_ne!(
+                step["target"], step["source"],
+                "{id}: independent identities"
+            );
             typed_domains(&step["before"], &step["before_domains"], id);
             typed_domains(&step["source_before"], &step["source_before_domains"], id);
             partition(
@@ -126,7 +159,10 @@ fn every_case_has_complete_typed_bags_and_true_not_true_witnesses() {
                 assert!(affected["deleted"].is_u64());
                 assert!(step["affected_target_ordinals"].is_array());
             } else {
-                assert!(step["after_domains"].is_null(), "{id}: no invented uncertain poststate");
+                assert!(
+                    step["after_domains"].is_null(),
+                    "{id}: no invented uncertain poststate"
+                );
             }
         }
         match case["classification"].as_str().unwrap() {
