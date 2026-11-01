@@ -216,5 +216,8 @@ fn materialized_view_replace_is_not_inferred_from_plain_snapshot_support() {
             "{name}: native replacement/session semantics cannot be inferred"
         );
     }
-    assert!(parsed > 0, "at least one parser must accept this vendor boundary");
+    assert!(
+        parsed > 0,
+        "at least one parser must accept this vendor boundary"
+    );
 }
