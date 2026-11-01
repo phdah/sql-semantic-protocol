@@ -23,11 +23,15 @@ fn row(a: Option<i64>, b: Option<i64>, columns: (&str, &str)) -> PhysicalWriteRo
     PhysicalWriteRow::new(BTreeMap::from([
         (
             columns.0.to_string(),
-            a.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+            a.map_or(LiteralValue::Null, |value| {
+                LiteralValue::Number(value.to_string())
+            }),
         ),
         (
             columns.1.to_string(),
-            b.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+            b.map_or(LiteralValue::Null, |value| {
+                LiteralValue::Number(value.to_string())
+            }),
         ),
     ]))
     .unwrap()
@@ -58,8 +62,10 @@ fn create_insert_add_default_rename_executes_in_statement_order() {
     assert_eq!(query.write().unwrap().column_alter_steps().len(), 1);
     assert_eq!(analyzed.layers().len(), 4);
 
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("portable ordered ALTER must have a complete physical proof");
     };
@@ -76,29 +82,45 @@ fn create_insert_add_default_rename_executes_in_statement_order() {
     assert_eq!(final_schema.columns()[0].name(), "c");
     assert_eq!(final_schema.columns()[1].name(), "b");
     let final_state = &final_states[0];
-    assert_eq!(expected_bag(final_state.rows()), expected_bag(&[
-        row(Some(1), Some(2), ("c", "b")),
-        row(None, Some(2), ("c", "b")),
-        row(Some(1), Some(2), ("c", "b")),
-    ]));
+    assert_eq!(
+        expected_bag(final_state.rows()),
+        expected_bag(&[
+            row(Some(1), Some(2), ("c", "b")),
+            row(None, Some(2), ("c", "b")),
+            row(Some(1), Some(2), ("c", "b")),
+        ])
+    );
     let domains = final_state.exact_domains(final_schema).unwrap();
-    assert_eq!(domains[0].values(), &[
-        (LiteralValue::Number("1".into()), 2),
-        (LiteralValue::Null, 1),
-    ]);
-    assert_eq!(domains[1].values(), &[(LiteralValue::Number("2".into()), 3)]);
+    assert_eq!(
+        domains[0].values(),
+        &[
+            (LiteralValue::Number("1".into()), 2),
+            (LiteralValue::Null, 1),
+        ]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[(LiteralValue::Number("2".into()), 3)]
+    );
 
     let db = Connection::open_in_memory().unwrap();
     for statement in &sql {
         db.execute_batch(statement).unwrap();
     }
-    let mut native = db.prepare("SELECT c, b FROM t ORDER BY c NULLS LAST").unwrap();
+    let mut native = db
+        .prepare("SELECT c, b FROM t ORDER BY c NULLS LAST")
+        .unwrap();
     let actual = native
-        .query_map([], |r| Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, Option<i64>>(1)?)))
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, Option<i64>>(1)?))
+        })
         .unwrap()
         .map(Result::unwrap)
         .collect::<Vec<_>>();
-    assert_eq!(actual, vec![(Some(1), Some(2)), (Some(1), Some(2)), (None, Some(2))]);
+    assert_eq!(
+        actual,
+        vec![(Some(1), Some(2)), (Some(1), Some(2)), (None, Some(2))]
+    );
     let native_columns = db
         .prepare("SELECT column_name FROM information_schema.columns WHERE table_name = 't' ORDER BY ordinal_position")
         .unwrap()
@@ -117,8 +139,10 @@ fn drop_nullable_column_preserves_duplicate_row_occurrences() {
         "ALTER TABLE t DROP COLUMN b",
     ];
     let analyzed = bundle(&sql);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("DROP must preserve full input bag");
     };
@@ -127,10 +151,13 @@ fn drop_nullable_column_preserves_duplicate_row_occurrences() {
     assert_eq!(schema.columns().len(), 1);
     let after = &final_states[0];
     assert_eq!(after.rows().len(), 3);
-    assert_eq!(after.exact_domains(schema).unwrap()[0].values(), &[
-        (LiteralValue::Number("1".into()), 2),
-        (LiteralValue::Null, 1),
-    ]);
+    assert_eq!(
+        after.exact_domains(schema).unwrap()[0].values(),
+        &[
+            (LiteralValue::Number("1".into()), 2),
+            (LiteralValue::Null, 1),
+        ]
+    );
     let db = Connection::open_in_memory().unwrap();
     for statement in sql {
         db.execute_batch(statement).unwrap();
@@ -138,7 +165,9 @@ fn drop_nullable_column_preserves_duplicate_row_occurrences() {
     let mut native = db.prepare("SELECT a FROM t ORDER BY a NULLS LAST").unwrap();
     let actual = native
         .query_map([], |r| r.get::<_, Option<i64>>(0))
-        .unwrap().map(Result::unwrap).collect::<Vec<_>>();
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     assert_eq!(actual, vec![Some(1), Some(1), None]);
 }
 
@@ -156,7 +185,9 @@ fn rejected_duplicate_is_impossible_and_cast_and_constraints_are_residual() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1)")
         .unwrap();
-    assert!(db.execute_batch("ALTER TABLE t ADD COLUMN a INTEGER").is_err());
+    assert!(db
+        .execute_batch("ALTER TABLE t ADD COLUMN a INTEGER")
+        .is_err());
 
     let typed = bundle(&[
         "CREATE TABLE t (a INTEGER)",
