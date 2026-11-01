@@ -285,6 +285,39 @@ fn analyze_statement(
                         .with_write(Some(WriteOperation::definition(target, mode))),
                 )
             }
+            None if !create_table.if_not_exists
+                && !create_table.or_replace
+                && !create_table.temporary
+                && !create_table.transient
+                && !create_table.external
+                && create_table.like.is_none()
+                && create_table.clone.is_none()
+                && !create_table.columns.is_empty() =>
+            {
+                // A schema-only CREATE is an actual producer of an empty
+                // physical relation. It must not be confused with a SELECT
+                // missing source evidence or an independent physical bag.
+                let target = create_table.name.to_string();
+                ProtocolStatement::Query(
+                    QueryStatement::new(
+                        Vec::new(),
+                        Vec::new(),
+                        Vec::new(),
+                        RowConditions::new(
+                            Predicates::new(None, None, None),
+                            Vec::new(),
+                            ConditionExactness::from_residuals(Vec::new()),
+                        ),
+                        Output::new(Vec::new()),
+                        Vec::new(),
+                    )
+                    .with_produced_relation(Some(target.clone()))
+                    .with_write(Some(WriteOperation::definition(
+                        target,
+                        WriteDefinitionMode::CreateTable,
+                    ))),
+                )
+            }
             None => unsupported_queryless_create_table(),
         },
         SqlStatement::CreateView {
