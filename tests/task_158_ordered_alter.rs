@@ -285,3 +285,44 @@ fn post_alter_inserts_validate_against_evolved_schema_not_initial_create() {
         .collect::<Vec<_>>();
     assert_eq!(native, vec![(1, 2), (3, 4)]);
 }
+
+#[test]
+fn widened_signed_integer_preserves_exact_values_and_sql_nulls() {
+    let sql = [
+        "CREATE TABLE t (a INTEGER)",
+        "INSERT INTO t (a) VALUES (2147483647), (NULL), (2147483647)",
+        "ALTER TABLE t ALTER COLUMN a SET DATA TYPE BIGINT",
+    ];
+    let analyzed = bundle(&sql);
+    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
+        physical_ordered_write_state_plan(&analyzed, &[])
+    else {
+        panic!("exact signed INTEGER to BIGINT widening should preserve the physical bag");
+    };
+    let post = transitions[2].after_schema().unwrap();
+    assert_eq!(
+        post.columns()[0].data_type(),
+        sql_semantic_protocol::SchemaColumn::from_sql_type("a", "BIGINT", "duckdb")
+            .unwrap().data_type()
+    );
+    assert_eq!(
+        final_states[0].exact_domains(post).unwrap()[0].values(),
+        &[
+            (LiteralValue::Number("2147483647".into()), 2),
+            (LiteralValue::Null, 1),
+        ]
+    );
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    let data_type: String = db.query_row(
+        "SELECT data_type FROM information_schema.columns WHERE table_name='t' AND column_name='a'",
+        [], |row| row.get(0),
+    ).unwrap();
+    assert_eq!(data_type, "BIGINT");
+    let native = db.prepare("SELECT a FROM t ORDER BY a NULLS LAST").unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
+        .map(Result::unwrap).collect::<Vec<_>>();
+    assert_eq!(native, vec![Some(2147483647), Some(2147483647), None]);
+}
