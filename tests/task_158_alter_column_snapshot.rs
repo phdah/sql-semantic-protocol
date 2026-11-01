@@ -254,3 +254,24 @@ fn data_type_rewrite_and_unattested_constraints_fail_closed() {
         PhysicalColumnAlterProof::Impossible { .. }
     ));
 }
+
+#[test]
+fn identifier_case_folding_is_residual_not_a_false_impossibility_or_proof() {
+    let before = schema(&["a", "b"]);
+    let rows = state(vec![row(&[("a", Some(1)), ("b", Some(2))])]);
+    let steps = [
+        PhysicalColumnAlterStep::Add { column: column("A", "INTEGER"), default: None },
+        PhysicalColumnAlterStep::Drop { column: "A".into() },
+        PhysicalColumnAlterStep::Rename { old: "a".into(), new: "A".into() },
+        PhysicalColumnAlterStep::SetType { column: column("A", "BIGINT") },
+    ];
+    for step in steps {
+        assert!(
+            matches!(
+                physical_alter_column_snapshot(&before, &rows, &[step], Some(&[])),
+                PhysicalColumnAlterProof::Residual { .. }
+            ),
+            "case-folding uncertainty is not an impossible column name"
+        );
+    }
+}
