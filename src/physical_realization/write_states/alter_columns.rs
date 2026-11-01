@@ -170,6 +170,34 @@ pub fn physical_alter_column_snapshot(
                     };
                 };
                 if columns[index] != *column {
+                    // Signed integer widening is a lossless injection for every
+                    // canonical scalar value, including the old range extrema.
+                    // It has no collation, timezone or vendor rounding law.
+                    // This certifies the schema/bag projection, not DDL success
+                    // in an engine whose operational migration law is unknown.
+                    let lossless_signed_widening = match (
+                        columns[index].data_type(),
+                        column.data_type(),
+                    ) {
+                        (
+                            DataType::SignedInteger { bits: Some(old) },
+                            DataType::SignedInteger { bits: Some(new) },
+                        ) => *new > *old
+                            && matches!(*old, 8 | 16 | 32 | 64)
+                            && matches!(*new, 16 | 32 | 64 | 128),
+                        _ => false,
+                    };
+                    if lossless_signed_widening
+                        && columns[index].collation().is_none()
+                        && column.collation().is_none()
+                        && columns[index].timestamp_zone().is_none()
+                        && column.timestamp_zone().is_none()
+                        && columns[index].comparison_evidence().is_empty()
+                        && column.comparison_evidence().is_empty()
+                    {
+                        columns[index] = column.clone();
+                        continue;
+                    }
                     return PhysicalColumnAlterProof::Residual {
                         reason: "ALTER TYPE requires independently proved cast/rewrite and comparison laws".to_string(),
                         before_schema: schema.clone(),
