@@ -252,7 +252,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 3);
+    assert_eq!(frozen["version"], 4);
     for case in frozen["cases"].as_array().unwrap() {
         if case["classification"] != "Exact" {
             continue;
@@ -301,6 +301,11 @@ fn frozen_sequential_merge_snapshots_match_independent_duckdb() {
                 sorted(&native_state(&db, source)),
                 sorted(expected_states.get(source).unwrap()),
                 "{id}: physical source must reflect only prior committed writes"
+            );
+            assert_eq!(
+                sorted(&native_state(&db, source)),
+                sorted(&state(source, &step["source_before"])),
+                "{id}: independent frozen source preimage"
             );
             assert_eq!(
                 native_state(&db, source).exact_domains(source_schema),
