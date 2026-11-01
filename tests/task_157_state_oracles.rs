@@ -328,7 +328,14 @@ fn materialized_view_freezes_creation_bag_while_source_changes() {
         .unwrap();
     let source = final_states.iter().find(|s| s.relation() == "raw").unwrap();
     assert_bag(snapshot, &case["after"], "snap_stage");
-    assert_eq!(source.rows().len(), 6);
+    let mut expected_source_rows = case["initial"]["raw"].as_array().unwrap().clone();
+    expected_source_rows.push(serde_json::json!({"k": 3}));
+    let expected_source_after = Value::Array(expected_source_rows);
+    assert_bag(transitions[1].before(), &case["initial"]["raw"], "raw before append");
+    assert_bag(transitions[1].after(), &expected_source_after, "raw after append");
+    assert_eq!(transitions[1].affected().inserted(), 1);
+    assert_eq!(transitions[1].affected().deleted(), 0);
+    assert_bag(source, &expected_source_after, "raw final source");
     let schema = analyzed
         .source_schemas()
         .iter()
@@ -337,7 +344,11 @@ fn materialized_view_freezes_creation_bag_while_source_changes() {
     assert_domains(snapshot, schema, &case["domain"]);
     let db = native(case, true);
     assert_eq!(native_bag(&db, "snap_stage"), frozen_bag(&case["after"]));
-    assert_eq!(native_bag(&db, "raw").len(), 6);
+    assert_eq!(
+        native_bag(&db, "raw"),
+        frozen_bag(&expected_source_after),
+        "native DuckDB source after append must match complete canonical bag"
+    );
 }
 
 #[test]
@@ -373,7 +384,14 @@ fn logical_view_re_evaluates_after_canonical_source_append() {
         panic!("VIEW must re-evaluate the canonical post-append physical leaf: {result:?}");
     };
     assert_eq!(proof.view_name, "view_stage");
-    assert_eq!(proof.source_bag.len(), 6);
+    let mut expected_source_rows = case["initial"]["raw"].as_array().unwrap().clone();
+    expected_source_rows.push(serde_json::json!({"k": 3}));
+    for (ordinal, expected) in expected_source_rows.iter().enumerate() {
+        let actual = &proof.source_bag[ordinal];
+        assert_eq!(&actual.values, row(expected).values(), "source row {ordinal}");
+        assert_eq!(actual.source_row_ids, [format!("raw#{ordinal}")]);
+    }
+    assert_eq!(proof.source_bag.len(), expected_source_rows.len());
     assert_eq!(proof.view_bag.len(), 4);
     assert_eq!(proof.terminal.len(), 4);
     assert_eq!(proof.terminal[0].source_row_ids, ["raw#0"]);
@@ -405,6 +423,10 @@ fn logical_view_re_evaluates_after_canonical_source_append() {
     ));
     let db = native(case, false);
     assert_eq!(native_bag(&db, "view_stage"), frozen_bag(&case["after"]));
+    assert_eq!(
+        native_bag(&db, "raw"),
+        frozen_bag(&Value::Array(expected_source_rows))
+    );
 }
 
 #[test]
