@@ -20,7 +20,7 @@
 
 - `src/analysis.rs` records ordinary schema-only CREATE and distinguishes `CreateView`/`ReplaceView` from `CreateMaterializedView`/`ReplaceMaterializedView`.
 - `src/protocol/writes.rs`, `src/emission/statements.rs`, `schema/protocol.schema.json` and `docs/protocol.md` own the typed lifecycle contract. New wire enum values must be treated as a breaking contract evolution for release planning.
-- `src/physical_realization/write_states.rs` validates future CREATE schema constraints without constructing independently usable pre-CREATE rows. `write_states/operators.rs` constructs empty definitions, CTAS and stored MV snapshots from the attested source population, and rejects duplicate object identity.
+- `src/physical_realization/write_states.rs` validates future CREATE schema constraints without constructing independently usable pre-CREATE rows. `write_states/operators.rs` constructs empty definitions, CTAS and stored MV snapshots from the attested source population, returns exact original source-row occurrence IDs for each produced row, and rejects duplicate object identity.
 - `src/physical_realization/view_bags.rs` re-reads a logical view after an optional one-leaf canonical INSERT using original physical occurrence identities; a stored MV is not a logical view.
 - `tests/task_157_empty_create.rs`, `tests/task_157_state_oracles.rs`, `tests/task_157_dialect_matrix.rs`, `tests/task_157_adapter_parity.rs` and `tests/task_157_acceptance_inventory.rs` are the task-owned executable acceptance suite.
 
