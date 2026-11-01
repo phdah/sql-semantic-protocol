@@ -321,8 +321,8 @@ fn widened_signed_integer_preserves_exact_values_and_sql_nulls() {
         [], |row| row.get(0),
     ).unwrap();
     assert_eq!(data_type, "BIGINT");
-    let native = db.prepare("SELECT a FROM t ORDER BY a NULLS LAST").unwrap()
-        .query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
+    let mut statement = db.prepare("SELECT a FROM t ORDER BY a NULLS LAST").unwrap();
+    let native = statement.query_map([], |row| row.get::<_, Option<i64>>(0)).unwrap()
         .map(Result::unwrap).collect::<Vec<_>>();
     assert_eq!(native, vec![Some(2147483647), Some(2147483647), None]);
 }
