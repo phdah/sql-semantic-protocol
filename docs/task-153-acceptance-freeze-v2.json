@@ -1,0 +1,1029 @@
+{
+  "version": 2,
+  "owner": "TASK-153",
+  "parent": "TASK-82",
+  "status": "implementation_matrix_pinned_pending_independent_review",
+  "freeze_date": "2026-11-01",
+  "fixture_ids": [
+    "82-C153-P",
+    "82-C153-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "scope": [
+    "uniquely matched MERGE UPDATE and DELETE",
+    "first applicable WHEN MATCHED predicate branch",
+    "complete target/source physical bag",
+    "NULL three-valued match rejection",
+    "enforced key collision and duplicate source fail-closed"
+  ],
+  "comparison_assumptions": [
+    "signed INTEGER equality/order; SQL three-valued NULL semantics",
+    "one complete independently attested target and source bag, no inferred rows",
+    "source and target row identity is physical bag occurrence ordinal",
+    "unique-key enforcement only when explicitly attested",
+    "DuckDB native execution oracle, not portable engine law"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_syntax": [
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN UPDATE SET score = source.score WHEN MATCHED THEN DELETE",
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN DELETE WHEN MATCHED THEN UPDATE SET score = source.score",
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score"
+  ],
+  "parser_matrix_disposition": "Every dialect must be classified as parsed_canonical, canonical_unsupported, or parser_boundary by executable parser tests; parsing does not certify a native engine. Classification not yet independently reviewed.",
+  "adapters": [
+    "direct_sql",
+    "dbt_compiled_catalog",
+    "odcs_schema"
+  ],
+  "adapter_boundary": "Equivalent attested schema and enforced constraints must yield identical canonical proof; adapters cannot attest runtime MERGE behavior on their own",
+  "oracles": {
+    "engine": "DuckDB",
+    "source": "complete ordered source and target bags",
+    "target": "exact before and full after, preserved and selected prestate ordinals",
+    "positive": "exact typed frequencies, bounds and inclusivity for every numeric target column",
+    "negative": "IS NOT TRUE match/nonmembership, duplicate sources Residual, missing source Residual, enforced PK collision Impossible"
+  },
+  "cases": [
+    {
+      "id": "82-C153-P-update-first",
+      "family": "matched_update_first_branch",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN UPDATE SET score = source.score WHEN MATCHED THEN DELETE",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 50
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "ordinals": [
+        0
+      ],
+      "not_true_ordinals": [
+        1
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0
+      },
+      "pk": true,
+      "fixture_id": "82-C153-P",
+      "proof": "Exact",
+      "row_ids": [
+        "target_before#0",
+        "target_before#1"
+      ],
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 50,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "50": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 50,
+          "upper": 50,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "50": 1
+          }
+        }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-P-delete-first",
+      "family": "matched_delete_first_branch",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN DELETE WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 50
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "ordinals": [
+        0
+      ],
+      "not_true_ordinals": [
+        1
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1
+      },
+      "pk": true,
+      "fixture_id": "82-C153-P",
+      "proof": "Exact",
+      "row_ids": [
+        "target_before#0",
+        "target_before#1"
+      ],
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 50,
+          "upper": 50,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "50": 1
+          }
+        }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-P-fallback-delete",
+      "family": "matched_predicate_false_falls_through",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND source.score > 0 THEN UPDATE SET score = source.score WHEN MATCHED THEN DELETE",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": -5
+        }
+      ],
+      "target_after": [
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "ordinals": [
+        0
+      ],
+      "not_true_ordinals": [
+        1
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1
+      },
+      "pk": true,
+      "fixture_id": "82-C153-P",
+      "proof": "Exact",
+      "row_ids": [
+        "target_before#0",
+        "target_before#1"
+      ],
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": -5,
+          "upper": -5,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "-5": 1
+          }
+        }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-N-null-key",
+      "family": "null_matching_is_not_true",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": null,
+          "score": 15
+        },
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 99
+        },
+        {
+          "id": 1,
+          "score": 50
+        }
+      ],
+      "target_after": [
+        {
+          "id": null,
+          "score": 15
+        },
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "ordinals": [
+        1
+      ],
+      "not_true_ordinals": [
+        0,
+        2
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0
+      },
+      "pk": false,
+      "fixture_id": "82-C153-N",
+      "proof": "Exact",
+      "row_ids": [
+        "target_before#0",
+        "target_before#1",
+        "target_before#2"
+      ],
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "15": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 15,
+          "upper": 50,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "15": 1,
+            "20": 1,
+            "50": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 50,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "50": 1,
+            "99": 1
+          }
+        }
+      },
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-N-no-match",
+      "family": "nonmatching_rows_untouched",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "ordinals": [],
+      "not_true_ordinals": [
+        0,
+        1
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "pk": true,
+      "fixture_id": "82-C153-N",
+      "proof": "Exact",
+      "row_ids": [
+        "target_before#0",
+        "target_before#1"
+      ],
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 3,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "3": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1
+          }
+        }
+      },
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-N-multimatch",
+      "fixture_id": "82-C153-N",
+      "family": "duplicate_source_match",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 50
+        },
+        {
+          "id": 1,
+          "score": 60
+        }
+      ],
+      "proof": "Residual",
+      "gap": "UnprovedOperation",
+      "pk": true,
+      "owner": "TASK-153",
+      "reason": "two source matches cannot select a unique branch evaluation",
+      "source_row_ids": [
+        "source_before#0",
+        "source_before#1"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-N-key-collision",
+      "fixture_id": "82-C153-N",
+      "family": "enforced_pk_violation",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET id = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 2
+        }
+      ],
+      "proof": "Impossible",
+      "pk": true,
+      "owner": "TASK-153",
+      "reason": "updated id=2 collides with untouched id=2",
+      "source_row_ids": [
+        "source_before#0"
+      ],
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    },
+    {
+      "id": "82-C153-N-missing-source",
+      "fixture_id": "82-C153-N",
+      "family": "source_population_missing",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": null,
+      "proof": "Residual",
+      "gap": "MissingPopulation",
+      "pk": true,
+      "owner": "TASK-153",
+      "reason": "no complete source bag may be invented",
+      "case_owner": "TASK-153",
+      "comparison_law": "SQL INTEGER equality and three-valued ON evaluation",
+      "runtime_oracle": "DuckDB current CI dependency, not portable execution guarantee"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "82-C153-N-vendor-law",
+      "owner": "TASK-153",
+      "classification": "conditional_residual",
+      "proof": "Residual",
+      "reason": "vendor-specific MERGE runtime match ordering and null equality require pinned native engine oracle",
+      "release_disposition": "do_not_certify_without_evidence"
+    }
+  ],
+  "acceptance_map": {
+    "1": [
+      "all_cases",
+      "dialects",
+      "adapters"
+    ],
+    "2": [
+      "exact_cases",
+      "negative_cases"
+    ],
+    "3": [
+      "native_oracles",
+      "typed_domains",
+      "row_ids"
+    ],
+    "4": [
+      "dialect_parser_matrix",
+      "adapter_equivalence"
+    ],
+    "5": [
+      "fmt",
+      "strict_clippy",
+      "cargo_test",
+      "cargo_doc",
+      "no_default_features",
+      "dbt_e2e",
+      "schema_snapshots"
+    ]
+  },
+  "required_ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo doc --no-deps",
+    "cargo test --no-default-features",
+    "dbt core E2E",
+    "protocol JSON schema snapshots"
+  ],
+  "signoff": {
+    "mandatory_cases": 5,
+    "negative_cases": 3,
+    "all_mandatory_verified": true,
+    "independent_review": false,
+    "ci_verified": false,
+    "child_done": false,
+    "parent_done": false,
+    "dialect_matrix_verified": true,
+    "adapter_paths_verified": true
+  },
+  "previous_snapshot": "docs/task-153-acceptance-freeze-v1.json",
+  "vendor_parser_syntax": [
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id",
+    "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score RETURNING id"
+  ],
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ]
+  },
+  "dialect_cells_required": 65,
+  "dialect_matrix_fixture_version": 2,
+  "adapter_cells_required": 24,
+  "adapter_equivalent_evidence": "same typed source/target catalog and explicit enforced PK metadata across direct SQL, dbt warehouse catalog and ODCS physical schema; test both exact and fail-closed cases at canonical interpreter seam",
+  "sql_oracles": "tests/task_153_merge_matched.rs",
+  "dialect_adapter_oracles": "tests/task_153_dialect_adapter.rs",
+  "vendor_boundaries": [
+    {
+      "id": "82-C153-N-vendor-1",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id",
+      "owner": "TASK-153",
+      "proof": "Residual",
+      "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
+      "evidence_owner": "TASK-153",
+      "parser_result": "parser_boundary",
+      "parser_cells": 13,
+      "native_execution_certified": false,
+      "engine_comparison": "none; syntax rejected by all exposed parser dialects"
+    },
+    {
+      "id": "82-C153-N-vendor-2",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score RETURNING id",
+      "owner": "TASK-153",
+      "proof": "Residual",
+      "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
+      "evidence_owner": "TASK-153",
+      "parser_result": "parser_boundary",
+      "parser_cells": 13,
+      "native_execution_certified": false,
+      "engine_comparison": "none; syntax rejected by all exposed parser dialects"
+    }
+  ],
+  "dialect_evidence": {
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41296352515",
+    "method": "observed all 65 parser-canonical boundaries against sqlparser 0.58; mandatory cells parsed canonical and both vendor spelling examples rejected at parser boundary",
+    "canonical_cells": 39,
+    "conditional_parser_boundaries": 26,
+    "engine_claims": "DuckDB only"
+  }
+}
