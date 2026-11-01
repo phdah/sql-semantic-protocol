@@ -433,7 +433,8 @@ fn analyze_statement(
         } => {
             if *if_exists || *only || location.is_some() || on_cluster.is_some() || *iceberg {
                 unsupported_write_statement(
-                    "alter_table", "unsupported_alter_lifecycle",
+                    "alter_table",
+                    "unsupported_alter_lifecycle",
                     "conditional, storage or vendor ALTER TABLE requires engine evidence",
                 )
             } else {
@@ -471,8 +472,8 @@ fn analyze_statement(
 }
 
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
-mod alter_columns;
 mod aggregation;
+mod alter_columns;
 mod arithmetic_domains;
 mod cast_domains;
 pub(crate) mod constraints;
