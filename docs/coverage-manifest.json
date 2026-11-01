@@ -2,17 +2,18 @@
   "task_156_computed_sequential_merge_acceptance": {
     "owner": "TASK-156",
     "parent": "TASK-82",
-    "status": "in_progress_unverified",
+    "status": "implementation_ci_pending",
     "freeze": "docs/task-156-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "freeze_history": [
-      "docs/task-156-acceptance-freeze-v1.json"
+      "docs/task-156-acceptance-freeze-v1.json",
+      "docs/task-156-acceptance-freeze-v2.json"
     ],
     "fixture_ids": [
       "82-C156-P",
       "82-C156-N"
     ],
-    "bounded_cases": 5,
+    "bounded_cases": 6,
     "exact_cases": 4,
     "residual_cases": 1,
     "full_bag_oracle": "tests/task_156_sequential_merges.rs",
@@ -22,12 +23,17 @@
     "release_approved": false,
     "ci_verified": false,
     "remaining_gates": [
-      "13-dialect parser and boundary matrix",
-      "direct/dbt/ODCS parity",
-      "all required native and typed negative matrix cells",
-      "strict lint/docs/no-default-features/dbt E2E on final head",
-      "independent code review and child/parent signoff"
-    ]
+      "final-run matrix verification",
+      "independent review",
+      "document signoff"
+    ],
+    "impossible_cases": 1,
+    "dialect_cells_required": 65,
+    "adapter_cases_required": 6,
+    "adapter_paths_required": 3,
+    "parser_matrix": "tests/task_156_dialect_matrix.rs",
+    "adapter_oracle": "tests/task_156_adapter_parity.rs",
+    "acceptance_inventory": "tests/task_156_acceptance_inventory.rs"
   },
   "task_155_merge_conflict_acceptance": {
     "owner": "TASK-155",
