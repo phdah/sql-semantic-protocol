@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-155",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
-  "status": "frozen_complete_implementation_matrix_pending_ci_and_review",
+  "status": "freeze_v3_fk_deferral_boundary_explicit_pending_final_oracles",
   "fixture_ids": [
     "82-C155-P",
     "82-C155-N"
@@ -950,7 +950,7 @@
       "target_pk": true,
       "parent_pk": true,
       "score_fk": true,
-      "classification": "Impossible",
+      "classification": "Residual",
       "on_true_target_ordinals": [
         0
       ],
@@ -1025,7 +1025,10 @@
       "on_true_source_ordinals": [
         0
       ],
-      "on_not_true_source_ordinals": []
+      "on_not_true_source_ordinals": [],
+      "gap": "UnprovedOperation",
+      "conditional_owner": "TASK-155",
+      "release_disposition": "Native DuckDB rejects immediately, but portable enforcement timing is not attested; owner-reviewed conditional deferral boundary (TASK-84/87)"
     },
     {
       "id": "82-C155-N-fk-missing-population",
@@ -1337,7 +1340,7 @@
     "parent_done": false,
     "release_approved": false
   },
-  "previous_snapshot": "docs/task-155-acceptance-freeze-v1.json",
+  "previous_snapshot": "docs/task-155-acceptance-freeze-v2.json",
   "dialect_syntax": [
     {
       "id": "merge-matched",
@@ -1461,5 +1464,13 @@
       "parsed_canonical",
       "canonical_unsupported"
     ]
+  },
+  "reviewed_matrix_change": {
+    "case_id": "82-C155-N-fk-violation",
+    "from": "Impossible",
+    "to": "Residual",
+    "justification": "The current canonical schema proves FK enforcement but not statement-time versus deferred enforcement; follow the TASK-152 deferred-FK law, never promote a DuckDB immediate error to portable Impossible.",
+    "owner": "TASK-155",
+    "release_disposition": "conditional native immediate execution observed in DuckDB; generic portable FK deferral attestation remains pending TASK-84/87"
   }
 }
