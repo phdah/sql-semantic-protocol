@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-153",
   "parent": "TASK-82",
-  "status": "implementation_matrix_expanded_pending_parser_observation_and_review",
+  "status": "implementation_matrix_pinned_pending_independent_review",
   "freeze_date": "2026-11-01",
   "fixture_ids": [
     "82-C153-P",
@@ -881,20 +881,112 @@
   "signoff": {
     "mandatory_cases": 5,
     "negative_cases": 3,
-    "all_mandatory_verified": false,
+    "all_mandatory_verified": true,
     "independent_review": false,
     "ci_verified": false,
     "child_done": false,
     "parent_done": false,
-    "dialect_matrix_verified": false,
-    "adapter_paths_verified": false
+    "dialect_matrix_verified": true,
+    "adapter_paths_verified": true
   },
   "previous_snapshot": "docs/task-153-acceptance-freeze-v1.json",
   "vendor_parser_syntax": [
     "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score OUTPUT inserted.id",
     "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score RETURNING id"
   ],
-  "dialect_expected": null,
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "parser_boundary",
+      "parser_boundary"
+    ]
+  },
   "dialect_cells_required": 65,
   "dialect_matrix_fixture_version": 2,
   "adapter_cells_required": 24,
@@ -908,7 +1000,11 @@
       "owner": "TASK-153",
       "proof": "Residual",
       "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
-      "evidence_owner": "TASK-153"
+      "evidence_owner": "TASK-153",
+      "parser_result": "parser_boundary",
+      "parser_cells": 13,
+      "native_execution_certified": false,
+      "engine_comparison": "none; syntax rejected by all exposed parser dialects"
     },
     {
       "id": "82-C153-N-vendor-2",
@@ -916,7 +1012,18 @@
       "owner": "TASK-153",
       "proof": "Residual",
       "release_disposition": "unsupported_or_parser_boundary_until_pinned_native_engine_oracle",
-      "evidence_owner": "TASK-153"
+      "evidence_owner": "TASK-153",
+      "parser_result": "parser_boundary",
+      "parser_cells": 13,
+      "native_execution_certified": false,
+      "engine_comparison": "none; syntax rejected by all exposed parser dialects"
     }
-  ]
+  ],
+  "dialect_evidence": {
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41296352515",
+    "method": "observed all 65 parser-canonical boundaries against sqlparser 0.58; mandatory cells parsed canonical and both vendor spelling examples rejected at parser boundary",
+    "canonical_cells": 39,
+    "conditional_parser_boundaries": 26,
+    "engine_claims": "DuckDB only"
+  }
 }
