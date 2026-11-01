@@ -240,6 +240,17 @@ fn frozen_table_create_replace_and_duplicate_oracles_match_native_duckdb() {
         };
         assert_eq!(transitions.len(), 1, "{id}: single DDL transition");
         let transition = &transitions[0];
+        let expected_source_ids = case["source_truth"]["true_ordinals"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| vec![format!("raw#{}", value.as_u64().unwrap())])
+            .collect::<Vec<_>>();
+        assert_eq!(
+            transition.definition_source_row_ids(),
+            expected_source_ids,
+            "{id}: each physical output must retain its exact original source occurrence"
+        );
         assert_eq!(transition.after().relation(), target);
         assert_bag(transition.after(), &case["after"], id);
         assert_eq!(
@@ -302,6 +313,15 @@ fn materialized_view_freezes_creation_bag_while_source_changes() {
         panic!("materialized snapshot and source append must be exact: {result:?}");
     };
     assert_eq!(transitions.len(), 2);
+    assert_eq!(
+        transitions[0].definition_source_row_ids(),
+        [
+            vec!["raw#0".to_owned()],
+            vec!["raw#1".to_owned()],
+            vec!["raw#2".to_owned()],
+        ],
+        "materialized snapshot must retain creation-time producer IDs after source INSERT"
+    );
     let snapshot = final_states
         .iter()
         .find(|s| s.relation() == "snap_stage")
