@@ -22,7 +22,7 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     );
     assert_eq!(
         frozen["previous_snapshot"],
-        "docs/task-155-acceptance-freeze-v2.json"
+        "docs/task-155-acceptance-freeze-v3.json"
     );
     assert_eq!(frozen["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
     assert_eq!(
