@@ -1,4 +1,26 @@
 {
+  "task_158_alter_column_transition_acceptance": {
+    "owner": "TASK-158",
+    "parent": "TASK-83",
+    "status": "partial_implementation_pending_sql_and_oracles",
+    "freeze": "docs/task-158-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["83-C158-P", "83-C158-N"],
+    "physical_row_projection_oracle": "tests/task_158_alter_column_snapshot.rs",
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "mandatory_cells_verified": false,
+    "dialect_cells_verified": 0,
+    "adapter_cells_verified": 0,
+    "ci_verified": false,
+    "remaining_gates": [
+      "AST and canonical write normalization",
+      "ordered DDL and authoritative constraints",
+      "full 13-dialect and SQL/dbt/ODCS parity",
+      "all complete DuckDB and negative oracles",
+      "full CI and independent review"
+    ]
+  },
   "task_157_ddl_identity_acceptance": {
     "owner": "TASK-157",
     "parent": "TASK-83",
