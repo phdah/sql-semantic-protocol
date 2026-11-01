@@ -261,6 +261,11 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 assert_eq!(sorted(transition.before()), sorted(before));
                 assert_eq!(sorted(transition.after()), sorted(&expected));
                 assert_eq!(
+                    transition.affected_target_ordinals(),
+                    ordinals(&case["on_true_target_ordinals"]),
+                    "{id}: target physical occurrence identity"
+                );
+                assert_eq!(
                     transition.affected().inserted(),
                     case["affected"]["inserted"].as_u64().unwrap()
                 );
