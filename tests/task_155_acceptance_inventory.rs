@@ -13,11 +13,11 @@ fn every_named_task_155_acceptance_cell_is_finite_and_owned() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let record = &manifest["task_155_merge_conflict_acceptance"];
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     assert_eq!(frozen["owner"], "TASK-155");
     assert_eq!(frozen["parent"], "TASK-82");
     assert_eq!(frozen["fixture_ids"], serde_json::json!(["82-C155-P", "82-C155-N"]));
-    assert_eq!(frozen["previous_snapshot"], "docs/task-155-acceptance-freeze-v1.json");
+    assert_eq!(frozen["previous_snapshot"], "docs/task-155-acceptance-freeze-v2.json");
     assert_eq!(frozen["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
     assert_eq!(frozen["original_parent_ac"], serde_json::json!([1, 2, 3, 5, 6]));
     assert_eq!(frozen["remaining_mandatory_matrix"], serde_json::json!([]));
@@ -123,5 +123,5 @@ fn all_cases_have_typed_domain_frequencies_and_closed_true_not_true_partitions()
             unexpected => panic!("{id}: unreviewed proof disposition {unexpected}"),
         }
     }
-    assert_eq!(counts, (5, 3, 4));
+    assert_eq!(counts, (5, 2, 5));
 }
