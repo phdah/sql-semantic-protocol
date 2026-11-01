@@ -453,7 +453,6 @@ fn frozen_negative_merges_fail_closed_and_preserve_native_atomicity() {
     }
 }
 
-
 #[test]
 fn ordered_unmatched_merges_replay_without_invented_intermediate_sources() {
     let frozen = freeze();
@@ -566,11 +565,21 @@ fn ordered_unmatched_merges_replay_without_invented_intermediate_sources() {
     );
     assert_domains(&terminal, schema, &replay["terminal_domains"]);
     assert_eq!(
-        sorted_rows(final_states.iter().find(|s| s.relation() == "target").unwrap()),
+        sorted_rows(
+            final_states
+                .iter()
+                .find(|s| s.relation() == "target")
+                .unwrap()
+        ),
         sorted_rows(&terminal)
     );
     assert_eq!(
-        sorted_rows(final_states.iter().find(|s| s.relation() == "source").unwrap()),
+        sorted_rows(
+            final_states
+                .iter()
+                .find(|s| s.relation() == "source")
+                .unwrap()
+        ),
         sorted_rows(&source)
     );
 }
