@@ -14,12 +14,12 @@ fn task_156_has_a_versioned_finite_matrix_and_all_original_parent_mappings() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let entry = &manifest["task_156_computed_sequential_merge_acceptance"];
-    assert_eq!(f["version"], 2);
+    assert_eq!(f["version"], 3);
     assert_eq!(f["owner"], "TASK-156");
     assert_eq!(f["parent"], "TASK-82");
     assert_eq!(
         f["previous_snapshot"],
-        "docs/task-156-acceptance-freeze-v1.json"
+        "docs/task-156-acceptance-freeze-v2.json"
     );
     assert_eq!(
         f["fixture_ids"],
@@ -31,7 +31,7 @@ fn task_156_has_a_versioned_finite_matrix_and_all_original_parent_mappings() {
         serde_json::json!([1, 2, 3, 4, 5, 6])
     );
     assert_eq!(entry["freeze"], "docs/task-156-acceptance-freeze.json");
-    assert_eq!(entry["freeze_version"], 2);
+    assert_eq!(entry["freeze_version"], 3);
     assert_eq!(entry["parent_signed_off"], false);
     assert_eq!(f["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(f["dialect_syntax"].as_array().unwrap().len(), 5);
