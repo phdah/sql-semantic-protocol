@@ -116,7 +116,10 @@ pub fn physical_alter_column_snapshot(
     for step in steps {
         match step {
             PhysicalColumnAlterStep::Add { column, default } => {
-                if columns.iter().any(|existing| existing.name() == column.name()) {
+                if columns
+                    .iter()
+                    .any(|existing| existing.name() == column.name())
+                {
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("ADD column '{}' already exists", column.name()),
                     };
@@ -138,7 +141,8 @@ pub fn physical_alter_column_snapshot(
                 };
                 if columns.len() == 1 {
                     return PhysicalColumnAlterProof::Residual {
-                        reason: "dropping the final column has unproved engine DDL laws".to_string(),
+                        reason: "dropping the final column has unproved engine DDL laws"
+                            .to_string(),
                     };
                 }
                 columns.remove(index);
@@ -175,7 +179,8 @@ pub fn physical_alter_column_snapshot(
                 }
             }
             PhysicalColumnAlterStep::SetType { column } => {
-                let Some(index) = columns.iter().position(|item| item.name() == column.name()) else {
+                let Some(index) = columns.iter().position(|item| item.name() == column.name())
+                else {
                     return PhysicalColumnAlterProof::Impossible {
                         reason: format!("ALTER TYPE column '{}' does not exist", column.name()),
                     };
