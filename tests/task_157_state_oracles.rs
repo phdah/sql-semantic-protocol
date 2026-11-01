@@ -60,9 +60,14 @@ fn bundle(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
     if case["id"] == "83-C157-P-empty-table" {
         return analyze_inputs(&inputs, "duckdb", dialect.as_ref()).unwrap();
     }
-    let configured = inputs.iter().enumerate().map(|(index, input)| {
-        ConfiguredSqlInput::new(format!("ddl-{index}"), input, "duckdb", dialect.as_ref())
-    }).collect::<Vec<_>>();
+    let ids = (0..inputs.len())
+        .map(|index| format!("ddl-{index}"))
+        .collect::<Vec<_>>();
+    let configured = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured, &catalog(case)).unwrap()
 }
 
