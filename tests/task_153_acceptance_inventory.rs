@@ -47,7 +47,7 @@ fn stable_frozen_variants_prove_every_original_child_and_parent_ac() {
     assert_eq!(root["parser_cells_required"], 65);
     assert_eq!(root["adapter_cells_required"], 24);
     assert_eq!(root["ordered_replay_cases"], 1);
-    assert_eq!(root["child_signed_off"], false);
+    assert_eq!(root["child_signed_off"], freeze["signoff"]["child_done"]);
     assert_eq!(root["parent_signed_off"], false);
     assert_eq!(root["release_approved"], false);
 
