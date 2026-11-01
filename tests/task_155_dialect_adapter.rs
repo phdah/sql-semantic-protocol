@@ -365,7 +365,11 @@ fn replay_plan(replay: &Value, catalog: &RelationCatalog) -> PhysicalWriteStateP
         .enumerate()
         .map(|(i, sql)| {
             ConfiguredSqlInput::new(
-                if i == 0 { "task155-replay0" } else { "task155-replay1" },
+                if i == 0 {
+                    "task155-replay0"
+                } else {
+                    "task155-replay1"
+                },
                 sql,
                 "postgresql",
                 dialect.as_ref(),
