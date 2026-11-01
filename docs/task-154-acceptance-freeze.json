@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-154",
   "parent": "TASK-82",
   "freeze_date": "2026-11-01",
@@ -162,6 +162,11 @@
       "id": "82-C154-vendor",
       "owner": "TASK-154",
       "disposition": "Dialect parser success does not certify native vendor/session execution"
+    },
+    {
+      "id": "82-C154-transaction",
+      "owner": "TASK-84",
+      "disposition": "Transaction BEGIN/COMMIT/SAVEPOINT execution/session laws remain Residual; portable ordered statement replay does not prove native transaction isolation or rollback."
     }
   ],
   "cases": [
@@ -1709,8 +1714,333 @@
   "oracle_paths": [
     "tests/task_154_merge_unmatched.rs",
     "tests/task_154_dialect_adapter.rs",
-    "tests/task_154_acceptance_inventory.rs"
+    "tests/task_154_acceptance_inventory.rs",
+    "tests/task_154_merge_unmatched.rs::ordered_unmatched_merges_replay_without_invented_intermediate_sources"
   ],
-  "previous_snapshot": "docs/task-154-acceptance-freeze-v1.json",
-  "revision_note": "Reviewed correction: absent source population has unknown ON partitions, never NOT TRUE; v1 preserved unchanged."
+  "previous_snapshot": "docs/task-154-acceptance-freeze-v2.json",
+  "revision_note": "Reviewed v3 adds mandatory sequential three-MERGE replay: newly inserted rows are target rows of later statements but never independent original source rows. v1 and v2 immutable histories retained.",
+  "ordered_replay": {
+    "id": "82-C154-P-ordered-replay",
+    "proof": "Exact",
+    "comparison_law": "signed INTEGER equality, SQL NULL stays NOT TRUE, each statement reads its preceding target state",
+    "target_initial": [
+      {
+        "id": 1,
+        "score": 10
+      },
+      {
+        "id": 2,
+        "score": 20
+      }
+    ],
+    "source": [
+      {
+        "id": 1,
+        "score": 100
+      },
+      {
+        "id": 3,
+        "score": 300
+      }
+    ],
+    "source_domains": {
+      "id": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 1,
+        "upper": 3,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "1": 1,
+          "3": 1
+        }
+      },
+      "score": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 100,
+        "upper": 300,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "100": 1,
+          "300": 1
+        }
+      }
+    },
+    "terminal": [
+      {
+        "id": 1,
+        "score": 100
+      },
+      {
+        "id": 3,
+        "score": 300
+      }
+    ],
+    "terminal_domains": {
+      "id": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 1,
+        "upper": 3,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "1": 1,
+          "3": 1
+        }
+      },
+      "score": {
+        "type": "INTEGER",
+        "nullable": false,
+        "lower": 100,
+        "upper": 300,
+        "lower_inclusive": true,
+        "upper_inclusive": true,
+        "frequencies": {
+          "100": 1,
+          "300": 1
+        }
+      }
+    },
+    "steps": [
+      {
+        "id": "82-C154-P-replay-insert-and-source-update",
+        "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score) WHEN NOT MATCHED BY SOURCE THEN UPDATE SET score = 25",
+        "before": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 20
+          }
+        ],
+        "after": [
+          {
+            "id": 1,
+            "score": 100
+          },
+          {
+            "id": 2,
+            "score": 25
+          },
+          {
+            "id": 3,
+            "score": 300
+          }
+        ],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 10,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "10": 1,
+              "20": 1
+            }
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1,
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 25,
+            "upper": 300,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "25": 1,
+              "100": 1,
+              "300": 1
+            }
+          }
+        },
+        "affected": {
+          "inserted": 1,
+          "updated": 2,
+          "deleted": 0
+        },
+        "affected_ordinals": [
+          0,
+          1
+        ]
+      },
+      {
+        "id": "82-C154-P-replay-delete",
+        "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED AND target.score >= 100 THEN DELETE WHEN NOT MATCHED BY SOURCE THEN DELETE",
+        "before": [
+          {
+            "id": 1,
+            "score": 100
+          },
+          {
+            "id": 2,
+            "score": 25
+          },
+          {
+            "id": 3,
+            "score": 300
+          }
+        ],
+        "after": [],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "2": 1,
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 25,
+            "upper": 300,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "25": 1,
+              "100": 1,
+              "300": 1
+            }
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          }
+        },
+        "affected": {
+          "inserted": 0,
+          "updated": 0,
+          "deleted": 3
+        },
+        "affected_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "id": "82-C154-P-replay-repopulate",
+        "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED BY TARGET THEN INSERT (id, score) VALUES (source.id, source.score)",
+        "before": [],
+        "after": [
+          {
+            "id": 1,
+            "score": 100
+          },
+          {
+            "id": 3,
+            "score": 300
+          }
+        ],
+        "before_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false,
+            "frequencies": {}
+          }
+        },
+        "after_domains": {
+          "id": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 1,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "1": 1,
+              "3": 1
+            }
+          },
+          "score": {
+            "type": "INTEGER",
+            "nullable": false,
+            "lower": 100,
+            "upper": 300,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "frequencies": {
+              "100": 1,
+              "300": 1
+            }
+          }
+        },
+        "affected": {
+          "inserted": 2,
+          "updated": 0,
+          "deleted": 0
+        },
+        "affected_ordinals": []
+      }
+    ]
+  }
 }
