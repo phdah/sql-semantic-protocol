@@ -247,3 +247,36 @@ fn future_create_cannot_attest_a_preexisting_table_has_no_constraints() {
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn post_alter_inserts_validate_against_evolved_schema_not_initial_create() {
+    let sql = [
+        "CREATE TABLE t (a INTEGER)",
+        "INSERT INTO t (a) VALUES (1)",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "INSERT INTO t (a, b) VALUES (3, 4)",
+    ];
+    let analyzed = bundle(&sql);
+    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
+        physical_ordered_write_state_plan(&analyzed, &[])
+    else {
+        panic!("later INSERT must see post-ALTER column and type evidence");
+    };
+    assert_eq!(transitions.len(), 4);
+    assert_eq!(final_states[0].rows().len(), 2);
+    assert_eq!(
+        expected_bag(final_states[0].rows()),
+        expected_bag(&[
+            row(Some(1), Some(2), ("a", "b")),
+            row(Some(3), Some(4), ("a", "b")),
+        ])
+    );
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    let mut stmt = db.prepare("SELECT a, b FROM t ORDER BY a").unwrap();
+    let native = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+        .unwrap().map(Result::unwrap).collect::<Vec<_>>();
+    assert_eq!(native, vec![(1, 2), (3, 4)]);
+}
