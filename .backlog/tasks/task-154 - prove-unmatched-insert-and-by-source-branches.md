@@ -1,10 +1,10 @@
 ---
 id: TASK-154
 title: Prove unmatched INSERT and BY SOURCE branches
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-01'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,7 @@ type: feature
 ## Sequencing
 
 Next: [TASK-155](task-155%20-%20classify-repeated-matches-upsert-equivalents-and-constraint-effects.md) after this child is merged.
+
+## Implementation progress (2026-11-01)
+
+Frozen the task-owned 12-case exact/negative physical source/target inventory in `docs/task-154-acceptance-freeze.json` (v1) before semantic changes. It defines exact expected before/after bags, NULL and SQL ON TRUE/NOT TRUE partitions, target occurrence ordinals, typed frequency/bound oracles, 65 parser cells, 3 evidence sources and conditional residual owners. Implementation and independent verification are pending; TASK-82 remains open.
