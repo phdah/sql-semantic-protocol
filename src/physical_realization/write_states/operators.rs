@@ -41,7 +41,16 @@ pub(super) fn define_rows(
         None => return Err(residual("missing CREATE/REPLACE lifecycle evidence")),
     }
     let schema = schema_for(bundle, target)?;
-    let projected = evaluate_simple_select(bundle, query, states)?;
+    // Schema-only CREATE TABLE is the empty bag, not a SELECT whose input
+    // may be omitted or invented. An AS SELECT must still prove its source.
+    let schema_only = write.definition_mode() == Some(WriteDefinitionMode::CreateTable)
+        && query.sources().is_empty()
+        && query.output().columns().is_empty();
+    let projected = if schema_only {
+        Vec::new()
+    } else {
+        evaluate_simple_select(bundle, query, states)?
+    };
     let columns = query
         .output()
         .columns()
