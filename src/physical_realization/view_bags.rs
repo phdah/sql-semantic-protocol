@@ -10,7 +10,8 @@ use crate::protocol::{LiteralValue, ProtocolStatement, QueryStatement, WriteDefi
 use super::exists_producers::{complete_domain, PhysicalProducerDomain, PhysicalProducerRow};
 use super::write_states::{
     append_source_for_view_read, evaluate_simple_select_with_source_ids,
-    physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    physical_closed_world_schema_plan, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan,
 };
 
 /// An exact view producer and terminal read, with original physical occurrence IDs.
@@ -120,11 +121,14 @@ pub fn physical_finite_view_read_plan(
     initial_states: &[PhysicalWriteState],
     wanted: Option<&BTreeMap<String, LiteralValue>>,
 ) -> PhysicalViewProof {
-    let (definition, mutation, read) = match bundle.layers() {
-        [definition, read] => (definition, None, read),
-        [definition, mutation, read] => (definition, Some(mutation), read),
-        _ => return residual("logical view proof requires one definition, optional source append, and one read"),
-    };
+    let (definition, mutation, read) =
+        match bundle.layers() {
+            [definition, read] => (definition, None, read),
+            [definition, mutation, read] => (definition, Some(mutation), read),
+            _ => return residual(
+                "logical view proof requires one definition, optional source append, and one read",
+            ),
+        };
     if read.id() != target_layer_id || read.write_kind().is_some() {
         return residual("logical view read must be the terminal SELECT");
     }
