@@ -4,7 +4,7 @@
     "parent": "TASK-82",
     "status": "implementation_in_progress",
     "freeze": "docs/task-154-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "fixture_ids": [
       "82-C154-P",
       "82-C154-N"
@@ -20,8 +20,10 @@
     "release_approved": false,
     "ci_verified": false,
     "freeze_history": [
-      "docs/task-154-acceptance-freeze-v1.json"
-    ]
+      "docs/task-154-acceptance-freeze-v1.json",
+      "docs/task-154-acceptance-freeze-v2.json"
+    ],
+    "ordered_replay_cases": 1
   },
   "task_153_matched_merge_acceptance": {
     "owner": "TASK-153",
