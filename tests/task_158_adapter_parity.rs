@@ -4,22 +4,19 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput, WriteKind,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn direct() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "t",
-            vec![
-                SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap(),
-                SchemaColumn::from_sql_type("b", "INTEGER", "duckdb").unwrap(),
-            ],
-        )
-        .unwrap(),
-    ])
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap(),
+            SchemaColumn::from_sql_type("b", "INTEGER", "duckdb").unwrap(),
+        ],
+    )
+    .unwrap()])
     .unwrap()
 }
 
@@ -76,8 +73,8 @@ fn odcs() -> RelationCatalog {
     use sql_semantic_protocol::parse_odcs_yaml;
 
     let contract = "apiVersion: v3.2.0\nkind: DataContract\nid: task158\nname: TASK-158 parity\nversion: 1.0.0\nstatus: active\nschema:\n  - name: t\n    physicalName: t\n    properties:\n      - name: a\n        physicalType: INTEGER\n      - name: b\n        physicalType: INTEGER\n";
-    let evidence = parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["t"]).unwrap())
-        .unwrap();
+    let evidence =
+        parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["t"]).unwrap()).unwrap();
     RelationCatalog::from_schemas(evidence.source_schemas()).unwrap()
 }
 
@@ -95,7 +92,13 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> String {
         .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
     let analyzed = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
-    let last = analyzed.inputs().last().unwrap().statements().first().unwrap();
+    let last = analyzed
+        .inputs()
+        .last()
+        .unwrap()
+        .statements()
+        .first()
+        .unwrap();
     match last {
         sql_semantic_protocol::ProtocolStatement::Query(query) => {
             assert_eq!(query.write().unwrap().kind(), WriteKind::SchemaAlter);
@@ -104,7 +107,10 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> String {
     };
     let result = physical_ordered_write_state_plan(&analyzed, &[]);
     assert!(
-        matches!(result, PhysicalWriteStatePlan::Feasible { .. } | PhysicalWriteStatePlan::Residual { .. }),
+        matches!(
+            result,
+            PhysicalWriteStatePlan::Feasible { .. } | PhysicalWriteStatePlan::Residual { .. }
+        ),
         "no adapter can invent impossible lifecycle facts: {result:?}"
     );
     format!("{result:?}")
