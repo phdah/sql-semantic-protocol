@@ -394,7 +394,6 @@ fn frozen_merge_negatives_never_claim_exact_source_winners_or_invalid_final_rows
     }
 }
 
-
 #[test]
 fn ordered_insert_then_two_matched_merges_replay_each_native_state_without_new_source_rows() {
     let frozen = freeze();
@@ -423,8 +422,11 @@ fn ordered_insert_then_two_matched_merges_replay_each_native_state_without_new_s
         vec![RelationConstraint::primary_key(
             vec!["id".to_owned()],
             vec![ConstraintEvidence::new(
-                ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task-153-replay")
-                    .unwrap(),
+                ConstraintProvenance::new(
+                    ConstraintSourceKind::ExternalMetadata,
+                    "task-153-replay",
+                )
+                .unwrap(),
                 ConstraintEnforcement::Enforced,
             )],
         )
@@ -465,9 +467,21 @@ fn ordered_insert_then_two_matched_merges_replay_each_native_state_without_new_s
     for (index, (transition, step)) in transitions.iter().zip(steps).enumerate() {
         let before = state("target", &step["before"]);
         let after = state("target", &step["after"]);
-        assert_eq!(transition.before(), &before, "step {index}: canonical before");
-        assert_eq!(native_state(&db, "target"), before, "step {index}: native before");
-        assert_eq!(native_state(&db, "source"), source, "step {index}: source before");
+        assert_eq!(
+            transition.before(),
+            &before,
+            "step {index}: canonical before"
+        );
+        assert_eq!(
+            native_state(&db, "target"),
+            before,
+            "step {index}: native before"
+        );
+        assert_eq!(
+            native_state(&db, "source"),
+            source,
+            "step {index}: source before"
+        );
         assert_domains(&before, schema, &step["before_domains"]);
         assert_eq!(
             transition.affected().inserted(),
@@ -491,10 +505,18 @@ fn ordered_insert_then_two_matched_merges_replay_each_native_state_without_new_s
             "step {index}: no independent write intermediate"
         );
         db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
-        assert_eq!(native_state(&db, "target"), after, "step {index}: native after");
+        assert_eq!(
+            native_state(&db, "target"),
+            after,
+            "step {index}: native after"
+        );
         assert_eq!(transition.after(), &after, "step {index}: canonical after");
         assert_domains(&after, schema, &step["after_domains"]);
-        assert_eq!(native_state(&db, "source"), source, "step {index}: unchanged source");
+        assert_eq!(
+            native_state(&db, "source"),
+            source,
+            "step {index}: unchanged source"
+        );
     }
     let terminal = state("target", &replay["terminal"]);
     assert_eq!(transitions.last().unwrap().after(), &terminal);
