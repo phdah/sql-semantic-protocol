@@ -139,3 +139,43 @@ fn portable_ctas_does_not_upgrade_unproved_temporary_storage_laws() {
         "{plan:?}"
     );
 }
+
+#[test]
+fn parsed_table_storage_options_never_claim_plain_create_exactness() {
+    let examples = [
+        ("sqlite", "CREATE TABLE storage_stage (k INTEGER) STRICT", false),
+        ("sqlite", "CREATE TABLE storage_stage (k INTEGER) WITHOUT ROWID", false),
+        (
+            "postgresql",
+            "CREATE TABLE storage_stage (k INTEGER) WITH (fillfactor = 70)",
+            false,
+        ),
+        (
+            "postgresql",
+            "CREATE TABLE storage_stage WITH (fillfactor = 70) AS SELECT k FROM raw",
+            true,
+        ),
+    ];
+    let mut parsed = 0;
+    for (dialect, sql, has_query) in examples {
+        let parser = dialect_from_name(dialect).unwrap();
+        if Parser::parse_sql(parser.as_ref(), sql).is_err() {
+            continue;
+        }
+        parsed += 1;
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()).unwrap();
+        match &bundle.inputs()[0].statements()[0] {
+            ProtocolStatement::Unsupported(_) if !has_query => {}
+            ProtocolStatement::Query(query) if has_query => {
+                assert!(
+                    query.write().unwrap().definition_execution_unknown(),
+                    "{dialect}: parser-accepted storage variant cannot be an exact CREATE"
+                );
+            }
+            statement => panic!(
+                "{dialect}: unsupported storage variant must fail closed: {statement:?}"
+            ),
+        }
+    }
+    assert!(parsed >= 2, "at least two storage variants must be exercised");
+}
