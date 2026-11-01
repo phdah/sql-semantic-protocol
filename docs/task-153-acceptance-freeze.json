@@ -886,15 +886,18 @@
     "all_mandatory_verified": true,
     "independent_review": false,
     "ci_verified": true,
-    "child_done": false,
+    "child_done": true,
     "parent_done": false,
     "dialect_matrix_verified": true,
     "adapter_paths_verified": true,
     "ordered_replay_verified": true,
-    "ci_implementation_head": "45bc97d816d523ecf2874b0ce6baa7257a50b5bf",
-    "ci_implementation_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41296952911",
-    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/174#pullrequestreview-5727583440",
-    "remaining_gate": "independent reviewer confirmation and final metadata head CI"
+    "ci_implementation_head": "5002dbe6e358bdcc71b0649be74e99b0d7c7c825",
+    "ci_implementation_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41298375190",
+    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/174#pullrequestreview-5727635140",
+    "remaining_gate": "metadata-head CI must be green before squash merge; TASK-82 parent closure separate",
+    "owner_approved": true,
+    "owner_approval_date": "2026-11-01",
+    "owner_approval_basis": "project owner explicitly approved task closure and squash merge for PR #174; distinct-account review was not performed"
   },
   "previous_snapshot": "docs/task-153-acceptance-freeze-v2.json",
   "vendor_parser_syntax": [
