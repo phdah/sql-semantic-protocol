@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use duckdb::{params, Connection};
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
+    analyze_configured_inputs_with_catalog, dialect_from_name,
     physical_finite_view_read_plan, physical_ordered_write_state_plan, ConfiguredSqlInput,
     LiteralValue, PhysicalViewProof, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteDefinitionMode,
@@ -58,9 +58,6 @@ fn bundle(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
         .iter()
         .map(|value| SqlInput::inline(value.as_str().unwrap()))
         .collect::<Vec<_>>();
-    if case["id"] == "83-C157-P-empty-table" {
-        return analyze_inputs(&inputs, "duckdb", dialect.as_ref()).unwrap();
-    }
     let ids = (0..inputs.len())
         .map(|index| format!("ddl-{index}"))
         .collect::<Vec<_>>();
@@ -73,9 +70,6 @@ fn bundle(case: &Value) -> sql_semantic_protocol::AnalysisBundle {
 }
 
 fn initial(case: &Value) -> Vec<PhysicalWriteState> {
-    if case["id"] == "83-C157-P-empty-table" {
-        return vec![];
-    }
     case["initial"]
         .as_object()
         .unwrap()
@@ -272,6 +266,11 @@ fn frozen_table_create_replace_and_duplicate_oracles_match_native_duckdb() {
             native_bag(&db, target),
             frozen_bag(&case["after"]),
             "{id}: DuckDB full snapshot"
+        );
+        assert_eq!(
+            native_bag(&db, "raw"),
+            frozen_bag(&case["initial"]["raw"]),
+            "{id}: CREATE must preserve the original complete physical source"
         );
     }
 }
