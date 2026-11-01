@@ -222,7 +222,7 @@ fn ordinals(value: &Value) -> Vec<usize> {
 #[test]
 fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates() {
     let freeze = frozen();
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 12);
     for case in freeze["cases"].as_array().unwrap().iter().take(7) {
         let id = case["id"].as_str().unwrap();
@@ -348,5 +348,116 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
             }
             other => panic!("{id}: unexpected proof class {other}"),
         }
+    }
+}
+
+#[test]
+fn ordered_conflict_then_matched_merge_reuses_one_complete_target_and_source_bag() {
+    let freeze = frozen();
+    let replay = &freeze["ordered_replay"];
+    assert_eq!(replay["id"], "82-C155-P-ordered-conflict-merge");
+    let steps = replay["steps"].as_array().unwrap();
+    assert_eq!(steps.len(), 2);
+    let sql_inputs = steps
+        .iter()
+        .map(|step| SqlInput::inline(step["sql"].as_str().unwrap()))
+        .collect::<Vec<_>>();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = sql_inputs
+        .iter()
+        .enumerate()
+        .map(|(i, input)| {
+            ConfiguredSqlInput::new(
+                if i == 0 { "task155-step0" } else { "task155-step1" },
+                input,
+                "duckdb",
+                dialect.as_ref(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
+    let enforced = ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "task155-replay")
+            .unwrap(),
+        ConstraintEnforcement::Enforced,
+    );
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(vec!["id".into()], vec![enforced]).unwrap()],
+    )
+    .unwrap()]);
+    let target = state("target", &replay["target_initial"]);
+    let source = state("source", &replay["source"]);
+    let plan = physical_ordered_write_state_plan(&bundle, &[target.clone(), source.clone()]);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = plan
+    else {
+        panic!("ordered conflict and MERGE replay must be exact: {plan:?}");
+    };
+    assert_eq!(transitions.len(), 2);
+    for (transition, step) in transitions.iter().zip(steps) {
+        assert_eq!(
+            sorted(transition.before()),
+            sorted(&state("target", &step["before"]))
+        );
+        assert_eq!(
+            sorted(transition.after()),
+            sorted(&state("target", &step["after"]))
+        );
+        assert_eq!(
+            transition.affected().inserted(),
+            step["affected"]["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            step["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            step["affected"]["deleted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected_target_ordinals(),
+            ordinals(&step["affected_target_ordinals"])
+        );
+        assert!(
+            transition.intermediate_states().is_empty(),
+            "an intermediate physical target cannot become an independent source"
+        );
+    }
+    assert_eq!(transitions[0].after(), transitions[1].before());
+    assert_eq!(
+        final_states.iter().find(|s| s.relation() == "source"),
+        Some(&source)
+    );
+    assert_eq!(
+        sorted(final_states.iter().find(|s| s.relation() == "target").unwrap()),
+        sorted(&state("target", &replay["terminal"]))
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
+         CREATE TABLE source(id INTEGER, score INTEGER);
+         INSERT INTO target VALUES (1,10),(2,20);
+         INSERT INTO source VALUES (1,30);",
+    )
+    .unwrap();
+    assert_eq!(sorted(&native_state(&db, "target")), sorted(&target));
+    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+    for step in steps {
+        db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+        assert_eq!(
+            sorted(&native_state(&db, "target")),
+            sorted(&state("target", &step["after"])),
+            "native ordered state must match the frozen complete bag"
+        );
+        assert_eq!(
+            sorted(&native_state(&db, "source")),
+            sorted(&source),
+            "the independent source population is immutable"
+        );
     }
 }
