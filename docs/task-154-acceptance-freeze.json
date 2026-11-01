@@ -1639,11 +1639,8 @@
       },
       "source_domains": null,
       "after_domains": null,
-      "on_true_target_ordinals": [],
-      "on_not_true_target_ordinals": [
-        0,
-        1
-      ],
+      "on_true_target_ordinals": null,
+      "on_not_true_target_ordinals": null,
       "on_true_source_ordinals": null,
       "on_not_true_source_ordinals": null
     }
@@ -1692,5 +1689,26 @@
     "independent_review": false,
     "parent_signed_off": false,
     "release_approved": false
-  }
+  },
+  "scope": {
+    "mandatory_exact": 9,
+    "required_negative": 3,
+    "parser_cells": 65,
+    "adapter_parity_per_case": 3,
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "semantics": "matched, source-only and target-only branches classified against pre-merge source and target; first eligible branch executes at most once per original occurrence"
+  },
+  "dialect_parser_boundary": "Only sqlparser parse plus canonical normalization is claimed across thirteen dialects. Native execution is certified by the pinned DuckDB oracle only.",
+  "oracle_paths": [
+    "tests/task_154_merge_unmatched.rs",
+    "tests/task_154_dialect_adapter.rs",
+    "tests/task_154_acceptance_inventory.rs"
+  ]
 }
