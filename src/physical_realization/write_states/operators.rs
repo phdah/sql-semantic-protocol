@@ -39,10 +39,11 @@ pub(super) fn define_rows(
             | WriteDefinitionMode::ReplaceTable
             | WriteDefinitionMode::CreateMaterializedView
             | WriteDefinitionMode::ReplaceMaterializedView,
-        ) if !write.view_execution_unknown() => {}
-        Some(
-            WriteDefinitionMode::CreateMaterializedView | WriteDefinitionMode::ReplaceMaterializedView,
-        ) => return Err(residual("materialized view options require engine/session evidence")),
+        ) => {
+            if write.view_execution_unknown() {
+                return Err(residual("materialized view options require engine/session evidence"));
+            }
+        }
         Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
             return Err(residual(
                 "logical CREATE VIEW is not a writable physical table",
