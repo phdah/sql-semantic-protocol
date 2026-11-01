@@ -320,3 +320,5 @@ bounds; unproven cyclic or overflowing recursion returns `Residual`.
 oracles, and `tests/task_142_dialect_adapter.rs` owns all 14 exposed dialect
 classifications and SQL/dbt compiled-model parity. Versioned acceptance:
 `docs/task-142-acceptance-freeze.json`; original v1 remains immutable.
+
+TASK-153 matched MERGE target occurrence identity: `src/physical_realization/write_states/operators.rs` applies the first eligible matched UPDATE/DELETE clause over complete target and source bags and records the exact affected prestate ordinals. `src/physical_realization/write_states.rs` exposes those ordinals through the canonical `PhysicalWriteTransition` (also including BY SOURCE mutations, without a separate copy of selection state). `tests/task_153_merge_matched.rs` owns the frozen full DuckDB pre/post-state and typed outcome-domain comparison, NULL and duplicate-source contrast, plus enforced constraint impossibility. The preimplementation matrix is `docs/task-153-acceptance-freeze.json`, linked from `docs/coverage-manifest.json`. TASK-153/TASK-82 signoff remains gated by independent review and complete CI.
