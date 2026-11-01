@@ -230,7 +230,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, expected:
 #[test]
 fn frozen_unmatched_merge_cases_prove_both_complete_bags_and_both_on_directions() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     let cases = frozen["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 12);
     let exact = cases.iter().filter(|case| case["proof"] == "Exact");
@@ -409,4 +409,126 @@ fn frozen_negative_merges_fail_closed_and_preserve_native_atomicity() {
             other => panic!("{id}: unexpected proof classification {other}"),
         }
     }
+}
+
+
+#[test]
+fn ordered_unmatched_merges_replay_without_invented_intermediate_sources() {
+    let frozen = freeze();
+    let replay = &frozen["ordered_replay"];
+    assert_eq!(replay["id"], "82-C154-P-ordered-replay");
+    assert_eq!(replay["proof"], "Exact");
+    let steps = replay["steps"].as_array().unwrap();
+    assert_eq!(steps.len(), 3);
+
+    let inputs = steps
+        .iter()
+        .map(|step| SqlInput::inline(step["sql"].as_str().unwrap()))
+        .collect::<Vec<_>>();
+    let ids = (0..inputs.len())
+        .map(|index| format!("task154-ordered-{index}"))
+        .collect::<Vec<_>>();
+    let parser = dialect_from_name("duckdb").unwrap();
+    let configured = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref()))
+        .collect::<Vec<_>>();
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap();
+    let initial = state("target", &replay["target_initial"]);
+    let source = state("source", &replay["source"]);
+    let plan = physical_ordered_write_state_plan(&bundle, &[initial.clone(), source.clone()]);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = &plan
+    else {
+        panic!("expected exact ordered MERGE replay: {plan:?}");
+    };
+    assert_eq!(transitions.len(), steps.len());
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "target")
+        .unwrap();
+    let source_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "source")
+        .unwrap();
+    assert_domains(&source, source_schema, &replay["source_domains"]);
+    let db = native(&serde_json::json!({
+        "target_before": replay["target_initial"],
+        "source": replay["source"],
+        "pk": false
+    }));
+
+    for (index, (step, transition)) in steps.iter().zip(&transitions).enumerate() {
+        let before = state("target", &step["before"]);
+        let after = state("target", &step["after"]);
+        assert_eq!(
+            sorted_rows(&native_state(&db, "target")),
+            sorted_rows(&before),
+            "step {index}: native prestate"
+        );
+        assert_eq!(
+            sorted_rows(transition.before()),
+            sorted_rows(&before),
+            "step {index}: canonical prestate"
+        );
+        assert_domains(transition.before(), schema, &step["before_domains"]);
+        assert_eq!(
+            transition.affected_target_ordinals(),
+            ordinals(&step["affected_ordinals"]),
+            "step {index}: target preimage identities"
+        );
+        assert_eq!(
+            transition.affected().inserted(),
+            step["affected"]["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            step["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            step["affected"]["deleted"].as_u64().unwrap()
+        );
+        assert!(
+            transition.intermediate_states().is_empty(),
+            "step {index}: no invented independent source from prior target"
+        );
+        db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+        assert_eq!(
+            sorted_rows(&native_state(&db, "target")),
+            sorted_rows(&after),
+            "step {index}: independent DuckDB target state"
+        );
+        assert_eq!(
+            sorted_rows(transition.after()),
+            sorted_rows(&after),
+            "step {index}: constructed target state"
+        );
+        assert_domains(transition.after(), schema, &step["after_domains"]);
+        assert_eq!(
+            sorted_rows(&native_state(&db, "source")),
+            sorted_rows(&source),
+            "step {index}: source never changes"
+        );
+    }
+
+    let terminal = state("target", &replay["terminal"]);
+    assert_eq!(
+        sorted_rows(transitions.last().unwrap().after()),
+        sorted_rows(&terminal)
+    );
+    assert_domains(&terminal, schema, &replay["terminal_domains"]);
+    assert_eq!(
+        sorted_rows(final_states.iter().find(|s| s.relation() == "target").unwrap()),
+        sorted_rows(&terminal)
+    );
+    assert_eq!(
+        sorted_rows(final_states.iter().find(|s| s.relation() == "source").unwrap()),
+        sorted_rows(&source)
+    );
 }
