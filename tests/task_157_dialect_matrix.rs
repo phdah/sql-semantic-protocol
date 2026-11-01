@@ -17,15 +17,18 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
     let mut checked = 0;
     let mut parsed = 0;
     let mut boundaries = 0;
+    let mut observed = std::collections::BTreeMap::new();
     for dialect in f["dialects"].as_array().unwrap() {
         let name = dialect.as_str().unwrap();
         let parser = dialect_from_name(name).unwrap();
+        let mut results = Vec::new();
         for case in f["cases"].as_array().unwrap() {
             let id = case["id"].as_str().unwrap();
             let sql = case["sql"][0].as_str().unwrap();
             checked += 1;
             if Parser::parse_sql(parser.as_ref(), sql).is_err() {
                 boundaries += 1;
+                results.push("parser_boundary");
                 assert!(
                     analyze_inputs(&[SqlInput::inline(sql)], name, parser.as_ref()).is_err(),
                     "{name}/{id}: rejected parser syntax must not normalize"
@@ -41,6 +44,7 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
                     matches!(statement, ProtocolStatement::Unsupported(_)),
                     "{name}/{id}: conditional existence must be explicitly unsupported"
                 );
+                results.push("canonical_unsupported");
                 continue;
             }
             let ProtocolStatement::Query(query) = statement else {
@@ -55,6 +59,14 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
                 _ => WriteDefinitionMode::CreateTable,
             };
             assert_eq!(write.definition_mode(), Some(mode), "{name}/{id}");
+            results.push(match mode {
+                WriteDefinitionMode::CreateTable => "create_table",
+                WriteDefinitionMode::ReplaceTable => "replace_table",
+                WriteDefinitionMode::CreateView => "create_view",
+                WriteDefinitionMode::ReplaceView => "replace_view",
+                WriteDefinitionMode::CreateMaterializedView => "create_materialized_view",
+                WriteDefinitionMode::ReplaceMaterializedView => "replace_materialized_view",
+            });
             if mode == WriteDefinitionMode::CreateMaterializedView {
                 assert!(
                     !write.view_execution_unknown(),
@@ -62,7 +74,13 @@ fn all_thirteen_dialects_classify_each_frozen_definition_without_invented_physic
                 );
             }
         }
+        observed.insert(name.to_owned(), results);
     }
+    assert_eq!(
+        serde_json::to_value(&observed).unwrap(),
+        f["dialect_expected"],
+        "every dialect and fixture requires a frozen parser/canonical outcome"
+    );
     assert_eq!(checked, 117);
     assert_eq!(checked, parsed + boundaries);
     assert!(parsed > 0);
