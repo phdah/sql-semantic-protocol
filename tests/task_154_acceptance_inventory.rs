@@ -14,11 +14,11 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let record = &manifest["task_154_unmatched_merge_acceptance"];
-    assert_eq!(frozen["version"], 3);
+    assert_eq!(frozen["version"], 4);
     assert_eq!(frozen["owner"], "TASK-154");
     assert_eq!(
         frozen["previous_snapshot"],
-        "docs/task-154-acceptance-freeze-v2.json"
+        "docs/task-154-acceptance-freeze-v3.json"
     );
     assert_eq!(frozen["parent"], "TASK-82");
     assert_eq!(
@@ -37,6 +37,8 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     assert_eq!(record["parent_signed_off"], false);
     assert_eq!(frozen["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(frozen["dialect_cells_required"], 65);
+    assert_eq!(frozen["vendor_dialect_cells_required"], 26);
+    assert_eq!(frozen["vendor_parser_syntax"].as_array().unwrap().len(), 2);
     assert_eq!(frozen["parser_syntax"].as_array().unwrap().len(), 5);
     for dialect in frozen["dialects"].as_array().unwrap() {
         let name = dialect.as_str().unwrap();
@@ -48,6 +50,8 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     }
     assert_eq!(frozen["adapter_sources"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["adapter_cases_required"], 3);
+    assert_eq!(frozen["adapter_parity_cases_required"], 13);
+    assert_eq!(frozen["adapter_ordered_replay_cases_required"], 1);
     assert_eq!(frozen["required_ci"].as_array().unwrap().len(), 7);
     assert_eq!(
         frozen["ordered_replay"]["steps"].as_array().unwrap().len(),
