@@ -18,7 +18,12 @@ fn frozen() -> Value {
 }
 
 const NAMES: &[&str] = &[
-    "raw", "empty_stage", "copy_stage", "stage.copy_stage", "view_stage", "snap_stage",
+    "raw",
+    "empty_stage",
+    "copy_stage",
+    "stage.copy_stage",
+    "view_stage",
+    "snap_stage",
 ];
 
 fn schema(name: &str) -> RelationSchema {
@@ -39,10 +44,13 @@ fn dbt() -> RelationCatalog {
     let mut introspected = serde_json::Map::new();
     for (index, name) in NAMES.iter().enumerate() {
         let key = format!("source.task157.s{index}");
-        sources.insert(key.clone(), json!({
-            "unique_id":key, "resource_type":"source", "relation_name":name, "name":name,
-            "columns":{"k":{"name":"k","data_type":"INTEGER"}}
-        }));
+        sources.insert(
+            key.clone(),
+            json!({
+                "unique_id":key, "resource_type":"source", "relation_name":name, "name":name,
+                "columns":{"k":{"name":"k","data_type":"INTEGER"}}
+            }),
+        );
         introspected.insert(key.clone(), json!({
             "unique_id":key, "metadata":{"type":"BASE TABLE", "database":"main", "schema":"main","name":name},
             "columns":{"k":{"name":"k","type":"INTEGER","index":1}}, "stats":{}
@@ -90,13 +98,20 @@ fn odcs() -> RelationCatalog {
 
 fn bundle(case: &Value, catalog: &RelationCatalog) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let inputs = case["sql"].as_array().unwrap().iter()
+    let inputs = case["sql"]
+        .as_array()
+        .unwrap()
+        .iter()
         .map(|stmt| SqlInput::inline(stmt.as_str().unwrap()))
         .collect::<Vec<_>>();
-    let ids = (0..inputs.len()).map(|index| format!("adapter-step-{index}")).collect::<Vec<_>>();
-    let configured = inputs.iter().zip(&ids).map(|(sql, id)| {
-        ConfiguredSqlInput::new(id, sql, "duckdb", dialect.as_ref())
-    }).collect::<Vec<_>>();
+    let ids = (0..inputs.len())
+        .map(|index| format!("adapter-step-{index}"))
+        .collect::<Vec<_>>();
+    let configured = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, "duckdb", dialect.as_ref()))
+        .collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
 
@@ -104,17 +119,31 @@ fn initial(case: &Value) -> Vec<PhysicalWriteState> {
     if case["id"] == "83-C157-P-empty-table" {
         return Vec::new();
     }
-    case["initial"].as_object().unwrap().iter().map(|(name, values)| {
-        PhysicalWriteState::new(
-            name,
-            values.as_array().unwrap().iter().map(|row| {
-                PhysicalWriteRow::new(BTreeMap::from([(
-                    "k".to_owned(),
-                    row["k"].as_i64().map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string())),
-                )])).unwrap()
-            }).collect()
-        ).unwrap()
-    }).collect()
+    case["initial"]
+        .as_object()
+        .unwrap()
+        .iter()
+        .map(|(name, values)| {
+            PhysicalWriteState::new(
+                name,
+                values
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|row| {
+                        PhysicalWriteRow::new(BTreeMap::from([(
+                            "k".to_owned(),
+                            row["k"].as_i64().map_or(LiteralValue::Null, |n| {
+                                LiteralValue::Number(n.to_string())
+                            }),
+                        )]))
+                        .unwrap()
+                    })
+                    .collect(),
+            )
+            .unwrap()
+        })
+        .collect()
 }
 
 fn outcome(case: &Value, catalog: &RelationCatalog) -> String {
@@ -124,14 +153,26 @@ fn outcome(case: &Value, catalog: &RelationCatalog) -> String {
     if id == "83-C157-P-logical-view" {
         let terminal = analyzed.layers().last().unwrap();
         let proof = physical_finite_view_read_plan(&analyzed, terminal.id(), &initial, None);
-        assert!(matches!(proof, PhysicalViewProof::Exact(_)), "{id}: {proof:?}");
+        assert!(
+            matches!(proof, PhysicalViewProof::Exact(_)),
+            "{id}: {proof:?}"
+        );
         return format!("{proof:?}");
     }
     let plan = physical_ordered_write_state_plan(&analyzed, &initial);
     match case["classification"].as_str().unwrap() {
-        "Exact" => assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{id}: {plan:?}"),
-        "Impossible" => assert!(matches!(plan, PhysicalWriteStatePlan::Impossible { .. }), "{id}: {plan:?}"),
-        "Residual" => assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{id}: {plan:?}"),
+        "Exact" => assert!(
+            matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+            "{id}: {plan:?}"
+        ),
+        "Impossible" => assert!(
+            matches!(plan, PhysicalWriteStatePlan::Impossible { .. }),
+            "{id}: {plan:?}"
+        ),
+        "Residual" => assert!(
+            matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+            "{id}: {plan:?}"
+        ),
         other => panic!("{id}: unreviewed outcome class {other}"),
     }
     format!("{plan:?}")
@@ -145,7 +186,11 @@ fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_dbt_schema() {
     assert_eq!(freeze["coverage"]["adapter_cells_required"], 27);
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
-        assert_eq!(outcome(case, &direct), outcome(case, &dbt), "{id}: compiled dbt catalog parity");
+        assert_eq!(
+            outcome(case, &direct),
+            outcome(case, &dbt),
+            "{id}: compiled dbt catalog parity"
+        );
     }
 }
 
@@ -157,6 +202,10 @@ fn all_frozen_ddl_cases_preserve_exact_outcome_from_equivalent_odcs_schema() {
     let odcs = odcs();
     for case in freeze["cases"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
-        assert_eq!(outcome(case, &direct), outcome(case, &odcs), "{id}: ODCS canonical schema parity");
+        assert_eq!(
+            outcome(case, &direct),
+            outcome(case, &odcs),
+            "{id}: ODCS canonical schema parity"
+        );
     }
 }
