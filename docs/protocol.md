@@ -1701,7 +1701,10 @@ an exact source construction. The optional field is absent on ordinary writes.
 The active write-operation JSON schema adds `target_alias` (nullable
 resolved SQL target qualifier) and `definition_mode` (nullable
 `create_table`, `replace_table`, `create_view`,
-`replace_view`). These are explicit semantic facts rather than inferred
+`replace_view`, `create_materialized_view`,
+`replace_materialized_view`). Materialized definitions snapshot a complete
+source bag at creation; logical VIEW definitions never become independently
+writable physical source states. These are explicit semantic facts rather than inferred
 table-writability hints. The corresponding Rust API
 `physical_ordered_write_state_plan` yields typed
 `PhysicalWriteStatePlan::{Feasible, Impossible, Residual}` outcomes.
