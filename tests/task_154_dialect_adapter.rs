@@ -4,6 +4,7 @@
 use std::collections::BTreeMap;
 
 use serde_json::Value;
+use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
     dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
@@ -54,10 +55,15 @@ fn classify(
     expected_kinds: Option<&[MergeMatchKind]>,
 ) -> &'static str {
     let parser = dialect_from_name(dialect).expect("advertised dialect");
-    let Ok(bundle) = analyze_inputs(&[SqlInput::inline(statement)], dialect, parser.as_ref())
-    else {
+    // A canonical analysis failure is not evidence that the SQL parser rejected
+    // the syntax. Verify the parser boundary independently to avoid hiding bugs.
+    if Parser::parse_sql(parser.as_ref(), statement).is_err() {
         return "parser_boundary";
-    };
+    }
+    let bundle = analyze_inputs(&[SqlInput::inline(statement)], dialect, parser.as_ref())
+        .unwrap_or_else(|error| {
+            panic!("{dialect}: parsed MERGE failed canonical analysis for {statement:?}: {error}")
+        });
     match bundle.inputs()[0]
         .statements()
         .first()
