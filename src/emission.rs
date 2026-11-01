@@ -30,7 +30,7 @@ use crate::protocol::{
     SetOperand, SetOperation, SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
-    WriteEffectAction, WriteIdempotence, WriteOperation, WritePostState, WriteValue,
+    ColumnAlterStep, WriteEffectAction, WriteIdempotence, WriteOperation, WritePostState, WriteValue,
 };
 
 // Serialization remains parser-independent; each format family has a single owner.
