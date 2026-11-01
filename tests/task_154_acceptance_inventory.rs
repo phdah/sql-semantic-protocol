@@ -17,8 +17,14 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     assert_eq!(frozen["version"], 1);
     assert_eq!(frozen["owner"], "TASK-154");
     assert_eq!(frozen["parent"], "TASK-82");
-    assert_eq!(frozen["fixture_ids"], serde_json::json!(["82-C154-P", "82-C154-N"]));
-    assert_eq!(frozen["original_parent_ac"], serde_json::json!([1, 2, 3, 4, 5, 6]));
+    assert_eq!(
+        frozen["fixture_ids"],
+        serde_json::json!(["82-C154-P", "82-C154-N"])
+    );
+    assert_eq!(
+        frozen["original_parent_ac"],
+        serde_json::json!([1, 2, 3, 4, 5, 6])
+    );
     assert_eq!(frozen["task_ac"], serde_json::json!([1, 2, 3, 4, 5]));
     assert_eq!(record["freeze"], "docs/task-154-acceptance-freeze.json");
     assert_eq!(record["freeze_version"], frozen["version"]);
@@ -30,7 +36,11 @@ fn frozen_unmatched_merge_acceptance_is_finite_and_linked() {
     assert_eq!(frozen["parser_syntax"].as_array().unwrap().len(), 5);
     for dialect in frozen["dialects"].as_array().unwrap() {
         let name = dialect.as_str().unwrap();
-        assert_eq!(frozen["dialect_expected"][name].as_array().unwrap().len(), 5, "{name}");
+        assert_eq!(
+            frozen["dialect_expected"][name].as_array().unwrap().len(),
+            5,
+            "{name}"
+        );
     }
     assert_eq!(frozen["adapter_sources"].as_array().unwrap().len(), 3);
     assert_eq!(frozen["adapter_cases_required"], 3);
@@ -54,7 +64,10 @@ fn frozen_cases_have_exact_typed_source_and_terminal_domains_and_on_partitions()
         assert!(id.starts_with("82-C154-P-") || id.starts_with("82-C154-N-"));
         assert!(!case["sql"].as_str().unwrap().is_empty());
         assert!(case["sql"].as_str().unwrap().contains("WHEN NOT MATCHED"));
-        assert_eq!(case["evidence"]["comparison"], "signed INTEGER equality; SQL NULL never matches");
+        assert_eq!(
+            case["evidence"]["comparison"],
+            "signed INTEGER equality; SQL NULL never matches"
+        );
         assert!(!case["variant"].as_str().unwrap().is_empty());
         assert!(case["target_before"].is_array());
         assert_eq!(case["before_domains"].as_object().unwrap().len(), 2);
@@ -63,19 +76,31 @@ fn frozen_cases_have_exact_typed_source_and_terminal_domains_and_on_partitions()
             "Exact" => {
                 exact += 1;
                 assert!(case["source"].is_array(), "{id}: exact requires source");
-                assert!(case["target_after"].is_array(), "{id}: exact requires terminal");
+                assert!(
+                    case["target_after"].is_array(),
+                    "{id}: exact requires terminal"
+                );
                 assert_eq!(case["after_domains"].as_object().unwrap().len(), 2);
                 assert_eq!(case["source_domains"].as_object().unwrap().len(), 2);
             }
             "Residual" => {
                 residual += 1;
                 assert!(case["gap"].is_string(), "{id}: typed residual gap required");
-                assert!(case["reason"].is_string(), "{id}: residual owner rationale required");
+                assert!(
+                    case["reason"].is_string(),
+                    "{id}: residual owner rationale required"
+                );
             }
             "Impossible" => {
                 impossible += 1;
-                assert!(case["reason"].is_string(), "{id}: infeasibility witness required");
-                assert_eq!(case["pk"], true, "{id}: enforced PK is the impossibility cause");
+                assert!(
+                    case["reason"].is_string(),
+                    "{id}: infeasibility witness required"
+                );
+                assert_eq!(
+                    case["pk"], true,
+                    "{id}: enforced PK is the impossibility cause"
+                );
             }
             other => panic!("{id}: unreviewed proof status {other}"),
         }
@@ -86,7 +111,10 @@ fn frozen_cases_have_exact_typed_source_and_terminal_domains_and_on_partitions()
             (&case["target_after"], &case["after_domains"]),
         ] {
             if !bag.is_array() {
-                assert!(domain.is_null(), "{id}: absent bag must not have guessed domain");
+                assert!(
+                    domain.is_null(),
+                    "{id}: absent bag must not have guessed domain"
+                );
                 continue;
             }
             for column in ["id", "score"] {
@@ -99,26 +127,57 @@ fn frozen_cases_have_exact_typed_source_and_terminal_domains_and_on_partitions()
                     .iter()
                     .filter_map(|row| row[column].as_i64())
                     .collect::<Vec<_>>();
-                assert_eq!(expected["lower"].as_i64(), non_null.iter().min().copied(), "{id}/{column}");
-                assert_eq!(expected["upper"].as_i64(), non_null.iter().max().copied(), "{id}/{column}");
-                assert_eq!(expected["lower_inclusive"], !non_null.is_empty(), "{id}/{column}");
-                assert_eq!(expected["upper_inclusive"], !non_null.is_empty(), "{id}/{column}");
+                assert_eq!(
+                    expected["lower"].as_i64(),
+                    non_null.iter().min().copied(),
+                    "{id}/{column}"
+                );
+                assert_eq!(
+                    expected["upper"].as_i64(),
+                    non_null.iter().max().copied(),
+                    "{id}/{column}"
+                );
+                assert_eq!(
+                    expected["lower_inclusive"],
+                    !non_null.is_empty(),
+                    "{id}/{column}"
+                );
+                assert_eq!(
+                    expected["upper_inclusive"],
+                    !non_null.is_empty(),
+                    "{id}/{column}"
+                );
                 let count = expected["frequencies"]
                     .as_object()
                     .unwrap()
                     .values()
                     .map(|value| value.as_u64().unwrap())
                     .sum::<u64>();
-                assert_eq!(count, values.len() as u64, "{id}/{column}: bag multiplicity");
+                assert_eq!(
+                    count,
+                    values.len() as u64,
+                    "{id}/{column}: bag multiplicity"
+                );
             }
         }
 
         for (rows, truth, not_true) in [
-            (&case["target_before"], &case["on_true_target_ordinals"], &case["on_not_true_target_ordinals"]),
-            (&case["source"], &case["on_true_source_ordinals"], &case["on_not_true_source_ordinals"]),
+            (
+                &case["target_before"],
+                &case["on_true_target_ordinals"],
+                &case["on_not_true_target_ordinals"],
+            ),
+            (
+                &case["source"],
+                &case["on_true_source_ordinals"],
+                &case["on_not_true_source_ordinals"],
+            ),
         ] {
             if !rows.is_array() || !case["source"].is_array() {
-                assert!(truth.is_null() && not_true.is_null(), "{id}: missing source is unknown, not a negative witness");
+                assert!(
+                    truth.is_null() && not_true.is_null(),
+                    "{id}: missing source is unknown, not a negative witness"
+                );
                 continue;
             }
             let selected = truth.as_array().unwrap();
@@ -128,9 +187,20 @@ fn frozen_cases_have_exact_typed_source_and_terminal_domains_and_on_partitions()
                 .chain(rejected)
                 .map(|entry| entry.as_u64().unwrap())
                 .collect::<BTreeSet<_>>();
-            assert_eq!(all.len(), rows.as_array().unwrap().len(), "{id}: complete TRUE / NOT TRUE partition");
-            assert_eq!(selected.len() + rejected.len(), rows.as_array().unwrap().len(), "{id}: no identity duplicated");
-            assert_eq!(all, (0..rows.as_array().unwrap().len() as u64).collect::<BTreeSet<_>>());
+            assert_eq!(
+                all.len(),
+                rows.as_array().unwrap().len(),
+                "{id}: complete TRUE / NOT TRUE partition"
+            );
+            assert_eq!(
+                selected.len() + rejected.len(),
+                rows.as_array().unwrap().len(),
+                "{id}: no identity duplicated"
+            );
+            assert_eq!(
+                all,
+                (0..rows.as_array().unwrap().len() as u64).collect::<BTreeSet<_>>()
+            );
         }
     }
     assert_eq!((exact, residual, impossible), (9, 2, 1));
