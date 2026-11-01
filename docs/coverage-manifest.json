@@ -1,4 +1,58 @@
 {
+  "task_155_merge_conflict_acceptance": {
+    "owner": "TASK-155",
+    "parent": "TASK-82",
+    "status": "done_owner_directed_signoff_metadata_head_ci_pending",
+    "freeze": "docs/task-155-acceptance-freeze.json",
+    "freeze_version": 4,
+    "fixture_ids": [
+      "82-C155-P",
+      "82-C155-N"
+    ],
+    "mandatory_cases": 12,
+    "initial_regression_cases": 7,
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "ci_verified": true,
+    "exact_cases": 5,
+    "impossible_cases": 2,
+    "residual_cases": 5,
+    "parser_cells_required": 52,
+    "adapter_cases_required": 12,
+    "adapter_sources": 3,
+    "full_bag_oracle": "tests/task_155_merge_conflicts.rs",
+    "constraint_oracle": "tests/task_155_fk_unique.rs",
+    "dialect_adapter_oracle": "tests/task_155_dialect_adapter.rs",
+    "acceptance_inventory": "tests/task_155_acceptance_inventory.rs",
+    "freeze_history": [
+      "docs/task-155-acceptance-freeze-v1.json",
+      "docs/task-155-acceptance-freeze-v2.json",
+      "docs/task-155-acceptance-freeze-v3.json"
+    ],
+    "mandatory_verified": true,
+    "fk_deferral": "conditional source-independent residual; DuckDB immediate-error oracle is not portable enforcement evidence",
+    "ordered_replay_cases": 1,
+    "ordered_replay_oracle": "tests/task_155_merge_conflicts.rs",
+    "ordered_replay_adapter_paths": 3,
+    "mandatory_exact_verified": 5,
+    "mandatory_impossible_verified": 2,
+    "mandatory_residual_verified": 5,
+    "ordered_replay_verified": true,
+    "dialect_parser_cells_verified": 52,
+    "adapter_parity_paths_verified": 39,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41333806420",
+    "implementation_ci_head": "6354552649c2ca5fed235493c818afd3d97cb655",
+    "author_review": "https://github.com/phdah/sql-semantic-protocol/pull/176#pullrequestreview-5729364657",
+    "independent_review_verified": false,
+    "owner_directed_review_exception": true,
+    "final_metadata_head_ci_required_before_merge": true,
+    "remaining_gates": [
+      "latest metadata-head nine-job CI must pass before squash merge of PR #176",
+      "TASK-156 blocked until TASK-155 Done PR merged",
+      "TASK-82 original acceptance closure remains independent"
+    ]
+  },
   "task_154_unmatched_merge_acceptance": {
     "owner": "TASK-154",
     "parent": "TASK-82",

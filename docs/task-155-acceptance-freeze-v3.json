@@ -1,0 +1,1476 @@
+{
+  "version": 3,
+  "owner": "TASK-155",
+  "parent": "TASK-82",
+  "freeze_date": "2026-11-01",
+  "status": "freeze_v3_fk_deferral_boundary_explicit_pending_final_oracles",
+  "fixture_ids": [
+    "82-C155-P",
+    "82-C155-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "requirements": [
+    "multiple MERGE source matches",
+    "two NULL equality keys",
+    "authoritative UNIQUE/PRIMARY KEY",
+    "FK preservation including referenced population",
+    "ON CONFLICT DO NOTHING vs DO UPDATE",
+    "native vendor/session error vs winner semantics"
+  ],
+  "comparison_assumptions": "Signed INTEGER and SQL three-valued equality; only TRUE matches. Do not infer native error, first-winner or NULLS NOT DISTINCT from parser acceptance.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_scope": {
+    "merge_shared_syntax": "13 parser identities require per-case assertions; prior TASK-154 covers accepted shared MERGE",
+    "conflict_syntax": "dialect-specific parser support not evidence of native UPSERT equivalence; preserve conditional parser boundaries"
+  },
+  "evidence_sources": [
+    "direct_sql",
+    "dbt_compiled_sql_with_catalog",
+    "odcs_equivalent_schema"
+  ],
+  "cases": [
+    {
+      "id": "82-C155-P-unique-match",
+      "variant": "one-to-one matched MERGE baseline",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "target_pk": true,
+      "source_pk": false,
+      "classification": "Exact",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0
+      },
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [
+        1
+      ],
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1
+          }
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "DuckDB complete source/target bag",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
+    },
+    {
+      "id": "82-C155-P-two-null-keys",
+      "variant": "SQL NULL keys never match ordinary equality",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score)",
+      "target_before": [
+        {
+          "id": null,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "target_pk": false,
+      "source_pk": false,
+      "classification": "Exact",
+      "target_after": [
+        {
+          "id": null,
+          "score": 10
+        },
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "on_true_target_ordinals": [],
+      "on_not_true_target_ordinals": [
+        0
+      ],
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1
+          }
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 2
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "DuckDB complete source/target bag",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
+    },
+    {
+      "id": "82-C155-N-ambiguous-winner",
+      "variant": "multiple source occurrences match the same target without an attested winner law",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "target_pk": true,
+      "source_pk": false,
+      "classification": "Residual",
+      "gap": "UnprovedOperation",
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [],
+      "conditional_owner": "TASK-155",
+      "release_disposition": "pending native engine law; canonical UnprovedOperation residual remains stable for TASK-153/154",
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 2
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "engine-dependent or unsupported, no exact claim",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0,
+        1
+      ],
+      "on_not_true_source_ordinals": []
+    },
+    {
+      "id": "82-C155-N-attested-source-key",
+      "variant": "initial repeated source violates enforced PRIMARY KEY",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 20
+        },
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "target_pk": true,
+      "source_pk": true,
+      "classification": "Impossible",
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [],
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 2
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "DuckDB complete source/target bag",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0,
+        1
+      ],
+      "on_not_true_source_ordinals": []
+    },
+    {
+      "id": "82-C155-N-insert-target-key",
+      "variant": "two unmatched inserts violate enforced target PRIMARY KEY",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score)",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 3,
+          "score": 20
+        },
+        {
+          "id": 3,
+          "score": 30
+        }
+      ],
+      "target_pk": true,
+      "source_pk": false,
+      "classification": "Impossible",
+      "on_true_target_ordinals": [],
+      "on_not_true_target_ordinals": [
+        0
+      ],
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 3,
+          "upper": 3,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "3": 2
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "DuckDB complete source/target bag",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "82-C155-P-conflict-ignore",
+      "variant": "ON CONFLICT (id) DO NOTHING with authoritative target key",
+      "sql": "INSERT INTO target (id,score) VALUES (1,99) ON CONFLICT (id) DO NOTHING",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [],
+      "target_pk": true,
+      "source_pk": false,
+      "classification": "Exact",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "on_true_target_ordinals": [],
+      "on_not_true_target_ordinals": [
+        0
+      ],
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "DuckDB complete source/target bag",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "positive_not_true_proof": "full ON TRUE/NOT TRUE target and source partitions; source occurrences immutable",
+      "parent_domains": null
+    },
+    {
+      "id": "82-C155-N-upsert-update",
+      "variant": "ON CONFLICT DO UPDATE is not equivalent to DO NOTHING",
+      "sql": "INSERT INTO target (id,score) VALUES (1,99) ON CONFLICT (id) DO UPDATE SET score = EXCLUDED.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [],
+      "target_pk": true,
+      "source_pk": false,
+      "classification": "Residual",
+      "gap": "UnsupportedStatement",
+      "conditional_owner": "TASK-155",
+      "release_disposition": "pending native conflict-target, EXCLUDED reference and update precedence law",
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {}
+        }
+      },
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "adapter_evidence": "direct SQL; equivalent dbt/ODCS schema requires independently checked matrix",
+      "native_oracle": "engine-dependent or unsupported, no exact claim",
+      "target_unique": false,
+      "score_fk": false,
+      "parent_pk": false,
+      "parent": null,
+      "comparison": "Signed INTEGER, NULL never equals under ordinary ON '='",
+      "parent_domains": null
+    },
+    {
+      "id": "82-C155-P-fk-supported",
+      "variant": "enforced FK update references complete attested parent bag",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "parent": [
+        {
+          "id": 10
+        },
+        {
+          "id": 20
+        },
+        {
+          "id": 30
+        }
+      ],
+      "target_pk": true,
+      "parent_pk": true,
+      "score_fk": true,
+      "classification": "Exact",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 30
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0
+      },
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [
+        1
+      ],
+      "conditional_owner": null,
+      "source_pk": false,
+      "target_unique": false,
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
+      "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1,
+            "30": 1
+          }
+        }
+      },
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
+    },
+    {
+      "id": "82-C155-N-fk-violation",
+      "variant": "unreferenced post-MERGE score violates enforced FK atomically",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 99
+        }
+      ],
+      "parent": [
+        {
+          "id": 10
+        },
+        {
+          "id": 30
+        }
+      ],
+      "target_pk": true,
+      "parent_pk": true,
+      "score_fk": true,
+      "classification": "Residual",
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [],
+      "source_pk": false,
+      "target_unique": false,
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 99,
+          "upper": 99,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "99": 1
+          }
+        }
+      },
+      "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
+      "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "30": 1
+          }
+        }
+      },
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": [],
+      "gap": "UnprovedOperation",
+      "conditional_owner": "TASK-155",
+      "release_disposition": "Native DuckDB rejects immediately, but portable enforcement timing is not attested; owner-reviewed conditional deferral boundary (TASK-84/87)"
+    },
+    {
+      "id": "82-C155-N-fk-missing-population",
+      "variant": "unattested referenced bag never defaults to empty",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 1,
+          "score": 30
+        }
+      ],
+      "parent": null,
+      "target_pk": true,
+      "parent_pk": true,
+      "score_fk": true,
+      "classification": "Residual",
+      "gap": "MissingPopulation",
+      "on_true_target_ordinals": [
+        0
+      ],
+      "on_not_true_target_ordinals": [],
+      "conditional_owner": "TASK-155",
+      "release_disposition": "require complete referenced parent population before exact FK claim",
+      "source_pk": false,
+      "target_unique": false,
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "30": 1
+          }
+        }
+      },
+      "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
+      "native_oracle": "conditional: fail closed without claiming native portability",
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [
+        0
+      ],
+      "on_not_true_source_ordinals": []
+    },
+    {
+      "id": "82-C155-N-nullable-unique",
+      "variant": "nullable UNIQUE duplicate NULL physical rows need native NULLS DISTINCT law",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score)",
+      "target_before": [
+        {
+          "id": null,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": null,
+          "score": 20
+        }
+      ],
+      "target_unique": true,
+      "classification": "Residual",
+      "gap": "UnprovedConstraint",
+      "on_true_target_ordinals": [],
+      "on_not_true_target_ordinals": [
+        0
+      ],
+      "conditional_owner": "TASK-155",
+      "release_disposition": "not portable: missing native NULLS DISTINCT enforcement law",
+      "target_pk": false,
+      "source_pk": false,
+      "parent_pk": false,
+      "score_fk": false,
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false,
+          "frequencies": {
+            "NULL": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1
+          }
+        }
+      },
+      "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
+      "native_oracle": "conditional: fail closed without claiming native portability",
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
+    },
+    {
+      "id": "82-C155-P-unique-key-insert",
+      "variant": "non-null enforced UNIQUE supports exact unmatched insert",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score)",
+      "target_before": [
+        {
+          "id": 1,
+          "score": 10
+        }
+      ],
+      "source": [
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "target_unique": true,
+      "classification": "Exact",
+      "target_after": [
+        {
+          "id": 1,
+          "score": 10
+        },
+        {
+          "id": 2,
+          "score": 20
+        }
+      ],
+      "affected": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0
+      },
+      "on_true_target_ordinals": [],
+      "on_not_true_target_ordinals": [
+        0
+      ],
+      "target_pk": false,
+      "source_pk": false,
+      "parent_pk": false,
+      "score_fk": false,
+      "before_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1
+          }
+        }
+      },
+      "source_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 20,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "20": 1
+          }
+        }
+      },
+      "after_domains": {
+        "id": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          }
+        },
+        "score": {
+          "type": "INTEGER",
+          "nullable": false,
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "frequencies": {
+            "10": 1,
+            "20": 1
+          }
+        }
+      },
+      "comparison": "Signed INTEGER/three-valued SQL ordinary ON '='; target and source bags are complete",
+      "native_oracle": "DuckDB independent source/poststate bag; atomic for Impossible",
+      "adapter_evidence": "direct SQL, dbt catalog and ODCS equivalent schema paths required",
+      "parent_domains": null,
+      "on_true_source_ordinals": [],
+      "on_not_true_source_ordinals": [
+        0
+      ]
+    }
+  ],
+  "remaining_mandatory_matrix": [],
+  "signoff": {
+    "semantic_matrix_complete": true,
+    "adapter_parity_verified": false,
+    "thirteen_dialects_verified": false,
+    "duckdb_full_bag_verified": false,
+    "strict_ci_verified": false,
+    "independent_review_verified": false,
+    "task_done": false,
+    "parent_done": false,
+    "release_approved": false
+  },
+  "previous_snapshot": "docs/task-155-acceptance-freeze-v2.json",
+  "dialect_syntax": [
+    {
+      "id": "merge-matched",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET score = source.score",
+      "expected": "parsed_canonical_shared"
+    },
+    {
+      "id": "merge-unmatched",
+      "sql": "MERGE INTO target USING source ON target.id = source.id WHEN NOT MATCHED THEN INSERT (id, score) VALUES (source.id, source.score)",
+      "expected": "parsed_canonical_shared"
+    },
+    {
+      "id": "insert-conflict-ignore",
+      "sql": "INSERT INTO target (id,score) VALUES (1,99) ON CONFLICT (id) DO NOTHING",
+      "expected": "canonical_when_parsed"
+    },
+    {
+      "id": "insert-conflict-update",
+      "sql": "INSERT INTO target (id,score) VALUES (1,99) ON CONFLICT (id) DO UPDATE SET score = EXCLUDED.score",
+      "expected": "never_exact"
+    }
+  ],
+  "dialect_cells_required": 52,
+  "adapter_cases_required": 12,
+  "adapter_paths_required": 3,
+  "mandatory_oracle_case_ids": [
+    "82-C155-P-fk-supported",
+    "82-C155-N-fk-violation",
+    "82-C155-N-fk-missing-population",
+    "82-C155-N-nullable-unique",
+    "82-C155-P-unique-key-insert"
+  ],
+  "coverage_notes": "All mandatory cases have fixed SQL, initial physical bags, proof classification, and typed output-domain expectations for Exact; Impossible and Residual never invent poststates. Conditional vendor execution requires independently attested native law; dialect parser acceptance alone cannot certify it.",
+  "comparison_oracle": "Native DuckDB executes complete target/source/parent snapshots where compatible; FALSE/UNKNOWN ON rows are distinct from matched TRUE rows.",
+  "required_ci": [
+    "fmt",
+    "clippy",
+    "tests",
+    "docs",
+    "no-default-tests",
+    "no-default-docs",
+    "dbt-core-e2e",
+    "active-snapshots"
+  ],
+  "dialect_expected": {
+    "generic": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "ansi": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "parsed_canonical",
+      "parsed_canonical",
+      "parsed_canonical",
+      "canonical_unsupported"
+    ]
+  },
+  "reviewed_matrix_change": {
+    "case_id": "82-C155-N-fk-violation",
+    "from": "Impossible",
+    "to": "Residual",
+    "justification": "The current canonical schema proves FK enforcement but not statement-time versus deferred enforcement; follow the TASK-152 deferred-FK law, never promote a DuckDB immediate error to portable Impossible.",
+    "owner": "TASK-155",
+    "release_disposition": "conditional native immediate execution observed in DuckDB; generic portable FK deferral attestation remains pending TASK-84/87"
+  }
+}
