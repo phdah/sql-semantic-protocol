@@ -8,10 +8,10 @@ use std::collections::BTreeMap;
 use duckdb::{params, Connection};
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_finite_view_read_plan, physical_ordered_write_state_plan, ConfiguredSqlInput,
-    LiteralValue, PhysicalViewProof, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteDefinitionMode,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_finite_view_read_plan,
+    physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue, PhysicalViewProof,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput, WriteDefinitionMode,
 };
 
 fn freeze() -> Value {
