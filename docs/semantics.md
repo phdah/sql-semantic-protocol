@@ -15,8 +15,17 @@ complete physical leaf on each read, so each output retains original source
 occurrence IDs. Filtered-out rows, NULL UNKNOWN and duplicate multiplicity
 are checked with full source/producer/terminal DuckDB bags; typed exact
 terminal domains and proven absent row requests are distinct from parser
-acceptance. Temporary, materialized, replacement and conditional VIEW laws
-lack portable execution proof, even if parsed, and fail closed.
+acceptance. TASK-157 additionally proves one canonical INSERT into the
+original physical source before the terminal live VIEW read. That source is
+evaluated at read time with stable occurrence ordinals, rather than inserting
+independent VIEW rows.
+
+A plain CREATE MATERIALIZED VIEW is a different canonical definition mode: it
+captures one complete physical producer bag at creation. Later source INSERTs
+do not mutate the stored snapshot. DuckDB's CTAS equivalent verifies snapshot
+and duplicate/NULL laws without claiming native MATERIALIZED VIEW syntax.
+Vendor session, refresh, placement, conditional creation and opaque options
+remain typed residuals; a parser accepting syntax is not an engine law.
 
 
 ### Sampling and row-membership uncertainty (TASK-136)
