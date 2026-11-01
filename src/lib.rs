@@ -36,7 +36,7 @@
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
-//! - physical_alter_column_snapshot proves constraint-free, complete-bag column projections without treating them as executed SQL DDL.
+//! - physical_alter_column_snapshot proves constraint-free, complete-bag column projections; ordered ALTER statements normalize into typed canonical write steps with conservative engine-law boundaries.
 //! - PhysicalWriteTransition::returning_exact_domains derives exact schema-backed returned value frequencies, including empty INSERT RETURNING bags.
 //! - InsertCteSource preserves one canonical producer/consumer CTE pair for INSERT SELECT without inventing physical stage populations.
 //! - JoinedMutationCteSource preserves an exact read-only CTE producer feeding UPDATE FROM or DELETE USING without independent physical insertion.
