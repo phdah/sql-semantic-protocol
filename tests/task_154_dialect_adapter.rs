@@ -107,6 +107,27 @@ fn all_thirteen_dialects_match_frozen_unmatched_merge_parser_matrix() {
     assert_eq!(matrix["dialects"], serde_json::json!(DIALECTS));
     assert_eq!(matrix["parser_syntax"].as_array().unwrap().len(), 5);
     assert_eq!(observed.values().map(Vec::len).sum::<usize>(), 65);
+
+    let mut vendor = BTreeMap::new();
+    for dialect in DIALECTS {
+        let observed = matrix["vendor_parser_syntax"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| classify(dialect, item.as_str().unwrap()))
+            .collect::<Vec<_>>();
+        vendor.insert(dialect.to_string(), observed);
+    }
+    assert_eq!(
+        serde_json::to_value(&vendor).unwrap(),
+        matrix["vendor_dialect_expected"],
+        "vendor parser or explicit unsupported boundary drift"
+    );
+    assert_eq!(matrix["vendor_dialect_cells_required"], 26);
+    assert_eq!(vendor.values().map(Vec::len).sum::<usize>(), 26);
+    for observed in vendor.values() {
+        assert!(observed.iter().all(|v| *v != "parsed_canonical"));
+    }
 }
 
 fn direct_catalog() -> RelationCatalog {
@@ -151,7 +172,7 @@ fn odcs_catalog() -> RelationCatalog {
 apiVersion: v3.2.0
 kind: DataContract
 id: task154parity
-name: Task 153 equivalent MERGE evidence
+name: Task 154 equivalent MERGE evidence
 version: 1.0.0
 status: active
 schema:
@@ -291,4 +312,95 @@ fn all_frozen_unmatched_merge_proofs_are_equivalent_across_adapter_metadata() {
             other => panic!("unexpected frozen proof: {other}"),
         }
     }
+}
+
+
+fn ordered_replay_plan(replay: &Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
+    let sql_texts = replay["steps"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|step| {
+            step["sql"]
+                .as_str()
+                .unwrap()
+                .replace("target", TARGET)
+                .replace("source", SOURCE)
+                .replace("score", "amount")
+        })
+        .collect::<Vec<_>>();
+    let sql_inputs = sql_texts
+        .iter()
+        .map(|sql| SqlInput::inline(sql))
+        .collect::<Vec<_>>();
+    let ids = (0..sql_inputs.len())
+        .map(|index| format!("task154-parity-step-{index}"))
+        .collect::<Vec<_>>();
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = sql_inputs
+        .iter()
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
+    let initial = [
+        state(TARGET, &replay["target_initial"]),
+        state(SOURCE, &replay["source"]),
+    ];
+    physical_ordered_write_state_plan(&bundle, &initial)
+}
+
+#[test]
+fn ordered_replay_has_equivalent_direct_dbt_and_odcs_outcomes() {
+    let matrix = frozen();
+    assert_eq!(matrix["adapter_parity_cases_required"], 13);
+    assert_eq!(matrix["adapter_ordered_replay_cases_required"], 1);
+    let replay = &matrix["ordered_replay"];
+    let direct = ordered_replay_plan(replay, &direct_catalog());
+    let dbt = ordered_replay_plan(replay, &dbt_catalog());
+    assert_eq!(direct, dbt, "ordered replay: SQL/dbt canonical semantics");
+    #[cfg(feature = "odcs")]
+    assert_eq!(
+        direct,
+        ordered_replay_plan(replay, &odcs_catalog()),
+        "ordered replay: SQL/ODCS canonical semantics"
+    );
+
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = direct
+    else {
+        panic!("ordered replay must have three exact canonical transitions");
+    };
+    let steps = replay["steps"].as_array().unwrap();
+    assert_eq!(transitions.len(), steps.len());
+    for (transition, step) in transitions.iter().zip(steps) {
+        assert_eq!(transition.before(), &state(TARGET, &step["before"]));
+        assert_eq!(transition.after(), &state(TARGET, &step["after"]));
+        assert_eq!(
+            transition.affected().inserted(),
+            step["affected"]["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            step["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            step["affected"]["deleted"].as_u64().unwrap()
+        );
+        assert!(
+            transition.intermediate_states().is_empty(),
+            "ordered target preimages are not independent source bags"
+        );
+    }
+    assert_eq!(
+        final_states.iter().find(|v| v.relation() == TARGET),
+        Some(&state(TARGET, &replay["terminal"]))
+    );
+    assert_eq!(
+        final_states.iter().find(|v| v.relation() == SOURCE),
+        Some(&state(SOURCE, &replay["source"]))
+    );
 }
