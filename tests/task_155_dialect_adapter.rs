@@ -343,3 +343,94 @@ fn every_frozen_case_has_identical_direct_dbt_and_odcs_proof_strength() {
         }
     }
 }
+
+fn replay_plan(replay: &Value, catalog: &RelationCatalog) -> PhysicalWriteStatePlan {
+    let statements = replay["steps"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|step| {
+            step["sql"]
+                .as_str()
+                .unwrap()
+                .replace("target", TARGET)
+                .replace("source", SOURCE)
+                .replace("score", "amount")
+        })
+        .collect::<Vec<_>>();
+    let inputs = statements.iter().map(SqlInput::inline).collect::<Vec<_>>();
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = inputs
+        .iter()
+        .enumerate()
+        .map(|(i, sql)| {
+            ConfiguredSqlInput::new(
+                if i == 0 { "task155-replay0" } else { "task155-replay1" },
+                sql,
+                "postgresql",
+                dialect.as_ref(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        TARGET,
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+    )
+    .unwrap()]);
+    physical_ordered_write_state_plan(
+        &bundle,
+        &[
+            state(TARGET, &replay["target_initial"]),
+            state(SOURCE, &replay["source"]),
+        ],
+    )
+}
+
+#[test]
+fn ordered_conflict_then_merge_preserves_source_independent_adapter_evidence() {
+    let f = frozen();
+    let replay = &f["ordered_replay"];
+    assert_eq!(f["version"], 4);
+    assert_eq!(f["ordered_replay_cases_required"], 1);
+    assert_eq!(f["adapter_replay_paths_required"], 3);
+    let direct = replay_plan(replay, &direct_catalog());
+    assert_eq!(direct, replay_plan(replay, &dbt_catalog()));
+    #[cfg(feature = "odcs")]
+    assert_eq!(direct, replay_plan(replay, &odcs_catalog()));
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = direct
+    else {
+        panic!("ordered source-independent parity must be Exact");
+    };
+    let steps = replay["steps"].as_array().unwrap();
+    assert_eq!(transitions.len(), steps.len());
+    for (transition, step) in transitions.iter().zip(steps) {
+        assert_eq!(transition.before(), &state(TARGET, &step["before"]));
+        assert_eq!(transition.after(), &state(TARGET, &step["after"]));
+        assert_eq!(
+            transition.affected().inserted(),
+            step["affected"]["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            step["affected"]["updated"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            step["affected"]["deleted"].as_u64().unwrap()
+        );
+        assert!(transition.intermediate_states().is_empty());
+    }
+    assert_eq!(transitions[0].after(), transitions[1].before());
+    assert_eq!(
+        final_states.iter().find(|item| item.relation() == TARGET),
+        Some(&state(TARGET, &replay["terminal"]))
+    );
+    assert_eq!(
+        final_states.iter().find(|item| item.relation() == SOURCE),
+        Some(&state(SOURCE, &replay["source"]))
+    );
+}
