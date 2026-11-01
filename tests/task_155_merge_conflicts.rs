@@ -332,18 +332,50 @@ fn frozen_repeated_match_and_conflict_cases_prove_only_attested_exact_poststates
                 assert_eq!(format!("{gap:?}"), case["gap"].as_str().unwrap(), "{id}");
                 if id == "82-C155-N-ambiguous-winner" {
                     let db = native(case).unwrap();
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+                    assert_eq!(
+                        on_ordinals(&db, false),
+                        ordinals(&case["on_true_target_ordinals"])
+                    );
+                    assert_eq!(
+                        on_ordinals(&db, true),
+                        ordinals(&case["on_not_true_target_ordinals"])
+                    );
                     let result = db.execute_batch(case["sql"].as_str().unwrap());
                     let after = native_state(&db, "target");
                     if result.is_err() {
                         assert_eq!(sorted(&after), sorted(before), "{id}: atomic failure");
                     } else {
-                        let score = after.rows()[0].values().get("score").unwrap();
+                        // DuckDB may select either original source occurrence. Assert the
+                        // entire observed bag without granting a portable winner law.
+                        let candidates = [
+                            serde_json::json!([{"id": 1, "score": 20}]),
+                            serde_json::json!([{"id": 1, "score": 30}]),
+                        ];
                         assert!(
-                            score == &LiteralValue::Number("20".to_string())
-                                || score == &LiteralValue::Number("30".to_string()),
-                            "{id}: native winner must be sourced, never invented"
+                            candidates
+                                .iter()
+                                .any(|candidate| sorted(&after) == sorted(&state("target", candidate))),
+                            "{id}: native success must preserve exactly one original target row"
                         );
                     }
+                    assert_eq!(
+                        sorted(&native_state(&db, "source")),
+                        sorted(&source),
+                        "{id}: ambiguous write cannot modify source"
+                    );
+                } else if id == "82-C155-N-upsert-update" {
+                    let db = native(case).unwrap();
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(before));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
+                    db.execute_batch(case["sql"].as_str().unwrap()).unwrap();
+                    // This is a DuckDB-only observation, not canonical evidence
+                    // for treating ON CONFLICT DO UPDATE as a portable MERGE.
+                    let native_after =
+                        state("target", &serde_json::json!([{"id": 1, "score": 99}]));
+                    assert_eq!(sorted(&native_state(&db, "target")), sorted(&native_after));
+                    assert_eq!(sorted(&native_state(&db, "source")), sorted(&source));
                 }
             }
             other => panic!("{id}: unexpected proof class {other}"),
