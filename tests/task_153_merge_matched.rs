@@ -129,8 +129,13 @@ fn native(case: &Value) -> Connection {
 }
 
 fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
+    let order = if relation == "target" {
+        "id NULLS FIRST"
+    } else {
+        "rowid"
+    };
     let mut query = db
-        .prepare(&format!("SELECT id,score FROM {relation} ORDER BY rowid"))
+        .prepare(&format!("SELECT id,score FROM {relation} ORDER BY {order}"))
         .unwrap();
     let rows = query
         .query_map([], |r| {
