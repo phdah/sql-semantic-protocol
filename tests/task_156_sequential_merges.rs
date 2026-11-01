@@ -49,7 +49,7 @@ fn all_initial(case: &Value) -> Vec<PhysicalWriteState> {
 
 fn catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(
-        ["source", "stage", "target", "terminal"]
+        &["source", "stage", "target", "terminal"]
             .into_iter()
             .map(|name| {
                 RelationSchema::new(
