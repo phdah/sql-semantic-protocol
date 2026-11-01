@@ -206,3 +206,65 @@ fn acceptance_dialect_matrix_is_complete_and_parent_stays_open() {
     assert_eq!(entry["freeze_version"], 2);
     assert_eq!(entry["parent_signed_off"], false);
 }
+
+#[test]
+fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
+    use duckdb::Connection;
+    for case in frozen()["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        if matches!(id, "83-C158-N-type" | "83-C158-N-key") {
+            // Vendor cast and constraint enforcement is a conditional engine law,
+            // not an Exact/Impossible inference from the SQL parser.
+            continue;
+        }
+        let db = Connection::open_in_memory().unwrap();
+        let before = case["initial_schema"].as_array().unwrap().iter()
+            .map(|column| column.as_str().unwrap()).collect::<Vec<_>>();
+        db.execute_batch(&format!("CREATE TABLE t ({})", before.join(", "))).unwrap();
+        for original_row in case["prestate"].as_array().unwrap() {
+            let row = original_row.as_object().unwrap();
+            let columns = before.iter().map(|declared| declared.split_once(' ').unwrap().0)
+                .collect::<Vec<_>>();
+            let values = columns.iter().map(|name| match &row[*name] {
+                Value::Null => "NULL".to_string(),
+                Value::Number(number) => number.to_string(),
+                other => panic!("{id}: unsupported native SQL value {other:?}"),
+            }).collect::<Vec<_>>();
+            db.execute_batch(&format!(
+                "INSERT INTO t ({}) VALUES ({})", columns.join(", "), values.join(", ")
+            )).unwrap();
+        }
+        let operation = case["sql"].as_str().unwrap();
+        if id.starts_with("83-C158-N-") {
+            assert!(db.execute_batch(operation).is_err(), "{id}: native contradiction");
+            continue;
+        }
+        db.execute_batch(operation).unwrap();
+        let after_cols = case["expected_schema"].as_array().unwrap().iter()
+            .map(|declared| declared.as_str().unwrap().split_once(' ').unwrap().0)
+            .collect::<Vec<_>>();
+        let mut statement = db.prepare(&format!("SELECT {} FROM t", after_cols.join(", ")))
+            .unwrap();
+        let native = statement.query_map([], |row| {
+            let mut values = BTreeMap::new();
+            for (index, column) in after_cols.iter().enumerate() {
+                let n: Option<i64> = row.get(index)?;
+                let canonical = n.map_or(LiteralValue::Null,
+                    |number| LiteralValue::Number(number.to_string()));
+                values.insert((*column).to_string(), canonical);
+            }
+            Ok(PhysicalWriteRow::new(values).unwrap())
+        }).unwrap().map(Result::unwrap).collect::<Vec<_>>();
+        assert_eq!(
+            sorted_bag(&native),
+            sorted_bag(state(&case["poststate"]).rows()),
+            "{id}: independently executed native source/target bag"
+        );
+        let mut columns = db.prepare(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='t' ORDER BY ordinal_position"
+        ).unwrap();
+        let actual_names = columns.query_map([], |row| row.get::<_, String>(0))
+            .unwrap().map(Result::unwrap).collect::<Vec<_>>();
+        assert_eq!(actual_names, after_cols, "{id}: native post-schema ordinal identity");
+    }
+}
