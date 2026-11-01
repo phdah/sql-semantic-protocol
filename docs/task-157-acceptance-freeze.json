@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-157",
   "parent": "TASK-83",
   "freeze_date": "2026-11-01",
-  "status": "preimplementation_required_matrix_not_signed_off",
+  "status": "expanded_required_matrix_under_review",
   "immutable": true,
   "fixture_ids": [
     "83-C157-P",
@@ -674,5 +674,201 @@
     "ci_verified": false,
     "independent_review_verified": false,
     "parent_signed_off": false
-  }
+  },
+  "previous_snapshot": "docs/task-157-acceptance-freeze-v1.json",
+  "reviewed_matrix_change": "v2 adds explicit observed 117 parser/canonical verdicts and 27 source parity obligations without reclassifying or weakening any v1 mandatory source/terminal oracle; independent review and final CI required",
+  "dialect_expected": {
+    "generic": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "ansi": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "create_table",
+      "create_table",
+      "create_table",
+      "replace_table",
+      "create_view",
+      "create_materialized_view",
+      "create_table",
+      "create_table",
+      "canonical_unsupported"
+    ]
+  },
+  "adapter_expected": {
+    "83-C157-P-empty-table": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-ctas": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-qualified": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-replace": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-logical-view": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-P-materialized": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-N-duplicate": {
+      "direct_sql": "Impossible",
+      "dbt_compiled_sql_with_catalog": "Impossible",
+      "odcs_equivalent_schema": "Impossible"
+    },
+    "83-C157-N-null-duplicate": {
+      "direct_sql": "Exact",
+      "dbt_compiled_sql_with_catalog": "Exact",
+      "odcs_equivalent_schema": "Exact"
+    },
+    "83-C157-N-conditional": {
+      "direct_sql": "Residual",
+      "dbt_compiled_sql_with_catalog": "Residual",
+      "odcs_equivalent_schema": "Residual"
+    }
+  },
+  "dialect_cells_required": 117,
+  "adapter_cells_required": 27
 }
