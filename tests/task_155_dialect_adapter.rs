@@ -331,7 +331,7 @@ fn every_frozen_case_has_identical_direct_dbt_and_odcs_proof_strength() {
             }
             "Impossible" => assert!(
                 matches!(direct, PhysicalWriteStatePlan::Impossible { .. }),
-                "{}: expected enforced contradiction",
+                "{}: expected enforced contradiction, actual {direct:?}",
                 case["id"]
             ),
             "Residual" => assert!(
