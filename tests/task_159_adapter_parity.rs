@@ -4,9 +4,8 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, PhysicalWriteStatePlan, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput, WriteKind,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn direct() -> RelationCatalog {
@@ -16,7 +15,9 @@ fn direct() -> RelationCatalog {
             SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap(),
             SchemaColumn::from_sql_type("b", "INTEGER", "duckdb").unwrap(),
         ],
-    ).unwrap()]).unwrap()
+    )
+    .unwrap()])
+    .unwrap()
 }
 
 fn dbt_bundle(compiled_sql: &str) -> Result<sql_semantic_protocol::AnalysisBundle, String> {
@@ -76,11 +77,8 @@ fn dbt() -> RelationCatalog {
 fn odcs() -> RelationCatalog {
     use sql_semantic_protocol::parse_odcs_yaml;
     let contract = "apiVersion: v3.2.0\nkind: DataContract\nid: task159\nname: TASK-159 parity\nversion: 1.0.0\nstatus: active\nschema:\n  - name: t\n    physicalName: t\n    properties:\n      - name: a\n        physicalType: INTEGER\n      - name: b\n        physicalType: INTEGER\n";
-    let evidence = parse_odcs_yaml(
-        contract,
-        "duckdb",
-        &RelationCatalog::new(&["t"]).unwrap(),
-    ).unwrap();
+    let evidence =
+        parse_odcs_yaml(contract, "duckdb", &RelationCatalog::new(&["t"]).unwrap()).unwrap();
     RelationCatalog::from_schemas(evidence.source_schemas()).unwrap()
 }
 
@@ -91,28 +89,38 @@ fn replay(catalog: &RelationCatalog, lifecycle: &str) -> (String, String, bool, 
         SqlInput::inline("INSERT INTO t (a, b) VALUES (1, NULL), (1, NULL)"),
         SqlInput::inline(lifecycle),
     ];
-    let configured = source.iter().enumerate().map(|(i, input)| {
-        ConfiguredSqlInput::new(
-            &format!("input-{i}"), input, "duckdb", parser.as_ref(),
-        )
-    }).collect::<Vec<_>>();
+    let configured = source
+        .iter()
+        .enumerate()
+        .map(|(i, input)| {
+            ConfiguredSqlInput::new(&format!("input-{i}"), input, "duckdb", parser.as_ref())
+        })
+        .collect::<Vec<_>>();
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     let last = &bundle.inputs()[2].statements()[0];
     let sql_semantic_protocol::ProtocolStatement::Query(query) = last else {
         panic!("SQL lifecycle input must have a canonical write");
     };
     assert_eq!(query.write().unwrap().kind(), WriteKind::Lifecycle);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&bundle, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&bundle, &[])
     else {
         panic!("equivalent schema metadata must not change closed-world replay");
     };
     let terminal = transitions.last().unwrap();
-    let after_schema = terminal.after_schema().map(|schema| {
-        schema.columns().iter().map(|column| {
-            format!("{}:{:?}", column.name(), column.data_type())
-        }).collect::<Vec<_>>().join(",")
-    }).unwrap_or_default();
+    let after_schema = terminal
+        .after_schema()
+        .map(|schema| {
+            schema
+                .columns()
+                .iter()
+                .map(|column| format!("{}:{:?}", column.name(), column.data_type()))
+                .collect::<Vec<_>>()
+                .join(",")
+        })
+        .unwrap_or_default();
     (
         format!("{:?}", terminal.before().rows()),
         format!("{:?}", final_states),
@@ -149,5 +157,8 @@ fn direct_sql_and_odcs_agree_on_lifecycle_state_and_schema() {
 #[test]
 fn dbt_compiled_model_drop_is_explicitly_not_a_select_backed_lifecycle() {
     let error = dbt_bundle("DROP TABLE t").unwrap_err();
-    assert!(error.contains("Expected: SELECT") && error.contains("DROP"), "{error}");
+    assert!(
+        error.contains("Expected: SELECT") && error.contains("DROP"),
+        "{error}"
+    );
 }
