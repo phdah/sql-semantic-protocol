@@ -2,7 +2,7 @@
   "task_160_ordered_lifecycle_acceptance": {
     "owner": "TASK-160",
     "parent": "TASK-83",
-    "status": "implementation_in_progress_not_signed_off",
+    "status": "child_Done_v3_bounded_review_and_CI_verified",
     "freeze": "docs/task-160-acceptance-freeze.json",
     "freeze_version": 3,
     "freeze_history": [
@@ -22,21 +22,32 @@
       5,
       6
     ],
-    "mandatory_cells_verified": false,
-    "child_signed_off": false,
+    "mandatory_cells_verified": true,
+    "child_signed_off": true,
     "parent_signed_off": false,
-    "dialect_matrix_verified": false,
-    "adapter_parity_verified": false,
-    "native_duckdb_oracles_verified": false,
-    "implementation_ci_verified": false,
-    "independent_review": false,
+    "dialect_matrix_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_oracles_verified": true,
+    "implementation_ci_verified": true,
+    "independent_review": true,
     "ordered_lifecycle_oracle": "tests/task_160_ordered_lifecycle.rs",
-    "remaining_gates": [
-      "Complete materialized SELECT read checkpoint and generation-aware source schema identity",
-      "Verify every mandatory/conditional frozen cell and 13 dialect parser identities",
-      "Verify SQL/dbt/ODCS parity and final Rust/dbt CI",
-      "Independent code-review and parent TASK-83 AC signoff"
-    ]
+    "remaining_gates": [],
+    "frozen_positive_negative_cases": 7,
+    "mandatory_cases": 5,
+    "conditional_cases": 2,
+    "parser_dialect_cells": 416,
+    "implementation_ci_head": "fd79c21efe4710178b6f1205d0a07016d4063df1",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41509894079",
+    "implementation_ci_jobs_green": 9,
+    "review_evidence": "Matt code-review two-axis Standards/Spec PR #181 review #5742168813 (separate review pass, same PR-author account)",
+    "dialect_oracle": "tests/task_160_dialect_matrix.rs",
+    "adapter_oracle": "tests/task_160_adapter_parity.rs",
+    "acceptance_audit": "docs/task-160-acceptance-audit.md",
+    "conditional_release_dispositions": [
+      "CREATE after DROP remains typed Residual until independently ordered new relation generation and authoritative defaults are provided (TASK-160 documented boundary)",
+      "Temporary/vendor/session DDL remains typed Residual; parser acceptance is not native execution evidence"
+    ],
+    "parent_follow_up": "TASK-83 original AC #1..#6 require separate independent verification after PR #181 merges; TASK-91 remains a separate release gate"
   },
   "task_159_ddl_lifecycle_acceptance": {
     "owner": "TASK-159",
