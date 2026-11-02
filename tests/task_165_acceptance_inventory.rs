@@ -102,7 +102,10 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
         );
     }
     assert_eq!(
-        cases.iter().filter(|case| case["requirement"] == "mandatory").count(),
+        cases
+            .iter()
+            .filter(|case| case["requirement"] == "mandatory")
+            .count(),
         7,
         "all seven mandatory cells remain included"
     );
