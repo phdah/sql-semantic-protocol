@@ -62,6 +62,12 @@ impl AnalysisBundle {
         prior_relation: &str,
         renamed: RelationSchema,
     ) {
+        // A separately proved DROP may have left historical schema evidence
+        // for the destination in this analysis bundle. It must not shadow the
+        // current renamed table's typed columns.
+        self.source_schemas.retain(|entry| {
+            entry.relation() == prior_relation || entry.relation() != renamed.relation()
+        });
         if let Some(current) = self
             .source_schemas
             .iter_mut()
