@@ -14,7 +14,10 @@ use sql_semantic_protocol::{
 
 fn analyze(sql: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let inputs = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     analyze_inputs(&inputs, "duckdb", dialect.as_ref()).unwrap()
 }
 
@@ -30,10 +33,15 @@ fn truncate_removes_every_duplicate_and_null_row_but_keeps_typed_relation() {
         panic!("TRUNCATE must be a normalized canonical write");
     };
     assert_eq!(query.write().unwrap().kind(), WriteKind::Lifecycle);
-    assert_eq!(query.write().unwrap().lifecycle_action(), Some(&WriteLifecycleAction::Truncate));
+    assert_eq!(
+        query.write().unwrap().lifecycle_action(),
+        Some(&WriteLifecycleAction::Truncate)
+    );
 
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&bundle, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&bundle, &[])
     else {
         panic!("known, constraint-free table TRUNCATE must have an exact closed bag");
     };
@@ -45,7 +53,10 @@ fn truncate_removes_every_duplicate_and_null_row_but_keeps_typed_relation() {
     assert_eq!(truncate.affected().deleted(), 3);
     let schema = truncate.after_schema().unwrap();
     assert_eq!(schema.columns()[0].name(), "a");
-    assert_eq!(truncate.after().exact_domains(schema).unwrap()[0].values(), &[]);
+    assert_eq!(
+        truncate.after().exact_domains(schema).unwrap()[0].values(),
+        &[]
+    );
     assert_eq!(final_states.len(), 1);
     assert_eq!(final_states[0].relation(), "t");
 
@@ -53,13 +64,20 @@ fn truncate_removes_every_duplicate_and_null_row_but_keeps_typed_relation() {
     for sql in statements {
         native.execute_batch(sql).unwrap();
     }
-    assert_eq!(native.query_row("SELECT COUNT(*) FROM t", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
     assert_eq!(
-        native.query_row(
-            "SELECT column_name FROM information_schema.columns WHERE table_name='t'",
-            [],
-            |r| r.get::<_, String>(0),
-        ).unwrap(),
+        native
+            .query_row("SELECT COUNT(*) FROM t", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        native
+            .query_row(
+                "SELECT column_name FROM information_schema.columns WHERE table_name='t'",
+                [],
+                |r| r.get::<_, String>(0),
+            )
+            .unwrap(),
         "a"
     );
 }
@@ -72,8 +90,10 @@ fn drop_removes_relation_identity_not_merely_rows() {
         "DROP TABLE t",
     ];
     let bundle = analyze(&statements);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&bundle, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&bundle, &[])
     else {
         panic!("full closed-world DROP requires an exact absent relation");
     };
@@ -103,8 +123,10 @@ fn if_exists_requires_proven_absence_and_never_mistakes_missing_snapshot_for_abs
         "DROP TABLE IF EXISTS t",
     ];
     let bundle = analyze(&statements);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&bundle, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&bundle, &[])
     else {
         panic!("second DROP IF EXISTS must be an exact no-op after a proved DROP");
     };
@@ -141,8 +163,10 @@ fn rename_preserves_row_occurrences_nulls_and_integer_domains() {
         "ALTER TABLE t RENAME TO u",
     ];
     let bundle = analyze(&statements);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&bundle, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&bundle, &[])
     else {
         panic!("constraint-free table RENAME preserves the full physical bag");
     };
@@ -157,15 +181,23 @@ fn rename_preserves_row_occurrences_nulls_and_integer_domains() {
     assert_eq!(final_states.len(), 1);
     assert_eq!(final_states[0].relation(), "u");
     assert_eq!(
-        final_states[0].exact_domains(renamed.after_schema().unwrap()).unwrap()[0].values(),
-        &[(LiteralValue::Number("1".into()), 2), (LiteralValue::Null, 1)]
+        final_states[0]
+            .exact_domains(renamed.after_schema().unwrap())
+            .unwrap()[0]
+            .values(),
+        &[
+            (LiteralValue::Number("1".into()), 2),
+            (LiteralValue::Null, 1)
+        ]
     );
 
     let native = Connection::open_in_memory().unwrap();
     for sql in statements {
         native.execute_batch(sql).unwrap();
     }
-    let mut query = native.prepare("SELECT a FROM u ORDER BY a NULLS LAST").unwrap();
+    let mut query = native
+        .prepare("SELECT a FROM u ORDER BY a NULLS LAST")
+        .unwrap();
     let rows: Vec<Option<i64>> = query
         .query_map([], |r| r.get::<_, Option<i64>>(0))
         .unwrap()
@@ -217,10 +249,13 @@ fn foreign_keys_or_unattested_lifecycle_options_fail_closed() {
             continue;
         }
         let result = analyze(&[sql]);
-        assert!(matches!(
-            result.inputs()[0].statements()[0],
-            ProtocolStatement::Unsupported(_)
-        ), "unproved conditional variant must not masquerade as Exact: {sql}");
+        assert!(
+            matches!(
+                result.inputs()[0].statements()[0],
+                ProtocolStatement::Unsupported(_)
+            ),
+            "unproved conditional variant must not masquerade as Exact: {sql}"
+        );
         assert!(matches!(
             physical_ordered_write_state_plan(&result, &[]),
             PhysicalWriteStatePlan::Residual { .. }
@@ -240,9 +275,12 @@ fn canonical_wire_records_lifecycle_kind_and_action_deterministically() {
 
     let schema: serde_json::Value =
         serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
-    assert!(schema["$defs"]["writeOperation"]["properties"]["kind"]["enum"]
-        .as_array().unwrap()
-        .contains(&serde_json::json!("relation_lifecycle")));
+    assert!(
+        schema["$defs"]["writeOperation"]["properties"]["kind"]["enum"]
+            .as_array()
+            .unwrap()
+            .contains(&serde_json::json!("relation_lifecycle"))
+    );
     assert_eq!(
         schema["$defs"]["writeOperation"]["allOf"][2]["then"]["required"],
         serde_json::json!(["lifecycle_action"])
@@ -273,9 +311,11 @@ fn drop_does_not_apply_row_selection_or_invent_new_occurrences() {
         panic!("complete row bag must drop all occurrences");
     };
     let before = &transitions[2].before();
-    let values = before.rows().iter().map(|row| {
-        row.values().get("a").cloned().unwrap()
-    }).collect::<Vec<_>>();
+    let values = before
+        .rows()
+        .iter()
+        .map(|row| row.values().get("a").cloned().unwrap())
+        .collect::<Vec<_>>();
     assert_eq!(
         values,
         vec![
@@ -288,9 +328,11 @@ fn drop_does_not_apply_row_selection_or_invent_new_occurrences() {
     assert!(transitions[2].after().rows().is_empty());
 
     // Complete physical rows are compared directly, not generated from SQL.
-    let constructed = sql_semantic_protocol::PhysicalWriteRow::new(BTreeMap::from([
-        ("a".to_owned(), LiteralValue::Number("1".to_owned())),
-    ])).unwrap();
+    let constructed = sql_semantic_protocol::PhysicalWriteRow::new(BTreeMap::from([(
+        "a".to_owned(),
+        LiteralValue::Number("1".to_owned()),
+    )]))
+    .unwrap();
     assert_eq!(before.rows()[0], constructed);
     assert_eq!(before.rows()[1], constructed);
 }
