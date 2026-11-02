@@ -437,10 +437,14 @@ fn analyze_statement(
                     "unsupported_alter_lifecycle",
                     "conditional, storage or vendor ALTER TABLE requires engine evidence",
                 )
-            } else if let [sqlparser::ast::AlterTableOperation::RenameTable { table_name }] = operations.as_slice() {
+            } else if let [sqlparser::ast::AlterTableOperation::RenameTable { table_name }] =
+                operations.as_slice()
+            {
                 analyze_relation_lifecycle(
                     name.to_string(),
-                    WriteLifecycleAction::Rename { to: table_name.to_string() },
+                    WriteLifecycleAction::Rename {
+                        to: table_name.to_string(),
+                    },
                 )
             } else {
                 analyze_alter_columns(name, operations, metadata.dialect_name)
@@ -455,10 +459,16 @@ fn analyze_statement(
             ..
         } => {
             if let [table] = table_names.as_slice() {
-                if !table.only && partitions.is_none() && identity.is_none()
-                    && cascade.is_none() && on_cluster.is_none()
+                if !table.only
+                    && partitions.is_none()
+                    && identity.is_none()
+                    && cascade.is_none()
+                    && on_cluster.is_none()
                 {
-                    analyze_relation_lifecycle(table.name.to_string(), WriteLifecycleAction::Truncate)
+                    analyze_relation_lifecycle(
+                        table.name.to_string(),
+                        WriteLifecycleAction::Truncate,
+                    )
                 } else {
                     unsupported_write_statement(
                         "truncate",
@@ -485,12 +495,18 @@ fn analyze_statement(
             table,
         } => {
             if matches!(object_type, sqlparser::ast::ObjectType::Table)
-                && !*cascade && !*restrict && !*purge && !*temporary && table.is_none()
+                && !*cascade
+                && !*restrict
+                && !*purge
+                && !*temporary
+                && table.is_none()
             {
                 if let [name] = names.as_slice() {
                     analyze_relation_lifecycle(
                         name.to_string(),
-                        WriteLifecycleAction::Drop { if_exists: *if_exists },
+                        WriteLifecycleAction::Drop {
+                            if_exists: *if_exists,
+                        },
                     )
                 } else {
                     unsupported_write_statement(
@@ -511,7 +527,9 @@ fn analyze_statement(
             if let [rename] = rename_tables.as_slice() {
                 analyze_relation_lifecycle(
                     rename.old_name.to_string(),
-                    WriteLifecycleAction::Rename { to: rename.new_name.to_string() },
+                    WriteLifecycleAction::Rename {
+                        to: rename.new_name.to_string(),
+                    },
                 )
             } else {
                 unsupported_write_statement(
@@ -554,11 +572,11 @@ fn analyze_statement(
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
 mod aggregation;
 mod alter_columns;
-mod ddl_lifecycle;
 mod arithmetic_domains;
 mod cast_domains;
 pub(crate) mod constraints;
 mod cte;
+mod ddl_lifecycle;
 mod decimal_literals;
 mod dependencies;
 mod diagnostics;
@@ -584,11 +602,11 @@ mod writes;
 
 use aggregation::*;
 use alter_columns::*;
-use ddl_lifecycle::*;
 use arithmetic_domains::*;
 use cast_domains::*;
 use constraints::*;
 use cte::*;
+use ddl_lifecycle::*;
 use decimal_literals::*;
 use dependencies::*;
 use diagnostics::*;
