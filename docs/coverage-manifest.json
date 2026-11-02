@@ -4,7 +4,8 @@
     "parent": "TASK-83",
     "status": "implementation_in_progress_not_signed_off",
     "freeze": "docs/task-160-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
+    "freeze_history": ["docs/task-160-acceptance-freeze-v1.json"],
     "fixture_ids": [
       "83-C160-P",
       "83-C160-N"
