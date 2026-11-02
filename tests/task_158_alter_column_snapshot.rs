@@ -256,6 +256,25 @@ fn data_type_rewrite_and_unattested_constraints_fail_closed() {
 }
 
 #[test]
+fn exact_rename_destination_collision_is_impossible() {
+    let before = schema(&["a", "b"]);
+    let rows = state(vec![row(&[("a", Some(1)), ("b", Some(2))])]);
+    let result = physical_alter_column_snapshot(
+        &before,
+        &rows,
+        &[PhysicalColumnAlterStep::Rename {
+            old: "a".into(),
+            new: "b".into(),
+        }],
+        Some(&[]),
+    );
+    assert!(
+        matches!(result, PhysicalColumnAlterProof::Impossible { .. }),
+        "an exact duplicate destination is impossible, not dialect-dependent: {result:?}"
+    );
+}
+
+#[test]
 fn identifier_case_folding_is_residual_not_a_false_impossibility_or_proof() {
     let before = schema(&["a", "b"]);
     let rows = state(vec![row(&[("a", Some(1)), ("b", Some(2))])]);
