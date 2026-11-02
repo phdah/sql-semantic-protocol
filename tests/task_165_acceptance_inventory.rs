@@ -92,6 +92,32 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
     assert_eq!(dialects.len(), 13);
     assert_eq!(cases.len(), 8);
     assert_eq!(freeze["dialect_cells"], json!(dialects.len() * cases.len()));
+    let mut unique_ids = std::collections::BTreeSet::new();
+    for case in cases {
+        let id = case["id"].as_str().expect("case ID");
+        assert!(unique_ids.insert(id), "repeated frozen case ID: {id}");
+        assert!(
+            ["mandatory", "conditional"].contains(&case["requirement"].as_str().expect("tier")),
+            "{id}: explicit tier required"
+        );
+    }
+    assert_eq!(
+        cases.iter().filter(|case| case["requirement"] == "mandatory").count(),
+        7,
+        "all seven mandatory cells remain included"
+    );
+    for criterion in ["1", "2", "3", "4", "5"] {
+        let mapped = freeze["original_child_ac_map"][criterion]
+            .as_array()
+            .expect("all child criteria own explicit case mapping");
+        assert!(!mapped.is_empty(), "AC {criterion} must be mapped");
+        for id in mapped {
+            assert!(
+                unique_ids.contains(id.as_str().expect("mapped case ID")),
+                "AC {criterion} references missing frozen case: {id}"
+            );
+        }
+    }
     let mut cell_count = 0;
     for case in cases {
         let id = case["id"].as_str().expect("stable ID");
