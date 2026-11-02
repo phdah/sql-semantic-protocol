@@ -1,7 +1,7 @@
 ---
 id: TASK-159
 title: Prove DROP TRUNCATE RENAME IF EXISTS and vendor object kinds
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-11-02'
@@ -37,7 +37,7 @@ type: feature
 - [x] #2 Implement the **finite variant inventory above** using the canonical protocol and physical state model. Match the independent row/state oracle exactly, including write/transaction precedence, before/after rows, untouched rows, enforced constraints and Exact/Impossible/Residual classification. Never invent a producer state or infer a dialect law from parser support.
 - [x] #3 Execute the named oracle plus its rejected/NULL/duplicate/impossible contrast on full DuckDB source, intermediate and target snapshots. Assert full bag, row identities, domain bounds, affected counts and final state, not only parsed output or one success count.
 - [x] #4 Test all 13 exposed parser dialects where syntax is shared and relevant vendor syntax boundaries; assert direct SQL, dbt and ODCS parity wherever identical metadata evidence exists. Vendor/session/engine-only claims require versioned evidence; missing evidence is typed Residual with owner TASK-159 and reviewed disposition.
-- [ ] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-83 open.
+- [x] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-83 open.
 <!-- AC:END -->
 
 ## Sequencing
@@ -50,10 +50,10 @@ Next: [TASK-160](task-160%20-%20compose-create-insert-alter-select-drop-and-cert
 - Frozen v1 inventory: [docs/task-159-acceptance-freeze.json](../../docs/task-159-acceptance-freeze.json), registered in [coverage-manifest.json](../../docs/coverage-manifest.json) before semantic edits.
 - Canonical typed `WriteLifecycleAction` and physical ordered DROP/TRUNCATE/RENAME transitions with explicit table existence, complete row occurrences, nullable value domains and conditional constraint boundaries.
 - Independent native DuckDB and public API cases: [tests/task_159_lifecycle.rs](../../tests/task_159_lifecycle.rs).
-- **Not signed off.** Pending final-head format/Clippy/full tests/docs/no-default-feature, adapter and 13-dialect matrix, full frozen oracle verification, reviewed vendor/session classifications, and independent two-axis review. No original parent acceptance criterion is automatically checked.
+- **Signed off for TASK-159 only.** The final v3 18-case inventory and original v1/v2 snapshots are preserved; independent Standards and Spec review and all required implementation-head CI checks passed. No original parent acceptance criterion is automatically checked.
 
 ## AC-1..4 verification checkpoint (2026-11-02)
 
 Eight mandatory frozen v2 cells (six Exact, two Impossible) and 234 pinned parser-dialect classifications are exercised by the protocol-owned public-API oracles. Direct SQL, dbt catalog and ODCS equivalent metadata and conditional vendor/parser boundaries are verified in focused tests. Native DuckDB checks source, intermediate and final bags, typed bounds, NULL, duplicate occurrence identity, and table/schema existence; semantic review fixed the RENAME/DROP graph producer contract and scalar default lineage. Nine implementation CI jobs passed at https://github.com/phdah/sql-semantic-protocol/actions/runs/41488484532 on head `c59113784a5968b73845af238c7bed1f2b99433c`.
 
-**#5 remains unchecked.** A truly independent standards/spec code review and subsequent final-head checks are still required before this child can be Done; parent TASK-83 remains open.
+**#5 completed.** The independent review corrected unproved vendor `RENAME TABLE` Exactness and consolidated duplicate constraint checks. All nine CI jobs passed on head `9356f69c01a180ef4a409aa258816cc11ee03d5d` (https://github.com/phdah/sql-semantic-protocol/actions/runs/41492788799). Eight mandatory frozen cases (six Exact, two Impossible), 234 dialect cells, and adapter parity are verified in active v3. The next gate is metadata-head CI and PR merge; parent TASK-83 remains open.
