@@ -1937,3 +1937,22 @@ session-specific behavior require separately attested evidence. An absent comple
 constraint-free DDL declaration or a nonidentity type rewrite remains Residual,
 even if an SQL parser accepts the syntax. This proof is scoped to row/schema
 projection, not independent certification of vendor DDL transaction behavior.
+
+
+### Ordered table lifecycle actions (TASK-159)
+
+Canonical SQL DROP TABLE, TRUNCATE TABLE and single-table RENAME may emit a
+`write` with `kind: "relation_lifecycle"` and a typed `lifecycle_action`:
+`{"kind":"truncate"}`, `{"kind":"drop","if_exists":true}`, or
+`{"kind":"rename","to":"new_relation"}`. Other vendor, clone, temporary,
+cascade and transaction laws are not certified by a parser-only match.
+
+The opt-in physical write-state interpreter requires an attested complete
+physical prestate and typed schema, plus an in-program constraint-free CREATE
+for portable exact lifecycle execution. `PhysicalWriteTransition::before_exists`
+and `after_exists` separate an actually dropped relation from a live table with
+zero rows. A repeated `DROP TABLE IF EXISTS` is a provable no-op only after
+an already executed DROP establishes table absence. On RENAME, all row
+occurrences, SQL NULLs and typed column domains survive under the new relation
+identity. Unattested external catalog constraints, foreign-key dependencies,
+storage/transaction semantics and unknown absence remain Residual.
