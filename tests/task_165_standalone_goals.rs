@@ -148,6 +148,16 @@ fn mismatched_and_duplicate_distinct_goals_are_impossible() {
 fn grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences() {
     for dialect in DIALECTS {
         let mut b = bundle("SELECT k, COUNT(*) AS n FROM t GROUP BY k", dialect);
+        request(&mut b, 2, Some(2), vec![]);
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Feasible,
+            "{dialect}: two distinct integer keys construct two complete groups"
+        );
+        assert!(
+            matches!(b.outcome_goals()[0].witness(), Some(OutcomeWitness::Groups { .. })),
+            "{dialect}: grouped goal must retain complete source key obligations"
+        );
         request(&mut b, 2, Some(3), vec![]);
         assert_eq!(
             b.outcome_goals()[0].status(),
