@@ -174,10 +174,13 @@ fn dbt_compiled_model_drop_is_explicitly_not_a_select_backed_lifecycle() {
     );
 }
 
-
 fn replay_known_absence(catalog: &RelationCatalog, conditional: bool) -> String {
     let parser = dialect_from_name("duckdb").unwrap();
-    let last = if conditional { "DROP TABLE IF EXISTS t" } else { "DROP TABLE t" };
+    let last = if conditional {
+        "DROP TABLE IF EXISTS t"
+    } else {
+        "DROP TABLE t"
+    };
     let source = [
         SqlInput::inline("CREATE TABLE t (a INTEGER, b INTEGER)"),
         SqlInput::inline("INSERT INTO t (a, b) VALUES (1, NULL), (1, NULL)"),
@@ -185,12 +188,17 @@ fn replay_known_absence(catalog: &RelationCatalog, conditional: bool) -> String 
         SqlInput::inline(last),
     ];
     let ids = ["create", "insert", "drop", "conditional"];
-    let configured = source.iter().zip(ids).map(|(input, id)| {
-        ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref())
-    }).collect::<Vec<_>>();
+    let configured = source
+        .iter()
+        .zip(ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref()))
+        .collect::<Vec<_>>();
     let analyzed = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     match physical_ordered_write_state_plan(&analyzed, &[]) {
-        PhysicalWriteStatePlan::Feasible { transitions, final_states } => {
+        PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } => {
             assert!(conditional);
             assert!(final_states.is_empty());
             let last = transitions.last().unwrap();
@@ -209,7 +217,14 @@ fn replay_known_absence(catalog: &RelationCatalog, conditional: bool) -> String 
 fn direct_and_dbt_agree_on_proven_missing_if_exists_and_missing_drop_refutation() {
     for conditional in [false, true] {
         let expected = replay_known_absence(&direct(), conditional);
-        assert_eq!(expected, if conditional { "Exact:4:0" } else { "Impossible:layer-0004" });
+        assert_eq!(
+            expected,
+            if conditional {
+                "Exact:4:0"
+            } else {
+                "Impossible:layer-0004"
+            }
+        );
         assert_eq!(expected, replay_known_absence(&dbt(), conditional));
         #[cfg(feature = "odcs")]
         assert_eq!(expected, replay_known_absence(&odcs(), conditional));
