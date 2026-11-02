@@ -2980,6 +2980,16 @@
         "state_effect",
         "selection_domains"
       ],
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "schema_alter" } } },
+          "then": { "required": ["alter_columns"] }
+        },
+        {
+          "if": { "properties": { "kind": { "not": { "const": "schema_alter" } } } },
+          "then": { "not": { "required": ["alter_columns"] } }
+        }
+      ],
       "properties": {
         "target": {
           "$ref": "#/$defs/relationName"
@@ -3032,9 +3042,60 @@
             "definition",
             "append",
             "conditional_mutation",
+            "schema_alter",
             "update",
             "delete"
           ]
+        },
+        "alter_columns": {
+          "description": "Ordered, parser-independent ALTER TABLE column transitions. SQL/vendor execution remains subject to physical proof.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {
+              "kind": { "enum": ["add", "drop", "rename", "set_type"] },
+              "column": {
+                "oneOf": [
+                  { "$ref": "#/$defs/nonEmptyString" },
+                  { "$ref": "#/$defs/schemaColumn" }
+                ]
+              },
+              "old": { "$ref": "#/$defs/nonEmptyString" },
+              "new": { "$ref": "#/$defs/nonEmptyString" },
+              "has_default": { "type": "boolean" },
+              "default": { "type": ["string", "number", "boolean", "null"] }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "kind": { "const": "add" } } },
+                "then": {
+                  "required": ["column", "has_default", "default"],
+                  "properties": { "column": { "$ref": "#/$defs/schemaColumn" } }
+                }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "drop" } } },
+                "then": {
+                  "required": ["column"],
+                  "properties": { "column": { "$ref": "#/$defs/nonEmptyString" } }
+                }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "rename" } } },
+                "then": { "required": ["old", "new"] }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "set_type" } } },
+                "then": {
+                  "required": ["column"],
+                  "properties": { "column": { "$ref": "#/$defs/schemaColumn" } }
+                }
+              }
+            ]
+          }
         },
         "target_columns": {
           "type": "array",

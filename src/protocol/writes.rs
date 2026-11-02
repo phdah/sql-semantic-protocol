@@ -7,6 +7,8 @@ use super::*;
 pub enum WriteKind {
     /// The transformation defines the complete relation contents represented by its query.
     Definition,
+    /// An ordered change to the columns of an existing physical relation.
+    SchemaAlter,
     /// The transformation appends rows without replacing pre-existing relation contents.
     Append,
     /// The transformation conditionally updates, inserts, or deletes existing relation rows.
@@ -21,6 +23,7 @@ impl WriteKind {
     pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Definition => "definition",
+            Self::SchemaAlter => "schema_alter",
             Self::Append => "append",
             Self::ConditionalMutation => "conditional_mutation",
             Self::Update => "update",
@@ -147,6 +150,36 @@ impl InsertConflictPolicy {
     }
 }
 
+/// One parser-independent change to an existing table's columns.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ColumnAlterStep {
+    /// Append a declared column. None represents SQL NULL, not an inferred DEFAULT.
+    Add {
+        /// Authoritative target column declaration.
+        column: crate::relation::SchemaColumn,
+        /// Attested scalar DEFAULT, or SQL NULL if absent.
+        default: Option<LiteralValue>,
+    },
+    /// Drop an existing nonfinal column.
+    Drop {
+        /// Column to remove.
+        column: String,
+    },
+    /// Rename a column while keeping its type and comparison evidence.
+    Rename {
+        /// Existing column name.
+        old: String,
+        /// Replacement column name.
+        new: String,
+    },
+    /// Replace the column type. Only an identical typed declaration is exact
+    /// without independently verified SQL cast and rewrite laws.
+    SetType {
+        /// New typed declaration with the same column name.
+        column: crate::relation::SchemaColumn,
+    },
+}
+
 /// Parser-independent semantics for a write into a named relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
@@ -156,6 +189,7 @@ pub struct WriteOperation {
     view_execution_unknown: bool,
     definition_execution_unknown: bool,
     kind: WriteKind,
+    alter_columns: Vec<ColumnAlterStep>,
     target_columns: Vec<String>,
     default_values: bool,
     insert_cte_source: Option<Box<InsertCteSource>>,
@@ -179,6 +213,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Definition,
+            alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
@@ -202,6 +237,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Append,
+            alter_columns: Vec::new(),
             target_columns,
             default_values: false,
             insert_cte_source: None,
@@ -215,6 +251,14 @@ impl WriteOperation {
             assignments: Vec::new(),
             selection_domains: Vec::new(),
         }
+    }
+
+    /// Normalize an ordered parser-independent table column alteration.
+    pub(crate) fn alter_columns(target: String, steps: Vec<ColumnAlterStep>) -> Self {
+        let mut operation = Self::append(target, Vec::new());
+        operation.kind = WriteKind::SchemaAlter;
+        operation.alter_columns = steps;
+        operation
     }
 
     /// One row entirely from independently attested target defaults.
@@ -237,6 +281,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::ConditionalMutation,
+            alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
@@ -266,6 +311,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Update,
+            alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
@@ -294,6 +340,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Delete,
+            alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
             insert_cte_source: None,
@@ -349,6 +396,11 @@ impl WriteOperation {
     /// Return how the write changes the target relation.
     pub fn kind(&self) -> WriteKind {
         self.kind
+    }
+
+    /// Ordered typed ALTER TABLE column steps (empty for other writes).
+    pub fn column_alter_steps(&self) -> &[ColumnAlterStep] {
+        &self.alter_columns
     }
 
     /// Return explicit INSERT target columns in SQL order.
@@ -462,7 +514,7 @@ impl WriteOperation {
             vec![WriteUncertainty::AffectedRowsUnknown]
         };
         let (branches, post_state, idempotence) = match self.kind {
-            WriteKind::Definition => return None,
+            WriteKind::Definition | WriteKind::SchemaAlter => return None,
             WriteKind::Append => {
                 if self.target_columns.is_empty() && !self.default_values {
                     reasons.push(WriteUncertainty::ImplicitTargetColumns);
@@ -568,7 +620,7 @@ impl WriteOperation {
                 WriteKind::Update => WriteCardinalityRule::Preserve,
                 WriteKind::Delete => WriteCardinalityRule::SubtractDeletes,
                 WriteKind::ConditionalMutation => WriteCardinalityRule::Merge,
-                WriteKind::Definition => return None,
+                WriteKind::Definition | WriteKind::SchemaAlter => return None,
             },
         })
     }

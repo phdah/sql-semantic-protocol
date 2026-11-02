@@ -1,0 +1,426 @@
+{
+  "version": 2,
+  "owner": "TASK-158",
+  "parent": "TASK-83",
+  "fixture_ids": [
+    "83-C158-P",
+    "83-C158-N"
+  ],
+  "status": "extended_implementation_pending_independent_verification",
+  "frozen_before_semantic_changes": true,
+  "scope": "Canonical SQL ALTER TABLE column semantics plus conditional ordered complete-bag proof; only proven portable, constraint-free migrations are Exact. Vendor cast, key and session laws stay Residual.",
+  "seam": "WriteOperation::column_alter_steps and physical_ordered_write_state_plan with exact before/after schema plus state",
+  "cases": [
+    {
+      "id": "83-C158-P-add-default",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": null,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-P-add-null",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-P-rename",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME COLUMN a TO c",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "expected_schema": [
+        "c INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "c": 1,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-P-drop",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN b",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": null
+        },
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 1
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-N-duplicate",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN a INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_duplicate_name",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-N-missing",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN absent",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_missing_column",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-N-type",
+      "family": "alter-type",
+      "sql": "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "residual_cast_rewrite_law",
+      "owner": "TASK-158",
+      "release_disposition": "pending_review",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    },
+    {
+      "id": "83-C158-N-key",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN key",
+      "initial_schema": [
+        "key INTEGER",
+        "value INTEGER"
+      ],
+      "prestate": [
+        {
+          "key": 1,
+          "value": 2
+        }
+      ],
+      "expected": "residual_constrained_schema_transition",
+      "owner": "TASK-158",
+      "release_disposition": "pending_review",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "unverified",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
+      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts"
+    }
+  ],
+  "unverified_mandatory": [
+    "CI confirmation of SQL AST normalization and ordered CREATE/INSERT/ALTER lifecycle",
+    "full DuckDB source/intermediate/target execution for every frozen variant",
+    "key/FK/default constraints and schema evidence",
+    "frozen results of all 13 dialect parser cells",
+    "independent dbt and ODCS parity",
+    "final code head nine-job CI and independent review"
+  ],
+  "original_ac_mapping": {
+    "1": [
+      "all"
+    ],
+    "2": [
+      "add",
+      "rename",
+      "drop",
+      "alter-type",
+      "constraints"
+    ],
+    "3": [
+      "all positive and rejected oracle"
+    ],
+    "4": [
+      "all parser/adapter cells"
+    ],
+    "5": [
+      "full CI and signoff"
+    ]
+  },
+  "signoff": {
+    "all_acceptance_criteria_verified": false,
+    "mandatory_cells_verified": false,
+    "ci_verified": false,
+    "independent_review": false
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_expected": {
+    "generic": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mysql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "postgresql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "hive": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "sqlite": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "snowflake": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "redshift": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mssql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "clickhouse": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "bigquery": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "ansi": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "duckdb": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "databricks": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ]
+  },
+  "adapter_evidence": {
+    "direct_sql": "DDL statement and preexisting CREATE TABLE schema carry the lifecycle and typed column declarations",
+    "dbt_compiled": "Compiled SQL, not catalog metadata, owns ALTER statement identity; catalog supplies typed prestate only",
+    "odcs": "Contract schemas can describe prestate typed columns, not ALTER execution order or default/cast vendor laws",
+    "limitation": "Do not claim direct/dbt/ODCS parity until all three independently replay the same canonical states"
+  },
+  "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells"
+}

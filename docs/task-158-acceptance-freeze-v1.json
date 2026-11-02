@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "owner": "TASK-158",
+  "parent": "TASK-83",
+  "fixture_ids": [
+    "83-C158-P",
+    "83-C158-N"
+  ],
+  "status": "implementation_in_progress",
+  "frozen_before_semantic_changes": true,
+  "scope": "Column transition proof over complete caller-attested schema and physical row bag. Does not certify the ordered SQL/DDL execution path or vendor casting law.",
+  "seam": "physical_alter_column_snapshot(RelationSchema, PhysicalWriteState, AlterColumnTransition[])",
+  "cases": [
+    {
+      "id": "83-C158-P-add-default",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": null,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-P-add-null",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-P-rename",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME COLUMN a TO c",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "expected_schema": [
+        "c INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "c": 1,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-P-drop",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN b",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": null
+        },
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 1
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-N-duplicate",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN a INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_duplicate_name",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-N-missing",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN absent",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_missing_column",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-N-type",
+      "family": "alter-type",
+      "sql": "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "residual_cast_rewrite_law",
+      "owner": "TASK-158",
+      "release_disposition": "pending_review",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    },
+    {
+      "id": "83-C158-N-key",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN key",
+      "initial_schema": [
+        "key INTEGER",
+        "value INTEGER"
+      ],
+      "prestate": [
+        {
+          "key": 1,
+          "value": 2
+        }
+      ],
+      "expected": "residual_constrained_schema_transition",
+      "owner": "TASK-158",
+      "release_disposition": "pending_review",
+      "dialect_matrix": "pending",
+      "adapter_matrix": "pending"
+    }
+  ],
+  "unverified_mandatory": [
+    "SQL AST normalization into canonical write graph",
+    "ordered CREATE/INSERT/ALTER/SELECT lifecycle",
+    "complete DuckDB source/terminal execution per case",
+    "key/FK/default constraints and schema evidence",
+    "13 dialect parser matrix",
+    "dbt and ODCS parity",
+    "final CI and independent code review"
+  ],
+  "original_ac_mapping": {
+    "1": [
+      "all"
+    ],
+    "2": [
+      "add",
+      "rename",
+      "drop",
+      "alter-type",
+      "constraints"
+    ],
+    "3": [
+      "all positive and rejected oracle"
+    ],
+    "4": [
+      "all parser/adapter cells"
+    ],
+    "5": [
+      "full CI and signoff"
+    ]
+  },
+  "signoff": {
+    "all_acceptance_criteria_verified": false,
+    "mandatory_cells_verified": false,
+    "ci_verified": false,
+    "independent_review": false
+  }
+}

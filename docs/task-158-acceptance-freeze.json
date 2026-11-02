@@ -1,0 +1,848 @@
+{
+  "version": 4,
+  "owner": "TASK-158",
+  "parent": "TASK-83",
+  "fixture_ids": [
+    "83-C158-P",
+    "83-C158-N"
+  ],
+  "status": "v4_bounded_child_accepted_no_vendor_exact_release",
+  "frozen_before_semantic_changes": true,
+  "scope": "Canonical SQL ALTER TABLE column semantics plus conditional ordered complete-bag proof; only proven portable, constraint-free migrations are Exact. Vendor cast, key and session laws stay Residual.",
+  "seam": "WriteOperation::column_alter_steps and physical_ordered_write_state_plan with exact before/after schema plus state",
+  "cases": [
+    {
+      "id": "83-C158-P-add-default",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": 2
+        },
+        {
+          "a": null,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 2,
+      "after_count": 2,
+      "source_truth": {
+        "meaning": "Every physical row occurrence is preserved",
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 2
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
+    },
+    {
+      "id": "83-C158-P-add-null",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN b INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": 1,
+      "source_truth": {
+        "meaning": "Every physical row occurrence is preserved",
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
+    },
+    {
+      "id": "83-C158-P-rename",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME COLUMN a TO c",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "expected_schema": [
+        "c INTEGER",
+        "b INTEGER"
+      ],
+      "poststate": [
+        {
+          "c": 1,
+          "b": 2
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": 1,
+      "source_truth": {
+        "meaning": "Every physical row occurrence is preserved",
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "typed_domains": {
+        "c": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
+    },
+    {
+      "id": "83-C158-P-drop",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN b",
+      "initial_schema": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1,
+          "b": null
+        },
+        {
+          "a": 1,
+          "b": null
+        }
+      ],
+      "expected_schema": [
+        "a INTEGER"
+      ],
+      "poststate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 1
+        }
+      ],
+      "expected": "exact_row_projection_only",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "exact ordered typed column names and datatypes",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 2,
+      "after_count": 2,
+      "source_truth": {
+        "meaning": "Every physical row occurrence is preserved",
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "NULL": 2
+          },
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
+    },
+    {
+      "id": "83-C158-N-duplicate",
+      "family": "add",
+      "sql": "ALTER TABLE t ADD COLUMN a INTEGER",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_duplicate_name",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Impossible",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "Entire proposed ALTER is refuted atomically",
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0
+        ],
+        "unknown_ordinals": []
+      },
+      "typed_domains": null,
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted"
+    },
+    {
+      "id": "83-C158-N-missing",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN absent",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "impossible_missing_column",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Impossible",
+      "requirement": "mandatory",
+      "owner": "TASK-158",
+      "release_disposition": "exact or proven contradiction required",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "Entire proposed ALTER is refuted atomically",
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0
+        ],
+        "unknown_ordinals": []
+      },
+      "typed_domains": null,
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted"
+    },
+    {
+      "id": "83-C158-N-type",
+      "family": "alter-type",
+      "sql": "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "expected": "residual_cast_rewrite_law",
+      "owner": "TASK-158",
+      "release_disposition": "remain unproved until independent engine cast/constraint contract",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Residual",
+      "requirement": "conditional",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "Physical ALTER operation requires unproved vendor or constraint law; neither success nor failure is certified",
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      },
+      "typed_domains": null,
+      "native_oracle": "DuckDB INTEGER -> VARCHAR runtime succeeds on the concrete source bag; canonical remains Residual without vendor-independent cast law",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted",
+      "conditional_evidence": {
+        "owner": "TASK-158",
+        "release_classification": "Residual",
+        "review_state": "maintainer_review_pending",
+        "known_engine": "DuckDB native test only",
+        "missing_law": "Portable SQL cast/rewrite and dependent constraint law",
+        "approval_required": true
+      }
+    },
+    {
+      "id": "83-C158-N-key",
+      "family": "drop",
+      "sql": "ALTER TABLE t DROP COLUMN key",
+      "initial_schema": [
+        "key INTEGER",
+        "value INTEGER"
+      ],
+      "prestate": [
+        {
+          "key": 1,
+          "value": 2
+        }
+      ],
+      "expected": "residual_constrained_schema_transition",
+      "owner": "TASK-158",
+      "release_disposition": "remain unproved until independent engine cast/constraint contract",
+      "dialect_matrix": "13/13 observed canonical_alter AST classification; not a vendor DDL execution claim",
+      "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
+      "mandatory": true,
+      "schema_oracle": "typed Impossible/Residual with no committed poststate",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
+      "classification": "Residual",
+      "requirement": "conditional",
+      "before_count": 1,
+      "after_count": null,
+      "source_truth": {
+        "meaning": "Physical ALTER operation requires unproved vendor or constraint law; neither success nor failure is certified",
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      },
+      "typed_domains": null,
+      "native_oracle": "DuckDB refuses DROP of enforced PRIMARY KEY and retains its source bag; canonical remains Residual without general constraint rewrite law",
+      "pre_typed_domains": {
+        "key": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "value": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted",
+      "conditional_evidence": {
+        "owner": "TASK-158",
+        "release_classification": "Residual",
+        "review_state": "maintainer_review_pending",
+        "known_engine": "DuckDB native test only",
+        "missing_law": "Portable enforced PK/dependency preservation and engine rejection law",
+        "approval_required": true
+      }
+    }
+  ],
+  "unverified_mandatory": [],
+  "original_ac_mapping": {
+    "1": [
+      "all"
+    ],
+    "2": [
+      "add",
+      "rename",
+      "drop",
+      "alter-type",
+      "constraints"
+    ],
+    "3": [
+      "all positive and rejected oracle"
+    ],
+    "4": [
+      "all parser/adapter cells"
+    ],
+    "5": [
+      "full CI and signoff"
+    ]
+  },
+  "signoff": {
+    "all_acceptance_criteria_verified": true,
+    "mandatory_cells_verified": true,
+    "ci_verified": true,
+    "independent_review": true,
+    "implementation_ci_head": "ffd4f594324119ccb67bb567a36f05a18ef3f1b2",
+    "conditional_vendor_claims": "accepted as explicitly unproved Residual or Unsupported, not vendor Exact"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_expected": {
+    "generic": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mysql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "postgresql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "hive": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "sqlite": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "snowflake": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "redshift": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "mssql": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "clickhouse": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "bigquery": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "ansi": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "duckdb": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ],
+    "databricks": [
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter",
+      "canonical_alter"
+    ]
+  },
+  "adapter_evidence": {
+    "direct_sql": "SQL ALTER owns operation identity; direct typed schema and native ordered DuckDB source/target evidence in task_158_ordered_alter.rs and task_158_frozen_cases.rs",
+    "dbt_compiled": "A dbt compiled model is SELECT-backed: compiled ALTER TABLE model SQL is explicitly rejected at the parser boundary, not silently converted into a write. dbt manifest/catalog provide authoritative metadata for the eight case SQL ALTER replay in task_158_adapter_parity.rs; separate SQL inputs own DDL lifecycle.",
+    "odcs": "ODCS supplies typed prestate only, never inferred ALTER lifecycle. task_158_adapter_parity.rs checks the same eight variants plus constrained key with explicit SQL statements.",
+    "limitation": "A dbt model's compiled SQL cannot act as an arbitrary ALTER DDL program. SQL ALTER is an independent input; dbt and ODCS provide typed prestate metadata only. 13x8 dialect tests classify AST normalization, not runtime. Vendor casts/keys remain TASK-158 Residual."
+  },
+  "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells",
+  "previous_snapshot": "docs/task-158-acceptance-freeze-v3.json",
+  "task_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    2,
+    4,
+    5,
+    6
+  ],
+  "evidence_sources": [
+    "sql",
+    "dbt_catalog_and_manifest_metadata",
+    "odcs_contract"
+  ],
+  "coverage": {
+    "mandatory_exact_cases": 4,
+    "mandatory_impossible_cases": 2,
+    "conditional_residual_cases": 2,
+    "dialect_parser_cells_required": 104,
+    "adapter_evidence_sources": 3,
+    "adapter_cases_required": 8,
+    "oracle_required": 8,
+    "core_exact_or_impossible_cases": 6,
+    "adapter_cells_verified_by_tests": 27,
+    "native_frozen_cases_verified_by_tests": 8,
+    "frozen_prestate_typed_domain_cells": 8,
+    "vendor_parser_boundary_variants": 4
+  },
+  "vendor_parser_boundaries": [
+    {
+      "id": "158-vendor-add-if-not-exists",
+      "sql": "ALTER TABLE t ADD COLUMN IF NOT EXISTS c INTEGER",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Existence-dependent ADD requires an attested catalog and engine DDL law",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-drop-if-exists",
+      "sql": "ALTER TABLE t DROP COLUMN IF EXISTS b",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Existence-dependent DROP requires an attested catalog and engine DDL law",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-drop-cascade",
+      "sql": "ALTER TABLE t DROP COLUMN b CASCADE",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Dependency cascade requires a complete cross-relation graph",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-type-using",
+      "sql": "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR USING a::VARCHAR",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Explicit vendor casts require proven rewrite and conversion semantics",
+      "owner": "TASK-158"
+    }
+  ]
+}
