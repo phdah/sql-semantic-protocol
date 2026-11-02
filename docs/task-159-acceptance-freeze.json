@@ -1,0 +1,1251 @@
+{
+  "version": 3,
+  "owner": "TASK-159",
+  "parent": "TASK-83",
+  "fixture_ids": [
+    "83-C159-P",
+    "83-C159-N"
+  ],
+  "status": "v3_verified_child_signed_off_parent_TASK83_open",
+  "frozen_before_semantic_changes": true,
+  "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
+  "seams": [
+    "WriteOperation canonical DDL lifecycle actions",
+    "physical_ordered_write_state_plan complete physical snapshots",
+    "SQL/dbt/ODCS adapters and active JSON schema"
+  ],
+  "cases": [
+    {
+      "id": "83-C159-P-truncate",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "poststate": [],
+      "post_relation": "t",
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 2
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "complete prestate supplied; after is a typed empty bag; NULL/bound domains empty",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(2)",
+        "TRUNCATE TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "t",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [
+        0,
+        1
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "t",
+          "rows": []
+        }
+      ],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-N-truncate-null-duplicate",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [],
+      "post_relation": "t",
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 3
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "all three physical occurrences removed; no selection/UNKNOWN survivors",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
+        "TRUNCATE TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "t",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [
+        0,
+        1,
+        2
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "t",
+          "rows": []
+        }
+      ],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-P-drop",
+      "family": "drop",
+      "sql": "DROP TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 2
+      },
+      "domains": null,
+      "proof": "physical relation identity ceases to exist; not an empty live relation",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(2)",
+        "DROP TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [
+        0,
+        1
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-P-drop-conditional",
+      "family": "if_exists",
+      "sql": "DROP TABLE IF EXISTS t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1
+      },
+      "domains": null,
+      "proof": "existing complete target is dropped; no claim about unobserved target absence",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1)",
+        "DROP TABLE IF EXISTS t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [
+        0
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-N-drop-missing",
+      "family": "if_exists",
+      "sql": "DROP TABLE IF EXISTS t",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact if prior DROP proves absence; Residual otherwise",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "domains": null,
+      "proof": "missing prior population alone is not a closed-world absence proof",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "DROP TABLE t",
+        "DROP TABLE IF EXISTS t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": false,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [],
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-P-rename",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "post_relation": "u",
+      "classification": "Exact if schema and constraints can be migrated without inference",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "rename changes table identity only; preserves all row ordinals and column domains",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE u(a INTEGER)",
+        "DROP TABLE u",
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "u",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "u",
+          "rows": [
+            {
+              "a": 1
+            },
+            {
+              "a": null
+            },
+            {
+              "a": 1
+            }
+          ]
+        }
+      ],
+      "native_last": "success"
+    },
+    {
+      "id": "83-C159-N-drop-not-exists",
+      "family": "drop",
+      "sql": "DROP TABLE t",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Impossible only under attested absence; Residual otherwise",
+      "mandatory": true,
+      "affected": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0
+      },
+      "domains": null,
+      "proof": "absence of caller snapshot alone cannot prove missing target",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "DROP TABLE t",
+        "DROP TABLE t"
+      ],
+      "expected_outcome": "Impossible",
+      "before_relation": "t",
+      "before_exists": false,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [],
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "error"
+    },
+    {
+      "id": "83-C159-N-if-not-exists",
+      "family": "if_not_exists",
+      "sql": "CREATE TABLE IF NOT EXISTS t (a INTEGER)",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [
+        {
+          "a": 1
+        }
+      ],
+      "post_relation": "t",
+      "classification": "Residual unless preexisting typed schema and lack of side effects attested",
+      "mandatory": false,
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "no-op only when target existence and schema are independently attested",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      }
+    },
+    {
+      "id": "83-C159-N-clone-like",
+      "family": "clone_like",
+      "sql": "CREATE TABLE copy LIKE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "source metadata and clone materialization/snapshot rules are engine-specific",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      }
+    },
+    {
+      "id": "83-C159-N-transient-temp",
+      "family": "temporary_transient",
+      "sql": "CREATE TEMPORARY TABLE temp_t (a INTEGER)",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "session scope/lifetime is not part of physical snapshot contract",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      }
+    },
+    {
+      "id": "83-C159-N-vendor-object",
+      "family": "vendor_object",
+      "sql": "DROP MATERIALIZED VIEW mv",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "materialized view refresh/dependency/storage semantics remain vendor-owned",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      }
+    },
+    {
+      "id": "83-C159-N-rename-unknown-destination",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-rename-collision",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
+        "CREATE TABLE u(a INTEGER)",
+        "INSERT INTO u VALUES (2)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Impossible",
+      "mandatory": true,
+      "owner": "TASK-159",
+      "release_disposition": "mandatory negative contradiction",
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "other_prestate": [
+        {
+          "a": 2
+        }
+      ],
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "expected_unchanged_states": [
+        {
+          "relation": "t",
+          "rows": [
+            {
+              "a": 1
+            },
+            {
+              "a": null
+            },
+            {
+              "a": 1
+            }
+          ]
+        },
+        {
+          "relation": "u",
+          "rows": [
+            {
+              "a": 2
+            }
+          ]
+        }
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "unknown_ordinals": []
+      },
+      "native_last": "error",
+      "native_error_contains": "already exists"
+    },
+    {
+      "id": "83-C159-N-drop-cascade",
+      "family": "drop",
+      "sql": "DROP TABLE t CASCADE",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-truncate-identity",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t RESTART IDENTITY",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-transient",
+      "family": "transient",
+      "sql": "CREATE TRANSIENT TABLE t(a INTEGER)",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-drop-view",
+      "family": "drop",
+      "sql": "DROP VIEW v",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-rename-mysql",
+      "family": "rename",
+      "sql": "RENAME TABLE t TO u",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    }
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "signoff": {
+    "mandatory_verified": true,
+    "duckdb_verified": true,
+    "all_dialects_verified": true,
+    "all_adapters_verified": true,
+    "independent_review": true,
+    "ci_verified": true
+  },
+  "history": [
+    "docs/task-159-acceptance-freeze-v1.json",
+    "docs/task-159-acceptance-freeze-v2.json"
+  ],
+  "freeze_policy": "preimplementation v1 retained immutably; v2 adds executable per-cell typed domains and native/protocol before/after oracles, without weakening mandatory inventory; v3 corrects conditional standalone RENAME TABLE parser normalization to fail-closed, preserving all mandatory Exact/Impossible obligations and immutable v2",
+  "ac_mapping": {
+    "1": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-N-transient-temp",
+      "83-C159-N-clone-like"
+    ],
+    "2": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-P-rename",
+      "83-C159-N-drop-not-exists"
+    ],
+    "3": [
+      "83-C159-N-truncate-null-duplicate",
+      "83-C159-N-drop-not-exists",
+      "83-C159-N-rename-collision"
+    ],
+    "4": [
+      "83-C159-N-if-not-exists",
+      "83-C159-N-clone-like",
+      "83-C159-N-vendor-object"
+    ],
+    "5": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-P-rename"
+    ]
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_expected": {
+    "ansi": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "bigquery": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "clickhouse": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "databricks": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "duckdb": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "generic": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "hive": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "mssql": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "mysql": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "postgresql": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "redshift": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "snowflake": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ],
+    "sqlite": [
+      "lifecycle:truncate",
+      "lifecycle:truncate",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:drop",
+      "lifecycle:rename",
+      "lifecycle:drop",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "lifecycle:rename",
+      "lifecycle:rename",
+      "canonical_unsupported",
+      "parser_boundary",
+      "canonical_unsupported",
+      "canonical_unsupported",
+      "canonical_unsupported"
+    ]
+  },
+  "dialect_observation": {
+    "oracle": "sqlparser 0.58 AST classification only; v3 standalone RENAME TABLE is canonical unsupported, not a portable execution proof",
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41492788799",
+    "head": "9356f69c01a180ef4a409aa258816cc11ee03d5d",
+    "cases": 18,
+    "cells": 234
+  }
+}

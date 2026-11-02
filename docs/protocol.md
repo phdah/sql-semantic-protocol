@@ -1937,3 +1937,37 @@ session-specific behavior require separately attested evidence. An absent comple
 constraint-free DDL declaration or a nonidentity type rewrite remains Residual,
 even if an SQL parser accepts the syntax. This proof is scoped to row/schema
 projection, not independent certification of vendor DDL transaction behavior.
+
+
+### Ordered table lifecycle actions (TASK-159)
+
+Canonical SQL DROP TABLE, TRUNCATE TABLE and single-table RENAME may emit a
+`write` with `kind: "relation_lifecycle"` and a typed `lifecycle_action`:
+`{"kind":"truncate"}`, `{"kind":"drop","if_exists":true}`, or
+`{"kind":"rename","to":"new_relation"}`. Standalone `RENAME TABLE t TO u` is a vendor form and remains explicitly
+unsupported, even if its AST parses. Other vendor, clone, temporary, cascade
+and transaction laws are not certified by a parser-only match.
+
+The opt-in physical write-state interpreter requires an attested complete
+physical prestate and typed schema, plus an in-program constraint-free CREATE
+for portable exact lifecycle execution. `PhysicalWriteTransition::before_exists`
+and `after_exists` separate an actually dropped relation from a live table with
+zero rows. A repeated `DROP TABLE IF EXISTS` is a provable no-op only after
+an already executed DROP establishes table absence. On RENAME, all row
+occurrences, SQL NULLs and typed column domains survive under the new relation
+identity. Unattested external catalog constraints, foreign-key dependencies,
+storage/transaction semantics and unknown absence remain Residual.
+
+
+A lifecycle layer retains its consumed relation identity. `TRUNCATE TABLE t` produces
+`t` with an empty physical bag; `ALTER TABLE t RENAME TO u` consumes `t` and
+produces `u` without copying rows; `DROP TABLE t` consumes `t` and produces
+**no dataset**, not even an anonymous one. The canonical graph therefore cannot
+advertise a dropped relation as a live source. Source identities and public
+`layers[].produces` are verified in `tests/task_159_lifecycle_graph.rs`.
+
+**Compatibility / release gate:** `relation_lifecycle` is a new variant in the
+public write-kind union and requires consumer handling of `lifecycle_action`.
+Treat it as a breaking protocol/API addition for the planned 3.0.0 release;
+this implementation PR does not independently authorize an intermediate
+2.x publication or sign off TASK-83/TASK-91.

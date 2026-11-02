@@ -57,7 +57,7 @@ use crate::protocol::{
     SubquerySemantics, TableSampling, UnaryExpression, UnaryOperator, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
-    WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
+    WindowSpecification, WriteDefinitionMode, WriteLifecycleAction, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 use temporal_literals::normalize_temporal_identity_cast;
@@ -437,10 +437,97 @@ fn analyze_statement(
                     "unsupported_alter_lifecycle",
                     "conditional, storage or vendor ALTER TABLE requires engine evidence",
                 )
+            } else if let [sqlparser::ast::AlterTableOperation::RenameTable { table_name }] =
+                operations.as_slice()
+            {
+                analyze_relation_lifecycle(
+                    name.to_string(),
+                    WriteLifecycleAction::Rename {
+                        to: table_name.to_string(),
+                    },
+                )
             } else {
                 analyze_alter_columns(name, operations, metadata.dialect_name)
             }
         }
+        SqlStatement::Truncate {
+            table_names,
+            partitions,
+            identity,
+            cascade,
+            on_cluster,
+            ..
+        } => {
+            if let [table] = table_names.as_slice() {
+                if !table.only
+                    && partitions.is_none()
+                    && identity.is_none()
+                    && cascade.is_none()
+                    && on_cluster.is_none()
+                {
+                    analyze_relation_lifecycle(
+                        table.name.to_string(),
+                        WriteLifecycleAction::Truncate,
+                    )
+                } else {
+                    unsupported_write_statement(
+                        "truncate",
+                        "unsupported_truncate_options",
+                        "partition, identity, cascade, and vendor TRUNCATE require engine evidence",
+                    )
+                }
+            } else {
+                unsupported_write_statement(
+                    "truncate",
+                    "unsupported_multi_table_truncate",
+                    "TRUNCATE requires one table with a complete source population",
+                )
+            }
+        }
+        SqlStatement::Drop {
+            object_type,
+            if_exists,
+            names,
+            cascade,
+            restrict,
+            purge,
+            temporary,
+            table,
+        } => {
+            if matches!(object_type, sqlparser::ast::ObjectType::Table)
+                && !*cascade
+                && !*restrict
+                && !*purge
+                && !*temporary
+                && table.is_none()
+            {
+                if let [name] = names.as_slice() {
+                    analyze_relation_lifecycle(
+                        name.to_string(),
+                        WriteLifecycleAction::Drop {
+                            if_exists: *if_exists,
+                        },
+                    )
+                } else {
+                    unsupported_write_statement(
+                        "drop",
+                        "unsupported_multi_table_drop",
+                        "DROP requires one table with proved row and schema identity",
+                    )
+                }
+            } else {
+                unsupported_write_statement(
+                    "drop",
+                    "unsupported_drop_object",
+                    "only ordinary single-table DROP without vendor or dependency clauses is modeled",
+                )
+            }
+        }
+        SqlStatement::RenameTable(_) => unsupported_write_statement(
+            "rename_table",
+            "unsupported_vendor_rename_table",
+            "standalone RENAME TABLE requires an independently attested vendor execution law",
+        ),
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
         SqlStatement::Update {
             table,
@@ -478,6 +565,7 @@ mod arithmetic_domains;
 mod cast_domains;
 pub(crate) mod constraints;
 mod cte;
+mod ddl_lifecycle;
 mod decimal_literals;
 mod dependencies;
 mod diagnostics;
@@ -507,6 +595,7 @@ use arithmetic_domains::*;
 use cast_domains::*;
 use constraints::*;
 use cte::*;
+use ddl_lifecycle::*;
 use decimal_literals::*;
 use dependencies::*;
 use diagnostics::*;

@@ -55,6 +55,51 @@ impl AnalysisBundle {
         }
     }
 
+    /// Rename a proved, constraint-free physical relation in the execution copy.
+    /// Original SQL and external catalog evidence remain immutable.
+    pub(crate) fn rename_physical_source_schema(
+        &mut self,
+        prior_relation: &str,
+        renamed: RelationSchema,
+    ) {
+        let destination = renamed.relation().to_string();
+        // A separately proved DROP may have left historical schema evidence
+        // for the destination in this analysis bundle. It must not shadow the
+        // current renamed table's typed columns.
+        self.source_schemas.retain(|entry| {
+            entry.relation() == prior_relation || entry.relation() != destination.as_str()
+        });
+        if let Some(current) = self
+            .source_schemas
+            .iter_mut()
+            .find(|entry| entry.relation() == prior_relation)
+        {
+            *current = renamed;
+        }
+        self.source_schemas
+            .sort_by(|left, right| left.relation().cmp(right.relation()));
+        if let Some(index) = self
+            .relation_constraints
+            .iter()
+            .position(|set| set.relation() == prior_relation)
+        {
+            let mut evidence = self.relation_constraints.remove(index);
+            self.relation_constraints
+                .retain(|set| set.relation() != destination.as_str());
+            evidence.rename_physical_relation(destination.as_str());
+            self.relation_constraints.push(evidence);
+            self.relation_constraints
+                .sort_by(|a, b| a.relation().cmp(b.relation()));
+        }
+    }
+
+    /// Drop the execution-only constraint and default evidence of an exactly
+    /// destroyed relation, so later statements cannot reuse stale metadata.
+    pub(crate) fn drop_physical_relation_evidence(&mut self, relation: &str) {
+        self.relation_constraints
+            .retain(|set| set.relation() != relation);
+    }
+
     /// Maintain authoritative scalar default declarations for subsequent ordered
     /// INSERT/MERGE writes after a physically certified ALTER. Source SQL syntax
     /// remains in the immutable original bundle; only the execution copy changes.

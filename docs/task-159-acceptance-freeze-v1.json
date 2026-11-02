@@ -1,0 +1,395 @@
+{
+  "version": 1,
+  "owner": "TASK-159",
+  "parent": "TASK-83",
+  "fixture_ids": [
+    "83-C159-P",
+    "83-C159-N"
+  ],
+  "status": "frozen_before_semantic_edits_implementation_pending",
+  "frozen_before_semantic_changes": true,
+  "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
+  "seams": [
+    "WriteOperation canonical DDL lifecycle actions",
+    "physical_ordered_write_state_plan complete physical snapshots",
+    "SQL/dbt/ODCS adapters and active JSON schema"
+  ],
+  "cases": [
+    {
+      "id": "83-C159-P-truncate",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "poststate": [],
+      "post_relation": "t",
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "deleted": 2
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "complete prestate supplied; after is a typed empty bag; NULL/bound domains empty",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-N-truncate-null-duplicate",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [],
+      "post_relation": "t",
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "deleted": 3
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "all three physical occurrences removed; no selection/UNKNOWN survivors",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-P-drop",
+      "family": "drop",
+      "sql": "DROP TABLE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "deleted": 2
+      },
+      "domains": null,
+      "proof": "physical relation identity ceases to exist; not an empty live relation",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-P-drop-conditional",
+      "family": "if_exists",
+      "sql": "DROP TABLE IF EXISTS t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact",
+      "mandatory": true,
+      "affected": {
+        "deleted": 1
+      },
+      "domains": null,
+      "proof": "existing complete target is dropped; no claim about unobserved target absence",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-N-drop-missing",
+      "family": "if_exists",
+      "sql": "DROP TABLE IF EXISTS t",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Exact if prior DROP proves absence; Residual otherwise",
+      "mandatory": true,
+      "affected": {
+        "deleted": 0
+      },
+      "domains": null,
+      "proof": "missing prior population alone is not a closed-world absence proof",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-P-rename",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "post_relation": "u",
+      "classification": "Exact if schema and constraints can be migrated without inference",
+      "mandatory": true,
+      "affected": {
+        "deleted": 0
+      },
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "rename changes table identity only; preserves all row ordinals and column domains",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-N-drop-not-exists",
+      "family": "drop",
+      "sql": "DROP TABLE t",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Impossible only under attested absence; Residual otherwise",
+      "mandatory": true,
+      "affected": {
+        "deleted": 0
+      },
+      "domains": null,
+      "proof": "absence of caller snapshot alone cannot prove missing target",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "unverified_until_native_and_canonical_oracle"
+    },
+    {
+      "id": "83-C159-N-if-not-exists",
+      "family": "if_not_exists",
+      "sql": "CREATE TABLE IF NOT EXISTS t (a INTEGER)",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": [
+        {
+          "a": 1
+        }
+      ],
+      "post_relation": "t",
+      "classification": "Residual unless preexisting typed schema and lack of side effects attested",
+      "mandatory": false,
+      "domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "proof": "no-op only when target existence and schema are independently attested",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "conditional_no_portable_exact_claim"
+    },
+    {
+      "id": "83-C159-N-clone-like",
+      "family": "clone_like",
+      "sql": "CREATE TABLE copy LIKE t",
+      "initial_schema": [
+        "a INTEGER"
+      ],
+      "prestate": [
+        {
+          "a": 1
+        }
+      ],
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "source metadata and clone materialization/snapshot rules are engine-specific",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "conditional_no_portable_exact_claim"
+    },
+    {
+      "id": "83-C159-N-transient-temp",
+      "family": "temporary_transient",
+      "sql": "CREATE TEMPORARY TABLE temp_t (a INTEGER)",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "session scope/lifetime is not part of physical snapshot contract",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "conditional_no_portable_exact_claim"
+    },
+    {
+      "id": "83-C159-N-vendor-object",
+      "family": "vendor_object",
+      "sql": "DROP MATERIALIZED VIEW mv",
+      "initial_schema": null,
+      "prestate": null,
+      "poststate": null,
+      "post_relation": null,
+      "classification": "Residual",
+      "mandatory": false,
+      "domains": null,
+      "proof": "materialized view refresh/dependency/storage semantics remain vendor-owned",
+      "row_identity": "source occurrence ordinal retained for surviving rows; no invented rows",
+      "true_not_true": "Proven operation TRUE, contradiction NOT TRUE, missing execution law UNKNOWN; NULL row values are not operation truth values",
+      "comparison_assumptions": "integer literal identity only; no inferred collation/timezone/session, isolation, cascade, FK, clone or storage laws",
+      "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
+      "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
+      "owner": "TASK-159",
+      "release_disposition": "conditional_no_portable_exact_claim"
+    }
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "signoff": {
+    "mandatory_verified": false,
+    "duckdb_verified": false,
+    "all_dialects_verified": false,
+    "all_adapters_verified": false,
+    "independent_review": false,
+    "ci_verified": false
+  }
+}

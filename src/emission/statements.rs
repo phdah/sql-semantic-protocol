@@ -1,7 +1,7 @@
 //! Query statements, DML effects, and MERGE write operations.
 
 use super::*;
-use crate::protocol::MergeAssignment;
+use crate::protocol::{MergeAssignment, WriteLifecycleAction};
 
 pub(super) fn statement_to_value(statement: &ProtocolStatement) -> Value {
     match statement {
@@ -209,6 +209,19 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
                 "column": { "name": column.name(), "data_type": data_type_to_value(column.data_type()) },
             }),
         }).collect::<Vec<_>>());
+    }
+    if let Some(action) = write.lifecycle_action() {
+        value["lifecycle_action"] = match action {
+            WriteLifecycleAction::Truncate => json!({"kind": "truncate"}),
+            WriteLifecycleAction::Drop { if_exists } => json!({
+                "kind": "drop",
+                "if_exists": if_exists,
+            }),
+            WriteLifecycleAction::Rename { to } => json!({
+                "kind": "rename",
+                "to": to,
+            }),
+        };
     }
     if write.view_execution_unknown() {
         value["view_execution_unknown"] = json!(true);

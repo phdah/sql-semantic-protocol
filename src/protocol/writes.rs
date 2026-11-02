@@ -9,6 +9,8 @@ pub enum WriteKind {
     Definition,
     /// An ordered change to the columns of an existing physical relation.
     SchemaAlter,
+    /// A table identity or physical row-lifecycle operation.
+    Lifecycle,
     /// The transformation appends rows without replacing pre-existing relation contents.
     Append,
     /// The transformation conditionally updates, inserts, or deletes existing relation rows.
@@ -24,6 +26,7 @@ impl WriteKind {
         match self {
             Self::Definition => "definition",
             Self::SchemaAlter => "schema_alter",
+            Self::Lifecycle => "relation_lifecycle",
             Self::Append => "append",
             Self::ConditionalMutation => "conditional_mutation",
             Self::Update => "update",
@@ -180,6 +183,23 @@ pub enum ColumnAlterStep {
     },
 }
 
+/// A closed-world table lifecycle operation, distinct from row-level mutation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WriteLifecycleAction {
+    /// Remove every existing physical occurrence while retaining the table schema.
+    Truncate,
+    /// Remove the table identity and all of its physical rows.
+    Drop {
+        /// A missing table is permitted only if its absence is proved.
+        if_exists: bool,
+    },
+    /// Change the table identity without changing the complete row bag.
+    Rename {
+        /// New complete relation identity.
+        to: String,
+    },
+}
+
 /// Parser-independent semantics for a write into a named relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
@@ -189,6 +209,7 @@ pub struct WriteOperation {
     view_execution_unknown: bool,
     definition_execution_unknown: bool,
     kind: WriteKind,
+    lifecycle_action: Option<WriteLifecycleAction>,
     alter_columns: Vec<ColumnAlterStep>,
     target_columns: Vec<String>,
     default_values: bool,
@@ -213,6 +234,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Definition,
+            lifecycle_action: None,
             alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
@@ -237,6 +259,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Append,
+            lifecycle_action: None,
             alter_columns: Vec::new(),
             target_columns,
             default_values: false,
@@ -261,6 +284,14 @@ impl WriteOperation {
         operation
     }
 
+    /// Normalize a table lifecycle action without SQL AST types.
+    pub(crate) fn lifecycle(target: String, action: WriteLifecycleAction) -> Self {
+        let mut operation = Self::append(target, Vec::new());
+        operation.kind = WriteKind::Lifecycle;
+        operation.lifecycle_action = Some(action);
+        operation
+    }
+
     /// One row entirely from independently attested target defaults.
     pub(crate) fn append_default_values(target: String) -> Self {
         let mut operation = Self::append(target, Vec::new());
@@ -281,6 +312,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::ConditionalMutation,
+            lifecycle_action: None,
             alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
@@ -311,6 +343,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Update,
+            lifecycle_action: None,
             alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
@@ -340,6 +373,7 @@ impl WriteOperation {
             view_execution_unknown: false,
             definition_execution_unknown: false,
             kind: WriteKind::Delete,
+            lifecycle_action: None,
             alter_columns: Vec::new(),
             target_columns: Vec::new(),
             default_values: false,
@@ -396,6 +430,11 @@ impl WriteOperation {
     /// Return how the write changes the target relation.
     pub fn kind(&self) -> WriteKind {
         self.kind
+    }
+
+    /// A typed table lifecycle action, if this operation changes relation identity or contents.
+    pub fn lifecycle_action(&self) -> Option<&WriteLifecycleAction> {
+        self.lifecycle_action.as_ref()
     }
 
     /// Ordered typed ALTER TABLE column steps (empty for other writes).
@@ -514,7 +553,7 @@ impl WriteOperation {
             vec![WriteUncertainty::AffectedRowsUnknown]
         };
         let (branches, post_state, idempotence) = match self.kind {
-            WriteKind::Definition | WriteKind::SchemaAlter => return None,
+            WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle => return None,
             WriteKind::Append => {
                 if self.target_columns.is_empty() && !self.default_values {
                     reasons.push(WriteUncertainty::ImplicitTargetColumns);
@@ -620,7 +659,9 @@ impl WriteOperation {
                 WriteKind::Update => WriteCardinalityRule::Preserve,
                 WriteKind::Delete => WriteCardinalityRule::SubtractDeletes,
                 WriteKind::ConditionalMutation => WriteCardinalityRule::Merge,
-                WriteKind::Definition | WriteKind::SchemaAlter => return None,
+                WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle => {
+                    return None
+                }
             },
         })
     }

@@ -28,13 +28,24 @@ pub(super) fn build_layers(
 
             let layer_number = layers.len() + 1;
             let layer_id = format!("layer-{:0width$}", layer_number, width = width);
-            let produces = match query.produced_relation() {
-                Some(name) => vec![DatasetRef::Relation {
-                    name: resolve_relation(resolver, input, name)?,
-                }],
-                None => vec![DatasetRef::Anonymous {
-                    layer_id: layer_id.clone(),
-                }],
+            let produces = if query.write().is_some_and(|write| {
+                matches!(
+                    write.lifecycle_action(),
+                    Some(crate::protocol::WriteLifecycleAction::Drop { .. })
+                )
+            }) {
+                // A dropped relation must not leak as a named *or* anonymous
+                // output; the lifecycle layer remains in program order.
+                Vec::new()
+            } else {
+                match query.produced_relation() {
+                    Some(name) => vec![DatasetRef::Relation {
+                        name: resolve_relation(resolver, input, name)?,
+                    }],
+                    None => vec![DatasetRef::Anonymous {
+                        layer_id: layer_id.clone(),
+                    }],
+                }
             };
 
             let mut relation_identities = BTreeMap::new();

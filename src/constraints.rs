@@ -678,6 +678,13 @@ impl RelationConstraintSet {
         &self.relation
     }
 
+    /// Move previously attested, constraint-free default metadata with a
+    /// physically proven table RENAME. This does not rewrite actual keys,
+    /// checks, FKs, or the original source provenance.
+    pub(crate) fn rename_physical_relation(&mut self, to: &str) {
+        self.relation = to.to_string();
+    }
+
     /// Return canonical constraints in deterministic order.
     pub fn constraints(&self) -> &[RelationConstraint] {
         &self.constraints
