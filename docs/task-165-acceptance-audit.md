@@ -11,16 +11,20 @@ does not claim TASK-165 Done from passing tests alone.
   AC #1 required the freeze **before** implementation, so the historical
   ordering is a real process deviation and must not be retroactively relabelled
   as compliant.
-- The active v2 freeze `docs/task-165-acceptance-freeze.json` preserves all
+- The active v3 freeze `docs/task-165-acceptance-freeze.json` preserves all
   eight stable variant IDs and records executable complete-bag oracles, 13
   parser-dialect identities per case (104 classification cells), evidence-source
   boundaries, typed SQL NULL/integer values, inclusion bounds and a named
-  arithmetic-only overflow exception. No mandatory SQL semantics have been
-  weakened by v2.
+  arithmetic-only overflow exception. Archived v2 is preserved. V3 corrects
+  the positive grouped fixture source to [0,1] and full terminal [(0,1),(1,1)]:
+  these are the **actual** physical key values constructed by the emitted
+  `Groups` witness, not merely another SQL example that produces two groups.
+  The v3 matrix was frozen before the tightened witness-replay test. No
+  mandatory semantic family was weakened by this review correction.
 - Release disposition for AC #1: **requires independent reviewer decision**.
   A fresh, prospective freeze is impossible for already implemented code.
-  Compensating evidence includes immutable v1, v2 delta and executable case
-  accounting. This does not automatically satisfy the temporal criterion.
+  Compensating evidence includes immutable v1/v2, active v3, and executable
+  case accounting. This does not automatically satisfy the temporal criterion.
 
 ## Evidence per mandatory family
 
@@ -29,15 +33,16 @@ does not claim TASK-165 Done from passing tests alone.
 | 85-C165-P-histogram | `tests/task_165_standalone_goals.rs`, `tests/task_165_acceptance_inventory.rs`; physical [1,1,NULL], complete source and output [1,1,NULL], exact SourceRows histogram | SQL NULL share 1/3, non-NULL distinct 1, duplicates 1, closed bag |
 | 85-C165-N-total | Same matrix runner; source/output [1,1,NULL] vs impossible requested 2-row/3-bucket goal | Checked total mismatch is unsatisfiable independent of source contents |
 | 85-C165-N-distinct | Same matrix runner; physical [1,1,NULL], full terminal [1,NULL] | DISTINCT multiplicity impossibility, **not** a SQL predicate NOT TRUE witness |
-| 85-C165-P-group | Same matrix runner and grouped public API test; physical [1,2], two group terminal rows | Grouped count = output row count, complete key-group witness |
+| 85-C165-P-group | Frozen physical [0,1] and terminal [(k=0,n=1),(k=1,n=1)]; matrix reconstructs both from the emitted source-key identity, `groups=2`, `rows_per_group=1` | Grouped count = output row count, complete constructive key/group witness |
 | 85-C165-N-group | Same matrix runner; physical [1,1,NULL], two groups with counts [2,1] | Two rows with requested three groups is impossible |
 | 85-C165-P-zero | Same matrix runner and empty-source test; empty physical/terminal bags | EmptySources witness, 0 numerator, NULL fraction undefined |
 | 85-C165-N-overflow | `tests/task_165_standalone_goals.rs` and matrix runner, checked u64::MAX + 1 | Arithmetic-only Impossible. A physically materialized source bag of that size is impossible to execute, so no native engine claim is made |
 
-The matrix runner reads the task-owned JSON (rather than reproducing an
-independent expectation from the implementation), checks every mandatory
-dialect-cell verdict and canonical witness tag, inserts all materializable
-frozen source occurrences into DuckDB, and compares the *entire*
+The matrix runner reads the task-owned JSON (rather than recomputing
+expectations from the implementation), checks every mandatory dialect-cell
+verdict and canonical witness tag, reconstructs physical inputs and terminal
+bags from `SourceRows` and `Groups` witnesses, inserts the independently frozen
+materializable physical occurrences into DuckDB, and compares the *entire*
 source and terminal bag including duplicate and NULL occurrences. Full
 native execution is a DuckDB oracle, **not** a claim that 13 vendor engines ran.
 
@@ -76,9 +81,10 @@ separate attestation.
 - Two genuine outstanding gates: AC #1 historical ordering needs explicit
   reviewer disposition; AC #5 needs final-head checks and an independently
   signed case-by-case review.
-- Relevant pinned `sql-tdg` consumer tests have not been run against the
-  PR head. Earlier protocol-owned conformance tests are not a substitute;
-  see TASK-99/100 and the separate downstream TASK-89/91 gates.
+- Pinned `sql-tdg` tests were run against an implementation SHA, with the same
+  public API and protocol semantics as the present PR head; two pre-existing
+  timestamp-specific failures were separately compared to the original base.
+  Broader consumer release certification remains owned by TASK-89/91.
 - Parent TASK-85 original AC #1/#3/#5/#6 remain open until the later
   children and independent parent certification complete.
 
@@ -97,8 +103,10 @@ tests were separately executed against both the pre-PR baseline
 Both returned exit 101 at baseline **and** PR head, with the identical
 `reason=computed_expression clause=where` residual diagnostic. They are
 pre-existing compatibility failures, not TASK-165 regressions. Full-suite
-green must not be claimed. They remain explicit conditional consumer
-exceptions pending the separate consumer/release owner disposition.
+green must not be claimed. These are **explicitly deferred to TASK-89/91** as unchanged, unrelated
+consumer compatibility failures; they are not treated as success or as a new
+TASK-165 semantics bug. TASK-165 claims only the verified selected downstream
+suites, not a fully green downstream repository.
 
 The temporary CI workflow was removed from the implementation branch
 after capturing the qualification run, so the protocol repository keeps
@@ -110,5 +118,5 @@ The GitHub CI workflow runs fmt, strict all-target Rust Clippy, tests, docs,
 no-default-features lint/test/docs and dependency guard, and compiled dbt E2E.
 Final-head evidence URL, SHA, job verdict and downstream pin must be written
 here after completion. Leave PR #182 in Draft and TASK-165 In Progress until
-the mandatory cells, documented residuals, independent review, pinned
-consumer test and explicit freeze deviation disposition have been signed off.
+the mandatory cells, documented residuals, independent review and explicit
+freeze deviation disposition have been signed off.
