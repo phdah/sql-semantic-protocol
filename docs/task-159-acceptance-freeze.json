@@ -1,12 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-159",
   "parent": "TASK-83",
   "fixture_ids": [
     "83-C159-P",
     "83-C159-N"
   ],
-  "status": "frozen_before_semantic_edits_implementation_pending",
+  "status": "v2_frozen_typed_cases_pending_final_verification",
   "frozen_before_semantic_changes": true,
   "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
   "seams": [
@@ -35,6 +35,8 @@
       "classification": "Exact",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 2
       },
       "domains": {
@@ -55,7 +57,64 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(2)",
+        "TRUNCATE TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "t",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [
+        0,
+        1
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "t",
+          "rows": []
+        }
+      ],
+      "native_last": "success"
     },
     {
       "id": "83-C159-N-truncate-null-duplicate",
@@ -80,6 +139,8 @@
       "classification": "Exact",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 3
       },
       "domains": {
@@ -100,7 +161,66 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
+        "TRUNCATE TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "t",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [
+        0,
+        1,
+        2
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {},
+          "nullable": false,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "t",
+          "rows": []
+        }
+      ],
+      "native_last": "success"
     },
     {
       "id": "83-C159-P-drop",
@@ -122,6 +242,8 @@
       "classification": "Exact",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 2
       },
       "domains": null,
@@ -132,7 +254,47 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(2)",
+        "DROP TABLE t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [
+        0,
+        1
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
     },
     {
       "id": "83-C159-P-drop-conditional",
@@ -151,6 +313,8 @@
       "classification": "Exact",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 1
       },
       "domains": null,
@@ -161,7 +325,44 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1)",
+        "DROP TABLE IF EXISTS t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [
+        0
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [
+          0
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
     },
     {
       "id": "83-C159-N-drop-missing",
@@ -174,6 +375,8 @@
       "classification": "Exact if prior DROP proves absence; Residual otherwise",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 0
       },
       "domains": null,
@@ -184,7 +387,28 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "DROP TABLE t",
+        "DROP TABLE IF EXISTS t"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": false,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [],
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "success"
     },
     {
       "id": "83-C159-P-rename",
@@ -219,6 +443,8 @@
       "classification": "Exact if schema and constraints can be migrated without inference",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 0
       },
       "domains": {
@@ -242,7 +468,77 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE u(a INTEGER)",
+        "DROP TABLE u",
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Exact",
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "after_relation": "u",
+      "after_schema": [
+        "a INTEGER"
+      ],
+      "affected_ordinals": [],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [
+        {
+          "relation": "u",
+          "rows": [
+            {
+              "a": 1
+            },
+            {
+              "a": null
+            },
+            {
+              "a": 1
+            }
+          ]
+        }
+      ],
+      "native_last": "success"
     },
     {
       "id": "83-C159-N-drop-not-exists",
@@ -255,6 +551,8 @@
       "classification": "Impossible only under attested absence; Residual otherwise",
       "mandatory": true,
       "affected": {
+        "inserted": 0,
+        "updated": 0,
         "deleted": 0
       },
       "domains": null,
@@ -265,7 +563,28 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "unverified_until_native_and_canonical_oracle"
+      "release_disposition": "mandatory portable Exact/Impossible; physical and native Oracle required",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "DROP TABLE t",
+        "DROP TABLE t"
+      ],
+      "expected_outcome": "Impossible",
+      "before_relation": "t",
+      "before_exists": false,
+      "after_exists": false,
+      "after_relation": null,
+      "after_schema": null,
+      "affected_ordinals": [],
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      },
+      "final_states": [],
+      "native_last": "error"
     },
     {
       "id": "83-C159-N-if-not-exists",
@@ -307,7 +626,41 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "conditional_no_portable_exact_claim"
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      }
     },
     {
       "id": "83-C159-N-clone-like",
@@ -333,7 +686,29 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "conditional_no_portable_exact_claim"
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
+      }
     },
     {
       "id": "83-C159-N-transient-temp",
@@ -353,7 +728,15 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "conditional_no_portable_exact_claim"
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      }
     },
     {
       "id": "83-C159-N-vendor-object",
@@ -373,7 +756,92 @@
       "dialects": "13 supported dialect names: classify parsed shared AST or explicit parser boundary; native vendor execution is not implied",
       "adapters": "Direct SQL controls lifecycle; dbt compiled SQL can carry same statement; ODCS metadata only supplies equivalent schema evidence",
       "owner": "TASK-159",
-      "release_disposition": "conditional_no_portable_exact_claim"
+      "release_disposition": "TASK-159 conditional Residual only; no vendor Exact without independent engine/session evidence",
+      "pre_typed_domains": null,
+      "post_typed_domains": null,
+      "expected_outcome": "Residual",
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
+      }
+    },
+    {
+      "id": "83-C159-N-rename-unknown-destination",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-rename-collision",
+      "family": "rename",
+      "sql": "ALTER TABLE t RENAME TO u",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "CREATE TABLE u(a INTEGER)",
+        "ALTER TABLE t RENAME TO u"
+      ],
+      "expected_outcome": "Impossible",
+      "mandatory": true,
+      "owner": "TASK-159",
+      "release_disposition": "mandatory negative contradiction"
+    },
+    {
+      "id": "83-C159-N-drop-cascade",
+      "family": "drop",
+      "sql": "DROP TABLE t CASCADE",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-truncate-identity",
+      "family": "truncate",
+      "sql": "TRUNCATE TABLE t RESTART IDENTITY",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-transient",
+      "family": "transient",
+      "sql": "CREATE TRANSIENT TABLE t(a INTEGER)",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-drop-view",
+      "family": "drop",
+      "sql": "DROP VIEW v",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
+    },
+    {
+      "id": "83-C159-N-rename-mysql",
+      "family": "rename",
+      "sql": "RENAME TABLE t TO u",
+      "program": null,
+      "expected_outcome": "Residual",
+      "mandatory": false,
+      "owner": "TASK-159",
+      "release_disposition": "conditional vendor/parser boundary, no Exact without independent evidence"
     }
   ],
   "original_parent_ac": [
@@ -391,5 +859,38 @@
     "all_adapters_verified": false,
     "independent_review": false,
     "ci_verified": false
+  },
+  "history": [
+    "docs/task-159-acceptance-freeze-v1.json"
+  ],
+  "freeze_policy": "preimplementation v1 retained immutably; v2 adds executable per-cell typed domains and native/protocol before/after oracles, without weakening mandatory inventory",
+  "ac_mapping": {
+    "1": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-N-transient-temp",
+      "83-C159-N-clone-like"
+    ],
+    "2": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-P-rename",
+      "83-C159-N-drop-not-exists"
+    ],
+    "3": [
+      "83-C159-N-truncate-null-duplicate",
+      "83-C159-N-drop-not-exists",
+      "83-C159-N-rename-collision"
+    ],
+    "4": [
+      "83-C159-N-if-not-exists",
+      "83-C159-N-clone-like",
+      "83-C159-N-vendor-object"
+    ],
+    "5": [
+      "83-C159-P-truncate",
+      "83-C159-P-drop",
+      "83-C159-P-rename"
+    ]
   }
 }
