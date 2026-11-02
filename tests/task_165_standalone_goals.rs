@@ -8,21 +8,9 @@ use sql_semantic_protocol::{
     OutputDistribution, OutputValueCount, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
-const DIALECTS: &[&str] = &[
-    "generic",
-    "mysql",
-    "postgresql",
-    "hive",
-    "sqlite",
-    "snowflake",
-    "redshift",
-    "mssql",
-    "clickhouse",
-    "bigquery",
-    "ansi",
-    "duckdb",
-    "databricks",
-];
+mod common;
+
+use common::DIALECTS;
 
 fn bundle(sql: &str, dialect: &str) -> AnalysisBundle {
     let schema = RelationSchema::new(
