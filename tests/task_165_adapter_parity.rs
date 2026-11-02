@@ -20,14 +20,14 @@ fn source_schema() -> RelationCatalog {
     .expect("catalog")
 }
 
-fn sql_bundle(catalog: &RelationCatalog) -> AnalysisBundle {
+fn sql_bundle(catalog: &RelationCatalog, sql_text: &str) -> AnalysisBundle {
     let parser = dialect_from_name("postgresql").expect("dialect");
-    let sql = SqlInput::inline(SQL);
+    let sql = SqlInput::inline(sql_text);
     let input = ConfiguredSqlInput::new("task-165", &sql, "postgresql", parser.as_ref());
     analyze_configured_inputs_with_catalog(&[input], catalog).expect("direct SQL")
 }
 
-fn dbt_bundle() -> AnalysisBundle {
+fn dbt_bundle(sql: &str) -> AnalysisBundle {
     let artifact = json!({
         "metadata":{
             "dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -39,7 +39,7 @@ fn dbt_bundle() -> AnalysisBundle {
                 "relation_name":"warehouse.analytics.task165",
                 "database":"warehouse", "schema":"analytics",
                 "original_file_path":"models/task165.sql", "language":"sql",
-                "raw_code":SQL, "compiled_code":SQL,
+                "raw_code":sql, "compiled_code":sql,
                 "depends_on":{"nodes":["source.demo.s"]}
             }
         },
@@ -140,13 +140,13 @@ fn evaluated(
 fn sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs() {
     let distribution = [(ConstraintValue::Integer(1), 2), (ConstraintValue::Null, 1)];
     let compare = |rows| {
-        let direct = evaluated(sql_bundle(&source_schema()), rows, &distribution);
-        let dbt = evaluated(dbt_bundle(), rows, &distribution);
+        let direct = evaluated(sql_bundle(&source_schema(), SQL), rows, &distribution);
+        let dbt = evaluated(dbt_bundle(SQL), rows, &distribution);
         assert_eq!(direct, dbt, "compiled dbt / direct source evidence");
         #[cfg(feature = "odcs")]
         assert_eq!(
             direct,
-            evaluated(sql_bundle(&odcs_catalog()), rows, &distribution),
+            evaluated(sql_bundle(&odcs_catalog(), SQL), rows, &distribution),
             "ODCS schema evidence"
         );
         direct
@@ -161,4 +161,52 @@ fn sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs() {
     assert_eq!(impossible.0, OutcomeGoalStatus::Unsatisfiable);
     assert!(impossible.1.is_none());
     assert_eq!(impossible.2, "unsatisfiable");
+}
+
+#[test]
+fn grouping_and_distinct_adapter_paths_preserve_canonical_outcome_classification() {
+    for sql in [
+        "SELECT k, COUNT(*) AS n FROM warehouse.raw.s GROUP BY k",
+        "SELECT DISTINCT k FROM warehouse.raw.s",
+    ] {
+        let summarize = |mut bundle: AnalysisBundle| {
+            let layer = bundle.layers().last().expect("layer").id().to_string();
+            let group = sql.contains("GROUP BY");
+            let distributions = if group {
+                Vec::new()
+            } else {
+                vec![
+                    OutputDistribution::new(
+                        "k",
+                        vec![OutputValueCount::new(ConstraintValue::Integer(1), 2)],
+                    )
+                    .expect("distinct counterexample"),
+                ]
+            };
+            bundle
+                .set_outcome_goals(&[
+                    OutcomeGoal::new(layer, Some(2), group.then_some(2), distributions)
+                        .expect("goal")
+                ])
+                .expect("analysis");
+            bundle.outcome_goals()[0].status()
+        };
+        let direct = summarize(sql_bundle(&source_schema(), sql));
+        assert_eq!(
+            direct,
+            if sql.contains("GROUP BY") {
+                OutcomeGoalStatus::Feasible
+            } else {
+                OutcomeGoalStatus::Unsatisfiable
+            },
+            "{sql}"
+        );
+        assert_eq!(direct, summarize(dbt_bundle(sql)), "{sql}: dbt catalog");
+        #[cfg(feature = "odcs")]
+        assert_eq!(
+            direct,
+            summarize(sql_bundle(&odcs_catalog(), sql)),
+            "{sql}: ODCS schema"
+        );
+    }
 }
