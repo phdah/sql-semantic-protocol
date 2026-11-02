@@ -118,26 +118,35 @@ fn read_at_checkpoint(
         if !names.insert(column.name()) {
             return Err("ambiguous SELECT output column identity".to_string());
         }
-        let [lineage] = column.lineage() else {
-            return Err("SELECT output has no unique physical column evidence".to_string());
+        // The statement may have been analyzed before an ALTER ADD introduced
+        // this column. In a single-source SELECT, its canonical ColumnExpression
+        // and the *evolved* typed schema are sufficient to establish identity.
+        // Never use an absent lineage as evidence for a join or an ambiguous alias.
+        let crate::protocol::Expression::Column(expression) = column.expression() else {
+            return Err("computed SELECT output requires a typed projection proof".to_string());
         };
-        if lineage.relation() != source.name() {
-            return Err("SELECT output lineage resolves to a different relation".to_string());
+        if expression
+            .relation()
+            .is_some_and(|qualifier| qualifier != source.name() && source.alias() != Some(qualifier))
+        {
+            return Err("SELECT column qualifier is not the current physical source".to_string());
+        }
+        match column.lineage() {
+            [] => {}
+            [lineage]
+                if lineage.relation() == source.name()
+                    && lineage.column() == expression.name() => {}
+            _ => return Err("SELECT output has ambiguous physical lineage".to_string()),
         }
         let Some(physical) = schema
             .columns()
             .iter()
-            .find(|col| col.name() == lineage.column())
+            .find(|col| col.name() == expression.name())
         else {
             return Err("SELECT output references an absent physical column".to_string());
         };
         if !integer_type(physical.data_type()) {
             return Err("SELECT output type needs an independently proven scalar law".to_string());
-        }
-        // The row evaluator supports more expressions, but only identity
-        // projections retain authoritative physical datatype evidence here.
-        if !matches!(column.expression(), crate::protocol::Expression::Column(_)) {
-            return Err("computed SELECT output requires a typed projection proof".to_string());
         }
         projected_schema.push(
             SchemaColumn::new(column.name(), physical.data_type().clone())
