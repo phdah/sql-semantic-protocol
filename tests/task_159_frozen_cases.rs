@@ -134,7 +134,7 @@ fn assert_domain(
 fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_oracles() {
     let matrix = matrix();
     assert_eq!(matrix["owner"], "TASK-159");
-    assert_eq!(matrix["version"], 2);
+    assert_eq!(matrix["version"], 3);
     assert_eq!(matrix["parent"], "TASK-83");
     let cases = matrix["cases"].as_array().unwrap();
     let mut seen = BTreeSet::new();
