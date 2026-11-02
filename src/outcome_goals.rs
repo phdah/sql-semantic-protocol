@@ -148,6 +148,36 @@ impl OutputDistributionStatistics {
     pub fn duplicate_rows(self) -> u64 {
         self.duplicate_rows
     }
+
+    /// Exact SQL NULL share in a nonempty requested bag, without rounding.
+    /// An empty bag has no defined fraction and returns `None`.
+    pub fn null_fraction(self) -> Option<NullFraction> {
+        (self.rows > 0).then_some(NullFraction {
+            numerator: self.null_rows,
+            denominator: self.rows,
+        })
+    }
+}
+
+/// Rational NULL share in one complete nonempty requested histogram.
+///
+/// The ratio is intentionally unrounded; consumers may reduce it if desired.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NullFraction {
+    numerator: u64,
+    denominator: u64,
+}
+
+impl NullFraction {
+    /// Number of SQL NULL occurrences.
+    pub fn numerator(self) -> u64 {
+        self.numerator
+    }
+
+    /// Total nonzero row count.
+    pub fn denominator(self) -> u64 {
+        self.denominator
+    }
 }
 
 /// Optional caller-requested output counts, addressed by a stable layer identity.
