@@ -138,8 +138,11 @@ fn task_160_scope_is_frozen_and_parent_acceptance_remains_open() {
         serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-160");
     assert_eq!(freeze["parent"], "TASK-83");
-    assert_eq!(freeze["version"], 1);
-    assert_eq!(freeze["frozen_before_semantic_changes"], true);
+    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["scope_amendment"]["from_version"], 1);
+    let original: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze-v1.json")).unwrap();
+    assert_eq!(original["frozen_before_semantic_changes"], true);
     let ids = freeze["cases"]
         .as_array()
         .unwrap()
@@ -191,7 +194,10 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                 let read = &exact.reads[0];
                 let expected = case["snapshots"][3]["read"].as_array().unwrap();
                 assert_eq!(read.output.rows().len(), expected.len());
-                assert_eq!(read.source.rows().len(), expected.len());
+                assert_eq!(
+                    read.source.rows().len(),
+                    case["snapshots"][2]["rows"].as_array().unwrap().len()
+                );
                 let domains = read.exact_domains().unwrap();
                 let frozen_domains = &case["typed_domains_at_read"];
                 for domain in domains {
@@ -227,7 +233,11 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                     "{}",
                     case["id"]
                 );
-                assert!(read.rejected_source_ordinals.is_empty());
+                assert_eq!(
+                    read.rejected_source_ordinals,
+                    truth["not_true_ordinals"].as_array().unwrap().iter()
+                        .map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>()
+                );
                 for (checkpoint, expected) in exact
                     .checkpoints
                     .iter()
