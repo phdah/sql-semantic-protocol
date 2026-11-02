@@ -491,6 +491,7 @@ mod join_uniform;
 mod joins;
 mod joint_counts;
 mod joint_distributions;
+mod lifecycle_scripts;
 mod membership;
 mod operators;
 mod page_bags;
@@ -550,6 +551,10 @@ pub use finite_tables::{
 pub use in_bags::{
     physical_finite_in_bag_plan, PhysicalFiniteInExact, PhysicalFiniteInProof,
     PhysicalInColumnDomain, PhysicalInTruth,
+};
+pub use lifecycle_scripts::{
+    physical_ordered_lifecycle_plan, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,
+    PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof,
 };
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
