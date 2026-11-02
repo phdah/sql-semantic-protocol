@@ -21,3 +21,25 @@ The 13-dialect matrix presently certifies **SQL parser and canonical AST normali
 ## Signoff policy
 
 The following flags remain false until supported by actual final-head evidence: `child_signed_off`, `mandatory_cells_verified`, `parent_signed_off`. TASK-83 #2/#4/#5/#6 cannot be checked through TASK-158 alone. A future reviewer must not reinterpret `Residual` as a mandatory Exact or erase a required variant to gain a green test.
+
+## Review follow-up (2026-11-02, v4)
+
+This PR now includes regression-proven persistence of authoritative ALTER ADD scalar
+defaults through later INSERT and RENAME, dropping stale default metadata on
+DROP/re-ADD, and NULL backfill for omitted nullable ALTER-added columns. It
+retains constraint/source provenance in the execution-only canonical bundle;
+unproved generated/identity or opaque-default transitions are residual, not
+guessed. Exact RENAME duplicate-target classification and conditional wire
+schema requirements have also been fixed.
+
+The native DuckDB matrix now asserts actual pre-ALTER bags for the executable
+frozen cases, both portable positive and contradiction snapshots, and separate
+cast/PRIMARY KEY conditional runtime evidence. The v4 matrix retains v1-v3,
+pins 104 AST parser cells and 27 representative SQL/dbt/ODCS prestate and
+constraint-boundary comparison cells. Parser acceptance and adapter metadata
+do not imply vendor DDL execution laws.
+
+Remaining signoff gates are final-head CI for v4, a genuinely independent
+standards/spec review, and maintainer-approved dispositions for cross-vendor
+cast/key/transaction semantics. TASK-158 must remain In Progress until
+those gates are independently certified. TASK-83 remains open regardless.
