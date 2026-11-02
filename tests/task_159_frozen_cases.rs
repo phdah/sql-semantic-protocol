@@ -57,14 +57,15 @@ fn native_columns(conn: &Connection, relation: &str) -> Vec<String> {
             "SELECT column_name, data_type FROM information_schema.columns              WHERE table_name = ? ORDER BY ordinal_position"
         )
         .unwrap();
-    query.query_map([relation], |row| {
-        let name: String = row.get(0)?;
-        let datatype: String = row.get(1)?;
-        Ok(format!("{name} {datatype}"))
-    })
-    .unwrap()
-    .map(Result::unwrap)
-    .collect()
+    query
+        .query_map([relation], |row| {
+            let name: String = row.get(0)?;
+            let datatype: String = row.get(1)?;
+            Ok(format!("{name} {datatype}"))
+        })
+        .unwrap()
+        .map(Result::unwrap)
+        .collect()
 }
 
 fn native_rows(conn: &Connection, relation: &str) -> Vec<PhysicalWriteRow> {
@@ -297,7 +298,10 @@ fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_ora
                 &case["post_typed_domains"],
             );
             let native = native_columns(&db, case["after_relation"].as_str().unwrap());
-            let expected = case["after_schema"].as_array().unwrap().iter()
+            let expected = case["after_schema"]
+                .as_array()
+                .unwrap()
+                .iter()
                 .map(|value| value.as_str().unwrap().to_string())
                 .collect::<Vec<_>>();
             assert_eq!(native, expected, "{id}: native final schema");
