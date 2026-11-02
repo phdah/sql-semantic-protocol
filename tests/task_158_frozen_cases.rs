@@ -359,6 +359,23 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
                 db.execute_batch(operation).is_err(),
                 "{id}: native contradiction"
             );
+            assert_eq!(
+                sorted_bag(&native_integer_bag(&db, &initial_columns)),
+                sorted_bag(state(&case["prestate"]).rows()),
+                "{id}: rejected ALTER must leave complete native source bag unchanged"
+            );
+            let names = db
+                .prepare("SELECT column_name FROM information_schema.columns WHERE table_name='t' ORDER BY ordinal_position")
+                .unwrap()
+                .query_map([], |row| row.get::<_, String>(0))
+                .unwrap()
+                .map(Result::unwrap)
+                .collect::<Vec<_>>();
+            assert_eq!(
+                names,
+                initial_columns,
+                "{id}: rejected ALTER must preserve schema identity"
+            );
             continue;
         }
         db.execute_batch(operation).unwrap();
