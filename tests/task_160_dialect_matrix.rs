@@ -33,14 +33,17 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
                     analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()).unwrap();
                 let status = match &analyzed.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => "canonical_unsupported",
-                    ProtocolStatement::Query(query) => match query.write().map(|write| write.kind()) {
-                        Some(WriteKind::Definition) => "definition",
-                        Some(WriteKind::Append) => "insert",
-                        Some(WriteKind::SchemaAlter) => "alter",
-                        Some(WriteKind::Lifecycle) => "lifecycle",
-                        Some(_) => "unrelated_write",
-                        None => "read",
-                    },
+                    _ => "unexpected_statement",
+                    ProtocolStatement::Query(query) => {
+                        match query.write().map(|write| write.kind()) {
+                            Some(WriteKind::Definition) => "definition",
+                            Some(WriteKind::Append) => "insert",
+                            Some(WriteKind::SchemaAlter) => "alter",
+                            Some(WriteKind::Lifecycle) => "lifecycle",
+                            Some(_) => "unrelated_write",
+                            None => "read",
+                        }
+                    }
                 };
                 statements.push(status);
             }
@@ -59,11 +62,15 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
         .unwrap()
         .iter()
         .map(|case| case["program"].as_array().unwrap().len())
-        .sum::<usize>() * 13;
+        .sum::<usize>()
+        * 13;
     assert_eq!(total, expected);
     // The observed matrix is printed for the next immutable versioned freeze.
     // It never upgrades parser acceptance into a native DuckDB proof.
-    println!("TASK160_DIALECT_OBSERVED={}", serde_json::to_string(&classifications).unwrap());
+    println!(
+        "TASK160_DIALECT_OBSERVED={}",
+        serde_json::to_string(&classifications).unwrap()
+    );
     for (dialect, cases) in &classifications {
         for (index, sequence) in cases.iter().enumerate() {
             let case = &freeze["cases"][index];
@@ -113,11 +120,13 @@ fn native_duckdb_validates_all_mandatory_full_script_classifications() {
         match case["classification"].as_str().unwrap() {
             "Exact" => assert!(
                 matches!(outcome, PhysicalOrderedLifecycleProof::Exact(_)),
-                "{}: {outcome:?}", case["id"]
+                "{}: {outcome:?}",
+                case["id"]
             ),
             "Impossible" => assert!(
                 matches!(outcome, PhysicalOrderedLifecycleProof::Impossible { .. }),
-                "{}: {outcome:?}", case["id"]
+                "{}: {outcome:?}",
+                case["id"]
             ),
             other => panic!("unreviewed mandatory classification {other}"),
         }
