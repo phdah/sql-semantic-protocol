@@ -82,8 +82,8 @@ one-column `DISTINCT` cannot return duplicate scalar values, including NULL.
 distinct non-NULL values, count of NULL occurrences and duplicate occurrences
 from the **requested complete histogram**. Duplicate rows count every
 occurrence after the first in its SQL DISTINCT equivalence class, including the
-single NULL class; zero-count buckets contribute nothing. The NULL fraction
-is the exact ratio `null_rows / rows` and is undefined for zero rows.
+single NULL class; zero-count buckets contribute nothing. The `null_fraction()` accessor returns an exact rational numerator and
+nonzero denominator; it is undefined for zero rows.
 Checked overflow returns `None`. These are descriptive request statistics:
 only an evaluated `Feasible` status backed by a source-complete witness proves
 that the SQL result can realize them. Unattested casts, session-dependent
