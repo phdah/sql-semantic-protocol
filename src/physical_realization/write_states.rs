@@ -667,8 +667,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
         }
         if let Some(schema) = &after_schema {
             execution_bundle.replace_physical_source_schema(schema.clone());
-            if let Err(error) = execution_bundle
-                .advance_physical_alter_defaults(target, write.column_alter_steps())
+            if let Err(error) =
+                execution_bundle.advance_physical_alter_defaults(target, write.column_alter_steps())
             {
                 return failure(
                     Some(layer.id()),
