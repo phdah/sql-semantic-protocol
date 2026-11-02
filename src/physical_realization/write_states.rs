@@ -561,6 +561,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                                     || !set.diagnostics().is_empty()
                                     || set.column_value_sources().iter().any(|source| {
                                         source.kind() != crate::column_sources::ColumnValueKind::Default
+                                            || source.value().is_none()
                                     })))
                                 || set.constraints().iter().any(|constraint| {
                                     matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
