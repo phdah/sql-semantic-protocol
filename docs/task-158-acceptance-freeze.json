@@ -605,9 +605,9 @@
   },
   "adapter_evidence": {
     "direct_sql": "SQL ALTER owns operation identity; direct typed schema and native ordered DuckDB source/target evidence in task_158_ordered_alter.rs and task_158_frozen_cases.rs",
-    "dbt_compiled": "Manifest compiled SQL owns any ALTER statement; catalog owns inspected prestate datatypes. task_158_adapter_parity.rs checks identical typed metadata through all eight variants and constrained key residual.",
+    "dbt_compiled": "A dbt compiled model is SELECT-backed: compiled ALTER TABLE model SQL is explicitly rejected at the parser boundary, not silently converted into a write. dbt manifest/catalog provide authoritative metadata for the eight case SQL ALTER replay in task_158_adapter_parity.rs; separate SQL inputs own DDL lifecycle.",
     "odcs": "ODCS supplies typed prestate only, never inferred ALTER lifecycle. task_158_adapter_parity.rs checks the same eight variants plus constrained key with explicit SQL statements.",
-    "limitation": "13x8 dialect checks certify AST normalization only, not vendor execution. Engine-only casts and keys remain named TASK-158 residuals with independent native DuckDB evidence."
+    "limitation": "A dbt model's compiled SQL cannot act as an arbitrary ALTER DDL program. SQL ALTER is an independent input; dbt and ODCS provide typed prestate metadata only. 13x8 dialect tests classify AST normalization, not runtime. Vendor casts/keys remain TASK-158 Residual."
   },
   "dialect_classifications_verified_from": "GitHub Actions 41353542144, Rust test diagnostic, 104/104 shared syntax AST cells",
   "previous_snapshot": "docs/task-158-acceptance-freeze-v3.json",
@@ -626,7 +626,7 @@
   ],
   "evidence_sources": [
     "sql",
-    "dbt_compiled_or_catalog",
+    "dbt_catalog_and_manifest_metadata",
     "odcs_contract"
   ],
   "coverage": {
