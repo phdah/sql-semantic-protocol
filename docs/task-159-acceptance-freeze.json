@@ -6,7 +6,7 @@
     "83-C159-P",
     "83-C159-N"
   ],
-  "status": "v3_vendor_rename_fail_closed_mandatory_child_pending_independent_review",
+  "status": "v3_verified_child_signed_off_parent_TASK83_open",
   "frozen_before_semantic_changes": true,
   "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
   "seams": [
@@ -927,8 +927,8 @@
     "duckdb_verified": true,
     "all_dialects_verified": true,
     "all_adapters_verified": true,
-    "independent_review": false,
-    "ci_verified": false
+    "independent_review": true,
+    "ci_verified": true
   },
   "history": [
     "docs/task-159-acceptance-freeze-v1.json",
@@ -1243,8 +1243,8 @@
   },
   "dialect_observation": {
     "oracle": "sqlparser 0.58 AST classification only; v3 standalone RENAME TABLE is canonical unsupported, not a portable execution proof",
-    "run": null,
-    "head": null,
+    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41492788799",
+    "head": "9356f69c01a180ef4a409aa258816cc11ee03d5d",
     "cases": 18,
     "cells": 234
   }
