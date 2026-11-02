@@ -49,6 +49,21 @@ fn schema_declares_optional_alter_columns_and_new_write_kind() {
         write["properties"]["alter_columns"]["items"]["additionalProperties"],
         false
     );
+    let variants = write["properties"]["alter_columns"]["items"]["allOf"]
+        .as_array()
+        .unwrap();
+    for (kind, required) in [
+        ("add", vec!["column", "has_default", "default"]),
+        ("drop", vec!["column"]),
+        ("rename", vec!["old", "new"]),
+        ("set_type", vec!["column"]),
+    ] {
+        let branch = variants
+            .iter()
+            .find(|branch| branch["if"]["properties"]["kind"]["const"] == kind)
+            .unwrap();
+        assert_eq!(branch["then"]["required"], json!(required));
+    }
     assert!(!write["required"]
         .as_array()
         .unwrap()
