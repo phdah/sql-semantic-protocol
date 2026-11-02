@@ -3,8 +3,10 @@
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    physical_alter_column_snapshot, LiteralValue, PhysicalColumnAlterProof,
-    PhysicalColumnAlterStep, PhysicalWriteRow, PhysicalWriteState, RelationSchema, SchemaColumn,
+    physical_alter_column_snapshot, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalColumnAlterProof,
+    PhysicalColumnAlterStep, PhysicalWriteRow, PhysicalWriteState, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -133,14 +135,53 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
             other => panic!("unreviewed frozen case {other}"),
         };
         let inventory = if id == "83-C158-N-key" {
-            Some(vec![sql_semantic_protocol::RelationConstraintSet::new(
-                "t",
-                Vec::new(),
-            )
-            .unwrap()])
+            let evidence = ConstraintEvidence::new(
+                ConstraintProvenance::new(ConstraintSourceKind::SqlDdl, "t.primary_key")
+                    .unwrap(),
+                ConstraintEnforcement::Enforced,
+            );
+            let primary_key =
+                RelationConstraint::primary_key(vec!["key".into()], vec![evidence]).unwrap();
+            Some(vec![RelationConstraintSet::new("t", vec![primary_key]).unwrap()])
         } else {
             Some(Vec::new())
         };
+        let domains = before
+            .exact_domains(&original_schema)
+            .expect("frozen source rows match exact declared columns");
+        for (column, domain) in original_schema.columns().iter().zip(domains) {
+            let expected = &case["pre_typed_domains"][column.name()];
+            assert_eq!(expected["type"], "INTEGER", "{id}: frozen source datatype");
+            let actual = domain
+                .values()
+                .iter()
+                .map(|(value, count)| {
+                    let key = match value {
+                        LiteralValue::Null => "NULL".to_string(),
+                        LiteralValue::Number(number) => number.clone(),
+                        other => panic!("{id}: unsupported source scalar {other:?}"),
+                    };
+                    (key, *count)
+                })
+                .collect::<BTreeMap<_, _>>();
+            let frequencies = expected["frequencies"]
+                .as_object()
+                .unwrap()
+                .iter()
+                .map(|(value, count)| (value.clone(), count.as_u64().unwrap()))
+                .collect::<BTreeMap<_, _>>();
+            assert_eq!(actual, frequencies, "{id}: pre-ALTER source domains");
+            assert_eq!(actual.contains_key("NULL"), expected["nullable"]);
+            let numbers = actual
+                .keys()
+                .filter(|value| value.as_str() != "NULL")
+                .map(|value| value.parse::<i64>().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(numbers.iter().min().copied(), expected["lower"].as_i64());
+            assert_eq!(numbers.iter().max().copied(), expected["upper"].as_i64());
+            assert_eq!(expected["lower_inclusive"], !numbers.is_empty());
+            assert_eq!(expected["upper_inclusive"], !numbers.is_empty());
+        }
         let proof = physical_alter_column_snapshot(
             &original_schema,
             &before,
