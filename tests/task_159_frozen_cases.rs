@@ -104,8 +104,17 @@ fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_ora
                 db.execute_batch(sql).unwrap();
             }
             assert!(db.execute_batch(program[program.len()-1]).is_err(), "{id}");
-            let relation = case["before_relation"].as_str().unwrap_or("t");
-            assert!(!native_exists(&db,relation), "{id}: impossible operation changed target");
+            let expected_states = case["expected_unchanged_states"].as_array();
+            if let Some(states) = expected_states {
+                for state in states {
+                    let relation = state["relation"].as_str().unwrap();
+                    assert!(native_exists(&db, relation), "{id}: impossible operation removed {relation}");
+                    assert_eq!(bag(&native_rows(&db, relation)), bag(&physical_rows(&state["rows"])));
+                }
+            } else {
+                let relation = case["before_relation"].as_str().unwrap_or("t");
+                assert!(!native_exists(&db,relation), "{id}: impossible operation changed target");
+            }
             continue;
         }
         assert_eq!(expected, "Exact", "{id}");
@@ -159,7 +168,7 @@ fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_ora
         assert_eq!(case["source_truth"]["not_true_ordinals"],serde_json::json!([]),"{id}");
         assert_eq!(case["source_truth"]["unknown_ordinals"],serde_json::json!([]),"{id}");
     }
-    assert_eq!(exact,7,"every mandatory Exact cell must be replayed");
-    assert_eq!(impossible,1,"every mandatory Impossible cell must be refuted");
+    assert_eq!(exact,6,"every mandatory Exact cell must be replayed");
+    assert_eq!(impossible,2,"every mandatory Impossible cell must be refuted");
     assert_eq!(seen.len(),8);
 }
