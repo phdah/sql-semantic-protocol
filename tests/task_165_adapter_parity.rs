@@ -2,10 +2,10 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
-    parse_dbt_manifest, to_bundle_json, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
-    OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
+    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, AnalysisBundle, ConfiguredSqlInput,
+    ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const RELATION: &str = "warehouse.raw.s";
@@ -51,10 +51,30 @@ fn dbt_bundle() -> AnalysisBundle {
             }
         }
     });
+    let catalog = json!({
+        "metadata":{
+            "dbt_schema_version":"https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version":"1.11.8"
+        },
+        "nodes":{},
+        "sources":{
+            "source.demo.s":{
+                "unique_id":"source.demo.s",
+                "metadata":{
+                    "type":"BASE TABLE", "database":"warehouse",
+                    "schema":"raw", "name":"s"
+                },
+                "columns":{"k":{"name":"k","type":"INTEGER","index":1}},
+                "stats":{}
+            }
+        },
+        "errors":null
+    });
     let manifest = parse_dbt_manifest(&artifact.to_string()).expect("compiled artifact");
+    let catalog = parse_dbt_catalog(&catalog.to_string()).expect("warehouse catalog");
     let parser = dialect_from_name("postgresql").expect("dialect");
-    analyze_dbt_manifest_with_schemas(&manifest, "postgresql", parser.as_ref())
-        .expect("compiled dbt")
+    analyze_dbt_artifacts(&manifest, &catalog, "postgresql", parser.as_ref())
+        .expect("compiled dbt plus authoritative warehouse types")
 }
 
 #[cfg(feature = "odcs")]
