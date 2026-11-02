@@ -3057,7 +3057,34 @@
               "new": { "$ref": "#/$defs/nonEmptyString" },
               "has_default": { "type": "boolean" },
               "default": { "type": ["string", "number", "boolean", "null"] }
-            }
+            },
+            "allOf": [
+              {
+                "if": { "properties": { "kind": { "const": "add" } } },
+                "then": {
+                  "required": ["column", "has_default", "default"],
+                  "properties": { "column": { "$ref": "#/$defs/schemaColumn" } }
+                }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "drop" } } },
+                "then": {
+                  "required": ["column"],
+                  "properties": { "column": { "$ref": "#/$defs/nonEmptyString" } }
+                }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "rename" } } },
+                "then": { "required": ["old", "new"] }
+              },
+              {
+                "if": { "properties": { "kind": { "const": "set_type" } } },
+                "then": {
+                  "required": ["column"],
+                  "properties": { "column": { "$ref": "#/$defs/schemaColumn" } }
+                }
+              }
+            ]
           }
         },
         "target_columns": {
