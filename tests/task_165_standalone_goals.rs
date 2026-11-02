@@ -217,6 +217,38 @@ fn duckdb_replays_the_complete_positive_and_rejected_bags() {
 }
 
 #[test]
+fn zero_rows_require_a_complete_empty_source_and_empty_terminal() {
+    for dialect in DIALECTS {
+        let mut b = bundle("SELECT k FROM t", dialect);
+        request(&mut b, 0, None, vec![histogram(&[])]);
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Feasible,
+            "{dialect}: the empty physical bag realizes an empty histogram"
+        );
+        assert!(
+            matches!(
+                b.outcome_goals()[0].witness(),
+                Some(OutcomeWitness::EmptySources { .. })
+            ),
+            "{dialect}: zero rows must close the entire source"
+        );
+    }
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch("CREATE TABLE t(k INTEGER)")
+        .expect("empty source");
+    let source_count: i64 = db
+        .query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0))
+        .expect("source count");
+    let terminal_count: i64 = db
+        .query_row("SELECT COUNT(*) FROM (SELECT k FROM t) AS q", [], |row| {
+            row.get(0)
+        })
+        .expect("terminal count");
+    assert_eq!((source_count, terminal_count), (0, 0));
+}
+
+#[test]
 fn zero_and_overflow_histograms_never_invent_undefined_fractions() {
     let empty = histogram(&[(ConstraintValue::Null, 0)]);
     let zero = empty.statistics().expect("empty histogram");
