@@ -68,4 +68,17 @@ fn schema_declares_optional_alter_columns_and_new_write_kind() {
         .as_array()
         .unwrap()
         .contains(&json!("alter_columns")));
+    let write_conditions = write["allOf"].as_array().unwrap();
+    assert_eq!(
+        write_conditions[0]["if"]["properties"]["kind"]["const"],
+        "schema_alter"
+    );
+    assert_eq!(
+        write_conditions[0]["then"]["required"],
+        json!(["alter_columns"])
+    );
+    assert_eq!(
+        write_conditions[1]["then"]["not"]["required"],
+        json!(["alter_columns"])
+    );
 }
