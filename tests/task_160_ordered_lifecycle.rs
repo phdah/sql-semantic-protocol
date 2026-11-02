@@ -235,8 +235,12 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                 );
                 assert_eq!(
                     read.rejected_source_ordinals,
-                    truth["not_true_ordinals"].as_array().unwrap().iter()
-                        .map(|v| v.as_u64().unwrap() as usize).collect::<Vec<_>>()
+                    truth["not_true_ordinals"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|v| v.as_u64().unwrap() as usize)
+                        .collect::<Vec<_>>()
                 );
                 for (checkpoint, expected) in exact
                     .checkpoints
