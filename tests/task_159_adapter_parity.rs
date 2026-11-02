@@ -89,11 +89,12 @@ fn replay(catalog: &RelationCatalog, lifecycle: &str) -> (String, String, bool, 
         SqlInput::inline("INSERT INTO t (a, b) VALUES (1, NULL), (1, NULL)"),
         SqlInput::inline(lifecycle),
     ];
+    let ids = ["create", "insert", "lifecycle"];
     let configured = source
         .iter()
-        .enumerate()
-        .map(|(i, input)| {
-            ConfiguredSqlInput::new(&format!("input-{i}"), input, "duckdb", parser.as_ref())
+        .zip(ids)
+        .map(|(input, id)| {
+            ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref())
         })
         .collect::<Vec<_>>();
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
