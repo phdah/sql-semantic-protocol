@@ -345,3 +345,105 @@ fn read_truth_partition_rejects_false_and_sql_unknown_without_inventing_rows() {
     db.execute_batch(sql[4]).unwrap();
     assert!(db.prepare("SELECT * FROM t").is_err());
 }
+
+#[test]
+fn every_frozen_exact_case_matches_native_catalog_and_full_bag_at_every_step() {
+    let freeze: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze.json")).unwrap();
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "Exact" {
+            continue;
+        }
+        let db = Connection::open_in_memory().unwrap();
+        let mut declared_columns = Vec::<String>::new();
+        for (index, step) in case["program"].as_array().unwrap().iter().enumerate() {
+            let sql = step.as_str().unwrap();
+            let expected = &case["snapshots"][index];
+            let mut output = Vec::<Vec<Option<i64>>>::new();
+            if sql.starts_with("SELECT ") {
+                let mut prepared = db.prepare(sql).unwrap();
+                let count = prepared.column_count();
+                output = prepared
+                    .query_map([], |row| {
+                        (0..count)
+                            .map(|position| row.get::<_, Option<i64>>(position))
+                            .collect::<duckdb::Result<Vec<_>>>()
+                    })
+                    .unwrap()
+                    .collect::<duckdb::Result<Vec<_>>>()
+                    .unwrap();
+            } else {
+                db.execute_batch(sql).unwrap();
+            }
+            let actual_columns = db
+                .prepare(
+                    "SELECT column_name FROM information_schema.columns
+                     WHERE table_name = 't' ORDER BY ordinal_position",
+                )
+                .unwrap()
+                .query_map([], |row| row.get::<_, String>(0))
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap();
+            if let Some(expected_schema) = expected["schema"].as_array() {
+                declared_columns = expected_schema
+                    .iter()
+                    .map(|column| column.as_str().unwrap().split_whitespace().next().unwrap().to_owned())
+                    .collect();
+            }
+            if expected["exists"] == false {
+                assert!(actual_columns.is_empty(), "{}", case["id"]);
+                assert!(db.prepare("SELECT * FROM t").is_err());
+                continue;
+            }
+            assert_eq!(actual_columns, declared_columns, "{} step {index}", case["id"]);
+            let (row_description, observed) = if expected.get("read").is_some() {
+                (&expected["read"], output)
+            } else {
+                let selection = format!("SELECT {} FROM t", actual_columns.join(", "));
+                let mut statement = db.prepare(&selection).unwrap();
+                let count = statement.column_count();
+                let rows = statement
+                    .query_map([], |row| {
+                        (0..count)
+                            .map(|position| row.get::<_, Option<i64>>(position))
+                            .collect::<duckdb::Result<Vec<_>>>()
+                    })
+                    .unwrap()
+                    .collect::<duckdb::Result<Vec<_>>>()
+                    .unwrap();
+                (&expected["rows"], rows)
+            };
+            let mut expected_rows = row_description
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| {
+                    actual_columns
+                        .iter()
+                        .map(|name| row[name].as_i64())
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>();
+            let mut observed = observed;
+            expected_rows.sort();
+            observed.sort();
+            assert_eq!(observed, expected_rows, "{} step {index}", case["id"]);
+        }
+    }
+}
+
+#[test]
+fn native_ddl_errors_preserve_before_state_and_known_drop_rejects_read() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1)")
+        .unwrap();
+    assert!(db.execute_batch("ALTER TABLE t ADD COLUMN a INTEGER").is_err());
+    assert_eq!(
+        db.query_row("SELECT a FROM t", [], |row| row.get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    db.execute_batch("DROP TABLE t").unwrap();
+    assert!(db.prepare("SELECT a FROM t").is_err());
+}
