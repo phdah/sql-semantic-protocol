@@ -2,19 +2,20 @@
   "task_159_ddl_lifecycle_acceptance": {
     "owner": "TASK-159",
     "parent": "TASK-83",
-    "status": "child_AC1_to_4_verified_independent_review_pending",
+    "status": "child_AC1_to_4_verified_vendor_rename_correction_CI_pending",
     "freeze": "docs/task-159-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "fixture_ids": [
       "83-C159-P",
       "83-C159-N"
     ],
     "mandatory_cells_verified": true,
-    "ci_verified": true,
+    "ci_verified": false,
     "child_signed_off": false,
     "parent_signed_off": false,
     "freeze_history": [
-      "docs/task-159-acceptance-freeze-v1.json"
+      "docs/task-159-acceptance-freeze-v1.json",
+      "docs/task-159-acceptance-freeze-v2.json"
     ],
     "frozen_positive_negative_cases": 18,
     "mandatory_cases": 8,
@@ -36,7 +37,7 @@
       6
     ],
     "duckdb_verified": true,
-    "all_dialects_verified": true,
+    "all_dialects_verified": false,
     "all_adapters_verified": true,
     "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41488484532",
     "implementation_ci_head": "c59113784a5968b73845af238c7bed1f2b99433c",
