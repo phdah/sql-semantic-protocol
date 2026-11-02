@@ -74,7 +74,10 @@ fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
     assert_eq!(statistics.duplicate_rows(), 1);
     // NULL share is exactly 1/3, never floating point or rounded.
     let null_fraction = statistics.null_fraction().expect("nonempty NULL ratio");
-    assert_eq!((null_fraction.numerator(), null_fraction.denominator()), (1, 3));
+    assert_eq!(
+        (null_fraction.numerator(), null_fraction.denominator()),
+        (1, 3)
+    );
 
     for dialect in DIALECTS {
         let mut b = bundle("SELECT k FROM t", dialect);
