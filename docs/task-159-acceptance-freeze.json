@@ -1,12 +1,12 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-159",
   "parent": "TASK-83",
   "fixture_ids": [
     "83-C159-P",
     "83-C159-N"
   ],
-  "status": "v2_verified_mandatory_child_pending_independent_review",
+  "status": "v3_vendor_rename_fail_closed_mandatory_child_pending_independent_review",
   "frozen_before_semantic_changes": true,
   "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
   "seams": [
@@ -928,12 +928,13 @@
     "all_dialects_verified": true,
     "all_adapters_verified": true,
     "independent_review": false,
-    "ci_verified": true
+    "ci_verified": false
   },
   "history": [
-    "docs/task-159-acceptance-freeze-v1.json"
+    "docs/task-159-acceptance-freeze-v1.json",
+    "docs/task-159-acceptance-freeze-v2.json"
   ],
-  "freeze_policy": "preimplementation v1 retained immutably; v2 adds executable per-cell typed domains and native/protocol before/after oracles, without weakening mandatory inventory",
+  "freeze_policy": "preimplementation v1 retained immutably; v2 adds executable per-cell typed domains and native/protocol before/after oracles, without weakening mandatory inventory; v3 corrects conditional standalone RENAME TABLE parser normalization to fail-closed, preserving all mandatory Exact/Impossible obligations and immutable v2",
   "ac_mapping": {
     "1": [
       "83-C159-P-truncate",
@@ -997,7 +998,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "bigquery": [
       "lifecycle:truncate",
@@ -1017,7 +1018,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "clickhouse": [
       "lifecycle:truncate",
@@ -1037,7 +1038,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "databricks": [
       "lifecycle:truncate",
@@ -1057,7 +1058,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "duckdb": [
       "lifecycle:truncate",
@@ -1077,7 +1078,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "generic": [
       "lifecycle:truncate",
@@ -1097,7 +1098,7 @@
       "canonical_unsupported",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "hive": [
       "lifecycle:truncate",
@@ -1117,7 +1118,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "mssql": [
       "lifecycle:truncate",
@@ -1137,7 +1138,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "mysql": [
       "lifecycle:truncate",
@@ -1157,7 +1158,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "postgresql": [
       "lifecycle:truncate",
@@ -1177,7 +1178,7 @@
       "canonical_unsupported",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "redshift": [
       "lifecycle:truncate",
@@ -1197,7 +1198,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "snowflake": [
       "lifecycle:truncate",
@@ -1217,7 +1218,7 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ],
     "sqlite": [
       "lifecycle:truncate",
@@ -1237,13 +1238,13 @@
       "parser_boundary",
       "canonical_unsupported",
       "canonical_unsupported",
-      "lifecycle:rename"
+      "canonical_unsupported"
     ]
   },
   "dialect_observation": {
-    "oracle": "sqlparser 0.58 AST classification only (not runtime vendor execution)",
-    "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41486428184",
-    "head": "7255ef7a828d4a64c59a6ae752ec7b4037775895",
+    "oracle": "sqlparser 0.58 AST classification only; v3 standalone RENAME TABLE is canonical unsupported, not a portable execution proof",
+    "run": null,
+    "head": null,
     "cases": 18,
     "cells": 234
   }
