@@ -97,7 +97,9 @@ pub(super) fn lifecycle_transition(
         }),
         WriteLifecycleAction::Rename { to } => {
             if to.trim().is_empty() || to == target {
-                return Err(residual("table RENAME requires a distinct named destination"));
+                return Err(residual(
+                    "table RENAME requires a distinct named destination",
+                ));
             }
             if states.contains_key(to) {
                 return Err(impossible("RENAME target relation already exists"));
