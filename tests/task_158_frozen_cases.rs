@@ -372,8 +372,7 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
                 .map(Result::unwrap)
                 .collect::<Vec<_>>();
             assert_eq!(
-                names,
-                initial_columns,
+                names, initial_columns,
                 "{id}: rejected ALTER must preserve schema identity"
             );
             continue;
