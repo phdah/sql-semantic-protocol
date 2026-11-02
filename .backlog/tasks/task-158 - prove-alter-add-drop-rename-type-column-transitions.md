@@ -34,6 +34,21 @@ type: feature
 
 PR #179 includes SQL AST `ALTER TABLE` normalization, a canonical `schema_alter` write kind with ordered typed operations, and complete-bag replay for conservative ADD/DROP/RENAME/identical-TYPE and provably lossless integer widening transitions. `PhysicalWriteTransition` retains exact before/after schemas, and unproved casts retain typed before/proposed schemas. The v1 inventory is preserved as `docs/task-158-acceptance-freeze-v1.json`; active `docs/task-158-acceptance-freeze.json` is v3 with typed domains, exact row truth partitions and 104 observed parser classifications. SQL/dbt/ODCS, DuckDB and negative tests have been added. `docs/task-158-acceptance-audit.md` records the still-open evidence obligations. No original AC is signed off until final-head CI, complete evidence and independent review are verified. Parent TASK-83 remains open.
 
+## Verification progress (2026-11-02)
+
+PR #179 now propagates source-independent, authoritative scalar ADD defaults
+through later INSERT and RENAME, removes obsolete defaults on DROP, and models
+omitted nullable ADD columns as SQL NULL. The native DuckDB suite asserts frozen
+prestate and poststate bags, with additional conditional cast/PK evidence.
+Direct SQL, dbt catalog and ODCS equivalent metadata paths include the
+constrained-key boundary; the v4 active matrix archives immutable v1-v3 and
+tracks 104 parser and 27 adapter evidence cells.
+
+The remaining gates are final-head CI, an independent fixed-point standards/spec
+review, and approved conditional vendor cast/key/transaction dispositions.
+No acceptance box is signed off merely because a parser accepts syntax or a
+single engine executes it. Parent TASK-83 remains open.
+
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
