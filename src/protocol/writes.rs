@@ -659,7 +659,9 @@ impl WriteOperation {
                 WriteKind::Update => WriteCardinalityRule::Preserve,
                 WriteKind::Delete => WriteCardinalityRule::SubtractDeletes,
                 WriteKind::ConditionalMutation => WriteCardinalityRule::Merge,
-                WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle => return None,
+                WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle => {
+                    return None
+                }
             },
         })
     }
