@@ -180,6 +180,11 @@ pub fn physical_alter_column_snapshot(
                         attempted_schema: None,
                     };
                 }
+                if old != new && columns.iter().any(|item| item.name() == new) {
+                    return PhysicalColumnAlterProof::Impossible {
+                        reason: format!("RENAME destination '{new}' already exists"),
+                    };
+                }
                 if columns
                     .iter()
                     .any(|item| item.name() != old && item.name().eq_ignore_ascii_case(new))
@@ -189,11 +194,6 @@ pub fn physical_alter_column_snapshot(
                             .to_string(),
                         before_schema: schema.clone(),
                         attempted_schema: None,
-                    };
-                }
-                if old != new && columns.iter().any(|item| item.name() == new) {
-                    return PhysicalColumnAlterProof::Impossible {
-                        reason: format!("RENAME destination '{new}' already exists"),
                     };
                 }
                 let renamed = match columns[index].clone().renamed(new.clone()) {
