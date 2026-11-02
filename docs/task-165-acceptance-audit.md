@@ -82,6 +82,28 @@ separate attestation.
 - Parent TASK-85 original AC #1/#3/#5/#6 remain open until the later
   children and independent parent certification complete.
 
+## Pinned downstream consumer evidence
+
+The one-off qualification run
+[41522367446](https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446)
+checked pinned `phdah/sql-tdg@3beaf7799ab54b2440ae34c917ff7eda6c11c398`
+against the PR protocol head `6e767dd62ef37a1ab5d30ddd515f7f423fe7503b`.
+The consumer's 34 library unit tests, 2 type-coverage tests,
+26 full-query tests and 7 exactness tests passed. Two timestamp-specific
+tests were separately executed against both the pre-PR baseline
+`7af4c128d5bc5785982ccdcd6bc7fed603651938` and this PR:
+`full_query/protocol_driven_timestamp_generation` and
+`exactness/timezone_dependent_timestamp_filters_require_session_assumption`.
+Both returned exit 101 at baseline **and** PR head, with the identical
+`reason=computed_expression clause=where` residual diagnostic. They are
+pre-existing compatibility failures, not TASK-165 regressions. Full-suite
+green must not be claimed. They remain explicit conditional consumer
+exceptions pending the separate consumer/release owner disposition.
+
+The temporary CI workflow was removed from the implementation branch
+after capturing the qualification run, so the protocol repository keeps
+no permanent dependency on the consumer's Git SHA.
+
 ## CI and merge gate
 
 The GitHub CI workflow runs fmt, strict all-target Rust Clippy, tests, docs,
