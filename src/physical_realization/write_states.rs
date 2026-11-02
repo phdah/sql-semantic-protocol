@@ -583,7 +583,9 @@ pub fn physical_ordered_write_state_plan_with_identities(
                                 created_here: executed_create.contains(target),
                                 proven_absent: proven_absent.contains(target),
                                 destination_absent: match action {
-                                    WriteLifecycleAction::Rename { to } => proven_absent.contains(to),
+                                    WriteLifecycleAction::Rename { to } => {
+                                        proven_absent.contains(to)
+                                    }
                                     _ => false,
                                 },
                                 constrained,
