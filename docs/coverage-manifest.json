@@ -1,4 +1,19 @@
 {
+  "task_159_ddl_lifecycle_acceptance": {
+    "owner": "TASK-159",
+    "parent": "TASK-83",
+    "status": "frozen_implementation_pending",
+    "freeze": "docs/task-159-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "83-C159-P",
+      "83-C159-N"
+    ],
+    "mandatory_cells_verified": false,
+    "ci_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false
+  },
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
     "parent": "TASK-83",
