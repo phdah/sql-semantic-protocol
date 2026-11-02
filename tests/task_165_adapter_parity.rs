@@ -2,24 +2,21 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    dialect_from_name, parse_dbt_manifest, to_bundle_json, AnalysisBundle, ConfiguredSqlInput,
-    ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
+    parse_dbt_manifest, to_bundle_json, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
+    OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 const RELATION: &str = "warehouse.raw.s";
 const SQL: &str = "SELECT k FROM warehouse.raw.s";
 
 fn source_schema() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            RELATION,
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
-                .expect("source INTEGER")],
-        )
-        .expect("schema"),
-    ])
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        RELATION,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").expect("source INTEGER")],
+    )
+    .expect("schema")])
     .expect("catalog")
 }
 
@@ -88,7 +85,12 @@ fn evaluated(
     rows: u64,
     entries: &[(ConstraintValue, u64)],
 ) -> (OutcomeGoalStatus, Option<String>, Value) {
-    let layer = bundle.layers().last().expect("output layer").id().to_string();
+    let layer = bundle
+        .layers()
+        .last()
+        .expect("output layer")
+        .id()
+        .to_string();
     let histogram = OutputDistribution::new(
         "k",
         entries
@@ -99,8 +101,7 @@ fn evaluated(
     .expect("histogram");
     bundle
         .set_outcome_goals(&[
-            OutcomeGoal::new(layer, Some(rows), None, vec![histogram])
-                .expect("complete target"),
+            OutcomeGoal::new(layer, Some(rows), None, vec![histogram]).expect("complete target")
         ])
         .expect("attach goals");
     let goal = &bundle.outcome_goals()[0];
@@ -117,10 +118,7 @@ fn evaluated(
 
 #[test]
 fn sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs() {
-    let distribution = [
-        (ConstraintValue::Integer(1), 2),
-        (ConstraintValue::Null, 1),
-    ];
+    let distribution = [(ConstraintValue::Integer(1), 2), (ConstraintValue::Null, 1)];
     let compare = |rows| {
         let direct = evaluated(sql_bundle(&source_schema()), rows, &distribution);
         let dbt = evaluated(dbt_bundle(), rows, &distribution);
