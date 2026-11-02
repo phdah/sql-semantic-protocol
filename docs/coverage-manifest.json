@@ -1,4 +1,38 @@
 {
+  "task_160_ordered_lifecycle_acceptance": {
+    "owner": "TASK-160",
+    "parent": "TASK-83",
+    "status": "implementation_in_progress_not_signed_off",
+    "freeze": "docs/task-160-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "83-C160-P",
+      "83-C160-N"
+    ],
+    "original_parent_ac_mapping": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cells_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "dialect_matrix_verified": false,
+    "adapter_parity_verified": false,
+    "native_duckdb_oracles_verified": false,
+    "implementation_ci_verified": false,
+    "independent_review": false,
+    "ordered_lifecycle_oracle": "tests/task_160_ordered_lifecycle.rs",
+    "remaining_gates": [
+      "Complete materialized SELECT read checkpoint and generation-aware source schema identity",
+      "Verify every mandatory/conditional frozen cell and 13 dialect parser identities",
+      "Verify SQL/dbt/ODCS parity and final Rust/dbt CI",
+      "Independent code-review and parent TASK-83 AC signoff"
+    ]
+  },
   "task_159_ddl_lifecycle_acceptance": {
     "owner": "TASK-159",
     "parent": "TASK-83",
