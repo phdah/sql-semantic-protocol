@@ -67,6 +67,28 @@ fn sorted_bag(rows: &[PhysicalWriteRow]) -> Vec<String> {
     result
 }
 
+/// Read the independent native physical bag without relying on SQL row order.
+fn native_integer_bag(db: &duckdb::Connection, columns: &[&str]) -> Vec<PhysicalWriteRow> {
+    let mut statement = db
+        .prepare(&format!("SELECT {} FROM t", columns.join(", ")))
+        .unwrap();
+    statement
+        .query_map([], |row| {
+            let mut values = BTreeMap::new();
+            for (index, name) in columns.iter().enumerate() {
+                let number: Option<i64> = row.get(index)?;
+                let value = number.map_or(LiteralValue::Null, |value| {
+                    LiteralValue::Number(value.to_string())
+                });
+                values.insert((*name).to_string(), value);
+            }
+            Ok(PhysicalWriteRow::new(values).unwrap())
+        })
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>()
+}
+
 #[test]
 fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
     let matrix = frozen();
@@ -294,6 +316,15 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
             ))
             .unwrap();
         }
+        let initial_columns = before
+            .iter()
+            .map(|declared| declared.split_once(' ').unwrap().0)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            sorted_bag(&native_integer_bag(&db, &initial_columns)),
+            sorted_bag(state(&case["prestate"]).rows()),
+            "{id}: complete independently executed pre-ALTER bag"
+        );
         let operation = case["sql"].as_str().unwrap();
         if id.starts_with("83-C158-N-") {
             assert!(
