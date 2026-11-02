@@ -126,6 +126,7 @@ fn diagnostic_frozen_v2_parser_classification_snapshot() {
                             "conditional_definition_unknown".to_string(),
                         _ => "unexpected_query".to_string(),
                     },
+                    _ => "unexpected_statement".to_string(),
                 }
             };
             row.push(status);
