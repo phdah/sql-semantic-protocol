@@ -148,27 +148,30 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
             inventory.as_deref(),
         );
         let truth = &case["source_truth"];
-        let expected_all_ordinals = (0..before.rows().len())
+        let all = (0..before.rows().len())
             .map(|index| Value::from(index as u64))
             .collect::<Vec<_>>();
-        let reject = case["classification"] != "Exact";
+        let (true_ordinals, not_true_ordinals, unknown_ordinals) =
+            match case["classification"].as_str().unwrap() {
+                "Exact" => (all, Vec::new(), Vec::new()),
+                "Impossible" => (Vec::new(), all, Vec::new()),
+                "Residual" => (Vec::new(), Vec::new(), all),
+                other => panic!("{id}: invalid frozen proof class {other}"),
+            };
         assert_eq!(
             truth["true_ordinals"],
-            Value::from(if reject {
-                Vec::new()
-            } else {
-                expected_all_ordinals.clone()
-            }),
-            "{id}: complete positive row-occurrence partition"
+            Value::from(true_ordinals),
+            "{id}: proven TRUE occurrences"
         );
         assert_eq!(
             truth["not_true_ordinals"],
-            Value::from(if reject {
-                expected_all_ordinals
-            } else {
-                Vec::new()
-            }),
-            "{id}: complete rejected row-occurrence partition"
+            Value::from(not_true_ordinals),
+            "{id}: proven NOT TRUE occurrences"
+        );
+        assert_eq!(
+            truth["unknown_ordinals"],
+            Value::from(unknown_ordinals),
+            "{id}: unproved operation occurrences"
         );
         assert_eq!(
             case["before_count"],
