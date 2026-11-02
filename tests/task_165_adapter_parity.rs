@@ -175,19 +175,20 @@ fn grouping_and_distinct_adapter_paths_preserve_canonical_outcome_classification
             let distributions = if group {
                 Vec::new()
             } else {
-                vec![
-                    OutputDistribution::new(
-                        "k",
-                        vec![OutputValueCount::new(ConstraintValue::Integer(1), 2)],
-                    )
-                    .expect("distinct counterexample"),
-                ]
+                vec![OutputDistribution::new(
+                    "k",
+                    vec![OutputValueCount::new(ConstraintValue::Integer(1), 2)],
+                )
+                .expect("distinct counterexample")]
             };
             bundle
-                .set_outcome_goals(&[
-                    OutcomeGoal::new(layer, Some(2), group.then_some(2), distributions)
-                        .expect("goal")
-                ])
+                .set_outcome_goals(&[OutcomeGoal::new(
+                    layer,
+                    Some(2),
+                    group.then_some(2),
+                    distributions,
+                )
+                .expect("goal")])
                 .expect("analysis");
             bundle.outcome_goals()[0].status()
         };
