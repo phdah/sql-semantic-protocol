@@ -62,7 +62,9 @@ fn intermediate_read_matches_exact_pre_drop_bag_and_final_catalog_is_absent() {
     }
     let mut native = db.prepare(sql[3]).unwrap();
     let rows = native
-        .query_map([], |r| Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?)))
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+        })
         .unwrap()
         .collect::<duckdb::Result<Vec<_>>>()
         .unwrap();
