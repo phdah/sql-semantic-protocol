@@ -136,13 +136,14 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
         };
         let inventory = if id == "83-C158-N-key" {
             let evidence = ConstraintEvidence::new(
-                ConstraintProvenance::new(ConstraintSourceKind::SqlDdl, "t.primary_key")
-                    .unwrap(),
+                ConstraintProvenance::new(ConstraintSourceKind::SqlDdl, "t.primary_key").unwrap(),
                 ConstraintEnforcement::Enforced,
             );
             let primary_key =
                 RelationConstraint::primary_key(vec!["key".into()], vec![evidence]).unwrap();
-            Some(vec![RelationConstraintSet::new("t", vec![primary_key]).unwrap()])
+            Some(vec![
+                RelationConstraintSet::new("t", vec![primary_key]).unwrap()
+            ])
         } else {
             Some(Vec::new())
         };
@@ -236,9 +237,14 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
                     "{id}: stable occurrence ids"
                 );
                 assert_eq!(
+                    after.rows(),
+                    state(&case["poststate"]).rows(),
+                    "{id}: every original physical occurrence retains its ordinal"
+                );
+                assert_eq!(
                     sorted_bag(after.rows()),
                     sorted_bag(state(&case["poststate"]).rows()),
-                    "{id}"
+                    "{id}: complete output bag"
                 );
                 let true_ordinals = case["source_truth"]["true_ordinals"].as_array().unwrap();
                 let not_true_ordinals = case["source_truth"]["not_true_ordinals"]
