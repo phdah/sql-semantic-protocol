@@ -6,7 +6,7 @@
 
 - Original six-case v1 frozen before code changes in `docs/task-160-acceptance-freeze-v1.json`.
 - Explicit v2 addition `83-C160-N-filter-null` corrects a missing AC #3 TRUE / NOT TRUE / SQL UNKNOWN contrast. Original v1 is preserved, and no original mandatory case is weakened.
-- Seven v2 cases, including five mandatory Exact/Impossible outcomes and two named conditional Residual boundaries. 13 dialect identities; 416 individual statement/parser classifications are the scope floor.
+- Seven v3 cases (v2 archived), including five mandatory Exact/Impossible outcomes and two named conditional Residual boundaries. 13 dialect identities; all 416 individual statement/parser classifications are pinned and verified in the active v3 matrix.
 - Original TASK-160 AC #1..#5 and TASK-83 parent AC #1..#6 remain independently traceable in the matrix.
 
 ## Semantic implementation and evidence
@@ -28,7 +28,7 @@ The new read API never treats a missing population as a physically absent relati
 
 ## Remaining gates before child Done
 
-1. Freeze exact per-dialect parser/canonical classifications for all 416 v2 statement cells and reconcile any invalid assumptions.
+1. Verify the pinned 416-cell v3 parser/canonical matrix on the final implementation CI head.
 2. Verify the final-head Rust fmt, strict Clippy, tests, docs, no-default-features and dbt E2E CI.
 3. Resolve any final direct SQL/dbt/ODCS parity and native DuckDB failures.
 4. Perform separate Standards and Spec code-review passes, correct findings, and record the reviewed CI head.
