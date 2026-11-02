@@ -4,9 +4,8 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput, WriteKind,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
+    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn direct() -> RelationCatalog {
