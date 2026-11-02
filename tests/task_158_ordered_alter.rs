@@ -344,14 +344,22 @@ fn alter_default_survives_later_omitted_insert_and_rename() {
         "INSERT INTO t (a) VALUES (4)",
     ];
     let analyzed = bundle(&sql);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("canonical ALTER default should survive later INSERT and RENAME");
     };
     assert_eq!(transitions.len(), sql.len());
-    assert_eq!(transitions[3].after().rows()[1].values()["b"], LiteralValue::Number("2".into()));
-    assert_eq!(transitions[4].after().rows()[1].values()["c"], LiteralValue::Number("2".into()));
+    assert_eq!(
+        transitions[3].after().rows()[1].values()["b"],
+        LiteralValue::Number("2".into())
+    );
+    assert_eq!(
+        transitions[4].after().rows()[1].values()["c"],
+        LiteralValue::Number("2".into())
+    );
     let final_schema = transitions[4].after_schema().unwrap();
     assert_eq!(final_schema.columns()[1].name(), "c");
     let final_state = &final_states[0];
@@ -384,20 +392,29 @@ fn alter_added_nullable_column_without_default_is_null_on_later_insert() {
         "INSERT INTO t (a) VALUES (3)",
     ];
     let analyzed = bundle(&sql);
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } =
-        physical_ordered_write_state_plan(&analyzed, &[])
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
     else {
         panic!("omitting a nullable ADD column must insert SQL NULL");
     };
     assert_eq!(transitions.len(), sql.len());
     let schema = transitions[2].after_schema().unwrap();
-    assert_eq!(final_states[0].exact_domains(schema).unwrap()[1].values(), &[(LiteralValue::Null, 2)]);
+    assert_eq!(
+        final_states[0].exact_domains(schema).unwrap()[1].values(),
+        &[(LiteralValue::Null, 2)]
+    );
     let db = Connection::open_in_memory().unwrap();
     for statement in sql {
         db.execute_batch(statement).unwrap();
     }
-    let values = db.prepare("SELECT b FROM t ORDER BY a").unwrap()
-        .query_map([], |r| r.get::<_, Option<i64>>(0)).unwrap()
-        .map(Result::unwrap).collect::<Vec<_>>();
+    let values = db
+        .prepare("SELECT b FROM t ORDER BY a")
+        .unwrap()
+        .query_map([], |r| r.get::<_, Option<i64>>(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect::<Vec<_>>();
     assert_eq!(values, vec![None, None]);
 }
