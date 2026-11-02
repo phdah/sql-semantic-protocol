@@ -1,0 +1,38 @@
+name: TASK-165 pinned downstream consumer (temporary qualification)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/task165-pinned-consumer.yml'
+      - 'src/**'
+      - 'tests/task_165_*.rs'
+      - 'docs/task-165-acceptance-freeze.json'
+permissions:
+  contents: read
+jobs:
+  pinned-consumer:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+    steps:
+      - name: Checkout protocol PR head
+        uses: actions/checkout@v4
+      - name: Checkout pinned downstream sql-tdg
+        uses: actions/checkout@v4
+        with:
+          repository: phdah/sql-tdg
+          ref: 3beaf7799ab54b2440ae34c917ff7eda6c11c398
+          path: .task165-consumer
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+      - name: Verify patched consumer uses this protocol head
+        run: |
+          cargo metadata --no-deps --format-version 1 --manifest-path .task165-consumer/Cargo.toml >/dev/null
+          printf 'consumer_pin=3beaf7799ab54b2440ae34c917ff7eda6c11c398\nprotocol_sha=%s\n' "$GITHUB_SHA"
+      - name: Test pinned consumer semantic goals against PR workspace protocol
+        run: |
+          cargo test --manifest-path .task165-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test exactness --test full_query --test type_coverage --lib
