@@ -73,7 +73,8 @@ fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
     assert_eq!(statistics.null_rows(), 1);
     assert_eq!(statistics.duplicate_rows(), 1);
     // NULL share is exactly 1/3, never floating point or rounded.
-    assert_eq!((statistics.null_rows(), statistics.rows()), (1, 3));
+    let null_fraction = statistics.null_fraction().expect("nonempty NULL ratio");
+    assert_eq!((null_fraction.numerator(), null_fraction.denominator()), (1, 3));
 
     for dialect in DIALECTS {
         let mut b = bundle("SELECT k FROM t", dialect);
@@ -255,6 +256,7 @@ fn zero_and_overflow_histograms_never_invent_undefined_fractions() {
     assert_eq!(zero.rows(), 0);
     assert_eq!(zero.null_rows(), 0);
     assert_eq!(zero.duplicate_rows(), 0);
+    assert!(zero.null_fraction().is_none());
 
     let overflow = histogram(&[
         (ConstraintValue::Integer(1), u64::MAX),
