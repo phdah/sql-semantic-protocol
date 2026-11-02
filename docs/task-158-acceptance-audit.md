@@ -51,3 +51,42 @@ model containing ALTER is now asserted to fail explicitly. The meaningful
 parity guarantee is the canonical replay of independent SQL ALTER inputs
 against equivalent dbt catalog/manifest or ODCS typed prestate evidence;
 neither adapter is claimed to execute database migrations.
+
+
+## Independent-evidence remediation (2026-11-02, v4)
+
+The first eight-case acceptance matrix conflated a nonempty constraint inventory
+with an actually enforced key: the `83-C158-N-key` test supplied an empty
+constraint set and happened to return Residual. The public-API acceptance
+test now supplies an explicit `PrimaryKey(key)` with SQL DDL provenance and
+Enforced status. It cannot pass merely because a caller supplied any nonempty
+inventory.
+
+Every frozen case now has complete *pre*-ALTER typed domain frequencies,
+NULL membership and inclusive integer bounds, asserted independently of its
+poststate typed domains. Exact transformations assert occurrence-preserving
+row order and the complete poststate bag, and Impossible outcomes verify
+that the native DuckDB source bag and schema remain unchanged. Conditional
+Residuals keep a third `unknown_ordinals` partition. They are not falsely
+promoted to proven NOT TRUE outcomes.
+
+Four additional frozen, owner-attributed vendor parser boundaries cover
+`ADD IF NOT EXISTS`, `DROP IF EXISTS`, `DROP ... CASCADE`, and
+`ALTER TYPE ... USING`. Every exposed dialect either rejects parsing
+or produces an explicit canonical Unsupported statement, never a false
+Exact operation. These are parser and structural-law classifications,
+not engine-level support claims.
+
+### Conditional release-disposition proposals
+
+| Variant | Portable claim | Evidence | Owner | Disposition |
+| --- | --- | --- | --- | --- |
+| INTEGER to VARCHAR type change | `Residual`, typed before/attempted schema | DuckDB concrete-row cast succeeds, but no portable cast/constraint law is proved | TASK-158 | Accept only as a documented conditional residual; additional engine laws require separately reviewed evidence |
+| DROP enforced PRIMARY KEY | `Residual`, no committed after-state | Independently enforced `PrimaryKey` evidence and native DuckDB rejects the operation | TASK-158 | Accept only as a documented conditional residual; full constraint/dependency rewrites are not claimed |
+| Vendor DDL transactions and existence/dependency options | `Unsupported` or `Residual` | Explicit AST parser boundaries; no vendor transaction/session execution oracle | TASK-158, with broader lifecycle work in TASK-159/160 and TASK-84 | Do not release any exact vendor/session proof without a separately reviewed engine-law fixture |
+
+These are **proposed dispositions**, not a fabricated maintainer approval.
+Parent TASK-83 still requires TASK-159/160 and separate parent acceptance
+closure. The task is eligible for child signoff only once final-head CI
+and the genuinely independent standards/spec review have verified this
+specific change set and the conditional dispositions are approved.
