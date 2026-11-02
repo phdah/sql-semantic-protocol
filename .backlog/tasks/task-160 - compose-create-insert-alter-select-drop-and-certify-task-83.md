@@ -1,10 +1,10 @@
 ---
 id: TASK-160
 title: Compose CREATE INSERT ALTER SELECT DROP and certify TASK-83
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-02'
 labels: []
 milestone: m-3
 dependencies:
@@ -39,6 +39,12 @@ type: feature
 - [ ] #4 Test all 13 exposed parser dialects where syntax is shared and relevant vendor syntax boundaries; assert direct SQL, dbt and ODCS parity wherever identical metadata evidence exists. Vendor/session/engine-only claims require versioned evidence; missing evidence is typed Residual with owner TASK-160 and reviewed disposition.
 - [ ] #5 On the final implementation head run fmt, strict Clippy, complete Rust tests/docs, no-default-features, dbt E2E and active protocol/schema snapshots. Check every mandatory fixture and parent AC mapping before marking this child Done and merging; leave TASK-83 open.
 <!-- AC:END -->
+
+## Implementation progress (2026-11-02)
+
+- Task-specific frozen v1 inventory: [docs/task-160-acceptance-freeze.json](../../docs/task-160-acceptance-freeze.json), with exact complete-bag CREATE/INSERT/ALTER/SELECT/DROP and negative/conditional boundaries.
+- First implementation slice: prove that a read after a witnessed DROP is impossible instead of silently skipping the SELECT. Native DuckDB and independent protocol regression coverage required.
+- Remaining acceptance work: generation-aware re-CREATE, complete intermediate read output/oracle and full catalog/row checkpoint lineage, complete parser-dialect matrix, direct SQL/dbt/ODCS parity, complete child/parent review and final CI. No AC has been signed off; TASK-83 remains open.
 
 ## Sequencing
 
