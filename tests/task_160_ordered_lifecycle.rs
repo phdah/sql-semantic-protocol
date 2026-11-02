@@ -138,11 +138,12 @@ fn task_160_scope_is_frozen_and_parent_acceptance_remains_open() {
         serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-160");
     assert_eq!(freeze["parent"], "TASK-83");
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["scope_amendment"]["from_version"], 1);
     let original: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["frozen_before_semantic_changes"], true);
+    assert_eq!(freeze["parser_dialect_cells"], 416);
     let ids = freeze["cases"]
         .as_array()
         .unwrap()
