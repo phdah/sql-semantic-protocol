@@ -21,7 +21,7 @@ fn rename_consumes_original_relation_and_produces_only_new_identity() {
     );
     let wire: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
     let query = &wire["inputs"][0]["statements"][0];
-    assert_eq!(query["produced_relation"], "u");
+    assert_eq!(wire["layers"][0]["produces"][0]["name"], "u");
     assert_eq!(query["write"]["target"], "t");
     assert_eq!(query["write"]["lifecycle_action"]["to"], "u");
 }
@@ -34,7 +34,7 @@ fn drop_is_destructive_not_a_phantom_anonymous_or_named_producer() {
     assert_eq!(layer.consumes(), &["t"]);
     assert!(layer.produces().is_empty(), "DROP is not a relation definition");
     let wire: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
-    assert!(wire["inputs"][0]["statements"][0]["produced_relation"].is_null());
+    assert_eq!(wire["layers"][0]["produces"], serde_json::json!([]));
 }
 
 #[test]
