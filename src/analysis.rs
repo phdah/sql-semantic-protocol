@@ -523,22 +523,11 @@ fn analyze_statement(
                 )
             }
         }
-        SqlStatement::RenameTable(rename_tables) => {
-            if let [rename] = rename_tables.as_slice() {
-                analyze_relation_lifecycle(
-                    rename.old_name.to_string(),
-                    WriteLifecycleAction::Rename {
-                        to: rename.new_name.to_string(),
-                    },
-                )
-            } else {
-                unsupported_write_statement(
-                    "rename_table",
-                    "unsupported_multi_table_rename",
-                    "multi-table RENAME requires an atomic engine-specific execution law",
-                )
-            }
-        }
+        SqlStatement::RenameTable(_) => unsupported_write_statement(
+            "rename_table",
+            "unsupported_vendor_rename_table",
+            "standalone RENAME TABLE requires an independently attested vendor execution law",
+        ),
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
         SqlStatement::Update {
             table,
