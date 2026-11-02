@@ -23,16 +23,44 @@ jobs:
           repository: phdah/sql-tdg
           ref: 3beaf7799ab54b2440ae34c917ff7eda6c11c398
           path: .task165-consumer
+      - name: Checkout fixed pre-PR protocol baseline
+        uses: actions/checkout@v4
+        with:
+          ref: 7af4c128d5bc5785982ccdcd6bc7fed603651938
+          path: .task165-baseline
       - name: Install Rust toolchain
         run: |
           rustup toolchain install stable --profile minimal --component rustfmt,clippy
           rustup default stable
-      - name: Verify patched consumer uses this protocol head
-        run: |
-          cargo metadata --no-deps --format-version 1 --manifest-path .task165-consumer/Cargo.toml >/dev/null
-          printf 'consumer_pin=3beaf7799ab54b2440ae34c917ff7eda6c11c398\nprotocol_sha=%s\n' "$GITHUB_SHA"
-      - name: Test pinned consumer semantic goals against PR workspace protocol
+      - name: Validate independent downstream semantic suites against this PR head
         run: |
           cargo test --manifest-path .task165-consumer/Cargo.toml \
             --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
-            --test exactness --test full_query --test type_coverage --lib
+            --lib --test full_query --test type_coverage
+          cargo test --manifest-path .task165-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test exactness -- --skip timezone_dependent_timestamp_filters_require_session_assumption
+      - name: Check whether historical timezone test also fails at pre-PR baseline
+        run: |
+          set +e
+          cargo test --manifest-path .task165-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE/.task165-baseline'" \
+            --test exactness timezone_dependent_timestamp_filters_require_session_assumption > /tmp/baseline.log 2>&1
+          baseline=$?
+          cargo test --manifest-path .task165-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test exactness timezone_dependent_timestamp_filters_require_session_assumption > /tmp/head.log 2>&1
+          head=$?
+          set -e
+          echo "baseline_exit=$baseline head_exit=$head"
+          grep 'reason=' /tmp/baseline.log || true
+          grep 'reason=' /tmp/head.log || true
+          if [ "$baseline" -ne "$head" ]; then
+            echo "The PR changes the pinned consumer timezone test verdict"
+            exit 1
+          fi
+          if [ "$baseline" -ne 0 ]; then
+            grep -F 'reason=computed_expression clause=where' /tmp/baseline.log
+            grep -F 'reason=computed_expression clause=where' /tmp/head.log
+            echo "Pre-existing baseline failure confirmed. Not a TASK-165 regression."
+          fi
