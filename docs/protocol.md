@@ -1,3 +1,9 @@
+## Ordered lifecycle SELECT checkpoints (TASK-160)
+
+`physical_ordered_lifecycle_plan(bundle, initial_states)` adds a Rust-library physical proof surface without changing the serialized JSON protocol. It consumes canonical analyzed statements and the complete caller-attested source bags. An `Exact` result includes all write transitions, one live catalog and typed schema snapshot after each SQL layer, and intermediate single-source `SELECT` bags with preserved row occurrence ordinals, SQL NULL, typed output column frequencies and the complement of rejected (NOT TRUE) source occurrences. Typed schema evidence comes from the live relation catalog and preceding ALTER mutations; the read evaluator is shared with row-local INSERT SELECT.
+
+A known-dropped source is `Impossible`; an unattested missing source, unsupported projection/producer, vendor session/transaction law or missing schema remains `Residual`. No implicit catalog rows, independent intermediate producer bags or engine-specific DDL behavior are fabricated. Parent TASK-83 release verification remains separate.
+
 # SQL Semantic Protocol contract
 
 ## TASK-144 bounded logical-view execution and multistep CTE proofs
