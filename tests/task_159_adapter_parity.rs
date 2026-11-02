@@ -93,9 +93,7 @@ fn replay(catalog: &RelationCatalog, lifecycle: &str) -> (String, String, bool, 
     let configured = source
         .iter()
         .zip(ids)
-        .map(|(input, id)| {
-            ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref())
-        })
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", parser.as_ref()))
         .collect::<Vec<_>>();
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     let last = &bundle.inputs()[2].statements()[0];
