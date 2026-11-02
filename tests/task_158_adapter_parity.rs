@@ -3,9 +3,10 @@
 
 use serde_json::json;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
+    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan,
+    ConfiguredSqlInput, PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn,
+    SqlInput, WriteKind,
 };
 
 fn direct() -> RelationCatalog {
@@ -91,7 +92,10 @@ fn compiled_dbt_alter_sql_uses_the_same_canonical_write_as_direct_sql() {
             .map(|write| write.column_alter_steps().to_vec())
     };
     assert_eq!(steps(&compiled), steps(&direct));
-    assert!(steps(&compiled).is_some(), "dbt compiled ALTER must retain its canonical write");
+    assert!(
+        steps(&compiled).is_some(),
+        "dbt compiled ALTER must retain its canonical write"
+    );
 }
 
 #[cfg(feature = "odcs")]
