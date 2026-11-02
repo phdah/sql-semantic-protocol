@@ -2,7 +2,7 @@
   "task_165_standalone_output_goal_acceptance": {
     "owner": "TASK-165",
     "parent": "TASK-85",
-    "status": "implementation_matrix_executable_awaiting_independent_review_and_final_signoff",
+    "status": "91_mandatory_cells_and_CI_verified_independent_review_pending",
     "freeze": "docs/task-165-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -20,9 +20,13 @@
       5,
       6
     ],
-    "mandatory_cells_verified": false,
-    "dbt_odcs_parity_verified": false,
+    "mandatory_cells_verified": true,
+    "dbt_odcs_parity_verified": true,
     "final_ci_verified": false,
+    "verified_implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+    "verification_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+    "verified_mandatory_dialect_cells": 91,
+    "verified_conditional_dialect_cells": 13,
     "independent_review": false,
     "child_signed_off": false,
     "parent_signed_off": false,
@@ -57,7 +61,7 @@
       "temporary_workflow_removed": true
     },
     "remaining_gates": [
-      "Final-head 9/9 CI with frozen acceptance runner",
+      "Final-head CI on metadata commit (implementation 9/9 green at 94bb54f)",
       "Independent two-axis review and acceptance-cell signoff",
       "Explicit approval or rejection of historical AC #1 freeze timing exception",
       "Documented TASK-89/91 follow-up for two preexisting downstream timestamp tests"
