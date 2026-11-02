@@ -158,6 +158,8 @@ fn if_exists_requires_proven_absence_and_never_mistakes_missing_snapshot_for_abs
 #[test]
 fn rename_preserves_row_occurrences_nulls_and_integer_domains() {
     let statements = [
+        "CREATE TABLE u (a INTEGER)",
+        "DROP TABLE u",
         "CREATE TABLE t (a INTEGER)",
         "INSERT INTO t (a) VALUES (1), (NULL), (1)",
         "ALTER TABLE t RENAME TO u",
@@ -170,8 +172,8 @@ fn rename_preserves_row_occurrences_nulls_and_integer_domains() {
     else {
         panic!("constraint-free table RENAME preserves the full physical bag");
     };
-    assert_eq!(transitions.len(), 3);
-    let renamed = &transitions[2];
+    assert_eq!(transitions.len(), 5);
+    let renamed = &transitions[4];
     assert!(renamed.before_exists() && renamed.after_exists());
     assert_eq!(renamed.before().relation(), "t");
     assert_eq!(renamed.after().relation(), "u");
@@ -220,6 +222,13 @@ fn rename_existing_target_is_impossible_and_nonexistent_source_is_residual() {
     ));
     assert!(matches!(
         physical_ordered_write_state_plan(&analyze(&["ALTER TABLE t RENAME TO u"]), &[]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    assert!(matches!(
+        physical_ordered_write_state_plan(
+            &analyze(&["CREATE TABLE t(a INTEGER)", "ALTER TABLE t RENAME TO u"]),
+            &[]
+        ),
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
