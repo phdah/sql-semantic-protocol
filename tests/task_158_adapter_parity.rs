@@ -3,7 +3,7 @@
 
 use serde_json::json;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_ordered_write_state_plan, ConfiguredSqlInput,
     PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
@@ -20,7 +20,7 @@ fn direct() -> RelationCatalog {
     .unwrap()
 }
 
-fn dbt() -> RelationCatalog {
+fn dbt_bundle(compiled_sql: &str) -> sql_semantic_protocol::AnalysisBundle {
     let manifest = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
                     "dbt_version":"1.11.8","adapter_type":"duckdb"},
@@ -29,7 +29,7 @@ fn dbt() -> RelationCatalog {
                 "unique_id":"model.task158.probe","resource_type":"model",
                 "name":"probe","relation_name":"task158_probe",
                 "original_file_path":"models/probe.sql","language":"sql",
-                "raw_code":"SELECT a FROM t","compiled_code":"SELECT a FROM t",
+                "raw_code":compiled_sql,"compiled_code":compiled_sql,
                 "depends_on":{"nodes":["source.task158.t"]}
             }
         },
@@ -64,8 +64,34 @@ fn dbt() -> RelationCatalog {
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let catalog = parse_dbt_catalog(&catalog.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    let analyzed = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
+    analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap()
+}
+
+fn dbt() -> RelationCatalog {
+    let analyzed = dbt_bundle("SELECT a FROM t");
     RelationCatalog::from_schemas(analyzed.source_schemas()).unwrap()
+}
+
+#[test]
+fn compiled_dbt_alter_sql_uses_the_same_canonical_write_as_direct_sql() {
+    let sql = "ALTER TABLE t ADD COLUMN c INTEGER DEFAULT 2";
+    let compiled = dbt_bundle(sql);
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let direct = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref()).unwrap();
+    let steps = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        bundle
+            .inputs()
+            .iter()
+            .flat_map(|input| input.statements())
+            .filter_map(|statement| match statement {
+                sql_semantic_protocol::ProtocolStatement::Query(query) => query.write(),
+                _ => None,
+            })
+            .find(|write| write.kind() == WriteKind::SchemaAlter)
+            .map(|write| write.column_alter_steps().to_vec())
+    };
+    assert_eq!(steps(&compiled), steps(&direct));
+    assert!(steps(&compiled).is_some(), "dbt compiled ALTER must retain its canonical write");
 }
 
 #[cfg(feature = "odcs")]
