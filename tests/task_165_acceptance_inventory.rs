@@ -179,8 +179,7 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                     "{id}/{dialect}: full typed NULL/integer histogram"
                 );
                 assert_eq!(
-                    json["outcome_goals"][0]["witness"]["columns"][0]["column"],
-                    "k",
+                    json["outcome_goals"][0]["witness"]["columns"][0]["column"], "k",
                     "{id}/{dialect}: canonical output/source column"
                 );
             }
