@@ -567,24 +567,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                             .source_schemas()
                             .iter()
                             .find(|schema| schema.relation() == target);
-                        let constrained =
-                            execution_bundle.relation_constraints().iter().any(|set| {
-                                (set.relation() == target
-                                    && (!set.constraints().is_empty()
-                                        || !set.computed_keys().is_empty()
-                                        || !set.computed_checks().is_empty()
-                                        || !set.computed_boolean_checks().is_empty()
-                                        || !set.diagnostics().is_empty()
-                                        || set.column_value_sources().iter().any(|source| {
-                                            source.kind()
-                                                != crate::column_sources::ColumnValueKind::Default
-                                                || source.value().is_none()
-                                        })))
-                                    || set.constraints().iter().any(|constraint| {
-                                        matches!(constraint, RelationConstraint::ForeignKey(key)
-                                        if key.referenced_relation() == target)
-                                    })
-                            });
+                        let constrained = has_unproved_physical_relation_constraints(&execution_bundle, target);
                         match lifecycle::lifecycle_transition(
                             action,
                             target,
@@ -649,22 +632,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         // attest the absence of declared table constraints.
                         // Catalog/adapter schemas alone do not certify this.
                         let declared_create = executed_create.contains(target);
-                        let constrained = execution_bundle.relation_constraints().iter().any(|set| {
-                            (set.relation() == target
-                                && (!set.constraints().is_empty()
-                                    || !set.computed_keys().is_empty()
-                                    || !set.computed_checks().is_empty()
-                                    || !set.computed_boolean_checks().is_empty()
-                                    || !set.diagnostics().is_empty()
-                                    || set.column_value_sources().iter().any(|source| {
-                                        source.kind() != crate::column_sources::ColumnValueKind::Default
-                                            || source.value().is_none()
-                                    })))
-                                || set.constraints().iter().any(|constraint| {
-                                    matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
-                                        if key.referenced_relation() == target)
-                                })
-                        });
+                        let constrained = has_unproved_physical_relation_constraints(&execution_bundle, target);
                         let inventory = if declared_create && !constrained {
                             Some(&[][..])
                         } else {
@@ -896,6 +864,28 @@ pub fn physical_ordered_write_state_plan_with_identities(
         transitions,
         final_states: states.into_values().collect(),
     }
+}
+
+/// Return true unless a relation's declared constraint/default inventory is
+/// complete enough to permit the bounded, constraint-free DDL proof.
+/// Also inspect other relations for incoming foreign-key dependencies.
+fn has_unproved_physical_relation_constraints(bundle: &AnalysisBundle, target: &str) -> bool {
+    bundle.relation_constraints().iter().any(|set| {
+        (set.relation() == target
+            && (!set.constraints().is_empty()
+                || !set.computed_keys().is_empty()
+                || !set.computed_checks().is_empty()
+                || !set.computed_boolean_checks().is_empty()
+                || !set.diagnostics().is_empty()
+                || set.column_value_sources().iter().any(|source| {
+                    source.kind() != crate::column_sources::ColumnValueKind::Default
+                        || source.value().is_none()
+                })))
+            || set.constraints().iter().any(|constraint| {
+                matches!(constraint, RelationConstraint::ForeignKey(key)
+                    if key.referenced_relation() == target)
+            })
+    })
 }
 
 /// Apply one normalized, complete, source-local append for a logical-view
