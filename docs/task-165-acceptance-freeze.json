@@ -1,10 +1,10 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-165",
   "parent": "TASK-85",
   "created": "2026-11-02",
   "frozen_before_semantic_changes": false,
-  "freeze_reason": "V1 was authored after initial tests. V2 explicitly reconciles those fixtures with executable source/terminal snapshots and typed boundaries, preserving v1 unchanged. TASK-165 AC#1 historical timing violation needs independent release disposition, not a retroactive claim.",
+  "freeze_reason": "V1 late after first implementation (historical process deviation retained); v2 archived. V3 freezes an explicit group witness source [0,1] and terminal output before tightening the executable group-witness oracle. Independent disposition of original AC #1 timing remains necessary.",
   "scope": "Standalone terminal rows, ordinary groups, single-column DISTINCT and complete signed INTEGER/NULL histogram. Duplicate rows mean occurrences beyond the first per SQL DISTINCT equivalence class (including NULL); null fraction is exact null_rows/total_rows with zero denominator undefined. No independent column conjunction, unproved expression inversion or grouped histogram inference.",
   "fixture_ids": [
     "85-C165-P",
@@ -266,16 +266,16 @@
       "requirement": "mandatory",
       "sql": "SELECT k, COUNT(*) AS n FROM t GROUP BY k",
       "source_bag": [
-        1,
-        2
+        0,
+        1
       ],
       "terminal_bag": [
         {
-          "k": 1,
+          "k": 0,
           "n": 1
         },
         {
-          "k": 2,
+          "k": 1,
           "n": 1
         }
       ],
@@ -291,8 +291,8 @@
         "typed_domain": {
           "k": {
             "kind": "signed_integer",
-            "min": 1,
-            "max": 2,
+            "min": 0,
+            "max": 1,
             "nullable": false
           },
           "n": {
@@ -301,7 +301,13 @@
             "max": 1,
             "nullable": false
           }
-        }
+        },
+        "source_rows": 2,
+        "witness_rows_per_group": 1,
+        "source_key_sequence": [
+          0,
+          1
+        ]
       },
       "directions": {
         "true_rows": [
@@ -311,7 +317,7 @@
         "not_true_rows": [],
         "impossible": false
       },
-      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences",
+      "oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
@@ -488,12 +494,13 @@
     "ci_run_url": null
   },
   "history": [
-    "docs/task-165-acceptance-freeze-v1.json"
+    "docs/task-165-acceptance-freeze-v1.json",
+    "docs/task-165-acceptance-freeze-v2.json"
   ],
-  "review_status": "revised_scope_and_execution_boundaries_awaiting_independent_review",
+  "review_status": "v3_contract_reconciled_with_exact_constructive_witness_before_new_test_changes",
   "dialect_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
   "physical_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
   "conditional_oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
-  "typed_distribution_contract": "Each histogram is a complete requested typed multiset. INTEGER 1 and NULL are canonical buckets. SQL native comparison laws require independent datatype/collation evidence. Null fraction is an exact numerator/denominator, undefined at zero rows.",
+  "typed_distribution_contract": "Each histogram is a complete requested typed multiset. INTEGER 1 and NULL are canonical buckets. SQL native comparison laws require independent datatype/collation evidence. Null fraction is an exact numerator/denominator, undefined at zero rows. The ordinary GROUP BY witness constructs exactly integer physical group keys 0..groups-1 with rows_per_group=1 and a full source bag.",
   "oracle_limits": "DuckDB proves the executable INTEGER/NULL source and terminal snapshots, not 13 native vendor engines. Overflow cannot have an executable u64::MAX+1 row bag and is a checked arithmetic impossibility oracle only."
 }
