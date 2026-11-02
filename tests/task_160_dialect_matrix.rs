@@ -33,7 +33,6 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
                     analyze_inputs(&[SqlInput::inline(sql)], dialect, parser.as_ref()).unwrap();
                 let status = match &analyzed.inputs()[0].statements()[0] {
                     ProtocolStatement::Unsupported(_) => "canonical_unsupported",
-                    _ => "unexpected_statement",
                     ProtocolStatement::Query(query) => {
                         match query.write().map(|write| write.kind()) {
                             Some(WriteKind::Definition) => "definition",
@@ -93,7 +92,7 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
                     ["read", "parser_boundary"].as_slice()
                 };
                 assert!(
-                    acceptable.contains(&classification.as_ref()),
+                    acceptable.contains(classification),
                     "{dialect}: {sql} unexpectedly lowered as {classification}"
                 );
             }
