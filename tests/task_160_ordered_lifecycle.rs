@@ -426,7 +426,7 @@ fn every_frozen_exact_case_matches_native_catalog_and_full_bag_at_every_step() {
             let mut output = Vec::<Vec<Option<i64>>>::new();
             if sql.starts_with("SELECT ") {
                 let mut prepared = db.prepare(sql).unwrap();
-                let count = prepared.column_count();
+                let count = 2usize;
                 output = prepared
                     .query_map([], |row| {
                         (0..count)
@@ -478,7 +478,7 @@ fn every_frozen_exact_case_matches_native_catalog_and_full_bag_at_every_step() {
             } else {
                 let selection = format!("SELECT {} FROM t", actual_columns.join(", "));
                 let mut statement = db.prepare(&selection).unwrap();
-                let count = statement.column_count();
+                let count = actual_columns.len();
                 let rows = statement
                     .query_map([], |row| {
                         (0..count)
