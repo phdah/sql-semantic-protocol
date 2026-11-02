@@ -82,7 +82,9 @@ impl OutputDistribution {
     ///
     /// A histogram is a *request*, not an executed result: these counts
     /// describe the requested bag only. SQL feasibility is certified
-    /// separately by `EvaluatedOutcomeGoal`. Returns `None` on overflow.
+    /// separately by `EvaluatedOutcomeGoal`. Counts compare canonical typed
+    /// buckets, not native text collation or implicit type coercion.
+    /// Returns `None` on overflow.
     pub fn statistics(&self) -> Option<OutputDistributionStatistics> {
         let mut rows = 0_u64;
         let mut distinct_non_null = 0_u64;
@@ -112,8 +114,9 @@ impl OutputDistribution {
 /// Exact arithmetic derived from a *complete requested* output histogram.
 ///
 /// Zero-frequency buckets do not contribute to distinct or duplicate counts.
-/// Duplicate rows are occurrences beyond the first in each SQL DISTINCT
-/// equivalence class, with SQL NULL forming one equivalence class.
+/// Duplicate rows are occurrences beyond the first in each canonical typed
+/// bucket, with SQL NULL forming one bucket. For text and other unproved
+/// comparison laws this is a requested-bucket count, not a native DISTINCT proof.
 /// The NULL fraction is the exact ratio `null_rows / rows`, undefined at
 /// zero rows. No floating-point conversion or execution claim is made.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -130,7 +133,8 @@ impl OutputDistributionStatistics {
         self.rows
     }
 
-    /// Number of distinct non-NULL values (SQL COUNT(DISTINCT column)).
+    /// Number of non-NULL canonical typed buckets. Equality-sensitive SQL
+    /// DISTINCT claims require separately attested comparison laws.
     pub fn distinct_non_null(self) -> u64 {
         self.distinct_non_null
     }
@@ -140,7 +144,7 @@ impl OutputDistributionStatistics {
         self.null_rows
     }
 
-    /// Duplicate occurrences beyond the first of each NULL/non-NULL class.
+    /// Requested duplicate occurrences beyond the first of each typed bucket.
     pub fn duplicate_rows(self) -> u64 {
         self.duplicate_rows
     }
