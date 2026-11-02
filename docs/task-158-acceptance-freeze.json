@@ -100,7 +100,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
     },
     {
       "id": "83-C158-P-add-null",
@@ -181,7 +182,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
     },
     {
       "id": "83-C158-P-rename",
@@ -275,7 +277,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
     },
     {
       "id": "83-C158-P-drop",
@@ -364,7 +367,8 @@
           "lower_inclusive": false,
           "upper_inclusive": false
         }
-      }
+      },
+      "comparison_assumptions": "Only integer scalar identities and signed exact numeric order; no collation, session, timezone or vendor cast law inferred"
     },
     {
       "id": "83-C158-N-duplicate",
@@ -412,7 +416,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted"
     },
     {
       "id": "83-C158-N-missing",
@@ -460,7 +465,8 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
-      }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted"
     },
     {
       "id": "83-C158-N-type",
@@ -509,6 +515,15 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted",
+      "conditional_evidence": {
+        "owner": "TASK-158",
+        "release_classification": "Residual",
+        "review_state": "maintainer_review_pending",
+        "known_engine": "DuckDB native test only",
+        "missing_law": "Portable SQL cast/rewrite and dependent constraint law",
+        "approval_required": true
       }
     },
     {
@@ -571,6 +586,15 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "comparison_assumptions": "No implicit vendor comparison, cast, constraint or session law asserted",
+      "conditional_evidence": {
+        "owner": "TASK-158",
+        "release_classification": "Residual",
+        "review_state": "maintainer_review_pending",
+        "known_engine": "DuckDB native test only",
+        "missing_law": "Portable enforced PK/dependency preservation and engine rejection law",
+        "approval_required": true
       }
     }
   ],
@@ -789,6 +813,37 @@
     "core_exact_or_impossible_cases": 6,
     "adapter_cells_verified_by_tests": 27,
     "native_frozen_cases_verified_by_tests": 8,
-    "frozen_prestate_typed_domain_cells": 8
-  }
+    "frozen_prestate_typed_domain_cells": 8,
+    "vendor_parser_boundary_variants": 4
+  },
+  "vendor_parser_boundaries": [
+    {
+      "id": "158-vendor-add-if-not-exists",
+      "sql": "ALTER TABLE t ADD COLUMN IF NOT EXISTS c INTEGER",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Existence-dependent ADD requires an attested catalog and engine DDL law",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-drop-if-exists",
+      "sql": "ALTER TABLE t DROP COLUMN IF EXISTS b",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Existence-dependent DROP requires an attested catalog and engine DDL law",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-drop-cascade",
+      "sql": "ALTER TABLE t DROP COLUMN b CASCADE",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Dependency cascade requires a complete cross-relation graph",
+      "owner": "TASK-158"
+    },
+    {
+      "id": "158-vendor-type-using",
+      "sql": "ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR USING a::VARCHAR",
+      "disposition": "parser_boundary_or_canonical_unsupported",
+      "reason": "Explicit vendor casts require proven rewrite and conversion semantics",
+      "owner": "TASK-158"
+    }
+  ]
 }
