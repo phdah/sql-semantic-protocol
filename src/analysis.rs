@@ -485,7 +485,7 @@ fn analyze_statement(
             table,
         } => {
             if matches!(object_type, sqlparser::ast::ObjectType::Table)
-                && !cascade && !restrict && !purge && !temporary && table.is_none()
+                && !*cascade && !*restrict && !*purge && !*temporary && table.is_none()
             {
                 if let [name] = names.as_slice() {
                     analyze_relation_lifecycle(
