@@ -2,7 +2,7 @@
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
     "parent": "TASK-83",
-    "status": "extended_bag_default_and_adapter_oracles_pending_independent_review",
+    "status": "child_signed_off_awaiting_final_metadata_ci_and_merge",
     "freeze": "docs/task-158-acceptance-freeze.json",
     "freeze_version": 4,
     "freeze_history": [
@@ -20,16 +20,23 @@
     "adapter_oracle": "tests/task_158_adapter_parity.rs",
     "wire_oracle": "tests/task_158_wire_contract.rs",
     "dialect_matrix": "tests/task_158_dialect_matrix.rs",
-    "child_signed_off": false,
+    "child_signed_off": true,
     "parent_signed_off": false,
-    "mandatory_cells_verified": false,
+    "mandatory_cells_verified": true,
     "dialect_cells_verified": 104,
     "adapter_cells_verified": 27,
-    "ci_verified": false,
+    "ci_verified": true,
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41432944297",
+    "implementation_ci_head": "ffd4f594324119ccb67bb567a36f05a18ef3f1b2",
+    "independent_review": "2026-11-02 Matt code-review, fixed-point main, final PR #179 review; connected GitHub account is the PR author",
+    "conditional_release_dispositions": [
+      "INTEGER-to-VARCHAR cast: typed Residual, no portable cast law asserted",
+      "enforced-key DROP: typed Residual, no portable key rewrite asserted",
+      "vendor DDL transaction and conditional/existence syntax: Unsupported or Residual, no engine law asserted"
+    ],
     "remaining_gates": [
-      "Final-head 9-job CI for v4 evidence matrix",
-      "Independent fixed-point standards and specification review",
-      "Approval of conditional vendor cast/key/transaction release dispositions"
+      "Post-signoff metadata-head CI before merge",
+      "Squash merge PR #179; TASK-83 parent remains open"
     ]
   },
   "task_157_ddl_identity_acceptance": {

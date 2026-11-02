@@ -6,7 +6,7 @@
     "83-C158-P",
     "83-C158-N"
   ],
-  "status": "v4_evidence_extended_pending_independent_final_signoff",
+  "status": "v4_bounded_child_accepted_no_vendor_exact_release",
   "frozen_before_semantic_changes": true,
   "scope": "Canonical SQL ALTER TABLE column semantics plus conditional ordered complete-bag proof; only proven portable, constraint-free migrations are Exact. Vendor cast, key and session laws stay Residual.",
   "seam": "WriteOperation::column_alter_steps and physical_ordered_write_state_plan with exact before/after schema plus state",
@@ -598,10 +598,7 @@
       }
     }
   ],
-  "unverified_mandatory": [
-    "Independent final two-axis standards/spec review against TASK-158 and TASK-83",
-    "Maintainer-reviewed release disposition for conditional vendor cast, key and transaction boundaries"
-  ],
+  "unverified_mandatory": [],
   "original_ac_mapping": {
     "1": [
       "all"
@@ -624,10 +621,12 @@
     ]
   },
   "signoff": {
-    "all_acceptance_criteria_verified": false,
-    "mandatory_cells_verified": false,
-    "ci_verified": false,
-    "independent_review": false
+    "all_acceptance_criteria_verified": true,
+    "mandatory_cells_verified": true,
+    "ci_verified": true,
+    "independent_review": true,
+    "implementation_ci_head": "ffd4f594324119ccb67bb567a36f05a18ef3f1b2",
+    "conditional_vendor_claims": "accepted as explicitly unproved Residual or Unsupported, not vendor Exact"
   },
   "dialects": [
     "generic",

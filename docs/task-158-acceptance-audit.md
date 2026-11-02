@@ -1,6 +1,14 @@
 # TASK-158 acceptance audit (2026-11-01)
 
-**Status: In Progress, not signed off.** PR #179 implements the typed core and new acceptance oracles. This record deliberately distinguishes implementation from verified release evidence. Parent TASK-83 remains open; TASK-159 and TASK-160 own subsequent lifecycle and full cross-object graph closure.
+**Status: Done for the bounded TASK-158 child; PR #179 awaits metadata-head CI and merge.** PR #179 implements the typed core and new acceptance oracles. This record deliberately distinguishes implementation from verified release evidence. Parent TASK-83 remains open; TASK-159 and TASK-160 own subsequent lifecycle and full cross-object graph closure.
+
+## Final independent review and conditional disposition (2026-11-02)
+
+The second-pass Matt `code-review` used the merge-base with `main` as fixed point and independently checked the two axes against the final implementation SHA `ffd4f594324119ccb67bb567a36f05a18ef3f1b2`. **Standards:** no blocking AGENTS.md/CONTRIBUTING.md violations; the duplicated typed-validation branches are an advisory, not a correctness blocker. **Spec:** all five TASK-158 child AC are satisfied for the documented finite inventory, with six mandatory Exact/Impossible oracle cases and two owner-attributed conditional Residual cases. The native DuckDB, ordered SQL, parser, wire and adapter evidence is verified by the nine green jobs in [run 41432944297](https://github.com/phdah/sql-semantic-protocol/actions/runs/41432944297). The separate metadata-only signoff commit requires fresh CI before merge.
+
+The conditional dispositions below are accepted as **unproved portability boundaries** only, not as permission to upgrade any vendor cast, constrained ALTER or transaction law to Exact. No unsupported mandatory structural family has been reclassified to get a green test. The compiled dbt model migration boundary remains explicit; SQL owns DDL. TASK-83 is *not* signed off and TASK-159 remains merge-blocked.
+
+The sections below preserve earlier checkpoints and their then-open gates for audit history. They no longer describe the final child signoff state.
 
 ## Original child AC mapping
 
