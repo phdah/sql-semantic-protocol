@@ -232,6 +232,35 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                         domain.values().len(),
                         expected_domain["frequencies"].as_object().unwrap().len()
                     );
+                    let observed_numbers = domain
+                        .values()
+                        .iter()
+                        .filter_map(|(value, _)| match value {
+                            LiteralValue::Number(number) => Some(number.parse::<i128>().unwrap()),
+                            LiteralValue::Null => None,
+                            other => panic!("unproved integer-domain value: {other:?}"),
+                        })
+                        .collect::<Vec<_>>();
+                    assert_eq!(
+                        observed_numbers.iter().min().copied(),
+                        expected_domain["lower"].as_i64().map(i128::from),
+                        "{} lower inclusive bound",
+                        case["id"]
+                    );
+                    assert_eq!(
+                        observed_numbers.iter().max().copied(),
+                        expected_domain["upper"].as_i64().map(i128::from),
+                        "{} upper inclusive bound",
+                        case["id"]
+                    );
+                    assert_eq!(
+                        expected_domain["lower_inclusive"],
+                        !observed_numbers.is_empty()
+                    );
+                    assert_eq!(
+                        expected_domain["upper_inclusive"],
+                        !observed_numbers.is_empty()
+                    );
                     for (value, frequency) in domain.values() {
                         let key = match value {
                             LiteralValue::Null => "NULL".to_string(),
