@@ -12,11 +12,17 @@ fn analyze(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
 #[test]
 fn rename_consumes_original_relation_and_produces_only_new_identity() {
     let bundle = analyze("ALTER TABLE t RENAME TO u");
-    let [layer] = bundle.layers() else { panic!("one lifecycle layer"); };
+    let [layer] = bundle.layers() else {
+        panic!("one lifecycle layer");
+    };
     assert_eq!(layer.write_kind(), Some(WriteKind::Lifecycle));
     assert_eq!(layer.consumes(), &["t"]);
     assert_eq!(
-        layer.produces().iter().map(|r| r.relation_name()).collect::<Vec<_>>(),
+        layer
+            .produces()
+            .iter()
+            .map(|r| r.relation_name())
+            .collect::<Vec<_>>(),
         vec![Some("u")],
     );
     let wire: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
@@ -40,7 +46,9 @@ fn drop_is_destructive_not_a_phantom_anonymous_or_named_producer() {
 #[test]
 fn truncate_preserves_named_producer_identity_but_not_old_rows() {
     let bundle = analyze("TRUNCATE TABLE t");
-    let [layer] = bundle.layers() else { panic!("one lifecycle layer"); };
+    let [layer] = bundle.layers() else {
+        panic!("one lifecycle layer");
+    };
     assert_eq!(layer.write_kind(), Some(WriteKind::Lifecycle));
     assert_eq!(layer.consumes(), &["t"]);
     assert_eq!(layer.produces()[0].relation_name(), Some("t"));
