@@ -155,7 +155,10 @@ fn grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences() {
             "{dialect}: two distinct integer keys construct two complete groups"
         );
         assert!(
-            matches!(b.outcome_goals()[0].witness(), Some(OutcomeWitness::Groups { .. })),
+            matches!(
+                b.outcome_goals()[0].witness(),
+                Some(OutcomeWitness::Groups { .. })
+            ),
             "{dialect}: grouped goal must retain complete source key obligations"
         );
         request(&mut b, 2, Some(3), vec![]);
