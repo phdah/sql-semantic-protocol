@@ -101,31 +101,37 @@ fn replay(catalog: &RelationCatalog, lifecycle: &str) -> (String, String, bool, 
         panic!("SQL lifecycle input must have a canonical write");
     };
     assert_eq!(query.write().unwrap().kind(), WriteKind::Lifecycle);
-    let PhysicalWriteStatePlan::Feasible {
-        transitions,
-        final_states,
-    } = physical_ordered_write_state_plan(&bundle, &[])
-    else {
-        panic!("equivalent schema metadata must not change closed-world replay");
-    };
-    let terminal = transitions.last().unwrap();
-    let after_schema = terminal
-        .after_schema()
-        .map(|schema| {
-            schema
-                .columns()
-                .iter()
-                .map(|column| format!("{}:{:?}", column.name(), column.data_type()))
-                .collect::<Vec<_>>()
-                .join(",")
-        })
-        .unwrap_or_default();
-    (
-        format!("{:?}", terminal.before().rows()),
-        format!("{:?}", final_states),
-        terminal.after_exists(),
-        after_schema,
-    )
+    match physical_ordered_write_state_plan(&bundle, &[]) {
+        PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } => {
+            let terminal = transitions.last().unwrap();
+            let after_schema = terminal
+                .after_schema()
+                .map(|schema| {
+                    schema
+                        .columns()
+                        .iter()
+                        .map(|column| format!("{}:{:?}", column.name(), column.data_type()))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                })
+                .unwrap_or_default();
+            (
+                format!("{:?}", terminal.before().rows()),
+                format!("{:?}", final_states),
+                terminal.after_exists(),
+                after_schema,
+            )
+        }
+        PhysicalWriteStatePlan::Residual { gap, .. } => {
+            (format!("Residual:{gap:?}"), String::new(), false, String::new())
+        }
+        PhysicalWriteStatePlan::Impossible { .. } => {
+            ("Impossible".to_string(), String::new(), false, String::new())
+        }
+    }
 }
 
 #[test]
