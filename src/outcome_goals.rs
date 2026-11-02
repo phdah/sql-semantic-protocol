@@ -77,6 +77,73 @@ impl OutputDistribution {
     pub fn values(&self) -> &[OutputValueCount] {
         &self.values
     }
+
+    /// Derive whole-histogram statistics without scanning or guessing source rows.
+    ///
+    /// A histogram is a *request*, not an executed result: these counts
+    /// describe the requested bag only. SQL feasibility is certified
+    /// separately by `EvaluatedOutcomeGoal`. Returns `None` on overflow.
+    pub fn statistics(&self) -> Option<OutputDistributionStatistics> {
+        let mut rows = 0_u64;
+        let mut distinct_non_null = 0_u64;
+        let mut null_rows = 0_u64;
+        let mut distinct_classes = 0_u64;
+        for entry in &self.values {
+            if entry.rows() == 0 {
+                continue;
+            }
+            rows = rows.checked_add(entry.rows())?;
+            distinct_classes = distinct_classes.checked_add(1)?;
+            if matches!(entry.value(), ConstraintValue::Null) {
+                null_rows = null_rows.checked_add(entry.rows())?;
+            } else {
+                distinct_non_null = distinct_non_null.checked_add(1)?;
+            }
+        }
+        Some(OutputDistributionStatistics {
+            rows,
+            distinct_non_null,
+            null_rows,
+            duplicate_rows: rows.checked_sub(distinct_classes)?,
+        })
+    }
+}
+
+/// Exact arithmetic derived from a *complete requested* output histogram.
+///
+/// Zero-frequency buckets do not contribute to distinct or duplicate counts.
+/// Duplicate rows are occurrences beyond the first in each SQL DISTINCT
+/// equivalence class, with SQL NULL forming one equivalence class.
+/// The NULL fraction is the exact ratio `null_rows / rows`, undefined at
+/// zero rows. No floating-point conversion or execution claim is made.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OutputDistributionStatistics {
+    rows: u64,
+    distinct_non_null: u64,
+    null_rows: u64,
+    duplicate_rows: u64,
+}
+
+impl OutputDistributionStatistics {
+    /// Total requested terminal occurrences.
+    pub fn rows(self) -> u64 {
+        self.rows
+    }
+
+    /// Number of distinct non-NULL values (SQL COUNT(DISTINCT column)).
+    pub fn distinct_non_null(self) -> u64 {
+        self.distinct_non_null
+    }
+
+    /// Number of SQL NULL occurrences.
+    pub fn null_rows(self) -> u64 {
+        self.null_rows
+    }
+
+    /// Duplicate occurrences beyond the first of each NULL/non-NULL class.
+    pub fn duplicate_rows(self) -> u64 {
+        self.duplicate_rows
+    }
 }
 
 /// Optional caller-requested output counts, addressed by a stable layer identity.
