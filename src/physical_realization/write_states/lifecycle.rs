@@ -30,7 +30,7 @@ pub(super) fn lifecycle_transition(
                     "a missing physical snapshot does not prove DROP target absence",
                 ));
             }
-            if !if_exists {
+            if !*if_exists {
                 return Err(impossible("DROP requires a table already proved absent"));
             }
             return Ok(LifecycleOutcome {
