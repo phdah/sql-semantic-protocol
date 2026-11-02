@@ -592,6 +592,18 @@ pub fn physical_ordered_write_state_plan_with_identities(
                             },
                         ) {
                             Ok(outcome) => {
+                                // DROP/TRUNCATE affect every physical occurrence, not
+                                // just distinct row values. RENAME preserves identity
+                                // order and has no row-level affected ordinals.
+                                if matches!(
+                                    action,
+                                    WriteLifecycleAction::Truncate | WriteLifecycleAction::Drop { .. }
+                                ) {
+                                    affected_target_ordinals = before.as_ref().map_or_else(
+                                        Vec::new,
+                                        |state| (0..state.rows().len()).collect(),
+                                    );
+                                }
                                 before_schema = schema.cloned();
                                 after_schema = outcome.after_schema;
                                 after_exists = outcome.exists_after;
