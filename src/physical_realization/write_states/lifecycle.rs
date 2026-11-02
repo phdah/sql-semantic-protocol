@@ -19,6 +19,7 @@ pub(super) struct LifecycleEvidence<'a> {
     pub(super) states: &'a BTreeMap<String, PhysicalWriteState>,
     pub(super) created_here: bool,
     pub(super) proven_absent: bool,
+    pub(super) destination_absent: bool,
     pub(super) constrained: bool,
 }
 
@@ -33,6 +34,7 @@ pub(super) fn lifecycle_transition(
         states,
         created_here,
         proven_absent,
+        destination_absent,
         constrained,
     } = evidence;
     if let WriteLifecycleAction::Drop { if_exists } = action {
@@ -116,6 +118,12 @@ pub(super) fn lifecycle_transition(
             }
             if states.contains_key(to) {
                 return Err(impossible("RENAME target relation already exists"));
+            }
+            if !destination_absent {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnresolvedSourceIdentity,
+                    "RENAME destination absence is not established by a missing population",
+                ));
             }
             let renamed = RelationSchema::new(to.clone(), prior_schema.columns().to_vec())
                 .map_err(|_| residual("cannot preserve typed schema on table RENAME"))?;
