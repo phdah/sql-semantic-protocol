@@ -822,6 +822,51 @@ impl RelationConstraintSet {
         self.column_value_sources.push(source);
     }
 
+    /// Replace one independently attested scalar default after an exact ALTER ADD.
+    /// Retain one authoritative current value source instead of conflicting historical
+    /// declarations after ordered DDL.
+    pub(crate) fn replace_physical_column_default(&mut self, source: ColumnValueSource) {
+        self.column_value_sources
+            .retain(|existing| existing.column() != source.column());
+        self.column_value_sources.push(source);
+        self.normalize();
+    }
+
+    /// Discard a dropped physical column's value-production declaration.
+    pub(crate) fn drop_physical_column_default(&mut self, column: &str) {
+        self.column_value_sources
+            .retain(|existing| existing.column() != column);
+        self.normalize();
+    }
+
+    /// Transfer an unchanged scalar default through a proven column rename.
+    /// Non-default generated or identity declarations require separate rewrite laws.
+    pub(crate) fn rename_physical_column_default(
+        &mut self,
+        old: &str,
+        new: &str,
+    ) -> Result<(), ConstraintMetadataError> {
+        for source in &mut self.column_value_sources {
+            if source.column() != old {
+                continue;
+            }
+            if source.kind() != crate::column_sources::ColumnValueKind::Default {
+                return Err(ConstraintMetadataError::InvalidEvidence {
+                    message: "renaming a generated or identity source needs independent evidence"
+                        .to_string(),
+                });
+            }
+            *source = ColumnValueSource::new(
+                new,
+                source.kind(),
+                source.value().cloned(),
+                source.evidence().to_vec(),
+            )?;
+        }
+        self.normalize();
+        Ok(())
+    }
+
     /// Whether an unconstrained synthetic physical population would omit required laws.
     ///
     /// Exact scalar defaults do not constrain already-materialized source rows.
