@@ -173,7 +173,13 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
-      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-N-total",
@@ -217,7 +223,13 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
-      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-N-distinct",
@@ -257,7 +269,13 @@
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
       "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
-      "proof_note": "DISTINCT duplicate collapse is not a SQL predicate and cannot be labelled NOT TRUE; impossibility is a one-column multiplicity invariant"
+      "proof_note": "DISTINCT duplicate collapse is not a SQL predicate and cannot be labelled NOT TRUE; impossibility is a one-column multiplicity invariant",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-P-group",
@@ -321,7 +339,13 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
-      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-N-group",
@@ -361,7 +385,13 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
-      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-P-zero",
@@ -393,7 +423,13 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
-      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-N-overflow",
@@ -430,7 +466,13 @@
       "canonical_source_identity": "t.k",
       "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
       "source_terminal_oracle": "arithmetic_only_unmaterializable_overflow",
-      "engine_oracle_disposition": "A u64::MAX+1 source is unmaterializable; checked arithmetic is the complete required proof and no native execution claim is made"
+      "engine_oracle_disposition": "A u64::MAX+1 source is unmaterializable; checked arithmetic is the complete required proof and no native execution claim is made",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     },
     {
       "id": "85-C165-C-unknown",
@@ -471,33 +513,47 @@
       "parser_dialect_cells": 13,
       "canonical_source_identity": "t.k",
       "adapter_scope": "No authoritative schema; intentionally residual",
-      "source_terminal_oracle": "no_schema_residual_no_engine_execution"
+      "source_terminal_oracle": "no_schema_residual_no_engine_execution",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
     }
   ],
   "verification": {
     "mandatory_count": 7,
     "conditional_count": 1,
-    "frozen_cases_verified": false,
+    "frozen_cases_verified": true,
     "final_head_fmt": false,
-    "strict_clippy": false,
-    "full_cargo_test": false,
-    "no_default_features": false,
-    "cargo_doc": false,
-    "dbt_core_e2e": false,
-    "active_schema_golden": false,
-    "pinned_sql_tdg": false,
-    "adapter_parity": false,
+    "strict_clippy": true,
+    "full_cargo_test": true,
+    "no_default_features": true,
+    "cargo_doc": true,
+    "dbt_core_e2e": true,
+    "active_schema_golden": true,
+    "pinned_sql_tdg": true,
+    "adapter_parity": true,
     "independent_review": false,
     "task_done": false,
     "parent_task_85_done": false,
     "evidence_matrix_runner": "tests/task_165_acceptance_inventory.rs",
-    "ci_run_url": null
+    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+    "verified_implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+    "verified_ci_jobs": 9,
+    "verified_mandatory_dialect_cells": 91,
+    "verified_conditional_dialect_cells": 13,
+    "downstream_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446",
+    "downstream_boundary": "69 selected sql-tdg tests passed; 2 unrelated timestamp tests fail identically on PR base and head, deferred TASK-89/91",
+    "independent_review_disposition": "pending external reviewer; author-only PR comment is not independent approval",
+    "freeze_timing_disposition": "original v1 late and not retroactively satisfiable; explicit waiver or reimplementation under prospective freeze required for AC1"
   },
   "history": [
     "docs/task-165-acceptance-freeze-v1.json",
     "docs/task-165-acceptance-freeze-v2.json"
   ],
-  "review_status": "v3_contract_reconciled_with_exact_constructive_witness_before_new_test_changes",
+  "review_status": "technical_mandatory_cases_91_of_91_verified_CI_green_independent_signoff_pending",
   "dialect_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
   "physical_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
   "conditional_oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
