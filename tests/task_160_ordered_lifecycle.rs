@@ -3,7 +3,8 @@
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_ordered_write_state_plan, LiteralValue,
+    analyze_inputs, dialect_from_name, physical_ordered_lifecycle_plan,
+    physical_ordered_write_state_plan, LiteralValue, PhysicalOrderedLifecycleProof,
     PhysicalWriteStatePlan, SqlInput, WriteKind,
 };
 
@@ -160,4 +161,103 @@ fn task_160_scope_is_frozen_and_parent_acceptance_remains_open() {
         manifest["task_160_ordered_lifecycle_acceptance"]["child_signed_off"],
         false
     );
+}
+
+#[test]
+fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
+    let freeze: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-160-acceptance-freeze.json")).unwrap();
+    let cases = freeze["cases"].as_array().unwrap();
+    for case in cases {
+        let sql = case["program"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap())
+            .collect::<Vec<_>>();
+        let bundle = analyze(&sql);
+        let result = physical_ordered_lifecycle_plan(&bundle, &[]);
+        match case["classification"].as_str().unwrap() {
+            "Exact" => {
+                let PhysicalOrderedLifecycleProof::Exact(exact) = result else {
+                    panic!("{}: expected full lifecycle proof: {result:?}", case["id"]);
+                };
+                assert_eq!(exact.checkpoints.len(), sql.len(), "{}", case["id"]);
+                assert!(exact.final_states.is_empty(), "DROP removes the final table");
+                assert_eq!(exact.reads.len(), 1);
+                let read = &exact.reads[0];
+                let expected = case["snapshots"][3]["read"].as_array().unwrap();
+                assert_eq!(read.output.rows().len(), expected.len());
+                assert_eq!(read.source.rows().len(), expected.len());
+                let domains = read.exact_domains().unwrap();
+                let frozen_domains = &case["typed_domains_at_read"];
+                for domain in domains {
+                    let expected_domain = &frozen_domains[domain.column()];
+                    assert_eq!(domain.values().len(), expected_domain["frequencies"].as_object().unwrap().len());
+                    for (value, frequency) in domain.values() {
+                        let key = match value {
+                            LiteralValue::Null => "NULL".to_string(),
+                            LiteralValue::Number(value) => value.clone(),
+                            other => panic!("unsupported frozen integer value: {other:?}"),
+                        };
+                        assert_eq!(
+                            *frequency,
+                            expected_domain["frequencies"][&key].as_u64().unwrap(),
+                            "{} {} {key}",
+                            case["id"],
+                            domain.column()
+                        );
+                    }
+                }
+                let truth = &case["snapshots"][3];
+                assert_eq!(
+                    read.surviving_source_ordinals,
+                    truth["source_occurrences"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|v| v.as_u64().unwrap() as usize)
+                        .collect::<Vec<_>>(),
+                    "{}",
+                    case["id"]
+                );
+                assert!(read.rejected_source_ordinals.is_empty());
+                for (checkpoint, expected) in exact.checkpoints.iter().zip(case["snapshots"].as_array().unwrap()) {
+                    if expected.get("read").is_some() {
+                        assert_eq!(checkpoint.states.len(), 1);
+                        assert_eq!(checkpoint.schemas.len(), 1);
+                        continue;
+                    }
+                    let exists = expected["exists"].as_bool().unwrap();
+                    assert_eq!(checkpoint.states.len(), usize::from(exists), "{}", case["id"]);
+                    assert_eq!(checkpoint.schemas.len(), usize::from(exists), "{}", case["id"]);
+                    if exists {
+                        let expected_rows = expected["rows"].as_array().unwrap();
+                        assert_eq!(checkpoint.states[0].rows().len(), expected_rows.len());
+                        for (row, expected_row) in checkpoint.states[0].rows().iter().zip(expected_rows) {
+                            let expected_row = expected_row.as_object().unwrap();
+                            assert_eq!(row.values().len(), expected_row.len());
+                            for (col, value) in expected_row {
+                                let expected_value = if value.is_null() {
+                                    LiteralValue::Null
+                                } else {
+                                    LiteralValue::Number(value.as_i64().unwrap().to_string())
+                                };
+                                assert_eq!(row.values()[col], expected_value);
+                            }
+                        }
+                    }
+                }
+            }
+            "Impossible" => assert!(
+                matches!(result, PhysicalOrderedLifecycleProof::Impossible { .. }),
+                "{}: {result:?}", case["id"]
+            ),
+            "Residual" => assert!(
+                matches!(result, PhysicalOrderedLifecycleProof::Residual { .. }),
+                "{}: {result:?}", case["id"]
+            ),
+            other => panic!("unsupported frozen classification: {other}"),
+        }
+    }
 }
