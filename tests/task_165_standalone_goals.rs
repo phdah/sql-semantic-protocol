@@ -9,15 +9,25 @@ use sql_semantic_protocol::{
 };
 
 const DIALECTS: &[&str] = &[
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 fn bundle(sql: &str, dialect: &str) -> AnalysisBundle {
     let schema = RelationSchema::new(
         "t",
-        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql")
-            .expect("catalog integer")],
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").expect("catalog integer")],
     )
     .expect("relation");
     let catalog = RelationCatalog::from_schemas(&[schema]).expect("catalog");
@@ -47,18 +57,17 @@ fn request(
     let layer = bundle.layers()[0].id().to_string();
     bundle
         .set_outcome_goals(&[
-            OutcomeGoal::new(layer, Some(rows), groups, distributions).expect("valid goal"),
+            OutcomeGoal::new(layer, Some(rows), groups, distributions).expect("valid goal")
         ])
         .expect("attach goal");
 }
 
 #[test]
 fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
-    let distribution = histogram(&[
-        (ConstraintValue::Integer(1), 2),
-        (ConstraintValue::Null, 1),
-    ]);
-    let statistics = distribution.statistics().expect("bounded complete histogram");
+    let distribution = histogram(&[(ConstraintValue::Integer(1), 2), (ConstraintValue::Null, 1)]);
+    let statistics = distribution
+        .statistics()
+        .expect("bounded complete histogram");
     assert_eq!(statistics.rows(), 3);
     assert_eq!(statistics.distinct_non_null(), 1);
     assert_eq!(statistics.null_rows(), 1);
@@ -74,8 +83,11 @@ fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
             OutcomeGoalStatus::Feasible,
             "{dialect}"
         );
-        let Some(OutcomeWitness::SourceRows { relation, rows, columns }) =
-            b.outcome_goals()[0].witness()
+        let Some(OutcomeWitness::SourceRows {
+            relation,
+            rows,
+            columns,
+        }) = b.outcome_goals()[0].witness()
         else {
             panic!("{dialect}: expected complete source-row witness");
         };
@@ -87,8 +99,14 @@ fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
 
         let emitted: serde_json::Value =
             serde_json::from_str(&to_bundle_json(&b)).expect("canonical protocol");
-        assert_eq!(emitted["outcome_goals"][0]["assessment"]["status"], "feasible");
-        assert_eq!(emitted["outcome_goals"][0]["witness"]["kind"], "source_rows");
+        assert_eq!(
+            emitted["outcome_goals"][0]["assessment"]["status"],
+            "feasible"
+        );
+        assert_eq!(
+            emitted["outcome_goals"][0]["witness"]["kind"],
+            "source_rows"
+        );
     }
 }
 
@@ -142,10 +160,8 @@ fn grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences() {
 #[test]
 fn duckdb_replays_the_complete_positive_and_rejected_bags() {
     let db = Connection::open_in_memory().expect("DuckDB");
-    db.execute_batch(
-        "CREATE TABLE t(k INTEGER); INSERT INTO t VALUES (1), (1), (NULL);",
-    )
-    .expect("physical source");
+    db.execute_batch("CREATE TABLE t(k INTEGER); INSERT INTO t VALUES (1), (1), (NULL);")
+        .expect("physical source");
     let mut query = db
         .prepare("SELECT k FROM t ORDER BY k NULLS LAST")
         .expect("terminal SQL");
