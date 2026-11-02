@@ -6,7 +6,7 @@
     "83-C158-P",
     "83-C158-N"
   ],
-  "status": "expanded_oracle_and_adapter_evidence_pending_independent_signoff",
+  "status": "v4_evidence_extended_pending_independent_final_signoff",
   "frozen_before_semantic_changes": true,
   "scope": "Canonical SQL ALTER TABLE column semantics plus conditional ordered complete-bag proof; only proven portable, constraint-free migrations are Exact. Vendor cast, key and session laws stay Residual.",
   "seam": "WriteOperation::column_alter_steps and physical_ordered_write_state_plan with exact before/after schema plus state",
@@ -45,8 +45,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Exact",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -86,6 +86,20 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
       }
     },
     {
@@ -115,8 +129,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Exact",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -154,6 +168,19 @@
           "lower_inclusive": false,
           "upper_inclusive": false
         }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
       }
     },
     {
@@ -185,8 +212,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Exact",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -203,6 +230,30 @@
       },
       "typed_domains": {
         "c": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "pre_typed_domains": {
+        "a": {
           "type": "INTEGER",
           "frequencies": {
             "1": 1
@@ -260,8 +311,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "exact ordered typed column names and datatypes",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Exact",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -289,6 +340,30 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "NULL": 2
+          },
+          "nullable": true,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        }
       }
     },
     {
@@ -308,8 +383,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Impossible",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -324,7 +399,20 @@
         ],
         "unknown_ordinals": []
       },
-      "typed_domains": null
+      "typed_domains": null,
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-N-missing",
@@ -343,8 +431,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Impossible",
       "requirement": "mandatory",
       "owner": "TASK-158",
@@ -359,7 +447,20 @@
         ],
         "unknown_ordinals": []
       },
-      "typed_domains": null
+      "typed_domains": null,
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-N-type",
@@ -380,8 +481,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Residual",
       "requirement": "conditional",
       "before_count": 1,
@@ -395,7 +496,20 @@
         ]
       },
       "typed_domains": null,
-      "native_oracle": "DuckDB INTEGER -> VARCHAR runtime succeeds on the concrete source bag; canonical remains Residual without vendor-independent cast law"
+      "native_oracle": "DuckDB INTEGER -> VARCHAR runtime succeeds on the concrete source bag; canonical remains Residual without vendor-independent cast law",
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     },
     {
       "id": "83-C158-N-key",
@@ -418,8 +532,8 @@
       "adapter_matrix": "SQL/dbt catalog/ODCS identical-typed prestate replay in tests/task_158_adapter_parity.rs; SQL owns ALTER execution, metadata alone does not",
       "mandatory": true,
       "schema_oracle": "typed Impossible/Residual with no committed poststate",
-      "row_identity": "prestate occurrence ordinal preserved; duplicates and SQL NULL retained",
-      "true_not_true": "positive outcome is complete transformed bag; NOT TRUE is rejected missing/duplicate/unknown constraints or casts",
+      "row_identity": "Physical bag occurrence ordinal is preserved on Exact; Impossible rejects operation atomically; Residual never invents a poststate",
+      "true_not_true": "Proven operation TRUE, disproven operation NOT TRUE, or UNKNOWN for conditional residual (not SQL row predicates)",
       "classification": "Residual",
       "requirement": "conditional",
       "before_count": 1,
@@ -433,11 +547,34 @@
         ]
       },
       "typed_domains": null,
-      "native_oracle": "DuckDB refuses DROP of enforced PRIMARY KEY and retains its source bag; canonical remains Residual without general constraint rewrite law"
+      "native_oracle": "DuckDB refuses DROP of enforced PRIMARY KEY and retains its source bag; canonical remains Residual without general constraint rewrite law",
+      "pre_typed_domains": {
+        "key": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 1
+          },
+          "nullable": false,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "value": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      }
     }
   ],
   "unverified_mandatory": [
-    "Final-head CI (9 jobs) for active v4 matrix and implementation",
     "Independent final two-axis standards/spec review against TASK-158 and TASK-83",
     "Maintainer-reviewed release disposition for conditional vendor cast, key and transaction boundaries"
   ],
@@ -651,6 +788,7 @@
     "oracle_required": 8,
     "core_exact_or_impossible_cases": 6,
     "adapter_cells_verified_by_tests": 27,
-    "native_frozen_cases_verified_by_tests": 8
+    "native_frozen_cases_verified_by_tests": 8,
+    "frozen_prestate_typed_domain_cells": 8
   }
 }
