@@ -147,6 +147,34 @@ fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
             &[operation],
             inventory.as_deref(),
         );
+        let truth = &case["source_truth"];
+        let expected_all_ordinals = (0..before.rows().len())
+            .map(|index| Value::from(index as u64))
+            .collect::<Vec<_>>();
+        let reject = case["classification"] != "Exact";
+        assert_eq!(
+            truth["true_ordinals"],
+            Value::from(if reject {
+                Vec::new()
+            } else {
+                expected_all_ordinals.clone()
+            }),
+            "{id}: complete positive row-occurrence partition"
+        );
+        assert_eq!(
+            truth["not_true_ordinals"],
+            Value::from(if reject {
+                expected_all_ordinals
+            } else {
+                Vec::new()
+            }),
+            "{id}: complete rejected row-occurrence partition"
+        );
+        assert_eq!(
+            case["before_count"],
+            before.rows().len(),
+            "{id}: frozen prestate count"
+        );
         match case["expected"].as_str().unwrap() {
             "exact_row_projection_only" => {
                 let PhysicalColumnAlterProof::Exact {
