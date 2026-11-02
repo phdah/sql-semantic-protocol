@@ -35,10 +35,15 @@ fn rename_consumes_original_relation_and_produces_only_new_identity() {
 #[test]
 fn drop_is_destructive_not_a_phantom_anonymous_or_named_producer() {
     let bundle = analyze("DROP TABLE t");
-    let [layer] = bundle.layers() else { panic!("one lifecycle layer"); };
+    let [layer] = bundle.layers() else {
+        panic!("one lifecycle layer");
+    };
     assert_eq!(layer.write_kind(), Some(WriteKind::Lifecycle));
     assert_eq!(layer.consumes(), &["t"]);
-    assert!(layer.produces().is_empty(), "DROP is not a relation definition");
+    assert!(
+        layer.produces().is_empty(),
+        "DROP is not a relation definition"
+    );
     let wire: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
     assert_eq!(wire["layers"][0]["produces"], serde_json::json!([]));
 }
