@@ -104,8 +104,7 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
         panic!("TASK160_DIALECT_OBSERVED={observed}");
     }
     assert_eq!(
-        observed,
-        freeze["dialect_expected"],
+        observed, freeze["dialect_expected"],
         "all parser and canonical outcomes must be pinned in the versioned acceptance freeze"
     );
 }
