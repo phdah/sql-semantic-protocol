@@ -1,4 +1,24 @@
 {
+  "task_165_standalone_output_goal_acceptance": {
+    "owner": "TASK-165",
+    "parent": "TASK-85",
+    "status": "implementation_in_progress_not_signed_off",
+    "freeze": "docs/task-165-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["85-C165-P", "85-C165-N"],
+    "frozen_positive_negative_cases": 8,
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "parser_dialect_cells": 104,
+    "direct_public_api_oracle": "tests/task_165_standalone_goals.rs",
+    "original_parent_ac_mapping": [1, 3, 5, 6],
+    "mandatory_cells_verified": false,
+    "dbt_odcs_parity_verified": false,
+    "final_ci_verified": false,
+    "independent_review": false,
+    "child_signed_off": false,
+    "parent_signed_off": false
+  },
   "task_160_ordered_lifecycle_acceptance": {
     "owner": "TASK-160",
     "parent": "TASK-83",
