@@ -194,10 +194,35 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                 let read = &exact.reads[0];
                 let expected = case["snapshots"][3]["read"].as_array().unwrap();
                 assert_eq!(read.output.rows().len(), expected.len());
+                for (actual, frozen) in read.output.rows().iter().zip(expected) {
+                    for (column, expected_value) in frozen.as_object().unwrap() {
+                        let expected_value = expected_value.as_i64().map_or(
+                            LiteralValue::Null,
+                            |value| LiteralValue::Number(value.to_string()),
+                        );
+                        assert_eq!(
+                            actual.values()[column],
+                            expected_value,
+                            "{}: correlated SELECT row {column}",
+                            case["id"]
+                        );
+                    }
+                }
                 assert_eq!(
                     read.source.rows().len(),
                     case["snapshots"][2]["rows"].as_array().unwrap().len()
                 );
+                let frozen_counts = case["affected"].as_array().unwrap();
+                let expected_counts = frozen_counts
+                    .iter()
+                    .filter(|row| row.is_object())
+                    .collect::<Vec<_>>();
+                assert_eq!(exact.transitions.len(), expected_counts.len());
+                for (transition, expected) in exact.transitions.iter().zip(expected_counts) {
+                    assert_eq!(transition.affected().inserted(), expected["inserted"].as_u64().unwrap());
+                    assert_eq!(transition.affected().updated(), expected["updated"].as_u64().unwrap());
+                    assert_eq!(transition.affected().deleted(), expected["deleted"].as_u64().unwrap());
+                }
                 let domains = read.exact_domains().unwrap();
                 let frozen_domains = &case["typed_domains_at_read"];
                 for domain in domains {
