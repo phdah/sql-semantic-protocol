@@ -51,6 +51,22 @@ fn native_exists(conn: &Connection, relation: &str) -> bool {
     .unwrap()
         == 1
 }
+fn native_columns(conn: &Connection, relation: &str) -> Vec<String> {
+    let mut query = conn
+        .prepare(
+            "SELECT column_name, data_type FROM information_schema.columns              WHERE table_name = ? ORDER BY ordinal_position"
+        )
+        .unwrap();
+    query.query_map([relation], |row| {
+        let name: String = row.get(0)?;
+        let datatype: String = row.get(1)?;
+        Ok(format!("{name} {datatype}"))
+    })
+    .unwrap()
+    .map(Result::unwrap)
+    .collect()
+}
+
 fn native_rows(conn: &Connection, relation: &str) -> Vec<PhysicalWriteRow> {
     let mut q = conn.prepare(&format!("SELECT a FROM {relation}")).unwrap();
     q.query_map([], |r| {
@@ -280,6 +296,11 @@ fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_ora
                 last.after_schema().unwrap(),
                 &case["post_typed_domains"],
             );
+            let native = native_columns(&db, case["after_relation"].as_str().unwrap());
+            let expected = case["after_schema"].as_array().unwrap().iter()
+                .map(|value| value.as_str().unwrap().to_string())
+                .collect::<Vec<_>>();
+            assert_eq!(native, expected, "{id}: native final schema");
             assert_eq!(final_states.len(), 1, "{id}");
             assert_eq!(
                 bag(final_states[0].rows()),
