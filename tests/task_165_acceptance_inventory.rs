@@ -202,8 +202,7 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                 // The protocol's complete physical source witness must itself
                 // match the frozen physical bag, not only the caller's target.
                 assert_eq!(
-                    json["outcome_goals"][0]["witness"]["relation"],
-                    "t",
+                    json["outcome_goals"][0]["witness"]["relation"], "t",
                     "{id}/{dialect}: witness must name physical source"
                 );
                 assert_eq!(
@@ -268,9 +267,14 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
             if id == "85-C165-P-group" {
                 let witness = &json["outcome_goals"][0]["witness"];
                 assert_eq!(witness["relation"], "t", "{id}/{dialect}: physical source");
-                assert_eq!(witness["groups"], json!(2), "{id}/{dialect}: complete groups");
                 assert_eq!(
-                    witness["rows_per_group"], json!(1),
+                    witness["groups"],
+                    json!(2),
+                    "{id}/{dialect}: complete groups"
+                );
+                assert_eq!(
+                    witness["rows_per_group"],
+                    json!(1),
                     "{id}/{dialect}: complete physical occurrence count per group"
                 );
                 // The source generator interprets Groups as keys 0..groups-1.
