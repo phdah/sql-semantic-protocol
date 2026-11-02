@@ -88,7 +88,7 @@ fn complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects() {
         let emitted: serde_json::Value =
             serde_json::from_str(&to_bundle_json(&b)).expect("canonical protocol");
         assert_eq!(emitted["outcome_goals"][0]["assessment"]["status"], "feasible");
-        assert_eq!(emitted["outcome_goals"][0]["assessment"]["witness"]["kind"], "source_rows");
+        assert_eq!(emitted["outcome_goals"][0]["witness"]["kind"], "source_rows");
     }
 }
 
@@ -164,9 +164,10 @@ fn duckdb_replays_the_complete_positive_and_rejected_bags() {
         )
         .expect("independent aggregate oracle");
     assert_eq!((rows, distinct, nulls), (3, 1, 1));
-    let distinct_bag: Vec<Option<i64>> = db
+    let mut distinct_stmt = db
         .prepare("SELECT DISTINCT k FROM t ORDER BY k NULLS LAST")
-        .expect("distinct SQL")
+        .expect("distinct SQL");
+    let distinct_bag: Vec<Option<i64>> = distinct_stmt
         .query_map([], |row| row.get(0))
         .expect("distinct rows")
         .map(|row| row.expect("distinct value"))
