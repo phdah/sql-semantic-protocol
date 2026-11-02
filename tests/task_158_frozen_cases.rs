@@ -346,3 +346,41 @@ fn duckdb_executes_every_frozen_exact_case_and_rejects_schema_contradictions() {
         );
     }
 }
+
+#[test]
+fn conditional_frozen_variants_have_independent_native_execution_evidence() {
+    use duckdb::Connection;
+
+    // DuckDB can cast these concrete INTEGER values to VARCHAR. The
+    // parser-independent proof still correctly refuses to claim that all
+    // vendors implement this conversion or preserve dependent constraints.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t (a INTEGER); INSERT INTO t VALUES (1); ALTER TABLE t ALTER COLUMN a SET DATA TYPE VARCHAR",
+    )
+    .unwrap();
+    let (value, datatype): (String, String) = (
+        db.query_row("SELECT a FROM t", [], |row| row.get(0)).unwrap(),
+        db.query_row(
+            "SELECT data_type FROM information_schema.columns WHERE table_name='t' AND column_name='a'",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap(),
+    );
+    assert_eq!(value, "1");
+    assert_eq!(datatype, "VARCHAR");
+
+    // Dropping the actual enforced primary key is not equivalent to dropping
+    // an unconstrained column, and must leave its source bag unchanged.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t (\"key\" INTEGER PRIMARY KEY, value INTEGER); INSERT INTO t VALUES (1, 2)",
+    )
+    .unwrap();
+    assert!(db.execute_batch("ALTER TABLE t DROP COLUMN \"key\"").is_err());
+    let source: (i64, i64) = db
+        .query_row("SELECT \"key\", value FROM t", [], |row| Ok((row.get(0)?, row.get(1)?)))
+        .unwrap();
+    assert_eq!(source, (1, 2));
+}
