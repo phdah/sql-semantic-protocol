@@ -163,6 +163,10 @@ fn task_160_scope_is_frozen_and_parent_acceptance_remains_open() {
     );
     assert_eq!(
         manifest["task_160_ordered_lifecycle_acceptance"]["child_signed_off"],
+        true
+    );
+    assert_eq!(
+        manifest["task_160_ordered_lifecycle_acceptance"]["parent_signed_off"],
         false
     );
 }
