@@ -552,12 +552,12 @@ pub use in_bags::{
     physical_finite_in_bag_plan, PhysicalFiniteInExact, PhysicalFiniteInProof,
     PhysicalInColumnDomain, PhysicalInTruth,
 };
+pub use joint_counts::physical_joint_row_count_plan;
+pub use joint_distributions::physical_joint_distribution_plan;
 pub use lifecycle_scripts::{
     physical_ordered_lifecycle_plan, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,
     PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof,
 };
-pub use joint_counts::physical_joint_row_count_plan;
-pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
