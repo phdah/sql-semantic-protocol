@@ -543,6 +543,18 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut before_schema = None;
         let mut after_schema = None;
         let mut after_exists = true;
+        // A DROP invalidates the old table definition. Reusing the static
+        // pre-analysis schema for a subsequent CREATE would silently mix
+        // different generations; full generation-aware DDL is TASK-160.
+        if kind == WriteKind::Definition && proven_absent.contains(target) {
+            return failure(
+                Some(layer.id()),
+                residual_gap(
+                    PhysicalWriteStateGap::UnprovedOperation,
+                    "CREATE after DROP needs an independently ordered fresh schema and default declaration",
+                ),
+            );
+        }
         let result = match kind {
             WriteKind::Lifecycle => {
                 let action = write
@@ -787,6 +799,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         match write.lifecycle_action() {
             Some(WriteLifecycleAction::Drop { .. }) => {
                 states.remove(target);
+                execution_bundle.drop_physical_relation_evidence(target);
                 proven_absent.insert(target.to_string());
                 executed_create.remove(target);
             }
