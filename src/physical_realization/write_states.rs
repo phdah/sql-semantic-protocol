@@ -510,10 +510,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
     let mut proven_absent = BTreeSet::<String>::new();
     let mut transitions = Vec::new();
     for layer in bundle.layers() {
-        let Some(kind) = layer.write_kind() else {
-            continue;
-        };
-        let Some(query) = bundle
+        let query = bundle
             .inputs()
             .iter()
             .find(|input| input.id() == layer.input_id())
@@ -521,8 +518,26 @@ pub fn physical_ordered_write_state_plan_with_identities(
             .and_then(|statement| match statement {
                 ProtocolStatement::Query(query) => Some(query),
                 ProtocolStatement::Unsupported(_) => None,
-            })
-        else {
+            });
+        let Some(kind) = layer.write_kind() else {
+            // A standalone read does not mutate the bag, but a known DROP
+            // invalidates its physical source. Ignoring that read would
+            // falsely certify a script that the database cannot execute.
+            if let Some(query) = query {
+                if let Some(source) = query
+                    .dependencies()
+                    .iter()
+                    .find(|source| proven_absent.contains(source.as_str()))
+                {
+                    return failure(
+                        Some(layer.id()),
+                        impossible(format!("SELECT references dropped relation {source}")),
+                    );
+                }
+            }
+            continue;
+        };
+        let Some(query) = query else {
             return failure(
                 Some(layer.id()),
                 residual("missing canonical write statement"),
@@ -866,6 +881,18 @@ pub fn physical_ordered_write_state_plan_with_identities(
         transitions,
         final_states: states.into_values().collect(),
     }
+}
+
+/// Evaluate one source-local SELECT against exactly the rows available at
+/// the current materialization checkpoint. The canonical scalar interpreter
+/// owns row membership, projection expressions and SQL NULL semantics.
+pub(in crate::physical_realization) fn evaluate_ordered_read(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
+) -> Result<Vec<(usize, Vec<LiteralValue>)>, String> {
+    projection::evaluate_simple_select_with_source_ids(bundle, query, states)
+        .map_err(|error| format!("{error:?}"))
 }
 
 /// Return true unless a relation's declared constraint/default inventory is

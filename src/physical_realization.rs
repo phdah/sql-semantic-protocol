@@ -491,6 +491,7 @@ mod join_uniform;
 mod joins;
 mod joint_counts;
 mod joint_distributions;
+mod lifecycle_scripts;
 mod membership;
 mod operators;
 mod page_bags;
@@ -553,6 +554,10 @@ pub use in_bags::{
 };
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
+pub use lifecycle_scripts::{
+    physical_ordered_lifecycle_plan, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,
+    PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof,
+};
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
