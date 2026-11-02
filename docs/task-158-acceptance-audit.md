@@ -43,3 +43,11 @@ Remaining signoff gates are final-head CI for v4, a genuinely independent
 standards/spec review, and maintainer-approved dispositions for cross-vendor
 cast/key/transaction semantics. TASK-158 must remain In Progress until
 those gates are independently certified. TASK-83 remains open regardless.
+
+
+**dbt compiled SQL boundary:** A compiled dbt model is SELECT-backed and
+cannot be used as an arbitrary ALTER DDL program. A deliberately invalid
+model containing ALTER is now asserted to fail explicitly. The meaningful
+parity guarantee is the canonical replay of independent SQL ALTER inputs
+against equivalent dbt catalog/manifest or ODCS typed prestate evidence;
+neither adapter is claimed to execute database migrations.
