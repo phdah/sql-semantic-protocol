@@ -32,3 +32,13 @@
 ## Review and signoff
 
 Review the actual final PR head against `main` using Matt's code-review standards and spec axes. A passing CI is necessary but not sufficient. Sign off only when all frozen mandatory cells, parser/adapter contract, independent review and final-head CI are true. Cross-object graph closure and full CREATE/ALTER/SELECT/DROP composition remain TASK-160; no TASK-83 parent checkbox is auto-signed.
+
+
+## Independent semantics review correction
+
+The initial lifecycle analyzer incorrectly advertised the *old* table as the
+producer after RENAME and the destroyed table as a producer after DROP. The
+public graph seam now makes RENAME produce only its new relation name, DROP
+produce no datasets (including anonymous), and TRUNCATE retain its table
+identity. `tests/task_159_lifecycle_graph.rs` verifies the public graph and
+wire output and protects downstream consumers from phantom sources.
