@@ -92,7 +92,7 @@ fn native_integer_bag(db: &duckdb::Connection, columns: &[&str]) -> Vec<Physical
 #[test]
 fn every_frozen_case_has_a_complete_typed_exact_or_refutation() {
     let matrix = frozen();
-    assert_eq!(matrix["version"], 3);
+    assert_eq!(matrix["version"], 4);
     assert_eq!(matrix["owner"], "TASK-158");
     assert_eq!(matrix["parent"], "TASK-83");
     let mut seen = BTreeSet::new();
@@ -300,7 +300,7 @@ fn acceptance_dialect_matrix_is_complete_and_parent_stays_open() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     let entry = &manifest["task_158_alter_column_transition_acceptance"];
-    assert_eq!(entry["freeze_version"], 3);
+    assert_eq!(entry["freeze_version"], 4);
     assert_eq!(entry["parent_signed_off"], false);
 }
 
