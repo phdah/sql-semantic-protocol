@@ -1956,3 +1956,11 @@ an already executed DROP establishes table absence. On RENAME, all row
 occurrences, SQL NULLs and typed column domains survive under the new relation
 identity. Unattested external catalog constraints, foreign-key dependencies,
 storage/transaction semantics and unknown absence remain Residual.
+
+
+A lifecycle layer retains its consumed relation identity. `TRUNCATE TABLE t` produces
+`t` with an empty physical bag; `ALTER TABLE t RENAME TO u` consumes `t` and
+produces `u` without copying rows; `DROP TABLE t` consumes `t` and produces
+**no dataset**, not even an anonymous one. The canonical graph therefore cannot
+advertise a dropped relation as a live source. Source identities and public
+`layers[].produces` are verified in `tests/task_159_lifecycle_graph.rs`.
