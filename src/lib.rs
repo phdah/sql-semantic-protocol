@@ -20,6 +20,7 @@
 //! - BooleanWitness describes coupled single-row boolean obligations and their proof boundaries.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
+//! - OutputDistributionStatistics derives exact requested NULL, distinct and duplicate counts from complete histograms without treating requests as execution proofs.
 //! - OutcomeGoal, OutputDistribution, and EvaluatedOutcomeGoal describe optional caller
 //!   requests and their independently proven output-row feasibility.
 //! - OutcomeWitness describes source-complete integer-key, group, join, window and set
@@ -166,7 +167,7 @@ pub use odcs::{
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use outcome_goals::{
     EvaluatedOutcomeGoal, OutcomeGoal, OutcomeGoalError, OutcomeGoalStatus, OutputDistribution,
-    OutputValueCount,
+    OutputDistributionStatistics, OutputValueCount,
 };
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
