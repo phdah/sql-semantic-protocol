@@ -125,12 +125,18 @@ fn replay(catalog: &RelationCatalog, lifecycle: &str) -> (String, String, bool, 
                 after_schema,
             )
         }
-        PhysicalWriteStatePlan::Residual { gap, .. } => {
-            (format!("Residual:{gap:?}"), String::new(), false, String::new())
-        }
-        PhysicalWriteStatePlan::Impossible { .. } => {
-            ("Impossible".to_string(), String::new(), false, String::new())
-        }
+        PhysicalWriteStatePlan::Residual { gap, .. } => (
+            format!("Residual:{gap:?}"),
+            String::new(),
+            false,
+            String::new(),
+        ),
+        PhysicalWriteStatePlan::Impossible { .. } => (
+            "Impossible".to_string(),
+            String::new(),
+            false,
+            String::new(),
+        ),
     }
 }
 
