@@ -69,6 +69,26 @@ implicit frames, peer ties and uncertain numeric cases is separately
 attested in the TASK-189 native oracle matrix. It does not certify other
 native vendor or session semantics.
 
+### Standalone output count and histogram goals (TASK-165)
+
+A caller can request an exact terminal row count, ordinary surviving group count,
+and complete typed column histogram using `OutcomeGoal`. For one direct, fully
+catalog-typed physical source, a feasible `OutcomeWitness::SourceRows` fixes the
+**entire** input bag, not merely a collection of independently selected rows.
+A request whose histogram sums to a different row count is impossible. A
+one-column `DISTINCT` cannot return duplicate scalar values, including NULL.
+
+`OutputDistribution::statistics()` derives the total row count, number of
+distinct non-NULL values, count of NULL occurrences and duplicate occurrences
+from the **requested complete histogram**. Duplicate rows count every
+occurrence after the first in its SQL DISTINCT equivalence class, including the
+single NULL class; zero-count buckets contribute nothing. The NULL fraction
+is the exact ratio `null_rows / rows` and is undefined for zero rows.
+Checked overflow returns `None`. These are descriptive request statistics:
+only an evaluated `Feasible` status backed by a source-complete witness proves
+that the SQL result can realize them. Unattested casts, session-dependent
+equality/collation and incomplete physical bags remain Residual.
+
 ## Protocol contract
 
 The Cargo package version is the single active protocol version emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
