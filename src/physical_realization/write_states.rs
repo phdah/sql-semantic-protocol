@@ -545,34 +545,43 @@ pub fn physical_ordered_write_state_plan_with_identities(
         let mut after_exists = true;
         let result = match kind {
             WriteKind::Lifecycle => {
-                let action = write.lifecycle_action().ok_or_else(|| {
-                    residual("missing canonical lifecycle action")
-                });
+                let action = write
+                    .lifecycle_action()
+                    .ok_or_else(|| residual("missing canonical lifecycle action"));
                 match action {
                     Err(error) => Err(error),
                     Ok(action) => {
-                        let schema = execution_bundle.source_schemas().iter().find(|schema| {
-                            schema.relation() == target
-                        });
-                        let constrained = execution_bundle.relation_constraints().iter().any(|set| {
-                            (set.relation() == target &&
-                                (!set.constraints().is_empty()
-                                    || !set.computed_keys().is_empty()
-                                    || !set.computed_checks().is_empty()
-                                    || !set.computed_boolean_checks().is_empty()
-                                    || !set.diagnostics().is_empty()
-                                    || set.column_value_sources().iter().any(|source| {
-                                        source.kind() != crate::column_sources::ColumnValueKind::Default
-                                            || source.value().is_none()
-                                    })))
-                                || set.constraints().iter().any(|constraint| {
-                                    matches!(constraint, RelationConstraint::ForeignKey(key)
+                        let schema = execution_bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == target);
+                        let constrained =
+                            execution_bundle.relation_constraints().iter().any(|set| {
+                                (set.relation() == target
+                                    && (!set.constraints().is_empty()
+                                        || !set.computed_keys().is_empty()
+                                        || !set.computed_checks().is_empty()
+                                        || !set.computed_boolean_checks().is_empty()
+                                        || !set.diagnostics().is_empty()
+                                        || set.column_value_sources().iter().any(|source| {
+                                            source.kind()
+                                                != crate::column_sources::ColumnValueKind::Default
+                                                || source.value().is_none()
+                                        })))
+                                    || set.constraints().iter().any(|constraint| {
+                                        matches!(constraint, RelationConstraint::ForeignKey(key)
                                         if key.referenced_relation() == target)
-                                })
-                        });
+                                    })
+                            });
                         match lifecycle::lifecycle_transition(
-                            action, target, before.as_ref(), schema, &states,
-                            executed_create.contains(target), proven_absent.contains(target), constrained,
+                            action,
+                            target,
+                            before.as_ref(),
+                            schema,
+                            &states,
+                            executed_create.contains(target),
+                            proven_absent.contains(target),
+                            constrained,
                         ) {
                             Ok(outcome) => {
                                 before_schema = schema.cloned();
@@ -584,7 +593,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         }
                     }
                 }
-            },
+            }
             WriteKind::SchemaAlter => {
                 let prior = before.as_ref().ok_or_else(|| {
                     residual_gap(
@@ -715,19 +724,25 @@ pub fn physical_ordered_write_state_plan_with_identities(
                     impossible("constructed rows contradict DML count law"),
                 );
             }
-        } else if !matches!(kind, WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle) {
+        } else if !matches!(
+            kind,
+            WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle
+        ) {
             return failure(
                 Some(layer.id()),
                 residual("missing canonical write count law"),
             );
         }
         if let Some(schema) = &after_schema {
-            if matches!(write.lifecycle_action(), Some(WriteLifecycleAction::Rename { .. })) {
+            if matches!(
+                write.lifecycle_action(),
+                Some(WriteLifecycleAction::Rename { .. })
+            ) {
                 execution_bundle.rename_physical_source_schema(target, schema.clone());
             } else if kind == WriteKind::SchemaAlter {
                 execution_bundle.replace_physical_source_schema(schema.clone());
-                if let Err(error) =
-                    execution_bundle.advance_physical_alter_defaults(target, write.column_alter_steps())
+                if let Err(error) = execution_bundle
+                    .advance_physical_alter_defaults(target, write.column_alter_steps())
                 {
                     return failure(
                         Some(layer.id()),
@@ -795,7 +810,10 @@ pub fn physical_ordered_write_state_plan_with_identities(
             let affected_rows: Vec<&PhysicalWriteRow> = match kind {
                 WriteKind::Append => after.rows.iter().skip(before.rows.len()).collect(),
                 WriteKind::Update | WriteKind::Delete => mutation_returning_rows.iter().collect(),
-                WriteKind::Definition | WriteKind::SchemaAlter | WriteKind::Lifecycle | WriteKind::ConditionalMutation => {
+                WriteKind::Definition
+                | WriteKind::SchemaAlter
+                | WriteKind::Lifecycle
+                | WriteKind::ConditionalMutation => {
                     return failure(
                         Some(layer.id()),
                         residual("RETURNING is not implemented for this write kind"),
