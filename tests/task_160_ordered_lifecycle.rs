@@ -388,7 +388,15 @@ fn every_frozen_exact_case_matches_native_catalog_and_full_bag_at_every_step() {
             if let Some(expected_schema) = expected["schema"].as_array() {
                 declared_columns = expected_schema
                     .iter()
-                    .map(|column| column.as_str().unwrap().split_whitespace().next().unwrap().to_owned())
+                    .map(|column| {
+                        column
+                            .as_str()
+                            .unwrap()
+                            .split_whitespace()
+                            .next()
+                            .unwrap()
+                            .to_owned()
+                    })
                     .collect();
             }
             if expected["exists"] == false {
@@ -396,7 +404,11 @@ fn every_frozen_exact_case_matches_native_catalog_and_full_bag_at_every_step() {
                 assert!(db.prepare("SELECT * FROM t").is_err());
                 continue;
             }
-            assert_eq!(actual_columns, declared_columns, "{} step {index}", case["id"]);
+            assert_eq!(
+                actual_columns, declared_columns,
+                "{} step {index}",
+                case["id"]
+            );
             let (row_description, observed) = if expected.get("read").is_some() {
                 (&expected["read"], output)
             } else {
@@ -438,7 +450,9 @@ fn native_ddl_errors_preserve_before_state_and_known_drop_rejects_read() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1)")
         .unwrap();
-    assert!(db.execute_batch("ALTER TABLE t ADD COLUMN a INTEGER").is_err());
+    assert!(db
+        .execute_batch("ALTER TABLE t ADD COLUMN a INTEGER")
+        .is_err());
     assert_eq!(
         db.query_row("SELECT a FROM t", [], |row| row.get::<_, i64>(0))
             .unwrap(),
