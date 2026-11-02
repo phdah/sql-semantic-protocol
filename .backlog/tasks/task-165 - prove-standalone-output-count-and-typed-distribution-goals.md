@@ -57,9 +57,11 @@ Next: [TASK-166](task-166%20-%20compose-shared-source-positive-and-impossible-te
 
 <!-- SECTION:NOTES:BEGIN -->
 - Working branch: `feat/task-165-standalone-output-distributions`.
-- Task-owned bounded matrix: `docs/task-165-acceptance-freeze.json` (active v2; v1 archived without erasing its late-freeze history; eight positive/negative/conditional cases and 104 parser-dialect cells).
+- Task-owned bounded matrix: `docs/task-165-acceptance-freeze.json` (active v3; v1/v2 archived without erasing the late-v1-freeze history; v3 source bag matches the actual Groups witness; eight positive/negative/conditional cases and 104 parser-dialect cells).
 - Public API proof seam: complete SQL output goals and canonical source-row witnesses. Exact histogram statistics are derived, not duplicated protocol facts; NULL ratio is rational, not floating-point.
 - Standalone direct-SQL and DuckDB fixture coverage: `tests/task_165_standalone_goals.rs`.
 - Executable frozen matrix: `tests/task_165_acceptance_inventory.rs`; direct/dbt catalog/ODCS parity: `tests/task_165_adapter_parity.rs`; review and signoff accounting: `docs/task-165-acceptance-audit.md`.
-- Remaining before child Done: current-head full CI, pinned sql-tdg consumer evidence, independent two-axis review of each mandatory cell, and explicit release disposition for the original AC #1 timing deviation (v1 freeze followed initial tests). Parent TASK-85 stays open.
+- V3 strengthens exact constructive replay: SourceRows [1,1,NULL], grouped physical [0,1] (one row per key), and complete corresponding DuckDB terminal bags across 13 dialect parser paths.
+- Pinned sql-tdg regression qualification: https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446, 69 selected tests passed; two unrelated timestamp tests fail identically on pre-PR base and branch (deferred to TASK-89/91).
+- Remaining before child Done: final-head 9/9 CI, independent two-axis review of each mandatory cell, and explicit disposition of original AC #1 timing deviation (v1 freeze followed initial tests). Parent TASK-85 stays open.
 <!-- SECTION:NOTES:END -->
