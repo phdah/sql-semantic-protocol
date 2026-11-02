@@ -52,3 +52,27 @@ fn every_frozen_alter_variant_has_a_classification_in_all_thirteen_dialects() {
         "Every parser/canonical matrix cell must be frozen independently"
     );
 }
+
+#[test]
+fn vendor_conditional_alter_forms_never_receive_unattested_exact_semantics() {
+    let f = freeze();
+    let boundaries = f["vendor_parser_boundaries"].as_array().unwrap();
+    assert_eq!(boundaries.len(), 4);
+    for dialect_name in f["dialects"].as_array().unwrap() {
+        let name = dialect_name.as_str().unwrap();
+        let parser = dialect_from_name(name).unwrap();
+        for boundary in boundaries {
+            let sql = boundary["sql"].as_str().unwrap();
+            assert_eq!(boundary["owner"], "TASK-158");
+            if Parser::parse_sql(parser.as_ref(), sql).is_err() {
+                continue;
+            }
+            let analyzed = analyze_inputs(&[SqlInput::inline(sql)], name, parser.as_ref()).unwrap();
+            assert!(
+                matches!(analyzed.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+                "{name} must not certify unproved vendor ALTER variant {}: {sql}",
+                boundary["id"]
+            );
+        }
+    }
+}
