@@ -43,6 +43,7 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
                             None => "read",
                         }
                     }
+                    _ => "unexpected_statement",
                 };
                 statements.push(status);
             }
