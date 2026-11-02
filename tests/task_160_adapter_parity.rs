@@ -110,18 +110,28 @@ fn outcome(catalog: &RelationCatalog, program: &[&str]) -> String {
 
 #[test]
 fn equivalent_direct_and_dbt_schema_evidence_produce_identical_read_and_catalog() {
-    let program = [
-        "CREATE TABLE t(a INTEGER)",
-        "INSERT INTO t(a) VALUES (1), (NULL), (1)",
-        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
-        "SELECT a, b FROM t",
-        "DROP TABLE t",
-    ];
-    let expected = outcome(&direct(), &program);
-    assert!(expected.starts_with("Exact:"), "{expected}");
-    assert_eq!(expected, outcome(&dbt(), &program));
-    #[cfg(feature = "odcs")]
-    assert_eq!(expected, outcome(&odcs(), &program));
+    for program in [
+        vec![
+            "CREATE TABLE t(a INTEGER)",
+            "INSERT INTO t(a) VALUES (1), (NULL), (1)",
+            "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+            "SELECT a, b FROM t",
+            "DROP TABLE t",
+        ],
+        vec![
+            "CREATE TABLE t(a INTEGER)",
+            "INSERT INTO t(a) VALUES (1), (NULL), (1), (2)",
+            "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+            "SELECT a, b FROM t WHERE a >= 2",
+            "DROP TABLE t",
+        ],
+    ] {
+        let expected = outcome(&direct(), &program);
+        assert!(expected.starts_with("Exact:"), "{expected}");
+        assert_eq!(expected, outcome(&dbt(), &program));
+        #[cfg(feature = "odcs")]
+        assert_eq!(expected, outcome(&odcs(), &program));
+    }
 }
 
 #[test]
