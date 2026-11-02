@@ -285,3 +285,50 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
         }
     }
 }
+
+#[test]
+fn read_truth_partition_rejects_false_and_sql_unknown_without_inventing_rows() {
+    let sql = [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t(a) VALUES (1), (NULL), (1), (2)",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "SELECT a, b FROM t WHERE a >= 2",
+        "DROP TABLE t",
+    ];
+    let bundle = analyze(&sql);
+    let PhysicalOrderedLifecycleProof::Exact(proof) =
+        physical_ordered_lifecycle_plan(&bundle, &[])
+    else {
+        panic!("complete WHERE prestate should certify TRUE and NOT TRUE occurrences");
+    };
+    assert_eq!(proof.reads.len(), 1);
+    let read = &proof.reads[0];
+    assert_eq!(read.source.rows().len(), 4);
+    assert_eq!(read.output.rows().len(), 1);
+    assert_eq!(read.surviving_source_ordinals, vec![3]);
+    assert_eq!(read.rejected_source_ordinals, vec![0, 1, 2]);
+    let domains = read.exact_domains().unwrap();
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("2".into()), 1)]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[(LiteralValue::Number("2".into()), 1)]
+    );
+    assert!(proof.final_states.is_empty());
+
+    let db = Connection::open_in_memory().unwrap();
+    for statement in &sql[..3] {
+        db.execute_batch(statement).unwrap();
+    }
+    let mut native = db.prepare(sql[3]).unwrap();
+    let rows = native
+        .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
+    assert_eq!(rows, vec![(2, 2)]);
+    db.execute_batch(sql[4]).unwrap();
+    assert!(db.prepare("SELECT * FROM t").is_err());
+}
