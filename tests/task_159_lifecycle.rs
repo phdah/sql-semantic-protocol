@@ -272,6 +272,31 @@ fn foreign_keys_or_unattested_lifecycle_options_fail_closed() {
     }
 }
 
+
+#[test]
+fn standalone_rename_table_cannot_become_exact_from_portable_catalog_evidence() {
+    let statements = [
+        "CREATE TABLE u(a INTEGER)",
+        "DROP TABLE u",
+        "CREATE TABLE t(a INTEGER)",
+        "RENAME TABLE t TO u",
+    ];
+    let parser = dialect_from_name("duckdb").unwrap();
+    assert!(
+        sqlparser::parser::Parser::parse_sql(parser.as_ref(), statements[3]).is_ok(),
+        "the regression must exercise a parsed vendor RENAME statement"
+    );
+    let bundle = analyze(&statements);
+    assert!(matches!(
+        bundle.inputs()[3].statements()[0],
+        ProtocolStatement::Unsupported(_)
+    ));
+    assert!(matches!(
+        physical_ordered_write_state_plan(&bundle, &[]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
+
 #[test]
 fn canonical_wire_records_lifecycle_kind_and_action_deterministically() {
     let bundle = analyze(&["DROP TABLE IF EXISTS t"]);
