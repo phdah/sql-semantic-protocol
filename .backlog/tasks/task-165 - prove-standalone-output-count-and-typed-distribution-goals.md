@@ -1,10 +1,10 @@
 ---
 id: TASK-165
 title: Prove standalone output count and typed distribution goals
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-02'
 labels: []
 milestone: m-3
 dependencies:
@@ -52,3 +52,13 @@ type: feature
 ## Next
 
 Next: [TASK-166](task-166%20-%20compose-shared-source-positive-and-impossible-terminal-goals.md), only after completion and merge.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Working branch: `feat/task-165-standalone-output-distributions`.
+- Task-owned bounded matrix: `docs/task-165-acceptance-freeze.json` (v1, eight positive/negative/conditional cases; 104 parser-dialect cells).
+- Public API proof seam: complete SQL output goals and canonical source-row witnesses. Exact histogram statistics are derived, not duplicated protocol facts; NULL ratio is rational, not floating-point.
+- Standalone direct-SQL and DuckDB fixture coverage: `tests/task_165_standalone_goals.rs`.
+- Remaining before child Done: verify exact frozen cases and full source/terminal snapshots, dbt/ODCS equivalence, production CI including no-default-features and dbt E2E, and independent two-axis review. Parent TASK-85 stays open.
+<!-- SECTION:NOTES:END -->
