@@ -183,7 +183,10 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                     panic!("{}: expected full lifecycle proof: {result:?}", case["id"]);
                 };
                 assert_eq!(exact.checkpoints.len(), sql.len(), "{}", case["id"]);
-                assert!(exact.final_states.is_empty(), "DROP removes the final table");
+                assert!(
+                    exact.final_states.is_empty(),
+                    "DROP removes the final table"
+                );
                 assert_eq!(exact.reads.len(), 1);
                 let read = &exact.reads[0];
                 let expected = case["snapshots"][3]["read"].as_array().unwrap();
@@ -193,7 +196,10 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                 let frozen_domains = &case["typed_domains_at_read"];
                 for domain in domains {
                     let expected_domain = &frozen_domains[domain.column()];
-                    assert_eq!(domain.values().len(), expected_domain["frequencies"].as_object().unwrap().len());
+                    assert_eq!(
+                        domain.values().len(),
+                        expected_domain["frequencies"].as_object().unwrap().len()
+                    );
                     for (value, frequency) in domain.values() {
                         let key = match value {
                             LiteralValue::Null => "NULL".to_string(),
@@ -222,19 +228,35 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
                     case["id"]
                 );
                 assert!(read.rejected_source_ordinals.is_empty());
-                for (checkpoint, expected) in exact.checkpoints.iter().zip(case["snapshots"].as_array().unwrap()) {
+                for (checkpoint, expected) in exact
+                    .checkpoints
+                    .iter()
+                    .zip(case["snapshots"].as_array().unwrap())
+                {
                     if expected.get("read").is_some() {
                         assert_eq!(checkpoint.states.len(), 1);
                         assert_eq!(checkpoint.schemas.len(), 1);
                         continue;
                     }
                     let exists = expected["exists"].as_bool().unwrap();
-                    assert_eq!(checkpoint.states.len(), usize::from(exists), "{}", case["id"]);
-                    assert_eq!(checkpoint.schemas.len(), usize::from(exists), "{}", case["id"]);
+                    assert_eq!(
+                        checkpoint.states.len(),
+                        usize::from(exists),
+                        "{}",
+                        case["id"]
+                    );
+                    assert_eq!(
+                        checkpoint.schemas.len(),
+                        usize::from(exists),
+                        "{}",
+                        case["id"]
+                    );
                     if exists {
                         let expected_rows = expected["rows"].as_array().unwrap();
                         assert_eq!(checkpoint.states[0].rows().len(), expected_rows.len());
-                        for (row, expected_row) in checkpoint.states[0].rows().iter().zip(expected_rows) {
+                        for (row, expected_row) in
+                            checkpoint.states[0].rows().iter().zip(expected_rows)
+                        {
                             let expected_row = expected_row.as_object().unwrap();
                             assert_eq!(row.values().len(), expected_row.len());
                             for (col, value) in expected_row {
@@ -251,11 +273,13 @@ fn ordered_read_checkpoints_retain_typed_full_bag_and_source_occurrences() {
             }
             "Impossible" => assert!(
                 matches!(result, PhysicalOrderedLifecycleProof::Impossible { .. }),
-                "{}: {result:?}", case["id"]
+                "{}: {result:?}",
+                case["id"]
             ),
             "Residual" => assert!(
                 matches!(result, PhysicalOrderedLifecycleProof::Residual { .. }),
-                "{}: {result:?}", case["id"]
+                "{}: {result:?}",
+                case["id"]
             ),
             other => panic!("unsupported frozen classification: {other}"),
         }
