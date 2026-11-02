@@ -2,11 +2,18 @@
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
     "parent": "TASK-83",
-    "status": "sql_ast_and_ordered_physical_implementation_pending_final_matrix",
+    "status": "extended_bag_default_and_adapter_oracles_pending_independent_review",
     "freeze": "docs/task-158-acceptance-freeze.json",
-    "freeze_version": 3,
-    "freeze_history": ["docs/task-158-acceptance-freeze-v1.json", "docs/task-158-acceptance-freeze-v2.json"],
-    "fixture_ids": ["83-C158-P", "83-C158-N"],
+    "freeze_version": 4,
+    "freeze_history": [
+      "docs/task-158-acceptance-freeze-v1.json",
+      "docs/task-158-acceptance-freeze-v2.json",
+      "docs/task-158-acceptance-freeze-v3.json"
+    ],
+    "fixture_ids": [
+      "83-C158-P",
+      "83-C158-N"
+    ],
     "physical_row_projection_oracle": "tests/task_158_alter_column_snapshot.rs",
     "ordered_sql_oracle": "tests/task_158_ordered_alter.rs",
     "frozen_complete_bag_oracle": "tests/task_158_frozen_cases.rs",
@@ -16,15 +23,13 @@
     "child_signed_off": false,
     "parent_signed_off": false,
     "mandatory_cells_verified": false,
-    "dialect_cells_verified": 0,
-    "adapter_cells_verified": 0,
+    "dialect_cells_verified": 104,
+    "adapter_cells_verified": 27,
     "ci_verified": false,
     "remaining_gates": [
-      "Final-head CI for AST and ordered physical writes",
-      "Authoritative constraints and post-ALTER row constraints",
-      "full 13-dialect and SQL/dbt/ODCS parity",
-      "all complete DuckDB and negative oracles",
-      "full CI and independent review"
+      "Final-head 9-job CI for v4 evidence matrix",
+      "Independent fixed-point standards and specification review",
+      "Approval of conditional vendor cast/key/transaction release dispositions"
     ]
   },
   "task_157_ddl_identity_acceptance": {
@@ -33,8 +38,13 @@
     "status": "done_independently_reviewed_ci_verified",
     "freeze": "docs/task-157-acceptance-freeze.json",
     "freeze_version": 2,
-    "freeze_history": ["docs/task-157-acceptance-freeze-v1.json"],
-    "fixture_ids": ["83-C157-P", "83-C157-N"],
+    "freeze_history": [
+      "docs/task-157-acceptance-freeze-v1.json"
+    ],
+    "fixture_ids": [
+      "83-C157-P",
+      "83-C157-N"
+    ],
     "mandatory_cases": 8,
     "conditional_cases": 1,
     "dialect_cells_required": 117,
