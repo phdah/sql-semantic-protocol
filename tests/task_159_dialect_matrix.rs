@@ -28,7 +28,6 @@ fn each_shared_lifecycle_ast_is_canonical_or_a_parser_boundary_in_all_dialects()
         ("DROP TABLE t", "drop"),
         ("DROP TABLE IF EXISTS t", "drop"),
         ("ALTER TABLE t RENAME TO u", "rename"),
-        ("RENAME TABLE t TO u", "rename"),
     ];
     let mut cells = 0usize;
     for dialect in DIALECTS {
@@ -63,6 +62,7 @@ fn each_shared_lifecycle_ast_is_canonical_or_a_parser_boundary_in_all_dialects()
 fn conditional_vendor_and_session_forms_fail_closed_when_the_ast_parses() {
     let conditional = [
         "DROP MATERIALIZED VIEW mv",
+        "RENAME TABLE t TO u",
         "DROP TABLE t CASCADE",
         "TRUNCATE TABLE t RESTART IDENTITY",
         "CREATE TEMP TABLE t(a INTEGER)",
@@ -98,7 +98,7 @@ fn conditional_vendor_and_session_forms_fail_closed_when_the_ast_parses() {
 }
 
 #[test]
-fn every_frozen_v2_dialect_case_has_a_pinned_parser_classification() {
+fn every_frozen_v3_dialect_case_has_a_pinned_parser_classification() {
     use std::collections::BTreeMap;
     let matrix: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-159-acceptance-freeze.json")).unwrap();
