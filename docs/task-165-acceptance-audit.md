@@ -60,6 +60,20 @@ without authoritative source datatype evidence remains Residual on all
 equivalent to canonical typed bucket identity; external engine truth requires
 separate attestation.
 
+## TASK-165 acceptance status mapped to parent TASK-85
+
+| Child AC | Parent original AC | Implementation result | Sign-off |
+| --- | --- | --- | --- |
+| #1 Frozen variants and prospective timing | #1, #3, #5, #6 | v1/v2 archived; active v3 froze the corrected group witness before its test. The original v1 was late and cannot become prospectively frozen by editing history | **Pending explicit process disposition** |
+| #2 Canonical complete-bag semantics | #1, #3 | Checked typed histogram totals, exact NULL/distinct/duplicate rates, full SourceRows and Groups witness bags; contradiction remains Impossible | **Technical pass** |
+| #3 Independent physical DuckDB oracle | #5, #6 | Positive/negative [1,1,NULL] and group [0,1] source plus full terminals; impossible overflow arithmetic only | **Technical pass** |
+| #4 Dialects/adapters/engine boundary | #1, #6 | 91 mandatory dialect cells and 13 conditional residual cells, direct SQL/dbt catalog/ODCS parity, DuckDB only as native engine | **Technical pass** |
+| #5 Final CI, pinned consumer and independent review | #5, #6 | Implementation-head [CI 41530620433](https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433) 9/9 green; 69 pinned consumer selected tests pass and two timestamp baseline failures unchanged. Final metadata-head CI and external independent review still required | **Pending independent sign-off** |
+
+These mapped parent AC are **evidence links**, not parent TASK-85 completion.
+Child AC #2/#3/#4 may be checked on the implementation evidence; #1/#5 remain
+unchecked rather than treating a reviewer waiver as already given.
+
 ## Matt code-review axes against `main...HEAD`
 
 ### Standards
