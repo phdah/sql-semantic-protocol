@@ -552,11 +552,20 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         // attest the absence of declared table constraints.
                         // Catalog/adapter schemas alone do not certify this.
                         let declared_create = executed_create.contains(target);
-                        let constrained = bundle.relation_constraints().iter().any(|set| {
-                            set.relation() == target || set.constraints().iter().any(|constraint| {
-                                matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
-                                    if key.referenced_relation() == target)
-                            })
+                        let constrained = execution_bundle.relation_constraints().iter().any(|set| {
+                            (set.relation() == target
+                                && (!set.constraints().is_empty()
+                                    || !set.computed_keys().is_empty()
+                                    || !set.computed_checks().is_empty()
+                                    || !set.computed_boolean_checks().is_empty()
+                                    || !set.diagnostics().is_empty()
+                                    || set.column_value_sources().iter().any(|source| {
+                                        source.kind() != crate::column_sources::ColumnValueKind::Default
+                                    })))
+                                || set.constraints().iter().any(|constraint| {
+                                    matches!(constraint, crate::constraints::RelationConstraint::ForeignKey(key)
+                                        if key.referenced_relation() == target)
+                                })
                         });
                         let inventory = if declared_create && !constrained {
                             Some(&[][..])
@@ -658,6 +667,17 @@ pub fn physical_ordered_write_state_plan_with_identities(
         }
         if let Some(schema) = &after_schema {
             execution_bundle.replace_physical_source_schema(schema.clone());
+            if let Err(error) = execution_bundle
+                .advance_physical_alter_defaults(target, write.column_alter_steps())
+            {
+                return failure(
+                    Some(layer.id()),
+                    residual_gap(
+                        PhysicalWriteStateGap::UnprovedConstraint,
+                        format!("cannot preserve canonical ALTER value sources: {error}"),
+                    ),
+                );
+            }
         }
         if let Err(error) = validate_state(&execution_bundle, &after) {
             return failure(Some(layer.id()), error);
