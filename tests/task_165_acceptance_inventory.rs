@@ -280,6 +280,11 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                 let witness = &json["outcome_goals"][0]["witness"];
                 assert_eq!(witness["relation"], "t", "{id}/{dialect}: physical source");
                 assert_eq!(
+                    witness["key"],
+                    json!({"relation":"t","name":"k"}),
+                    "{id}/{dialect}: source identity and grouped key"
+                );
+                assert_eq!(
                     witness["groups"],
                     json!(2),
                     "{id}/{dialect}: complete groups"
