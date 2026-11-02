@@ -36,11 +36,30 @@
     "historical_freeze_timing_deviation": "Original v1 authored after first semantic changes. Explicit independent review disposition required for TASK-165 AC #1",
     "native_oracle_scope": "Full DuckDB source/terminal bags for six executable mandatory cases; overflow is checked arithmetic impossible",
     "conditional_release_disposition": "Absent authoritative source schema stays Residual; no vendor/session equality laws asserted",
+    "pinned_consumer_qualification": {
+      "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446",
+      "consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+      "protocol_commit": "6e767dd62ef37a1ab5d30ddd515f7f423fe7503b",
+      "baseline_commit": "7af4c128d5bc5785982ccdcd6bc7fed603651938",
+      "selected_suite_counts": {
+        "lib": 34,
+        "type_coverage": 2,
+        "full_query": 26,
+        "exactness": 7
+      },
+      "conditional_existing_failures": [
+        "full_query/protocol_driven_timestamp_generation",
+        "exactness/timezone_dependent_timestamp_filters_require_session_assumption"
+      ],
+      "baseline_comparison": "Both timestamp tests fail with identical computed_expression residual on baseline and PR head",
+      "result": "selected_consumer_suites_green_full_suite_not_claimed",
+      "temporary_workflow_removed": true
+    },
     "remaining_gates": [
       "Final-head 9/9 CI with frozen acceptance runner",
-      "External pinned sql-tdg consumer verification against PR head",
       "Independent two-axis review and acceptance-cell signoff",
-      "Explicit approval or rejection of historical AC #1 freeze timing exception"
+      "Explicit approval or rejection of historical AC #1 freeze timing exception",
+      "External owner review of two preexisting downstream timestamp test failures"
     ]
   },
   "task_160_ordered_lifecycle_acceptance": {
