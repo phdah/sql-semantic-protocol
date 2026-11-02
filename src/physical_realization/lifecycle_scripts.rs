@@ -125,17 +125,16 @@ fn read_at_checkpoint(
         let crate::protocol::Expression::Column(expression) = column.expression() else {
             return Err("computed SELECT output requires a typed projection proof".to_string());
         };
-        if expression
-            .relation()
-            .is_some_and(|qualifier| qualifier != source.name() && source.alias() != Some(qualifier))
-        {
+        if expression.relation().is_some_and(|qualifier| {
+            qualifier != source.name() && source.alias() != Some(qualifier)
+        }) {
             return Err("SELECT column qualifier is not the current physical source".to_string());
         }
         match column.lineage() {
             [] => {}
             [lineage]
-                if lineage.relation() == source.name()
-                    && lineage.column() == expression.name() => {}
+                if lineage.relation() == source.name() && lineage.column() == expression.name() => {
+            }
             _ => return Err("SELECT output has ambiguous physical lineage".to_string()),
         }
         let Some(physical) = schema
