@@ -77,6 +77,24 @@ impl AnalysisBundle {
         }
         self.source_schemas
             .sort_by(|left, right| left.relation().cmp(right.relation()));
+        if let Some(index) = self
+            .relation_constraints
+            .iter()
+            .position(|set| set.relation() == prior_relation)
+        {
+            let mut evidence = self.relation_constraints.remove(index);
+            self.relation_constraints.retain(|set| set.relation() != renamed.relation());
+            evidence.rename_physical_relation(renamed.relation());
+            self.relation_constraints.push(evidence);
+            self.relation_constraints
+                .sort_by(|a, b| a.relation().cmp(b.relation()));
+        }
+    }
+
+    /// Drop the execution-only constraint and default evidence of an exactly
+    /// destroyed relation, so later statements cannot reuse stale metadata.
+    pub(crate) fn drop_physical_relation_evidence(&mut self, relation: &str) {
+        self.relation_constraints.retain(|set| set.relation() != relation);
     }
 
     /// Maintain authoritative scalar default declarations for subsequent ordered
