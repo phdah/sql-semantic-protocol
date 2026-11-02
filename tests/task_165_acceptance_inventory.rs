@@ -245,7 +245,7 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                     }
                 }
                 assert_eq!(
-                    generated,
+                    json!(generated),
                     case["source_bag"],
                     "{id}/{dialect}: reconstruct protocol witness physical inputs"
                 );
@@ -254,7 +254,7 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                     generated_terminal.push(json!({"k":key,"n":rows_per_group}));
                 }
                 assert_eq!(
-                    generated_terminal,
+                    json!(generated_terminal),
                     case["terminal_bag"],
                     "{id}/{dialect}: witness implies exact complete terminal bag"
                 );
