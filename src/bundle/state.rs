@@ -55,6 +55,24 @@ impl AnalysisBundle {
         }
     }
 
+    /// Rename a proved, constraint-free physical relation in the execution copy.
+    /// Original SQL and external catalog evidence remain immutable.
+    pub(crate) fn rename_physical_source_schema(
+        &mut self,
+        prior_relation: &str,
+        renamed: RelationSchema,
+    ) {
+        if let Some(current) = self
+            .source_schemas
+            .iter_mut()
+            .find(|entry| entry.relation() == prior_relation)
+        {
+            *current = renamed;
+        }
+        self.source_schemas
+            .sort_by(|left, right| left.relation().cmp(right.relation()));
+    }
+
     /// Maintain authoritative scalar default declarations for subsequent ordered
     /// INSERT/MERGE writes after a physically certified ALTER. Source SQL syntax
     /// remains in the immutable original bundle; only the execution copy changes.
