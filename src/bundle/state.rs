@@ -65,8 +65,8 @@ impl AnalysisBundle {
     ) -> Result<(), crate::constraints::ConstraintMetadataError> {
         use crate::column_sources::{ColumnValueKind, ColumnValueSource};
         use crate::constraints::{
-            ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-            ConstraintSourceKind, ConstraintValue, RelationConstraintSet,
+            ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+            ConstraintValue, RelationConstraintSet,
         };
         use crate::protocol::{ColumnAlterStep, LiteralValue};
 
@@ -86,9 +86,7 @@ impl AnalysisBundle {
                     let value = match default {
                         None | Some(LiteralValue::Null) => ConstraintValue::Null,
                         Some(LiteralValue::Boolean(value)) => ConstraintValue::Boolean(*value),
-                        Some(LiteralValue::Number(value)) => {
-                            ConstraintValue::Number(value.clone())
-                        }
+                        Some(LiteralValue::Number(value)) => ConstraintValue::Number(value.clone()),
                         Some(LiteralValue::Text(value)) => ConstraintValue::String(value.clone()),
                     };
                     let provenance = ConstraintProvenance::new(
