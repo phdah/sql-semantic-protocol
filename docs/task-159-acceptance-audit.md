@@ -42,3 +42,11 @@ public graph seam now makes RENAME produce only its new relation name, DROP
 produce no datasets (including anonymous), and TRUNCATE retain its table
 identity. `tests/task_159_lifecycle_graph.rs` verifies the public graph and
 wire output and protects downstream consumers from phantom sources.
+
+## Two-axis self-audit and CI checkpoint (2026-11-02)
+
+**Standards axis:** the implementation passes cargo fmt, strict Rust Clippy, full tests, no-default-feature checks, docs and dbt E2E (nine green jobs at https://github.com/phdah/sql-semantic-protocol/actions/runs/41488484532). Public SQL ASTs remain at analysis boundary, canonical lifecycle types at protocol boundary, and physical snapshots remain conditional. Consumer-facing wire-kind compatibility now has a Conventional Commit breaking-change footer for the planned 3.0.0 release. The repeated constraint inventory predicate in ALTER and lifecycle is a nonblocking DRY advisory.
+
+**Spec axis:** eight mandatory v2 executable fixtures (six Exact, two Impossible), complete before/after DuckDB row/schema snapshots, NULL and duplicate counts, typed domain frequencies and bounds, 234 pinned 13-dialect parser classifications and SQL/dbt/ODCS parity are verified. A separate inspection found and fixed phantom DROP and old-name RENAME graph outputs plus default lineage and stale schema recreation. Conditional vendor/session/clone laws remain explicit Residual and TASK-83 remains open.
+
+This self-audit is **not represented as an independent subagent/reviewer signoff**. A separate fixed-point Matt standards/spec review remains the final TASK-159 criterion before Done. The reviewed implementation CI head is `c59113784a5968b73845af238c7bed1f2b99433c`; metadata-only updates should also pass CI before merge.

@@ -6,7 +6,7 @@
     "83-C159-P",
     "83-C159-N"
   ],
-  "status": "v2_frozen_typed_cases_pending_final_verification",
+  "status": "v2_verified_mandatory_child_pending_independent_review",
   "frozen_before_semantic_changes": true,
   "definition_of_done": "all mandatory Exact/Impossible cells, source and post-state identities, typed domains, full DuckDB oracle, 13 parsed dialect classifications, and applicable direct/dbt/ODCS evidence must be independently verified",
   "seams": [
@@ -923,12 +923,12 @@
     6
   ],
   "signoff": {
-    "mandatory_verified": false,
-    "duckdb_verified": false,
-    "all_dialects_verified": false,
-    "all_adapters_verified": false,
+    "mandatory_verified": true,
+    "duckdb_verified": true,
+    "all_dialects_verified": true,
+    "all_adapters_verified": true,
     "independent_review": false,
-    "ci_verified": false
+    "ci_verified": true
   },
   "history": [
     "docs/task-159-acceptance-freeze-v1.json"
