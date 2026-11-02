@@ -55,6 +55,73 @@ impl AnalysisBundle {
         }
     }
 
+    /// Maintain authoritative scalar default declarations for subsequent ordered
+    /// INSERT/MERGE writes after a physically certified ALTER. Source SQL syntax
+    /// remains in the immutable original bundle; only the execution copy changes.
+    pub(crate) fn advance_physical_alter_defaults(
+        &mut self,
+        relation: &str,
+        steps: &[crate::protocol::ColumnAlterStep],
+    ) -> Result<(), crate::constraints::ConstraintMetadataError> {
+        use crate::column_sources::{ColumnValueKind, ColumnValueSource};
+        use crate::constraints::{
+            ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+            ConstraintSourceKind, ConstraintValue, RelationConstraintSet,
+        };
+        use crate::protocol::{ColumnAlterStep, LiteralValue};
+
+        let index = self
+            .relation_constraints
+            .iter()
+            .position(|set| set.relation() == relation);
+        let mut set = match index {
+            Some(index) => self.relation_constraints[index].clone(),
+            None => RelationConstraintSet::new(relation, Vec::new())?,
+        };
+        for step in steps {
+            match step {
+                ColumnAlterStep::Add { column, default } => {
+                    // An ALTER ADD with no DEFAULT is nullable and future
+                    // omitted-column INSERTs materialize SQL NULL.
+                    let value = match default {
+                        None | Some(LiteralValue::Null) => ConstraintValue::Null,
+                        Some(LiteralValue::Boolean(value)) => ConstraintValue::Boolean(*value),
+                        Some(LiteralValue::Number(value)) => {
+                            ConstraintValue::Number(value.clone())
+                        }
+                        Some(LiteralValue::Text(value)) => ConstraintValue::String(value.clone()),
+                    };
+                    let provenance = ConstraintProvenance::new(
+                        ConstraintSourceKind::SqlDdl,
+                        format!("ordered_alter:{relation}:{}", column.name()),
+                    )?;
+                    let source = ColumnValueSource::new(
+                        column.name(),
+                        ColumnValueKind::Default,
+                        Some(value),
+                        vec![ConstraintEvidence::new(
+                            provenance,
+                            ConstraintEnforcement::Enforced,
+                        )],
+                    )?;
+                    set.replace_physical_column_default(source);
+                }
+                ColumnAlterStep::Drop { column } => {
+                    set.drop_physical_column_default(column);
+                }
+                ColumnAlterStep::Rename { old, new } => {
+                    set.rename_physical_column_default(old, new)?;
+                }
+                ColumnAlterStep::SetType { .. } => {}
+            }
+        }
+        match index {
+            Some(index) => self.relation_constraints[index] = set,
+            None => self.relation_constraints.push(set),
+        }
+        Ok(())
+    }
+
     /// Return canonical relation constraints from SQL and metadata adapters.
     pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
         &self.relation_constraints
