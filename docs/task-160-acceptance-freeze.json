@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-160",
   "parent": "TASK-83",
-  "status": "frozen_before_semantic_changes_in_progress",
-  "frozen_before_semantic_changes": true,
+  "status": "v2_explicit_true_not_true_null_contrast_under_verification",
+  "frozen_before_semantic_changes": false,
   "fixture_ids": [
     "83-C160-P",
     "83-C160-N"
@@ -52,7 +52,8 @@
     "3": [
       "83-C160-P-main",
       "83-C160-N-null-duplicates",
-      "83-C160-N-drop-before-read"
+      "83-C160-N-drop-before-read",
+      "83-C160-N-filter-null"
     ],
     "4": [
       "83-C160-P-main",
@@ -492,6 +493,165 @@
       "identity": "Complete ordered prestate and after-state physical row occurrences; no generated independent snapshots",
       "dialect_matrix": "13 dialects: parser boundary or same canonical AST; a parsed vendor form is not execution evidence",
       "adapter_matrix": "direct SQL / dbt compiled SQL / ODCS equivalent schema evidence separately proved"
+    },
+    {
+      "id": "83-C160-N-filter-null",
+      "family": "three_valued_read_predicate",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "program": [
+        "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t(a) VALUES (1), (NULL), (1), (2)",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "SELECT a, b FROM t WHERE a >= 2",
+        "DROP TABLE t"
+      ],
+      "snapshots": [
+        {
+          "step": 0,
+          "exists": true,
+          "schema": [
+            "a INTEGER"
+          ],
+          "rows": []
+        },
+        {
+          "step": 1,
+          "exists": true,
+          "schema": [
+            "a INTEGER"
+          ],
+          "rows": [
+            {
+              "a": 1
+            },
+            {
+              "a": null
+            },
+            {
+              "a": 1
+            },
+            {
+              "a": 2
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "exists": true,
+          "schema": [
+            "a INTEGER",
+            "b INTEGER"
+          ],
+          "rows": [
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": null,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 2,
+              "b": 2
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "read": [
+            {
+              "a": 2,
+              "b": 2
+            }
+          ],
+          "source_occurrences": [
+            3
+          ],
+          "true_ordinals": [
+            3
+          ],
+          "not_true_ordinals": [
+            0,
+            1,
+            2
+          ],
+          "unknown_ordinals": [
+            1
+          ]
+        },
+        {
+          "step": 4,
+          "exists": false,
+          "schema": null,
+          "rows": null
+        }
+      ],
+      "final_states": [],
+      "affected": [
+        {
+          "inserted": 0,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 4,
+          "updated": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 0,
+          "updated": 0,
+          "deleted": 0
+        },
+        null,
+        {
+          "inserted": 0,
+          "updated": 0,
+          "deleted": 4
+        }
+      ],
+      "typed_domains_at_read": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "b": {
+          "type": "INTEGER",
+          "frequencies": {
+            "2": 1
+          },
+          "nullable": false,
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "comparison_assumptions": "SQL 3VL: a=1 evaluates FALSE, a=NULL evaluates UNKNOWN, a=2 evaluates TRUE. No unknown row is counted as TRUE.",
+      "source_truth": "TRUE source ordinal 3; NOT TRUE 0,1,2 of which ordinal 1 is SQL UNKNOWN",
+      "identity": "Complete ordered prestate and after-state physical row occurrences; no generated independent snapshots",
+      "dialect_matrix": "13 dialects: parser boundary or same canonical AST; a parsed vendor form is not execution evidence",
+      "adapter_matrix": "direct SQL / dbt compiled SQL / ODCS equivalent schema evidence separately proved",
+      "release_disposition": "Mandatory Exact/Impossible required, no Residual accepted without independently reviewed conditional boundary"
     }
-  ]
+  ],
+  "scope_amendment": {
+    "from_version": 1,
+    "reason": "AC #3 requires a source-backed TRUE/NOT TRUE contrast, including SQL UNKNOWN, which the v1 all-rows SELECT did not exercise",
+    "review_disposition": "Added an explicit mandatory filtered SELECT variant; v1 is immutable; no mandatory cell downgraded",
+    "owner": "TASK-160"
+  }
 }
