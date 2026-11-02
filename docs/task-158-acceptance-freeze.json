@@ -54,12 +54,13 @@
       "before_count": 2,
       "after_count": 2,
       "source_truth": {
-        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "meaning": "Every physical row occurrence is preserved",
         "true_ordinals": [
           0,
           1
         ],
-        "not_true_ordinals": []
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
       },
       "typed_domains": {
         "a": {
@@ -123,11 +124,12 @@
       "before_count": 1,
       "after_count": 1,
       "source_truth": {
-        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "meaning": "Every physical row occurrence is preserved",
         "true_ordinals": [
           0
         ],
-        "not_true_ordinals": []
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
       },
       "typed_domains": {
         "a": {
@@ -192,11 +194,12 @@
       "before_count": 1,
       "after_count": 1,
       "source_truth": {
-        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "meaning": "Every physical row occurrence is preserved",
         "true_ordinals": [
           0
         ],
-        "not_true_ordinals": []
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
       },
       "typed_domains": {
         "c": {
@@ -266,12 +269,13 @@
       "before_count": 2,
       "after_count": 2,
       "source_truth": {
-        "meaning": "ALTER preserves every physical row occurrence, not a row-filter predicate",
+        "meaning": "Every physical row occurrence is preserved",
         "true_ordinals": [
           0,
           1
         ],
-        "not_true_ordinals": []
+        "not_true_ordinals": [],
+        "unknown_ordinals": []
       },
       "typed_domains": {
         "a": {
@@ -313,11 +317,12 @@
       "before_count": 1,
       "after_count": null,
       "source_truth": {
-        "meaning": "entire proposed ALTER rejected atomically",
+        "meaning": "Entire proposed ALTER is refuted atomically",
         "true_ordinals": [],
         "not_true_ordinals": [
           0
-        ]
+        ],
+        "unknown_ordinals": []
       },
       "typed_domains": null
     },
@@ -347,11 +352,12 @@
       "before_count": 1,
       "after_count": null,
       "source_truth": {
-        "meaning": "entire proposed ALTER rejected atomically",
+        "meaning": "Entire proposed ALTER is refuted atomically",
         "true_ordinals": [],
         "not_true_ordinals": [
           0
-        ]
+        ],
+        "unknown_ordinals": []
       },
       "typed_domains": null
     },
@@ -381,9 +387,12 @@
       "before_count": 1,
       "after_count": null,
       "source_truth": {
-        "meaning": "no SQL row truth can be certified without engine law",
-        "true_ordinals": null,
-        "not_true_ordinals": null
+        "meaning": "Physical ALTER operation requires unproved vendor or constraint law; neither success nor failure is certified",
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
       },
       "typed_domains": null,
       "native_oracle": "DuckDB INTEGER -> VARCHAR runtime succeeds on the concrete source bag; canonical remains Residual without vendor-independent cast law"
@@ -416,9 +425,12 @@
       "before_count": 1,
       "after_count": null,
       "source_truth": {
-        "meaning": "no SQL row truth can be certified without engine law",
-        "true_ordinals": null,
-        "not_true_ordinals": null
+        "meaning": "Physical ALTER operation requires unproved vendor or constraint law; neither success nor failure is certified",
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "unknown_ordinals": [
+          0
+        ]
       },
       "typed_domains": null,
       "native_oracle": "DuckDB refuses DROP of enforced PRIMARY KEY and retains its source bag; canonical remains Residual without general constraint rewrite law"
