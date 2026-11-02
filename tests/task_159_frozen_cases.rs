@@ -147,7 +147,7 @@ fn every_mandatory_frozen_lifecycle_cell_has_independent_native_and_physical_ora
                 assert!(!native_exists(&db,step.after().relation()), "{id}: absent after #{index}");
             }
         }
-        let expected_pre = case["prestate"].as_array().map(physical_rows);
+        let expected_pre = case["prestate"].is_array().then(|| physical_rows(&case["prestate"]));
         assert_eq!(bag(last.before().rows()),bag(&expected_pre.unwrap_or_default()), "{id}: frozen prestate");
         if case["before_exists"] == true {
             assert_domain(last.before(),last.before_schema().unwrap(),&case["pre_typed_domains"]);
