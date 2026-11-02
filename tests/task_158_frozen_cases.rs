@@ -409,9 +409,13 @@ fn conditional_frozen_variants_have_independent_native_execution_evidence() {
         "CREATE TABLE t (\"key\" INTEGER PRIMARY KEY, value INTEGER); INSERT INTO t VALUES (1, 2)",
     )
     .unwrap();
-    assert!(db.execute_batch("ALTER TABLE t DROP COLUMN \"key\"").is_err());
+    assert!(db
+        .execute_batch("ALTER TABLE t DROP COLUMN \"key\"")
+        .is_err());
     let source: (i64, i64) = db
-        .query_row("SELECT \"key\", value FROM t", [], |row| Ok((row.get(0)?, row.get(1)?)))
+        .query_row("SELECT \"key\", value FROM t", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
         .unwrap();
     assert_eq!(source, (1, 2));
 }
