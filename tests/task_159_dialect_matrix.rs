@@ -90,6 +90,7 @@ fn conditional_vendor_and_session_forms_fail_closed_when_the_ast_parses() {
                         "{dialect} unproved vendor/session form became portable: {sql}"
                     );
                 }
+                _ => panic!("{dialect}: unsupported canonical statement variant: {sql}"),
             }
         }
     }
