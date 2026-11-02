@@ -1964,3 +1964,9 @@ produces `u` without copying rows; `DROP TABLE t` consumes `t` and produces
 **no dataset**, not even an anonymous one. The canonical graph therefore cannot
 advertise a dropped relation as a live source. Source identities and public
 `layers[].produces` are verified in `tests/task_159_lifecycle_graph.rs`.
+
+**Compatibility / release gate:** `relation_lifecycle` is a new variant in the
+public write-kind union and requires consumer handling of `lifecycle_action`.
+Treat it as a breaking protocol/API addition for the planned 3.0.0 release;
+this implementation PR does not independently authorize an intermediate
+2.x publication or sign off TASK-83/TASK-91.
