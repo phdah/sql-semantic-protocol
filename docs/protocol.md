@@ -1944,8 +1944,9 @@ projection, not independent certification of vendor DDL transaction behavior.
 Canonical SQL DROP TABLE, TRUNCATE TABLE and single-table RENAME may emit a
 `write` with `kind: "relation_lifecycle"` and a typed `lifecycle_action`:
 `{"kind":"truncate"}`, `{"kind":"drop","if_exists":true}`, or
-`{"kind":"rename","to":"new_relation"}`. Other vendor, clone, temporary,
-cascade and transaction laws are not certified by a parser-only match.
+`{"kind":"rename","to":"new_relation"}`. Standalone `RENAME TABLE t TO u` is a vendor form and remains explicitly
+unsupported, even if its AST parses. Other vendor, clone, temporary, cascade
+and transaction laws are not certified by a parser-only match.
 
 The opt-in physical write-state interpreter requires an attested complete
 physical prestate and typed schema, plus an in-program constraint-free CREATE
