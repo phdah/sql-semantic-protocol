@@ -272,7 +272,6 @@ fn foreign_keys_or_unattested_lifecycle_options_fail_closed() {
     }
 }
 
-
 #[test]
 fn standalone_rename_table_cannot_become_exact_from_portable_catalog_evidence() {
     let statements = [
