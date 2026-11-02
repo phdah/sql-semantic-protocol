@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-165",
   "parent": "TASK-85",
   "created": "2026-11-02",
   "frozen_before_semantic_changes": false,
-  "freeze_reason": "Task-owned finite typed SQL/physical/adapter inventory; v1 recorded on branch after first test slice, cannot be retrospectively described as pre-implementation.",
+  "freeze_reason": "V1 was authored after initial tests. V2 explicitly reconciles those fixtures with executable source/terminal snapshots and typed boundaries, preserving v1 unchanged. TASK-165 AC#1 historical timing violation needs independent release disposition, not a retroactive claim.",
   "scope": "Standalone terminal rows, ordinary groups, single-column DISTINCT and complete signed INTEGER/NULL histogram. Duplicate rows mean occurrences beyond the first per SQL DISTINCT equivalence class (including NULL); null fraction is exact null_rows/total_rows with zero denominator undefined. No independent column conjunction, unproved expression inversion or grouped histogram inference.",
   "fixture_ids": [
     "85-C165-P",
@@ -45,14 +45,14 @@
       "evidence": "tests/task_165_standalone_goals.rs"
     },
     "dbt": {
-      "fact_source": "manifest compiled SQL and catalog authoritative warehouse column type",
+      "fact_source": "manifest.json compiled model SQL and authoritative catalog.json warehouse column type",
       "required": true,
-      "evidence": "pending equivalent compiled model execution"
+      "evidence": "tests/task_165_adapter_parity.rs:sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs"
     },
     "odcs": {
       "fact_source": "ODCS v3.2 authoritative signed integer, nullable columns only; never SQL execution",
       "required": true,
-      "evidence": "pending equivalent metadata path"
+      "evidence": "tests/task_165_adapter_parity.rs:sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs (feature=odcs)"
     }
   },
   "original_child_ac_map": {
@@ -169,7 +169,11 @@
         "not_true_rows": [],
         "impossible": false
       },
-      "oracle": "tests/task_165_standalone_goals.rs::complete_typed_histogram_proves_rows_nulls_and_duplicates_across_dialects"
+      "oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
     },
     {
       "id": "85-C165-N-total",
@@ -209,7 +213,11 @@
         "not_true_rows": [],
         "impossible": true
       },
-      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible"
+      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
     },
     {
       "id": "85-C165-N-distinct",
@@ -241,12 +249,15 @@
       },
       "directions": {
         "true_rows": [],
-        "not_true_rows": [
-          1
-        ],
+        "not_true_rows": [],
         "impossible": true
       },
-      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible"
+      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "proof_note": "DISTINCT duplicate collapse is not a SQL predicate and cannot be labelled NOT TRUE; impossibility is a one-column multiplicity invariant"
     },
     {
       "id": "85-C165-P-group",
@@ -300,7 +311,11 @@
         "not_true_rows": [],
         "impossible": false
       },
-      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences"
+      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
     },
     {
       "id": "85-C165-N-group",
@@ -336,7 +351,11 @@
         "not_true_rows": [],
         "impossible": true
       },
-      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences"
+      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
     },
     {
       "id": "85-C165-P-zero",
@@ -364,7 +383,11 @@
         "not_true_rows": [],
         "impossible": false
       },
-      "oracle": "tests/task_165_standalone_goals.rs::zero_and_overflow_histograms_never_invent_undefined_fractions"
+      "oracle": "tests/task_165_standalone_goals.rs::zero_rows_require_a_complete_empty_source_and_empty_terminal",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot"
     },
     {
       "id": "85-C165-N-overflow",
@@ -396,7 +419,12 @@
         "not_true_rows": [],
         "impossible": true
       },
-      "oracle": "tests/task_165_standalone_goals.rs::zero_and_overflow_histograms_never_invent_undefined_fractions"
+      "oracle": "tests/task_165_standalone_goals.rs::zero_and_overflow_histograms_never_invent_undefined_fractions",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "arithmetic_only_unmaterializable_overflow",
+      "engine_oracle_disposition": "A u64::MAX+1 source is unmaterializable; checked arithmetic is the complete required proof and no native execution claim is made"
     },
     {
       "id": "85-C165-C-unknown",
@@ -433,7 +461,11 @@
         "owner": "TASK-165",
         "disposition": "do not promote parser acceptance into engine execution"
       },
-      "oracle": "pending external/native engine verification"
+      "oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "No authoritative schema; intentionally residual",
+      "source_terminal_oracle": "no_schema_residual_no_engine_execution"
     }
   ],
   "verification": {
@@ -451,6 +483,17 @@
     "adapter_parity": false,
     "independent_review": false,
     "task_done": false,
-    "parent_task_85_done": false
-  }
+    "parent_task_85_done": false,
+    "evidence_matrix_runner": "tests/task_165_acceptance_inventory.rs",
+    "ci_run_url": null
+  },
+  "history": [
+    "docs/task-165-acceptance-freeze-v1.json"
+  ],
+  "review_status": "revised_scope_and_execution_boundaries_awaiting_independent_review",
+  "dialect_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+  "physical_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+  "conditional_oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
+  "typed_distribution_contract": "Each histogram is a complete requested typed multiset. INTEGER 1 and NULL are canonical buckets. SQL native comparison laws require independent datatype/collation evidence. Null fraction is an exact numerator/denominator, undefined at zero rows.",
+  "oracle_limits": "DuckDB proves the executable INTEGER/NULL source and terminal snapshots, not 13 native vendor engines. Overflow cannot have an executable u64::MAX+1 row bag and is a checked arithmetic impossibility oracle only."
 }
