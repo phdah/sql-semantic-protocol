@@ -223,6 +223,46 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                     json["outcome_goals"][0]["witness"]["columns"][0]["column"], "k",
                     "{id}/{dialect}: canonical output/source column"
                 );
+                let witness_values = json["outcome_goals"][0]["witness"]["columns"][0]["values"]
+                    .as_array()
+                    .expect("complete typed physical buckets");
+                let mut witness_bag = Vec::new();
+                for bucket in witness_values {
+                    let value = &bucket["value"];
+                    let scalar = match value["type"].as_str().expect("canonical scalar type") {
+                        "null" => Value::Null,
+                        "integer" => value["value"].clone(),
+                        other => panic!("{id}/{dialect}: unreviewed bucket {other}"),
+                    };
+                    for _ in 0..bucket["rows"].as_u64().expect("bucket rows") {
+                        witness_bag.push(scalar.clone());
+                    }
+                }
+                witness_bag.sort_by_key(Value::to_string);
+                let mut frozen_bag = case["source_bag"].as_array().expect("source bag").clone();
+                frozen_bag.sort_by_key(Value::to_string);
+                assert_eq!(
+                    witness_bag, frozen_bag,
+                    "{id}/{dialect}: replay the actual canonical source witness"
+                );
+                let requested = request_for(case, &target);
+                let stats = requested.distributions()[0].statistics().expect("checked histogram");
+                assert_eq!(stats.rows(), case["expected"]["terminal_rows"].as_u64().expect("rows"));
+                assert_eq!(
+                    stats.distinct_non_null(),
+                    case["expected"]["non_null_distinct"].as_u64().expect("distinct")
+                );
+                assert_eq!(stats.null_rows(), case["expected"]["null_rows"].as_u64().expect("nulls"));
+                assert_eq!(
+                    stats.duplicate_rows(),
+                    case["expected"]["duplicate_rows"].as_u64().expect("duplicates")
+                );
+                let share = stats.null_fraction().expect("nonempty null share");
+                assert_eq!(
+                    json!({"numerator":share.numerator(),"denominator":share.denominator()}),
+                    case["expected"]["null_fraction"],
+                    "{id}/{dialect}: exact rational NULL share"
+                );
             }
 
             if id == "85-C165-P-group" {
