@@ -883,6 +883,18 @@ pub fn physical_ordered_write_state_plan_with_identities(
     }
 }
 
+/// Evaluate one source-local SELECT against exactly the rows available at
+/// the current materialization checkpoint. The canonical scalar interpreter
+/// owns row membership, projection expressions and SQL NULL semantics.
+pub(in crate::physical_realization) fn evaluate_ordered_read(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
+) -> Result<Vec<(usize, Vec<LiteralValue>)>, String> {
+    projection::evaluate_simple_select_with_source_ids(bundle, query, states)
+        .map_err(|error| format!("{error:?}"))
+}
+
 /// Return true unless a relation's declared constraint/default inventory is
 /// complete enough to permit the bounded, constraint-free DDL proof.
 /// Also inspect other relations for incoming foreign-key dependencies.
