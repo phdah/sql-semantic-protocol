@@ -9,6 +9,11 @@ pub(super) fn analyze_relation_lifecycle(
     target: String,
     action: WriteLifecycleAction,
 ) -> ProtocolStatement {
+    let produced = match &action {
+        WriteLifecycleAction::Truncate => Some(target.clone()),
+        WriteLifecycleAction::Drop { .. } => None,
+        WriteLifecycleAction::Rename { to } => Some(to.clone()),
+    };
     ProtocolStatement::Query(
         QueryStatement::new(
             Vec::new(),
@@ -26,7 +31,7 @@ pub(super) fn analyze_relation_lifecycle(
             Output::new(Vec::new()),
             Vec::new(),
         )
-        .with_produced_relation(Some(target.clone()))
+        .with_produced_relation(produced)
         .with_write(Some(WriteOperation::lifecycle(target, action))),
     )
 }
