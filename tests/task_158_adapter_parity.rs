@@ -78,10 +78,10 @@ fn odcs() -> RelationCatalog {
     RelationCatalog::from_schemas(evidence.source_schemas()).unwrap()
 }
 
-fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
+fn replay_with_create(catalog: &RelationCatalog, create: &str, alter: &str) -> (String, String) {
     let dialect = dialect_from_name("duckdb").unwrap();
     let sql = [
-        SqlInput::inline("CREATE TABLE t (a INTEGER, b INTEGER)"),
+        SqlInput::inline(create),
         SqlInput::inline("INSERT INTO t (a, b) VALUES (1, NULL), (1, NULL)"),
         SqlInput::inline(alter),
     ];
@@ -123,6 +123,21 @@ fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
         }
         PhysicalWriteStatePlan::Impossible { reason, .. } => ("Impossible".into(), reason),
     }
+}
+
+fn replay(catalog: &RelationCatalog, alter: &str) -> (String, String) {
+    replay_with_create(catalog, "CREATE TABLE t (a INTEGER, b INTEGER)", alter)
+}
+
+#[test]
+fn source_independent_key_boundary_is_residual_for_all_equivalent_metadata() {
+    let create = "CREATE TABLE t (a INTEGER PRIMARY KEY, b INTEGER)";
+    let alter = "ALTER TABLE t DROP COLUMN a";
+    let direct = replay_with_create(&direct(), create, alter);
+    assert!(direct.0.starts_with("Residual:"), "{direct:?}");
+    assert_eq!(direct, replay_with_create(&dbt(), create, alter));
+    #[cfg(feature = "odcs")]
+    assert_eq!(direct, replay_with_create(&odcs(), create, alter));
 }
 
 #[test]
