@@ -418,3 +418,36 @@ fn alter_added_nullable_column_without_default_is_null_on_later_insert() {
         .collect::<Vec<_>>();
     assert_eq!(values, vec![None, None]);
 }
+
+#[test]
+fn dropped_alter_default_cannot_leak_into_recreated_column() {
+    let sql = [
+        "CREATE TABLE t (a INTEGER)",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "ALTER TABLE t DROP COLUMN b",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 5",
+        "INSERT INTO t (a) VALUES (7)",
+    ];
+    let analyzed = bundle(&sql);
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = physical_ordered_write_state_plan(&analyzed, &[])
+    else {
+        panic!("DROP must discard obsolete default evidence before a new ADD");
+    };
+    assert_eq!(transitions.len(), sql.len());
+    let schema = transitions[3].after_schema().unwrap();
+    assert_eq!(
+        final_states[0].exact_domains(schema).unwrap()[1].values(),
+        &[(LiteralValue::Number("5".into()), 1)]
+    );
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    let native: (i64, i64) = db
+        .query_row("SELECT a, b FROM t", [], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap();
+    assert_eq!(native, (7, 5));
+}
