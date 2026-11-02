@@ -91,6 +91,7 @@ fn integer_type(data_type: &DataType) -> bool {
 }
 
 fn read_at_checkpoint(
+    bundle: &AnalysisBundle,
     layer_id: &str,
     query: &crate::protocol::QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
@@ -143,7 +144,7 @@ fn read_at_checkpoint(
                 .map_err(|error| format!("invalid SELECT column: {error}"))?,
         );
     }
-    let selected = evaluate_ordered_read(query, states)?;
+    let selected = evaluate_ordered_read(bundle, query, states)?;
     let mut output_rows = Vec::new();
     let mut surviving = Vec::new();
     for (ordinal, values) in selected {
@@ -266,7 +267,7 @@ pub fn physical_ordered_lifecycle_plan(
             else {
                 return residual("non-write statement has no canonical SELECT semantics");
             };
-            let read = match read_at_checkpoint(layer.id(), query, &states, &schemas) {
+            let read = match read_at_checkpoint(bundle, layer.id(), query, &states, &schemas) {
                 Ok(read) => read,
                 Err(reason) => return residual(reason),
             };
