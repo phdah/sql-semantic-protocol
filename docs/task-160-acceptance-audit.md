@@ -1,6 +1,6 @@
 # TASK-160 bounded acceptance audit
 
-**Status:** Implementation under verification, not signed off. TASK-83 remains a separate parent gate.
+**Status:** TASK-160 bounded child signed off on 2026-11-02. TASK-83 remains a separate open parent gate.
 
 ## Frozen contract and scope
 
@@ -26,12 +26,15 @@
 
 The new read API never treats a missing population as a physically absent relation, never derives a stored table from CTE or view metadata, never invents a post-ALTER column datatype, and never accepts a computed/non-integer expression without a typed projection proof. Any unproven source and vendor session law remains Residual. A witnessed DROP followed by a SELECT of that target is Impossible.
 
-## Remaining gates before child Done
+## Final verification and independent closure boundaries
 
-1. Verify the pinned 416-cell v3 parser/canonical matrix on the final implementation CI head.
-2. Verify the final-head Rust fmt, strict Clippy, tests, docs, no-default-features and dbt E2E CI.
-3. Resolve any final direct SQL/dbt/ODCS parity and native DuckDB failures.
-4. Perform separate Standards and Spec code-review passes, correct findings, and record the reviewed CI head.
-5. Mark TASK-160 Done only after all five original AC and mandatory cells pass. Keep TASK-83 open until independently certified.
+- **Mandatory outcome cells:** 5/5 Exact/Impossible, including complete CREATE/INSERT/ALTER/SELECT/DROP, NULL and duplicate occurrences, the SQL three-valued rejected predicate contrast, missing-read impossibility and duplicate ADD contradiction.
+- **Conditional cells:** 2/2 explicitly typed Residual (DROP then CREATE generation reset; temporary/vendor/session DDL). No unproved execution law is promoted to Exact.
+- **Parser matrix:** All 416 statement-level classifications pinned for 13 dialects in active v3; immutable v1/v2 histories retained.
+- **Adapters:** `tests/task_160_adapter_parity.rs` verifies equivalent direct SQL, dbt catalog and ODCS typed schema evidence, including filtered reads. Dbt compiled SQL does not masquerade as executable DDL.
+- **DuckDB:** `tests/task_160_ordered_lifecycle.rs` checks each frozen exact case's complete live source, intermediate SELECT/output, catalog and final bags, NULL/bound inclusivity, row counts, and rejected/unknown ordinals.
+- **Implementation-head CI:** [41509894079](https://github.com/phdah/sql-semantic-protocol/actions/runs/41509894079), head `fd79c21efe4710178b6f1205d0a07016d4063df1`: 9/9 jobs successful (fmt, all-feature and no-default strict lint, tests, docs, dbt E2E, dependency checks).
+- **Standards review:** PASS, zero blockers; canonical ownership, source completeness, deterministic typed domains, fail-closed semantics and no gratuitous JSON contract changes.
+- **Spec review:** PASS for all original TASK-160 AC #1..#5 and reviewed v3 matrix. Separate two-axis review [#5742168813](https://github.com/phdah/sql-semantic-protocol/pull/181#pullrequestreview-5742168813), recorded from the PR author's connected account rather than a second human reviewer.
 
-No parent TASK-83 acceptance criterion is automatically signed off by this child.
+**Child disposition:** Done on the implementation head and review evidence above, with the last metadata-head CI as PR integration verification. **Parent/release boundaries:** TASK-83 original AC #1..#6 and TASK-91 remain open for their own independent closure and cannot be inferred from child CI or an unmerged PR. No sibling task is unblocked until TASK-160 is both Done and merged into `main`.
