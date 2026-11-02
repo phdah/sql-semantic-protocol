@@ -245,16 +245,28 @@ fn every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle() {
                     "{id}/{dialect}: replay the actual canonical source witness"
                 );
                 let requested = request_for(case, &target);
-                let stats = requested.distributions()[0].statistics().expect("checked histogram");
-                assert_eq!(stats.rows(), case["expected"]["terminal_rows"].as_u64().expect("rows"));
+                let stats = requested.distributions()[0]
+                    .statistics()
+                    .expect("checked histogram");
+                assert_eq!(
+                    stats.rows(),
+                    case["expected"]["terminal_rows"].as_u64().expect("rows")
+                );
                 assert_eq!(
                     stats.distinct_non_null(),
-                    case["expected"]["non_null_distinct"].as_u64().expect("distinct")
+                    case["expected"]["non_null_distinct"]
+                        .as_u64()
+                        .expect("distinct")
                 );
-                assert_eq!(stats.null_rows(), case["expected"]["null_rows"].as_u64().expect("nulls"));
+                assert_eq!(
+                    stats.null_rows(),
+                    case["expected"]["null_rows"].as_u64().expect("nulls")
+                );
                 assert_eq!(
                     stats.duplicate_rows(),
-                    case["expected"]["duplicate_rows"].as_u64().expect("duplicates")
+                    case["expected"]["duplicate_rows"]
+                        .as_u64()
+                        .expect("duplicates")
                 );
                 let share = stats.null_fraction().expect("nonempty null share");
                 assert_eq!(
