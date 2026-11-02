@@ -4,19 +4,16 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_lifecycle_plan,
-    ConfiguredSqlInput, PhysicalOrderedLifecycleProof, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, physical_ordered_lifecycle_plan, ConfiguredSqlInput,
+    PhysicalOrderedLifecycleProof, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn direct() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "t",
-            vec![SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap()],
-        )
-        .unwrap(),
-    ])
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
     .unwrap()
 }
 
@@ -78,7 +75,10 @@ fn odcs() -> RelationCatalog {
 
 fn outcome(catalog: &RelationCatalog, program: &[&str]) -> String {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let inputs = program.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = program
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let ids = (0..inputs.len())
         .map(|index| format!("step-{index}"))
         .collect::<Vec<_>>();
@@ -93,7 +93,11 @@ fn outcome(catalog: &RelationCatalog, program: &[&str]) -> String {
             assert_eq!(proof.reads.len(), 1);
             format!(
                 "Exact:{:?}:{:?}:{:?}:{:?}",
-                proof.checkpoints.iter().map(|step| step.states.clone()).collect::<Vec<_>>(),
+                proof
+                    .checkpoints
+                    .iter()
+                    .map(|step| step.states.clone())
+                    .collect::<Vec<_>>(),
                 proof.reads[0].output.rows(),
                 proof.reads[0].exact_domains(),
                 proof.final_states
