@@ -306,8 +306,7 @@ fn read_truth_partition_rejects_false_and_sql_unknown_without_inventing_rows() {
         "DROP TABLE t",
     ];
     let bundle = analyze(&sql);
-    let PhysicalOrderedLifecycleProof::Exact(proof) =
-        physical_ordered_lifecycle_plan(&bundle, &[])
+    let PhysicalOrderedLifecycleProof::Exact(proof) = physical_ordered_lifecycle_plan(&bundle, &[])
     else {
         panic!("complete WHERE prestate should certify TRUE and NOT TRUE occurrences");
     };
