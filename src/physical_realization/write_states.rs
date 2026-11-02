@@ -567,7 +567,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
                             .source_schemas()
                             .iter()
                             .find(|schema| schema.relation() == target);
-                        let constrained = has_unproved_physical_relation_constraints(&execution_bundle, target);
+                        let constrained =
+                            has_unproved_physical_relation_constraints(&execution_bundle, target);
                         match lifecycle::lifecycle_transition(
                             action,
                             target,
@@ -632,7 +633,8 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         // attest the absence of declared table constraints.
                         // Catalog/adapter schemas alone do not certify this.
                         let declared_create = executed_create.contains(target);
-                        let constrained = has_unproved_physical_relation_constraints(&execution_bundle, target);
+                        let constrained =
+                            has_unproved_physical_relation_constraints(&execution_bundle, target);
                         let inventory = if declared_create && !constrained {
                             Some(&[][..])
                         } else {
