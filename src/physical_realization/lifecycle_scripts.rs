@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::AnalysisBundle;
 use crate::data_type::DataType;
-use crate::protocol::{LiteralValue, ProtocolStatement, WriteLifecycleAction};
+use crate::protocol::{LiteralValue, ProtocolStatement};
 use crate::relation::{RelationSchema, SchemaColumn};
 
 use super::write_states::evaluate_ordered_read;
@@ -209,7 +209,10 @@ pub fn physical_ordered_lifecycle_plan(
         };
     let mut states = BTreeMap::new();
     for state in initial_states {
-        if states.insert(state.relation().to_string(), state.clone()).is_some() {
+        if states
+            .insert(state.relation().to_string(), state.clone())
+            .is_some()
+        {
             return PhysicalOrderedLifecycleProof::Impossible {
                 reason: "duplicate initial physical relation identity".to_string(),
             };
@@ -235,7 +238,9 @@ pub fn physical_ordered_lifecycle_plan(
             // A previously attested complete poststate must agree with the
             // next operation's preimage, never merely with its cardinality.
             if transition.before_exists() && states.get(target) != Some(transition.before()) {
-                return residual("ordered source preimage disagrees with the canonical write proof");
+                return residual(
+                    "ordered source preimage disagrees with the canonical write proof",
+                );
             }
             if !transition.before_exists() && states.contains_key(target) {
                 return residual("unexpected live relation before CREATE");
