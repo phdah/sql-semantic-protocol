@@ -5,7 +5,8 @@
 ## Immutable acceptance lineage
 
 - Preimplementation fixture freeze: `docs/task-159-acceptance-freeze-v1.json` (exact copy of originally committed v1).
-- Active v2 fixture freeze: `docs/task-159-acceptance-freeze.json`. V2 adds precise source/post typed domains, full programs, SQL NULL and duplicate occurrence identities, native DuckDB expectations, and mandatory negative contradictions without weakening the original seven mandatory cases. The eighth mandatory cell is RENAME collision.
+- Archived v2 fixture freeze: `docs/task-159-acceptance-freeze-v2.json`. V2 adds typed source/post domains, full programs, native DuckDB expectations, and mandatory negative contradictions, retaining all original seven mandatory cases. The eighth mandatory cell is RENAME collision.
+- Active v3 fixture freeze: `docs/task-159-acceptance-freeze.json`. V3 changes only the conditional standalone `RENAME TABLE t TO u` parser outcome to canonical unsupported for all 13 dialects. Its vendor execution law is not certified, so normalizing it as a portable physical RENAME would violate the frozen Residual disposition. All eight mandatory oracles and their outcomes remain unchanged.
 - `tests/task_159_frozen_cases.rs` interprets every mandatory v2 case as a public SQL program and compares each before/after complete bag against native DuckDB; it also asserts typed domain frequencies, minimum/maximum, NULL membership, inclusive bounds, affected ordinals, named relations, and truth partitions. Impossible cases prove the native statement rejects without altering existing states.
 - The freeze is test data, not a source of execution law. No dynamic acceptance snapshots are generated from the analyzer.
 
@@ -50,3 +51,7 @@ wire output and protects downstream consumers from phantom sources.
 **Spec axis:** eight mandatory v2 executable fixtures (six Exact, two Impossible), complete before/after DuckDB row/schema snapshots, NULL and duplicate counts, typed domain frequencies and bounds, 234 pinned 13-dialect parser classifications and SQL/dbt/ODCS parity are verified. A separate inspection found and fixed phantom DROP and old-name RENAME graph outputs plus default lineage and stale schema recreation. Conditional vendor/session/clone laws remain explicit Residual and TASK-83 remains open.
 
 This self-audit is **not represented as an independent subagent/reviewer signoff**. A separate fixed-point Matt standards/spec review remains the final TASK-159 criterion before Done. The reviewed implementation CI head is `c59113784a5968b73845af238c7bed1f2b99433c`; metadata-only updates should also pass CI before merge.
+
+## Independent review defect and remediation (2026-11-02)
+
+**Spec axis finding, corrected:** Standalone `RENAME TABLE t TO u` was classified `lifecycle:rename` despite its conditional Residual status in v2. The physical planner could consequently treat a vendor-specific statement as Exact based solely on a prior DROP of the destination. The analyzer now emits `unsupported_vendor_rename_table`, and the physical plan fails closed. This is tested with complete physical evidence that otherwise enabled Exact and the pinned 13-dialect v3 parser matrix. ALTER TABLE RENAME TO retains bounded portable semantics. The archived v2 file preserves the prior acceptance evidence. Final-head CI is still required before signoff.
