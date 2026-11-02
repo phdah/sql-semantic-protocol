@@ -12,16 +12,29 @@ pub(super) struct LifecycleOutcome {
     pub(super) exists_after: bool,
 }
 
+/// Evidence facts for one lifecycle action over the current physical catalog.
+pub(super) struct LifecycleEvidence<'a> {
+    pub(super) before: Option<&'a PhysicalWriteState>,
+    pub(super) schema: Option<&'a RelationSchema>,
+    pub(super) states: &'a BTreeMap<String, PhysicalWriteState>,
+    pub(super) created_here: bool,
+    pub(super) proven_absent: bool,
+    pub(super) constrained: bool,
+}
+
 pub(super) fn lifecycle_transition(
     action: &WriteLifecycleAction,
     target: &str,
-    before: Option<&PhysicalWriteState>,
-    schema: Option<&RelationSchema>,
-    states: &BTreeMap<String, PhysicalWriteState>,
-    created_here: bool,
-    proven_absent: bool,
-    constrained: bool,
+    evidence: LifecycleEvidence<'_>,
 ) -> StateResult<LifecycleOutcome> {
+    let LifecycleEvidence {
+        before,
+        schema,
+        states,
+        created_here,
+        proven_absent,
+        constrained,
+    } = evidence;
     if let WriteLifecycleAction::Drop { if_exists } = action {
         if before.is_none() {
             if !proven_absent {
