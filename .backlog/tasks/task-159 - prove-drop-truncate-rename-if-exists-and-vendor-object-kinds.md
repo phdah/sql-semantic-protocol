@@ -1,10 +1,10 @@
 ---
 id: TASK-159
 title: Prove DROP TRUNCATE RENAME IF EXISTS and vendor object kinds
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-02'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,11 @@ type: feature
 ## Sequencing
 
 Next: [TASK-160](task-160%20-%20compose-create-insert-alter-select-drop-and-certify-task-83.md) after this child is merged.
+
+
+## Implementation branch evidence (2026-11-02)
+
+- Frozen v1 inventory: [docs/task-159-acceptance-freeze.json](../../docs/task-159-acceptance-freeze.json), registered in [coverage-manifest.json](../../docs/coverage-manifest.json) before semantic edits.
+- Canonical typed `WriteLifecycleAction` and physical ordered DROP/TRUNCATE/RENAME transitions with explicit table existence, complete row occurrences, nullable value domains and conditional constraint boundaries.
+- Independent native DuckDB and public API cases: [tests/task_159_lifecycle.rs](../../tests/task_159_lifecycle.rs).
+- **Not signed off.** Pending final-head format/Clippy/full tests/docs/no-default-feature, adapter and 13-dialect matrix, full frozen oracle verification, reviewed vendor/session classifications, and independent two-axis review. No original parent acceptance criterion is automatically checked.
