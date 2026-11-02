@@ -785,13 +785,83 @@
       "sql": "ALTER TABLE t RENAME TO u",
       "program": [
         "CREATE TABLE t(a INTEGER)",
+        "INSERT INTO t VALUES (1),(NULL),(1)",
         "CREATE TABLE u(a INTEGER)",
+        "INSERT INTO u VALUES (2)",
         "ALTER TABLE t RENAME TO u"
       ],
       "expected_outcome": "Impossible",
       "mandatory": true,
       "owner": "TASK-159",
-      "release_disposition": "mandatory negative contradiction"
+      "release_disposition": "mandatory negative contradiction",
+      "prestate": [
+        {
+          "a": 1
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 1
+        }
+      ],
+      "other_prestate": [
+        {
+          "a": 2
+        }
+      ],
+      "before_relation": "t",
+      "before_exists": true,
+      "after_exists": true,
+      "expected_unchanged_states": [
+        {
+          "relation": "t",
+          "rows": [
+            {
+              "a": 1
+            },
+            {
+              "a": null
+            },
+            {
+              "a": 1
+            }
+          ]
+        },
+        {
+          "relation": "u",
+          "rows": [
+            {
+              "a": 2
+            }
+          ]
+        }
+      ],
+      "pre_typed_domains": {
+        "a": {
+          "type": "INTEGER",
+          "frequencies": {
+            "1": 2,
+            "NULL": 1
+          },
+          "nullable": true,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "source_truth": {
+        "true_ordinals": [],
+        "not_true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "unknown_ordinals": []
+      },
+      "native_last": "error",
+      "native_error_contains": "already exists"
     },
     {
       "id": "83-C159-N-drop-cascade",
