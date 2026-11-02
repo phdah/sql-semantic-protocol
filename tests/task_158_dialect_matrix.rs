@@ -69,7 +69,10 @@ fn vendor_conditional_alter_forms_never_receive_unattested_exact_semantics() {
             }
             let analyzed = analyze_inputs(&[SqlInput::inline(sql)], name, parser.as_ref()).unwrap();
             assert!(
-                matches!(analyzed.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+                matches!(
+                    analyzed.inputs()[0].statements()[0],
+                    ProtocolStatement::Unsupported(_)
+                ),
                 "{name} must not certify unproved vendor ALTER variant {}: {sql}",
                 boundary["id"]
             );
