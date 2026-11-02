@@ -2,7 +2,7 @@
   "task_159_ddl_lifecycle_acceptance": {
     "owner": "TASK-159",
     "parent": "TASK-83",
-    "status": "child_AC1_to_4_verified_vendor_rename_correction_CI_pending",
+    "status": "child_Done_v3_independent_review_verified",
     "freeze": "docs/task-159-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -10,8 +10,8 @@
       "83-C159-N"
     ],
     "mandatory_cells_verified": true,
-    "ci_verified": false,
-    "child_signed_off": false,
+    "ci_verified": true,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "freeze_history": [
       "docs/task-159-acceptance-freeze-v1.json",
@@ -37,12 +37,12 @@
       6
     ],
     "duckdb_verified": true,
-    "all_dialects_verified": false,
+    "all_dialects_verified": true,
     "all_adapters_verified": true,
-    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41488484532",
-    "implementation_ci_head": "c59113784a5968b73845af238c7bed1f2b99433c",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41492788799",
+    "implementation_ci_head": "9356f69c01a180ef4a409aa258816cc11ee03d5d",
     "implementation_jobs_green": 9,
-    "independent_review": false
+    "independent_review": true
   },
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
