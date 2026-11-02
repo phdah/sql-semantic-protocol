@@ -576,12 +576,14 @@ pub fn physical_ordered_write_state_plan_with_identities(
                         match lifecycle::lifecycle_transition(
                             action,
                             target,
-                            before.as_ref(),
-                            schema,
-                            &states,
-                            executed_create.contains(target),
-                            proven_absent.contains(target),
-                            constrained,
+                            lifecycle::LifecycleEvidence {
+                                before: before.as_ref(),
+                                schema,
+                                states: &states,
+                                created_here: executed_create.contains(target),
+                                proven_absent: proven_absent.contains(target),
+                                constrained,
+                            },
                         ) {
                             Ok(outcome) => {
                                 before_schema = schema.cloned();
