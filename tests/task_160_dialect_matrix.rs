@@ -99,8 +99,12 @@ fn each_frozen_lifecycle_statement_is_normalized_or_has_a_named_parser_boundary(
             }
         }
     }
+    let observed = serde_json::to_value(classifications).unwrap();
+    if freeze["dialect_expected"].is_null() {
+        panic!("TASK160_DIALECT_OBSERVED={observed}");
+    }
     assert_eq!(
-        serde_json::to_value(classifications).unwrap(),
+        observed,
         freeze["dialect_expected"],
         "all parser and canonical outcomes must be pinned in the versioned acceptance freeze"
     );
