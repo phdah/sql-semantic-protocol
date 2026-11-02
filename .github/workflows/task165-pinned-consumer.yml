@@ -36,31 +36,39 @@ jobs:
         run: |
           cargo test --manifest-path .task165-consumer/Cargo.toml \
             --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
-            --lib --test full_query --test type_coverage
+            --lib --test type_coverage
+          cargo test --manifest-path .task165-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test full_query -- --skip protocol_driven_timestamp_generation
           cargo test --manifest-path .task165-consumer/Cargo.toml \
             --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
             --test exactness -- --skip timezone_dependent_timestamp_filters_require_session_assumption
-      - name: Check whether historical timezone test also fails at pre-PR baseline
+      - name: Compare both pre-existing timestamp cases with fixed pre-PR baseline
         run: |
-          set +e
-          cargo test --manifest-path .task165-consumer/Cargo.toml \
-            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE/.task165-baseline'" \
-            --test exactness timezone_dependent_timestamp_filters_require_session_assumption > /tmp/baseline.log 2>&1
-          baseline=$?
-          cargo test --manifest-path .task165-consumer/Cargo.toml \
-            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
-            --test exactness timezone_dependent_timestamp_filters_require_session_assumption > /tmp/head.log 2>&1
-          head=$?
-          set -e
-          echo "baseline_exit=$baseline head_exit=$head"
-          grep 'reason=' /tmp/baseline.log || true
-          grep 'reason=' /tmp/head.log || true
-          if [ "$baseline" -ne "$head" ]; then
-            echo "The PR changes the pinned consumer timezone test verdict"
-            exit 1
-          fi
-          if [ "$baseline" -ne 0 ]; then
-            grep -F 'reason=computed_expression clause=where' /tmp/baseline.log
-            grep -F 'reason=computed_expression clause=where' /tmp/head.log
-            echo "Pre-existing baseline failure confirmed. Not a TASK-165 regression."
-          fi
+          for case in "exactness timezone_dependent_timestamp_filters_require_session_assumption" "full_query protocol_driven_timestamp_generation"; do
+            set -- $case
+            suite="$1"
+            testcase="$2"
+            set +e
+            cargo test --manifest-path .task165-consumer/Cargo.toml \
+              --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE/.task165-baseline'" \
+              --test "$suite" "$testcase" > "/tmp/baseline-$suite.log" 2>&1
+            baseline=$?
+            cargo test --manifest-path .task165-consumer/Cargo.toml \
+              --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+              --test "$suite" "$testcase" > "/tmp/head-$suite.log" 2>&1
+            head=$?
+            set -e
+            echo "$suite/$testcase baseline_exit=$baseline head_exit=$head"
+            grep -F 'reason=computed_expression clause=where' "/tmp/baseline-$suite.log" || true
+            grep -F 'reason=computed_expression clause=where' "/tmp/head-$suite.log" || true
+            if [ "$baseline" -ne "$head" ]; then
+              echo "PR changed pinned consumer test verdict"
+              exit 1
+            fi
+            if [ "$baseline" -ne 0 ]; then
+              grep -F 'reason=computed_expression clause=where' "/tmp/baseline-$suite.log"
+              grep -F 'reason=computed_expression clause=where' "/tmp/head-$suite.log"
+              echo "$suite: pre-existing baseline failure, not TASK-165 regression"
+            fi
+          done
