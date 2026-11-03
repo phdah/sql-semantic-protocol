@@ -565,6 +565,8 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
             );
             match &proof {
                 PhysicalJointTerminalProof::Exact(_) => {
+                    assert_eq!(typed["evidence"]["grouped"]["layer_id"], goals[0].layer_id());
+                    assert_eq!(typed["evidence"]["secondary"]["layer_id"], goals[1].layer_id());
                     assert_eq!(typed["evidence"]["sources"].as_array().unwrap().len(), 2);
                     assert_eq!(
                         typed["evidence"]["grouped"]["selected"]
@@ -577,7 +579,7 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                             .len()
                     );
                     assert_eq!(
-                        typed["evidence"]["secondary"]["terminal"]
+                        typed["evidence"]["secondary"]["proof"]["terminal"]
                             .as_array()
                             .unwrap()
                             .len(),
@@ -588,8 +590,8 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                     );
                     assert!(typed["evidence"]["grouped"]["domains"].is_object());
                     assert!(
-                        typed["evidence"]["secondary"]["domains"].is_object()
-                            || typed["evidence"]["secondary"]["domains"].is_array()
+                        typed["evidence"]["secondary"]["proof"]["domains"].is_object()
+                            || typed["evidence"]["secondary"]["proof"]["domains"].is_array()
                     );
                     assert_eq!(
                         sidecar,
