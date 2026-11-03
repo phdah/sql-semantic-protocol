@@ -9,15 +9,26 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_terminal_bag_plan,
     to_bundle_json, to_physical_joint_terminal_json, AnalysisBundle, ConfiguredSqlInput,
-    ConstraintValue, LiteralValue,
-    OutcomeGoal, OutputDistribution, OutputValueCount, PhysicalJointOtherExact,
-    PhysicalJointTerminalProof, PhysicalWriteRow, PhysicalWriteState, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
+    ConstraintValue, LiteralValue, OutcomeGoal, OutputDistribution, OutputValueCount,
+    PhysicalJointOtherExact, PhysicalJointTerminalProof, PhysicalWriteRow, PhysicalWriteState,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput,
+    ValueDomain,
 };
 
 const DIALECTS: [&str; 13] = [
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 fn freeze() -> Value {
@@ -93,7 +104,11 @@ fn analyze(case: &Value, dialect: &str) -> AnalysisBundle {
         .enumerate()
         .map(|(index, value)| {
             ConfiguredSqlInput::new(
-                if index == 0 {"task-167-joined"} else {"task-167-other"},
+                if index == 0 {
+                    "task-167-joined"
+                } else {
+                    "task-167-other"
+                },
                 value,
                 dialect,
                 parser.as_ref(),
@@ -167,7 +182,10 @@ fn expected_rows(value: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
 }
 
 fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut output = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut output = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     output.sort();
     output
 }
@@ -207,22 +225,28 @@ fn check_domain(domain: &ValueDomain, frozen: &Value, case_id: &str, column: &st
         .collect::<Vec<_>>();
     let min = signed.iter().min().copied().map(|value| json!(value));
     let max = signed.iter().max().copied().map(|value| json!(value));
-    assert_eq!(min.unwrap_or(Value::Null), frozen["lower"], "{case_id}/{column}");
-    assert_eq!(max.unwrap_or(Value::Null), frozen["upper"], "{case_id}/{column}");
+    assert_eq!(
+        min.unwrap_or(Value::Null),
+        frozen["lower"],
+        "{case_id}/{column}"
+    );
+    assert_eq!(
+        max.unwrap_or(Value::Null),
+        frozen["upper"],
+        "{case_id}/{column}"
+    );
     assert_eq!(frozen["lower_inclusive"], true);
     assert_eq!(frozen["upper_inclusive"], true);
     assert_eq!(frozen["type"], "INTEGER");
 }
 
-fn check_domains(
-    domains: &BTreeMap<String, ValueDomain>,
-    expected: &Value,
-    case_id: &str,
-) {
+fn check_domains(domains: &BTreeMap<String, ValueDomain>, expected: &Value, case_id: &str) {
     assert_eq!(domains.len(), expected.as_object().unwrap().len());
     for (name, expected_domain) in expected.as_object().unwrap() {
         check_domain(
-            domains.get(name).expect("every terminal domain accounted for"),
+            domains
+                .get(name)
+                .expect("every terminal domain accounted for"),
             expected_domain,
             case_id,
             name,
@@ -254,8 +278,14 @@ fn check_set_domains(
         assert_eq!(values, expected_values, "{case_id}/{name} tuple positions");
         assert_eq!(actual.contains_null, frozen["contains_null"]);
         let bounds = actual.bounds();
-        assert_eq!(bounds.map(|bounds| json!(bounds.0)), Some(frozen["lower"].clone()));
-        assert_eq!(bounds.map(|bounds| json!(bounds.1)), Some(frozen["upper"].clone()));
+        assert_eq!(
+            bounds.map(|bounds| json!(bounds.0)),
+            Some(frozen["lower"].clone())
+        );
+        assert_eq!(
+            bounds.map(|bounds| json!(bounds.1)),
+            Some(frozen["upper"].clone())
+        );
         assert_eq!(frozen["lower_inclusive"], true);
         assert_eq!(frozen["upper_inclusive"], true);
     }
@@ -266,10 +296,12 @@ fn pairs(value: &Value) -> Vec<[String; 2]> {
         .as_array()
         .unwrap()
         .iter()
-        .map(|pair| [
-            pair[0].as_str().unwrap().to_string(),
-            pair[1].as_str().unwrap().to_string(),
-        ])
+        .map(|pair| {
+            [
+                pair[0].as_str().unwrap().to_string(),
+                pair[1].as_str().unwrap().to_string(),
+            ]
+        })
         .collect()
 }
 
@@ -280,7 +312,11 @@ fn assert_proof(case: &Value, proof: PhysicalJointTerminalProof) {
             let PhysicalJointTerminalProof::Exact(exact) = proof else {
                 panic!("{id}: frozen exact plan is {proof:?}");
             };
-            assert_eq!(exact.sources, snapshots(case), "{id}: one complete shared assignment");
+            assert_eq!(
+                exact.sources,
+                snapshots(case),
+                "{id}: one complete shared assignment"
+            );
             assert_eq!(
                 exact.grouped.selected,
                 pairs(&case["join_pair_membership"]["true"]),
@@ -379,13 +415,19 @@ fn native_duckdb(case: &Value) {
             .as_array()
             .unwrap()
             .iter()
-            .map(|row| (
-                row["id"].as_str().unwrap().to_string(),
-                row["k"].as_i64(),
-                row["v"].as_i64(),
-            ))
+            .map(|row| {
+                (
+                    row["id"].as_str().unwrap().to_string(),
+                    row["k"].as_i64(),
+                    row["v"].as_i64(),
+                )
+            })
             .collect::<Vec<_>>();
-        assert_eq!(actual, expected, "{}: complete {relation} physical bag", case["id"]);
+        assert_eq!(
+            actual, expected,
+            "{}: complete {relation} physical bag",
+            case["id"]
+        );
     }
     let query = |sql: &str, columns: &[&str]| {
         let mut statement = db.prepare(sql).unwrap();
@@ -451,7 +493,11 @@ fn native_duckdb(case: &Value) {
         canonical.sort();
         let mut frozen = pairs(expected);
         frozen.sort();
-        assert_eq!(canonical, frozen, "{}: SQL 3VL TRUE/NOT TRUE pairs", case["id"]);
+        assert_eq!(
+            canonical, frozen,
+            "{}: SQL 3VL TRUE/NOT TRUE pairs",
+            case["id"]
+        );
     }
     if let Some(sql) = case["sql"][1].as_str() {
         if case["native_duckdb"]["status"] != "unavailable_opaque_sql_function" {
@@ -477,17 +523,26 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
     let matrix = document["matrix"].as_array().unwrap();
     assert_eq!(matrix.len(), 6);
     assert_eq!(
-        matrix.iter().filter(|case| case["requirement"] == "mandatory").count(),
+        matrix
+            .iter()
+            .filter(|case| case["requirement"] == "mandatory")
+            .count(),
         5,
     );
-    assert_eq!(document["dialects"].as_array().unwrap().len(), DIALECTS.len());
+    assert_eq!(
+        document["dialects"].as_array().unwrap().len(),
+        DIALECTS.len()
+    );
     for case in matrix {
         let id = case["id"].as_str().unwrap();
         assert!(id.starts_with("85-C167-"));
         let cells = case["dialect_cells"].as_array().unwrap();
         assert_eq!(cells.len(), 13);
         for (index, dialect) in DIALECTS.iter().enumerate() {
-            assert_eq!(cells[index]["dialect"], *dialect, "{id}: dialect cell identity");
+            assert_eq!(
+                cells[index]["dialect"], *dialect,
+                "{id}: dialect cell identity"
+            );
             assert_eq!(cells[index]["expected_verdict"], case["expected"]);
             let bundle = analyze(case, dialect);
             assert_eq!(bundle.layers().len(), 2, "{id}/{dialect}");
@@ -512,16 +567,30 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                 PhysicalJointTerminalProof::Exact(_) => {
                     assert_eq!(typed["evidence"]["sources"].as_array().unwrap().len(), 2);
                     assert_eq!(
-                        typed["evidence"]["grouped"]["selected"].as_array().unwrap().len(),
-                        case["join_pair_membership"]["true"].as_array().unwrap().len()
+                        typed["evidence"]["grouped"]["selected"]
+                            .as_array()
+                            .unwrap()
+                            .len(),
+                        case["join_pair_membership"]["true"]
+                            .as_array()
+                            .unwrap()
+                            .len()
                     );
                     assert_eq!(
-                        typed["evidence"]["secondary"]["terminal"].as_array().unwrap().len(),
-                        case["observed_terminal_bags"]["other"].as_array().unwrap().len()
+                        typed["evidence"]["secondary"]["terminal"]
+                            .as_array()
+                            .unwrap()
+                            .len(),
+                        case["observed_terminal_bags"]["other"]
+                            .as_array()
+                            .unwrap()
+                            .len()
                     );
                     assert!(typed["evidence"]["grouped"]["domains"].is_object());
-                    assert!(typed["evidence"]["secondary"]["domains"].is_object()
-                        || typed["evidence"]["secondary"]["domains"].is_array());
+                    assert!(
+                        typed["evidence"]["secondary"]["domains"].is_object()
+                            || typed["evidence"]["secondary"]["domains"].is_array()
+                    );
                     assert_eq!(
                         sidecar,
                         to_physical_joint_terminal_json(&bundle, &proof),
@@ -540,10 +609,14 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
             assert_eq!(emitted["source_schemas"].as_array().unwrap().len(), 2);
             assert_eq!(emitted["outcome_goals"].as_array().unwrap().len(), 2);
             for target in &goals {
-                assert!(emitted["outcome_goals"].as_array().unwrap().iter().any(|goal| {
-                    goal["layer_id"] == target.layer_id()
-                        && goal["requested"]["rows"] == target.rows().unwrap()
-                }));
+                assert!(emitted["outcome_goals"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|goal| {
+                        goal["layer_id"] == target.layer_id()
+                            && goal["requested"]["rows"] == target.rows().unwrap()
+                    }));
             }
         }
         if case["requirement"] == "mandatory" {
@@ -552,7 +625,10 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
             // Vendor-defined opaque function semantics cannot be certified
             // from parser output or independent generated expectations.
             assert_eq!(case["expected"], "Residual");
-            assert_eq!(case["native_duckdb"]["status"], "unavailable_opaque_sql_function");
+            assert_eq!(
+                case["native_duckdb"]["status"],
+                "unavailable_opaque_sql_function"
+            );
         }
     }
 }
