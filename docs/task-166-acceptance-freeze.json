@@ -3,7 +3,7 @@
   "owner": "TASK-166",
   "parent": "TASK-85",
   "created": "2026-11-03",
-  "frozen_before_semantic_changes": true,
+  "frozen_before_semantic_changes": false,
   "scope": "Complete one-source, two-terminal goals: transparent full typed signed INTEGER/NULL source histogram and directly filtered second output with SQL TRUE/NOT TRUE partition; no independent-source bag multiplication. No joins, grouping, or unproved vendor equality. Other DAGs conservatively Residual.",
   "fixture_ids": [
     "85-C166-P",
