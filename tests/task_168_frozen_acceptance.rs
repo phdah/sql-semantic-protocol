@@ -113,6 +113,7 @@ fn scalar(row: &LiteralValue) -> Value {
         LiteralValue::Number(n) => json!(n.parse::<i64>().unwrap()),
         LiteralValue::Text(v) => json!(v),
         LiteralValue::Boolean(v) => json!(v),
+        _ => panic!("an uncertified literal cannot be a native numeric tuple"),
     }
 }
 fn normalized(rows: &[BTreeMap<String,LiteralValue>]) -> Vec<String> {
@@ -202,7 +203,7 @@ fn versioned_inventory_covers_every_frozen_family_and_named_dialect() {
     let matrix = freeze();
     assert_eq!(matrix["owner"],"TASK-168");
     assert!(matrix["frozen_before_semantic_changes"].as_bool().unwrap());
-    assert_eq!(matrix["fixture_ids"],json!(["85-C168-P","85-C168-N"]));
+    assert_eq!(matrix["fixtures"],json!(["85-C168-P","85-C168-N"]));
     let cases = matrix["matrix"].as_array().unwrap();
     assert_eq!(cases.len(),7);
     assert_eq!(cases.iter().filter(|v|v["required"]==true).count(),6);
@@ -232,6 +233,7 @@ fn canonical_tuple_proof_follows_frozen_seven_case_dialect_matrix() {
             let dialect = cell["dialect"].as_str().unwrap();
             match analyze(case,dialect) {
                 Ok(bundle) => {
+                    assert_eq!(cell["classification"],"canonical_parser_equivalent","{dialect}: frozen parser classification");
                     if case["sql"].as_array().unwrap().len()==2 {
                         joint_case(case,dialect,&bundle);
                     } else {
