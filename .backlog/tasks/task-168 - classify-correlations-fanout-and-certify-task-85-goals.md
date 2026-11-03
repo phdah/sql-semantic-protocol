@@ -1,10 +1,10 @@
 ---
 id: TASK-168
 title: Classify correlations fanout and certify TASK-85 goals
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-03'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,13 @@ type: feature
 ## Next
 
 After this child, audit and sign off TASK-85 separately; TASK-91 controls release readiness.
+
+## TASK-168 implementation evidence (2026-11-03)
+
+- [Immutable preimplementation v1 freeze](../../docs/task-168-acceptance-freeze-v1.json) and [versioned v2 executed target matrix](../../docs/task-168-acceptance-freeze.json) preserve seven positive, impossible, and residual source/terminal cases across 13 canonical parser dialects (91 classifications); the original v1 lacks some per-cell richness. The v2 correction is **not** described as prospective completeness. Owner disposition of this historical AC #1 discrepancy is required before signoff.
+- [Canonical tuple proof](../../src/physical_realization/joint_tuple_goals.rs) checks signed INTEGER/SQL NULL correlated tuple frequencies against one exact physical source assignment, with separate source-complete JOIN/GROUP + WINDOW/SET and LIMIT/QUALIFY/rank interpreters. Cross-row correlation is never inferred by multiplying scalar histograms; contradictions return `Impossible` and unproved text/order/engine behavior returns `Residual`.
+- [Independent frozen oracle inventory](../../tests/task_168_frozen_acceptance.rs) checks complete native DuckDB source and terminal bags, all 91 parser cells, selected/NOT TRUE physical occurrences, exact typed NULL and inclusive numeric value domains, and active typed witness emission. [Shared adapter parity](../../tests/task_167_adapter_parity.rs) covers direct SQL, compiled dbt + authoritative warehouse catalog, and ODCS for equivalent source facts, including negative and residual cases. [Single-terminal oracle](../../tests/task_168_tuple_fanout.rs) exercises LIMIT, QUALIFY, duplicates and empty full-bag proofs. 
+- [Opt-in sidecar](../../src/emission/tuple_goals.rs) emits only source-complete `Exact` bags; negative and residual verdicts contain no fabricated source or result. The active protocol root and `schema/protocol.schema.json` are unchanged.
+- [Pinned downstream sql-tdg qualification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41725446712) passes the selected lib/type/full-query/exactness suites using consumer `3beaf7799ab54b2440ae34c917ff7eda6c11c398`; two known timestamp tests are compared with the fixed baseline and retain the same computed-expression residual. No new vendor-engine execution or consumer release certification is asserted.
+
+**Outstanding signoff:** rerun full standard CI and complete task-specific matrix checks on the final semantic head; ensure the temporary pinned workflow is deleted after qualification. Run Matt code-review Standards + Spec and obtain a genuinely independent reviewer or an explicit task-specific owner waiver. Only then sign AC #1..#5 and change the task to Done. Parent TASK-85 and release TASK-91 remain open.
