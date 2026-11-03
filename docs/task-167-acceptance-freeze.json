@@ -1,0 +1,1805 @@
+{
+  "version": 2,
+  "owner": "TASK-167",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": false,
+  "scope": "Exact joint closed-world snapshots with a two-source INNER JOIN -> WHERE -> GROUP/HAVING and a second shared-source window or set-tree terminal. One snapshot per physical source; never conjoin independently constructed populations.",
+  "fixture_ids": [
+    "85-C167-P",
+    "85-C167-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "dependencies": [
+    "TASK-166 Done and PR #183 squash-merged into main"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_policy": "All 13 parser dialects must be checked for equivalent canonical shapes; native runtime verification only DuckDB unless separately executed.",
+  "supported_types": "Signed integer and SQL NULL with exact inclusive bounds; set-tree also requires stable text identity and positional integer tuples.",
+  "oracle_policy": "Each mandatory case must compare full native physical inputs, complete terminal bags, selected/NOT TRUE identities, canonical typed domains, and requested count/histogram classification. Contradictions require a complete attested physical source assignment.",
+  "adapter_policy": {
+    "sql": "mandatory",
+    "dbt": "mandatory for equivalent compiled model SQL and authoritative catalog schema",
+    "odcs": "mandatory when the same source schema facts can be represented",
+    "native_vendor": "conditional; no native engine claim except DuckDB",
+    "sql_tdg": "pinned consumer qualification mandatory before Done"
+  },
+  "matrix": [
+    {
+      "id": "85-C167-P-window",
+      "fixture": "85-C167-P",
+      "requirement": "mandatory",
+      "secondary": "window",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "join_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "secondary_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {
+            "copies": {
+              "1": 1,
+              "2": 2
+            }
+          }
+        }
+      },
+      "expected": "Exact",
+      "truth": "Join keeps two (l=1,r=1) pairs, rejecting (l=NULL,r=1) as SQL UNKNOWN; window partitions same l bag including NULL",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "required",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
+      },
+      "signed_off": true,
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": [
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": null,
+            "copies": 1
+          }
+        ]
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ],
+        "sql_null_not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1",
+          "l#2"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    },
+    {
+      "id": "85-C167-N-join-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-window",
+      "mutate_goal": {
+        "join": {
+          "rows": 2,
+          "groups": 2
+        }
+      },
+      "expected": "Impossible",
+      "truth": "Complete source bags generate exactly one grouped result, not two",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "required",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
+      },
+      "signed_off": true,
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": [
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": null,
+            "copies": 1
+          }
+        ]
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ],
+        "sql_null_not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1",
+          "l#2"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "goal": {
+        "join": {
+          "rows": 2,
+          "groups": 2,
+          "histogram": {
+            "n": {
+              "2": 2
+            }
+          }
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {
+            "copies": {
+              "1": 1,
+              "2": 2
+            }
+          }
+        }
+      },
+      "secondary": "window",
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    },
+    {
+      "id": "85-C167-N-window-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-window",
+      "mutate_goal": {
+        "secondary": {
+          "rows": 2
+        }
+      },
+      "expected": "Impossible",
+      "truth": "Shared L bag contains three rows and the row-preserving window emits all three",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "required",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
+      },
+      "signed_off": true,
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": [
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": 1,
+            "copies": 2
+          },
+          {
+            "k": null,
+            "copies": 1
+          }
+        ]
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ],
+        "sql_null_not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1",
+          "l#2"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 2,
+          "histogram": {
+            "copies": {
+              "2": 2
+            }
+          }
+        }
+      },
+      "secondary": "window",
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    },
+    {
+      "id": "85-C167-P-set",
+      "fixture": "85-C167-P",
+      "requirement": "mandatory",
+      "secondary": "set",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) = 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "join_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "secondary_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {
+            "v": {
+              "10": 2,
+              "20": 1
+            }
+          }
+        }
+      },
+      "expected": "Exact",
+      "truth": "The same two source bags drive both the cross-source join multiplicity and the positional UNION ALL tuple frequencies",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Exact",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "required",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
+      },
+      "signed_off": true,
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": [
+          {
+            "k": 1,
+            "v": 10
+          },
+          {
+            "k": 1,
+            "v": 20
+          },
+          {
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [],
+        "sql_null_not_true": []
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "v": {
+            "type": "INTEGER",
+            "values": [
+              10,
+              20
+            ],
+            "contains_null": false,
+            "lower": 10,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    },
+    {
+      "id": "85-C167-N-set-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-set",
+      "mutate_goal": {
+        "secondary": {
+          "rows": 4
+        }
+      },
+      "expected": "Impossible",
+      "truth": "UNION ALL over fixed two and one input occurrences is exactly three rows",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
+          "verified": true,
+          "expected_verdict": "Impossible",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "required",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
+      },
+      "signed_off": true,
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) = 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": [
+          {
+            "k": 1,
+            "v": 10
+          },
+          {
+            "k": 1,
+            "v": 20
+          },
+          {
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [],
+        "sql_null_not_true": []
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "v": {
+            "type": "INTEGER",
+            "values": [
+              10,
+              20
+            ],
+            "contains_null": false,
+            "lower": 10,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 4,
+          "histogram": {
+            "v": {
+              "10": 3,
+              "20": 1
+            }
+          }
+        }
+      },
+      "secondary": "set",
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    },
+    {
+      "id": "85-C167-N-unsupported",
+      "fixture": "85-C167-N",
+      "requirement": "conditional",
+      "secondary": "unsupported",
+      "based_on": "85-C167-P-window",
+      "mutation": "replace second terminal with opaque table-valued function",
+      "expected": "Residual",
+      "truth": "Missing typed interpreter or runtime law is never an impossible witness",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "canonical_opaque_or_parser_residual",
+          "verified": true,
+          "expected_verdict": "Residual",
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+        }
+      ],
+      "adapters": {
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "native_other": "conditional not executed"
+      },
+      "native_duckdb": {
+        "status": "unavailable_opaque_sql_function",
+        "engine": "DuckDB",
+        "observed_not_requested": true,
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": false
+      },
+      "signed_off": true,
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT opaque(k) AS x FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "observed_terminal_bags": {
+        "join": [
+          {
+            "k": 1,
+            "n": 2
+          }
+        ],
+        "other": null
+      },
+      "join_pair_membership": {
+        "true": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ],
+        "sql_null_not_true": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "typed_output_domains": {
+        "joined": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "n": {
+            "type": "INTEGER",
+            "values": [
+              2
+            ],
+            "contains_null": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        },
+        "other": null
+      },
+      "source_identity": {
+        "relations": [
+          "l",
+          "r"
+        ],
+        "l_row_ids": [
+          "l#0",
+          "l#1",
+          "l#2"
+        ],
+        "r_row_ids": [
+          "r#0"
+        ]
+      },
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {}
+        }
+      },
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
+    }
+  ],
+  "signoff": {
+    "ac_1": "accepted_by_owner_with_documented_historical_v1_prospective_freeze_exception; corrected_v2_78_cells_verified",
+    "ac_2": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_3": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_4": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_5": "accepted_by_owner_with_TASK_167_specific_independent_reviewer_waiver; pre_signoff_CI_9_of_9; pinned_consumer_selected_suites_passed",
+    "child_done": true,
+    "parent_done": false,
+    "accepted_on": "2026-11-03",
+    "independent_review_waived": true,
+    "historical_freeze_exception_accepted": true,
+    "pre_signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41714154496"
+  },
+  "review_disposition": "TASK-167 owner accepted all 78 verified case x dialect cells, including conditional opaque/vendor Residual boundaries, with a task-specific waiver of distinct independent reviewer. Historical prospective v1 freeze incompleteness remains an explicitly accepted exception, not retroactive compliance. Native vendor execution outside DuckDB is not claimed. TASK-85 parent is not signed off.",
+  "version_history": [
+    "docs/task-167-acceptance-freeze-v1.json"
+  ],
+  "correction_record": "V1 was prospective but contained incomplete physical source rows for positive window, unverified per-cell assertions, and self-inconsistent impossible request histograms. V2 is an implementation-stage verified-target correction. V1 remains unchanged; original temporal/literal freeze AC remains historically unmet; TASK-167 owner explicitly accepted this documented exception on 2026-11-03.",
+  "native_execution_boundary": "Only DuckDB verified by task-owned differential tests. No claim about 12 other native dialect engines.",
+  "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
+  "verified_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+}

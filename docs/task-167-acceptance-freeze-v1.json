@@ -1,0 +1,683 @@
+{
+  "version": 1,
+  "owner": "TASK-167",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": true,
+  "scope": "Exact joint closed-world snapshots with a two-source INNER JOIN -> WHERE -> GROUP/HAVING and a second shared-source window or set-tree terminal. One snapshot per physical source; never conjoin independently constructed populations.",
+  "fixture_ids": [
+    "85-C167-P",
+    "85-C167-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "dependencies": [
+    "TASK-166 Done and PR #183 squash-merged into main"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_policy": "All 13 parser dialects must be checked for equivalent canonical shapes; native runtime verification only DuckDB unless separately executed.",
+  "supported_types": "Signed integer and SQL NULL with exact inclusive bounds; set-tree also requires stable text identity and positional integer tuples.",
+  "oracle_policy": "Each mandatory case must compare full native physical inputs, complete terminal bags, selected/NOT TRUE identities, canonical typed domains, and requested count/histogram classification. Contradictions require a complete attested physical source assignment.",
+  "adapter_policy": {
+    "sql": "mandatory",
+    "dbt": "mandatory for equivalent compiled model SQL and authoritative catalog schema",
+    "odcs": "mandatory when the same source schema facts can be represented",
+    "native_vendor": "conditional; no native engine claim except DuckDB",
+    "sql_tdg": "pinned consumer qualification mandatory before Done"
+  },
+  "matrix": [
+    {
+      "id": "85-C167-P-window",
+      "fixture": "85-C167-P",
+      "requirement": "mandatory",
+      "secondary": "window",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          1,
+          1,
+          null
+        ],
+        "r": [
+          1
+        ]
+      },
+      "join_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "secondary_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1,
+          "histogram": {
+            "n": {
+              "2": 1
+            }
+          }
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {
+            "copies": {
+              "1": 1,
+              "2": 2
+            }
+          }
+        }
+      },
+      "expected": "Exact",
+      "truth": "Join keeps two (l=1,r=1) pairs, rejecting (l=NULL,r=1) as SQL UNKNOWN; window partitions same l bag including NULL",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    },
+    {
+      "id": "85-C167-N-join-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-window",
+      "mutate_goal": {
+        "join": {
+          "rows": 2,
+          "groups": 2
+        }
+      },
+      "expected": "Impossible",
+      "truth": "Complete source bags generate exactly one grouped result, not two",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    },
+    {
+      "id": "85-C167-N-window-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-window",
+      "mutate_goal": {
+        "secondary": {
+          "rows": 2
+        }
+      },
+      "expected": "Impossible",
+      "truth": "Shared L bag contains three rows and the row-preserving window emits all three",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    },
+    {
+      "id": "85-C167-P-set",
+      "fixture": "85-C167-P",
+      "requirement": "mandatory",
+      "secondary": "set",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) = 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l2",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r1",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "join_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "secondary_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "goal": {
+        "join": {
+          "rows": 1,
+          "groups": 1
+        },
+        "secondary": {
+          "rows": 3,
+          "histogram": {
+            "v": {
+              "10": 2,
+              "20": 1
+            }
+          }
+        }
+      },
+      "expected": "Exact",
+      "truth": "The same two source bags drive both the cross-source join multiplicity and the positional UNION ALL tuple frequencies",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    },
+    {
+      "id": "85-C167-N-set-goal",
+      "fixture": "85-C167-N",
+      "requirement": "mandatory",
+      "based_on": "85-C167-P-set",
+      "mutate_goal": {
+        "secondary": {
+          "rows": 4
+        }
+      },
+      "expected": "Impossible",
+      "truth": "UNION ALL over fixed two and one input occurrences is exactly three rows",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    },
+    {
+      "id": "85-C167-N-unsupported",
+      "fixture": "85-C167-N",
+      "requirement": "conditional",
+      "secondary": "unsupported",
+      "based_on": "85-C167-P-window",
+      "mutation": "replace second terminal with opaque table-valued function",
+      "expected": "Residual",
+      "truth": "Missing typed interpreter or runtime law is never an impossible witness",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected_parser": "equivalent_where_supported_else_named_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapters": {
+        "sql": "pending",
+        "dbt": "pending",
+        "odcs": "pending"
+      },
+      "native_duckdb": "pending",
+      "signed_off": false
+    }
+  ],
+  "signoff": {
+    "ac_1": "freeze created, verification pending",
+    "ac_2": "pending",
+    "ac_3": "pending",
+    "ac_4": "pending",
+    "ac_5": "pending",
+    "child_done": false,
+    "parent_done": false
+  },
+  "review_disposition": "All mandatory unverified cells block Done. Conditional parser/vendor/opaque paths require named owner TASK-167 and explicit reviewer disposition. No unexecuted native-vendor certification."
+}

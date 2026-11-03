@@ -491,6 +491,7 @@ mod join_uniform;
 mod joins;
 mod joint_counts;
 mod joint_distributions;
+mod joint_terminals;
 mod lifecycle_scripts;
 mod membership;
 mod operators;
@@ -554,6 +555,10 @@ pub use in_bags::{
 };
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
+pub use joint_terminals::{
+    physical_joint_terminal_bag_plan, PhysicalJointOtherExact, PhysicalJointTerminalExact,
+    PhysicalJointTerminalProof,
+};
 pub use lifecycle_scripts::{
     physical_ordered_lifecycle_plan, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,
     PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof,

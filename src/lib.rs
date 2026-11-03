@@ -33,6 +33,8 @@
 //! - physical_source_plan builds a canonical reference-based physical dependency DAG and proves supported row witnesses.
 //! - physical_row_count_plan and physical_joint_row_count_plan construct complete source-backed counts for verified DAG subsets.
 //! - physical_joint_distribution_plan reconciles complete physical source histograms across terminal goals.
+//! - physical_joint_terminal_bag_plan certifies joined and window/set terminals against shared complete source bags.
+//! - to_physical_joint_terminal_json emits deterministic exact joint witness sidecars.
 //! - physical_joint_source_plan returns one canonical topologically ordered source graph and typed joint goal proof.
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
@@ -148,7 +150,9 @@ pub use dbt::{
     parse_dbt_catalog, parse_dbt_manifest, DbtArtifactsError, DbtCatalog, DbtCatalogError,
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
-pub use emission::{to_bundle_json, to_json, to_physical_typed_population_json};
+pub use emission::{
+    to_bundle_json, to_json, to_physical_joint_terminal_json, to_physical_typed_population_json,
+};
 pub use group_witness::{
     GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
 };
@@ -184,38 +188,40 @@ pub use physical_realization::{
     physical_finite_set_bag_plan, physical_finite_set_tree_membership_plan,
     physical_finite_set_tree_plan, physical_finite_table_plan, physical_finite_view_read_plan,
     physical_finite_window_bag_plan, physical_joint_distribution_plan,
-    physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_cte_read_plan,
-    physical_ordered_lifecycle_plan, physical_ordered_write_state_plan,
-    physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
-    physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
-    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_ordered_write_plan, physical_typed_value_plan,
-    physical_unconditional_delete_plan, PhysicalAggregateGroup, PhysicalAggregateTruth,
-    PhysicalColumnAlterProof, PhysicalColumnAlterStep, PhysicalComposedPageExact,
-    PhysicalComposedPageProof, PhysicalCteExact, PhysicalCteInput, PhysicalCteNode,
-    PhysicalCteProof, PhysicalCteRef, PhysicalExistsColumnDomain, PhysicalFiniteAggregateExact,
-    PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain, PhysicalFiniteChainExact,
-    PhysicalFiniteChainProof, PhysicalFiniteExistsExact, PhysicalFiniteExistsProof,
-    PhysicalFiniteInExact, PhysicalFiniteInProof, PhysicalFinitePageExact, PhysicalFinitePageProof,
-    PhysicalFiniteQuantifiedExact, PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact,
-    PhysicalFiniteRankProof, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
-    PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalFiniteTableExact,
-    PhysicalFiniteTableProof, PhysicalFiniteWindowExact, PhysicalFiniteWindowProof,
-    PhysicalIdentitySequence, PhysicalInColumnDomain, PhysicalInTruth,
-    PhysicalJoinedAggregateExact, PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact,
-    PhysicalJoinedExistsProof, PhysicalJointSourcePlan, PhysicalLifecycleCheckpoint,
-    PhysicalLifecycleRead, PhysicalOrderedCteExact, PhysicalOrderedCteProof,
-    PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof, PhysicalPageRow,
-    PhysicalPlanNode, PhysicalPlanRef, PhysicalProducerDomain, PhysicalProducerExistsExact,
-    PhysicalProducerExistsProof, PhysicalProducerRow, PhysicalProofGap,
-    PhysicalQuantifiedColumnDomain, PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact,
-    PhysicalQuantifiedScalarProof, PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow,
-    PhysicalRowTarget, PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof,
-    PhysicalSetColumnDomain, PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple,
-    PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue,
-    PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalViewExact, PhysicalViewProof,
-    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
-    PhysicalWriteStatePlan, PhysicalWriteTransition,
+    physical_joint_row_count_plan, physical_joint_source_plan, physical_joint_terminal_bag_plan,
+    physical_ordered_cte_read_plan, physical_ordered_lifecycle_plan,
+    physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
+    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
+    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
+    physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
+    physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalAggregateGroup,
+    PhysicalAggregateTruth, PhysicalColumnAlterProof, PhysicalColumnAlterStep,
+    PhysicalComposedPageExact, PhysicalComposedPageProof, PhysicalCteExact, PhysicalCteInput,
+    PhysicalCteNode, PhysicalCteProof, PhysicalCteRef, PhysicalExistsColumnDomain,
+    PhysicalFiniteAggregateExact, PhysicalFiniteAggregateProof, PhysicalFiniteChainColumnDomain,
+    PhysicalFiniteChainExact, PhysicalFiniteChainProof, PhysicalFiniteExistsExact,
+    PhysicalFiniteExistsProof, PhysicalFiniteInExact, PhysicalFiniteInProof,
+    PhysicalFinitePageExact, PhysicalFinitePageProof, PhysicalFiniteQuantifiedExact,
+    PhysicalFiniteQuantifiedProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
+    PhysicalFiniteSetExact, PhysicalFiniteSetProof, PhysicalFiniteSetTreeExact,
+    PhysicalFiniteSetTreeProof, PhysicalFiniteTableExact, PhysicalFiniteTableProof,
+    PhysicalFiniteWindowExact, PhysicalFiniteWindowProof, PhysicalIdentitySequence,
+    PhysicalInColumnDomain, PhysicalInTruth, PhysicalJoinedAggregateExact,
+    PhysicalJoinedAggregateProof, PhysicalJoinedExistsExact, PhysicalJoinedExistsProof,
+    PhysicalJointOtherExact, PhysicalJointSourcePlan, PhysicalJointTerminalExact,
+    PhysicalJointTerminalProof, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,
+    PhysicalOrderedCteExact, PhysicalOrderedCteProof, PhysicalOrderedLifecycleExact,
+    PhysicalOrderedLifecycleProof, PhysicalPageRow, PhysicalPlanNode, PhysicalPlanRef,
+    PhysicalProducerDomain, PhysicalProducerExistsExact, PhysicalProducerExistsProof,
+    PhysicalProducerRow, PhysicalProofGap, PhysicalQuantifiedColumnDomain,
+    PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
+    PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalRankRow, PhysicalRowTarget,
+    PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof, PhysicalSetColumnDomain,
+    PhysicalSetTreeBranch, PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSourcePlan,
+    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
+    PhysicalTypedWriteState, PhysicalViewExact, PhysicalViewProof, PhysicalWriteColumnDomain,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
+    PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
