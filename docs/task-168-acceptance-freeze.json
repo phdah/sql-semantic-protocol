@@ -1,0 +1,1066 @@
+{
+  "version": 1,
+  "owner": "TASK-168",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": true,
+  "status": "frozen_pending_implementation_and_verification",
+  "fixtures": [
+    "85-C168-P",
+    "85-C168-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "scope": "Typed correlated tuple frequencies; shared source bag across join, set and window terminals, plus LIMIT/QUALIFY fanout. Freeze all mandatory variants; none may be moved to optional residual to achieve signoff.",
+  "types": "Canonical signed INTEGER and SQL NULL only for exact typed tuple equality; unproved collation and vendor/session laws must remain Residual.",
+  "evaluation": "Full closed-world physical source and terminal bags, all output rows, integer/null bounds and TRUE/NOT TRUE selected/rejected identities; an independently supplied tuple histogram is a goal, not executable proof.",
+  "unverified_mandatory_blocks_done": true,
+  "independent_review_required": true,
+  "release_gate": "TASK-85 independent parent signoff and TASK-91 separate v3 gate",
+  "matrix": [
+    {
+      "id": "85-C168-P-set-tuples",
+      "fixture": "85-C168-P",
+      "family": "set",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 2
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-N-set-correlation",
+      "fixture": "85-C168-N",
+      "family": "set",
+      "expectation": "Impossible",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 2
+        }
+      ],
+      "required": true,
+      "proof": "Same scalar marginals and total rows, but requested joint tuple multiplicity conflicts with one complete physical source bag",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-P-window-null",
+      "fixture": "85-C168-P",
+      "family": "window",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "columns": [
+        "k",
+        "copies"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            2
+          ],
+          "rows": 2
+        },
+        {
+          "values": [
+            null,
+            1
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-N-window-correlation",
+      "fixture": "85-C168-N",
+      "family": "window",
+      "expectation": "Impossible",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "columns": [
+        "k",
+        "copies"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            1
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            2
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            null,
+            2
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "proof": "Equal column marginals and row count but impossible joint correlation",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-P-limit-fanout",
+      "fixture": "85-C168-P",
+      "family": "order_limit_fanout",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT k,v FROM l ORDER BY v LIMIT 2"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ]
+      },
+      "terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "implementation_state": "pending",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-N-qualify-fanout",
+      "fixture": "85-C168-N",
+      "family": "qualify_window_fanout",
+      "expectation": "Residual",
+      "sql": [
+        "SELECT k,v FROM l QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY v) = 1"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ]
+      },
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            null,
+            30
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "implementation_state": "pending_parser_and_execution_oracle",
+      "proof": "Every dialect must be classified by parser and exact row selection; native dialect execution not presumed",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    },
+    {
+      "id": "85-C168-R-opaque-collation",
+      "fixture": "85-C168-N",
+      "family": "unproved_comparison_law",
+      "expectation": "Residual",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            "a",
+            10
+          ],
+          "rows": 1
+        }
+      ],
+      "required": false,
+      "proof": "Text collation unsupported; never imply native equality",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "hive",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "pending_evidence",
+          "native_engine": "pending_full_bag_oracle"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "pending_evidence",
+          "native_engine": "not_executed"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "pending_evidence"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "pending_evidence"
+        }
+      ],
+      "verified": false
+    }
+  ]
+}
