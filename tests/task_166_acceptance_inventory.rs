@@ -427,6 +427,13 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
                 id == "85-C166-C-missing-schema",
                 "{id}/{name}: canonical schema authority"
             );
+            if id != "85-C166-C-missing-schema" {
+                let schema = &emitted["source_schemas"][0];
+                assert_eq!(schema["relation"], "t", "{id}/{name}: source identity");
+                assert_eq!(schema["columns"][0]["name"], "k");
+                assert_eq!(schema["columns"][0]["data_type"]["kind"], "signed_integer");
+                assert_eq!(schema["columns"][0]["data_type"]["bits"], 32);
+            }
             checked += 1;
         }
         if case["native_snapshots"]["execute_terminal_b"] == true {
