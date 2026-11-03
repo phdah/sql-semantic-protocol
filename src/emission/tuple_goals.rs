@@ -16,7 +16,6 @@ fn requested_scalar(value: &ConstraintValue) -> Value {
             json!({"kind":"unsigned_integer","value":number.to_string()}),
         ConstraintValue::Number(number) => json!({"kind":"decimal","value":number}),
         ConstraintValue::Boolean(value) => json!({"kind":"boolean","value":value}),
-        _ => json!({"kind":"unsupported"}),
     }
 }
 
