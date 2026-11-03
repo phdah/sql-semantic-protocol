@@ -46,7 +46,7 @@ Next: [TASK-168](task-168%20-%20classify-correlations-fanout-and-certify-task-85
 
 ## TASK-167 implementation (2026-11-03)
 
-- Prospective acceptance matrix: [v1](../../docs/task-167-acceptance-freeze.json), linked from the coverage manifest.
+- Original prospective acceptance matrix: [archived v1](../../docs/task-167-acceptance-freeze-v1.json) (historically incomplete); corrected [active v2](../../docs/task-167-acceptance-freeze.json) is linked from the coverage manifest.
 - Initial implementation: snapshot-relative joint certification of a two-source INNER JOIN/WHERE/GROUP/HAVING terminal and an independent window or set-tree terminal using the *same* complete physical source bags. Unsupported semantics remain Residual; exact full-bag contradictions are Impossible.
 - Public API and full-bag DuckDB tests: `src/physical_realization/joint_terminals.rs` and `tests/task_167_joint_terminals.rs`.
 - **Technically verified:** Child AC #2/#3/#4 pass the 78-cell v2 matrix, full source/terminal native DuckDB and typed sidecar checks, 13 canonical parsers, both window/set SQL/dbt/ODCS adapter families, [nine-job implementation-head CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562), and [pinned sql-tdg selected consumer qualification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41698923842). Technical verification is not independent identity signoff.
