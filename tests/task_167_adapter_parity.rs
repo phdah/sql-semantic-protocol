@@ -169,7 +169,11 @@ fn snapshots() -> Vec<PhysicalWriteState> {
     vec![
         PhysicalWriteState::new(
             LEFT,
-            vec![row("l0", Some(1), 10), row("l1", Some(1), 20), row("l2", None, 30)],
+            vec![
+                row("l0", Some(1), 10),
+                row("l1", Some(1), 20),
+                row("l2", None, 30),
+            ],
         )
         .unwrap(),
         PhysicalWriteState::new(RIGHT, vec![row("r0", Some(1), 10)]).unwrap(),
@@ -217,13 +221,20 @@ fn goals(bundle: &AnalysisBundle, window_rows: u64) -> Vec<OutcomeGoal> {
 }
 
 fn normalized(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut result = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut result = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     result.sort();
     result
 }
 
-fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<(Vec<String>, Vec<String>, Vec<String>, usize)> {
-    let result = physical_joint_terminal_bag_plan(bundle, &goals(bundle, requested_rows), &snapshots());
+fn signature(
+    bundle: &AnalysisBundle,
+    requested_rows: u64,
+) -> Option<(Vec<String>, Vec<String>, Vec<String>, usize)> {
+    let result =
+        physical_joint_terminal_bag_plan(bundle, &goals(bundle, requested_rows), &snapshots());
     let PhysicalJointTerminalProof::Exact(exact) = result else {
         return None;
     };
@@ -233,7 +244,11 @@ fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<(Vec<String
     Some((
         normalized(&exact.grouped.terminal),
         normalized(&window.terminal),
-        exact.sources.iter().map(|source| source.relation().to_string()).collect(),
+        exact
+            .sources
+            .iter()
+            .map(|source| source.relation().to_string())
+            .collect(),
         exact.grouped.rejected.len(),
     ))
 }
