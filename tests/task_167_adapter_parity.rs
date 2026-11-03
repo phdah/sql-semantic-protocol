@@ -5,11 +5,10 @@ use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_joint_terminal_bag_plan,
-    physical_joint_tuple_histogram_plan, physical_single_tuple_histogram_plan,
-    AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
-    LiteralValue, OutcomeGoal, OutputDistribution, OutputValueCount, PhysicalJointOtherExact,
-    PhysicalJointTerminalProof, PhysicalSingleTupleProof, PhysicalTupleBucket,
-    PhysicalTupleHistogramGoal, PhysicalWriteRow,
+    physical_joint_tuple_histogram_plan, physical_single_tuple_histogram_plan, AnalysisBundle,
+    ConfiguredSqlInput, ConstraintValue, LiteralValue, OutcomeGoal, OutputDistribution,
+    OutputValueCount, PhysicalJointOtherExact, PhysicalJointTerminalProof,
+    PhysicalSingleTupleProof, PhysicalTupleBucket, PhysicalTupleHistogramGoal, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
@@ -417,50 +416,68 @@ fn task_168_page_and_qualify_source_facts_are_equal_across_sql_dbt_odcs() {
     const QUALIFY: &str =
         "SELECT k,v FROM warehouse.raw.l QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY v) = 1";
 
-    let positive = |layer: &str, rows: &[(Option<i64>,i64)]| {
+    let positive = |layer: &str, rows: &[(Option<i64>, i64)]| {
         PhysicalTupleHistogramGoal::new(
             layer,
             vec!["k".into(), "v".into()],
             rows.iter()
-                .map(|(k,v)| PhysicalTupleBucket::new(vec![
-                    k.map_or(ConstraintValue::Null, ConstraintValue::Integer),
-                    ConstraintValue::Integer(*v),
-                ],1))
-                .collect()
-        ).unwrap()
+                .map(|(k, v)| {
+                    PhysicalTupleBucket::new(
+                        vec![
+                            k.map_or(ConstraintValue::Null, ConstraintValue::Integer),
+                            ConstraintValue::Integer(*v),
+                        ],
+                        1,
+                    )
+                })
+                .collect(),
+        )
+        .unwrap()
     };
     let left = snapshots().remove(0);
     for (sql, expected, values) in [
-        (PAGE, "Exact", vec![(Some(1),10),(Some(1),20)]),
-        (QUALIFY, "Residual", vec![(Some(1),10),(None,30)]),
+        (PAGE, "Exact", vec![(Some(1), 10), (Some(1), 20)]),
+        (QUALIFY, "Residual", vec![(Some(1), 10), (None, 30)]),
     ] {
         let direct_bundle = direct(
-            &RelationCatalog::from_schemas(&source_schemas()).unwrap(),sql
+            &RelationCatalog::from_schemas(&source_schemas()).unwrap(),
+            sql,
         );
         let dbt_bundle = dbt(sql);
-        #[cfg(feature="odcs")]
-        let odcs_bundle = direct(&odcs_catalog(),sql);
-        #[cfg(feature="odcs")]
-        let bundles = vec![&direct_bundle,&dbt_bundle,&odcs_bundle];
-        #[cfg(not(feature="odcs"))]
-        let bundles = vec![&direct_bundle,&dbt_bundle];
+        #[cfg(feature = "odcs")]
+        let odcs_bundle = direct(&odcs_catalog(), sql);
+        #[cfg(feature = "odcs")]
+        let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+        #[cfg(not(feature = "odcs"))]
+        let bundles = vec![&direct_bundle, &dbt_bundle];
 
         for bundle in bundles {
-            let layer = bundle.layers().iter()
-                .find(|layer|layer.input_id()=="model.demo.second").unwrap();
-            let request = positive(layer.id(),&values);
-            let result = physical_single_tuple_histogram_plan(bundle,std::slice::from_ref(&left),&request);
+            let layer = bundle
+                .layers()
+                .iter()
+                .find(|layer| layer.input_id() == "model.demo.second")
+                .unwrap();
+            let request = positive(layer.id(), &values);
+            let result =
+                physical_single_tuple_histogram_plan(bundle, std::slice::from_ref(&left), &request);
             let verdict = match &result {
                 PhysicalSingleTupleProof::Exact(_) => "Exact",
-                PhysicalSingleTupleProof::Impossible{..} => "Impossible",
-                PhysicalSingleTupleProof::Residual{..} => "Residual",
+                PhysicalSingleTupleProof::Impossible { .. } => "Impossible",
+                PhysicalSingleTupleProof::Residual { .. } => "Residual",
             };
-            assert_eq!(verdict,expected,"{sql}: adapter changed physical proof strength");
+            assert_eq!(
+                verdict, expected,
+                "{sql}: adapter changed physical proof strength"
+            );
             if sql == PAGE {
-                let wrong = positive(layer.id(),&[(Some(1),10),(None,30)]);
+                let wrong = positive(layer.id(), &[(Some(1), 10), (None, 30)]);
                 assert!(matches!(
-                    physical_single_tuple_histogram_plan(bundle,std::slice::from_ref(&left),&wrong),
-                    PhysicalSingleTupleProof::Impossible{..}
+                    physical_single_tuple_histogram_plan(
+                        bundle,
+                        std::slice::from_ref(&left),
+                        &wrong
+                    ),
+                    PhysicalSingleTupleProof::Impossible { .. }
                 ));
             }
         }
