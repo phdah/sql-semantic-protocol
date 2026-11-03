@@ -30,6 +30,10 @@ impl PhysicalJointOtherExact {
 /// Two exact terminal results over one closed physical source assignment.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalJointTerminalExact {
+    /// Canonical grouped terminal layer identity.
+    pub grouped_layer_id: String,
+    /// Canonical window/set terminal layer identity.
+    pub other_layer_id: String,
     /// The source bags in stable relation order. No terminal may replace them.
     pub sources: Vec<PhysicalWriteState>,
     /// JOIN, WHERE, GROUP and HAVING results and TRUE/NOT TRUE pair identities.
@@ -279,6 +283,8 @@ pub fn physical_joint_terminal_bag_plan(
             let mut sources = joined_sources.to_vec();
             sources.sort_by(|left, right| left.relation().cmp(right.relation()));
             PhysicalJointTerminalProof::Exact(Box::new(PhysicalJointTerminalExact {
+                grouped_layer_id: grouped_goal.layer_id().to_string(),
+                other_layer_id: other_goal.layer_id().to_string(),
                 sources,
                 grouped,
                 other,
