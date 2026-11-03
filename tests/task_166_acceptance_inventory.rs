@@ -388,7 +388,10 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
             assert_eq!(bundle.inputs().len(), 2, "{id}/{name}: two SQL inputs");
             for input in bundle.inputs() {
                 assert!(
-                    matches!(input.statements().first(), Some(ProtocolStatement::Query(_))),
+                    matches!(
+                        input.statements().first(),
+                        Some(ProtocolStatement::Query(_))
+                    ),
                     "{id}/{name}: canonical query required, not parser acceptance alone"
                 );
             }
