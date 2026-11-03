@@ -200,6 +200,22 @@ fn observed_bag(db: &Connection, sql: &str) -> Vec<Value> {
     sorted_bag(&values)
 }
 
+fn observed_integer_domain(bag: &[Value]) -> Value {
+    let mut integers = bag.iter().filter_map(Value::as_i64).collect::<Vec<_>>();
+    integers.sort();
+    let lower = integers.first().copied();
+    let upper = integers.last().copied();
+    json!({
+        "type": "signed_integer",
+        "bits": 32,
+        "lower": lower,
+        "upper": upper,
+        "lower_inclusive": lower.map(|_| true),
+        "upper_inclusive": upper.map(|_| true),
+        "nullable": bag.iter().any(Value::is_null)
+    })
+}
+
 fn check_native_bags(case: &Value) {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE t(ordinal INTEGER, k INTEGER);")
@@ -220,7 +236,19 @@ fn check_native_bags(case: &Value) {
         "{}: physical input mismatch",
         case["id"]
     );
+    assert_eq!(
+        observed_integer_domain(&observed_bag(&db, "SELECT k FROM t")),
+        case["expected"]["typed_domains"]["t.k"],
+        "{}: native physical INTEGER/NULL range and inclusivity",
+        case["id"]
+    );
     let statements = case["sql_statements"].as_array().unwrap();
+    assert_eq!(
+        observed_integer_domain(&observed_bag(&db, statements[0].as_str().unwrap())),
+        case["expected"]["typed_domains"]["terminal_a"],
+        "{}: native A output domain",
+        case["id"]
+    );
     assert_eq!(
         observed_bag(&db, statements[0].as_str().unwrap()),
         sorted_bag(
@@ -232,6 +260,12 @@ fn check_native_bags(case: &Value) {
         case["id"]
     );
     if case["native_snapshots"]["execute_terminal_b"] == true {
+        assert_eq!(
+            observed_integer_domain(&observed_bag(&db, statements[1].as_str().unwrap())),
+            case["expected"]["typed_domains"]["terminal_b"],
+            "{}: native B output domain",
+            case["id"]
+        );
         assert_eq!(
             observed_bag(&db, statements[1].as_str().unwrap()),
             sorted_bag(
