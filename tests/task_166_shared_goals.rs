@@ -243,6 +243,34 @@ fn opaque_filter_and_untyped_source_remain_residual() {
 }
 
 #[test]
+fn computed_whole_projection_does_not_extend_the_frozen_shared_source_law() {
+    let bundle = analyze(
+        &[
+            "SELECT k + 1 AS whole FROM t",
+            "SELECT k AS filtered FROM t WHERE k = 1",
+        ],
+        "postgresql",
+        true,
+    );
+    let targets = goals(
+        &bundle,
+        &[
+            (ConstraintValue::Integer(2), 2),
+            (ConstraintValue::Integer(3), 1),
+        ],
+        2,
+        None,
+    );
+    assert!(
+        matches!(
+            physical_joint_distribution_plan(&bundle, &targets),
+            WitnessDirection::Residual { .. }
+        ),
+        "a reversible scalar whole projection is not the frozen transparent source case"
+    );
+}
+
+#[test]
 fn duckdb_observes_exact_full_source_and_both_terminal_bags() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE t(k INTEGER); INSERT INTO t VALUES (1), (1), (2);")
