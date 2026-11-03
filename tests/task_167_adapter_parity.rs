@@ -15,6 +15,7 @@ const LEFT: &str = "warehouse.raw.l";
 const RIGHT: &str = "warehouse.raw.r";
 const JOINED: &str = "SELECT l.k AS k, COUNT(*) AS n FROM warehouse.raw.l l JOIN warehouse.raw.r r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2";
 const WINDOW: &str = "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM warehouse.raw.l";
+const SET: &str = "SELECT k, v FROM warehouse.raw.l UNION ALL SELECT k, v FROM warehouse.raw.r";
 
 fn source_schemas() -> Vec<RelationSchema> {
     [LEFT, RIGHT]
@@ -34,17 +35,17 @@ fn source_schemas() -> Vec<RelationSchema> {
         .collect()
 }
 
-fn direct(catalog: &RelationCatalog) -> AnalysisBundle {
+fn direct(catalog: &RelationCatalog, second: &str) -> AnalysisBundle {
     let parser = dialect_from_name("postgresql").unwrap();
-    let sql = [SqlInput::inline(JOINED), SqlInput::inline(WINDOW)];
+    let sql = [SqlInput::inline(JOINED), SqlInput::inline(second)];
     let configured = [
         ConfiguredSqlInput::new("model.demo.joined", &sql[0], "postgresql", parser.as_ref()),
-        ConfiguredSqlInput::new("model.demo.window", &sql[1], "postgresql", parser.as_ref()),
+        ConfiguredSqlInput::new("model.demo.second", &sql[1], "postgresql", parser.as_ref()),
     ];
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
 
-fn dbt() -> AnalysisBundle {
+fn dbt(second: &str) -> AnalysisBundle {
     let source = |unique_id: &str, name: &str, relation_name: &str| {
         json!({
             "unique_id":unique_id,"resource_type":"source",
@@ -74,7 +75,12 @@ fn dbt() -> AnalysisBundle {
         },
         "nodes":{
             "model.demo.joined":model("model.demo.joined","joined",JOINED,vec!["source.demo.l","source.demo.r"]),
-            "model.demo.window":model("model.demo.window","window",WINDOW,vec!["source.demo.l"])
+            "model.demo.second":model(
+                "model.demo.second",
+                "second",
+                second,
+                if second == SET {vec!["source.demo.l","source.demo.r"]} else {vec!["source.demo.l"]}
+            )
         },
         "sources":{
             "source.demo.l":source("source.demo.l","l",LEFT),
@@ -180,7 +186,7 @@ fn snapshots() -> Vec<PhysicalWriteState> {
     ]
 }
 
-fn goals(bundle: &AnalysisBundle, window_rows: u64) -> Vec<OutcomeGoal> {
+fn goals(bundle: &AnalysisBundle, secondary_rows: u64, set: bool) -> Vec<OutcomeGoal> {
     let layer = |name: &str| {
         bundle
             .layers()
@@ -211,10 +217,14 @@ fn goals(bundle: &AnalysisBundle, window_rows: u64) -> Vec<OutcomeGoal> {
         )
         .unwrap(),
         OutcomeGoal::new(
-            layer("model.demo.window"),
-            Some(window_rows),
+            layer("model.demo.second"),
+            Some(secondary_rows),
             None,
-            vec![distribution("copies", &[(1, 1), (2, 2)])],
+            if set {
+                vec![distribution("v", &[(10, 2), (20, 1), (30, 1)])]
+            } else {
+                vec![distribution("copies", &[(1, 1), (2, 2)])]
+            },
         )
         .unwrap(),
     ]
@@ -232,23 +242,27 @@ fn normalized(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct JointSignature {
     grouped: Vec<String>,
-    window: Vec<String>,
+    secondary: Vec<String>,
     sources: Vec<String>,
     rejected_pairs: usize,
 }
 
-fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<JointSignature> {
-    let result =
-        physical_joint_terminal_bag_plan(bundle, &goals(bundle, requested_rows), &snapshots());
+fn signature(bundle: &AnalysisBundle, requested_rows: u64, set: bool) -> Option<JointSignature> {
+    let result = physical_joint_terminal_bag_plan(
+        bundle,
+        &goals(bundle, requested_rows, set),
+        &snapshots(),
+    );
     let PhysicalJointTerminalProof::Exact(exact) = result else {
         return None;
     };
-    let PhysicalJointOtherExact::Window(window) = exact.other else {
-        return None;
+    let secondary = match exact.other {
+        PhysicalJointOtherExact::Window(window) => normalized(&window.terminal),
+        PhysicalJointOtherExact::Set(set) => normalized(&set.terminal),
     };
     Some(JointSignature {
         grouped: normalized(&exact.grouped.terminal),
-        window: normalized(&window.terminal),
+        secondary,
         sources: exact
             .sources
             .iter()
@@ -260,25 +274,29 @@ fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<JointSignat
 
 #[test]
 fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
-    let sql_bundle = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap());
-    let dbt = dbt();
-    let expected = signature(&sql_bundle, 3).expect("direct SQL exact pair");
-    assert_eq!(expected.sources, vec![LEFT.to_string(), RIGHT.to_string()]);
-    assert_eq!(expected.rejected_pairs, 1);
-    assert_eq!(signature(&dbt, 3), Some(expected.clone()));
-    for bundle in [&sql_bundle, &dbt] {
-        assert!(matches!(
-            physical_joint_terminal_bag_plan(bundle, &goals(bundle, 2), &snapshots()),
-            PhysicalJointTerminalProof::Impossible { .. }
-        ));
-    }
-    #[cfg(feature = "odcs")]
-    {
-        let odcs = direct(&odcs_catalog());
-        assert_eq!(signature(&odcs, 3), Some(expected));
-        assert!(matches!(
-            physical_joint_terminal_bag_plan(&odcs, &goals(&odcs, 2), &snapshots()),
-            PhysicalJointTerminalProof::Impossible { .. }
-        ));
+    for (other, set, rows) in [(WINDOW, false, 3), (SET, true, 4)] {
+        let sql_bundle = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap(), other);
+        let dbt = dbt(other);
+        let expected = signature(&sql_bundle, rows, set).expect("direct SQL exact pair");
+        assert_eq!(expected.sources, vec![LEFT.to_string(), RIGHT.to_string()]);
+        assert_eq!(expected.rejected_pairs, 1);
+        assert_eq!(signature(&dbt, rows, set), Some(expected.clone()));
+        for bundle in [&sql_bundle, &dbt] {
+            assert!(matches!(
+                physical_joint_terminal_bag_plan(
+                    bundle, &goals(bundle, rows + 1, set), &snapshots()
+                ),
+                PhysicalJointTerminalProof::Impossible { .. }
+            ));
+        }
+        #[cfg(feature = "odcs")]
+        {
+            let odcs = direct(&odcs_catalog(), other);
+            assert_eq!(signature(&odcs, rows, set), Some(expected));
+            assert!(matches!(
+                physical_joint_terminal_bag_plan(&odcs, &goals(&odcs, rows + 1, set), &snapshots()),
+                PhysicalJointTerminalProof::Impossible { .. }
+            ));
+        }
     }
 }
