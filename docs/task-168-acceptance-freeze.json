@@ -101,91 +101,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -193,19 +232,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -319,6 +367,13 @@
           ]
         ],
         "join_not_true_pairs": []
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
       }
     },
     {
@@ -399,91 +454,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -491,19 +585,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -617,6 +720,13 @@
           ]
         ],
         "join_not_true_pairs": []
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Impossible",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
       }
     },
     {
@@ -701,91 +811,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -793,19 +942,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -925,6 +1083,13 @@
             "r#0"
           ]
         ]
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
       }
     },
     {
@@ -1017,91 +1182,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -1109,19 +1313,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Impossible",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -1241,6 +1454,13 @@
             "r#0"
           ]
         ]
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Impossible",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
       }
     },
     {
@@ -1308,91 +1528,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -1400,19 +1659,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Exact",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -1492,6 +1760,13 @@
           "l#2"
         ],
         "rejected_count": 1
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
       }
     },
     {
@@ -1550,91 +1825,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -1642,19 +1956,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -1734,6 +2057,14 @@
           "l1"
         ],
         "portable_proof": "Residual due to implicit SQL NULL/peer ordering; no exact certification"
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Residual",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence",
+        "portable_unproved": "QUALIFY unprojected ROW_NUMBER with omitted explicit NULL ordering lacks a portable exact physical output proof; DuckDB native outcome is diagnostic only"
       }
     },
     {
@@ -1787,91 +2118,130 @@
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mysql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "postgresql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "hive",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "sqlite",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "snowflake",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "redshift",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "mssql",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "clickhouse",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "bigquery",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "ansi",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         },
         {
           "dialect": "duckdb",
           "classification": "canonical_parser_equivalent",
           "native_engine": "native_full_bag_oracle_required",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains"
         },
         {
           "dialect": "databricks",
           "classification": "canonical_parser_equivalent",
           "native_engine": "not_executed",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification"
         }
       ],
       "adapter_cells": [
@@ -1879,19 +2249,28 @@
           "adapter": "direct_sql",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog"
         },
         {
           "adapter": "compiled_dbt_catalog",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types"
         },
         {
           "adapter": "odcs",
           "classification": "equivalent_metadata_requires_executable_parity",
           "expected_verdict": "Residual",
-          "verified": false
+          "verified": false,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types"
         }
       ],
       "verified": false,
@@ -2022,7 +2401,15 @@
           "k": 1,
           "v": 10
         }
-      ]
+      ],
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Residual",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Explicit source text collation and native/session comparison laws plus terminal full-bag execution",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence",
+        "portable_unproved": "No authoritative cross-engine text collation/equality facts for requested string tuple"
+      }
     }
   ],
   "prospective_v1_frozen_before_semantic_changes": true,
@@ -2050,5 +2437,38 @@
     "compiled_dbt_catalog": "Model compiled SQL plus warehouse catalog source types; no manifest-only type guesses",
     "odcs": "Same source facts when contract can represent them",
     "native_vendor": "Only DuckDB execution observed; no inference to other dialect engines"
+  },
+  "native_runtime_policy": {
+    "executable_engine": "DuckDB",
+    "not_certified": [
+      "Snowflake",
+      "BigQuery",
+      "PostgreSQL",
+      "Redshift",
+      "MSSQL",
+      "MySQL",
+      "SQLite",
+      "Hive",
+      "ClickHouse",
+      "Databricks",
+      "ANSI",
+      "Generic"
+    ],
+    "required_external_evidence": "Native vendor execution of complete source, selected/NOT TRUE and terminal bags on a named engine/runtime/session with collation, NULL ordering and feature flags",
+    "disposition": "No native-vendor certification by parser equivalence; pending TASK-91 release review",
+    "owner": "TASK-168"
+  },
+  "sql_tdg_pinned_consumer": {
+    "commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+    "tested_protocol_head": "610cd696f090498a03ac08a2b2a049951ad57fd2",
+    "qualification_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41725446712",
+    "suites": [
+      "lib",
+      "type_coverage",
+      "full_query (except known baseline timestamp)",
+      "exactness (except known baseline timestamp)"
+    ],
+    "two_timestamp_failures": "baseline-equal computed_expression residual; not a TASK-168 regression",
+    "native_vendor_coverage": false
   }
 }
