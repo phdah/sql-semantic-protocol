@@ -57,7 +57,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -69,7 +70,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -81,7 +83,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -93,7 +96,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -105,7 +109,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -117,7 +122,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -129,7 +135,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -141,7 +148,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -153,7 +161,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -165,7 +174,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -177,7 +187,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -189,7 +200,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-window",
@@ -201,7 +213,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -213,7 +226,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -225,7 +239,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -237,7 +252,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -249,7 +265,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -261,7 +278,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -273,7 +291,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -285,7 +304,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -297,7 +317,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -309,7 +330,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -321,7 +343,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -333,7 +356,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -345,7 +369,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -357,7 +382,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -369,7 +395,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -381,7 +408,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -393,7 +421,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -405,7 +434,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -417,7 +447,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -429,7 +460,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -441,7 +473,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -453,7 +486,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -465,7 +499,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -477,7 +512,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -489,7 +525,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -501,7 +538,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -513,7 +551,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -525,7 +564,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -537,7 +577,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -549,7 +590,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -561,7 +603,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -573,7 +616,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -585,7 +629,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -597,7 +642,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -609,7 +655,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -621,7 +668,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -633,7 +681,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -645,7 +694,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -657,7 +707,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-P-set",
@@ -669,7 +720,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -681,7 +733,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -693,7 +746,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -705,7 +759,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -717,7 +772,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -729,7 +785,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -741,7 +798,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -753,7 +811,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -765,7 +824,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -777,7 +837,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -789,7 +850,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -801,7 +863,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -813,7 +876,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -825,7 +889,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -837,7 +902,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -849,7 +915,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -861,7 +928,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -873,7 +941,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -885,7 +954,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -897,7 +967,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -909,7 +980,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -921,7 +993,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -933,7 +1006,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -945,7 +1019,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -957,7 +1032,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -969,7 +1045,8 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -981,16 +1058,19 @@
       "proof_execution": "tests/task_167_acceptance_inventory.rs",
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
-      "technically_verified": false
+      "technically_verified": true,
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
     }
   ],
   "signoff": {
-    "ac1": "pending independent review of corrected v2 vs preimplementation v1",
-    "ac2": "pending final-head CI",
-    "ac3": "pending final-head CI",
-    "ac4": "pending final-head CI",
-    "ac5": "pending independent reviewer / owner waiver",
+    "ac1": "technical_v2_cells_passed_but_original_v1_incompleteness_needs_owner_disposition",
+    "ac2": "technical_pass",
+    "ac3": "technical_pass",
+    "ac4": "technical_pass",
+    "ac5": "technical_9_of_9_ci_plus_pinned_consumer_pass_independent_review_pending",
     "child_done": false,
     "parent_done": false
-  }
+  },
+  "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
+  "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
 }
