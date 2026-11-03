@@ -37,7 +37,7 @@ The acceptance test independently inserts every source occurrence into DuckDB, e
 ## CI and downstream consumer evidence
 
 - [9/9 previous standard jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41645707286) passed after the native typed-domain differential runner.
-- [Full parser/emitted-type verification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619) passed Rust tests, strict Clippy, docs, no-default tests and dbt E2E. Its only failing job was rustfmt; the exact rustfmt patch was committed as `a661009`. A **fully green final PR head** still needs independent confirmation after documentation cleanup.
+- [Full parser/emitted-type verification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619) passed Rust tests, strict Clippy, docs, no-default tests and dbt E2E. Its only failing job was rustfmt; the exact rustfmt patch was committed as `a661009`. A **fully green 9/9 CI run** on final implementation/documentation head `8899a58` is recorded at [CI 41646921872](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872). A later metadata-only tracking commit must also pass CI before final signoff.
 - [Pinned sql-tdg compatibility run](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167) passed on consumer commit `3beaf7799ab54b2440ae34c917ff7eda6c11c398` with the PR protocol patched in. This covers library, output generation, boundaries, types, full-query and exactness suites. Two preexisting, separately owned timestamp failures were excluded; full sql-tdg green is not claimed. The qualification-only workflow is temporary and must be removed from the final PR.
 
 ## Original child criteria and remaining formal decisions

@@ -21,7 +21,7 @@
     ],
     "mandatory_cells_verified": true,
     "dbt_odcs_parity_verified": true,
-    "final_ci_verified": false,
+    "final_ci_verified": true,
     "child_signed_off": false,
     "parent_signed_off": false,
     "freeze_history": [
@@ -36,7 +36,9 @@
     "sql_tdg_pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167",
     "full_frozen_case_runner": "tests/task_166_acceptance_inventory.rs",
     "historical_v1_freeze_correction_requires_owner_disposition": true,
-    "independent_review": false
+    "independent_review": false,
+    "verified_metadata_head_before_tracking_commit": "8899a587c48a63f060e8b2bb5c84dc518a5c99c9",
+    "verified_metadata_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872"
   },
   "task_165_standalone_output_goal_acceptance": {
     "owner": "TASK-165",

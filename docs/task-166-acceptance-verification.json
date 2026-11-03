@@ -17,7 +17,9 @@
     "docs": "success",
     "dbt_e2e": "success",
     "fmt": "failed_then_corrected_in_a6610094799cb4dd87856d503899b865c9a22a6d",
-    "final_head_all_jobs": "pending"
+    "final_head_all_jobs": "all_9_jobs_success_on_pre_signoff_head",
+    "verified_head_before_signoff": "8899a587c48a63f060e8b2bb5c84dc518a5c99c9",
+    "verified_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872"
   },
   "conditional_boundaries": [
     {
@@ -955,7 +957,7 @@
     "ac2": "technical_pass",
     "ac3": "technical_pass",
     "ac4": "technical_pass",
-    "ac5": "awaiting_final_head_all_jobs_and_distinct_reviewer",
+    "ac5": "all 9 CI jobs and pinned consumer verified; separate independent review or owner waiver pending",
     "independent_reviewer_identity_verified": false,
     "owner_process_waiver_granted": false,
     "parent_TASK_85_signed_off": false,
