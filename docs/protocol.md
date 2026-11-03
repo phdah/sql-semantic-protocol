@@ -1977,3 +1977,36 @@ public write-kind union and requires consumer handling of `lifecycle_action`.
 Treat it as a breaking protocol/API addition for the planned 3.0.0 release;
 this implementation PR does not independently authorize an intermediate
 2.x publication or sign off TASK-83/TASK-91.
+
+### Shared grouped JOIN and window/set terminal sidecar (TASK-167)
+
+`physical_joint_terminal_bag_plan(bundle, goals, snapshots)` accepts exactly two
+distinct terminal goal layers and a caller-attested, complete two-relation physical
+assignment. One terminal is an INNER JOIN followed by WHERE and GROUP/HAVING;
+the other is an executable window query or positional set-tree query. The same
+source occurrence bags drive both, with no independent witness multiplication.
+
+The optional `to_physical_joint_terminal_json(bundle, proof)` emitter returns a
+**physical evidence sidecar**, not a replacement root for the active
+`schema/protocol.schema.json` document. Its top-level keys are
+`protocol_version` (the active Cargo package version),
+`kind: "physical_joint_terminal_evidence"`, and `evidence`. When
+`evidence.status == "exact"`, the sidecar includes `sources` (every
+schema-attested physical occurrence and its signed-integer lexical/null
+scalars), `grouped` (complete TRUE and NOT TRUE pair identities, group
+contributors, full terminal bag and canonical finite domains), and
+`secondary` (full window or set-tree bag, membership information, and
+exact domains). Set-tree domains retain positional tuple identities,
+integer bounds with explicit inclusivity and SQL NULL membership. The
+serialization is deterministic and does **not** reconstruct SQL or reparse
+consumer output. `impossible` and `residual` emit reasons only, never
+fabricated complete outputs.
+
+An `impossible` response is relative to the exact supplied physical
+assignment (or enforced physical schema contradiction), **not** an assertion
+that no other, unspecified assignment could meet the requested goals.
+Unsupported expressions, unverified dialect execution/session laws,
+absent source identities and uncertain source constraints remain
+`residual`. Only DuckDB native differential tests are claimed; parsing a
+dialect's SQL does not certify native vendor behavior. The original
+TASK-85 parent goals and release gates remain independent.
