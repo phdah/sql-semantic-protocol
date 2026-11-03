@@ -11,7 +11,7 @@ use sql_semantic_protocol::{
     LiteralValue, OutcomeGoal, OutputDistribution, OutputValueCount, PhysicalJointOtherExact,
     PhysicalJointTerminalProof, PhysicalSingleTupleExact, PhysicalSingleTupleProof,
     PhysicalTupleBucket, PhysicalTupleHistogramGoal, PhysicalWriteRow, PhysicalWriteState,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 use std::collections::BTreeMap;
 
@@ -208,6 +208,55 @@ fn assert_verdict(case: &Value, result: &str, dialect: &str) {
         case["id"]
     );
 }
+fn check_exact_value_domain(domain: &ValueDomain, expected: &Value, case_id: &str, column: &str) {
+    let ValueDomain::Set(set) = domain else {
+        panic!("{case_id}/{column}: no exact finite typed domain: {domain:?}");
+    };
+    assert_eq!(set.mode(),SetMode::Include);
+    let actual = set.values().iter()
+        .filter_map(|entry| match entry.value() {
+            LiteralValue::Number(v) => Some(v.parse::<i64>().unwrap()),
+            _ => None
+        }).collect::<std::collections::BTreeSet<_>>();
+    let frozen = expected["values"].as_array().unwrap().iter()
+        .map(|v|v.as_i64().unwrap()).collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(actual,frozen,"{case_id}/{column}: strongest exact integer domain");
+    assert_eq!(domain.admits_null(),Some(expected["null_allowed"].as_bool().unwrap()));
+    let min = actual.iter().next().copied();
+    let max = actual.iter().next_back().copied();
+    assert_eq!(min.map_or(Value::Null,|v|json!(v)),expected["lower"]);
+    assert_eq!(max.map_or(Value::Null,|v|json!(v)),expected["upper"]);
+    assert_eq!(expected["lower_inclusive"],true);
+    assert_eq!(expected["upper_inclusive"],true);
+}
+fn check_domains(domains: &BTreeMap<String,ValueDomain>, expected: &Value, id: &str) {
+    assert_eq!(domains.len(),expected.as_object().unwrap().len());
+    for (name, frozen) in expected.as_object().unwrap() {
+        check_exact_value_domain(&domains[name],frozen,id,name);
+    }
+}
+fn check_set_domains(
+    exact: &sql_semantic_protocol::PhysicalFiniteSetTreeExact,
+    expected: &Value,
+    id: &str,
+) {
+    assert_eq!(exact.terminal_domains.len(),2);
+    for (idx,name) in ["k","v"].into_iter().enumerate() {
+        let actual=&exact.terminal_domains[idx];
+        let frozen=&expected[name];
+        let observed=actual.values.iter().map(|v|v.to_string())
+            .collect::<std::collections::BTreeSet<_>>();
+        let wanted=frozen["values"].as_array().unwrap().iter().map(Value::to_string)
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(observed,wanted,"{id}/{name}: exact finite set values");
+        assert_eq!(actual.contains_null,frozen["null_allowed"].as_bool().unwrap());
+        let bounds=actual.bounds();
+        assert_eq!(bounds.map(|(a,_)|json!(a)),Some(frozen["lower"].clone()));
+        assert_eq!(bounds.map(|(_,b)|json!(b)),Some(frozen["upper"].clone()));
+        assert_eq!(frozen["lower_inclusive"],true);
+        assert_eq!(frozen["upper_inclusive"],true);
+    }
+}
 fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
     let states = snapshots(case);
     let goals = joint_goals(bundle, case);
@@ -242,6 +291,7 @@ fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
         normalized(&exact.grouped.terminal),
         expected(case, "grouped_terminal")
     );
+    check_domains(&exact.grouped.terminal_domains,&case["grouped_terminal_domains"],case["id"].as_str().unwrap());
     assert_eq!(
         json!(exact.grouped.selected),
         case["physical_truth_partitions"]["join_true_pairs"]
@@ -256,9 +306,13 @@ fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
                 window.source_row_ids.len(),
                 case["source_bags"]["l"].as_array().unwrap().len()
             );
+            check_domains(&window.terminal_domains,&case["native_terminal_domains"],case["id"].as_str().unwrap());
             &window.terminal
         }
-        PhysicalJointOtherExact::Set(set) => &set.terminal,
+        PhysicalJointOtherExact::Set(set) => {
+            check_set_domains(set,&case["native_terminal_domains"],case["id"].as_str().unwrap());
+            &set.terminal
+        },
     };
     assert_eq!(normalized(second), expected(case, "second_terminal"));
     let sidecar: Value =
@@ -294,6 +348,7 @@ fn single_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
     if let PhysicalSingleTupleProof::Exact(exact) = result {
         match exact {
             PhysicalSingleTupleExact::Page(page) => {
+                check_domains(&page.terminal_domains,&case["native_terminal_domains"],case["id"].as_str().unwrap());
                 assert_eq!(normalized(&page.terminal), expected(case, "terminal"));
                 assert_eq!(page.rows.len(), 3);
                 assert_eq!(page.rows.iter().filter(|r| r.survives).count(), 2);
