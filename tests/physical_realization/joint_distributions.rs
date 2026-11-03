@@ -230,7 +230,7 @@ fn disjoint_source_bags_and_columns_are_independently_reconciled() {
 }
 
 #[test]
-fn unsupported_filter_and_missing_schema_remain_residual() {
+fn shared_filter_exactness_and_missing_evidence_remain_distinct() {
     let source = bundle(
         &["SELECT a AS x FROM t WHERE a > 0", "SELECT a AS y FROM t"],
         "postgresql",
@@ -245,6 +245,25 @@ fn unsupported_filter_and_missing_schema_remain_residual() {
     );
     assert!(matches!(
         physical_joint_distribution_plan(&source, &goals),
+        WitnessDirection::Feasible(_)
+    ));
+
+    // The histogram for a gives no values for the independent predicate on b.
+    // Two independently feasible queries must not be promoted to a joint bag.
+    let unproved = bundle(
+        &["SELECT a AS x FROM t WHERE b > 0", "SELECT a AS y FROM t"],
+        "postgresql",
+    );
+    let goals = targets(
+        &unproved,
+        1,
+        &[
+            (0, "x", vec![(ConstraintValue::Integer(2), 1)]),
+            (1, "y", vec![(ConstraintValue::Integer(2), 1)]),
+        ],
+    );
+    assert!(matches!(
+        physical_joint_distribution_plan(&unproved, &goals),
         WitnessDirection::Residual { .. }
     ));
 
