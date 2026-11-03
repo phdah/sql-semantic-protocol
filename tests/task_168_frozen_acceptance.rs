@@ -434,9 +434,15 @@ fn versioned_inventory_covers_every_frozen_family_and_named_dialect() {
     );
     for case in cases {
         assert!(case["id"].as_str().unwrap().starts_with("85-C168-"));
-        assert_eq!(case["external_boundary"]["owner"],"TASK-168");
-        assert!(case["external_boundary"]["needed"].as_str().unwrap().contains("bag"));
-        assert!(case["external_boundary"]["disposition"].as_str().unwrap().contains("TASK-91"));
+        assert_eq!(case["external_boundary"]["owner"], "TASK-168");
+        assert!(case["external_boundary"]["needed"]
+            .as_str()
+            .unwrap()
+            .contains("bag"));
+        assert!(case["external_boundary"]["disposition"]
+            .as_str()
+            .unwrap()
+            .contains("TASK-91"));
         assert!(case["source_bags"].is_object());
         assert_eq!(case["columns"].as_array().unwrap().len(), 2);
         assert!(case["tuple_histogram"].is_array());
@@ -454,15 +460,21 @@ fn versioned_inventory_covers_every_frozen_family_and_named_dialect() {
             .collect::<Vec<_>>();
         assert_eq!(ids, canonical);
         for cell in case["dialect_cells"].as_array().unwrap() {
-            assert_eq!(cell["owner"],"TASK-168");
-            assert_eq!(cell["classification"],"canonical_parser_equivalent");
-            assert!(cell["release_disposition"].as_str().unwrap().contains("TASK-91"));
-            assert!(cell["required_external_evidence"].as_str().unwrap().contains("bag"));
+            assert_eq!(cell["owner"], "TASK-168");
+            assert_eq!(cell["classification"], "canonical_parser_equivalent");
+            assert!(cell["release_disposition"]
+                .as_str()
+                .unwrap()
+                .contains("TASK-91"));
+            assert!(cell["required_external_evidence"]
+                .as_str()
+                .unwrap()
+                .contains("bag"));
         }
         for cell in case["adapter_cells"].as_array().unwrap() {
             assert!(["direct_sql", "compiled_dbt_catalog", "odcs"]
                 .contains(&cell["adapter"].as_str().unwrap()));
-            assert_eq!(cell["owner"],"TASK-168");
+            assert_eq!(cell["owner"], "TASK-168");
             assert!(!cell["required_fact"].as_str().unwrap().is_empty());
             assert!(!cell["evidence_test"].as_str().unwrap().is_empty());
         }
