@@ -219,28 +219,43 @@ fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
         PhysicalJointTerminalProof::Residual { .. } => "Residual",
     };
     assert_verdict(case, verdict, dialect);
-    let claim: Value = serde_json::from_str(
-        &to_physical_joint_terminal_json(bundle,&result)
-    ).unwrap();
+    let claim: Value =
+        serde_json::from_str(&to_physical_joint_terminal_json(bundle, &result)).unwrap();
     assert_eq!(claim["evidence"]["status"], verdict.to_ascii_lowercase());
     if verdict != "Exact" {
-        assert!(claim["evidence"].get("sources").is_none(),
-            "unproved tuple goal must not emit a fabricated exact physical population");
+        assert!(
+            claim["evidence"].get("sources").is_none(),
+            "unproved tuple goal must not emit a fabricated exact physical population"
+        );
     }
-
 
     // Independent complete source and terminal fixtures remain checked even
     // when an impossible/requested tuple cannot be emitted as an exact proof.
-    let original = physical_joint_terminal_bag_plan(bundle,&goals,&states);
+    let original = physical_joint_terminal_bag_plan(bundle, &goals, &states);
     let PhysicalJointTerminalProof::Exact(exact) = &original else {
-        panic!("{} / {dialect}: frozen source must have exact base bag: {original:?}",case["id"]);
+        panic!(
+            "{} / {dialect}: frozen source must have exact base bag: {original:?}",
+            case["id"]
+        );
     };
-    assert_eq!(normalized(&exact.grouped.terminal),expected(case,"grouped_terminal"));
-    assert_eq!(json!(exact.grouped.selected),case["physical_truth_partitions"]["join_true_pairs"]);
-    assert_eq!(json!(exact.grouped.rejected),case["physical_truth_partitions"]["join_not_true_pairs"]);
+    assert_eq!(
+        normalized(&exact.grouped.terminal),
+        expected(case, "grouped_terminal")
+    );
+    assert_eq!(
+        json!(exact.grouped.selected),
+        case["physical_truth_partitions"]["join_true_pairs"]
+    );
+    assert_eq!(
+        json!(exact.grouped.rejected),
+        case["physical_truth_partitions"]["join_not_true_pairs"]
+    );
     let second = match &exact.other {
         PhysicalJointOtherExact::Window(window) => {
-            assert_eq!(window.source_row_ids.len(),case["source_bags"]["l"].as_array().unwrap().len());
+            assert_eq!(
+                window.source_row_ids.len(),
+                case["source_bags"]["l"].as_array().unwrap().len()
+            );
             &window.terminal
         }
         PhysicalJointOtherExact::Set(set) => &set.terminal,
@@ -293,18 +308,36 @@ fn single_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
 #[test]
 fn versioned_inventory_covers_every_frozen_family_and_named_dialect() {
     let matrix = freeze();
-    assert_eq!(matrix["owner"],"TASK-168");
-    assert_eq!(matrix["version"],2);
-    assert_eq!(matrix["freeze_history"],json!(["docs/task-168-acceptance-freeze-v1.json"]));
-    let v1: Value = serde_json::from_str(include_str!("../docs/task-168-acceptance-freeze-v1.json")).unwrap();
+    assert_eq!(matrix["owner"], "TASK-168");
+    assert_eq!(matrix["version"], 2);
+    assert_eq!(
+        matrix["freeze_history"],
+        json!(["docs/task-168-acceptance-freeze-v1.json"])
+    );
+    let v1: Value =
+        serde_json::from_str(include_str!("../docs/task-168-acceptance-freeze-v1.json")).unwrap();
     assert!(v1["frozen_before_semantic_changes"].as_bool().unwrap());
     assert!(!matrix["frozen_before_semantic_changes"].as_bool().unwrap());
-    assert_eq!(matrix["fixtures"],json!(["85-C168-P","85-C168-N"]));
+    assert_eq!(matrix["fixtures"], json!(["85-C168-P", "85-C168-N"]));
     let cases = matrix["matrix"].as_array().unwrap();
-    assert_eq!(cases.len(),7);
-    assert_eq!(cases.iter().filter(|v|v["required"]==true).count(),6);
-    let families = cases.iter().map(|v|v["family"].as_str().unwrap()).collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(families,["set","window","order_limit_fanout","qualify_window_fanout","unproved_comparison_law"].into_iter().collect());
+    assert_eq!(cases.len(), 7);
+    assert_eq!(cases.iter().filter(|v| v["required"] == true).count(), 6);
+    let families = cases
+        .iter()
+        .map(|v| v["family"].as_str().unwrap())
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        families,
+        [
+            "set",
+            "window",
+            "order_limit_fanout",
+            "qualify_window_fanout",
+            "unproved_comparison_law"
+        ]
+        .into_iter()
+        .collect()
+    );
     for case in cases {
         assert!(case["id"].as_str().unwrap().starts_with("85-C168-"));
         assert!(case["source_bags"].is_object());
