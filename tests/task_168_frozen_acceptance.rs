@@ -353,15 +353,13 @@ fn canonical_tuple_proof_follows_frozen_seven_case_dialect_matrix() {
 
 fn native_json_rows(db: &Connection, sql: &str) -> Vec<String> {
     let mut statement = db.prepare(sql).unwrap();
-    let names = (0..statement.column_count())
-        .map(|n| statement.column_name(n).unwrap().to_owned())
-        .collect::<Vec<_>>();
     let mut rows = statement
         .query_map([], |row| {
             let mut map = serde_json::Map::new();
-            for (n, name) in names.iter().enumerate() {
-                let value: Option<i64> = row.get(n)?;
-                map.insert(name.to_owned(), value.map_or(Value::Null, |v| json!(v)));
+            for index in 0..row.as_ref().column_count() {
+                let name = row.as_ref().column_name(index)?.to_owned();
+                let value: Option<i64> = row.get(index)?;
+                map.insert(name, value.map_or(Value::Null, |v| json!(v)));
             }
             Ok(Value::Object(map).to_string())
         })
@@ -371,6 +369,7 @@ fn native_json_rows(db: &Connection, sql: &str) -> Vec<String> {
     rows.sort();
     rows
 }
+
 #[test]
 fn independent_duckdb_executes_each_frozen_physical_source_and_output_bag() {
     let matrix = freeze();
