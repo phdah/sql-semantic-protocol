@@ -491,28 +491,38 @@ fn task_168_unproved_text_collation_stays_residual_for_every_evidence_adapter() 
         SET,
     );
     let dbt_bundle = dbt(SET);
-    #[cfg(feature="odcs")]
-    let odcs_bundle = direct(&odcs_catalog(),SET);
-    #[cfg(feature="odcs")]
-    let bundles = vec![&direct_bundle,&dbt_bundle,&odcs_bundle];
-    #[cfg(not(feature="odcs"))]
-    let bundles = vec![&direct_bundle,&dbt_bundle];
+    #[cfg(feature = "odcs")]
+    let odcs_bundle = direct(&odcs_catalog(), SET);
+    #[cfg(feature = "odcs")]
+    let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+    #[cfg(not(feature = "odcs"))]
+    let bundles = vec![&direct_bundle, &dbt_bundle];
     for bundle in bundles {
-        let output = bundle.layers().iter()
-            .find(|layer|layer.input_id()=="model.demo.second").unwrap();
+        let output = bundle
+            .layers()
+            .iter()
+            .find(|layer| layer.input_id() == "model.demo.second")
+            .unwrap();
         let unproved = PhysicalTupleHistogramGoal::new(
             output.id(),
-            vec!["k".into(),"v".into()],
+            vec!["k".into(), "v".into()],
             vec![PhysicalTupleBucket::new(
-                vec![ConstraintValue::String("unsupported_collation".into()),ConstraintValue::Integer(10)],
-                1
+                vec![
+                    ConstraintValue::String("unsupported_collation".into()),
+                    ConstraintValue::Integer(10),
+                ],
+                1,
             )],
-        ).unwrap();
+        )
+        .unwrap();
         assert!(matches!(
             physical_joint_tuple_histogram_plan(
-                bundle,&goals(bundle,4,true),&snapshots(),&[unproved]
+                bundle,
+                &goals(bundle, 4, true),
+                &snapshots(),
+                &[unproved]
             ),
-            PhysicalJointTerminalProof::Residual{..}
+            PhysicalJointTerminalProof::Residual { .. }
         ));
     }
 }
