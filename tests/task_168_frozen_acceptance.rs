@@ -190,7 +190,7 @@ fn single_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
                 assert_eq!(page.rows.len(),3);
                 assert_eq!(page.rows.iter().filter(|r| r.survives).count(),2);
                 assert_eq!(page.terminal_contributors.len(),2);
-                assert!(page.terminal_domains["v"].to_string().contains("10"));
+                assert!(format!("{:?}",page.terminal_domains["v"]).contains("10"));
             }
             other => panic!("frozen LIMIT should be page, not {other:?}")
         }
