@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_distribution_plan,
     to_bundle_json, AnalysisBundle, ClosedWorldCoverage, ConfiguredSqlInput, ConstraintValue,
-    CountBounds, GroupBoundaryKind, OutcomeGoal, OutcomeWitness, OutputDistribution,
+    GroupBoundaryKind, OutcomeGoal, OutcomeWitness, OutputDistribution,
     OutputValueCount, RelationCatalog, RelationSchema, RowQuantifier, SchemaColumn, SqlInput,
     WitnessDirection, WitnessObligation,
 };
