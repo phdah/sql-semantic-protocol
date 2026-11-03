@@ -46,7 +46,7 @@ Next: [TASK-167](task-167%20-%20compose-join-filter-group-and-another-window-set
 
 ## TASK-166 implementation (2026-11-03)
 
-Frozen before semantic implementation: [v1 task-owned complete-source/terminal inventory](../../docs/task-166-acceptance-freeze.json). The full original AC #1..#5 remain unchecked pending executable evidence, independent review and final-head CI. TASK-85 remains open.
+Frozen before semantic implementation: [v1 task-owned complete-source/terminal inventory](../../docs/task-166-acceptance-freeze-v1.json). The full original AC #1..#5 remain unchecked pending executable evidence, independent review and final-head CI. TASK-85 remains open.
 
 ## Technical verification and formal signoff status (2026-11-03)
 
