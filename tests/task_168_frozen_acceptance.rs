@@ -219,6 +219,15 @@ fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
         PhysicalJointTerminalProof::Residual { .. } => "Residual",
     };
     assert_verdict(case, verdict, dialect);
+    let claim: Value = serde_json::from_str(
+        &to_physical_joint_terminal_json(bundle,&result)
+    ).unwrap();
+    assert_eq!(claim["evidence"]["status"], verdict.to_ascii_lowercase());
+    if verdict != "Exact" {
+        assert!(claim["evidence"].get("sources").is_none(),
+            "unproved tuple goal must not emit a fabricated exact physical population");
+    }
+
 
     // Independent complete source and terminal fixtures remain checked even
     // when an impossible/requested tuple cannot be emitted as an exact proof.
