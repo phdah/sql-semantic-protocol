@@ -221,7 +221,13 @@ fn goals(bundle: &AnalysisBundle, secondary_rows: u64, set: bool) -> Vec<Outcome
             Some(secondary_rows),
             None,
             if set {
-                vec![distribution("v", &[(10, 2), (20, 1), (30, 1)])]
+                if secondary_rows == 5 {
+                    vec![distribution("v", &[(10, 3), (20, 1), (30, 1)])]
+                } else {
+                    vec![distribution("v", &[(10, 2), (20, 1), (30, 1)])]
+                }
+            } else if secondary_rows == 4 {
+                vec![distribution("copies", &[(1, 2), (2, 2)])]
             } else {
                 vec![distribution("copies", &[(1, 1), (2, 2)])]
             },
