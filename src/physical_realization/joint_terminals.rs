@@ -100,10 +100,14 @@ fn matches_goal(
     let Ok(actual) = u64::try_from(rows.len()) else {
         return GoalMatch::Unproved;
     };
-    if actual != wanted || (goal.groups().is_some_and(|groups| !grouped || groups != actual)) {
+    if actual != wanted || goal.groups().is_some_and(|groups| !grouped || groups != actual) {
         return GoalMatch::Contradictory;
     }
-    let Some(layer) = bundle.layers().iter().find(|layer| layer.id() == goal.layer_id()) else {
+    let Some(layer) = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == goal.layer_id())
+    else {
         return GoalMatch::Unproved;
     };
     let Some(query) = query_for(bundle, layer) else {
@@ -258,7 +262,9 @@ pub fn physical_joint_terminal_bag_plan(
     match (group_match, other_match) {
         (GoalMatch::Contradictory, _) | (_, GoalMatch::Contradictory) => {
             PhysicalJointTerminalProof::Impossible {
-                reason: "requested terminal count or typed histogram contradicts the complete shared source bags".into(),
+                reason:
+                    "requested terminal count or typed histogram contradicts the complete shared source bags"
+                        .into(),
             }
         }
         (GoalMatch::Matching, GoalMatch::Matching) => {
@@ -270,6 +276,8 @@ pub fn physical_joint_terminal_bag_plan(
                 other,
             }))
         }
-        _ => residual("requested distribution uses a scalar with no certified exact comparison law"),
+        _ => residual(
+            "requested distribution uses a scalar with no certified exact comparison law",
+        ),
     }
 }
