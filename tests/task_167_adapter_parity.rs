@@ -254,11 +254,8 @@ struct JointSignature {
 }
 
 fn signature(bundle: &AnalysisBundle, requested_rows: u64, set: bool) -> Option<JointSignature> {
-    let result = physical_joint_terminal_bag_plan(
-        bundle,
-        &goals(bundle, requested_rows, set),
-        &snapshots(),
-    );
+    let result =
+        physical_joint_terminal_bag_plan(bundle, &goals(bundle, requested_rows, set), &snapshots());
     let PhysicalJointTerminalProof::Exact(exact) = result else {
         return None;
     };
@@ -281,7 +278,10 @@ fn signature(bundle: &AnalysisBundle, requested_rows: u64, set: bool) -> Option<
 #[test]
 fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
     for (other, set, rows) in [(WINDOW, false, 3), (SET, true, 4)] {
-        let sql_bundle = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap(), other);
+        let sql_bundle = direct(
+            &RelationCatalog::from_schemas(&source_schemas()).unwrap(),
+            other,
+        );
         let dbt = dbt(other);
         let expected = signature(&sql_bundle, rows, set).expect("direct SQL exact pair");
         assert_eq!(expected.sources, vec![LEFT.to_string(), RIGHT.to_string()]);
@@ -290,7 +290,9 @@ fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
         for bundle in [&sql_bundle, &dbt] {
             assert!(matches!(
                 physical_joint_terminal_bag_plan(
-                    bundle, &goals(bundle, rows + 1, set), &snapshots()
+                    bundle,
+                    &goals(bundle, rows + 1, set),
+                    &snapshots()
                 ),
                 PhysicalJointTerminalProof::Impossible { .. }
             ));
