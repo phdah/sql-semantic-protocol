@@ -36,8 +36,7 @@ fn bundle(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
 }
 
 fn snapshot() -> PhysicalWriteState {
-    let data: [(i64, Option<i64>, i64); 3] =
-        [(0, Some(1), 10), (1, Some(1), 20), (2, None, 30)];
+    let data: [(i64, Option<i64>, i64); 3] = [(0, Some(1), 10), (1, Some(1), 20), (2, None, 30)];
     PhysicalWriteState::new(
         "l",
         data.into_iter()
@@ -46,9 +45,7 @@ fn snapshot() -> PhysicalWriteState {
                     ("id".into(), LiteralValue::Number(id.to_string())),
                     (
                         "k".into(),
-                        k.map_or(LiteralValue::Null, |k| {
-                            LiteralValue::Number(k.to_string())
-                        }),
+                        k.map_or(LiteralValue::Null, |k| LiteralValue::Number(k.to_string())),
                     ),
                     ("v".into(), LiteralValue::Number(v.to_string())),
                 ]))
@@ -59,11 +56,7 @@ fn snapshot() -> PhysicalWriteState {
     .unwrap()
 }
 
-fn goal(
-    id: &str,
-    a: (Option<i64>, i64),
-    b: (Option<i64>, i64),
-) -> PhysicalTupleHistogramGoal {
+fn goal(id: &str, a: (Option<i64>, i64), b: (Option<i64>, i64)) -> PhysicalTupleHistogramGoal {
     let bucket = |(key, value): (Option<i64>, i64)| {
         PhysicalTupleBucket::new(
             vec![
@@ -73,12 +66,8 @@ fn goal(
             1,
         )
     };
-    PhysicalTupleHistogramGoal::new(
-        id,
-        vec!["k".into(), "v".into()],
-        vec![bucket(a), bucket(b)],
-    )
-    .unwrap()
+    PhysicalTupleHistogramGoal::new(id, vec!["k".into(), "v".into()], vec![bucket(a), bucket(b)])
+        .unwrap()
 }
 
 fn native(sql: &str) -> Vec<(Option<i64>, i64)> {
@@ -95,7 +84,10 @@ fn native(sql: &str) -> Vec<(Option<i64>, i64)> {
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
-    assert_eq!(source_rows, vec![(0, Some(1), 10), (1, Some(1), 20), (2, None, 30)]);
+    assert_eq!(
+        source_rows,
+        vec![(0, Some(1), 10), (1, Some(1), 20), (2, None, 30)]
+    );
     let mut terminal = db
         .prepare(sql)
         .unwrap()
