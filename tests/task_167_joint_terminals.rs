@@ -126,7 +126,10 @@ fn goals(
 }
 
 fn normalized(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
-    let mut output = rows.iter().map(|row| format!("{row:?}")).collect::<Vec<_>>();
+    let mut output = rows
+        .iter()
+        .map(|row| format!("{row:?}"))
+        .collect::<Vec<_>>();
     output.sort();
     output
 }
@@ -225,8 +228,7 @@ fn set_and_join_reconcile_multiplicities_from_the_same_two_sources() {
         "duckdb",
     );
     let assignment = sources(false);
-    let exact =
-        physical_joint_terminal_bag_plan(&bundle, &goals(&bundle, 3, 1, true), &assignment);
+    let exact = physical_joint_terminal_bag_plan(&bundle, &goals(&bundle, 3, 1, true), &assignment);
     let PhysicalJointTerminalProof::Exact(exact) = exact else {
         panic!("set branch and join must share complete bags: {exact:?}");
     };
@@ -300,7 +302,9 @@ fn independent_duckdb_oracle_attests_complete_source_and_both_terminal_bags() {
         .prepare("SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l ORDER BY id")
         .unwrap();
     let window_rows = window
-        .query_map([], |r| Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?)))
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+        })
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
