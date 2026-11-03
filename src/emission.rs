@@ -50,10 +50,12 @@ mod relations_domains;
 mod scalars;
 mod statements;
 mod typed_physical;
+mod tuple_goals;
 
 pub use document::{to_bundle_json, to_json};
 pub use joint_terminals::to_physical_joint_terminal_json;
 pub use typed_physical::to_physical_typed_population_json;
+pub use tuple_goals::to_physical_single_tuple_json;
 
 use aggregation_sets::*;
 use composition::*;
