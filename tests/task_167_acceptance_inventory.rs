@@ -688,7 +688,6 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
     }
 }
 
-
 #[test]
 fn verification_inventory_maps_every_frozen_case_to_each_canonical_dialect() {
     let frozen = freeze();
@@ -709,10 +708,17 @@ fn verification_inventory_maps_every_frozen_case_to_each_canonical_dialect() {
                         && cell["required"] == (case["requirement"] == "mandatory")
                 })
                 .count();
-            assert_eq!(matching, 1, "{}/{}: exact signed matrix cell", case["id"], dialect);
+            assert_eq!(
+                matching, 1,
+                "{}/{}: exact signed matrix cell",
+                case["id"], dialect
+            );
         }
     }
-    assert_eq!(verification["freeze"], "docs/task-167-acceptance-freeze.json");
+    assert_eq!(
+        verification["freeze"],
+        "docs/task-167-acceptance-freeze.json"
+    );
     assert_eq!(verification["owner"], "TASK-167");
     assert_eq!(verification["parent"], "TASK-85");
 }
