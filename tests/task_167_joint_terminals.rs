@@ -428,12 +428,7 @@ fn task_168_correlated_window_histograms_reject_same_marginals_wrong_pairs() {
         .unwrap();
         assert!(
             matches!(
-                physical_joint_tuple_histogram_plan(
-                    &bundle,
-                    &requested,
-                    &physical,
-                    &[wrong_pairs],
-                ),
+                physical_joint_tuple_histogram_plan(&bundle, &requested, &physical, &[wrong_pairs],),
                 PhysicalJointTerminalProof::Impossible { .. }
             ),
             "{dialect}: independent marginal agreement is not a tuple proof"
@@ -499,12 +494,7 @@ fn task_168_set_tuples_preserve_duplicate_multiplicity_and_fail_closed() {
     )
     .unwrap();
     assert!(matches!(
-        physical_joint_tuple_histogram_plan(
-            &bundle,
-            &goals,
-            &sources(false),
-            &[unknown_column],
-        ),
+        physical_joint_tuple_histogram_plan(&bundle, &goals, &sources(false), &[unknown_column],),
         PhysicalJointTerminalProof::Residual { .. }
     ));
 }
@@ -541,7 +531,10 @@ fn task_168_tuple_goal_constructor_rejects_ambiguous_or_incomplete_shapes() {
         PhysicalTupleHistogramGoal::new(
             "target",
             vec!["k".into(), "v".into()],
-            vec![PhysicalTupleBucket::new(vec![ConstraintValue::Integer(1)], 1)],
+            vec![PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1)],
+                1
+            )],
         )
         .unwrap_err(),
         PhysicalTupleGoalError::TupleArityMismatch
@@ -568,10 +561,7 @@ fn task_168_native_duckdb_confirms_complete_null_and_duplicate_tuple_bags() {
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
     actual_window.sort();
-    assert_eq!(
-        actual_window,
-        vec![(None, 1), (Some(1), 2), (Some(1), 2)],
-    );
+    assert_eq!(actual_window, vec![(None, 1), (Some(1), 2), (Some(1), 2)],);
     let mut actual_set = db
         .prepare(SET)
         .unwrap()
@@ -584,11 +574,6 @@ fn task_168_native_duckdb_confirms_complete_null_and_duplicate_tuple_bags() {
     actual_set.sort();
     assert_eq!(
         actual_set,
-        vec![
-            (None, 30),
-            (Some(1), 10),
-            (Some(1), 10),
-            (Some(1), 20),
-        ],
+        vec![(None, 30), (Some(1), 10), (Some(1), 10), (Some(1), 20),],
     );
 }
