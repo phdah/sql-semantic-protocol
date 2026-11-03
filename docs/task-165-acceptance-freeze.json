@@ -1,0 +1,562 @@
+{
+  "version": 3,
+  "owner": "TASK-165",
+  "parent": "TASK-85",
+  "created": "2026-11-02",
+  "frozen_before_semantic_changes": false,
+  "freeze_reason": "V1 late after first implementation (historical process deviation retained); v2 archived. V3 freezes an explicit group witness source [0,1] and terminal output before tightening the executable group-witness oracle. Independent disposition of original AC #1 timing remains necessary.",
+  "scope": "Standalone terminal rows, ordinary groups, single-column DISTINCT and complete signed INTEGER/NULL histogram. Duplicate rows mean occurrences beyond the first per SQL DISTINCT equivalence class (including NULL); null fraction is exact null_rows/total_rows with zero denominator undefined. No independent column conjunction, unproved expression inversion or grouped histogram inference.",
+  "fixture_ids": [
+    "85-C165-P",
+    "85-C165-N"
+  ],
+  "sql_semantic_seam": "analyze_configured_inputs_with_catalog -> set_outcome_goals -> EvaluatedOutcomeGoal + OutcomeWitness -> to_bundle_json",
+  "whole_bag_seam": "complete source tuple occurrence bag + independently executed full DuckDB terminal bag; no sql-tdg reparsing",
+  "schemas": {
+    "t": {
+      "k": {
+        "sql_type": "INTEGER",
+        "nullable": true,
+        "physical_identity": "t.k"
+      }
+    }
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "dialect_cells": 104,
+  "parser_boundary": "All 13 identities are mandatory for the portable SQL shapes; nonportable parser errors must be recorded as a named boundary rather than silently skipped.",
+  "source_adapters": {
+    "sql": {
+      "fact_source": "SQL expression and relation identity + supplied typed RelationCatalog",
+      "required": true,
+      "evidence": "tests/task_165_standalone_goals.rs"
+    },
+    "dbt": {
+      "fact_source": "manifest.json compiled model SQL and authoritative catalog.json warehouse column type",
+      "required": true,
+      "evidence": "tests/task_165_adapter_parity.rs:sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs"
+    },
+    "odcs": {
+      "fact_source": "ODCS v3.2 authoritative signed integer, nullable columns only; never SQL execution",
+      "required": true,
+      "evidence": "tests/task_165_adapter_parity.rs:sql_dbt_odcs_typed_evidence_equivalence_preserves_complete_goal_proofs (feature=odcs)"
+    }
+  },
+  "original_child_ac_map": {
+    "1": [
+      "85-C165-P-histogram",
+      "85-C165-N-total",
+      "85-C165-N-distinct",
+      "85-C165-P-group",
+      "85-C165-N-group",
+      "85-C165-P-zero",
+      "85-C165-N-overflow",
+      "85-C165-C-unknown"
+    ],
+    "2": [
+      "85-C165-P-histogram",
+      "85-C165-N-total",
+      "85-C165-N-distinct",
+      "85-C165-P-group",
+      "85-C165-N-group",
+      "85-C165-P-zero",
+      "85-C165-N-overflow"
+    ],
+    "3": [
+      "85-C165-P-histogram",
+      "85-C165-N-total",
+      "85-C165-N-distinct",
+      "85-C165-P-group",
+      "85-C165-N-group"
+    ],
+    "4": [
+      "85-C165-P-histogram",
+      "85-C165-N-total",
+      "85-C165-N-distinct",
+      "85-C165-P-group",
+      "85-C165-N-group",
+      "85-C165-P-zero",
+      "85-C165-N-overflow",
+      "85-C165-C-unknown"
+    ],
+    "5": [
+      "85-C165-P-histogram",
+      "85-C165-N-total",
+      "85-C165-N-distinct",
+      "85-C165-P-group",
+      "85-C165-N-group",
+      "85-C165-P-zero",
+      "85-C165-N-overflow"
+    ]
+  },
+  "original_parent_ac": [
+    1,
+    3,
+    5,
+    6
+  ],
+  "cases": [
+    {
+      "id": "85-C165-P-histogram",
+      "fixture": "85-C165-P",
+      "family": "rows_histogram_null_duplicates",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_bag": [
+        1,
+        1,
+        null
+      ],
+      "requested": {
+        "rows": 3,
+        "groups": null,
+        "histogram": [
+          {
+            "value": 1,
+            "rows": 2
+          },
+          {
+            "value": null,
+            "rows": 1
+          }
+        ]
+      },
+      "expected": {
+        "classification": "Exact",
+        "witness": "source_rows",
+        "source_rows": 3,
+        "terminal_rows": 3,
+        "non_null_distinct": 1,
+        "null_rows": 1,
+        "duplicate_rows": 1,
+        "null_fraction": {
+          "numerator": 1,
+          "denominator": 3
+        },
+        "typed_domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": true
+        }
+      },
+      "directions": {
+        "true_rows": [
+          0,
+          1,
+          2
+        ],
+        "not_true_rows": [],
+        "impossible": false
+      },
+      "oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-N-total",
+      "fixture": "85-C165-N",
+      "family": "wrong_whole_bag_count",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_bag": [
+        1,
+        1,
+        null
+      ],
+      "requested": {
+        "rows": 2,
+        "histogram": [
+          {
+            "value": 1,
+            "rows": 2
+          },
+          {
+            "value": null,
+            "rows": 1
+          }
+        ]
+      },
+      "expected": {
+        "classification": "Impossible",
+        "reason": "three complete histogram occurrences cannot be reconciled with two requested rows"
+      },
+      "directions": {
+        "true_rows": [],
+        "not_true_rows": [],
+        "impossible": true
+      },
+      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-N-distinct",
+      "fixture": "85-C165-N",
+      "family": "duplicate_distinct_impossibility",
+      "requirement": "mandatory",
+      "sql": "SELECT DISTINCT k FROM t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_bag": [
+        1,
+        null
+      ],
+      "requested": {
+        "rows": 2,
+        "histogram": [
+          {
+            "value": 1,
+            "rows": 2
+          }
+        ]
+      },
+      "expected": {
+        "classification": "Impossible",
+        "reason": "a one-column DISTINCT permits at most one occurrence per scalar including NULL"
+      },
+      "directions": {
+        "true_rows": [],
+        "not_true_rows": [],
+        "impossible": true
+      },
+      "oracle": "tests/task_165_standalone_goals.rs::mismatched_and_duplicate_distinct_goals_are_impossible",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "proof_note": "DISTINCT duplicate collapse is not a SQL predicate and cannot be labelled NOT TRUE; impossibility is a one-column multiplicity invariant",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-P-group",
+      "fixture": "85-C165-P",
+      "family": "ordinary_group_cardinality",
+      "requirement": "mandatory",
+      "sql": "SELECT k, COUNT(*) AS n FROM t GROUP BY k",
+      "source_bag": [
+        0,
+        1
+      ],
+      "terminal_bag": [
+        {
+          "k": 0,
+          "n": 1
+        },
+        {
+          "k": 1,
+          "n": 1
+        }
+      ],
+      "requested": {
+        "rows": 2,
+        "groups": 2
+      },
+      "expected": {
+        "classification": "Exact",
+        "witness": "groups",
+        "terminal_rows": 2,
+        "groups": 2,
+        "typed_domain": {
+          "k": {
+            "kind": "signed_integer",
+            "min": 0,
+            "max": 1,
+            "nullable": false
+          },
+          "n": {
+            "kind": "nonnegative_count",
+            "min": 1,
+            "max": 1,
+            "nullable": false
+          }
+        },
+        "source_rows": 2,
+        "witness_rows_per_group": 1,
+        "source_key_sequence": [
+          0,
+          1
+        ]
+      },
+      "directions": {
+        "true_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [],
+        "impossible": false
+      },
+      "oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-N-group",
+      "fixture": "85-C165-N",
+      "family": "incompatible_group_goal",
+      "requirement": "mandatory",
+      "sql": "SELECT k, COUNT(*) AS n FROM t GROUP BY k",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_bag": [
+        {
+          "k": 1,
+          "n": 2
+        },
+        {
+          "k": null,
+          "n": 1
+        }
+      ],
+      "requested": {
+        "rows": 2,
+        "groups": 3
+      },
+      "expected": {
+        "classification": "Impossible",
+        "reason": "ordinary grouped output has one row per surviving group"
+      },
+      "directions": {
+        "true_rows": [],
+        "not_true_rows": [],
+        "impossible": true
+      },
+      "oracle": "tests/task_165_standalone_goals.rs::grouped_row_goal_is_bound_to_surviving_groups_not_input_occurrences",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes; no independent engine assertions",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-P-zero",
+      "fixture": "85-C165-P",
+      "family": "empty_source_and_zero_counts",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t",
+      "source_bag": [],
+      "terminal_bag": [],
+      "requested": {
+        "rows": 0,
+        "histogram": []
+      },
+      "expected": {
+        "classification": "Exact",
+        "source_rows": 0,
+        "terminal_rows": 0,
+        "non_null_distinct": 0,
+        "null_rows": 0,
+        "duplicate_rows": 0,
+        "null_fraction": "undefined"
+      },
+      "directions": {
+        "true_rows": [],
+        "not_true_rows": [],
+        "impossible": false
+      },
+      "oracle": "tests/task_165_standalone_goals.rs::zero_rows_require_a_complete_empty_source_and_empty_terminal",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "DuckDB_full_source_and_terminal_snapshot",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-N-overflow",
+      "fixture": "85-C165-N",
+      "family": "checked_count_overflow",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t",
+      "source_bag": "unmaterializable_u64_MAX_plus_one",
+      "terminal_bag": "unmaterializable_u64_MAX_plus_one",
+      "requested": {
+        "rows": 2,
+        "histogram": [
+          {
+            "value": 1,
+            "rows": "u64::MAX"
+          },
+          {
+            "value": null,
+            "rows": 1
+          }
+        ]
+      },
+      "expected": {
+        "classification": "Impossible",
+        "statistics": "None_on_overflow"
+      },
+      "directions": {
+        "true_rows": [],
+        "not_true_rows": [],
+        "impossible": true
+      },
+      "oracle": "tests/task_165_standalone_goals.rs::zero_and_overflow_histograms_never_invent_undefined_fractions",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "SQL/dbt compiled SQL and ODCS equivalent source datatypes",
+      "source_terminal_oracle": "arithmetic_only_unmaterializable_overflow",
+      "engine_oracle_disposition": "A u64::MAX+1 source is unmaterializable; checked arithmetic is the complete required proof and no native execution claim is made",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    },
+    {
+      "id": "85-C165-C-unknown",
+      "fixture": "85-C165-N",
+      "family": "unattested_vendor_and_runtime_laws",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_bag": [
+        1,
+        1,
+        null
+      ],
+      "requested": {
+        "rows": 3,
+        "histogram": [
+          {
+            "value": 1,
+            "rows": 2
+          },
+          {
+            "value": null,
+            "rows": 1
+          }
+        ]
+      },
+      "expected": {
+        "classification": "Residual",
+        "condition": "only when source datatype, equality, collation or physical completeness is not attested; otherwise direct SQL exact",
+        "owner": "TASK-165",
+        "disposition": "do not promote parser acceptance into engine execution"
+      },
+      "oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
+      "parser_dialect_cells": 13,
+      "canonical_source_identity": "t.k",
+      "adapter_scope": "No authoritative schema; intentionally residual",
+      "source_terminal_oracle": "no_schema_residual_no_engine_execution",
+      "automated_evidence": {
+        "parser_cells_verified": 13,
+        "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+        "implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+        "independent_signoff": false
+      }
+    }
+  ],
+  "verification": {
+    "mandatory_count": 7,
+    "conditional_count": 1,
+    "frozen_cases_verified": true,
+    "final_head_fmt": false,
+    "strict_clippy": true,
+    "full_cargo_test": true,
+    "no_default_features": true,
+    "cargo_doc": true,
+    "dbt_core_e2e": true,
+    "active_schema_golden": true,
+    "pinned_sql_tdg": true,
+    "adapter_parity": true,
+    "independent_review": false,
+    "task_done": false,
+    "parent_task_85_done": false,
+    "evidence_matrix_runner": "tests/task_165_acceptance_inventory.rs",
+    "ci_run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+    "verified_implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+    "verified_ci_jobs": 9,
+    "verified_mandatory_dialect_cells": 91,
+    "verified_conditional_dialect_cells": 13,
+    "downstream_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446",
+    "downstream_boundary": "69 selected sql-tdg tests passed; 2 unrelated timestamp tests fail identically on PR base and head, deferred TASK-89/91",
+    "independent_review_disposition": "pending external reviewer; author-only PR comment is not independent approval",
+    "freeze_timing_disposition": "original v1 late and not retroactively satisfiable; explicit waiver or reimplementation under prospective freeze required for AC1"
+  },
+  "history": [
+    "docs/task-165-acceptance-freeze-v1.json",
+    "docs/task-165-acceptance-freeze-v2.json"
+  ],
+  "review_status": "technical_mandatory_cases_91_of_91_verified_CI_green_independent_signoff_pending",
+  "dialect_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+  "physical_oracle": "tests/task_165_acceptance_inventory.rs::every_frozen_dialect_cell_has_exact_proof_and_native_complete_bag_oracle",
+  "conditional_oracle": "tests/task_165_acceptance_inventory.rs::conditional_unattested_source_is_residual_not_an_invented_exact_population",
+  "typed_distribution_contract": "Each histogram is a complete requested typed multiset. INTEGER 1 and NULL are canonical buckets. SQL native comparison laws require independent datatype/collation evidence. Null fraction is an exact numerator/denominator, undefined at zero rows. The ordinary GROUP BY witness constructs exactly integer physical group keys 0..groups-1 with rows_per_group=1 and a full source bag.",
+  "oracle_limits": "DuckDB proves the executable INTEGER/NULL source and terminal snapshots, not 13 native vendor engines. Overflow cannot have an executable u64::MAX+1 row bag and is a checked arithmetic impossibility oracle only."
+}

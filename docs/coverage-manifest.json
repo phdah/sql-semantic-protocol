@@ -1,4 +1,75 @@
 {
+  "task_165_standalone_output_goal_acceptance": {
+    "owner": "TASK-165",
+    "parent": "TASK-85",
+    "status": "child_done_owner_waivers_accepted_technical_review_passed",
+    "freeze": "docs/task-165-acceptance-freeze.json",
+    "freeze_version": 3,
+    "fixture_ids": [
+      "85-C165-P",
+      "85-C165-N"
+    ],
+    "frozen_positive_negative_cases": 8,
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "parser_dialect_cells": 104,
+    "direct_public_api_oracle": "tests/task_165_standalone_goals.rs",
+    "original_parent_ac_mapping": [
+      1,
+      3,
+      5,
+      6
+    ],
+    "mandatory_cells_verified": true,
+    "dbt_odcs_parity_verified": true,
+    "final_ci_verified": true,
+    "verified_implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
+    "verification_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
+    "verified_mandatory_dialect_cells": 91,
+    "verified_conditional_dialect_cells": 13,
+    "independent_review": false,
+    "independent_reviewer_identity_waived_by_owner": true,
+    "owner_process_waiver_accepted": true,
+    "owner_signoff_date": "2026-11-03",
+    "review_evidence": "PR #182 Matt code-review #5744151756, technically passes Standards/Spec; review posted via author-connected account, not an independent GitHub approval",
+    "final_ci_head_before_bookkeeping": "98f87c940e8f6dc276970eb4a847493a06e3dace",
+    "final_ci_run_before_bookkeeping": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41531283571",
+    "child_signed_off": true,
+    "parent_signed_off": false,
+    "freeze_history": [
+      "docs/task-165-acceptance-freeze-v1.json",
+      "docs/task-165-acceptance-freeze-v2.json"
+    ],
+    "dialect_parser_cells_pinned": 104,
+    "frozen_inventory_oracle": "tests/task_165_acceptance_inventory.rs",
+    "adapter_parity_oracle": "tests/task_165_adapter_parity.rs",
+    "acceptance_audit": "docs/task-165-acceptance-audit.md",
+    "historical_freeze_timing_deviation": "Original v1 authored after first semantic changes; owner accepted explicit AC #1 process waiver on 2026-11-03, not retroactive compliance",
+    "native_oracle_scope": "Full DuckDB source/terminal bags for six executable mandatory cases; v3 reconstructs SourceRows and Groups exactly from emitted witnesses; overflow is checked arithmetic impossible",
+    "conditional_release_disposition": "Absent authoritative source schema stays Residual; no vendor/session equality laws asserted. Two baseline-confirmed unrelated downstream timestamp failures remain owned by TASK-89/91 and are not a TASK-165 regression.",
+    "pinned_consumer_qualification": {
+      "run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41522367446",
+      "consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+      "protocol_commit": "6e767dd62ef37a1ab5d30ddd515f7f423fe7503b",
+      "baseline_commit": "7af4c128d5bc5785982ccdcd6bc7fed603651938",
+      "selected_suite_counts": {
+        "lib": 34,
+        "type_coverage": 2,
+        "full_query": 26,
+        "exactness": 7
+      },
+      "conditional_existing_failures": [
+        "full_query/protocol_driven_timestamp_generation",
+        "exactness/timezone_dependent_timestamp_filters_require_session_assumption"
+      ],
+      "baseline_comparison": "Both timestamp tests fail with identical computed_expression residual on baseline and PR head",
+      "result": "selected_consumer_suites_green_full_suite_not_claimed",
+      "temporary_workflow_removed": true
+    },
+    "remaining_gates": [
+      "Recheck final CI on bookkeeping-only PR head, then squash merge PR #182; TASK-85 remains open"
+    ]
+  },
   "task_160_ordered_lifecycle_acceptance": {
     "owner": "TASK-160",
     "parent": "TASK-83",
