@@ -12,11 +12,11 @@ use crate::outcome_goals::OutcomeGoal;
 use crate::protocol::LiteralValue;
 
 use super::{
-    physical_finite_page_bag_plan, physical_finite_rank_bag_plan,
-    physical_finite_window_bag_plan, physical_joint_terminal_bag_plan, PhysicalFinitePageExact,
-    PhysicalFinitePageProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
-    PhysicalFiniteWindowExact, PhysicalFiniteWindowProof, PhysicalJointOtherExact,
-    PhysicalJointTerminalProof, PhysicalWriteState,
+    physical_finite_page_bag_plan, physical_finite_rank_bag_plan, physical_finite_window_bag_plan,
+    physical_joint_terminal_bag_plan, PhysicalFinitePageExact, PhysicalFinitePageProof,
+    PhysicalFiniteRankExact, PhysicalFiniteRankProof, PhysicalFiniteWindowExact,
+    PhysicalFiniteWindowProof, PhysicalJointOtherExact, PhysicalJointTerminalProof,
+    PhysicalWriteState,
 };
 
 /// An exact requested multiplicity for a typed, positional output tuple.
@@ -246,12 +246,16 @@ pub fn physical_joint_tuple_histogram_plan(
             TupleMatch::Matching => {}
             TupleMatch::Contradictory => {
                 return PhysicalJointTerminalProof::Impossible {
-                    reason: "requested correlated tuple histogram contradicts the complete terminal bag".into(),
+                    reason:
+                        "requested correlated tuple histogram contradicts the complete terminal bag"
+                            .into(),
                 };
             }
             TupleMatch::Unproved => {
                 return PhysicalJointTerminalProof::Residual {
-                    reason: "tuple histogram requires unsupported scalar laws or unattested columns".into(),
+                    reason:
+                        "tuple histogram requires unsupported scalar laws or unattested columns"
+                            .into(),
                 };
             }
         }
@@ -259,7 +263,6 @@ pub fn physical_joint_tuple_histogram_plan(
     proof
 }
 
- 
 /// An exact page, window or ranking proof, including original source row IDs.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PhysicalSingleTupleExact {
@@ -294,7 +297,10 @@ pub fn physical_single_tuple_histogram_plan(
     snapshots: &[PhysicalWriteState],
     goal: &PhysicalTupleHistogramGoal,
 ) -> PhysicalSingleTupleProof {
-    let layer = bundle.layers().iter().find(|layer| layer.id() == goal.layer_id());
+    let layer = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == goal.layer_id());
     let Some(layer) = layer else {
         return PhysicalSingleTupleProof::Residual {
             reason: "tuple request references an unknown output layer".into(),
@@ -306,7 +312,13 @@ pub fn physical_single_tuple_histogram_plan(
         };
     };
     if goal.columns.iter().any(|name| {
-        query.output().columns().iter().filter(|col| col.name() == name).count() != 1
+        query
+            .output()
+            .columns()
+            .iter()
+            .filter(|col| col.name() == name)
+            .count()
+            != 1
     }) {
         return PhysicalSingleTupleProof::Residual {
             reason: "tuple request lacks unique canonical projected column identities".into(),
@@ -327,7 +339,9 @@ pub fn physical_single_tuple_histogram_plan(
                 }
                 PhysicalFiniteWindowProof::Residual { .. } => {
                     match physical_finite_rank_bag_plan(bundle, goal.layer_id(), snapshots) {
-                        PhysicalFiniteRankProof::Exact(proof) => PhysicalSingleTupleExact::Rank(proof),
+                        PhysicalFiniteRankProof::Exact(proof) => {
+                            PhysicalSingleTupleExact::Rank(proof)
+                        }
                         PhysicalFiniteRankProof::Impossible { reason } => {
                             return PhysicalSingleTupleProof::Impossible { reason };
                         }
