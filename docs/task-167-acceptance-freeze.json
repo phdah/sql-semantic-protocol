@@ -126,106 +126,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "required",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
       },
       "signed_off": false,
       "observed_terminal_bags": {
@@ -339,7 +353,8 @@
         "r_row_ids": [
           "r#0"
         ]
-      }
+      },
+      "technically_verified": true
     },
     {
       "id": "85-C167-N-join-goal",
@@ -358,106 +373,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "required",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
       },
       "signed_off": false,
       "sql": [
@@ -622,7 +651,8 @@
           }
         }
       },
-      "secondary": "window"
+      "secondary": "window",
+      "technically_verified": true
     },
     {
       "id": "85-C167-N-window-goal",
@@ -640,106 +670,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "required",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
       },
       "signed_off": false,
       "sql": [
@@ -903,7 +947,8 @@
           }
         }
       },
-      "secondary": "window"
+      "secondary": "window",
+      "technically_verified": true
     },
     {
       "id": "85-C167-P-set",
@@ -981,106 +1026,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Exact",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "required",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
       },
       "signed_off": false,
       "observed_terminal_bags": {
@@ -1182,7 +1241,8 @@
         "r_row_ids": [
           "r#0"
         ]
-      }
+      },
+      "technically_verified": true
     },
     {
       "id": "85-C167-N-set-goal",
@@ -1200,106 +1260,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_two_query_layers_and_verified_exact_shape",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Impossible",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "required",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": true
       },
       "signed_off": false,
       "sql": [
@@ -1447,7 +1521,8 @@
           }
         }
       },
-      "secondary": "set"
+      "secondary": "set",
+      "technically_verified": true
     },
     {
       "id": "85-C167-N-unsupported",
@@ -1462,106 +1537,120 @@
         {
           "dialect": "generic",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mysql",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "postgresql",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "hive",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "sqlite",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "snowflake",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "redshift",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "mssql",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "clickhouse",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "bigquery",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "ansi",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "duckdb",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         },
         {
           "dialect": "databricks",
           "expected_parser": "canonical_opaque_or_parser_residual",
-          "verified": false,
+          "verified": true,
           "expected_verdict": "Residual",
-          "native_vendor": "not_executed"
+          "native_vendor": "not_executed",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
         }
       ],
       "adapters": {
-        "sql": "required",
-        "dbt": "required equivalent facts",
-        "odcs": "required equivalent schema",
+        "sql": "verified_executable_canonical",
+        "dbt": "verified_equivalent_catalog_facts_for_both_terminal_families",
+        "odcs": "verified_equivalent_catalog_facts_for_both_terminal_families",
         "native_other": "conditional not executed"
       },
       "native_duckdb": {
         "status": "unavailable_opaque_sql_function",
         "engine": "DuckDB",
         "observed_not_requested": true,
-        "run": "tests/task_167_acceptance_inventory.rs"
+        "run": "tests/task_167_acceptance_inventory.rs",
+        "verified": false
       },
       "signed_off": false,
       "sql": [
@@ -1682,15 +1771,16 @@
           "rows": 3,
           "histogram": {}
         }
-      }
+      },
+      "technically_verified": true
     }
   ],
   "signoff": {
-    "ac_1": "v1 archived; v2 corrects missing evidence and timing exception; owner decision pending",
-    "ac_2": "technical verification pending",
-    "ac_3": "technical verification pending",
-    "ac_4": "technical verification pending",
-    "ac_5": "final CI and independent reviewer pending",
+    "ac_1": "78 technical cells verified; original prospective v1 missing evidence, owner disposition still required",
+    "ac_2": "technical_pass_on_CI_41699203562",
+    "ac_3": "technical_pass_on_CI_41699203562",
+    "ac_4": "technical_pass_on_CI_41699203562",
+    "ac_5": "9_of_9_implementation_CI_and_pinned_consumer_passed; final_tracking_head_CI_and_independent_reviewer_pending",
     "child_done": false,
     "parent_done": false
   },
@@ -1699,5 +1789,7 @@
     "docs/task-167-acceptance-freeze-v1.json"
   ],
   "correction_record": "V1 was prospective but contained incomplete physical source rows for positive window, unverified per-cell assertions, and self-inconsistent impossible request histograms. V2 is an implementation-stage verified-target correction. V1 remains unchanged; original temporal/literal freeze AC is subject to independent owner disposition.",
-  "native_execution_boundary": "Only DuckDB verified by task-owned differential tests. No claim about 12 other native dialect engines."
+  "native_execution_boundary": "Only DuckDB verified by task-owned differential tests. No claim about 12 other native dialect engines.",
+  "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
+  "verified_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
 }
