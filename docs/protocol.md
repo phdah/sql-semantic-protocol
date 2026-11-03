@@ -1993,10 +1993,10 @@ The optional `to_physical_joint_terminal_json(bundle, proof)` emitter returns a
 `kind: "physical_joint_terminal_evidence"`, and `evidence`. When
 `evidence.status == "exact"`, the sidecar includes `sources` (every
 schema-attested physical occurrence and its signed-integer lexical/null
-scalars), `grouped` (complete TRUE and NOT TRUE pair identities, group
-contributors, full terminal bag and canonical finite domains), and
-`secondary` (full window or set-tree bag, membership information, and
-exact domains). Set-tree domains retain positional tuple identities,
+scalars), `grouped` (canonical `layer_id`, complete TRUE and NOT TRUE pair identities,
+group contributors, full terminal bag and canonical finite domains), and
+`secondary` (canonical `layer_id` and a `proof` object containing the full
+window or set-tree bag, membership information, and exact domains). Set-tree domains retain positional tuple identities,
 integer bounds with explicit inclusivity and SQL NULL membership. The
 serialization is deterministic and does **not** reconstruct SQL or reparse
 consumer output. `impossible` and `residual` emit reasons only, never
