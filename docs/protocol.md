@@ -2010,3 +2010,11 @@ absent source identities and uncertain source constraints remain
 `residual`. Only DuckDB native differential tests are claimed; parsing a
 dialect's SQL does not certify native vendor behavior. The original
 TASK-85 parent goals and release gates remain independent.
+
+## Optional correlated tuple witness sidecar (TASK-168)
+
+`PhysicalTupleHistogramGoal` requests a **complete positional, typed frequency bag** for two or more projected output columns. `physical_joint_tuple_histogram_plan(bundle, goals, snapshots, tuple_goals)` verifies JOIN/GROUP and WINDOW/SET terminals against one shared source assignment. `physical_single_tuple_histogram_plan(bundle, snapshots, tuple_goal)` reuses the existing canonical ORDER/LIMIT, window/QUALIFY and ranking full-bag interpreters.
+
+These are **snapshot-relative proofs**, not independent constructions of input populations. Exact INTEGER/SQL NULL tuples use canonical equality; unsupported comparison, ambiguous source/output identity, and nonportable session/order laws remain `Residual`. A contradictory full-bag requested tuple frequency is `Impossible` only after complete physical sources and query execution are independently attested. The strongest exact terminal value domains (finite values, NULL and inclusive numeric bounds), physical row occurrence IDs, TRUE/NOT TRUE membership and whole terminal bags must be preserved.
+
+`to_physical_single_tuple_json(bundle, snapshots, tuple_goal)` is an **opt-in deterministic evidence sidecar**, not a replacement for the active `schema/protocol.schema.json` root. It recalculates the physical proof and emits `protocol_version`, `kind: physical_single_tuple_evidence`, the typed requested tuple buckets and a status. Only `exact` contains physical source rows, selected/rejected IDs, entire terminal bags and exact domains. `impossible` and `residual` contain a reason without fabricated physical rows. No parser AST or sql-tdg SQL reconstruction appears in the contract. Formal release approval remains under TASK-91.
