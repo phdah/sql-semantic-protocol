@@ -66,7 +66,9 @@ fn catalog(typed: bool) -> RelationCatalog {
 }
 
 fn analyze(case: &Value, dialect: &str) -> AnalysisBundle {
-    let sqls = case["sql_statements"].as_array().expect("two SQL statements");
+    let sqls = case["sql_statements"]
+        .as_array()
+        .expect("two SQL statements");
     assert_eq!(sqls.len(), 2);
     let parser = dialect_from_name(dialect).expect("advertised parser");
     let inputs = sqls
@@ -123,11 +125,12 @@ fn check_feasible(case: &Value, goals: &[OutcomeGoal; 2], result: &WitnessDirect
     for obligation in proof.obligations() {
         match obligation {
             WitnessObligation::OperatorPopulation {
-                witness: OutcomeWitness::SourceRows {
-                    relation,
-                    rows,
-                    columns,
-                },
+                witness:
+                    OutcomeWitness::SourceRows {
+                        relation,
+                        rows,
+                        columns,
+                    },
             } => populations.push((relation, rows, columns)),
             WitnessObligation::ClosedWorld { boundary, coverage }
                 if boundary.kind() == GroupBoundaryKind::Physical
@@ -151,10 +154,7 @@ fn check_feasible(case: &Value, goals: &[OutcomeGoal; 2], result: &WitnessDirect
             WitnessObligation::OutputRows { layer_id, bounds } => {
                 assert!(
                     outputs
-                        .insert(
-                            layer_id.clone(),
-                            (bounds.minimum(), bounds.maximum())
-                        )
+                        .insert(layer_id.clone(), (bounds.minimum(), bounds.maximum()))
                         .is_none(),
                     "no duplicate terminal obligations"
                 );
@@ -162,7 +162,11 @@ fn check_feasible(case: &Value, goals: &[OutcomeGoal; 2], result: &WitnessDirect
             _ => {}
         }
     }
-    assert_eq!(populations.len(), 1, "single physical-source occurrence bag");
+    assert_eq!(
+        populations.len(),
+        1,
+        "single physical-source occurrence bag"
+    );
     assert_eq!(closed, 1);
     assert_eq!(physical_rows, 1);
     assert_eq!(populations[0].0.as_str(), "t");
@@ -190,7 +194,9 @@ fn observed_bag(db: &Connection, sql: &str) -> Vec<Value> {
             Ok(json!(value))
         })
         .expect("execute whole terminal");
-    let values = rows.map(|row| row.expect("full result row")).collect::<Vec<_>>();
+    let values = rows
+        .map(|row| row.expect("full result row"))
+        .collect::<Vec<_>>();
     sorted_bag(&values)
 }
 
@@ -205,10 +211,8 @@ fn check_native_bags(case: &Value) {
         let scalar = value
             .as_i64()
             .map_or_else(|| "NULL".to_string(), |n| n.to_string());
-        db.execute_batch(&format!(
-            "INSERT INTO t VALUES ({ordinal}, {scalar});"
-        ))
-        .unwrap();
+        db.execute_batch(&format!("INSERT INTO t VALUES ({ordinal}, {scalar});"))
+            .unwrap();
     }
     assert_eq!(
         observed_bag(&db, "SELECT k FROM t"),
@@ -219,14 +223,22 @@ fn check_native_bags(case: &Value) {
     let statements = case["sql_statements"].as_array().unwrap();
     assert_eq!(
         observed_bag(&db, statements[0].as_str().unwrap()),
-        sorted_bag(case["native_snapshots"]["terminal_a_bag"].as_array().unwrap()),
+        sorted_bag(
+            case["native_snapshots"]["terminal_a_bag"]
+                .as_array()
+                .unwrap()
+        ),
         "{}: A terminal bag mismatch",
         case["id"]
     );
     if case["native_snapshots"]["execute_terminal_b"] == true {
         assert_eq!(
             observed_bag(&db, statements[1].as_str().unwrap()),
-            sorted_bag(case["native_snapshots"]["terminal_b_bag"].as_array().unwrap()),
+            sorted_bag(
+                case["native_snapshots"]["terminal_b_bag"]
+                    .as_array()
+                    .unwrap()
+            ),
             "{}: B terminal bag mismatch",
             case["id"]
         );
@@ -265,8 +277,16 @@ fn check_native_bags(case: &Value) {
             .iter()
             .map(|item| item.as_i64().unwrap())
             .collect::<Vec<_>>();
-        assert_eq!(selected, expected_selected, "{}: SQL TRUE source indices", case["id"]);
-        assert_eq!(rejected, expected_rejected, "{}: SQL NOT TRUE source indices", case["id"]);
+        assert_eq!(
+            selected, expected_selected,
+            "{}: SQL TRUE source indices",
+            case["id"]
+        );
+        assert_eq!(
+            rejected, expected_rejected,
+            "{}: SQL NOT TRUE source indices",
+            case["id"]
+        );
         assert_eq!(selected.len() + rejected.len(), source.len());
     }
 }
@@ -288,11 +308,17 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
         "85-C166-C-opaque",
         "85-C166-C-missing-schema",
     ]);
-    let ids = cases.iter().map(|case| case["id"].as_str().unwrap()).collect::<BTreeSet<_>>();
+    let ids = cases
+        .iter()
+        .map(|case| case["id"].as_str().unwrap())
+        .collect::<BTreeSet<_>>();
     assert_eq!(ids, expected_ids);
     for number in ["1", "2", "3", "4", "5"] {
         for id in fixture["original_child_ac_map"][number].as_array().unwrap() {
-            assert!(ids.contains(id.as_str().unwrap()), "unmapped child AC {number}");
+            assert!(
+                ids.contains(id.as_str().unwrap()),
+                "unmapped child AC {number}"
+            );
         }
     }
     let mut checked = 0;
@@ -306,15 +332,22 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
         );
         assert_eq!(case["dialect_parser_cells"].as_array().unwrap().len(), 13);
         assert_eq!(case["native_snapshots"]["source_bag"], case["source_bag"]);
-        assert_eq!(case["native_snapshots"]["terminal_a_bag"], case["terminal_a"]);
+        assert_eq!(
+            case["native_snapshots"]["terminal_a_bag"],
+            case["terminal_a"]
+        );
         for dialect in dialects {
             let name = dialect.as_str().unwrap();
             assert!(
-                case["dialect_parser_cells"].as_array().unwrap().iter().any(|cell| {
-                    cell["dialect"] == name
-                        && cell["verdict"] == expected
-                        && cell["expected"] == "canonical_two_query_layers"
-                }),
+                case["dialect_parser_cells"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|cell| {
+                        cell["dialect"] == name
+                            && cell["verdict"] == expected
+                            && cell["expected"] == "canonical_two_query_layers"
+                    }),
                 "{id}/{name}: no frozen parser-classification cell"
             );
             let mut bundle = analyze(case, name);
@@ -335,10 +368,14 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
             assert_eq!(emitted["outcome_goals"].as_array().unwrap().len(), 2);
             for requested in &targets {
                 assert!(
-                    emitted["outcome_goals"].as_array().unwrap().iter().any(|goal| {
-                        goal["requested"]["layer_id"] == requested.layer_id()
-                            && goal["requested"]["rows"] == requested.rows().unwrap()
-                    }),
+                    emitted["outcome_goals"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|goal| {
+                            goal["requested"]["layer_id"] == requested.layer_id()
+                                && goal["requested"]["rows"] == requested.rows().unwrap()
+                        }),
                     "{id}/{name}: canonical requested goal must survive emission"
                 );
             }
@@ -357,5 +394,8 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
             check_native_bags(case);
         }
     }
-    assert_eq!(checked, 78, "all frozen parser-dialect classifications checked");
+    assert_eq!(
+        checked, 78,
+        "all frozen parser-dialect classifications checked"
+    );
 }
