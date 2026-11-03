@@ -1906,7 +1906,7 @@
       },
       "native_terminal_domains": {
         "k": {
-          "null_allowed": true,
+          "null_allowed": false,
           "values": [
             1
           ],
@@ -1920,16 +1920,39 @@
           "null_allowed": false,
           "values": [
             10,
-            30
+            20
           ],
           "lower": 10,
-          "upper": 30,
+          "upper": 20,
           "lower_inclusive": true,
           "upper_inclusive": true,
           "exact": true
         }
       },
-      "grouped_terminal_domains": null,
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
       "typed_goal_domains": {
         "k": {
           "null_allowed": false,
@@ -1957,11 +1980,49 @@
           "v": 10
         },
         {
-          "k": null,
-          "v": 30
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
         }
       ],
-      "physical_truth_partitions": {}
+      "physical_truth_partitions": {
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ]
     }
   ],
   "prospective_v1_frozen_before_semantic_changes": true,
