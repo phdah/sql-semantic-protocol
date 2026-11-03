@@ -24,12 +24,13 @@
     "mandatory_cells_verified": true,
     "dbt_odcs_parity_verified": true,
     "native_duckdb_verified": true,
-    "final_ci_verified": false,
+    "final_ci_verified": true,
+    "final_verified_code_head": "b694e8b1d6977861b388ce7b1483a1257cd24cda",
+    "final_verified_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41713268383",
     "independent_review": false,
     "child_signed_off": false,
     "parent_signed_off": false,
     "remaining_gates": [
-      "confirm final tracking-head nine-job CI after verification/audit bookkeeping",
       "independent TASK-167 Standards/Spec reviewer identity and per-case owner signoff, or explicit TASK-167-specific waiver",
       "owner disposition on historically incomplete prospective v1 acceptance matrix; v2 correction archived and verified"
     ],
