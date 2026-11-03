@@ -1,10 +1,10 @@
 ---
 id: TASK-166
 title: Compose shared-source positive and impossible terminal goals
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-03'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,7 @@ type: feature
 ## Next
 
 Next: [TASK-167](task-167%20-%20compose-join-filter-group-and-another-window-set-terminal.md), only after completion and merge.
+
+## TASK-166 implementation (2026-11-03)
+
+Frozen before semantic implementation: [v1 task-owned complete-source/terminal inventory](../../docs/task-166-acceptance-freeze.json). The full original AC #1..#5 remain unchecked pending executable evidence, independent review and final-head CI. TASK-85 remains open.
