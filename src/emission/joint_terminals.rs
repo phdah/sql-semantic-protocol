@@ -100,7 +100,7 @@ pub fn to_physical_joint_terminal_json(
                         "branch_row_ids": tuple.branch_row_ids,
                         "output_count": tuple.output_count
                     })).collect::<Vec<_>>()
-                })
+                }),
             };
             json!({
                 "status": "exact",
