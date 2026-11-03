@@ -113,12 +113,18 @@ fn matches_goal(
     let Ok(actual) = u64::try_from(rows.len()) else {
         return GoalMatch::Unproved;
     };
-    if actual != wanted
-        || goal
-            .groups()
-            .is_some_and(|groups| !grouped || groups != actual)
-    {
+    if actual != wanted {
         return GoalMatch::Contradictory;
+    }
+    if let Some(groups) = goal.groups() {
+        if !grouped {
+            // The secondary window/set interpreter has no certified GROUP
+            // count, so this request cannot refute the physical assignment.
+            return GoalMatch::Unproved;
+        }
+        if groups != actual {
+            return GoalMatch::Contradictory;
+        }
     }
     let Some(layer) = bundle
         .layers()
