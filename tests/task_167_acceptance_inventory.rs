@@ -8,7 +8,8 @@ use duckdb::Connection;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_terminal_bag_plan,
-    to_bundle_json, AnalysisBundle, ConfiguredSqlInput, ConstraintValue, LiteralValue,
+    to_bundle_json, to_physical_joint_terminal_json, AnalysisBundle, ConfiguredSqlInput,
+    ConstraintValue, LiteralValue,
     OutcomeGoal, OutputDistribution, OutputValueCount, PhysicalJointOtherExact,
     PhysicalJointTerminalProof, PhysicalWriteRow, PhysicalWriteState, ProtocolStatement,
     RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput, ValueDomain,
@@ -497,7 +498,42 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                 "{id}/{dialect}: not merely parser acceptance"
             );
             let goals = goals(case, &bundle);
-            assert_proof(case, physical_joint_terminal_bag_plan(&bundle, &goals, &snapshots(case)));
+            let proof = physical_joint_terminal_bag_plan(&bundle, &goals, &snapshots(case));
+            assert_proof(case, proof.clone());
+            let sidecar = to_physical_joint_terminal_json(&bundle, &proof);
+            let typed: Value = serde_json::from_str(&sidecar).unwrap();
+            assert_eq!(typed["kind"], "physical_joint_terminal_evidence");
+            assert_eq!(typed["protocol_version"], env!("CARGO_PKG_VERSION"));
+            assert_eq!(
+                typed["evidence"]["status"],
+                case["expected"].as_str().unwrap().to_ascii_lowercase()
+            );
+            match &proof {
+                PhysicalJointTerminalProof::Exact(_) => {
+                    assert_eq!(typed["evidence"]["sources"].as_array().unwrap().len(), 2);
+                    assert_eq!(
+                        typed["evidence"]["grouped"]["selected"].as_array().unwrap().len(),
+                        case["join_pair_membership"]["true"].as_array().unwrap().len()
+                    );
+                    assert_eq!(
+                        typed["evidence"]["secondary"]["terminal"].as_array().unwrap().len(),
+                        case["observed_terminal_bags"]["other"].as_array().unwrap().len()
+                    );
+                    assert!(typed["evidence"]["grouped"]["domains"].is_object());
+                    assert!(typed["evidence"]["secondary"]["domains"].is_object()
+                        || typed["evidence"]["secondary"]["domains"].is_array());
+                    assert_eq!(
+                        sidecar,
+                        to_physical_joint_terminal_json(&bundle, &proof),
+                        "{id}/{dialect}: byte-identical canonical emission"
+                    );
+                }
+                _ => {
+                    assert!(typed["evidence"]["grouped"].is_null());
+                    assert!(typed["evidence"]["sources"].is_null());
+                    assert!(typed["evidence"]["reason"].is_string());
+                }
+            }
             let mut emitted_bundle = bundle.clone();
             emitted_bundle.set_outcome_goals(&goals).unwrap();
             let emitted: Value = serde_json::from_str(&to_bundle_json(&emitted_bundle)).unwrap();
