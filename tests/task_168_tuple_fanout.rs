@@ -9,11 +9,10 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_single_tuple_histogram_plan, to_physical_single_tuple_json,
-    ConfiguredSqlInput, ConstraintValue, LiteralValue,
-    PhysicalSingleTupleExact, PhysicalSingleTupleProof, PhysicalTupleBucket,
-    PhysicalTupleHistogramGoal, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    physical_single_tuple_histogram_plan, to_physical_single_tuple_json, ConfiguredSqlInput,
+    ConstraintValue, LiteralValue, PhysicalSingleTupleExact, PhysicalSingleTupleProof,
+    PhysicalTupleBucket, PhysicalTupleHistogramGoal, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
 
@@ -113,30 +112,38 @@ fn limit_uses_complete_source_and_exact_rejected_rows() {
     assert_eq!(page.rows.len(), 3);
     assert_eq!(page.rows.iter().filter(|row| !row.survives).count(), 1);
     assert_eq!(native(LIMIT), vec![(Some(1), 10), (Some(1), 20)]);
-    let witness: serde_json::Value = serde_json::from_str(
-        &to_physical_single_tuple_json(&b, &[snapshot()], &correct)
-    ).unwrap();
+    let witness: serde_json::Value =
+        serde_json::from_str(&to_physical_single_tuple_json(&b, &[snapshot()], &correct)).unwrap();
     assert_eq!(witness["evidence"]["status"], "exact");
     assert_eq!(witness["evidence"]["operator"], "page");
-    assert_eq!(witness["evidence"]["selected_row_ids"], serde_json::json!(["l#0","l#1"]));
-    assert_eq!(witness["evidence"]["not_true_row_ids"], serde_json::json!(["l#2"]));
-    assert_eq!(witness["evidence"]["source"]["rows"].as_array().unwrap().len(),3);
-    assert_eq!(witness["evidence"]["terminal"].as_array().unwrap().len(),2);
-    assert_eq!(witness["requested"]["buckets"].as_array().unwrap().len(),2);
+    assert_eq!(
+        witness["evidence"]["selected_row_ids"],
+        serde_json::json!(["l#0", "l#1"])
+    );
+    assert_eq!(
+        witness["evidence"]["not_true_row_ids"],
+        serde_json::json!(["l#2"])
+    );
+    assert_eq!(
+        witness["evidence"]["source"]["rows"]
+            .as_array()
+            .unwrap()
+            .len(),
+        3
+    );
+    assert_eq!(witness["evidence"]["terminal"].as_array().unwrap().len(), 2);
+    assert_eq!(witness["requested"]["buckets"].as_array().unwrap().len(), 2);
     assert!(witness["evidence"]["domains"]["v"].is_object());
-
 
     let wrong = goal(target, (Some(1), 10), (Some(1), 30));
     assert!(matches!(
         physical_single_tuple_histogram_plan(&b, &[snapshot()], &wrong),
         PhysicalSingleTupleProof::Impossible { .. }
     ));
-    let rejected: serde_json::Value = serde_json::from_str(
-        &to_physical_single_tuple_json(&b, &[snapshot()], &wrong)
-    ).unwrap();
-    assert_eq!(rejected["evidence"]["status"],"impossible");
+    let rejected: serde_json::Value =
+        serde_json::from_str(&to_physical_single_tuple_json(&b, &[snapshot()], &wrong)).unwrap();
+    assert_eq!(rejected["evidence"]["status"], "impossible");
     assert!(rejected["evidence"].get("terminal").is_none());
-
 }
 
 #[test]
@@ -155,14 +162,24 @@ fn qualify_ranking_certifies_selected_and_not_true_physical_rows() {
     // bag with an independent SQL projection of the same QUALIFY semantics.
     let sql = "SELECT k, v FROM l QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY v DESC NULLS LAST, id ASC NULLS LAST) = 1";
     assert_eq!(native(sql), vec![(None, 30), (Some(1), 20)]);
-    let evidence: serde_json::Value = serde_json::from_str(
-        &to_physical_single_tuple_json(&b, &[snapshot()], &correct)
-    ).unwrap();
-    assert_eq!(evidence["evidence"]["status"],"exact");
-    assert_eq!(evidence["evidence"]["operator"],"window");
-    assert_eq!(evidence["evidence"]["selected_row_ids"].as_array().unwrap().len(),2);
-    assert_eq!(evidence["evidence"]["not_true_row_ids"].as_array().unwrap().len(),1);
-
+    let evidence: serde_json::Value =
+        serde_json::from_str(&to_physical_single_tuple_json(&b, &[snapshot()], &correct)).unwrap();
+    assert_eq!(evidence["evidence"]["status"], "exact");
+    assert_eq!(evidence["evidence"]["operator"], "window");
+    assert_eq!(
+        evidence["evidence"]["selected_row_ids"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    assert_eq!(
+        evidence["evidence"]["not_true_row_ids"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
 
     let wrong = goal(target, (Some(1), 30), (None, 20));
     assert!(matches!(
