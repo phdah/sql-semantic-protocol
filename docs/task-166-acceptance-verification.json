@@ -1,0 +1,964 @@
+{
+  "schema_version": 1,
+  "task": "TASK-166",
+  "parent": "TASK-85",
+  "date": "2026-11-03",
+  "frozen_contract": "docs/task-166-acceptance-freeze.json",
+  "frozen_contract_version": 2,
+  "archived_original": "docs/task-166-acceptance-freeze-v1.json",
+  "correction_disposition": "Historical v1 matrix inversion and requested-vs-observed bag conflation remain recorded. V2 corrects expected evidence and is verified by the independent native oracle runner, but no owner waiver for historical freeze errors is presumed.",
+  "test_verification": {
+    "run_url": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619",
+    "candidate_commit": "11af45a1db08cdb457643e6da48453243e98b978",
+    "rust_tests_default": "success",
+    "rust_tests_no_default": "success",
+    "strict_lint_default": "success",
+    "strict_lint_no_default": "success",
+    "docs": "success",
+    "dbt_e2e": "success",
+    "fmt": "failed_then_corrected_in_a6610094799cb4dd87856d503899b865c9a22a6d",
+    "final_head_all_jobs": "pending"
+  },
+  "conditional_boundaries": [
+    {
+      "owner": "TASK-166",
+      "id": "85-C166-C-opaque",
+      "status": "Residual",
+      "reason": "Unproved function semantics; no native target B or vendor claim",
+      "release_disposition": "must remain Residual until verified engine-specific contract exists"
+    },
+    {
+      "owner": "TASK-166",
+      "id": "85-C166-C-missing-schema",
+      "status": "Residual",
+      "reason": "No authoritative signed integer schema metadata",
+      "release_disposition": "must remain Residual until catalog/dbt/ODCS type evidence exists"
+    }
+  ],
+  "adapter_parity": {
+    "direct_sql": "verified",
+    "dbt_manifest_and_catalog": "verified",
+    "odcs_metadata_with_default_features": "verified",
+    "emitted_schema_and_goal_claims": "verified",
+    "native_vendor_engines": "not_executed",
+    "evidence": "tests/task_166_adapter_parity.rs"
+  },
+  "consumer": {
+    "repository": "phdah/sql-tdg",
+    "commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+    "candidate_test_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167",
+    "status": "success",
+    "excluded_known_baseline_timestamp_cases": [
+      "full_query/protocol_driven_timestamp_generation",
+      "exactness/timezone_dependent_timestamp_filters_require_session_assumption"
+    ]
+  },
+  "verification_summary": {
+    "cases": 6,
+    "mandatory": 4,
+    "conditional": 2,
+    "checked_parser_cells": 78,
+    "mandatory_parser_cells": 52,
+    "conditional_parser_cells": 26,
+    "independent_duckdb_source_and_a_bags": 6,
+    "independent_duckdb_b_bags": 5
+  },
+  "cases": [
+    {
+      "case_id": "85-C166-P-shared",
+      "requirement": "mandatory",
+      "classification": "Exact",
+      "positive_source_ordinals": [
+        0,
+        1
+      ],
+      "not_true_source_ordinals": [
+        2
+      ],
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b_bag": [
+        1,
+        1
+      ],
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_b": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        }
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": true,
+        "unexecuted_reason": null
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    },
+    {
+      "case_id": "85-C166-P-null",
+      "requirement": "mandatory",
+      "classification": "Exact",
+      "positive_source_ordinals": [
+        2
+      ],
+      "not_true_source_ordinals": [
+        0,
+        1
+      ],
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_b_bag": [
+        null
+      ],
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": true
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": true
+        },
+        "terminal_b": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": null,
+          "upper_inclusive": null,
+          "nullable": true
+        }
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Exact",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": true,
+        "unexecuted_reason": null
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    },
+    {
+      "case_id": "85-C166-N-upper",
+      "requirement": "mandatory",
+      "classification": "Impossible",
+      "positive_source_ordinals": [
+        0,
+        1
+      ],
+      "not_true_source_ordinals": [
+        2
+      ],
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b_bag": [
+        1,
+        1
+      ],
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_b": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        }
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": true,
+        "unexecuted_reason": null
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    },
+    {
+      "case_id": "85-C166-N-histogram",
+      "requirement": "mandatory",
+      "classification": "Impossible",
+      "positive_source_ordinals": [
+        0,
+        1
+      ],
+      "not_true_source_ordinals": [
+        2
+      ],
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b_bag": [
+        1,
+        1
+      ],
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_b": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        }
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Impossible",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": true,
+        "unexecuted_reason": null
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    },
+    {
+      "case_id": "85-C166-C-opaque",
+      "requirement": "conditional",
+      "classification": "Residual",
+      "positive_source_ordinals": null,
+      "not_true_source_ordinals": null,
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b_bag": null,
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_b": null
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": false,
+        "unexecuted_reason": "unimplemented opaque SQL function; no native inference"
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    },
+    {
+      "case_id": "85-C166-C-missing-schema",
+      "requirement": "conditional",
+      "classification": "Residual",
+      "positive_source_ordinals": [
+        0,
+        1
+      ],
+      "not_true_source_ordinals": [
+        2
+      ],
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b_bag": [
+        1,
+        1
+      ],
+      "source_and_terminal_domain_oracle": {
+        "t.k": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_a": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        },
+        "terminal_b": {
+          "type": "signed_integer",
+          "bits": 32,
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nullable": false
+        }
+      },
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mysql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "postgresql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "hive",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "sqlite",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "snowflake",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "redshift",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "mssql",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "clickhouse",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "bigquery",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "ansi",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "duckdb",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        },
+        {
+          "dialect": "databricks",
+          "canonical_status": "query",
+          "expected_classification": "Residual",
+          "verified_in_rust_test": true
+        }
+      ],
+      "native_duckdb": {
+        "source_and_a_verified": true,
+        "b_verified": true,
+        "unexecuted_reason": null
+      },
+      "evidence": [
+        "tests/task_166_acceptance_inventory.rs",
+        "tests/task_166_shared_goals.rs"
+      ]
+    }
+  ],
+  "original_child_ac_mapping": {
+    "1": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "2": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "3": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "4": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "5": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ]
+  },
+  "signoff": {
+    "ac1": "pending_owner_disposition_of_historical_v1_oracle_errors",
+    "ac2": "technical_pass",
+    "ac3": "technical_pass",
+    "ac4": "technical_pass",
+    "ac5": "awaiting_final_head_all_jobs_and_distinct_reviewer",
+    "independent_reviewer_identity_verified": false,
+    "owner_process_waiver_granted": false,
+    "parent_TASK_85_signed_off": false,
+    "task_done": false
+  }
+}
