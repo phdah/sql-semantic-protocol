@@ -270,8 +270,7 @@ fn shared_filtered_histogram_plan(
             };
             if matches.next().is_some()
                 || !projected.plain_copy_source().is_some_and(|source| {
-                    source.column() == source_column.column()
-                        && source.relation() == relation
+                    source.column() == source_column.column() && source.relation() == relation
                 })
             {
                 projections_verified = false;
