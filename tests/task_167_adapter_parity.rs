@@ -449,7 +449,7 @@ fn task_168_page_and_qualify_source_facts_are_equal_across_sql_dbt_odcs() {
             let layer = bundle.layers().iter()
                 .find(|layer|layer.input_id()=="model.demo.second").unwrap();
             let request = positive(layer.id(),&values);
-            let result = physical_single_tuple_histogram_plan(bundle,&[left.clone()],&request);
+            let result = physical_single_tuple_histogram_plan(bundle,std::slice::from_ref(&left),&request);
             let verdict = match &result {
                 PhysicalSingleTupleProof::Exact(_) => "Exact",
                 PhysicalSingleTupleProof::Impossible{..} => "Impossible",
@@ -459,7 +459,7 @@ fn task_168_page_and_qualify_source_facts_are_equal_across_sql_dbt_odcs() {
             if sql == PAGE {
                 let wrong = positive(layer.id(),&[(Some(1),10),(None,30)]);
                 assert!(matches!(
-                    physical_single_tuple_histogram_plan(bundle,&[left.clone()],&wrong),
+                    physical_single_tuple_histogram_plan(bundle,std::slice::from_ref(&left),&wrong),
                     PhysicalSingleTupleProof::Impossible{..}
                 ));
             }
