@@ -557,7 +557,8 @@ pub use in_bags::{
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
 pub use joint_tuple_goals::{
-    physical_joint_tuple_histogram_plan, PhysicalTupleBucket, PhysicalTupleGoalError,
+    physical_joint_tuple_histogram_plan, physical_single_tuple_histogram_plan,
+    PhysicalSingleTupleExact, PhysicalSingleTupleProof, PhysicalTupleBucket, PhysicalTupleGoalError,
     PhysicalTupleHistogramGoal,
 };
 pub use joint_terminals::{
