@@ -299,7 +299,32 @@
             "upper_inclusive": true
           }
         },
-        "other": null
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
       },
       "source_identity": {
         "relations": [
@@ -536,7 +561,32 @@
             "upper_inclusive": true
           }
         },
-        "other": null
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
       },
       "source_identity": {
         "relations": [
@@ -792,7 +842,32 @@
             "upper_inclusive": true
           }
         },
-        "other": null
+        "other": {
+          "k": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              null
+            ],
+            "contains_null": true,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "copies": {
+            "type": "INTEGER",
+            "values": [
+              1,
+              2
+            ],
+            "contains_null": false,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
       },
       "source_identity": {
         "relations": [
