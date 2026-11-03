@@ -1,6 +1,6 @@
 # TASK-166 acceptance and review audit
 
-**Status (2026-11-03):** Technical AC #2, #3 and #4 verified, but AC #1 and #5 remain formal gates. Do **not** mark the child Done before those dispositions. Parent TASK-85 is independently open.
+**Status (2026-11-03):** All five child ACs accepted and TASK-166 Done, with explicit owner waivers for the historical AC #1 freeze error and AC #5 distinct-reviewer identity. Parent TASK-85 remains independently open.
 
 ## Frozen contract, correction, and evidence
 
@@ -37,17 +37,21 @@ The acceptance test independently inserts every source occurrence into DuckDB, e
 ## CI and downstream consumer evidence
 
 - [9/9 previous standard jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41645707286) passed after the native typed-domain differential runner.
-- [Full parser/emitted-type verification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619) passed Rust tests, strict Clippy, docs, no-default tests and dbt E2E. Its only failing job was rustfmt; the exact rustfmt patch was committed as `a661009`. A **fully green 9/9 CI run** on final implementation/documentation head `8899a58` is recorded at [CI 41646921872](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872). A later metadata-only tracking commit must also pass CI before final signoff.
+- [Full parser/emitted-type verification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619) passed Rust tests, strict Clippy, docs, no-default tests and dbt E2E. Its only failing job was rustfmt; the exact rustfmt patch was committed as `a661009`. A **fully green 9/9 CI run** on final implementation/documentation head `8899a58` is recorded at [CI 41646921872](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872). The final reviewed implementation head `be2ab0b` also passed all 9/9 CI jobs ([run 41667049421](https://github.com/phdah/sql-semantic-protocol/actions/runs/41667049421)). Subsequent signoff-only tracking changes require green CI before merge.
 - [Pinned sql-tdg compatibility run](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167) passed on consumer commit `3beaf7799ab54b2440ae34c917ff7eda6c11c398` with the PR protocol patched in. This covers library, output generation, boundaries, types, full-query and exactness suites. Two preexisting, separately owned timestamp failures were excluded; full sql-tdg green is not claimed. The qualification-only workflow is temporary and must be removed from the final PR.
 
 ## Original child criteria and remaining formal decisions
 
 | Child AC | Original parent AC | Result |
 | --- | --- | --- |
-| #1 prospective exact freeze | #1, #3, #5, #6 | Prospective v1 exists but contained wrong expected ordinal and confused requested/native B bag; v2 corrected and validated. **Owner disposition of historical deviation pending**, so unchecked. |
+| #1 prospective exact freeze | #1, #3, #5, #6 | Prospective v1 exists but contained wrong expected ordinal and confused requested/native B bag; v2 corrected and validated. **Owner explicitly accepts the documented historical process deviation and waives literal prospective correctness** on 2026-11-03; AC signed off without rewriting v1. |
 | #2 shared source and sound negative proof | #1, #3, #4 | **Technical pass**, 4 mandatory finite cases and conservative conditional boundary |
 | #3 full native differential and canonical claims | #5, #6 | **Technical pass**, all executable full-bag/oracle/typed domain checks |
 | #4 13 dialect and SQL/dbt/ODCS equivalence | #1, #6 | **Technical pass**, 78 explicit parser+classification cells and conditional evidence |
-| #5 final CI and independent review | #5, #6 | **Pending**, final-head CI and independent reviewer/explicit owner waiver. No independent GitHub approval claimed. |
+| #5 final CI and independent review | #5, #6 | **Accepted with owner waiver** of a distinct independent reviewer identity on 2026-11-03. Technical Matt Standards/Spec pass is evidence, not an independent GitHub approval. Reviewed head `be2ab0b` passed 9/9 CI; check final tracking-only CI before merge. |
 
-The task cannot honestly be marked Done until the owner resolves the v1 process deviation and independent review requirement. A Standards/Spec technical pass submitted by the PR author's own connected GitHub account **does not** constitute a separate reviewer identity. TASK-85 parent remains open until all its children merge and original parent AC independently pass.
+The owner has explicitly resolved both formal gates, accepted completion, and authorized squash merge of PR #183 on 2026-11-03. A Standards/Spec technical pass submitted through the PR author's own connected GitHub account **does not** constitute a separate reviewer identity, so the owner waiver is explicit and retained. All six frozen cases, 78 parser cells, direct SQL/dbt/ODCS parity, and pinned consumer qualification remain the technical evidence. The two preexisting sql-tdg timestamp failures were excluded rather than claimed fixed. TASK-85 parent remains open until all children merge and its original AC independently pass.
+
+## Formal owner disposition recorded 2026-11-03
+
+The owner explicitly accepted the completed Matt code-review and authorized TASK-166 to be marked Done and PR #183 squash-merged. The owner **waives** (1) historical prospective-v1 freeze correctness, recognizing the unchanged v1 and transparently corrected, exercised v2; and (2) the distinct independent-reviewer identity requirement, while retaining the technical review evidence and not asserting an independent GitHub approval. These are recorded exception dispositions, not claims that the original criteria were literally met without waiver. AC #1 and #5 are closed through owner acceptance. The implementation head `be2ab0b` passed 9/9 CI ([run 41667049421](https://github.com/phdah/sql-semantic-protocol/actions/runs/41667049421)); final tracking-only CI must be green before merge. No native non-DuckDB vendor engine proof or full sql-tdg timestamp suite signoff is implied.
