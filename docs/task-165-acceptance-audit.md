@@ -1,8 +1,6 @@
 # TASK-165 bounded acceptance and review audit
 
-**Status:** Implementation in PR #182 is pending final-head verification and
-independent acceptance sign-off. TASK-85 remains open. This audit deliberately
-does not claim TASK-165 Done from passing tests alone.
+**Status (2026-11-03):** TASK-165 signed off as Done by the owner, using two explicitly accepted process waivers. PR #182 is ready for final merge checks and remains unmerged. TASK-85 remains open. This is owner authorization, not a separate independent GitHub review.
 
 ## Versioned inventory and historical freeze disposition
 
@@ -21,10 +19,11 @@ does not claim TASK-165 Done from passing tests alone.
   `Groups` witness, not merely another SQL example that produces two groups.
   The v3 matrix was frozen before the tightened witness-replay test. No
   mandatory semantic family was weakened by this review correction.
-- Release disposition for AC #1: **requires independent reviewer decision**.
+- Release disposition for AC #1 (owner-authorized 2026-11-03): **waiver accepted**.
   A fresh, prospective freeze is impossible for already implemented code.
   Compensating evidence includes immutable v1/v2, active v3, and executable
-  case accounting. This does not automatically satisfy the temporal criterion.
+  case accounting. This waiver closes the process gate without claiming literal
+  compliance with the original temporal criterion.
 
 ## Evidence per mandatory family
 
@@ -64,15 +63,17 @@ separate attestation.
 
 | Child AC | Parent original AC | Implementation result | Sign-off |
 | --- | --- | --- | --- |
-| #1 Frozen variants and prospective timing | #1, #3, #5, #6 | v1/v2 archived; active v3 froze the corrected group witness before its test. The original v1 was late and cannot become prospectively frozen by editing history | **Pending explicit process disposition** |
+| #1 Frozen variants and prospective timing | #1, #3, #5, #6 | v1/v2 archived; active v3 froze the corrected group witness before its test. The original v1 was late and cannot become prospectively frozen by editing history | **Closed by explicit owner waiver (2026-11-03), historical deviation retained** |
 | #2 Canonical complete-bag semantics | #1, #3 | Checked typed histogram totals, exact NULL/distinct/duplicate rates, full SourceRows and Groups witness bags; contradiction remains Impossible | **Technical pass** |
 | #3 Independent physical DuckDB oracle | #5, #6 | Positive/negative [1,1,NULL] and group [0,1] source plus full terminals; impossible overflow arithmetic only | **Technical pass** |
 | #4 Dialects/adapters/engine boundary | #1, #6 | 91 mandatory dialect cells and 13 conditional residual cells, direct SQL/dbt catalog/ODCS parity, DuckDB only as native engine | **Technical pass** |
-| #5 Final CI, pinned consumer and independent review | #5, #6 | Implementation-head [CI 41530620433](https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433) 9/9 green; 69 pinned consumer selected tests pass and two timestamp baseline failures unchanged. Final metadata-head CI and external independent review still required | **Pending independent sign-off** |
+| #5 Final CI, pinned consumer and independent review | #5, #6 | Previous head [CI 41531283571](https://github.com/phdah/sql-semantic-protocol/actions/runs/41531283571) 9/9 green; 69 pinned consumer selected tests pass and two timestamp baseline failures unchanged. Final bookkeeping-only commit CI must be checked before merge; no distinct reviewer approval exists | **Closed by explicit owner waiver of distinct-reviewer identity (2026-11-03)** |
 
 These mapped parent AC are **evidence links**, not parent TASK-85 completion.
-Child AC #2/#3/#4 may be checked on the implementation evidence; #1/#5 remain
-unchecked rather than treating a reviewer waiver as already given.
+Child AC #2/#3/#4 are verified on implementation evidence; #1/#5 have now
+been closed via **owner-authorized exceptions**, explicitly accepted on
+2026-11-03. A waived requirement is not asserted to have been literally
+satisfied. No independent GitHub approver is claimed.
 
 ## Matt code-review axes against `main...HEAD`
 
@@ -85,16 +86,20 @@ unchecked rather than treating a reviewer waiver as already given.
 - Potential style concern: a separate statistic type is a deliberately small
   value object for repeated NULL/distinct/duplicate counts, not a second
   authoritative protocol representation.
-- **Independent review status: pending.** A self-audit does not constitute a
-  separate human review; final-head Clippy/fmt/test outcomes are recorded by CI.
+- **Reviewer-identity exception: owner accepted (2026-11-03).** The Matt
+  two-axis review was submitted through the author-connected GitHub account;
+  it is not an independent GitHub approval. The owner explicitly waived the
+  distinct-reviewer-identity gate for TASK-165 only.
 
 ### Spec
 
 - The seven mandatory case semantics are linked to explicit golden whole-bag
   and Impossible oracles; a conditional no-schema residual is named.
-- Two genuine outstanding gates: AC #1 historical ordering needs explicit
-  reviewer disposition; AC #5 needs final-head checks and an independently
-  signed case-by-case review.
+- Both originally outstanding process gates have explicit owner dispositions:
+  AC #1 late freeze accepted as a waiver; AC #5 independent identity waived.
+  The seven mandatory families (91 parser cells) were evaluated in the Matt
+  two-axis review and by the frozen DuckDB/adapter acceptance tests. The
+  original unfulfilled historical conditions remain visible.
 - Pinned `sql-tdg` tests were run against an implementation SHA, with the same
   public API and protocol semantics as the present PR head; two pre-existing
   timestamp-specific failures were separately compared to the original base.
@@ -130,7 +135,9 @@ no permanent dependency on the consumer's Git SHA.
 
 The GitHub CI workflow runs fmt, strict all-target Rust Clippy, tests, docs,
 no-default-features lint/test/docs and dependency guard, and compiled dbt E2E.
-Final-head evidence URL, SHA, job verdict and downstream pin must be written
-here after completion. Leave PR #182 in Draft and TASK-165 In Progress until
-the mandatory cells, documented residuals, independent review and explicit
-freeze deviation disposition have been signed off.
+Implementation and prior metadata head `98f87c940e8f6dc276970eb4a847493a06e3dace`
+passed all nine jobs: [CI 41531283571](https://github.com/phdah/sql-semantic-protocol/actions/runs/41531283571).
+Pinned downstream evidence is recorded above. With both owner waivers accepted,
+TASK-165 is Done and PR #182 remains open, non-draft. Check current-head CI for
+this audit-only update and GitHub mergeability before squash-merging. The parent
+TASK-85 remains open; no distinct independent reviewer approval is claimed.

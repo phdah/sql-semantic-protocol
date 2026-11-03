@@ -2,7 +2,7 @@
   "task_165_standalone_output_goal_acceptance": {
     "owner": "TASK-165",
     "parent": "TASK-85",
-    "status": "91_mandatory_cells_and_CI_verified_independent_review_pending",
+    "status": "child_done_owner_waivers_accepted_technical_review_passed",
     "freeze": "docs/task-165-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -22,13 +22,19 @@
     ],
     "mandatory_cells_verified": true,
     "dbt_odcs_parity_verified": true,
-    "final_ci_verified": false,
+    "final_ci_verified": true,
     "verified_implementation_sha": "94bb54f5ca6a46bf9f84e870734043dd25a26337",
     "verification_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41530620433",
     "verified_mandatory_dialect_cells": 91,
     "verified_conditional_dialect_cells": 13,
     "independent_review": false,
-    "child_signed_off": false,
+    "independent_reviewer_identity_waived_by_owner": true,
+    "owner_process_waiver_accepted": true,
+    "owner_signoff_date": "2026-11-03",
+    "review_evidence": "PR #182 Matt code-review #5744151756, technically passes Standards/Spec; review posted via author-connected account, not an independent GitHub approval",
+    "final_ci_head_before_bookkeeping": "98f87c940e8f6dc276970eb4a847493a06e3dace",
+    "final_ci_run_before_bookkeeping": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41531283571",
+    "child_signed_off": true,
     "parent_signed_off": false,
     "freeze_history": [
       "docs/task-165-acceptance-freeze-v1.json",
@@ -38,7 +44,7 @@
     "frozen_inventory_oracle": "tests/task_165_acceptance_inventory.rs",
     "adapter_parity_oracle": "tests/task_165_adapter_parity.rs",
     "acceptance_audit": "docs/task-165-acceptance-audit.md",
-    "historical_freeze_timing_deviation": "Original v1 authored after first semantic changes. Explicit independent review disposition required for TASK-165 AC #1",
+    "historical_freeze_timing_deviation": "Original v1 authored after first semantic changes; owner accepted explicit AC #1 process waiver on 2026-11-03, not retroactive compliance",
     "native_oracle_scope": "Full DuckDB source/terminal bags for six executable mandatory cases; v3 reconstructs SourceRows and Groups exactly from emitted witnesses; overflow is checked arithmetic impossible",
     "conditional_release_disposition": "Absent authoritative source schema stays Residual; no vendor/session equality laws asserted. Two baseline-confirmed unrelated downstream timestamp failures remain owned by TASK-89/91 and are not a TASK-165 regression.",
     "pinned_consumer_qualification": {
@@ -61,10 +67,7 @@
       "temporary_workflow_removed": true
     },
     "remaining_gates": [
-      "Final-head CI on metadata commit (implementation 9/9 green at 94bb54f)",
-      "Independent two-axis review and acceptance-cell signoff",
-      "Explicit approval or rejection of historical AC #1 freeze timing exception",
-      "Documented TASK-89/91 follow-up for two preexisting downstream timestamp tests"
+      "Recheck final CI on bookkeeping-only PR head, then squash merge PR #182; TASK-85 remains open"
     ]
   },
   "task_160_ordered_lifecycle_acceptance": {
