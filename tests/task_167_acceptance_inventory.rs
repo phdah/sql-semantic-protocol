@@ -640,3 +640,32 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
         }
     }
 }
+
+
+#[test]
+fn verification_inventory_maps_every_frozen_case_to_each_canonical_dialect() {
+    let frozen = freeze();
+    let verification: Value = serde_json::from_str(include_str!(
+        "../docs/task-167-acceptance-verification.json"
+    ))
+    .unwrap();
+    let cells = verification["cells"].as_array().unwrap();
+    assert_eq!(cells.len(), 78);
+    for case in frozen["matrix"].as_array().unwrap() {
+        for dialect in DIALECTS {
+            let matching = cells
+                .iter()
+                .filter(|cell| {
+                    cell["case_id"] == case["id"]
+                        && cell["dialect"] == dialect
+                        && cell["expected_verdict"] == case["expected"]
+                        && cell["required"] == (case["requirement"] == "mandatory")
+                })
+                .count();
+            assert_eq!(matching, 1, "{}/{}: exact signed matrix cell", case["id"], dialect);
+        }
+    }
+    assert_eq!(verification["freeze"], "docs/task-167-acceptance-freeze.json");
+    assert_eq!(verification["owner"], "TASK-167");
+    assert_eq!(verification["parent"], "TASK-85");
+}
