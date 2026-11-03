@@ -14580,9 +14580,9 @@
   "task_168_correlated_tuple_goals_acceptance": {
     "owner": "TASK-168",
     "parent": "TASK-85",
-    "status": "frozen_pending_implementation_and_review",
+    "status": "all_technical_cells_verified_ac1_timing_and_ac5_independent_review_pending",
     "freeze": "docs/task-168-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "85-C168-P",
       "85-C168-N"
@@ -14598,18 +14598,33 @@
       5,
       6
     ],
-    "mandatory_cells_verified": false,
-    "native_duckdb_verified": false,
-    "adapter_parity_verified": false,
-    "full_rust_ci_verified": false,
+    "mandatory_cells_verified": true,
+    "native_duckdb_verified": true,
+    "adapter_parity_verified": true,
+    "full_rust_ci_verified": true,
     "independent_review": false,
     "child_signed_off": false,
     "parent_signed_off": false,
     "remaining_gates": [
-      "Implement and independently verify every mandatory tuple/LIMIT/QUALIFY/fanout case",
-      "Run 13 dialect and SQL/dbt/ODCS parity matrix",
-      "Run complete DuckDB native source and terminal oracles, fmt, Clippy, Rust/default/no-default, docs, dbt E2E, schema and pinned sql-tdg CI",
-      "Obtain independent review and owner signoff; parent TASK-85 remains open"
-    ]
+      "Explicit TASK-168 owner acceptance of historical v1 freeze incompleteness",
+      "Distinct independent GitHub reviewer or explicit TASK-168-only owner waiver",
+      "Remove temporary consumer workflow after qualification and require final metadata-head CI 9/9 before merge"
+    ],
+    "freeze_history": [
+      "docs/task-168-acceptance-freeze-v1.json"
+    ],
+    "verification": "docs/task-168-acceptance-verification.json",
+    "acceptance_audit": "docs/task-168-acceptance-audit.md",
+    "verified_mandatory_cases": 6,
+    "verified_conditional_cases": 1,
+    "verified_parser_cells": 91,
+    "verified_adapter_cells": 21,
+    "candidate_implementation_head": "2dd6a7ab01f56cfe31fdac1fa03cfc2244c19c6f",
+    "candidate_standard_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+    "pinned_consumer_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214",
+    "pinned_consumer_sha": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+    "author_account_review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574",
+    "historical_v1_freeze_timing_deviation": "Prospective v1 incomplete; v2 filled after semantic changes, not retroactive compliance; owner approval required",
+    "native_vendor_release_disposition": "No native engine certification outside DuckDB; conditional evidence owned by TASK-168 and reviewed under TASK-91"
   }
 }
