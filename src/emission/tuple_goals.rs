@@ -1,6 +1,6 @@
 //! Opt-in typed correlated-tuple proof sidecar. The active protocol root is unchanged.
+use super::joint_terminals::{domains_to_value, source_to_value, terminal_to_value};
 use super::*;
-use super::joint_terminals::{domains_to_value,source_to_value,terminal_to_value};
 use crate::constraints::ConstraintValue;
 use crate::physical_realization::{
     physical_single_tuple_histogram_plan, PhysicalSingleTupleExact, PhysicalSingleTupleProof,
@@ -34,35 +34,55 @@ pub fn to_physical_single_tuple_json(
     let result = physical_single_tuple_histogram_plan(bundle, snapshots, request);
     let evidence = match result {
         PhysicalSingleTupleProof::Exact(exact) => {
-            let (kind,relation,selected,rejected,rows,domains,extra) = match exact {
+            let (kind, relation, selected, rejected, rows, domains, extra) = match exact {
                 PhysicalSingleTupleExact::Page(page) => {
-                    let selected = page.rows.iter().filter(|row|row.survives)
-                        .map(|row|row.source_row_id.clone()).collect::<Vec<_>>();
-                    let rejected = page.rows.iter().filter(|row|!row.survives)
-                        .map(|row|row.source_row_id.clone()).collect::<Vec<_>>();
+                    let selected = page
+                        .rows
+                        .iter()
+                        .filter(|row| row.survives)
+                        .map(|row| row.source_row_id.clone())
+                        .collect::<Vec<_>>();
+                    let rejected = page
+                        .rows
+                        .iter()
+                        .filter(|row| !row.survives)
+                        .map(|row| row.source_row_id.clone())
+                        .collect::<Vec<_>>();
                     (
-                        "page",page.source.clone(),selected,rejected,
+                        "page",
+                        page.source.clone(),
+                        selected,
+                        rejected,
                         terminal_to_value(&page.terminal),
                         domains_to_value(&page.terminal_domains),
-                        json!({"contributors":page.terminal_contributors})
+                        json!({"contributors":page.terminal_contributors}),
                     )
                 }
                 PhysicalSingleTupleExact::Window(window) => (
-                    "window",window.source.clone(),
-                    window.terminal_row_ids.clone(),window.rejected_row_ids.clone(),
+                    "window",
+                    window.source.clone(),
+                    window.terminal_row_ids.clone(),
+                    window.rejected_row_ids.clone(),
                     terminal_to_value(&window.terminal),
                     domains_to_value(&window.terminal_domains),
                     json!({
                         "source_row_ids":window.source_row_ids,
                         "rejected_upstream_row_ids":window.rejected_upstream_row_ids
-                    })
+                    }),
                 ),
                 PhysicalSingleTupleExact::Rank(rank) => (
-                    "rank",rank.source.clone(),
-                    rank.ranked_rows.iter().filter(|row|row.survives)
-                        .map(|row|row.source_row_id.clone()).collect(),
-                    rank.ranked_rows.iter().filter(|row|!row.survives)
-                        .map(|row|row.source_row_id.clone()).collect(),
+                    "rank",
+                    rank.source.clone(),
+                    rank.ranked_rows
+                        .iter()
+                        .filter(|row| row.survives)
+                        .map(|row| row.source_row_id.clone())
+                        .collect(),
+                    rank.ranked_rows
+                        .iter()
+                        .filter(|row| !row.survives)
+                        .map(|row| row.source_row_id.clone())
+                        .collect(),
                     terminal_to_value(&rank.terminal),
                     domains_to_value(&rank.terminal_domains),
                     json!({"ranked_rows":rank.ranked_rows.iter().map(|row|json!({
@@ -71,21 +91,25 @@ pub fn to_physical_single_tuple_json(
                         "rank":row.rank,
                         "dense_rank":row.dense_rank,
                         "survives":row.survives
-                    })).collect::<Vec<_>>()})
+                    })).collect::<Vec<_>>()}),
                 ),
             };
-            let source=snapshots.iter().find(|state|state.relation()==relation)
+            let source = snapshots
+                .iter()
+                .find(|state| state.relation() == relation)
                 .map(source_to_value);
             json!({
                 "status":"exact","operator":kind,"source":source,
                 "selected_row_ids":selected,"not_true_row_ids":rejected,
                 "terminal":rows,"domains":domains,"details":extra
             })
-        },
-        PhysicalSingleTupleProof::Impossible{reason} =>
-            json!({"status":"impossible","reason":reason}),
-        PhysicalSingleTupleProof::Residual{reason} =>
-            json!({"status":"residual","reason":reason}),
+        }
+        PhysicalSingleTupleProof::Impossible { reason } => {
+            json!({"status":"impossible","reason":reason})
+        }
+        PhysicalSingleTupleProof::Residual { reason } => {
+            json!({"status":"residual","reason":reason})
+        }
     };
     json!({
         "protocol_version":bundle.protocol_version(),
@@ -99,5 +123,6 @@ pub fn to_physical_single_tuple_json(
             })).collect::<Vec<_>>()
         },
         "evidence":evidence
-    }).to_string()
+    })
+    .to_string()
 }
