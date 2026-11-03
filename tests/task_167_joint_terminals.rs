@@ -232,6 +232,30 @@ fn complete_source_bags_make_incompatible_join_or_window_goals_impossible() {
 }
 
 #[test]
+fn secondary_group_target_without_group_evidence_stays_residual() {
+    let bundle = analyze(JOIN, WINDOW, "duckdb");
+    let mut requested = goals(&bundle, 3, 1, false);
+    requested[1] = OutcomeGoal::new(
+        bundle.layers()[1].id(),
+        Some(3),
+        Some(3),
+        vec![histogram(
+            "copies",
+            &[
+                (ConstraintValue::Integer(1), 1),
+                (ConstraintValue::Integer(2), 2),
+            ],
+        )],
+    )
+    .unwrap();
+
+    assert!(matches!(
+        physical_joint_terminal_bag_plan(&bundle, &requested, &sources(true)),
+        PhysicalJointTerminalProof::Residual { .. }
+    ));
+}
+
+#[test]
 fn set_and_join_reconcile_multiplicities_from_the_same_two_sources() {
     let bundle = analyze(
         "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) = 2",
